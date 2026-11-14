@@ -87,7 +87,11 @@ task and name that file in the Command column.
 | Generated repository headers that take the declaration | 539 | =git diff --name-only origin/main...HEAD | grep '_repository\.hpp$' | xargs grep -l context_fwd.hpp | wc -l= | =2e1c0fcc14= |
 | Repository headers that keep the definition because they hold a member | 29, each carrying =context ctx_= | =grep -rl 'ores.database/domain/context.hpp' projects --include=*_repository.hpp= | =2e1c0fcc14= |
 | Archetypes the check's baseline held before | 5 | =check_forward_declarable_includes.py= | =2e1c0fcc14= |
-| Archetypes it holds after | 3: =cpp_nats_registrar=, =cpp_trade_type_digest=, =cpp_trade_type_writer= | the same check | =2e1c0fcc14= |
+| Archetypes it holds after the first family | 3: =cpp_nats_registrar=, =cpp_trade_type_digest=, =cpp_trade_type_writer= | the same check | =2e1c0fcc14= |
+| Registrar headers that take the declaration | 556 | =git diff --name-only main...HEAD | grep -c '_registrar\.hpp$'= | =74f9d7d07e= |
+| Archetypes it holds after the second family | 2: =cpp_trade_type_digest= and =cpp_trade_type_writer= | the same check | =74f9d7d07e= |
+| Full build of the second family | 343 steps, 0 failures, 19 minutes | =compass build --preset linux-clang-release-ninja= | =74f9d7d07e= |
+| Suites the second family reaches | 6 of 6 after a re-run; =ores.marketdata.service.tests= failed once on a timing assertion and passed on its own | =compass test run -- -j 4 -R ...= | =74f9d7d07e= |
 | Objects that depend on =context.hpp=, after the family | 373 objects in 68 targets — unchanged in kind, because the implementations construct a context | =header_blast_radius.py --build-dir build/output/linux-clang-release-ninja= | =cd07249042= |
 | The same, at the analysis | 365 objects at =27cad5a0c6= on a smaller tree | the same instrument | =27cad5a0c6= |
 | Full build of the change | 539 steps, 0 failures, 37 minutes | =compass build --preset linux-clang-release-ninja= | =2e1c0fcc14= |
@@ -165,6 +169,14 @@ header a consumer of a repository parses no longer sets off the definition, and
 that the next family should measure before and after rather than reason about
 it.
 
-*What the next family needs.* =cpp_nats_registrar= is 556 headers and its
-implementation includes the definition on its own, so the swap is one line.
-=cpp_trade_type_digest= and =cpp_trade_type_writer= are one file each.
+*The second family was uniform.* The registrar archetype emits four headers per
+component and none of them holds a context member: they pass the context to the
+handler they construct, and their implementations include the definition
+themselves. So the swap was the four lines the model shows, with no junction
+case, and the check's reading held.
+
+*What the next family needs.* =cpp_trade_type_digest= and
+=cpp_trade_type_writer= are one generated file each, and the baseline holds
+nothing else that is fixable. That pair is the task's closing work: after it, the
+check reports only =pq/unit_of_work.hpp=, whose body needs =pq::transaction= from
+the header that defines =pq::session_context=.

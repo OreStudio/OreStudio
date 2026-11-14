@@ -45,6 +45,7 @@ using ores::iam::workflow::generate_trades_step_kind;
 using ores::iam::workflow::is_declared_step_kind;
 using ores::iam::workflow::is_executed_step_kind;
 using ores::iam::workflow::is_system_scoped_step_kind;
+using ores::iam::workflow::marketdata_provision_tenant_step_subject;
 using ores::iam::workflow::provision_executed_step_kinds;
 using ores::iam::workflow::provision_party_step_kind;
 using ores::iam::workflow::provision_party_workflow_type;
@@ -63,6 +64,7 @@ using ores::iam::workflow::register_tenant_setup_workflow;
 using ores::iam::workflow::schedule_reports_step_kind;
 using ores::iam::workflow::step_subject_for_kind;
 using ores::iam::workflow::start_tenant_setup_step_kind;
+using ores::iam::workflow::subscribe_market_data_step_kind;
 using ores::iam::workflow::load_staff_step_kind;
 using ores::iam::workflow::system_provision_step_kind;
 using ores::iam::workflow::tenant_setup_workflow_type;
@@ -241,6 +243,11 @@ TEST_CASE("a step is dispatched to the service that owns the work it does", "[wo
     // served there through the service's own tenant-scoped session.
     CHECK(step_subject_for_kind(generate_trades_step_kind) ==
           synthetic_provision_tenant_step_subject);
+    // The subscriptions and routes are marketdata's work, so the step that
+    // writes them is served there through the service's own tenant-scoped and
+    // party-scoped sessions.
+    CHECK(step_subject_for_kind(subscribe_market_data_step_kind) ==
+          marketdata_provision_tenant_step_subject);
     // The identity steps stay in ores.iam, which owns the run and the people.
     CHECK(step_subject_for_kind(load_staff_step_kind) == provision_tenant_step_subject);
     CHECK(step_subject_for_kind(system_provision_step_kind) == provision_tenant_step_subject);

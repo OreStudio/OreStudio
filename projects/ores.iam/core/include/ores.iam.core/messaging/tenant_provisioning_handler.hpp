@@ -54,14 +54,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
-#include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
-#include "ores.marketdata.api/messaging/route_protocol.hpp"
-#include "ores.marketdata.api/messaging/subscription_protocol.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -990,9 +987,6 @@ private:
                 return;
             case workflow::provision_step_action::attach_photos:
                 attach_photos_step(wf, command, resolve_step_actor(command));
-                return;
-            case workflow::provision_step_action::subscribe_market_data:
-                subscribe_market_data_step(wf, command, resolve_step_actor(command));
                 return;
             case workflow::provision_step_action::publish_party_curves:
                 publish_party_curves_step(wf, command, resolve_step_actor(command));
@@ -2469,81 +2463,6 @@ private:
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
-    /// Gives each party the tenant holds a subscription to each of its providers and a route to
-    /// one source of each: the step's own, or the ones the step names for that party.
-    ///
-    /// A demonstration's legal entities are meant to take their market data from different vendors,
-    /// because each collection quotes the markets its own feeds serve, so the profile names a
-    /// provider and a source for each party it wants on another. A party the profile names twice
-    /// takes both providers, as a bank that reads rates from one vendor and crosses from another
-    /// does. A party the profile does not name takes the step's own, and a party it names that the
-    /// tenant does not hold is refused: a subscription written for nobody would leave the tenant
-    /// quietly on the wrong feed.
-    ///
-    /// The generators belong to the system, so the tenant publishes none and starts none: the
-    /// parties take the shared simulated stream through their subscriptions and routes.
-    void
-    subscribe_market_data_step(const ores::service::messaging::workflow_step_context& wf,
-                               const ores::iam::workflow::provision_tenant_step_command& command,
-                               const step_actor& actor) {
-        const auto arguments = workflow::parse_market_data_arguments(command.arguments_json);
-        auto discover =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-
-        // One lookup for each provider and source named, so a party on another feed costs no more
-        // reads than the parties on the step's own.
-        std::map<std::string, boost::uuids::uuid> sources;
-        const auto source_of = [&](const std::string& provider, const std::string& source) {
-            const auto key = provider + "/" + source;
-            const auto found = sources.find(key);
-            if (found != sources.end())
-                return found->second;
-            const auto id = find_source_id(discover, provider, source);
-            sources.emplace(key, id);
-            return id;
-        };
-        // The step's own source is looked up first, so a profile that names a wrong one fails
-        // before any party is subscribed.
-        source_of(arguments.provider, arguments.source);
-
-        std::vector<std::string> subscribed;
-        std::set<std::string> matched;
-        std::uint32_t offset = 0;
-        constexpr std::uint32_t page_size = 1000;
-        while (true) {
-            ores::refdata::messaging::list_parties_request request;
-            request.offset = offset;
-            request.limit = page_size;
-            const auto page = discover.request(request).parties;
-            for (const auto& party : page) {
-                const auto id_text = boost::uuids::to_string(party.id);
-                for (const auto& assignment : arguments.parties)
-                    if (assignment.party == id_text || assignment.party == party.full_name)
-                        matched.insert(assignment.party);
-                auto party_client =
-                    make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                for (const auto& feed :
-                     workflow::feeds_of_party(arguments, id_text, party.full_name))
-                    subscribe_party(party_client,
-                                    party.id,
-                                    feed.provider,
-                                    source_of(feed.provider, feed.source));
-                subscribed.push_back(id_text);
-            }
-            if (page.size() < page_size)
-                break;
-            offset += page_size;
-        }
-
-        for (const auto& assignment : arguments.parties)
-            if (!matched.contains(assignment.party))
-                throw std::runtime_error("The tenant holds no party the market data step names: '" +
-                                         assignment.party + "'.");
-
-        wf.complete(ores::utility::codec::json::write(
-            provision_step_result{.kind = command.kind, .parties = subscribed}));
-    }
-
     /// Every definition a party owns, one page at a time, as the party reads
     /// them. A single page with a fixed limit would schedule the first hundred
     /// and leave the rest of the catalogue unscheduled without saying so.
@@ -2886,91 +2805,6 @@ private:
             if (party.party_category == "System")
                 return party;
         return std::nullopt;
-    }
-
-    // The id of the source the step names, which must belong to the provider.
-    static boost::uuids::uuid find_source_id(internal_request_client& client,
-                                             const std::string& provider,
-                                             const std::string& source) {
-        marketdata::messaging::list_feeds_request request;
-        request.limit = 1000;
-        const auto response = client.request(request);
-        if (response.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The market data feeds were not read: " +
-                                     response.result.message);
-        for (const auto& candidate : response.feeds)
-            if (candidate.name == source && candidate.publisher_code == provider)
-                return candidate.id;
-        throw std::runtime_error("The catalogue holds no feed '" + source + "' of the provider '" +
-                                 provider + "'.");
-    }
-
-    // Gives one party a subscription to a provider and a route to a source. The
-    // client speaks as the party, because the service stamps the party from the
-    // session. A subscription or a route the party already holds is left as it is,
-    // so the step can run again.
-    static void subscribe_party(internal_request_client& party_client,
-                                const boost::uuids::uuid& party_id,
-                                const std::string& provider,
-                                const boost::uuids::uuid& source_id) {
-        const auto party_text = boost::uuids::to_string(party_id);
-        boost::uuids::random_generator uuid_gen;
-
-        marketdata::messaging::list_subscriptions_request held_subscriptions;
-        held_subscriptions.limit = 1000;
-        const auto subscriptions = party_client.request(held_subscriptions);
-        if (subscriptions.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The subscriptions of party " + party_text +
-                                     " were not read: " + subscriptions.result.message);
-        // The session of a parent party also sees the rows of its child parties, so the
-        // check names the party and a child's subscription does not count as the parent's.
-        const bool has_subscription =
-            std::ranges::any_of(subscriptions.subscriptions, [&](const auto& s) {
-                return s.party_id == party_id && s.provider_code == provider;
-            });
-        if (!has_subscription) {
-            marketdata::messaging::put_subscription_request put;
-            put.change.write.id = uuid_gen();
-            put.change.write.party_id = party_id;
-            put.change.write.provider_code = provider;
-            put.change.write.display = true;
-            put.change.write.non_display = true;
-            put.change.write.derived = true;
-            put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
-            put.intent.reason_code = "system.new_record";
-            put.intent.commentary =
-                "Created by provisioning: the party takes the shared market data";
-            const auto saved = party_client.request(put);
-            if (saved.result.outcome != ores::utility::domain::outcome::ok)
-                throw std::runtime_error("The subscription of party " + party_text + " to '" +
-                                         provider + "' was not saved: " + saved.result.message);
-        }
-
-        marketdata::messaging::list_routes_request held_routes;
-        held_routes.limit = 1000;
-        const auto routes = party_client.request(held_routes);
-        if (routes.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The routes of party " + party_text +
-                                     " were not read: " + routes.result.message);
-        const bool has_route = std::ranges::any_of(routes.routes, [&](const auto& r) {
-            return r.party_id == party_id && r.publisher_code == provider;
-        });
-        if (!has_route) {
-            marketdata::messaging::put_route_request put;
-            put.change.write.id = uuid_gen();
-            put.change.write.party_id = party_id;
-            put.change.write.publisher_code = provider;
-            put.change.write.asset_class = "fx";
-            put.change.write.feed_id = source_id;
-            put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
-            put.intent.reason_code = "system.new_record";
-            put.intent.commentary =
-                "Created by provisioning: the party takes the shared market data";
-            const auto saved = party_client.request(put);
-            if (saved.result.outcome != ores::utility::domain::outcome::ok)
-                throw std::runtime_error("The route of party " + party_text + " to '" + provider +
-                                         "' was not saved: " + saved.result.message);
-        }
     }
 
     // Ensures the caller tenant holds the image with this code, copying the

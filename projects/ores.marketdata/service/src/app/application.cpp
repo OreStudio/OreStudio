@@ -64,6 +64,7 @@
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/provisioning_step_registrar.hpp"
 #include "ores.marketdata.service/messaging/publish_due_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/published_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/rate_card_component_event_registrar.hpp"
@@ -142,14 +143,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    // Authenticated client for service-to-service calls. Currently used
-    // only by import_handler, to fetch ores.refdata's currency_pair
-    // reference data for FX quote convention checking during import. The
-    // token provider authenticates with the service's own database
-    // account credentials.
-    ores::nats::service::nats_client svc_nats(nats,
-                                              ores::iam::client::make_service_token_provider(
-                                                  nats, cfg.database.user, cfg.database.password));
+    // Authenticated client for service-to-service calls: import_handler reads
+    // ores.refdata's currency_pair reference data through it for FX quote
+    // convention checking during import. The token provider authenticates with
+    // the service's own database account credentials, and is kept beside the
+    // client because a provisioning step enters a tenant with it.
+    auto service_token = ores::iam::client::make_service_token_provider(
+        nats, cfg.database.user, cfg.database.password);
+    ores::nats::service::nats_client svc_nats(nats, service_token);
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
     std::shared_ptr<tick_writer> ticks;
@@ -303,9 +304,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg, ingest, supervisor, &svc_nats, crm_bridge](auto& n, auto c, auto v) {
+        [&cfg, ingest, supervisor, &svc_nats, service_token, crm_bridge](auto& n, auto c, auto v) {
             auto subs = ores::marketdata::messaging::registrar::register_handlers(
                 n, c, svc_nats, v, cfg.http_base_url);
+
+            // The provisioning steps the service owns, on their own stream and
+            // consumer: the engine sends them, and each one holds a session
+            // inside the tenant its command names.
+            auto provisioning = ores::marketdata::service::messaging::provisioning_step_registrar::
+                register_handlers(n, service_token);
+            for (auto& sub : provisioning)
+                subs.push_back(std::move(sub));
 
             namespace mm = ores::marketdata::messaging;
             constexpr auto queue = "ores.marketdata.service";

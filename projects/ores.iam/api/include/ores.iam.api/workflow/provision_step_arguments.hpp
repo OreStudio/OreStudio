@@ -52,7 +52,6 @@ enum class provision_step_action {
     attach_photos,
     start_auto_approval,
     end_auto_approval,
-    subscribe_market_data,
     publish_party_curves,
     give_party_surface_blueprints,
     publish_party_forwards,
@@ -100,8 +99,6 @@ enum class provision_step_action {
         return provision_step_action::start_auto_approval;
     if (kind == "end_auto_approval")
         return provision_step_action::end_auto_approval;
-    if (kind == "subscribe_market_data")
-        return provision_step_action::subscribe_market_data;
     if (kind == publish_party_curves_step_kind)
         return provision_step_action::publish_party_curves;
     if (kind == give_party_surface_blueprints_step_kind)

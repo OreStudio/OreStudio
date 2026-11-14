@@ -57,7 +57,7 @@ std::string_view describe(tenant_session_refusal refusal) {
         case tenant_session_refusal::already_inside_a_tenant:
             return "The session is already inside a tenant; leave it first.";
         case tenant_session_refusal::not_permitted:
-            return "Entering a tenant needs the permission iam::tenants:impersonate.";
+            return "The caller does not hold the permission this entry needs.";
         case tenant_session_refusal::unreadable_tenant_id:
             return "The tenant id could not be read.";
         case tenant_session_refusal::system_tenant:

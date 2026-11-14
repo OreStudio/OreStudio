@@ -114,6 +114,9 @@ target_link_libraries(${tests_target_name}
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.trading.core.lib
+        # The fixture writes the account a trade is stamped with, because the
+        # store refuses an audit name that is not an account.
+        ores.iam.core.lib
         ores.ore.core.lib
         ores.service.lib
         Boost::process

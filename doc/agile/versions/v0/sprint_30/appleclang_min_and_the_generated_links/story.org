@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: EAD87500-027A-46B7-BD34-911D827DCF71
+:END:
+#+title: Story: Hotfix: Fix the AppleClang min call and the generated link drift
+#+description: macOS fails to compile a min call, and three generated CMake files no longer match their models.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:hotfix:codegen:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make macOS compile again, and bring three generated CMake files back in line
+with the models they are generated from.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Both fixes are written and the drift check reports none. |
+| Waiting on    | The next macOS build and the drift workflow. |
+| Next          | Confirm, then close.                   |
+| Last touched  | 2026-11-14                               |
+
+* Acceptance
+
+- macOS compiles =storage_file_source.cpp=.
+- =check_component_drift.py= reports no drift for iam, refdata and synthetic.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5C7F8CAE-E0E2-4EDD-945D-5A57436816C1][Scaffold story: Hotfix: Fix the AppleClang min call and the generated link drift]] | DONE | 2026-11-14 | 2026-11-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9610FEC2-2D29-4EA6-BAFB-65D9046DE5BD][Implement Hotfix: Fix the AppleClang min call and the generated link drift]] | DONE | | 2026-11-14 | Initial task for: Hotfix: Fix the AppleClang min call and the generated link drift |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -30,7 +30,9 @@ storage_file_source::storage_file_source(std::filesystem::path path,
     : path_(std::move(path)) {
 
     std::error_code ec;
-    const auto stated = std::filesystem::file_size(path_, ec);
+    // uintmax_t is unsigned long on macOS and unsigned long long elsewhere,
+    // which std::min refuses to mix with the uint64_t arguments below.
+    const auto stated = static_cast<std::uint64_t>(std::filesystem::file_size(path_, ec));
     if (ec)
         throw std::runtime_error("Cannot read object: " + path_.string() + ": " + ec.message());
 

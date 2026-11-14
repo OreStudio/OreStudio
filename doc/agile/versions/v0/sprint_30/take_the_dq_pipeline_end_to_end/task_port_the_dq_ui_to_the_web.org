@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/take-the-dq-pipeline-end-to-end
-#+pr: 4711
+#+pr: 4712
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -121,6 +121,7 @@ they would otherwise become.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4712][#4712]] | [agile] Scope the DQ screens as journeys and prototypes, not a port |
 | [[https://github.com/OreStudio/OreStudio/pull/4711][#4711]] | [agile] Record the Qt source and screens for the DQ port |
 
 * Review

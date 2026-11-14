@@ -63,9 +63,13 @@ The move is one kind at a time, because each kind drags its own dependencies:
 5. Then the reporting, dq and inbox kinds: =schedule_reports=,
    =publish_bundle= and the two approval-mode steps.
 
-Stage 2 has a prerequisite this stage did not: a moved step that asks another
-service as the run's tenant needs a session, and the token is minted in process
-by =internal_impersonation_service=, which lives in iam.core. The calendar step
+Stage 2 has a prerequisite this stage did not, and it is now stated in the
+story's Decisions: a moved step that writes as the run's tenant needs a session,
+and the token is minted in process by =internal_impersonation_service=, which
+lives in iam.core. =iam.v1.ops.enter_tenant= is the only subject that issues a
+tenant-scoped token, and it issues read permissions for the caller's own
+account; the trading service takes the tenant, the party and the author from
+the caller's claims, so a step served outside iam cannot write a trade. The calendar step
 avoided it because its work is refdata's own data and it writes as its own
 service account. =generate_trades= books trades through requests that answer a
 session, so either iam offers a request that mints a short-lived session for a

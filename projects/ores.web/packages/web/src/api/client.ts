@@ -3633,6 +3633,7 @@ export const api = {
         readonly currency: string;
         readonly asOf: string;
         readonly instrumentType?: string;
+        readonly forwardStart?: string;
         readonly providers?: readonly string[];
     }): Promise<RateLadder> {
         return rateLadderSchema.parse(
@@ -3642,6 +3643,7 @@ export const api = {
                 body: JSON.stringify({
                     currency: query.currency,
                     instrument_type: query.instrumentType ?? 'discount',
+                    forward_start: query.forwardStart ?? '',
                     as_of: query.asOf,
                     providers: query.providers ?? [],
                 }),

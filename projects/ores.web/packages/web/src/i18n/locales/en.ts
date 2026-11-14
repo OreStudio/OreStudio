@@ -315,6 +315,18 @@ export const en: SourceCatalogue = {
         curvePublish: {
             subject: 'The subject the request authorises',
             curve: 'Curve',
+            forwardStart: 'Forward start',
+            starts: {
+                '0D': 'Spot',
+                '3M': '3M',
+                '1Y': '1Y',
+            },
+            window: 'Window',
+            windows: {
+                short: 'Short dates',
+                all: 'The whole curve',
+                long: '1Y to 10Y',
+            },
             party: 'Party',
             asOf: 'Published as-of',
             points: 'Points',
@@ -5634,7 +5646,7 @@ export const en: SourceCatalogue = {
                 fixing: 'Fixing',
             },
             whatOpens:
-                'A pair opens its convention. The other kinds are read on their own screens.',
+                'A pair opens its convention, a curve its published sets, a fixing its series and a ladder its currency. A surface has no page yet.',
         },
 
         rateLadder: {

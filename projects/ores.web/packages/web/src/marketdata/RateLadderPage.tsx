@@ -40,6 +40,25 @@ import { LineChart, SERIES_COLOURS } from './LineChart.js';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD'] as const;
 
+/// The forward start a ladder is quoted from: spot, or a broken date.
+const STARTS = ['0D', '3M', '1Y'] as const;
+
+/// How much of the curve the ladder shows, by the year fraction the server states.
+const WINDOWS = ['short', 'all', 'long'] as const;
+
+type Window = (typeof WINDOWS)[number];
+
+function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+    return allowed.find((candidate) => candidate === value) ?? fallback;
+}
+
+/** Whether a rung falls in the window, by the year fraction the server dated it with. */
+function inWindow(rung: RateLadderRung, window: Window): boolean {
+    if (window === 'short') return rung.year_fraction < 1.0 / 12.0;
+    if (window === 'long') return rung.year_fraction >= 1.0 && rung.year_fraction <= 10.0;
+    return true;
+}
+
 function asOfInstant(date: string): string {
     return `${date} 23:59:59Z`;
 }
@@ -82,7 +101,9 @@ export function RateLadderPage(): ReactNode {
     const currency = (search.get('ccy') ?? 'USD').toUpperCase();
     const asOf = search.get('asof') ?? todayIso();
     const providers = search.get('providers') ?? '';
-    const key = ['rate-ladder', currency, asOf, providers] as const;
+    const start = oneOf(search.get('start'), STARTS, '0D');
+    const window = oneOf(search.get('window'), WINDOWS, 'all');
+    const key = ['rate-ladder', currency, asOf, providers, start] as const;
 
     const ladder = useQuery({
         queryKey: key,
@@ -91,11 +112,21 @@ export function RateLadderPage(): ReactNode {
                 currency,
                 asOf: asOfInstant(asOf),
                 providers: providers === '' ? [] : providers.split(','),
+                forwardStart: start,
             }),
         retry: false,
     });
 
-    const rows = ladder.data?.rungs ?? [];
+    const rows = (ladder.data?.rungs ?? []).filter((rung) => inWindow(rung, window));
+    // One column per provider, in the order the server lists them, so a gap on a
+    // rung is a gap in a column a person can see.
+    const quoted = [
+        ...new Set(
+            (ladder.data?.rungs ?? []).flatMap((rung) =>
+                rung.quotes.map((quote) => quote.provider_code),
+            ),
+        ),
+    ];
     const quotedBy = (rung: RateLadderRung): string =>
         rung.quotes.length === 0
             ? t('marketdata.rateLadder.noQuotes')
@@ -133,6 +164,34 @@ export function RateLadderPage(): ReactNode {
                             if (event.target.value !== '') set({ asof: event.target.value });
                         }}
                     />
+                </Field>
+                <Field label={t('marketdata.rateLadder.forwardStart')}>
+                    <Select
+                        value={start}
+                        onChange={(event) => {
+                            set({ start: event.target.value });
+                        }}
+                    >
+                        {STARTS.map((option) => (
+                            <option key={option} value={option}>
+                                {t(`marketdata.rateLadder.starts.${option}`)}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+                <Field label={t('marketdata.rateLadder.window')}>
+                    <Select
+                        value={window}
+                        onChange={(event) => {
+                            set({ window: event.target.value });
+                        }}
+                    >
+                        {WINDOWS.map((option) => (
+                            <option key={option} value={option}>
+                                {t(`marketdata.rateLadder.windows.${option}`)}
+                            </option>
+                        ))}
+                    </Select>
                 </Field>
                 <Field label={t('marketdata.rateLadder.providers')}>
                     <Input
@@ -202,7 +261,11 @@ export function RateLadderPage(): ReactNode {
                                     </th>
                                     <th className={head}>{t('marketdata.rateLadder.maturity')}</th>
                                     <th className={head}>{t('marketdata.rateLadder.consensus')}</th>
-                                    <th className={head}>{t('marketdata.rateLadder.quotedBy')}</th>
+                                    {quoted.map((provider) => (
+                                        <th className={head} key={provider}>
+                                            {provider}
+                                        </th>
+                                    ))}
                                     <th className={head}>{t('marketdata.rateLadder.best')}</th>
                                     <th className={head}>{t('marketdata.rateLadder.distance')}</th>
                                     <th className={head}>{t('marketdata.rateLadder.age')}</th>
@@ -232,9 +295,26 @@ export function RateLadderPage(): ReactNode {
                                             <td className={cell}>
                                                 {percent(rung.consensus.value, language)}
                                             </td>
-                                            <td className="px-2 py-1 text-xs text-ink-muted">
-                                                {quotedBy(rung)}
-                                            </td>
+                                            {quoted.map((provider) => {
+                                                const quote = rung.quotes.find(
+                                                    (one) => one.provider_code === provider,
+                                                );
+                                                return (
+                                                    <td
+                                                        className={cx(
+                                                            cell,
+                                                            quote === undefined
+                                                                ? 'text-ink-faint'
+                                                                : undefined,
+                                                        )}
+                                                        key={provider}
+                                                    >
+                                                        {quote === undefined
+                                                            ? '—'
+                                                            : percent(quote.value, language)}
+                                                    </td>
+                                                );
+                                            })}
                                             <td className={cell}>
                                                 {best === undefined ? '—' : percent(best, language)}
                                             </td>

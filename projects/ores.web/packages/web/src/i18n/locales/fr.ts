@@ -314,6 +314,18 @@ const fr: SourceCatalogue = {
         curvePublish: {
             subject: 'Le sujet que la demande autorise',
             curve: 'Courbe',
+            forwardStart: 'Départ',
+            starts: {
+                '0D': 'Spot',
+                '3M': '3M',
+                '1Y': '1Y',
+            },
+            window: 'Fenêtre',
+            windows: {
+                short: 'Dates courtes',
+                all: 'Toute la courbe',
+                long: '1Y à 10Y',
+            },
             party: 'Partie',
             asOf: 'Date d’arrêté publiée',
             points: 'Points',
@@ -5715,7 +5727,7 @@ const fr: SourceCatalogue = {
                 fixing: 'Fixing',
             },
             whatOpens:
-                'Une paire ouvre sa convention. Les autres types se lisent sur leurs propres écrans.',
+                'Une paire ouvre sa convention, une courbe ses ensembles publiés, un fixing sa série et une échelle sa devise. Une surface n’a pas encore de page.',
         },
 
         rateLadder: {

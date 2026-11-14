@@ -315,6 +315,18 @@ const pt: SourceCatalogue = {
         curvePublish: {
             subject: 'O sujeito que o pedido autoriza',
             curve: 'Curva',
+            forwardStart: 'Início',
+            starts: {
+                '0D': 'Spot',
+                '3M': '3M',
+                '1Y': '1Y',
+            },
+            window: 'Janela',
+            windows: {
+                short: 'Datas curtas',
+                all: 'A curva toda',
+                long: '1Y a 10Y',
+            },
             party: 'Parte',
             asOf: 'Data de referência publicada',
             points: 'Pontos',
@@ -5674,7 +5686,7 @@ const pt: SourceCatalogue = {
                 fixing: 'Fixing',
             },
             whatOpens:
-                'Um par abre a sua convenção. Os outros tipos leem-se nos seus próprios ecrãs.',
+                'Um par abre a sua convenção, uma curva os seus conjuntos publicados, um fixing a sua série e uma escada a sua moeda. Uma superfície ainda não tem página.',
         },
 
         rateLadder: {

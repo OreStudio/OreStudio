@@ -146,6 +146,14 @@ describe('the instrument finder', () => {
         expect(page).not.toContain('href="/refdata/currency-pairs/USD-SOFR"');
     });
 
+    it('opens a curve at its published sets and leaves a surface as text', () => {
+        const page = draw('/market-data/instruments');
+        expect(page).toContain('href="/market-data/published-curves/USD-SOFR"');
+        // A surface has no page, so its name is not a link.
+        expect(page).not.toContain('href="/market-data/published-curves/EURUSD_SSVI"');
+        expect(page).not.toContain('href="/market-data/instruments/EURUSD_SSVI"');
+    });
+
     it('says nothing matched when the catalogue answers nothing', () => {
         const page = draw('/market-data/instruments', {
             total: 0,

@@ -24,6 +24,7 @@ import { api, type MarketInstrument } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { pairPath } from '../refdata/currencyPairs.js';
+import { PATHS, publishedCurvePath } from '../shell/paths.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { relativeTime } from '../ui/Time.js';
 
@@ -55,11 +56,30 @@ function sourcesOf(instrument: MarketInstrument): string {
     return codes.length === 0 ? '—' : codes.join(', ');
 }
 
-/** The page a row opens, for the kinds the product has a page for. */
+/**
+ * The page a row opens, for the kinds the product has a page for.
+ *
+ * The catalogue's instrument id is the party and the series' URI, so a kind whose
+ * page is addressed by the series reads that URI out of the id. A surface has no
+ * page yet, so its row stays text rather than linking somewhere that would say
+ * nothing.
+ */
 function destination(instrument: MarketInstrument): string | undefined {
-    return instrument.kind === 'pair' && instrument.name.includes('/')
-        ? pairPath(instrument.name)
-        : undefined;
+    const uri = instrument.instrument_id.split('|')[1] ?? '';
+    switch (instrument.kind) {
+        case 'pair':
+            return instrument.name.includes('/') ? pairPath(instrument.name) : undefined;
+        case 'curve':
+            return instrument.name === '' ? undefined : publishedCurvePath(instrument.name);
+        case 'fixing':
+            return uri === '' ? undefined : `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+        case 'ladder':
+            return instrument.currency === ''
+                ? undefined
+                : `${PATHS.rateLadder}?ccy=${instrument.currency}`;
+        default:
+            return undefined;
+    }
 }
 
 function Row({ instrument }: { readonly instrument: MarketInstrument }): ReactNode {

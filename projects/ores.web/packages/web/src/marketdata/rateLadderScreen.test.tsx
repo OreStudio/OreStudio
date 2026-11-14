@@ -89,7 +89,7 @@ const ladder: RateLadder = {
 
 function draw(address: string, set: RateLadder = ladder): string {
     const client = new QueryClient();
-    client.setQueryData(['rate-ladder', 'USD', '2026-11-13', ''], set);
+    client.setQueryData(['rate-ladder', 'USD', '2026-11-13', '', '0D'], set);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -123,9 +123,21 @@ describe('the rate ladder page', () => {
         expect(page).toContain('+3.0 bp');
     });
 
-    it('names the providers that quote a rung', () => {
+    it('gives every provider a column, and a gap a dash', () => {
         const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
-        expect(page).toContain('ore, bloomberg, derived');
+        for (const provider of ['ore', 'bloomberg', 'derived']) {
+            const header = new RegExp(`<th[^>]*>\\s*${provider}\\s*<\\/th>`);
+            expect(page).toMatch(header);
+        }
+        // The 3M rung is quoted by ore alone, so the other two columns are gaps.
+        expect(page).toContain('—');
+    });
+
+    it('shows only the short dates when the window asks for them', () => {
+        const short = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13&window=short');
+        expect(short).not.toContain('2027-02-15');
+        const all = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
+        expect(all).toContain('2027-02-15');
     });
 
     it('marks a rung fewer providers quote than the desk holds', () => {

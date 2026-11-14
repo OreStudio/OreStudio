@@ -226,6 +226,14 @@ is the state the inbox's own captures describe
 (=the_feed_ingest_tests_fail_while_the_environments_services_run=,
 =feed_ingest_small_batch_test_times_out_under_load=). With the services stopped, both pass.
 
+The run after these fixes is 29 of 31: =portable-stop= is green and no longer reported, main
+having added =forward-declarable-includes= to the list in the meantime. =ctest= failed one
+suite, =ores.synthetic.core.tests=, on a database assertion that a basket constituent named
+=.SPX= and the equity catalogue did not hold it; run on its own against the same freshly
+recreated database, that suite passes 138 of 139 cases and 3230 assertions, so what failed is
+four suites sharing one database in parallel, not the code. =ticks-smoke= is the date rule
+above and nothing else.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

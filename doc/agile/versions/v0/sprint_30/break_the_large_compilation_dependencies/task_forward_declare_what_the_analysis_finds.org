@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Started; the check and its baseline are the work list. |
+| Now          | The repository family is done; the baseline holds three archetypes. |
 | Waiting on   | Nothing.                               |
-| Next         | The repository archetype family.       |
+| Next         | The nats registrar and trade-type families. |
 | Last touched | 2026-11-13                             |
 
 * Acceptance
@@ -102,3 +102,29 @@ A decision that turns out wrong while it is applied, such as a type that cannot 
 |   |                 |      |          |       |
 
 * Result
+
+The first family is done and the check that guards the rule carries the rest.
+
+- The =repository= archetype emits =domain/context_fwd.hpp= in the 539 generated
+  headers that only name the context, and its implementation now includes the
+  definition it used to get from the header by accident. =cpp_convention_family_units=
+  takes the declaration with it. The baseline falls from five archetypes to
+  three: =cpp_nats_registrar=, =cpp_trade_type_digest= and =cpp_trade_type_writer=.
+- Measured at =2e1c0fcc14=: 1086 files regenerated, build clean (539 steps, 37
+  minutes), and the five suites that read repositories pass (5 of 5, 606 s). The
+  objects that rebuild when =context.hpp= is touched do not move, because the
+  implementations construct a context and read it either way; what moves is what
+  a header-only consumer parses.
+
+*The family was not uniform, and the compile is what said so.* The first cut of
+the change swapped the include in both headers the archetype emits, and the build
+stopped at the first junction entity: 62 of them hold a =context ctx_= member and
+need the definition. The junction header, emitted under =has_uuid_left_or_right=,
+keeps =context.hpp=. The check that guards this rule can see a header that
+includes too much and cannot see one that includes too little, so this is a fact
+about the archetype only a build reports. The next family should be measured the
+same way before its PR claims a saving.
+
+*What the next family needs.* =cpp_nats_registrar= is 556 headers and its
+implementation includes the definition on its own, so the swap is one line.
+=cpp_trade_type_digest= and =cpp_trade_type_writer= are one file each.

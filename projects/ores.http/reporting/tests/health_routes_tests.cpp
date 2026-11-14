@@ -31,7 +31,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <optional>
-#include <catch2/catch_test_macros.hpp>
 #include <string>
 
 using ores::http::domain::http_method;
@@ -61,9 +60,7 @@ http_status status_of(http_request req) {
     std::optional<ores::http::domain::http_response> answer;
     boost::asio::co_spawn(
         io,
-        [&]() -> boost::asio::awaitable<void> {
-            answer = co_await route->handler(req);
-        },
+        [&]() -> boost::asio::awaitable<void> { answer = co_await route->handler(req); },
         boost::asio::detached);
     io.run();
     REQUIRE(answer.has_value());

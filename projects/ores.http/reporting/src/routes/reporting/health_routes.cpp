@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -68,8 +68,8 @@ std::string tally_of(const http_request& req, nats_client& session) {
     for (const auto& entry : reply.counts)
         counts.push_back("{\"health\":" + json::write(entry.health) +
                          ",\"count\":" + std::to_string(entry.count) + "}");
-    return "{\"counts\":" + rr::array_of(counts) +
-           ",\"total\":" + std::to_string(reply.total) + "}";
+    return "{\"counts\":" + rr::array_of(counts) + ",\"total\":" + std::to_string(reply.total) +
+           "}";
 }
 
 }
@@ -81,26 +81,29 @@ void reporting_routes::register_health_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
     using forwarding::guarded;
-    const auto built = router->get("/api/reporting/report-health")
-                           .summary("The report definitions of a party, counted by their health")
-                           .description("Each health word with the number of definitions that "
-                                        "carry it, in the service's own order, and the total it "
-                                        "counted.")
-                           .tags({"reporting"})
-                           .auth_required()
-                           .query_param("party_id", "string", "", false, "The party to count")
-                           .query_param("search", "string", "", false, "A text the definition's "
-                                                                      "name holds")
-                           .handler([&session](const http_request& req)
-                                        -> boost::asio::awaitable<http_response> {
-                               co_return guarded<
-                                   reporting_messaging::count_report_definitions_by_health_request>(
-                                   [&] {
-                                       rr::refuse_unknown_params(req, {"party_id", "search"});
-                                       return http_response::json(health::tally_of(req, session));
-                                   });
-                           })
-                           .build();
+    const auto built =
+        router->get("/api/reporting/report-health")
+            .summary("The report definitions of a party, counted by their health")
+            .description("Each health word with the number of definitions that "
+                         "carry it, in the service's own order, and the total it "
+                         "counted.")
+            .tags({"reporting"})
+            .auth_required()
+            .query_param("party_id", "string", "", false, "The party to count")
+            .query_param("search",
+                         "string",
+                         "",
+                         false,
+                         "A text the definition's "
+                         "name holds")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::count_report_definitions_by_health_request>(
+                    [&] {
+                        rr::refuse_unknown_params(req, {"party_id", "search"});
+                        return http_response::json(health::tally_of(req, session));
+                    });
+            })
+            .build();
     router->add_route(built);
     registry->register_route(built);
 }

@@ -107,7 +107,7 @@ machinery.
 The mechanism a tier-2 dataset uses is the same one every other published
 dataset uses: a bundle, a publish function and a target tenant. The level and
 the bundle that carry a dataset are
-[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]]'s
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]]'s
 subject, not this page's. This page decides the tier and stops there.
 
 ** The procedure

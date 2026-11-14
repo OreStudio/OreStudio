@@ -11,7 +11,7 @@
 
 * Superseded
 
-[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]] owns the model. It states the three levels, the
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]] owns the model. It states the three levels, the
 bundle map, the target tenant of each bundle and the publish path, and it is
 the page to read first. This page keeps the stage-by-stage account of the
 artefact tables, the artefact types and the publish functions, and three of

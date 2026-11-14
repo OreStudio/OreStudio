@@ -88,5 +88,6 @@ An exception to the rule needs a stated reason, a review and a sign-off before i
 
 - [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]: the four mechanisms and the reads that cross tenants.
 - [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]: the read codes and the allow-list.
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]]: the level a new shared table takes, and the bundle that publishes it.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]: the accounts exception and the system tenant.
 - [[id:ABA133C1-B8F3-4B13-999F-4C03400A8BCB][Story: Split accounts into open and confidential data]]: why the standard exists.

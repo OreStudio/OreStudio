@@ -30,7 +30,7 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
 | Now          | The page and its three diagrams are written. They await review and sign-off. |
 | Waiting on   | The sign-off. Task 2 must not start until it lands. |
-| Next         | Review [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]], answer its decisions, then apply the bundle rename and the bundle map. |
+| Next         | Review [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]], answer its decisions, then apply the bundle rename and the bundle map. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -38,25 +38,33 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 **Documentation first.** No implementation starts until these documents answer
 every question below.
 
-- One knowledge page paints the whole publishing architecture in one picture:
-  every level, every artefact table, every dataset, every bundle, and what
-  publishes what into which tenant. It replaces the four partial answers, and
-  the pages it supersedes link to it rather than restating it.
-- The page carries UML for the parts a table cannot show, as =*.puml= beside it
-  in =doc/knowledge/=:
+- One knowledge page answers one question: *where does this new data go?* It
+  gives the decision a developer makes — the level, the tenant, the bundle and
+  the writer — and the map that follows from it. It is an atomic note in the
+  sense of [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]: one
+  assertion, a dense set of =id:= links, and nothing the pages it links already
+  own.
+- It states the target state and no history: no defect list, no "today", no
+  retired path, no task table. What the tree still has to change is the story's
+  record and not the page's.
+- It does not restate what another page owns. The tiers stay in
+  [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]], the ownership
+  classes and policies in
+  [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
+  information flow]], the artefact and the publish function in
+  [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]], the provenance
+  fields in [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]], and the
+  atomicity of a bundle in
+  [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package
+  catalogue]]. The page links each and says what each completes.
+- It carries UML for the parts a table cannot show, as =*.puml= beside it in
+  =doc/knowledge/=:
   - a component diagram of the publish path from request to published row;
   - a diagram of the levels, showing which tables each level writes and which
     readers look at each;
   - a sequence diagram for one bundle publish, including the dependency order.
-- The page states, in their own sections:
-  - *Provenance* — for a published row, the dataset and artefact row it came
-    from, and how a person finds that chain.
-  - *Methodology* — how a dataset is staged, declared, bundled and published,
-    as the canonical sequence an author follows.
-  - *Reproducibility* — what a blank database produces, what a recreate
-    reproduces, what depends on the outside world, and how an operator proves a
-    database matches its datasets.
-- Every question the investigation left open is answered on the page:
+- It answers the questions the investigation left open that a page of this
+  scope can answer, and it says where the others are answered:
   1. Which levels exist, what each is named, and what each holds?
   2. Which bundle publishes which datasets, into which tenant, once or per
      tenant?
@@ -64,9 +72,12 @@ every question below.
      security?
   4. Where do the coded vocabularies and catalogues live, and who owns them?
   5. What is the single canonical way to add a dataset, end to end?
-  6. What is legacy, and what retires it?
-  7. What does a recreated database contain, and what must an operator run?
-- The page is reviewed and signed off before task 2 starts.
+  6. What does a recreated database contain, and what must an operator run?
+  7. What is legacy, and what retires it? *Not this page's.* The story's
+     inventory of write paths and its tasks answer it.
+- It states what publication adds to provenance, and what a recreate produces
+  and how an operator proves it.
+- It is reviewed and signed off before task 2 starts.
 
 * Measurements
 

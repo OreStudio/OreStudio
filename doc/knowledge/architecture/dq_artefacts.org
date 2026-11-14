@@ -81,7 +81,7 @@ shape, and the two cannot drift.
    tenant: =system_core= and =world= publish into the system tenant,
    =tenant_defaults= into a tenant, and =party_essentials= into a party's
    tenant. A dataset joins one bundle and no other. See
-   [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]] for the levels and the whole bundle map.
+   [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]] for the levels and the whole bundle map.
 8. *Declare what it depends on* with =ores_dq_dataset_dependencies_upsert_fn=.
    The publication orders datasets by their dependencies and nothing else: the
    display order of a bundle member does not decide it. A dataset whose rows
@@ -132,7 +132,7 @@ returns table (action text, record_count bigint)
   repository that declares =:system_tenant_visible:= admits them. A dataset
   that publishes an installation or world row into a tenant is misclassified;
   see
-  [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]] and
+  [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]] and
   [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]].
 - It reads =p_params= only for what the bundle publication passes, such as the
   party a party-scoped publish writes for.

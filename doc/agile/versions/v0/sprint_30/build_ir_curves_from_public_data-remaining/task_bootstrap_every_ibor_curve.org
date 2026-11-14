@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
-#+updated: 2026-11-13
+#+updated: 2026-11-14
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Every IBOR feed of every currency has a bootstrapped curve that reads its own IB
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; one firing published all thirty curves. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-13                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 
@@ -61,7 +61,11 @@ task and name that file in the Command column.
 | IBOR bootstrap configs seeded | 10 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl where curve_family_role='PROJECTION'= | eb9acd465c |
 | IBOR bootstrap pillars seeded | 70 | same table joined to the pillars where the role is =PROJECTION= | eb9acd465c |
 | IBOR market series seeded | 40 (10 output, 30 quote) | =select count(*) from ores_marketdata_market_series_tbl where oresmd_uri like 'oresmd://ir/%tenor=1M'...= | eb9acd465c |
-| Fresh database with the seeds | recreate passes | =./compass.sh db recreate -y -k= | eb9acd465c |
+| Fresh database with the seeds | recreate passes | =./compass.sh db recreate -y -k= | ca20a1be68 |
+| Curves a fresh database seeds | 30 (20 funding, 10 projection) | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl where valid_to = ... and tenant_id = <system>= | ca20a1be68 |
+| Curves one firing published | 30 of 30 (20 funding, 10 projection) | marketdata log: =Curve republish sweep: published 30 of 30 curve(s): deferred 0, failed 0, raised 0= | ca20a1be68 |
+| Curves a firing left unbuilt on a database with no quotes | 0 published, 30 deferred, 0 failed | marketdata log: =published 0 of 30 curve(s): deferred 30, failed 0, raised 0= | ca20a1be68 |
+| Service suites | 257 cases, all pass | =./compass.sh test run -- -R ores.marketdata.service.tests= | ca20a1be68 |
 
 * Notes
 
@@ -123,3 +127,91 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The task shipped. One firing of the scheduled sweep planned the thirty seeded
+curves, built the twenty funding curves, then built the ten IBOR projections
+against the funding curves it had just published, and published all thirty. No
+curve was deferred and none failed.
+
+** The order is a plan, not a role sort
+
+=curve_build_planner= (=ores.marketdata.core=) orders a set of artefacts by the
+inputs each one declares, and states the nodes no input allows: an input the set
+does not hold, or one that is itself held out. Its three parts are pure, so order,
+missing inputs and cycles are decided without a database.
+
+The sweep builds its nodes from the configs it reads -- a projection declares the
+funding config it discounts off -- and visits the plan's levels in order. A node
+no level holds is deferred unvisited, and a cyclic set is refused rather than
+retried, naming the curves. The plan and the outcomes are
+[[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]].
+
+** A deferred curve is not a failure
+
+=curve_republish_service= returns a =curve_deferral= rather than throwing when a
+pillar has no quote or the funding curve has published nothing: the build did not
+start, so the curve keeps the set it had, and the next firing tries again. The
+publish path answers in the same words -- published, raised, deferred, refused,
+failed -- so the sweep reports a curve's fate without restating it, and counts the
+three outcomes apart.
+
+On the fresh database, before any quote existed, a firing reported =published 0 of
+30 curve(s): deferred 30, failed 0=. Before this change the ten projections failed
+in the pass that published their funding curves, and the log could not tell that
+ordering from a break.
+
+** A projection reads its funding curve from that curve's reference date
+
+The funding curves' first pillar is a three month deposit; every IBOR ladder starts
+with a one month deposit. The engine refuses a discount curve that does not span a
+pillar's dates, and a stored set leaves out its own reference date, where the
+discount factor is one. The projection now anchors the funding curve it reads at
+the as-of before the engine judges coverage
+(=curve_republish_service.cpp=). Without the anchor the ten projections deferred
+with =discount_curve does not cover pillar '1M'=; with it they publish.
+
+** Evidence
+
+A firing on the recreated database, at 2026-11-14 00:45, in plan order: the twenty
+funding curves first (KRW-KOFR, MXN-TIIE, COP-IBR, HKD-HONIA, CZK-CZEONIA,
+SEK-SWESTR, SGD-SORA, EUR-ESTR, AUD-AONIA, CHF-SARON, TRY-TLREF, GBP-SONIA,
+ZAR-ZARONIA, NZD-NZONIA, CAD-CORRA, DKK-DESTR, CLP-CAMARA, USD-SOFR-FOMC,
+INR-MIBOR, JPY-TONA), then the ten projections (EUR-EURIBOR-1M, EUR-EURIBOR-6M,
+CHF-LIBOR-3M, CHF-LIBOR-6M, GBP-LIBOR-3M, GBP-LIBOR-1M, USD-LIBOR-1M,
+USD-LIBOR-6M, JPY-LIBOR-3M, JPY-LIBOR-1M). Every one published.
+
+=select curve_family_role, count(distinct c.id), count(distinct p.output_series_id)
+filter (where p.valid_to = ores_utility_infinity_timestamp_fn()) ...= answers 20
+funding and 10 projection curves with a live publish each, for the system tenant.
+
+** What the quotes were, and what is still provisioning's
+
+This environment was recreated and not provisioned. Nothing the installation
+publishes was there: the adapter and supplier catalogues are DQ datasets of the
+=system_core= bundle, and the =system_provision= step of the provisioning run is
+what publishes them into the system tenant. A bare database therefore knows no
+adapter, refuses every announce, and demands nothing from any feed. Provider terms
+are not the cause: the simulated vendors carry no terms at all (=ice=, =tradeweb=,
+=bloomberg=, =lseg=, =demo=, =composite=), and the terms a person must accept
+belong to the public single-source providers (=boe=, =ecb=, =nyfed= and the rest).
+
+The bring-up is =compass shell -f
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=, which runs
+=system_provision= and then the tenant's own steps. It did not run after the
+recreate, and =compass db status= says so: =bootstrap mode true -- system
+provisioning wizard not yet run=.
+
+Publishing the catalogues by hand -- =marketdata.adapters=, =marketdata.suppliers=,
+=synthetic.market_data_providers= and the synthetic feeds datasets -- got the
+adapters as far as announcing and being accepted, and the environment stops there:
+the synthetic service does not answer the market data service's demand subjects
+inside the supervisor's two second wait, so no feed starts and no quote series
+holds an observation. That is
+[[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]],
+which is in flight elsewhere.
+
+So that this task's own chain could be proved, the live run seeded one flat quote
+per pillar directly: 210 observations, =source = 'provisioning hack: flat quote'=.
+They are not the feeds' work and stand in for it. Deleting them
+(=delete from ores_marketdata_market_observations_tbl where source = 'provisioning
+hack: flat quote'=) returns the environment to the feeds, after which the curves
+defer until the synthetic service serves them.

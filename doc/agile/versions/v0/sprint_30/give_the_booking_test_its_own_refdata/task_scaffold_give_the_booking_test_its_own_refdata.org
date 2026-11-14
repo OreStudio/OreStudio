@@ -8,7 +8,7 @@
 #+filetags: :give_the_booking_test_its_own_refdata:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/give-the-booking-test-its-own-refdata
-#+pr:
+#+pr: 4707
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4707][#4707]] | [synthetic] Give the booking test its own refdata |
 
 * Review
 

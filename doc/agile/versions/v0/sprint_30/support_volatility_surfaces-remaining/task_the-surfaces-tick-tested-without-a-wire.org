@@ -55,7 +55,7 @@ thousand feeds is measured.
 - Two consecutive ticks against an unchanged board hand the emitter identical markets and it emits identical quotes, so the board adds no drift of its own. A republication of the same values changes nothing either.
 - The round trip goes through the board: curves and a spot are published to a board, read by the surface's read, turned into markets by =fx_vol_expiry_markets= and emitted, and then calibrated against those same markets, with no =fx_market= built by hand in that test. Its error is measured once and recorded in Measurements with its command and commit.
 - The pair's spot member is named by one function at the writer and at the reader, so the spot a spot feed publishes is the spot a surface reads.
-- A hidden benchmark states the cost of one driver lookup per tick and one board member read at a thousand members, with its command and commit. The layout of =drive= and of a member's points changes only if that number breaches the tick path's budget.
+- A hidden benchmark states the cost of one driver lookup per tick and one board member read at a thousand members, with its command and commit. The budget it is read against is the sentence the tick's own body builds, which is the other thing the loop pays for on every tick: the layout of =drive= and of a member's points changes only if a lookup costs more than that sentence.
 
 * Plan
 
@@ -70,12 +70,17 @@ it could not read. =tick= then keeps the publish loop and nothing else, and the 
 stays byte-identical: the function names the member, the tick prefixes =no market: =. The
 alternative -- constructing a feed with a default client -- would test the same sentence
 through a class whose only remaining dependence is a broker, which is the wire this task
-exists to avoid.
+exists to avoid. The review showed the price of that: the =no market: = prefix belongs to
+the tick, so no test of the read alone can assert the sentence an operator greps for. Every
+gate answers before the publish, so a feed built on a client that is never used is not the
+wire -- it is the sentence. The gate case therefore does what this stage argued against, and
+the argument was wrong.
 
 *Stage 2 — the values.* With the read in hand, the tests publish to a real board and read
-back through the same views: a curve built by =append_curve_points= from a flat three
-percent Hull-White process, whose factors are checkable by hand, and a spot under
-=fx_pair_member_code=. Three gates, three cases, one fixture.
+back through the same views, under the name =fx_pair_member_code= builds. The curves are
+stated points rather than ones =append_curve_points= derives from a process: that path has
+its own tests, and stating the points is what lets the expected factor be a literal a reader
+can check by hand.
 
 *Stage 3 — the dates.* The value date is the claim the previous task made and never
 observed: the three expiries must discount over three different horizons. A flat curve with
@@ -88,10 +93,12 @@ emitter's processes are at their start and the drivers are zero, so the fixed po
 exact and any difference is the board's.
 
 *Stage 5 — the round trip.* The existing round-trip test builds three identical =fx_market=s
-by hand and hands each side the same one, which is why the review called it weak. A second
-case in the same file goes through the board end to end and calibrates the quotes against
-the markets the read produced. The first case stays, retitled to the claim it actually
-makes -- the fit recovers the quotes -- because isolating the fit is still worth a test.
+by hand and hands each side the same one, which is why the review called it weak. It is
+rewritten in place rather than joined by a second case: the case goes through the board end
+to end and calibrates the quotes against the markets the read produced, and it keeps the fit
+assertions it had, so the claim that the fit recovers the quotes is still measured -- on
+three markets that differ, rather than on one stated three times. The plan said the old case
+would stay; keeping it would have been a test that guarantees its own precondition.
 
 *Stage 6 — the measurement.* =drive= and the board's layout were deferred because nobody
 had measured them. A hidden =[.benchmark]= test, in the style of the pq layer benchmark,
@@ -116,17 +123,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| A surface's gate, with neither curve published | =no market: curve:EUR= | =ores.synthetic.api.tests "[fx_vol_surface_tick]"= | 941d11a13e |
-| The same with the base curve published | =no market: curve:USD= | the same | 941d11a13e |
-| The same with both curves published | =no market: spot:EUR/USD= | the same | 941d11a13e |
-| The three expiries' discounts against the curves' own flat factors | equal to =1e-12= relative, asserted | the same | 941d11a13e |
-| The three expiries' forwards | 1.08242, 1.07875, 1.07350, strictly falling, so one market is not reused | the same | 941d11a13e |
-| Two ticks with the same values republished between them | bit-for-bit identical quotes | the same | 941d11a13e |
-| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]"= | 941d11a13e |
-| The same at the 25 and 10 delta wings | 6.56e-09 volatility | the same | 941d11a13e |
-| One driver lookup in a run of a thousand series | 15.85 ns median (15.69–16.01), 5 passes of 2,000,000 | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 941d11a13e |
-| The tick body's own sentence, for comparison | 50.45 ns median (50.29–50.62) | the same | 941d11a13e |
-| One board member read at a thousand members | 6.39 ns median (6.35–6.44) | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 941d11a13e |
+| A tick whose run has published neither curve | =no market: curve:EUR=, and =publish_count()= stays zero | =ores.synthetic.api.tests "[fx_vol_surface_feed]"= | 10595d103f |
+| The same with the base curve published | =no market: curve:USD=, and nothing sent | the same | 10595d103f |
+| The same with both curves published | =no market: spot:EUR/USD=, and nothing sent | the same | 10595d103f |
+| The value date of each expiry | 16 December 2026, 16 February 2027, 16 May 2027, at 30, 92 and 181 days | =ores.synthetic.api.tests "[fx_vol_surface_tick]"= | 10595d103f |
+| The discounts each value date carries, domestic then foreign | 0.9991784198737006 and 0.997537284048252; 0.9974826259685393 and 0.9924668734686284; 0.9950533709567208 and 0.9852333992470845, asserted at =1e-12= relative | the same | 10595d103f |
+| The forward of each expiry | 1.0824192174825231, 1.0787481969120785, 1.0735002590229397, strictly falling, so one market is not reused | the same | 10595d103f |
+| A curve and a spot read back through the surface's own read | the published points, point for point, and the published level | the same | 10595d103f |
+| Two ticks with the same values republished between them | bit-for-bit identical quotes; the 1M ATM is 0.0699722922466306 | the same | 10595d103f |
+| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility, asserted at =1e-8= | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]"= | 941d11a13e |
+| The same at the 25 and 10 delta wings | 6.56e-09 volatility, asserted at =2e-8= | the same | 941d11a13e |
+| One driver lookup in a run of a thousand series, which is 250 series keys | 15.85, 25.18 and 26.07 ns, the medians of three runs of five passes of 2,000,000 | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 941d11a13e, 10595d103f |
+| A sentence of the tick body's shape, as the budget a lookup is read against | 50.45, 67.03 and 141.98 ns over the same three runs, so the lookup is between a third and a sixth of it | the same | 941d11a13e, 10595d103f |
+| One board member read at a thousand members | 6.39 and 8.09 ns, the medians of two runs | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 941d11a13e, 10595d103f |
+| The quant suite | 712 cases | =ores.analytics.quant.tests= | 10595d103f |
+| The synthetic api suite | 1018 cases | =ores.synthetic.api.tests= | 10595d103f |
+| The marketdata core suite | 407 cases | =ores.marketdata.core.tests= | 941d11a13e |
+| The reporting core suite | 303 cases | =ores.reporting.core.tests= | 941d11a13e |
+
+The three nanosecond ranges are the honest shape of this measurement: the same code on the
+same machine read 15.85 ns and then 26.07 ns for a lookup, so a single median would carry
+more precision than the number has. What the decision needs is the ratio, and that holds at
+every reading.
 
 * Notes
 
@@ -134,10 +152,13 @@ task and name that file in the Command column.
 
 The two candidates the previous review deferred were =drive='s map lookup and a member's
 points in their own heap vector. Measured at the scale the deferral named -- a thousand
-series, a thousand members -- a lookup is 15.85 ns and a member read is 6.39 ns, against
-50.45 ns for the sentence the tick's own body builds and a publish in the microseconds. At
-ten thousand ticks a second that is 0.16 ms of lookup per second of run. Neither is worth a
-change, so neither changed.
+series, a thousand members -- a lookup reads between 15.85 and 26.07 ns across three runs
+and a member read between 6.39 and 8.09 ns across two, against 50.45 to 141.98 ns for a
+sentence of the tick body's shape and a publish in the microseconds. The spread is the
+machine's load, not the code's, which is why the table carries the range: at the worst
+reading a lookup still costs a sixth of what the body's own message costs, so nothing on
+the path is worth re-laying out. What a change would buy is 26 ns a tick, at ten thousand
+ticks a second 0.26 ms of a second of run.
 
 The second is worth one sentence of argument the number cannot make: a *reader* touches one
 member, and that member's points are contiguous inside its own vector, so the locality a
@@ -153,6 +174,13 @@ the loop.
 - The round trip compared =fit.error=, which is signed, to an absolute value. It passed
   only because that fixture's residuals happened to be positive; with three different
   markets one is negative and the comparison caught itself.
+
+** The review of this branch
+
+Two axes were run separately -- standards against the checklist and the repo's own rules,
+spec against this page's acceptance -- and they agreed on the load-bearing finding, which is
+why the gate case takes the shape it does. The findings and what came of each are in the
+review table further down this page.
 
 ** The gate on this branch
 
@@ -171,7 +199,7 @@ and =build=. What stayed red is not this branch's:
   with a null =const char*=. That is not this branch's file either, and it is captured as
   [[id:C73E11BE-122E-466B-BCEC-3F0AF7A979F6][The Banxico unset-key tests throw instead of
   reporting unset]]. The other 102 suites pass, including every suite this branch can move:
-  quant 712 cases, synthetic api 1017, synthetic service 78 of 79 (the one failure is the
+  quant 712 cases, synthetic api 1018, synthetic service 78 of 79 (the one failure is the
   adapter-announce race the inbox already carries), marketdata core 407, reporting core 303.
 - =ticks-smoke= fails at =publish_party_surfaces=, and the reason is the one another
   environment filed the same day: =expiry 1W: the row dated 2026-11-16 is before the spot
@@ -202,29 +230,56 @@ via its "Verifies task" field.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+Two axes, run separately: standards against the code-review checklist and the repo's rules,
+spec against this page's acceptance.
+
+| # | Comment summary | Axis | File | Decision | Notes |
+|---+-----------------+------+------+----------+-------|
+| 1 | Nothing called =tick=, so the =no market: = prefix and "publishes nothing" were unasserted | both | tests | fixed | the gate case builds the real feed and ticks it three times, asserting the whole sentence and =publish_count()= |
+| 2 | The value dates and discounts were computed with the expression the fixture used, so a wrong =add_period= would agree with itself | standards | tick tests | fixed | dates, discounts and forwards are literals a reader can check |
+| 3 | The no-drift case compared the emitter with its own next step | standards | tick tests | fixed | it states the 1M ATM the first tick quotes |
+| 4 | The round trip measured 2.55e-09 and asserted < =1e-7=, so a doubling would stay green | spec | round-trip tests | fixed | asserted at =1e-8= and =2e-8= |
+| 5 | The new public function documented two of its four parameters and not its return | standards | =fx_vol_surface_feed.hpp= | fixed | all four and the return are documented |
+| 6 | The benchmark called 250 series keys "a thousand series", and measured a copy of the body's sentence | spec, standards | =run_market_benchmark_tests.cpp= | fixed | the label says what is measured, and the sentence is a reference, not a guard |
+| 7 | Plan stage 5 said the fit-only case stays; it was replaced instead | spec | this page | fixed | the plan now says what happened and why |
+| 8 | The round trip's comment narrated the design it replaced | standards | round-trip tests | fixed | the comment is gone |
+| 9 | Acceptance 9 named a budget no page states | spec | this page | fixed | the budget is the sentence the tick's body builds, measured beside the lookup |
+| 10 | The board fixture is duplicated between the two test files | standards | both test files | deferred | [[id:25D92EF7-A9A6-4295-8BDA-990CD9D50047][captured]]: a shared header changes how the fixtures are built, not what is asserted |
+| 11 | Three member ids travel as three arguments of one type | standards | =fx_vol_surface_feed.hpp= | deferred | [[id:25D92EF7-A9A6-4295-8BDA-990CD9D50047][captured]] with 10; a transposition is silent, which is the argument for taking it |
+| 12 | Two inbox captures and the predecessor's row 16 sit outside this task | spec | =doc/agile/= | accepted | the captures record red checks the gate hits on every branch, and row 16 is this task's closing |
+| 13 | Sentence-style test names | standards | tests | accepted | the neighbouring feed and emitter tests name cases the same way |
 
 * Result
 
 The surface's tick is now testable without a wire, and what it does is tested. The read came
 out of the body into =fx_vol_board_inputs=, which answers the pair's three values or the
-member it could not read; the tick keeps the walk over the points and the publish, and the
-gate's sentence is byte-identical because the function names the member and the tick
-prefixes it.
+member it could not read; the tick keeps the walk over the points and the publish, so the
+sentence it logs is byte-identical to the one it logged before.
 
-Four claims, each of which had none: the three gates, asserted character for character
-(=curve:EUR=, =curve:USD=, =spot:EUR/USD=); the value date of each expiry, so three
-expiries discount over three horizons and each market's forward is the ratio of the two
-curves' own factors there, to =1e-12=; two ticks with the same values republished between
-them quoting bit for bit; and a round trip that goes *through* the board -- curves and a
-spot published, read back through the surface's own read, and calibrated against the
-markets that read produced -- costing 2.55e-09 at ATM and 6.56e-09 at the wings.
+Four claims, each of which had none. The three gates, asserted as the whole sentence a
+reader of the log sees -- =no market: curve:EUR=, =no market: curve:USD=,
+=no market: spot:EUR/USD= -- by building the real feed and ticking it, with =publish_count()=
+checked at zero after each, which is "publishes nothing" as a number rather than a hope. The
+value date of each expiry: 16 December, 16 February and 16 May, at 30, 92 and 181 days, with
+the discounts and forwards those dates carry stated as literals, so a wrong period addition
+or a shared expression cannot agree with itself. Two ticks with the same values republished
+between them quoting bit for bit, and stating the 1M ATM they quote rather than only
+comparing it with its own next step. And a round trip that goes *through* the board --
+curves and a spot published, read back through the surface's own read, and calibrated
+against the markets that read produced -- costing 2.55e-09 at ATM and 6.56e-09 at the wings,
+asserted at =1e-8= and =2e-8=.
 
 The two layout questions the previous review deferred are closed by measurement rather than
-by argument: a driver lookup is 15.85 ns and a board read is 6.39 ns at the scale the
-deferral named, against the 50.45 ns the tick's own sentence costs. Neither changed.
+by argument: a driver lookup reads 15.85 to 26.07 ns across three runs and a board read 6.39
+to 8.09 ns, at the scale the deferral named, against 50.45 to 141.98 ns for a sentence of
+the tick body's shape. Neither changed; the table carries the ranges because a single median
+would claim more precision than the number has.
+
+The review of this branch found that the first version of these tests asserted the member
+name and never the sentence -- nothing called =tick= -- which is the finding this page's
+Review table records first. It also found the expectations computing themselves, the
+no-drift case comparing the emitter with itself, and the round trip asserting forty times
+looser than it measured. All four are fixed in the commit the Measurements cite.
 
 Two leftovers from that review table were real and are gone: the comment above the build
 input's convention described a field deleted in the previous task, and =make_fx_spot_feed=

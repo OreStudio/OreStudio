@@ -224,7 +224,8 @@ get_curve_analytics(const ores::database::context& ctx,
 
         // The verdict is the server's, asked of the one policy, of when the market
         // behind the curve was last written rather than of the instant it was read.
-        resp.stale = staleness_policy::is_stale(newest_instant, std::chrono::system_clock::now());
+        resp.stale =
+            staleness_policy::is_stale("ir", newest_instant, std::chrono::system_clock::now());
         resp.success = !resp.bootstrapped.empty();
         if (!resp.success)
             resp.message = "Curve " + config.name + " produced no analyzable pillar.";

@@ -173,7 +173,7 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
         }
         spot.as_of = newest.observation_datetime;
         spot.age_seconds = staleness_policy::age_seconds(spot.as_of, now);
-        spot.stale = staleness_policy::is_stale(spot.as_of, now);
+        spot.stale = staleness_policy::is_stale("fx", spot.as_of, now);
         spot.series_id = boost::uuids::to_string(series.id);
 
         const auto name = base + "/" + quote;

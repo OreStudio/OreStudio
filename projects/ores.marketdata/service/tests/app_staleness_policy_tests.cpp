@@ -68,3 +68,29 @@ TEST_CASE("the_threshold_is_configurable_and_refuses_a_non_positive_one", policy
     staleness_policy::configure(0);
     CHECK(staleness_policy::threshold_seconds() == 3600);
 }
+
+TEST_CASE("each_instrument_kind_has_its_own_threshold", policy_tags) {
+    struct restore final {
+        std::int64_t was = staleness_policy::threshold_seconds();
+        ~restore() {
+            staleness_policy::configure(was);
+        }
+    } guard;
+
+    staleness_policy::configure(3600);
+    staleness_policy::configure("fx", 60);
+    staleness_policy::configure("ir", 86400);
+
+    const auto now = std::chrono::system_clock::time_point{} + std::chrono::hours{24 * 365 * 50};
+    const auto two_minutes_ago = now - std::chrono::seconds{120};
+
+    // One value, two verdicts: the same age is stale to the FX threshold and current to the
+    // IR one, which is the whole point of stating the threshold per instrument kind.
+    CHECK(staleness_policy::is_stale("fx", two_minutes_ago, now));
+    CHECK(staleness_policy::is_stale("ir", two_minutes_ago, now) == false);
+    CHECK(staleness_policy::threshold_seconds("fx") == 60);
+    CHECK(staleness_policy::threshold_seconds("ir") == 86400);
+
+    // A kind the deployment does not name falls back to the one threshold.
+    CHECK(staleness_policy::threshold_seconds("equity") == 3600);
+}

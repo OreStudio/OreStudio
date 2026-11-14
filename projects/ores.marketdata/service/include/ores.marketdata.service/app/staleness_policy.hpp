@@ -23,6 +23,7 @@
 #include "ores.marketdata.service/export.hpp"
 #include <chrono>
 #include <cstdint>
+#include <string_view>
 
 namespace ores::marketdata::service::app {
 
@@ -51,11 +52,22 @@ public:
     /// The threshold in whole seconds.
     [[nodiscard]] static std::int64_t threshold_seconds();
 
+    /**
+     * @brief The threshold for one instrument kind, in whole seconds.
+     *
+     * A kind the configuration does not name falls back to the default, so a
+     * deployment that sets one number still answers every read.
+     */
+    [[nodiscard]] static std::int64_t threshold_seconds(std::string_view kind);
+
     /// Whether the threshold came from the environment rather than the default.
     [[nodiscard]] static bool is_configured();
 
     /// Replaces the threshold. For a test, or for a caller that read its options.
     static void configure(std::int64_t seconds);
+
+    /// Replaces one kind's threshold. For the service's options, or for a test.
+    static void configure(std::string_view kind, std::int64_t seconds);
 
     /// =max(0, now - as_of)= in whole seconds; zero for a value with no instant.
     [[nodiscard]] static std::int64_t age_seconds(std::chrono::system_clock::time_point as_of,
@@ -63,6 +75,11 @@ public:
 
     /// The verdict: a value with no instant is stale, and so is one past the threshold.
     [[nodiscard]] static bool is_stale(std::chrono::system_clock::time_point as_of,
+                                       std::chrono::system_clock::time_point now);
+
+    /// The verdict under one instrument kind's threshold.
+    [[nodiscard]] static bool is_stale(std::string_view kind,
+                                       std::chrono::system_clock::time_point as_of,
                                        std::chrono::system_clock::time_point now);
 };
 

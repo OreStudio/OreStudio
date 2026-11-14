@@ -67,6 +67,16 @@ struct options final {
      * @brief Password of the tick writer role.
      */
     std::string tick_writer_password;
+    /**
+     * @brief How long a quoted value of one instrument kind stays current, in seconds.
+     *
+     * Zero or absent means the deployment's one threshold answers for that kind.
+     */
+    std::int64_t stale_seconds_ir = 0;
+    /**
+     * @brief The same, for the FX instruments.
+     */
+    std::int64_t stale_seconds_fx = 0;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
@@ -76,6 +86,8 @@ struct options final {
         ::ores::utility::codec::field{"database", &options::database},
         ::ores::utility::codec::field{"http_base_url", &options::http_base_url},
         ::ores::utility::codec::field{"tick_writer_user", &options::tick_writer_user},
+        ::ores::utility::codec::field{"stale_seconds_ir", &options::stale_seconds_ir},
+        ::ores::utility::codec::field{"stale_seconds_fx", &options::stale_seconds_fx},
     };
 }
 

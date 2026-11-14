@@ -261,7 +261,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
             wire.value = value;
             wire.as_of = q.as_of;
             wire.age_seconds = staleness_policy::age_seconds(q.as_of, now);
-            wire.stale = staleness_policy::is_stale(q.as_of, now);
+            wire.stale = staleness_policy::is_stale("ir", q.as_of, now);
             wire.series_id = q.series_id;
             values.push_back(value);
             rung.quotes.push_back(std::move(wire));

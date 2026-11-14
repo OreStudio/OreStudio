@@ -51,7 +51,7 @@ constexpr std::size_t only_calendar = 0;
 
 /// South Africa is the pair's calendar throughout: it has a holiday between the
 /// dates the cases meet, so a rule that ignored it would answer the wrong day.
-business_day_calendar_set make_south_africa(year from, year to) {
+business_day_calendar_set south_africa_calendar(year from, year to) {
     const std::vector<calendar_ruleset> rulesets = {quantlib_calendar_rulesets::south_africa()};
     const auto holidays = calendar_rule_engine::instantiate_holidays_batch(
         rulesets, from / January / 1, to / December / 31);
@@ -70,7 +70,7 @@ business_day_calendar_set make_south_africa(year from, year to) {
 
 fx_expiry_date_rule rule_today(business_day_convention roll, bool end_of_month = false) {
     return fx_expiry_date_rule(
-        roll, end_of_month, only_calendar, make_south_africa(year{2025}, year{2027}));
+        roll, end_of_month, only_calendar, south_africa_calendar(year{2025}, year{2027}));
 }
 
 date_period week_periods(int n) {
@@ -110,10 +110,10 @@ TEST_CASE("a month-end spot snaps the expiry only when the pair's convention say
     // the Friday before, and without it the Monday after.
     const auto spot_date = year{2014} / November / 28;
     const auto roll = business_day_convention::following;
-    const auto snapped =
-        fx_expiry_date_rule(roll, true, only_calendar, make_south_africa(year{2014}, year{2016}));
-    const auto plain =
-        fx_expiry_date_rule(roll, false, only_calendar, make_south_africa(year{2014}, year{2016}));
+    const auto snapped = fx_expiry_date_rule(
+        roll, true, only_calendar, south_africa_calendar(year{2014}, year{2016}));
+    const auto plain = fx_expiry_date_rule(
+        roll, false, only_calendar, south_africa_calendar(year{2014}, year{2016}));
 
     CHECK(snapped.expiry(spot_date, month_periods(3)) == year{2015} / February / 27);
     CHECK(plain.expiry(spot_date, month_periods(3)) == year{2015} / March / 2);
@@ -126,7 +126,7 @@ TEST_CASE("a holiday on the expiry moves it to the next day the pair settles on"
     const auto rule = fx_expiry_date_rule(business_day_convention::following,
                                           false,
                                           only_calendar,
-                                          make_south_africa(year{2014}, year{2016}));
+                                          south_africa_calendar(year{2014}, year{2016}));
 
     CHECK(rule.expiry(year{2014} / April / 24, week_periods(1)) == year{2014} / May / 2);
 }
@@ -137,7 +137,7 @@ TEST_CASE("a business day count walks business days, not calendar days", "[fx_ex
     const auto rule = fx_expiry_date_rule(business_day_convention::following,
                                           false,
                                           only_calendar,
-                                          make_south_africa(year{2014}, year{2016}));
+                                          south_africa_calendar(year{2014}, year{2016}));
 
     CHECK(rule.business_day(year{2014} / December / 19, 3) == year{2014} / December / 24);
 }

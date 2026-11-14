@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
@@ -39,7 +40,7 @@ namespace refdata_repo = ores::refdata::repository;
 
 /// Saturday and Sunday, in the bit positions a weekday takes: the weeks a pair
 /// settles over are the ones reference data never materialises as holidays.
-constexpr unsigned weekend_mask = 0b1000001;
+constexpr unsigned weekend_closed_mask = 0b1000001;
 constexpr std::size_t only_calendar = 0;
 
 }
@@ -60,7 +61,7 @@ joint_calendar(std::span<const std::vector<domain::calendar_date>> calendars) {
     };
     holidays.erase(std::unique(holidays.begin(), holidays.end(), same), holidays.end());
     return quant_domain::business_day_calendar_set::from_rows(
-        holidays, 1, {std::bitset<7>{weekend_mask}});
+        holidays, 1, {std::bitset<7>{weekend_closed_mask}});
 }
 
 std::expected<pair_expiry_date_rule, std::string>

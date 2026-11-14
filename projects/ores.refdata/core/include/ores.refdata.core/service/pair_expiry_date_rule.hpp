@@ -21,7 +21,7 @@
 #define ORES_REFDATA_CORE_SERVICE_PAIR_EXPIRY_DATE_RULE_HPP
 
 #include "ores.analytics.quant/service/fx_expiry_dates.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <expected>

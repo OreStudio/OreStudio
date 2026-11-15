@@ -30,12 +30,12 @@ service behaves.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:C1830F26-2A60-49CE-AC82-6B784F34F79E][Serve the pricing engines' reads]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | All three writes are served.           |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request and merge it.    |
+| Last touched | 2026-11-15                               |
 
 * Acceptance
 
@@ -80,7 +80,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's suite | 84 cases, 647 assertions | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | 605cdb6b88 |
+| The writes' own cases | 11 cases, 60 assertions | =ores.http.reporting.tests [pricing_engine_writes]= | 605cdb6b88 |
+| The gateway's routes | 1015 of 1343 | =python3 build/scripts/route_inventory.py --check= | 605cdb6b88 |
+| The BFF's routes paired with a C++ one | 249 of 328, reporting 41 of 44 | =python3 build/scripts/route_inventory.py --check= | 605cdb6b88 |
 
 * Notes
 
@@ -146,3 +149,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The pricing engines' three writes are served at the BFF's paths, member names and
+status codes, and the document a write answers is the document a read answers.
+
+- A create writes the reporting configuration first and the document second, and
+  a refused document removes the configuration again, so a refused create leaves
+  nothing behind.
+- A change takes the version the screen read and carries the party and the
+  configuration the record already fills, so a write cannot move a document to
+  another party or another report.
+- A removal removes the document through the service that owns it and leaves the
+  reporting configuration in place, because a report binds the document by it.
+- A document that omits a product or a parameter removes it, which is how the
+  service's own save reads a document.
+
+Two statements moved to one home each rather than being copied: the document's
+JSON to =pricing_engine_shapes=, so the page, the reads and the writes state one
+contract, and the reporting configuration header's write to
+=reporting_configuration_rows=, which the engine settings already needed.
+
+The reporting part's suite passes 84 cases and 647 assertions, eleven of them for
+these routes, and the inventory pairs 249 of the BFF's 328 routes, reporting 41 of
+44.

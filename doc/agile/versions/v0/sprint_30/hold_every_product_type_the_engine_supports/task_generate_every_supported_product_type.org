@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB
+:END:
+#+title: Task: Generate every supported product type
+#+description: The generator books 83 of the 91 routed types. A type with a table, a builder and no generator is a product the platform can hold but never exercises.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch: feature/generate-every-supported-product-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The planner books at least one trade of every routed type, each through its builder, so the whole catalogue is exercised by a provisioned book.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- every routed type appears in a plan of one book long enough to reach the catalogue
+- every booked type is built by its builder, and a type with no builder fails loudly
+- a test asserts the coverage as catalogue minus the recorded exclusions, so adding a type without a generator fails
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

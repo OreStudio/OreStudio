@@ -158,6 +158,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:07B94320-9844-4292-A266-3F63639B2CB6][Hotfix: Publish the catalogues the booking test reads]] | STARTED | | | The generated-trade booking test is refused because the refdata catalogues are never published in a recreated database. |
 | [[id:664765D8-1D00-4F55-A750-D16BBC60BEDE][Hotfix: Give the booking test its own refdata]] | STARTED | | | The booking test must write the equity vocabulary its scope names instead of publishing it. |
 | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] | STARTED | | | Reference data is seeded as DQ artefacts and never published, the seeding model is inconsistent, and the DQ UI was never ported to ores.web. |
+| [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] | BACKLOG | | | Every product type ORE 1.8 supports has a data model of its own, with its tables, a builder and a generator; where ORE carries the product as a scripted trade, the domain models the facts and the projection writes the element ORE reads. A type the engine cannot carry leaves the catalogue with its reason recorded. Market data and pricing are out of scope. |
 
 * Achievements
 

@@ -93,7 +93,7 @@ TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][b
     ores::marketdata::messaging::get_many_market_observations_request get;
     const auto missing = boost::uuids::random_generator()();
     get.keys.push_back(market_observation_key{.id = missing});
-    for (auto o = observations.rbegin(); o != observations.rend(); ++o)
+    for (auto o = observations.rbegin(); get.keys.size() < 1000; ++o)
         get.keys.push_back(market_observation_key{.id = o->id});
     const auto read = svc.get_many_market_observations(get);
 
@@ -105,11 +105,12 @@ TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][b
     }
 }
 
-TEST_CASE("put_many_with_one_existing_row_refuses_the_set_and_writes_nothing", "[service][batch]") {
+TEST_CASE("put_many_with_an_existing_row_past_the_first_read_chunk_refuses_the_set",
+          "[service][batch]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::database_helper h;
     ores::marketdata::service::market_observation_service svc(h.context());
-    const auto observations = observations_of_a_new_series(h, 4);
+    const auto observations = observations_of_a_new_series(h, 1001);
 
     ores::marketdata::messaging::put_many_market_observations_request first;
     first.changes.push_back(change_for(observations.back()));
@@ -134,6 +135,23 @@ TEST_CASE("put_many_with_one_existing_row_refuses_the_set_and_writes_nothing", "
     REQUIRE(read.entries.size() == get.keys.size());
     for (const auto& entry : read.entries)
         CHECK(!entry.market_observation);
+}
+
+TEST_CASE("get_many_of_more_than_1000_keys_is_refused", "[service][batch]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::database_helper h;
+    ores::marketdata::service::market_observation_service svc(h.context());
+
+    ores::marketdata::messaging::get_many_market_observations_request get;
+    boost::uuids::random_generator ids;
+    for (std::size_t i = 0; i < 1001; ++i)
+        get.keys.push_back(market_observation_key{.id = ids()});
+    BOOST_LOG_SEV(lg, info) << "Getting " << get.keys.size() << " market observations.";
+    const auto refused = svc.get_many_market_observations(get);
+
+    CHECK(refused.result.outcome != outcome::ok);
+    CHECK(refused.result.code == "filter_too_large");
+    CHECK(refused.entries.empty());
 }
 
 // Hidden from the suite: it times a write rather than checking one. Run it by

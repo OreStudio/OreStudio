@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 692B8571-8E4F-4955-980A-F261E2289680
+:END:
+#+title: Task: Take an expiry's length from the expiry-date rule
+#+description: An expiry's length is a constant table in the derived source; take it from the expiry-date rule and the pair's convention, which is where the ladder and the feed already date an expiry.
+#+type: task
+#+level: s1
+#+filetags: :size_a_surface_to_its_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/surface-every-pair-out-to-ten-years
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+derived_fx_expiries holds thirteen labels with a years figure each, a second source of truth beside the blueprint pillars and the expiry-date rule. Read the years from the rule for the as-of day and delete the table, so a label means the same thing to the ladder, the calibration and the derivation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- An expiry's years are computed from the pair's convention and the expiry-date rule, for the day being derived.
+- derived_fx_expiries is deleted, and nothing duplicates the ladder it used to state.
+- A test pins the years of every label to the rule's answer for a fixed spot date.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

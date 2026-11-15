@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 776C71FA-4592-4C73-8104-27006D45001C
+:END:
+#+title: Task: Scaffold the coverage story
+#+description: The coverage story and its tasks are authored, wired into sprint 30 and reviewed before any of them starts, so the work has one index and one branch.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch: doc/scaffold-product-type-coverage
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story exists with its goal, acceptance, decisions and task table, and the tasks state what each closes well enough to be started by someone who did not write them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- the story and its sixteen tasks are wired into sprint 30
+- each task names the types it closes or the evidence it establishes
+- the coverage gap is stated once, from ORE's own source, so a reader can size the remaining work
+
+* Plan
+
+Survey ORE's own source for what it does with each of the 121 catalogue types,
+then write the story and one task per body of work. The survey is a script over
+the checkout: for each code, whether =instruments.xsd= names an element, whether
+the trade type is registered in =databuilders.cpp=, and the class the element is
+read as, following the base chain to see whether it is a =ScriptedTrade=
+subclass. The 30 unrouted types partition by element shape, which is what makes
+ten modelling tasks rather than thirty.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story and its sixteen tasks are wired into sprint 30, with the coverage gap
+stated from ORE's own source: 121 declared types, 91 routed, 30 unheld, of which
+twenty are scripted classes and ten native. Each task names the types it closes,
+so the work can be picked up in any order that respects the surveys.

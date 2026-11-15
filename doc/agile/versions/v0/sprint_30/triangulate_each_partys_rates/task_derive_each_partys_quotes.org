@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/surface-every-pair-out-to-ten-years
-#+pr:
+#+pr: 4767
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -41,9 +41,51 @@ A surface belongs to a party and reads the party's own series, so the quotes it 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+**What is already on main**
+
+The three pieces this needs exist and are tested: the provider rank
+(PR #4757), the policy that reads a topology from the identity a source
+states (PR #4761), the CRM building its topology from the party's series
+(PR #4763), and the replay that turns a publisher's fixings into daily
+levels (PR #4765).
+
+**What the derived source has to stop doing**
+
+=derived_fx_vol_adapter= names its publisher (=fixing_provider = "ecb"=),
+builds the leg URI itself (=ecb_fixing_item=) and decides the legs
+(=ecb_legs_of=). All three go. The pair's returns then come from the CRM
+engine reading the fixings the store holds, whichever publisher ranks
+first, not from a constant in the adapter.
+
+**The slices, in order**
+
+1. *Read the identity over the wire.* The service already answers
+   =marketdata.v1.ops.list_series_identities=, and the client does not
+   expose it. Add the client method. The adapter cannot work this out
+   from the series URI: the URI says =fx/EUR= for a publisher that
+   quotes against the dollar, which is the very fault the identity
+   table exists to end.
+2. *Choose the publisher and state the legs.* Read the identities, the
+   series and the provider ranks once per pass, group them into
+   =fixing_source=s, and call =topology_from_sources= to choose. Build
+   the star with =topology_builder= and read each leg's fixing window
+   through the existing =get_fixing_window=.
+3. *Hand the fixings to the engine.* Convert the leg windows into
+   =fixing_day=s and call =replay_fixings= for the pair, which is what
+   makes CRM the composer instead of the adapter. Difference the levels
+   into returns and leave =derive_grid= as it is.
+4. *Delete the constants* and their tests: =fixing_provider=,
+   =ecb_fixing_item=, =ecb_legs_of=, and the ECB wording in the header
+   and the adapter's own documentation.
+
+**What this collides with**
+
+The horizon branch, =feature/surface-every-pair-out-to-ten-years=,
+rewrites =derived_fx_vol.cpp= and the adapter's neighbours to carry a
+thirteen-expiry ladder and a ten-year read. Whichever lands second pays
+the conflict; the arithmetic of the move is independent of the horizon,
+so either order works, but the branch that lands second should expect to
+resolve rather than re-apply.
 
 * Measurements
 
@@ -76,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4767][#4767]] | [agile] Plan the move of the derivation onto the CRM |
 
 * Review
 

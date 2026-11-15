@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every scripted product prices: the engine's required parameters are stated on the pair the scripted products name, with the values ORE's own example configuration states, and the report records no missing parameter for a scripted trade.
+Every scripted trade's configuration states what its engine reads: the parameters the engine treats as mandatory are stated on the pair the scripted products name, with the values ORE's own example configuration states, so no scripted trade stops for want of one. Whether the trade then prices is the market data's question, which this task does not own.
 
 * Status
 
@@ -28,7 +28,7 @@ Every scripted product prices: the engine's required parameters are stated on th
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Nothing. |
+| Now          | Done. No scripted trade stops for want of a parameter; they stop on the market data they name. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-11-14                               |

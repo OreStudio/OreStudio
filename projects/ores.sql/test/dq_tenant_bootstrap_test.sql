@@ -142,6 +142,18 @@ select is(
         select tenant_id from ores_dq_coding_schemes_tbl
         where tenant_id = (select id from t_tenant)
         union all
+        select tenant_id from ores_dq_coding_scheme_authority_types_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
+        select tenant_id from ores_dq_origin_dimensions_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
+        select tenant_id from ores_dq_nature_dimensions_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
+        select tenant_id from ores_dq_treatment_dimensions_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
         select tenant_id from ores_dq_methodologies_tbl
         where tenant_id = (select id from t_tenant)
         union all
@@ -151,10 +163,22 @@ select is(
         select tenant_id from ores_dq_data_domains_tbl
         where tenant_id = (select id from t_tenant)
         union all
+        select tenant_id from ores_trading_trade_id_types_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
+        select tenant_id from ores_trading_trade_link_types_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
         select tenant_id from ores_trading_activity_types_tbl
         where tenant_id = (select id from t_tenant)
         union all
         select tenant_id from ores_trading_structure_kinds_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
+        select tenant_id from ores_trading_structure_templates_tbl
+        where tenant_id = (select id from t_tenant)
+        union all
+        select tenant_id from ores_trading_structure_template_roles_tbl
         where tenant_id = (select id from t_tenant)
         union all
         select tenant_id from ores_marketdata_series_classification_rules_tbl

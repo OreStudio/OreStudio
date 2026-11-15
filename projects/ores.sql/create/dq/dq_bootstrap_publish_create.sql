@@ -19,16 +19,16 @@
 /**
  * Publishes one dataset into one tenant, without the bus.
  *
- * The function is the bring-up caller's unit: it resolves the dataset, its
+ * The function is the unit both bootstraps share: it resolves the dataset, its
  * artefact type and the publish function, and calls that function. A dataset
  * the system tenant does not hold publishes nothing, and a terminal artefact
  * type, whose rows are the entity's only store, publishes nothing either.
  *
  * The subject names the operation, and the operation names the function,
  * except for the datasets DQ publishes into itself: those are written by
- * <component>_<artefact type>_publish_fn. Neither name resolving is an error,
- * because a member that publishes nowhere is a bundle that lies about what it
- * carries.
+ * <component>_<artefact type>_publish_fn. When neither name resolves the
+ * function raises, because a member that publishes nowhere is a bundle that
+ * lies about what it carries.
  */
 create or replace function ores_dq_publish_dataset_fn(
     p_dataset_code text,
@@ -57,10 +57,13 @@ begin
       and d.tenant_id = ores_utility_system_tenant_id_fn()
       and d.valid_to = ores_utility_infinity_timestamp_fn();
 
-    if v_dataset_id is null
-       or v_subject is null
-       or position('v1.ops.' in v_subject) = 0 then
+    if v_dataset_id is null or v_subject is null then
         return;
+    end if;
+
+    if position('v1.ops.' in v_subject) = 0 then
+        raise exception 'Dataset "%" names subject "%", which names no operation.',
+            p_dataset_code, v_subject;
     end if;
 
     v_function := 'ores_' || split_part(v_subject, '.', 1) || '_'
@@ -126,6 +129,7 @@ declare
     v_count bigint;
     v_missing text[] := '{}';
     v_failed text[] := '{}';
+    v_order text[] := '{}';
 begin
     if v_target is null then
         raise exception 'A bundle publish needs a target tenant, and none was given.';
@@ -197,6 +201,8 @@ begin
             continue;
         end if;
 
+        v_order := v_order || v_code;
+
         begin
             for v_action, v_count in
                 select * from ores_dq_publish_dataset_fn(v_code, v_target)
@@ -211,9 +217,15 @@ begin
         end;
     end loop;
 
-    for v_code in
-        select unnest(v_failed)
+    -- The retry keeps the order the first pass walked, so a held-back dataset
+    -- is retried after the datasets that precede it, not in the order an array
+    -- of failures happens to hold.
+    foreach v_code in array v_order
     loop
+        if not (v_code = any(v_failed)) then
+            continue;
+        end if;
+
         begin
             for v_action, v_count in
                 select * from ores_dq_publish_dataset_fn(v_code, v_target)
@@ -262,13 +274,10 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * The bundles are named here and nowhere else, so a tenant's seed rows are
  * stated in one place. A bundle belongs to this list when the bundle map places
  * it at the tenant level with tenant-wide scope and the publication happens
- * when the tenant is created; today that is tenant_defaults, the badges, the
- * badge mappings and the code domains a tenant starts with. The rule that
- * assigns the level is stated in
+ * when the tenant is created; that is tenant_defaults, the badges, the badge
+ * mappings and the code domains a tenant starts with. The rule that assigns the
+ * level is stated in
  * doc/knowledge/architecture/reference_data_classification_by_publication_level.org.
- *
- * When the bundle map carries its level as a column, the list becomes a query
- * against it and this function keeps its name and its contract.
  */
 create or replace function ores_dq_tenant_bootstrap_fn(
     p_tenant_id uuid

@@ -40,15 +40,9 @@ select plan(13);
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
 -- The cases below read the ORE sample counterparties, which a publish writes.
--- A recreated database carries the datasets and nothing published from them,
--- and the sample names business centres beyond the seeded WRLD, so the
--- fixture publishes the canonical business centres and then runs the first
--- counterparty publish; a case that publishes then sees its own run as the
--- second. The suite rolls it back.
-select count(*) from ores_refdata_publish_business_centres_from_dq_fn(
-    (select id from ores_dq_datasets_tbl where code = 'fpml.business_center'
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_utility_system_tenant_id_fn());
+-- The bring-up publishes the FpML business centres into the system tenant, so
+-- the fixture runs the first counterparty publish only; a case that publishes
+-- then sees its own run as the second. The suite rolls it back.
 
 select count(*) from ores_refdata_publish_lei_counterparties_from_dq_fn(
     (select id from ores_dq_datasets_tbl where code = 'ore.sample_counterparties'

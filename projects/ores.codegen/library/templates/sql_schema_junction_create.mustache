@@ -244,13 +244,28 @@ create policy {{junction.name}}_tbl_tenant_isolation_policy
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}{{#junction.sql.rls_own_or_system_tenant_rows}}
-    or tenant_id = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_own_or_system_tenant_rows}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
 );
+{{#junction.sql.rls_own_or_system_tenant_rows}}
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows, because a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists {{junction.name}}_tbl_shared_reference_read_policy
+    on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl";
+
+create policy {{junction.name}}_tbl_shared_reference_read_policy
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+{{/junction.sql.rls_own_or_system_tenant_rows}}
 {{#junction.sql.rls_party_isolation}}
 
 -- Party isolation (restrictive, ANDed with the tenant policy). A session with

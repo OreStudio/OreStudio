@@ -34,6 +34,14 @@ BEGIN
 
     -- --- Dataset Bundles ---
 
+    -- The platform catalogue: the rows the platform defines in order to
+    -- function. Published once, into the system tenant, at database bring-up.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system_core',
+        'System Core',
+        'The rows the platform defines in order to function: coding schemes, the template images, the provider, adapter and supplier catalogues, the system tenant''s feeds, the ORE parameters and their value domains, and the FX vol surface blueprints.'
+    );
+
     -- The world catalogue: the facts every installation holds identically,
     -- adopted from an outside standard. Published once, into the system tenant,
     -- at database bring-up.

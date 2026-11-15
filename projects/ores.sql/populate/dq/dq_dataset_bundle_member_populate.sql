@@ -160,11 +160,11 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.reporting_regime', 120);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.supervisory_body', 121);
 
-    -- GLEIF LEI. Every rung is opt-in: a tenant asks for the slice it needs.
-    -- Publishing base must not force a thirteen-thousand-entity corpus on a
-    -- tenant that wants a handful, which is what the two mandatory members
-    -- here used to do. Tiny covers every region and is what the demo tenants
-    -- want; small and large are for work where the volume is the point.
+    -- GLEIF LEI. Every rung is opt-in: a caller asks for the slice it needs.
+    -- Publishing the world bundle must not force a thirteen-thousand-entity
+    -- corpus on a tenant that wants a handful, which is what the two mandatory
+    -- members here used to do. Tiny covers every region and is what the demo
+    -- tenants want; small and large are for work where the volume is the point.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_entities.tiny', 210, true);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_relationships.tiny', 211, true);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.tiny', 212, true);

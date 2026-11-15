@@ -48,8 +48,10 @@ namespace {
 /// The publisher whose reference fixings the derived source reads.
 constexpr std::string_view fixing_provider = "ecb";
 
-/// The history read for a pair: the five years every environment holds, and a margin.
-constexpr int window_days = 1830;
+/// The history read for a pair: the whole backfill an environment holds, which is what the
+/// longest expiry the grid carries asks of it. A ten year expiry reads 2520 returns, and the
+/// reference publisher quotes roughly 2550 of 3650 days, so the read must span the backfill.
+constexpr int window_days = 3650;
 
 /// The days of one read of what a series holds: 120 days of 40 quotes stay under the ceiling
 /// of one reply.

@@ -1,0 +1,128 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/generators/market_observation_generator.hpp"
+#include "ores.marketdata.api/generators/market_series_generator.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/service/market_observation_service.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <vector>
+
+namespace {
+
+using ores::marketdata::domain::market_observation;
+using ores::marketdata::messaging::market_observation_change;
+using ores::marketdata::messaging::market_observation_key;
+using ores::marketdata::messaging::market_observation_write;
+using ores::utility::domain::outcome;
+
+market_observation_change change_for(const market_observation& o) {
+    market_observation_change c;
+    c.write = market_observation_write{.id = o.id,
+                                       .party_id = o.party_id,
+                                       .series_id = o.series_id,
+                                       .observation_datetime = o.observation_datetime,
+                                       .oresmd_uri = o.oresmd_uri,
+                                       .value = o.value,
+                                       .source = o.source,
+                                       .feed_id = o.feed_id};
+    return c;
+}
+
+std::vector<market_observation> observations_of_a_new_series(ores::testing::database_helper& h,
+                                                             std::size_t n) {
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto s = ores::marketdata::generators::generate_synthetic_market_series(ctx);
+    ores::marketdata::repository::market_series_repository{}.write(h.context(), s);
+    auto observations =
+        ores::marketdata::generators::generate_synthetic_market_observations(n, ctx);
+    for (auto& o : observations)
+        o.series_id = s.id;
+    return observations;
+}
+
+}
+
+TEST_CASE("a put of more rows than one read chunk answers every row in the order written",
+          "[service][batch]") {
+    ores::testing::database_helper h;
+    ores::marketdata::service::market_observation_service svc(h.context());
+    const auto observations = observations_of_a_new_series(h, 1001);
+
+    ores::marketdata::messaging::put_many_market_observations_request put;
+    for (const auto& o : observations)
+        put.changes.push_back(change_for(o));
+    const auto written = svc.put_many_market_observations(put);
+
+    REQUIRE(written.result.outcome == outcome::ok);
+    REQUIRE(written.market_observations.size() == observations.size());
+    for (std::size_t i = 0; i < observations.size(); ++i)
+        CHECK(written.market_observations[i].id == observations[i].id);
+
+    ores::marketdata::messaging::get_many_market_observations_request get;
+    const auto missing = boost::uuids::random_generator()();
+    get.keys.push_back(market_observation_key{.id = missing});
+    for (auto o = observations.rbegin(); o != observations.rend(); ++o)
+        get.keys.push_back(market_observation_key{.id = o->id});
+    const auto read = svc.get_many_market_observations(get);
+
+    REQUIRE(read.entries.size() == get.keys.size());
+    CHECK(!read.entries.front().market_observation);
+    for (std::size_t i = 1; i < read.entries.size(); ++i) {
+        REQUIRE(read.entries[i].market_observation);
+        CHECK(read.entries[i].market_observation->id == get.keys[i].id);
+    }
+}
+
+TEST_CASE("a put of many refuses the whole set when one row already exists, and writes nothing",
+          "[service][batch]") {
+    ores::testing::database_helper h;
+    ores::marketdata::service::market_observation_service svc(h.context());
+    const auto observations = observations_of_a_new_series(h, 4);
+
+    ores::marketdata::messaging::put_many_market_observations_request first;
+    first.changes.push_back(change_for(observations.back()));
+    REQUIRE(svc.put_many_market_observations(first).result.outcome == outcome::ok);
+
+    ores::marketdata::messaging::put_many_market_observations_request put;
+    for (const auto& o : observations)
+        put.changes.push_back(change_for(o));
+    const auto refused = svc.put_many_market_observations(put);
+
+    CHECK(refused.result.outcome != outcome::ok);
+    CHECK(refused.result.code == "already_exists");
+    CHECK(refused.market_observations.empty());
+
+    ores::marketdata::messaging::get_many_market_observations_request get;
+    for (std::size_t i = 0; i + 1 < observations.size(); ++i)
+        get.keys.push_back(market_observation_key{.id = observations[i].id});
+    const auto read = svc.get_many_market_observations(get);
+
+    REQUIRE(read.entries.size() == get.keys.size());
+    for (const auto& entry : read.entries)
+        CHECK(!entry.market_observation);
+}

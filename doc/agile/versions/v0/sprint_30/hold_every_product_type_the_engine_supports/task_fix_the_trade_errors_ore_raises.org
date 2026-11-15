@@ -48,9 +48,16 @@ Every error ORE raises reading or building a recorded trade is either fixed, bec
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The ORE engine test gives each error a kind from a fixed table of ORE's
+  message patterns: =market_data= for a missing curve, quote, index or
+  reference data; =engine_configuration= for a missing pricing engine or engine
+  builder; =trade= for any other message. The known list gains the kind as its
+  first column, and the test fails on any error of the =trade= kind.
+- Trace each =trade= error to its cause in ORE's source, fix it in the
+  generator, re-record the generated trades, and rewrite the known list from a
+  fresh run.
+- Give every known missing path a reason, from ORE's schema, and make the
+  export test require one.
 
 * Measurements
 
@@ -64,9 +71,48 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE errors by kind before the fixes | 40 market_data, 3 engine_configuration, 6 trade | scratch =ore_errors.py= (stages the test's run and applies the same patterns) over the recorded trades less BalanceGuaranteedSwap | 02fbc3fb93 base |
+| ORE errors by kind after the fixes | 44 market_data, 3 engine_configuration, 0 trade; no crash with BalanceGuaranteedSwap included | the same, every recorded trade | 3d15ed9b15 |
+| ORE engine test | passes, 171 assertions; fails naming the BondOption error when its VolatilityCurveId is removed | =ores.synthetic.core.tests "the ORE engine raises only the known errors on the recorded trades"= | 3d15ed9b15 |
+| Generated trade tests | 6 pass, 1 skipped | =ores.synthetic.core.tests "[generated]"= | 3d15ed9b15 |
+| Known missing paths with a reason | 101 of 101: 96 optional in ORE's schema, 3 dated notionals, 2 underlying form | scratch =path_optional.py= over =external/ore/xsd=, the rest checked by hand | 6c56b9a763 |
 
 * Notes
+
+** What caused each trade error
+
+- /ScriptedTrade/: the generic trade named its index =.SPX= and stated three of
+  the variables =AsianBasketOption= reads, with =PutCall= as =Call=. ORE's own
+  example (=Example_Trades/Scripted_BasketOption.xml=) states =Expiry=,
+  =Settlement=, an =ObservationDates= schedule, =PutCall= and =LongShort= as
+  signs, =Notional=, =Strike=, =Underlyings= and =Weights= lists and =PayCcy=.
+  The generator now states all of them; the export writes =EQ-= names since
+  =cf010d9c18=. ORE now reports only the missing =.SPX= equity curve.
+- /BondOption/: =BondOptionEngineBuilder= requires the bond's
+  =VolatilityCurveId= (=OREData/ored/portfolio/builders/bondoption.hpp:68=), which
+  ORE's examples take from reference data and our inline bond left empty. The
+  issue of a bond option now names =BondOptionVols-<ccy>=; the trade prices.
+- /CallableBond/: with no =CreditCurveId= the engine builder leaves the default
+  curve, recovery and spread handles empty
+  (=OREData/ored/portfolio/builders/callablebond.cpp:348-370=) and pricing
+  dereferences them. The issue now names the credit curve a credit trade on
+  the same entity names; ORE reports that curve missing, which is market data.
+- /BalanceGuaranteedSwap/: ORE crashed with signal 11 in
+  =BalanceGuaranteedSwap::build=. The builder reads =fixLeg[i]= at the floating
+  coupon's index (=OREData/ored/portfolio/balanceguaranteedswap.cpp:191=), past
+  the end of an annual fixed leg against a semi-annual floating one. ORE's own
+  BGS example (both legs 6M) runs clean under the same configuration. Both legs
+  now pay on the floating tenor; ORE reports the missing CPR, market data, and
+  the test runs the type again.
+- /DoubleDigitalOption/: the parse error no longer occurs on main; the trade
+  now reaches the missing =.SPX= and =.STOXX50E= equity curves.
+
+** Credit curves named by address
+
+A generated credit curve is named by its oresmd address, so ORE reports
+=did not find object 'oresmd://credit/...'=. The planner says so on purpose:
+the market data work gives each entity its curve. The pattern table counts it
+as market data.
 
 ** The state of the scripted index on main
 

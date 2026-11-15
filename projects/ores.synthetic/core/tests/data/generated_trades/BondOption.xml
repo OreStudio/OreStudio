@@ -20,6 +20,7 @@
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POP0I8Z1XE0C6</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
+        <VolatilityCurveId>BondOptionVols-EUR</VolatilityCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -75,6 +76,7 @@
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POPPD9V2UE1T1</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
+        <VolatilityCurveId>BondOptionVols-EUR</VolatilityCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>

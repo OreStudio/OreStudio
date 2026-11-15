@@ -6,21 +6,60 @@
       <ScriptName>AsianBasketOption</ScriptName>
       <Data>
         <Number>
-          <Name>Notional</Name>
-          <Value>723174.17</Value>
+          <Name>PutCall</Name>
+          <Value>1</Value>
         </Number>
         <Number>
-          <Name>PutCall</Name>
-          <Value>Call</Value>
+          <Name>LongShort</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>Notional</Name>
+          <Value>723174.17</Value>
         </Number>
         <Number>
           <Name>Strike</Name>
           <Value>1.0853</Value>
         </Number>
+        <Number>
+          <Name>Weights</Name>
+          <Values>
+            <Value>0.5</Value>
+            <Value>0.5</Value>
+          </Values>
+        </Number>
+        <Currency>
+          <Name>PayCcy</Name>
+          <Value>EUR</Value>
+        </Currency>
         <Index>
-          <Name>Underlying</Name>
-          <Value>.SPX</Value>
+          <Name>Underlyings</Name>
+          <Values>
+            <Value>EQ-.SPX</Value>
+            <Value>EQ-MSFT.O</Value>
+          </Values>
         </Index>
+        <Event>
+          <Name>Expiry</Name>
+          <Value>2036-01-02</Value>
+        </Event>
+        <Event>
+          <Name>Settlement</Name>
+          <Value>2036-03-02</Value>
+        </Event>
+        <Event>
+          <Name>ObservationDates</Name>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2036-01-02</EndDate>
+              <Tenor>1M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+        </Event>
       </Data>
     </ScriptedTradeData>
   </Trade>
@@ -30,21 +69,60 @@
       <ScriptName>AsianBasketOption</ScriptName>
       <Data>
         <Number>
-          <Name>Notional</Name>
-          <Value>6765247.42</Value>
+          <Name>PutCall</Name>
+          <Value>1</Value>
         </Number>
         <Number>
-          <Name>PutCall</Name>
-          <Value>Call</Value>
+          <Name>LongShort</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>Notional</Name>
+          <Value>6765247.42</Value>
         </Number>
         <Number>
           <Name>Strike</Name>
           <Value>0.8130</Value>
         </Number>
+        <Number>
+          <Name>Weights</Name>
+          <Values>
+            <Value>0.5</Value>
+            <Value>0.5</Value>
+          </Values>
+        </Number>
+        <Currency>
+          <Name>PayCcy</Name>
+          <Value>EUR</Value>
+        </Currency>
         <Index>
-          <Name>Underlying</Name>
-          <Value>GB0005405286</Value>
+          <Name>Underlyings</Name>
+          <Values>
+            <Value>EQ-GB0005405286</Value>
+            <Value>EQ-.SPX</Value>
+          </Values>
         </Index>
+        <Event>
+          <Name>Expiry</Name>
+          <Value>2028-10-02</Value>
+        </Event>
+        <Event>
+          <Name>Settlement</Name>
+          <Value>2028-12-02</Value>
+        </Event>
+        <Event>
+          <Name>ObservationDates</Name>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2028-10-02</EndDate>
+              <Tenor>1M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+        </Event>
       </Data>
     </ScriptedTradeData>
   </Trade>

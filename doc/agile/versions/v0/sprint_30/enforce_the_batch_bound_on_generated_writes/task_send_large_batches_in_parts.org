@@ -8,7 +8,7 @@
 #+filetags: :enforce_the_batch_bound_on_generated_writes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/enforce-the-batch-bound-on-generated-writes
-#+pr:
+#+pr: 4747
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4747][#4747]] | [services] Send batch writes of more than 1,000 elements in parts |
 
 * Review
 

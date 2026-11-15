@@ -148,6 +148,9 @@ via its "Verifies task" field.
 | 8 | Claude review 4: name the services that still read per key | ores.cpp.service.service_impl.org | Decline | The helper's comment states the rule; the services are those whose declared key is not the storage key. |
 | 9 | Claude review 5: a single put now reads before the gate | ores.cpp.service.service_impl.org | Decline | It always did: =prepare_change= read the row and then called =gate_put= with it. Only the place of the read moved. |
 | 10 | Claude review 6: split template and regeneration commits | (branch) | Decline | They are separate commits already. |
+| 11 | Claude review 2.1: the test name says chunks, but only the put crosses one | service_market_observation_batch_tests.cpp | Decline | The name starts with put_many and the put does cross a chunk. |
+| 12 | Claude review 2.2: the get loop has no end guard | service_market_observation_batch_tests.cpp | Accept | The loop stops at rend as well. |
+| 13 | Claude review 2.3 and 2.4: write bound, and the bound tested in one component | (template) | Decline | The write bound is captured; the template is shared and the drift gate covers the other services. |
 
 * Result
 

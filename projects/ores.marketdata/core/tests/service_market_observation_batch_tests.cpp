@@ -93,7 +93,7 @@ TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][b
     ores::marketdata::messaging::get_many_market_observations_request get;
     const auto missing = boost::uuids::random_generator()();
     get.keys.push_back(market_observation_key{.id = missing});
-    for (auto o = observations.rbegin(); get.keys.size() < 1000; ++o)
+    for (auto o = observations.rbegin(); o != observations.rend() && get.keys.size() < 1000; ++o)
         get.keys.push_back(market_observation_key{.id = o->id});
     const auto read = svc.get_many_market_observations(get);
 

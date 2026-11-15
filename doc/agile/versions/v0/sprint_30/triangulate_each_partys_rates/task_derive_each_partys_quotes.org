@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/surface-every-pair-out-to-ten-years
-#+pr:
+#+pr: 4767
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4767][#4767]] | [agile] Plan the move of the derivation onto the CRM |
 
 * Review
 

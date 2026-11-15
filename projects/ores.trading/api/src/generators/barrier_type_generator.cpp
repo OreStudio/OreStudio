@@ -47,6 +47,7 @@ domain::barrier_type generate_synthetic_barrier_type(utility::generation::genera
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string("UpAndOut") + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
+    r.direction = std::optional<std::string>("Up");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

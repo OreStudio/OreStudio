@@ -35,6 +35,7 @@ export interface BarrierTypeKey {
 export interface BarrierTypeWrite {
     code: string;
     description: string;
+    direction: string | null;
 }
 
 export interface BarrierTypeChange {

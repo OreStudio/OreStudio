@@ -51,6 +51,7 @@ namespace ores::trading::domain {
         utility::codec::field{"tenant_id", &barrier_type::tenant_id},
         utility::codec::field{"code", &barrier_type::code},
         utility::codec::field{"description", &barrier_type::description},
+        utility::codec::field{"direction", &barrier_type::direction},
         utility::codec::field{"modified_by", &barrier_type::modified_by},
         utility::codec::field{"performed_by", &barrier_type::performed_by},
         utility::codec::field{"change_reason_code", &barrier_type::change_reason_code},

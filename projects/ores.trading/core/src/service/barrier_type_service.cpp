@@ -141,6 +141,7 @@ domain::barrier_type barrier_type_to_domain(const messaging::barrier_type_write&
     domain::barrier_type v;
     v.code = write.code;
     v.description = write.description;
+    v.direction = write.direction;
     return v;
 }
 

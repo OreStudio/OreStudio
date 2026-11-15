@@ -79,9 +79,7 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     check ("lower_barrier" is null or "lower_barrier" > 0),
     check ("upper_barrier" is null or "upper_barrier" > 0),
     check ("lower_barrier" is not null or "upper_barrier" is not null),
-    check (("trade_type_code" <> 'FxDoubleBarrierOption') or ("lower_barrier" is not null and "upper_barrier" is not null)),
-    check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('UpAndOut', 'UpAndIn', 'FixingCap')) or ("lower_barrier" is null and "upper_barrier" is not null)),
-    check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('DownAndOut', 'DownAndIn', 'FixingFloor')) or ("lower_barrier" is not null and "upper_barrier" is null))
+    check (("trade_type_code" <> 'FxDoubleBarrierOption') or ("lower_barrier" is not null and "upper_barrier" is not null))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -171,6 +169,28 @@ begin
         end if;
     end if;
 
+    if NEW.trade_type_code = 'FxBarrierOption' then
+        if exists (
+            select 1 from ores_trading_barrier_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.barrier_type
+              and direction = 'Up'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) and not (NEW.lower_barrier is null and NEW.upper_barrier is not null) then
+            raise exception 'Invalid barrier levels for %: an Up barrier states the upper level only.',
+                NEW.barrier_type using errcode = '23514';
+        end if;
+        if exists (
+            select 1 from ores_trading_barrier_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.barrier_type
+              and direction = 'Down'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) and not (NEW.lower_barrier is not null and NEW.upper_barrier is null) then
+            raise exception 'Invalid barrier levels for %: a Down barrier states the lower level only.',
+                NEW.barrier_type using errcode = '23514';
+        end if;
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

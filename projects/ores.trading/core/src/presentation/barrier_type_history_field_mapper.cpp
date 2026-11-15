@@ -27,6 +27,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/barrier_type.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -38,6 +39,7 @@ render_barrier_type_fields(const domain::barrier_type& v) {
 
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Direction", .value = v.direction.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

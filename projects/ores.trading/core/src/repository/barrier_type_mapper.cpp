@@ -45,6 +45,7 @@ domain::barrier_type barrier_type_mapper::map(const barrier_type_entity& v) {
     r.tenant_id = v.tenant_id;
     r.code = v.code;
     r.description = v.description.value_or("");
+    r.direction = v.direction;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -63,6 +64,7 @@ barrier_type_entity barrier_type_mapper::map(const domain::barrier_type& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.direction = v.direction;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

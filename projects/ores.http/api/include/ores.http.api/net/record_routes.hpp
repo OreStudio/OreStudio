@@ -232,6 +232,14 @@ template <typename Row>
 [[nodiscard]] ORES_HTTP_API_EXPORT std::string array_of(const std::vector<std::string>& objects);
 
 /**
+ * @brief The members of one object, each already written, joined into an object.
+ *
+ * A row is a handful of members, and a route that assembles one states its
+ * members rather than its punctuation, so the punctuation is stated here.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string object_of(const std::vector<std::string>& members);
+
+/**
  * @brief The written document with each named member set, replacing a member of
  * the same name.
  */

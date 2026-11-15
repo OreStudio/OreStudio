@@ -350,3 +350,28 @@ TEST_CASE("a_removal_with_no_service_is_refused_as_upstream", "[engine_settings]
                            req,
                            "/api/reporting/engine-settings/{id}") == http_status::bad_gateway);
 }
+
+TEST_CASE("an_update_refuses_a_member_it_does_not_read", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing an update's members";
+
+    http_request req;
+    req.body =
+        R"({"name":"alpha","description":"","version":1,"intent":{"reason_code":"seed"},"extra":1})";
+    CHECK(writes_status_of(http_method::put,
+                           "/api/reporting/engine-settings/00000000-0000-0000-0000-0000000000e1",
+                           req,
+                           "/api/reporting/engine-settings/{id}") == http_status::bad_request);
+}
+
+TEST_CASE("a_removal_refuses_a_member_it_does_not_read", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a removal's members";
+
+    http_request req;
+    req.body = R"({"intent":{"reason_code":"seed"},"extra":1})";
+    CHECK(writes_status_of(http_method::delete_,
+                           "/api/reporting/engine-settings/00000000-0000-0000-0000-0000000000e1",
+                           req,
+                           "/api/reporting/engine-settings/{id}") == http_status::bad_request);
+}

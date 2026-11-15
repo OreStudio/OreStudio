@@ -1,0 +1,391 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.http/routes/reporting/pricing_engine_routes.hpp"
+#include "ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/domain/http_status.hpp"
+#include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.core/routes/history_routes.hpp"
+#include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/reporting/engine_settings_rows.hpp"
+#include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http/routes/reporting/pricing_engine_rows.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <map>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace ores::http::routes::reporting {
+
+namespace {
+
+namespace json = ores::utility::codec::json;
+namespace rr = ores::http::net::record_routes;
+namespace forwarding = ores::http::forwarding;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
+using shape::member;
+using shape::object;
+using ores::nats::service::nats_client;
+
+auto& pricing_engine_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.reporting.pricing_engine");
+    return instance;
+}
+
+/// The party a configuration belongs to, and the names of its parties.
+std::vector<std::string> party_members(std::string_view party_id,
+                                       const std::map<std::string, engine_party_name>& parties) {
+    const auto party = parties.find(std::string(party_id));
+    return {member("partyId", json::write(std::string(party_id))),
+            member("partyName",
+                   json::write(party == parties.end() ? std::string() : party->second.name)),
+            member("partyCode",
+                   json::write(party == parties.end() ? std::string() : party->second.short_code))};
+}
+
+/// One configuration as the page of engines states it.
+std::string summary_json_of(const ores::analytics::domain::pricing_model_config& row,
+                            const pricing_engine_rows::document_counts& counts,
+                            const std::map<std::string, engine_party_name>& parties) {
+    const auto id = boost::uuids::to_string(row.id);
+    const auto products = counts.products.find(id);
+    const auto parameters = counts.parameters.find(id);
+    auto members = party_members(boost::uuids::to_string(row.party_id), parties);
+    members.push_back(member("id", json::write(id)));
+    members.push_back(member("version", std::to_string(row.version)));
+    members.push_back(member("name", json::write(row.name)));
+    members.push_back(member("description", json::write(row.description)));
+    members.push_back(member("variant", json::write(row.config_variant)));
+    members.push_back(
+        member("configurationId", json::write(boost::uuids::to_string(row.configuration_id))));
+    members.push_back(member(
+        "products", std::to_string(products == counts.products.end() ? 0 : products->second)));
+    members.push_back(
+        member("parameters",
+               std::to_string(parameters == counts.parameters.end() ? 0 : parameters->second)));
+    members.push_back(member("modifiedBy", json::write(row.modified_by)));
+    members.push_back(member("recordedAt", json::write(row.recorded_at)));
+    return object(members);
+}
+
+/// One product of a document.
+std::string product_json_of(const pricing_product_row& row) {
+    return object({member("id", json::write(row.id)),
+                   member("version", std::to_string(row.version)),
+                   member("typeCode", json::write(row.type_code)),
+                   member("model", json::write(row.model)),
+                   member("engine", json::write(row.engine)),
+                   member("position", std::to_string(row.position))});
+}
+
+/// One parameter of a document.
+std::string parameter_json_of(const pricing_parameter_row& row) {
+    return object(
+        {member("id", json::write(row.id)),
+         member("version", std::to_string(row.version)),
+         member("productId", row.product_id ? json::write(*row.product_id) : std::string("null")),
+         member("scope", json::write(row.scope)),
+         member("name", json::write(row.name)),
+         member("value", json::write(row.value)),
+         member("position", std::to_string(row.position))});
+}
+
+/// The reports that bind one configuration, or null when they cannot be read.
+std::string reports_json_of(const http_request& req,
+                            nats_client& session,
+                            const boost::uuids::uuid& configuration_id) {
+    std::vector<engine_bound_report> reports;
+    try {
+        reports = engine_settings_rows::read_bound_reports(
+            req, session, pricing_engine_rows::configuration_type, configuration_id);
+    } catch (const std::exception&) {
+        // A binding that cannot be read must not hide the document.
+        BOOST_LOG_SEV(pricing_engine_lg(), ores::logging::debug)
+            << "The reports that bind configuration " << boost::uuids::to_string(configuration_id)
+            << " could not be read, so the page states them as unknown.";
+        return "null";
+    }
+    std::vector<std::string> rows;
+    rows.reserve(reports.size());
+    for (const auto& report : reports)
+        rows.push_back(object(
+            {member("id", json::write(report.id)), member("name", json::write(report.name))}));
+    return rr::array_of(rows);
+}
+
+/// One configuration with its products, its parameters and the reports that bind it.
+std::string pricing_document_json_of(const pricing_document_row& row,
+                                     const std::map<std::string, engine_party_name>& parties,
+                                     const std::string& reports) {
+    auto members = party_members(row.party_id, parties);
+    members.push_back(member("id", json::write(row.id)));
+    members.push_back(member("version", std::to_string(row.version)));
+    members.push_back(member("name", json::write(row.name)));
+    members.push_back(member("description", json::write(row.description)));
+    members.push_back(member("variant", json::write(row.variant)));
+    members.push_back(member("configurationId", json::write(row.configuration_id)));
+    members.push_back(member("modifiedBy", json::write(row.modified_by)));
+    members.push_back(member("recordedAt", json::write(row.recorded_at)));
+    members.push_back(member("changeReason", json::write(row.change_reason)));
+    members.push_back(member("changeCommentary", json::write(row.change_commentary)));
+    std::vector<std::string> products;
+    products.reserve(row.products.size());
+    for (const auto& product : row.products)
+        products.push_back(product_json_of(product));
+    members.push_back(member("products", rr::array_of(products)));
+    std::vector<std::string> parameters;
+    parameters.reserve(row.parameters.size());
+    for (const auto& parameter : row.parameters)
+        parameters.push_back(parameter_json_of(parameter));
+    members.push_back(member("parameters", rr::array_of(parameters)));
+    members.push_back(member("reports", reports));
+    return object(members);
+}
+
+/// One record whose versions the history tab draws, and the name it states.
+struct history_entity final {
+    std::string type;
+    std::string id;
+    std::string name;
+};
+
+/// The record kinds a document's timeline draws.
+constexpr std::string_view config_entity_type = "ores.analytics.pricing_model_config";
+constexpr std::string_view product_entity_type = "ores.analytics.pricing_model_product";
+constexpr std::string_view parameter_entity_type = "ores.analytics.pricing_model_product_parameter";
+
+/// Every record of a document, the configuration first.
+///
+/// A save writes the three together and a person reads one timeline, so they
+/// are read together. A parameter is named by the product it belongs to and its
+/// own name, because its own name repeats across products.
+std::vector<history_entity> entities_of(const pricing_document_row& document) {
+    std::vector<history_entity> entities{
+        {std::string(config_entity_type), document.id, document.name}};
+    std::map<std::string, std::string> type_of_product;
+    for (const auto& product : document.products) {
+        type_of_product[product.id] = product.type_code;
+        entities.push_back({std::string(product_entity_type), product.id, product.type_code});
+    }
+    for (const auto& parameter : document.parameters) {
+        std::string name;
+        if (parameter.product_id) {
+            const auto product = type_of_product.find(*parameter.product_id);
+            if (product != type_of_product.end())
+                name = product->second;
+        }
+        if (!name.empty())
+            name += " · ";
+        entities.push_back(
+            {std::string(parameter_entity_type), parameter.id, name + parameter.name});
+    }
+    return entities;
+}
+
+/// Every version of every record of a document, the configuration's first.
+std::vector<std::string> history_rows_of(const http_request& req,
+                                         nats_client& session,
+                                         const pricing_document_row& document) {
+    std::vector<std::string> rows;
+    for (const auto& entity : entities_of(document)) {
+        const auto versions =
+            ores::http::routes::history_routes::read_versions(req, session, entity.type, entity.id);
+        for (const auto& version : versions) {
+            auto members = std::vector<std::string>{member("entityType", json::write(entity.type)),
+                                                    member("entityId", json::write(entity.id)),
+                                                    member("entityName", json::write(entity.name))};
+            const auto stated = ores::http::routes::history_routes::version_members(version);
+            members.insert(members.end(), stated.begin(), stated.end());
+            rows.push_back(object(members));
+        }
+    }
+    return rows;
+}
+
+/// One byte written as a percent-encoded octet, in upper-case hex.
+void append_encoded(unsigned char c, std::string& out) {
+    static constexpr char digits[] = "0123456789ABCDEF";
+    out += '%';
+    out += digits[c >> 4];
+    out += digits[c & 0x0F];
+}
+
+/**
+ * @brief The header that offers one file to the browser, under the name the ORE
+ * service stated.
+ *
+ * The name comes from the reporting file types table rather than from this
+ * server, so it is quoted and stripped of the characters that would end the
+ * value, and nothing else about it is rewritten. A header is ASCII, so a name
+ * with a byte outside it states both a plain name and its encoded form, and the
+ * browser saves the file under its own name.
+ */
+std::string ore_document_disposition_of(std::string_view name) {
+    const auto strippable = [](unsigned char c) {
+        return c < 0x20 || c == 0x7F || c == '"' || c == '\\' || c == '/';
+    };
+    std::string safe;
+    std::string ascii;
+    for (const char raw : name) {
+        const auto c = static_cast<unsigned char>(raw);
+        if (strippable(c))
+            continue;
+        safe += raw;
+        if (c < 0x7F)
+            ascii += raw;
+    }
+    if (!safe.empty() && safe == ascii)
+        return "attachment; filename=\"" + safe + "\"";
+
+    std::string encoded;
+    for (const char raw : name) {
+        const auto c = static_cast<unsigned char>(raw);
+        const auto plain = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+                           (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~';
+        if (plain)
+            encoded += raw;
+        else
+            append_encoded(c, encoded);
+    }
+    return "attachment; filename=\"" + (ascii.empty() ? std::string("document") : ascii) +
+           "\"; filename*=UTF-8''" + encoded;
+}
+
+}
+
+void pricing_engine_routes::register_read_routes(
+    std::shared_ptr<ores::http::net::router> router,
+    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+    ores::nats::service::nats_client& session) {
+    using forwarding::guarded;
+    const auto add = [&](ores::http::net::route_builder builder) {
+        const auto built = builder.tags({"reporting"}).auth_required().build();
+        router->add_route(built);
+        registry->register_route(built);
+    };
+
+    add(router->get("/api/reporting/pricing-engines")
+            .summary("The pricing engine configurations a party holds")
+            .description("One row per configuration: the party that holds it, the version, the "
+                         "variant, and how many products and parameters its document holds.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<ores::analytics::messaging::list_pricing_model_configs_request>(
+                    [&] {
+                        rr::refuse_unknown_params(req, {});
+                        const auto configs = pricing_engine_rows::read_configs(req, session);
+                        const auto counts = pricing_engine_rows::read_counts(req, session);
+                        const auto parties = engine_settings_rows::read_party_names(req, session);
+                        std::vector<std::string> rows;
+                        rows.reserve(configs.size());
+                        for (const auto& config : configs)
+                            rows.push_back(summary_json_of(config, counts, parties));
+                        return http_response::json(object({member("rows", rr::array_of(rows))}));
+                    });
+            }));
+
+    add(router->get("/api/reporting/pricing-engines/{id}")
+            .summary("One pricing engine document and the reports that bind it")
+            .description("The configuration, its products and its parameters as one document, "
+                         "and the reports that bind it through its reporting configuration.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<ores::analytics::messaging::list_pricing_model_configs_request>(
+                    [&] {
+                        rr::refuse_unknown_params(req, {});
+                        const auto raw = req.get_path_param("id");
+                        if (!rr::is_uuid(raw))
+                            rr::invalid("A pricing engine is named by its id.");
+                        const auto id = boost::uuids::string_generator()(raw);
+                        const auto document = pricing_engine_rows::read_document(req, session, id);
+                        const auto parties = engine_settings_rows::read_party_names(req, session);
+                        const auto reports = reports_json_of(
+                            req,
+                            session,
+                            boost::uuids::string_generator()(document.configuration_id));
+                        return http_response::json(
+                            pricing_document_json_of(document, parties, reports));
+                    });
+            }));
+
+    add(router->get("/api/reporting/pricing-engines/{id}/history")
+            .summary("Every version of a pricing engine document")
+            .description("The versions of the configuration, of every product it holds and of "
+                         "every parameter, newest first within each record, so one save reads as "
+                         "one timeline.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<ores::analytics::messaging::list_pricing_model_configs_request>(
+                    [&] {
+                        rr::refuse_unknown_params(req, {});
+                        const auto raw = req.get_path_param("id");
+                        if (!rr::is_uuid(raw))
+                            rr::invalid("A pricing engine is named by its id.");
+                        const auto document = pricing_engine_rows::read_document(
+                            req, session, boost::uuids::string_generator()(raw));
+                        return http_response::json(object({member(
+                            "versions", rr::array_of(history_rows_of(req, session, document)))}));
+                    });
+            }));
+
+    add(router->get("/api/reporting/pricing-engines/{id}/ore-document")
+            .summary("The ORE document of one pricing engine configuration")
+            .description("The ORE service writes the file and names it, and this route offers it "
+                         "to the browser under that name. The service reads the document by the "
+                         "reporting configuration the record fills, so the two ids are joined "
+                         "here rather than sent to the screen.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<ores::ore::messaging::export_pricing_engines_request>([&] {
+                    rr::refuse_unknown_params(req, {});
+                    const auto raw = req.get_path_param("id");
+                    if (!rr::is_uuid(raw))
+                        rr::invalid("A pricing engine is named by its id.");
+                    const auto document = pricing_engine_rows::read_document(
+                        req, session, boost::uuids::string_generator()(raw));
+                    ores::ore::messaging::export_pricing_engines_request ask;
+                    ask.configuration_id = document.configuration_id;
+                    const auto exported = forwarding::forward(req, session, ask);
+                    if (!exported.success || exported.files.empty())
+                        rr::invalid(exported.message.empty() ?
+                                        "The pricing engines document could not be written." :
+                                        exported.message);
+                    if (exported.files.size() > 1)
+                        rr::refuse(http_status::bad_gateway,
+                                   "internal",
+                                   "The export answered more than one file.");
+                    const auto& file = exported.files.front();
+                    http_response answer;
+                    answer.content_type = "application/xml";
+                    answer.body = file.content;
+                    answer.set_header("content-disposition",
+                                      ore_document_disposition_of(file.name));
+                    return answer;
+                });
+            }));
+}
+
+}

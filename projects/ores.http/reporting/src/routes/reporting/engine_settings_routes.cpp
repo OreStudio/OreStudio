@@ -26,6 +26,9 @@
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
+#include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http/routes/reporting/ore_value_set_rows.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
@@ -72,91 +75,20 @@ using ores::http::routes::value_set_error;
 using ores::http::routes::value_set_reader;
 using ores::http::routes::value_set_tables;
 using ores::nats::service::nats_client;
+using shape::member;
+using shape::object;
+
+auto& engine_settings_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.reporting.engine_settings");
+    return instance;
+}
+
+/// The reporting configuration type a report binds the settings through.
+constexpr std::string_view settings_configuration_type = "engine_settings";
 
 /// The schema and the scope whose parameters the documentation page states.
 constexpr std::string_view ore_schema_code = "ore.xsd";
 constexpr std::string_view setup_scope_code = "Setup";
-
-/// The four value set tables as the rows the reader takes.
-value_set_tables value_set_tables_of(const http_request& req, nats_client& session) {
-    value_set_tables tables;
-    for (const auto& set : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_sets_request{},
-             &reporting_messaging::list_ore_parameter_value_sets_response::sets))
-        tables.sets.push_back(
-            {set.code, set.source_kind, set.catalogue_code, set.minimum, set.maximum, set.pattern});
-    for (const auto& value : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_set_values_request{},
-             &reporting_messaging::list_ore_parameter_value_set_values_response::values))
-        tables.values.push_back({value.value_set_code,
-                                 value.value,
-                                 value.label,
-                                 value.display_order,
-                                 value.canonical_value});
-    for (const auto& catalogue : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_set_catalogues_request{},
-             &reporting_messaging::list_ore_parameter_value_set_catalogues_response::catalogues))
-        tables.catalogues.push_back({catalogue.code, catalogue.relation});
-    for (const auto& link : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_setting_value_sets_request{},
-             &reporting_messaging::list_ore_parameter_setting_value_sets_response::
-                 setting_value_sets))
-        tables.links.push_back({link.scope, link.name, link.value_set_code});
-    return tables;
-}
-
-/**
- * @brief The choices of one catalogue relation, read from the collection that
- * holds it.
- *
- * A relation names a view in another component, so the gateway states which
- * relations it reads. The three the value set data names are read here; any
- * other is refused with a sentence that names it, rather than drawn as a list
- * that is empty.
- */
-std::vector<value_choice>
-catalogue_choices_of(const http_request& req, nats_client& session, std::string_view relation) {
-    if (relation == "ores_refdata_tenor_catalogue_v") {
-        std::vector<value_choice> choices;
-        for (const auto& tenor :
-             forwarding::forward_all(req,
-                                     session,
-                                     refdata_messaging::list_tenors_request{},
-                                     &refdata_messaging::list_tenors_response::tenors))
-            choices.push_back({tenor.code, tenor.display_name});
-        return choices;
-    }
-    if (relation == "ores_refdata_currency_catalogue_v") {
-        std::vector<value_choice> choices;
-        for (const auto& currency :
-             forwarding::forward_all(req,
-                                     session,
-                                     refdata_messaging::list_currencies_request{},
-                                     &refdata_messaging::list_currencies_response::currencies))
-            choices.push_back({currency.iso_code, currency.name});
-        return choices;
-    }
-    if (relation == "ores_analytics_sensitivity_template_catalogue_v") {
-        std::vector<value_choice> choices;
-        for (const auto& template_row : forwarding::forward_all(
-                 req,
-                 session,
-                 analytics_messaging::list_sensitivity_templates_request{},
-                 &analytics_messaging::list_sensitivity_templates_response::templates))
-            choices.push_back({template_row.code, template_row.code});
-        return choices;
-    }
-    throw value_set_error("The value set tables name the catalogue relation \"" +
-                          std::string(relation) + "\", which this build does not read.");
-}
 
 /// One setting with what it means and which values it accepts.
 std::string setting_json_of(const engine_setting_row& setting,
@@ -166,35 +98,34 @@ std::string setting_json_of(const engine_setting_row& setting,
         [documented](std::string ores::reporting::domain::ore_parameter::* field) {
             return documented == nullptr ? std::string() : documented->*field;
         };
-    std::vector<std::string> choices;
-    choices.reserve(fields.choices.size());
-    for (const auto& choice : fields.choices)
-        choices.push_back("{\"value\":" + json::write(choice.value) +
-                          ",\"label\":" + json::write(choice.label) + "}");
-
-    return "{\"column\":" + json::write(setting.column) + ",\"ore\":" + json::write(setting.ore) +
-           ",\"changesNumbers\":" + (setting.changes_numbers ? "true" : "false") +
-           ",\"valueSet\":" + json::write(fields.value_set) +
-           ",\"sourceKind\":" + json::write(fields.source_kind) +
-           ",\"catalogue\":" + json::write(fields.catalogue) +
-           ",\"choices\":" + rr::array_of(choices) + ",\"minimum\":" + json::write(fields.minimum) +
-           ",\"maximum\":" + json::write(fields.maximum) +
-           ",\"pattern\":" + json::write(fields.pattern) +
-           ",\"documented\":" + (documented != nullptr ? "true" : "false") + ",\"label\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::label)) +
-           ",\"help\":" + json::write(of_parameter(&ores::reporting::domain::ore_parameter::help)) +
-           ",\"description\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::description)) +
-           ",\"defaultText\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::default_text)) +
-           ",\"format\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::format)) +
-           ",\"introducedIn\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::introduced_in)) +
-           ",\"removedIn\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::removed_in)) +
-           ",\"xpath\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::xpath)) + "}";
+    auto members = std::vector<std::string>{
+        member("column", json::write(setting.column)),
+        member("ore", json::write(setting.ore)),
+        member("changesNumbers", setting.changes_numbers ? "true" : "false")};
+    const auto values = value_set_rows::fields_members(fields);
+    members.insert(members.end(), values.begin(), values.end());
+    members.push_back(member("documented", documented != nullptr ? "true" : "false"));
+    members.push_back(
+        member("label", json::write(of_parameter(&ores::reporting::domain::ore_parameter::label))));
+    members.push_back(
+        member("help", json::write(of_parameter(&ores::reporting::domain::ore_parameter::help))));
+    members.push_back(
+        member("description",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::description))));
+    members.push_back(
+        member("defaultText",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::default_text))));
+    members.push_back(member(
+        "format", json::write(of_parameter(&ores::reporting::domain::ore_parameter::format))));
+    members.push_back(
+        member("introducedIn",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::introduced_in))));
+    members.push_back(
+        member("removedIn",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::removed_in))));
+    members.push_back(
+        member("xpath", json::write(of_parameter(&ores::reporting::domain::ore_parameter::xpath))));
+    return object(members);
 }
 
 /// The settings of each group, with what each means and which values it accepts.
@@ -211,10 +142,10 @@ std::string documentation_of(const http_request& req, nats_client& session) {
             documented.emplace(parameter.name, &parameter);
     }
 
-    const value_set_reader reader(value_set_tables_of(req, session),
-                                  [&req, &session](std::string_view relation) {
-                                      return catalogue_choices_of(req, session, relation);
-                                  });
+    const value_set_reader reader(
+        value_set_rows::tables_of(req, session), [&req, &session](std::string_view relation) {
+            return value_set_rows::catalogue_choices_of(req, session, relation);
+        });
 
     std::vector<std::string> group_json;
     group_json.reserve(groups.size());
@@ -235,27 +166,6 @@ std::string documentation_of(const http_request& req, nats_client& session) {
     return "{\"groups\":" + rr::array_of(group_json) + "}";
 }
 
-/**
- * @brief The members of one JSON object, joined.
- *
- * A page here is a dozen small objects, so the members are listed and joined
- * rather than built one string at a time.
- */
-std::string object_of(const std::vector<std::string>& members) {
-    std::string out = "{";
-    for (std::size_t i = 0; i < members.size(); ++i) {
-        if (i != 0)
-            out += ',';
-        out += members[i];
-    }
-    return out + '}';
-}
-
-/// One member of a JSON object, its value already rendered.
-std::string member_of(std::string_view name, std::string_view value) {
-    return "\"" + std::string(name) + "\":" + std::string(value);
-}
-
 /// The values one part states, by the columns the group's settings name.
 std::string values_of(const engine_group_row& group,
                       const std::map<std::string, std::string>& columns) {
@@ -263,22 +173,22 @@ std::string values_of(const engine_group_row& group,
     members.reserve(group.settings.size());
     for (const auto& setting : group.settings) {
         const auto found = columns.find(setting.column);
-        members.push_back(member_of(setting.column,
-                                    found == columns.end() ? std::string_view("null") :
-                                                             std::string_view(found->second)));
+        members.push_back(member(setting.column,
+                                 found == columns.end() ? std::string_view("null") :
+                                                          std::string_view(found->second)));
     }
-    return object_of(members);
+    return object(members);
 }
 
 /// One part with the values of its group.
 std::string part_json_of(const engine_part_row& part, const engine_group_row& group) {
-    return object_of({member_of("id", json::write(part.id)),
-                      member_of("version", std::to_string(part.version)),
-                      member_of("values", values_of(group, part.columns)),
-                      member_of("modifiedBy", json::write(part.modified_by)),
-                      member_of("recordedAt", json::write(part.recorded_at)),
-                      member_of("changeReason", json::write(part.change_reason)),
-                      member_of("changeCommentary", json::write(part.change_commentary))});
+    return object({member("id", json::write(part.id)),
+                   member("version", std::to_string(part.version)),
+                   member("values", values_of(group, part.columns)),
+                   member("modifiedBy", json::write(part.modified_by)),
+                   member("recordedAt", json::write(part.recorded_at)),
+                   member("changeReason", json::write(part.change_reason)),
+                   member("changeCommentary", json::write(part.change_commentary))});
 }
 
 /// One configuration as the page of settings states it.
@@ -309,20 +219,20 @@ std::string row_json_of(const ores::reporting::domain::engine_settings& row,
             threads = column->second;
     }
 
-    return object_of(
-        {member_of("id", json::write(id)),
-         member_of("partyId", json::write(party_id)),
-         member_of("partyName", json::write(party_name)),
-         member_of("partyCode", json::write(party_code)),
-         member_of("version", std::to_string(row.version)),
-         member_of("name", json::write(row.name)),
-         member_of("description", json::write(row.description)),
-         member_of("configurationId", json::write(boost::uuids::to_string(row.configuration_id))),
-         member_of("groupsSet", std::to_string(groups_set)),
-         member_of("groups", std::to_string(groups.size())),
-         member_of("threads", threads),
-         member_of("modifiedBy", json::write(row.modified_by)),
-         member_of("recordedAt", json::write(row.recorded_at))});
+    return object(
+        {member("id", json::write(id)),
+         member("partyId", json::write(party_id)),
+         member("partyName", json::write(party_name)),
+         member("partyCode", json::write(party_code)),
+         member("version", std::to_string(row.version)),
+         member("name", json::write(row.name)),
+         member("description", json::write(row.description)),
+         member("configurationId", json::write(boost::uuids::to_string(row.configuration_id))),
+         member("groupsSet", std::to_string(groups_set)),
+         member("groups", std::to_string(groups.size())),
+         member("threads", threads),
+         member("modifiedBy", json::write(row.modified_by)),
+         member("recordedAt", json::write(row.recorded_at))});
 }
 
 /// One configuration with its groups and the reports that bind it.
@@ -348,7 +258,7 @@ std::string document_json_of(const ores::reporting::domain::engine_settings& row
                 found = &part->second;
         }
         const auto part_text = found == nullptr ? std::string("null") : part_json_of(*found, group);
-        group_members.push_back(member_of(group.code, part_text));
+        group_members.push_back(member(group.code, part_text));
     }
 
     std::string reports_json = "null";
@@ -356,26 +266,50 @@ std::string document_json_of(const ores::reporting::domain::engine_settings& row
         std::vector<std::string> report_rows;
         report_rows.reserve(reports->size());
         for (const auto& report : *reports)
-            report_rows.push_back(object_of({member_of("id", json::write(report.id)),
-                                             member_of("name", json::write(report.name))}));
+            report_rows.push_back(object(
+                {member("id", json::write(report.id)), member("name", json::write(report.name))}));
         reports_json = rr::array_of(report_rows);
     }
 
-    return object_of(
-        {member_of("id", json::write(id)),
-         member_of("partyId", json::write(party_id)),
-         member_of("partyName", json::write(party_name)),
-         member_of("partyCode", json::write(party_code)),
-         member_of("version", std::to_string(row.version)),
-         member_of("name", json::write(row.name)),
-         member_of("description", json::write(row.description)),
-         member_of("configurationId", json::write(boost::uuids::to_string(row.configuration_id))),
-         member_of("modifiedBy", json::write(row.modified_by)),
-         member_of("recordedAt", json::write(row.recorded_at)),
-         member_of("changeReason", json::write(row.change_reason_code)),
-         member_of("changeCommentary", json::write(row.change_commentary)),
-         member_of("groups", object_of(group_members)),
-         member_of("reports", reports_json)});
+    return object(
+        {member("id", json::write(id)),
+         member("partyId", json::write(party_id)),
+         member("partyName", json::write(party_name)),
+         member("partyCode", json::write(party_code)),
+         member("version", std::to_string(row.version)),
+         member("name", json::write(row.name)),
+         member("description", json::write(row.description)),
+         member("configurationId", json::write(boost::uuids::to_string(row.configuration_id))),
+         member("modifiedBy", json::write(row.modified_by)),
+         member("recordedAt", json::write(row.recorded_at)),
+         member("changeReason", json::write(row.change_reason_code)),
+         member("changeCommentary", json::write(row.change_commentary)),
+         member("groups", object(group_members)),
+         member("reports", reports_json)});
+}
+
+/// What a screen reads of one configuration, as the answer states it.
+http_response document_answer(const http_request& req,
+                              nats_client& session,
+                              const ores::reporting::domain::engine_settings& row,
+                              http_status status) {
+    const auto groups = engine_settings_rows::read_groups(req, session);
+    const auto parties = engine_settings_rows::read_party_names(req, session);
+    const auto parts = engine_settings_rows::read_parts(req, session, {row.id});
+    std::optional<std::vector<engine_bound_report>> reports;
+    try {
+        reports = engine_settings_rows::read_bound_reports(
+            req, session, settings_configuration_type, row.configuration_id);
+    } catch (const std::exception&) {
+        // A binding that cannot be read must not hide the settings, so the page
+        // states it as unknown rather than refusing.
+        BOOST_LOG_SEV(engine_settings_lg(), ores::logging::debug)
+            << "The reports that bind configuration "
+            << boost::uuids::to_string(row.configuration_id)
+            << " could not be read, so the page states them as unknown.";
+        reports = std::nullopt;
+    }
+    return http_response::json(document_json_of(row, groups, parts, parties, reports), status);
 }
 
 /// One version of a configuration, or of one of its parts, as the history states it.
@@ -395,15 +329,14 @@ std::string history_json_of(std::vector<history_entry> entries) {
     std::vector<std::string> rows;
     rows.reserve(entries.size());
     for (const auto& entry : entries)
-        rows.push_back(
-            object_of({member_of("kind", json::write(entry.kind)),
-                       member_of("version", std::to_string(entry.version)),
-                       member_of("modifiedBy", json::write(entry.modified_by)),
-                       member_of("recordedAt", json::write(entry.recorded_at)),
-                       member_of("changeReason", json::write(entry.change_reason)),
-                       member_of("changeCommentary", json::write(entry.change_commentary)),
-                       member_of("values", entry.values)}));
-    return object_of({member_of("entries", rr::array_of(rows))});
+        rows.push_back(object({member("kind", json::write(entry.kind)),
+                               member("version", std::to_string(entry.version)),
+                               member("modifiedBy", json::write(entry.modified_by)),
+                               member("recordedAt", json::write(entry.recorded_at)),
+                               member("changeReason", json::write(entry.change_reason)),
+                               member("changeCommentary", json::write(entry.change_commentary)),
+                               member("values", entry.values)}));
+    return object({member("entries", rr::array_of(rows))});
 }
 
 }
@@ -463,7 +396,7 @@ void engine_settings_routes::register_read_routes(
                     state.reserve(rows.size());
                     for (const auto& row : rows)
                         state.push_back(row_json_of(row, groups, parts, parties));
-                    return http_response::json(object_of({member_of("rows", rr::array_of(state))}));
+                    return http_response::json(object({member("rows", rr::array_of(state))}));
                 });
             }));
 
@@ -478,20 +411,10 @@ void engine_settings_routes::register_read_routes(
                     if (!rr::is_uuid(raw))
                         rr::invalid("Engine settings are named by their id.");
                     const auto id = boost::uuids::string_generator()(raw);
-                    const auto groups = engine_settings_rows::read_groups(req, session);
-                    const auto row = engine_settings_rows::read_central(req, session, id);
-                    const auto parties = engine_settings_rows::read_party_names(req, session);
-                    const auto parts = engine_settings_rows::read_parts(req, session, {id});
-                    std::optional<std::vector<engine_bound_report>> reports;
-                    try {
-                        reports = engine_settings_rows::read_bound_reports(
-                            req, session, row.configuration_id);
-                    } catch (const std::exception&) {
-                        // A binding that cannot be read must not hide the settings.
-                        reports = std::nullopt;
-                    }
-                    return http_response::json(
-                        document_json_of(row, groups, parts, parties, reports));
+                    return document_answer(req,
+                                           session,
+                                           engine_settings_rows::read_central(req, session, id),
+                                           http_status::ok);
                 });
             }));
 
@@ -528,9 +451,8 @@ void engine_settings_routes::register_read_routes(
                              version.recorded_at,
                              version.change_reason_code,
                              version.change_commentary,
-                             object_of(
-                                 {member_of("name", json::write(version.name)),
-                                  member_of("description", json::write(version.description))})});
+                             object({member("name", json::write(version.name)),
+                                     member("description", json::write(version.description))})});
                     }
 
                     const auto id_text = boost::uuids::to_string(id);
@@ -607,8 +529,6 @@ namespace {
 using ores::utility::domain::change_intent;
 using ores::utility::domain::precondition_kind;
 
-/// The reporting configuration a create registers the settings as.
-constexpr std::string_view header_configuration_type = "engine_settings";
 constexpr std::string_view engine_settings_owning_component = "ores.reporting";
 
 /// The party a token states when the session chose none.
@@ -631,10 +551,8 @@ boost::uuids::uuid settings_id_of(const http_request& req) {
 }
 
 /**
- * @brief The party that holds a new configuration: the one asked for, else the
- * one the caller's token states.
- *
- * The BFF read its own session's party, which is the party the token carries.
+ * @brief The party that holds a new configuration: the one the body names, else
+ * the one the caller's token states.
  */
 boost::uuids::uuid party_for_new(const http_request& req, const std::optional<std::string>& asked) {
     if (asked && !asked->empty()) {
@@ -660,15 +578,15 @@ const engine_group_row& group_of(const std::vector<engine_group_row>& groups,
     return *found;
 }
 
-/// The reporting configuration a create writes first, so a report can bind it.
-boost::uuids::uuid create_header(const http_request& req,
-                                 nats_client& session,
-                                 const std::string& name,
-                                 const change_intent& intent) {
+/// The reporting configuration a create registers the settings as.
+boost::uuids::uuid register_configuration(const http_request& req,
+                                          nats_client& session,
+                                          const std::string& name,
+                                          const change_intent& intent) {
     reporting_messaging::put_configuration_request msg;
     msg.change.write.id = boost::uuids::random_generator()();
     msg.change.write.name = name;
-    msg.change.write.configuration_type_code = std::string(header_configuration_type);
+    msg.change.write.configuration_type_code = std::string(settings_configuration_type);
     msg.change.write.owning_component = std::string(engine_settings_owning_component);
     msg.change.precondition.kind = precondition_kind::must_not_exist;
     msg.intent = intent;
@@ -678,10 +596,10 @@ boost::uuids::uuid create_header(const http_request& req,
 }
 
 /// Remove the configuration a failed create wrote, stating no failure of its own.
-void remove_header(const http_request& req,
-                   nats_client& session,
-                   const std::string& name,
-                   const change_intent& intent) {
+void remove_configuration(const http_request& req,
+                          nats_client& session,
+                          const std::string& name,
+                          const change_intent& intent) {
     try {
         reporting_messaging::delete_configuration_request msg;
         msg.removal.key.name = name;
@@ -751,47 +669,138 @@ group_write group_write_of(const http_request& req,
     }
     row_json += "}";
 
+    const auto version = root.member("version");
+    const auto intent = root.member("intent");
+    if (!version.exists() || !intent.exists())
+        rr::invalid(std::string(malformed));
+
     group_write out;
-    const auto stated = root.member("version").integer();
-    if (stated)
+    if (version.write() != "null") {
+        const auto stated = version.integer();
+        if (!stated || *stated < 1)
+            rr::invalid("A group write states the version it was read at, or null when the group "
+                        "has no row.");
         out.version = static_cast<std::uint32_t>(*stated);
-    const auto stated_intent = rr::read_body<rr::stated_intent>(root.member("intent").write());
+    }
+    const auto stated_intent = rr::read_body<rr::stated_intent>(intent.write());
     out.intent = stated_intent ? intent_or_none(*stated_intent) : change_intent{};
     out.row_json = std::move(row_json);
     return out;
 }
 
-/// Write one group's part, at the version the form read or as a new row.
-template <typename Request, typename Row>
-void put_part(const http_request& req, nats_client& session, const group_write& body) {
-    Row row;
+/// The groups whose part a write reaches, in the words a part travels under.
+enum class part_kind { building, execution, fixings };
+
+part_kind kind_of(std::string_view code) {
+    if (code == "building")
+        return part_kind::building;
+    if (code == "execution")
+        return part_kind::execution;
+    if (code == "fixings")
+        return part_kind::fixings;
+    rr::invalid("There is no such group of engine settings.");
+}
+
+/// Read one group's values as the row its part travels as.
+template <typename Row>
+Row read_part_row(const std::string& row_json) {
     try {
-        row = ores::utility::codec::wire_traits<Row>::read_json(body.row_json);
+        return ores::utility::codec::wire_traits<Row>::read_json(row_json);
     } catch (const std::exception&) {
         rr::invalid("A group write states a value in a form the group does not hold.");
     }
-    Request msg;
-    msg.change.write = row;
-    msg.change.precondition.kind =
-        body.version ? precondition_kind::must_match_version : precondition_kind::must_not_exist;
-    msg.change.precondition.version = body.version;
-    msg.intent = body.intent;
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_ok(reply.result);
+}
+
+/// Refuse a group's values when they are not the form its columns hold.
+void check_values_of(part_kind kind, const std::string& row_json) {
+    switch (kind) {
+        case part_kind::building:
+            static_cast<void>(
+                read_part_row<reporting_messaging::engine_settings_building_write>(row_json));
+            return;
+        case part_kind::execution:
+            static_cast<void>(
+                read_part_row<reporting_messaging::engine_settings_execution_write>(row_json));
+            return;
+        case part_kind::fixings:
+            static_cast<void>(
+                read_part_row<reporting_messaging::engine_settings_fixings_write>(row_json));
+            return;
+    }
+}
+
+/// Write one group's part, at the version the form read or as a new row.
+void write_part(const http_request& req,
+                nats_client& session,
+                part_kind kind,
+                const group_write& body) {
+    const auto precondition = [&body] {
+        ores::utility::domain::precondition out;
+        out.kind = body.version ? precondition_kind::must_match_version :
+                                  precondition_kind::must_not_exist;
+        out.version = body.version;
+        return out;
+    };
+    switch (kind) {
+        case part_kind::building: {
+            reporting_messaging::put_engine_settings_building_request msg;
+            msg.change.write =
+                read_part_row<reporting_messaging::engine_settings_building_write>(body.row_json);
+            msg.change.precondition = precondition();
+            msg.intent = body.intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::execution: {
+            reporting_messaging::put_engine_settings_execution_request msg;
+            msg.change.write =
+                read_part_row<reporting_messaging::engine_settings_execution_write>(body.row_json);
+            msg.change.precondition = precondition();
+            msg.intent = body.intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::fixings: {
+            reporting_messaging::put_engine_settings_fixings_request msg;
+            msg.change.write =
+                read_part_row<reporting_messaging::engine_settings_fixings_write>(body.row_json);
+            msg.change.precondition = precondition();
+            msg.intent = body.intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+    }
 }
 
 /// Remove one group's part.
-template <typename Request>
 void delete_part(const http_request& req,
                  nats_client& session,
+                 part_kind kind,
                  const boost::uuids::uuid& part_id,
                  const change_intent& intent) {
-    Request msg;
-    msg.removal.key.id = part_id;
-    msg.removal.precondition.kind = precondition_kind::any;
-    msg.intent = intent;
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_ok(reply.result);
+    switch (kind) {
+        case part_kind::building: {
+            reporting_messaging::delete_engine_settings_building_request msg;
+            msg.removal.key.id = part_id;
+            msg.intent = intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::execution: {
+            reporting_messaging::delete_engine_settings_execution_request msg;
+            msg.removal.key.id = part_id;
+            msg.intent = intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::fixings: {
+            reporting_messaging::delete_engine_settings_fixings_request msg;
+            msg.removal.key.id = part_id;
+            msg.intent = intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+    }
 }
 
 /// The reason a proposal carries, as the service states it.
@@ -844,24 +853,6 @@ std::string propose_group(const http_request& req,
     return reply.request_id;
 }
 
-/// What a screen reads of one configuration, as the answer states it.
-http_response document_answer(const http_request& req,
-                              nats_client& session,
-                              const ores::reporting::domain::engine_settings& row,
-                              http_status status) {
-    const auto groups = engine_settings_rows::read_groups(req, session);
-    const auto parties = engine_settings_rows::read_party_names(req, session);
-    const auto parts = engine_settings_rows::read_parts(req, session, {row.id});
-    std::optional<std::vector<engine_bound_report>> reports;
-    try {
-        reports = engine_settings_rows::read_bound_reports(req, session, row.configuration_id);
-    } catch (const std::exception&) {
-        // A binding that cannot be read must not hide the settings.
-        reports = std::nullopt;
-    }
-    return http_response::json(document_json_of(row, groups, parts, parties, reports), status);
-}
-
 }
 
 void engine_settings_routes::register_write_routes(
@@ -877,8 +868,9 @@ void engine_settings_routes::register_write_routes(
 
     add(router->post("/api/reporting/engine-settings")
             .summary("Create a configuration and the reporting header a report binds it through")
-            .description("The header is written first and the central row second, and a failed "
-                         "second step removes the header, so a failed create leaves nothing.")
+            .description("The configuration a report binds is written first and the central row "
+                         "second, and a refused central write removes it again, so a "
+                         "create the service refuses leaves nothing behind.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<reporting_messaging::put_engine_settings_request>([&] {
                     const auto body = rr::lenient_body_of<engine_create_body>(
@@ -891,7 +883,8 @@ void engine_settings_routes::register_write_routes(
                         rr::invalid(std::string(malformed_settings_write));
                     const auto party = party_for_new(req, body.party_id);
                     const auto intent = intent_or_none(body.intent);
-                    const auto configuration_id = create_header(req, session, name, intent);
+                    const auto configuration_id =
+                        register_configuration(req, session, name, intent);
                     const auto id = boost::uuids::random_generator()();
                     try {
                         reporting_messaging::engine_settings_write write;
@@ -903,7 +896,7 @@ void engine_settings_routes::register_write_routes(
                         const auto central = put_central(req, session, write, std::nullopt, intent);
                         return document_answer(req, session, central, http_status::created);
                     } catch (...) {
-                        remove_header(req, session, name, intent);
+                        remove_configuration(req, session, name, intent);
                         throw;
                     }
                 });
@@ -949,7 +942,11 @@ void engine_settings_routes::register_write_routes(
                 co_return guarded<reporting_messaging::put_engine_settings_execution_request>([&] {
                     const auto id = settings_id_of(req);
                     const auto groups = engine_settings_rows::read_groups(req, session);
-                    const auto& group = group_of(groups, req.get_path_param("group"));
+                    const auto code = req.get_path_param("group");
+                    const auto wired = engine_settings_rows::wired_groups();
+                    if (std::ranges::find(wired, code) == wired.end())
+                        rr::invalid("There is no such group of engine settings.");
+                    const auto& group = group_of(groups, code);
                     const auto central = engine_settings_rows::read_central(req, session, id);
                     const auto parts = engine_settings_rows::read_parts(req, session, {id});
 
@@ -972,41 +969,37 @@ void engine_settings_routes::register_write_routes(
                         std::optional<std::vector<engine_bound_report>> reports;
                         try {
                             reports = engine_settings_rows::read_bound_reports(
-                                req, session, central.configuration_id);
+                                req,
+                                session,
+                                settings_configuration_type,
+                                central.configuration_id);
                         } catch (const std::exception&) {
                             reports = std::nullopt;
                         }
                         if (!reports || !reports->empty()) {
+                            // A proposal states the values a write would, so they are
+                            // read as the row the part's own codec writes before they
+                            // travel: a value of the wrong form is refused here.
+                            check_values_of(kind_of(group.code), body.row_json);
                             const auto request_id = propose_group(req, session, group, id, body);
                             const auto document =
                                 document_answer(req, session, central, http_status::ok);
                             return http_response::json(
-                                object_of({member_of("document", document.body),
-                                           member_of("proposal",
-                                                     object_of({member_of(
-                                                         "requestId", json::write(request_id))}))}),
+                                object({member("document", document.body),
+                                        member("proposal",
+                                               object({member("requestId",
+                                                              json::write(request_id))}))}),
                                 http_status::accepted);
                         }
                     }
 
-                    if (group.code == "building")
-                        put_part<reporting_messaging::put_engine_settings_building_request,
-                                 reporting_messaging::engine_settings_building_write>(
-                            req, session, body);
-                    else if (group.code == "execution")
-                        put_part<reporting_messaging::put_engine_settings_execution_request,
-                                 reporting_messaging::engine_settings_execution_write>(
-                            req, session, body);
-                    else
-                        put_part<reporting_messaging::put_engine_settings_fixings_request,
-                                 reporting_messaging::engine_settings_fixings_write>(
-                            req, session, body);
+                    write_part(req, session, kind_of(group.code), body);
 
                     const auto written = engine_settings_rows::read_central(req, session, id);
                     const auto document = document_answer(req, session, written, http_status::ok);
-                    return http_response::json(object_of({member_of("document", document.body),
-                                                          member_of("proposal", "null")}),
-                                               http_status::ok);
+                    return http_response::json(
+                        object({member("document", document.body), member("proposal", "null")}),
+                        http_status::ok);
                 });
             }));
 
@@ -1023,7 +1016,7 @@ void engine_settings_routes::register_write_routes(
                     const auto intent = intent_or_none(body.intent);
                     const auto central = engine_settings_rows::read_central(req, session, id);
                     const auto reports = engine_settings_rows::read_bound_reports(
-                        req, session, central.configuration_id);
+                        req, session, settings_configuration_type, central.configuration_id);
                     if (!reports.empty())
                         rr::refuse(http_status::conflict,
                                    "conflict",
@@ -1036,19 +1029,11 @@ void engine_settings_routes::register_write_routes(
                         const auto part = of_code.find(id_text);
                         if (part == of_code.end())
                             continue;
-                        const auto part_id = boost::uuids::string_generator()(part->second.id);
-                        if (code == "building")
-                            delete_part<
-                                reporting_messaging::delete_engine_settings_building_request>(
-                                req, session, part_id, intent);
-                        else if (code == "execution")
-                            delete_part<
-                                reporting_messaging::delete_engine_settings_execution_request>(
-                                req, session, part_id, intent);
-                        else
-                            delete_part<
-                                reporting_messaging::delete_engine_settings_fixings_request>(
-                                req, session, part_id, intent);
+                        delete_part(req,
+                                    session,
+                                    kind_of(code),
+                                    boost::uuids::string_generator()(part->second.id),
+                                    intent);
                     }
 
                     reporting_messaging::delete_engine_settings_request msg;
@@ -1057,7 +1042,7 @@ void engine_settings_routes::register_write_routes(
                     msg.intent = intent;
                     const auto reply = forwarding::forward(req, session, msg);
                     rr::require_ok(reply.result);
-                    remove_header(req, session, central.name, intent);
+                    remove_configuration(req, session, central.name, intent);
                     return rr::no_content();
                 });
             }));

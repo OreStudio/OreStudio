@@ -400,7 +400,7 @@ RULES = (
          " display order for a form."),
     Rule("the pricing engine vocabulary",
          ("exact", "GET /api/reporting/pricing-engines/vocabulary"),
-         BFF, NOT_API, NO_AREA,
+         None, NOT_API, NO_AREA,
          "Fifteen lookup collections read at once and keyed by the names the editor's"
          " controls use, so a client that wants one of them reads that collection instead."),
 
@@ -773,7 +773,7 @@ RULES = (
          " history, and one group's write or proposal."),
     Rule("the pricing engines",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/reporting/pricing-engines"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "The pricing engine configuration: the collection and its party names, one"
          " configuration with its bound reports, its history, and its ORE document as a file."),
 

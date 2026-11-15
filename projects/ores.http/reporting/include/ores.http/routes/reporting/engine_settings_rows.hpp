@@ -173,6 +173,7 @@ read_party_names(const ores::http::domain::http_request& req,
 [[nodiscard]] std::vector<engine_bound_report>
 read_bound_reports(const ores::http::domain::http_request& req,
                    ores::nats::service::nats_client& session,
+                   std::string_view configuration_type,
                    const boost::uuids::uuid& configuration_id);
 
 /**

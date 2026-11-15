@@ -27,11 +27,42 @@
 #include "ores.http.core/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <chrono>
 #include <memory>
 #include <span>
+#include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::http::routes {
+
+/**
+ * @brief One field of one version of a record, as the record stated it.
+ */
+struct version_field final {
+    std::string name;
+    std::string value;
+};
+
+/**
+ * @brief One thing a version changed, and what it changed from and to.
+ */
+struct version_change final {
+    std::string field;
+    std::string before;
+    std::string after;
+};
+
+/**
+ * @brief One version of one record, as a history tab draws it.
+ */
+struct version_row final {
+    int version = 0;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::vector<version_field> fields;
+    std::vector<version_change> changes;
+};
 
 /**
  * @brief The one history read every screen's history tab calls.
@@ -66,6 +97,29 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_history(const ores::http::domain::http_request& req,
                    ores::nats::service::nats_client& session);
+
+    /**
+     * @brief Every version of one record, newest first, read from the component
+     * that owns the type.
+     *
+     * The caller names the type, because a screen that weaves several records
+     * into one timeline reads types that no history screen offers on its own.
+     * Only @ref serves decides what the generic route will answer.
+     */
+    [[nodiscard]] static std::vector<version_row>
+    read_versions(const ores::http::domain::http_request& req,
+                  ores::nats::service::nats_client& session,
+                  std::string_view entity_type,
+                  std::string_view entity_id);
+
+    /**
+     * @brief The members one version states: its number, who wrote it and when,
+     * its fields and its changes.
+     *
+     * A caller that names a version by the record it belongs to states those
+     * members first and appends these, so one version is written one way.
+     */
+    [[nodiscard]] static std::vector<std::string> version_members(const version_row& row);
 };
 
 }

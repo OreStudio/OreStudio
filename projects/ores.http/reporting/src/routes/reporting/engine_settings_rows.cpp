@@ -22,6 +22,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/messaging/engine_settings_building_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_fixings_protocol.hpp"
@@ -60,6 +61,11 @@ constexpr std::array<std::string_view, 3> wireable_groups{"building", "execution
 
 /// The reporting configuration type a report binds engine settings through.
 constexpr std::string_view engine_settings_configuration_type = "engine_settings";
+
+auto& engine_settings_rows_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.reporting.engine_settings_rows");
+    return instance;
+}
 
 /**
  * @brief Every member of one row, by name, as the JSON it renders to.
@@ -220,48 +226,49 @@ std::map<std::string, engine_party_name> read_party_names(const http_request& re
     } catch (const std::exception&) {
         // A read that fails leaves the names empty: the page still states the
         // configuration it could read.
+        BOOST_LOG_SEV(engine_settings_rows_lg(), ores::logging::debug)
+            << "The parties the caller works in could not be read, so their names are empty.";
     }
     return names;
 }
 
 std::vector<engine_bound_report> read_bound_reports(const http_request& req,
                                                     nats_client& session,
+                                                    std::string_view configuration_type,
                                                     const boost::uuids::uuid& configuration_id) {
-    {
-        reporting_messaging::list_report_configurations_request ask;
-        ask.filter.emplace();
-        ask.filter->configuration_type_code = std::string(engine_settings_configuration_type);
-        ask.filter->configuration_id = configuration_id;
-        const auto bindings = forwarding::forward_all(
-            req,
-            session,
-            ask,
-            &reporting_messaging::list_report_configurations_response::report_configurations);
+    reporting_messaging::list_report_configurations_request ask;
+    ask.filter.emplace();
+    ask.filter->configuration_type_code = std::string(configuration_type);
+    ask.filter->configuration_id = configuration_id;
+    const auto bindings = forwarding::forward_all(
+        req,
+        session,
+        ask,
+        &reporting_messaging::list_report_configurations_response::report_configurations);
 
-        std::vector<boost::uuids::uuid> ids;
-        ids.reserve(bindings.size());
-        for (const auto& binding : bindings)
-            ids.push_back(binding.report_definition_id);
-        std::ranges::sort(ids);
-        ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
-        if (ids.empty())
-            return std::vector<engine_bound_report>{};
+    std::vector<boost::uuids::uuid> ids;
+    ids.reserve(bindings.size());
+    for (const auto& binding : bindings)
+        ids.push_back(binding.report_definition_id);
+    std::ranges::sort(ids);
+    ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+    if (ids.empty())
+        return std::vector<engine_bound_report>{};
 
-        reporting_messaging::list_report_definitions_request definitions_ask;
-        definitions_ask.filter.emplace();
-        definitions_ask.filter->id_one_of = ids;
-        const auto definitions = forwarding::forward_all(
-            req,
-            session,
-            definitions_ask,
-            &reporting_messaging::list_report_definitions_response::definitions);
+    reporting_messaging::list_report_definitions_request definitions_ask;
+    definitions_ask.filter.emplace();
+    definitions_ask.filter->id_one_of = ids;
+    const auto definitions = forwarding::forward_all(
+        req,
+        session,
+        definitions_ask,
+        &reporting_messaging::list_report_definitions_response::definitions);
 
-        std::vector<engine_bound_report> reports;
-        reports.reserve(definitions.size());
-        for (const auto& definition : definitions)
-            reports.push_back({boost::uuids::to_string(definition.id), definition.name});
-        return reports;
-    }
+    std::vector<engine_bound_report> reports;
+    reports.reserve(definitions.size());
+    for (const auto& definition : definitions)
+        reports.push_back({boost::uuids::to_string(definition.id), definition.name});
+    return reports;
 }
 
 std::vector<engine_part_row> read_part_versions(const http_request& req,

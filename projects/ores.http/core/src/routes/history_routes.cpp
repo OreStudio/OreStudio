@@ -146,21 +146,22 @@ bool fits(const std::string& value) {
     return !value.empty() && value.size() <= 200;
 }
 
-std::string version_json(const ores::history::messaging::entity_history_version& v) {
-    std::string out = "{\"version\":" + std::to_string(v.version) +
-                      ",\"modifiedBy\":" + json::write(v.modified_by) +
-                      ",\"recordedAt\":" + json::write(v.recorded_at) + ",\"fields\":[";
-    for (std::size_t i = 0; i < v.fields.size(); ++i)
-        out += (i != 0 ? "," : "") + std::string("{\"name\":") + json::write(v.fields[i].name) +
-               ",\"value\":" + json::write(v.fields[i].value) + "}";
-    out += "],\"changes\":[";
-    const auto& entries = v.changes.entries;
-    for (std::size_t i = 0; i < entries.size(); ++i)
-        out += (i != 0 ? "," : "") + std::string("{\"field\":") +
-               json::write(entries[i].field_name) +
-               ",\"before\":" + json::write(entries[i].old_value) +
-               ",\"after\":" + json::write(entries[i].new_value) + "}";
-    return out + "]}";
+std::vector<version_row>
+versions_of(const ores::history::messaging::get_entity_history_response& r) {
+    std::vector<version_row> versions;
+    versions.reserve(r.versions.size());
+    for (const auto& v : r.versions) {
+        version_row row;
+        row.version = v.version;
+        row.modified_by = v.modified_by;
+        row.recorded_at = v.recorded_at;
+        for (const auto& field : v.fields)
+            row.fields.push_back({field.name, field.value});
+        for (const auto& entry : v.changes.entries)
+            row.changes.push_back({entry.field_name, entry.old_value, entry.new_value});
+        versions.push_back(std::move(row));
+    }
+    return versions;
 }
 
 }
@@ -171,6 +172,46 @@ std::span<const std::string_view> history_routes::served_types() {
 
 bool history_routes::serves(std::string_view entity_type) {
     return std::ranges::binary_search(history_types, entity_type);
+}
+
+std::vector<version_row> history_routes::read_versions(const http_request& req,
+                                                       nats_client& session,
+                                                       std::string_view entity_type,
+                                                       std::string_view entity_id) {
+    ores::history::messaging::get_entity_history_request msg;
+    msg.entity_type = std::string(entity_type);
+    msg.entity_id = std::string(entity_id);
+    const auto subject = ores::history::messaging::history_subject_for(msg.entity_type);
+    auto reply = ores::http::forwarding::forward_on(req, session, subject, msg);
+    // The BFF answered a history read the service refused as a conflict of the
+    // request, with the service's own words.
+    if (!reply.success)
+        rr::refuse(http_status::conflict, "invalid-request", reply.message);
+
+    auto versions = versions_of(reply);
+    std::ranges::sort(versions, std::ranges::greater{}, &version_row::version);
+    return versions;
+}
+
+std::vector<std::string> history_routes::version_members(const version_row& row) {
+    std::vector<std::string> members;
+    members.push_back("\"version\":" + std::to_string(row.version));
+    members.push_back("\"modifiedBy\":" + json::write(row.modified_by));
+    members.push_back("\"recordedAt\":" + json::write(row.recorded_at));
+    std::vector<std::string> fields;
+    fields.reserve(row.fields.size());
+    for (const auto& field : row.fields)
+        fields.push_back("{\"name\":" + json::write(field.name) +
+                         ",\"value\":" + json::write(field.value) + "}");
+    members.push_back("\"fields\":" + rr::array_of(fields));
+    std::vector<std::string> changes;
+    changes.reserve(row.changes.size());
+    for (const auto& change : row.changes)
+        changes.push_back("{\"field\":" + json::write(change.field) +
+                          ",\"before\":" + json::write(change.before) +
+                          ",\"after\":" + json::write(change.after) + "}");
+    members.push_back("\"changes\":" + rr::array_of(changes));
+    return members;
 }
 
 boost::asio::awaitable<http_response> history_routes::handle_history(const http_request& req,
@@ -185,23 +226,12 @@ boost::asio::awaitable<http_response> history_routes::handle_history(const http_
                        "not-found",
                        "No history is served for " + entity_type + ".");
 
-        ores::history::messaging::get_entity_history_request msg;
-        msg.entity_type = entity_type;
-        msg.entity_id = entity_id;
-        const auto subject = ores::history::messaging::history_subject_for(entity_type);
-        auto reply = ores::http::forwarding::forward_on(req, session, subject, msg);
-        // The BFF answered a history read the service refused as a conflict of the
-        // request, with the service's own words.
-        if (!reply.success)
-            rr::refuse(http_status::conflict, "invalid-request", reply.message);
-
-        std::ranges::sort(reply.versions,
-                          std::ranges::greater{},
-                          &ores::history::messaging::entity_history_version::version);
-        std::string out = "{\"versions\":[";
-        for (std::size_t i = 0; i < reply.versions.size(); ++i)
-            out += (i != 0 ? "," : "") + version_json(reply.versions[i]);
-        co_return http_response::json(out + "]}");
+        const auto versions = read_versions(req, session, entity_type, entity_id);
+        std::vector<std::string> rows;
+        rows.reserve(versions.size());
+        for (const auto& version : versions)
+            rows.push_back(rr::object_of(version_members(version)));
+        co_return http_response::json("{\"versions\":" + rr::array_of(rows) + "}");
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {

@@ -222,6 +222,13 @@ std::string array_of(const std::vector<std::string>& objects) {
     return out + "]";
 }
 
+std::string object_of(const std::vector<std::string>& members) {
+    std::string out = "{";
+    for (std::size_t i = 0; i < members.size(); ++i)
+        out += (i == 0 ? "" : ",") + members[i];
+    return out + "}";
+}
+
 std::string object_with_members(const std::string& object,
                                 const std::vector<std::pair<std::string, std::string>>& members) {
     const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(

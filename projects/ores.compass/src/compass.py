@@ -7427,6 +7427,83 @@ def _build_stamp(label, log=None):
         log.flush()
     return line
 
+# The build's own sounds, taken from the desktop's freedesktop theme so a build
+# speaks the vocabulary the machine already uses: information when it starts,
+# complete when it ends green, error when it ends red. A person working in
+# another window hears the outcome without watching the log.
+BUILD_SOUND_THEME_DIR = Path("/usr/share/sounds/freedesktop/stereo")
+BUILD_SOUND_FILES = {
+    "start": "dialog-information.oga",
+    "succeeded": "complete.oga",
+    "failed": "dialog-error.oga",
+}
+# What silences them: `ORES_BUILD_SOUND=0` in the environment, or in .env.
+_SOUND_DISABLED_WORDS = {"0", "false", "no", "off", "none", "disabled", "quiet"}
+# The players that decode what the theme ships, most specific first. aplay is
+# absent on purpose: it plays raw WAV and the theme is Ogg Vorbis.
+_BUILD_SOUND_PLAYERS = (
+    ("pw-play", ()),
+    ("paplay", ()),
+    ("canberra-gtk-play", ("--file",)),
+    ("ffplay", ("-nodisp", "-autoexit", "-loglevel", "quiet")),
+)
+
+
+def build_sound_event(outcome):
+    """The build event a finished build's outcome names."""
+    return "succeeded" if outcome == "succeeded" else "failed"
+
+
+def _sounds_enabled():
+    value = os.environ.get("ORES_BUILD_SOUND", "").strip().lower()
+    if value:
+        return value not in _SOUND_DISABLED_WORDS
+    return _read_env_map().get("ORES_BUILD_SOUND", "").strip().lower() not in _SOUND_DISABLED_WORDS
+
+
+def build_sound_command(event, theme_dir=None):
+    """The command that plays @p event's sound, or None when nothing can.
+
+    None is the ordinary answer on a machine with no player, no theme, or the
+    sounds turned off, so a build says nothing rather than failing over a bell.
+    """
+    if not _sounds_enabled():
+        return None
+    name = BUILD_SOUND_FILES.get(event)
+    if name is None:
+        return None
+    path = (theme_dir or BUILD_SOUND_THEME_DIR) / name
+    if not path.is_file():
+        return None
+    for player, player_args in _BUILD_SOUND_PLAYERS:
+        exe = shutil.which(player)
+        if exe:
+            return [exe, *player_args, str(path)]
+    return None
+
+
+def play_build_sound(event):
+    """Play @p event's sound without holding the build up.
+
+    The player is spawned detached and its output dropped: a build that cannot
+    make a sound, or whose player is slow to start, reports what it always did.
+    Returns whether a sound was started.
+    """
+    try:
+        cmd = build_sound_command(event)
+        if cmd is None:
+            return False
+        subprocess.Popen(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return True
+    except (OSError, ValueError):
+        return False
+
 
 def _cmake_cache_value(build_dir, key):
     """A value from the build directory's CMakeCache.txt, or "" without one."""
@@ -7667,6 +7744,8 @@ def cmd_build(argv):
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
     start_time = time.monotonic()
     started = None if args.dry_run else _build_stamp("Build started")
+    if not args.dry_run:
+        play_build_sound("start")
     build_cmd += ["-j", str(jobs)]
     if args.keep_going is not None:
         build_cmd += keep_going_args(build_dir, preset, int(args.keep_going))
@@ -7733,6 +7812,7 @@ def cmd_build(argv):
         if started is not None:
             took = datetime.timedelta(seconds=round(time.monotonic() - start_time))
             _build_stamp(f"Build finished ({outcome}, took {took})", log)
+            play_build_sound(build_sound_event(outcome))
         if log is not None:
             log.close()
         if lock is not None:

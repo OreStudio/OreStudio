@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,51 @@ curve_segment_curve_read_one(repository::curve_segment_curve_repository& repo,
                              const ores::database::context& ctx,
                              const messaging::curve_segment_curve_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::curve_segment_curve>>
+curve_segment_curve_read_many(repository::curve_segment_curve_repository& repo,
+                              const ores::database::context& ctx,
+                              const std::vector<messaging::curve_segment_curve_key>& keys) {
+    std::vector<std::vector<domain::curve_segment_curve>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> id_keys;
+        id_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            id_keys.push_back(boost::uuids::to_string(key.id));
+        }
+        std::map<key_tuple, std::vector<domain::curve_segment_curve>> by_key;
+        for (auto& row : repo.read_latest(ctx, id_keys)) {
+            key_tuple named(boost::uuids::to_string(row.id));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -164,16 +211,23 @@ messaging::get_many_curve_segment_curves_response
 curve_segment_curve_service::get_many_curve_segment_curves(
     const messaging::get_many_curve_segment_curves_request& request) {
     messaging::get_many_curve_segment_curves_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = curve_segment_curve_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::curve_segment_curve_lookup entry;
-        entry.key = k;
-        auto found = curve_segment_curve_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.curve_segment_curve = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.curve_segment_curve = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -183,7 +237,11 @@ messaging::put_curve_segment_curve_response curve_segment_curve_service::put_cur
     const messaging::put_curve_segment_curve_request& request) {
     messaging::put_curve_segment_curve_response response;
     domain::curve_segment_curve value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = curve_segment_curve_read_one(
+        repo_,
+        ctx_,
+        curve_segment_curve_key_from(curve_segment_curve_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -197,11 +255,18 @@ messaging::put_many_curve_segment_curves_response
 curve_segment_curve_service::put_many_curve_segment_curves(
     const messaging::put_many_curve_segment_curves_request& request) {
     messaging::put_many_curve_segment_curves_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::curve_segment_curve_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(curve_segment_curve_key_from(curve_segment_curve_to_domain(change.write)));
+    const auto current = curve_segment_curve_read_many(repo_, ctx_, keys);
     std::vector<domain::curve_segment_curve> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::curve_segment_curve value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -219,10 +284,12 @@ curve_segment_curve_service::put_many_curve_segment_curves(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.segment_curves.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            curve_segment_curve_read_one(repo_, ctx_, curve_segment_curve_key_from(value));
-        response.segment_curves.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = curve_segment_curve_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.segment_curves.push_back(written[i].empty() ? batch[i] :
+                                                               std::move(written[i].front()));
     }
     return response;
 }
@@ -340,13 +407,12 @@ curve_segment_curve_service::get_curve_segment_curve_version(
 ores::utility::domain::result
 curve_segment_curve_service::prepare_change(const messaging::curve_segment_curve_change& change,
                                             const ores::utility::domain::change_intent& intent,
+                                            const std::vector<domain::curve_segment_curve>& current,
                                             domain::curve_segment_curve& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = curve_segment_curve_to_domain(change.write);
-    const auto current =
-        curve_segment_curve_read_one(repo_, ctx_, curve_segment_curve_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -77,6 +79,31 @@ std::vector<domain::role> role_read_one(repository::role_repository& repo,
                                         const ores::database::context& ctx,
                                         const messaging::role_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::role>>
+role_read_many(repository::role_repository& repo,
+               const ores::database::context& ctx,
+               const std::vector<messaging::role_key>& keys) {
+    std::vector<std::vector<domain::role>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = role_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 /**
@@ -156,16 +183,23 @@ messaging::get_role_response role_service::get_role(const messaging::get_role_re
 messaging::get_many_roles_response
 role_service::get_many_roles(const messaging::get_many_roles_request& request) {
     messaging::get_many_roles_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = role_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::role_lookup entry;
-        entry.key = k;
-        auto found = role_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.role = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.role = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -174,7 +208,9 @@ role_service::get_many_roles(const messaging::get_many_roles_request& request) {
 messaging::put_role_response role_service::put_role(const messaging::put_role_request& request) {
     messaging::put_role_response response;
     domain::role value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current =
+        role_read_one(repo_, ctx_, role_key_from(role_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -187,11 +223,18 @@ messaging::put_role_response role_service::put_role(const messaging::put_role_re
 messaging::put_many_roles_response
 role_service::put_many_roles(const messaging::put_many_roles_request& request) {
     messaging::put_many_roles_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::role_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(role_key_from(role_to_domain(change.write)));
+    const auto current = role_read_many(repo_, ctx_, keys);
     std::vector<domain::role> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::role value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -209,9 +252,11 @@ role_service::put_many_roles(const messaging::put_many_roles_request& request) {
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.roles.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = role_read_one(repo_, ctx_, role_key_from(value));
-        response.roles.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = role_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.roles.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -287,10 +332,13 @@ role_service::delete_many_roles(const messaging::delete_many_roles_request& requ
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::role_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::role> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = role_read_one(repo_, ctx_, removal.key);
+    for (auto& named : role_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -357,12 +405,12 @@ role_service::get_role_version(const messaging::get_role_version_request& reques
 ores::utility::domain::result
 role_service::prepare_change(const messaging::role_change& change,
                              const ores::utility::domain::change_intent& intent,
+                             const std::vector<domain::role>& current,
                              domain::role& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = role_to_domain(change.write);
-    const auto current = role_read_one(repo_, ctx_, role_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

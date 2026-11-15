@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,52 @@ market_data_generation_config_read_one(repository::market_data_generation_config
                                        const ores::database::context& ctx,
                                        const messaging::market_data_generation_config_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::market_data_generation_config>>
+market_data_generation_config_read_many(
+    repository::market_data_generation_config_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<messaging::market_data_generation_config_key>& keys) {
+    std::vector<std::vector<domain::market_data_generation_config>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> id_keys;
+        id_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            id_keys.push_back(boost::uuids::to_string(key.id));
+        }
+        std::map<key_tuple, std::vector<domain::market_data_generation_config>> by_key;
+        for (auto& row : repo.read_latest(ctx, id_keys)) {
+            key_tuple named(boost::uuids::to_string(row.id));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -167,16 +215,23 @@ messaging::get_many_market_data_generation_configs_response
 market_data_generation_config_service::get_many_market_data_generation_configs(
     const messaging::get_many_market_data_generation_configs_request& request) {
     messaging::get_many_market_data_generation_configs_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = market_data_generation_config_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::market_data_generation_config_lookup entry;
-        entry.key = k;
-        auto found = market_data_generation_config_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.market_data_generation_config = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.market_data_generation_config = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -187,7 +242,12 @@ market_data_generation_config_service::put_market_data_generation_config(
     const messaging::put_market_data_generation_config_request& request) {
     messaging::put_market_data_generation_config_response response;
     domain::market_data_generation_config value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = market_data_generation_config_read_one(
+        repo_,
+        ctx_,
+        market_data_generation_config_key_from(
+            market_data_generation_config_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -202,11 +262,19 @@ messaging::put_many_market_data_generation_configs_response
 market_data_generation_config_service::put_many_market_data_generation_configs(
     const messaging::put_many_market_data_generation_configs_request& request) {
     messaging::put_many_market_data_generation_configs_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::market_data_generation_config_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(market_data_generation_config_key_from(
+            market_data_generation_config_to_domain(change.write)));
+    const auto current = market_data_generation_config_read_many(repo_, ctx_, keys);
     std::vector<domain::market_data_generation_config> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::market_data_generation_config value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -224,11 +292,12 @@ market_data_generation_config_service::put_many_market_data_generation_configs(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.market_data_generation_configs.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = market_data_generation_config_read_one(
-            repo_, ctx_, market_data_generation_config_key_from(value));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = market_data_generation_config_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
         response.market_data_generation_configs.push_back(
-            written.empty() ? value : std::move(written.front()));
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -352,13 +421,12 @@ market_data_generation_config_service::get_market_data_generation_config_version
 ores::utility::domain::result market_data_generation_config_service::prepare_change(
     const messaging::market_data_generation_config_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::market_data_generation_config>& current,
     domain::market_data_generation_config& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = market_data_generation_config_to_domain(change.write);
-    const auto current = market_data_generation_config_read_one(
-        repo_, ctx_, market_data_generation_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

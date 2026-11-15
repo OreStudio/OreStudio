@@ -72,6 +72,7 @@ set(files
     "service_import_party_series_tests.cpp"
     "service_import_service_tests.cpp"
     "service_manual_point_service_tests.cpp"
+    "service_market_observation_batch_tests.cpp"
     "service_market_state_reader_tests.cpp"
     "service_observation_reader_tests.cpp"
     "service_ore_export_tests.cpp"

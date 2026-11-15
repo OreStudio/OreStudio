@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,31 @@ delivery_count_read_one(repository::delivery_count_repository& repo,
                         const ores::database::context& ctx,
                         const messaging::delivery_count_key& key) {
     return repo.read_latest_by_oresmd_uri(ctx, key.oresmd_uri);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::delivery_count>>
+delivery_count_read_many(repository::delivery_count_repository& repo,
+                         const ores::database::context& ctx,
+                         const std::vector<messaging::delivery_count_key>& keys) {
+    std::vector<std::vector<domain::delivery_count>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = delivery_count_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 /**
@@ -179,16 +206,23 @@ delivery_count_service::get_delivery_count(const messaging::get_delivery_count_r
 messaging::get_many_delivery_counts_response delivery_count_service::get_many_delivery_counts(
     const messaging::get_many_delivery_counts_request& request) {
     messaging::get_many_delivery_counts_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = delivery_count_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::delivery_count_lookup entry;
-        entry.key = k;
-        auto found = delivery_count_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.delivery_count = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.delivery_count = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -198,7 +232,9 @@ messaging::put_delivery_count_response
 delivery_count_service::put_delivery_count(const messaging::put_delivery_count_request& request) {
     messaging::put_delivery_count_response response;
     domain::delivery_count value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = delivery_count_read_one(
+        repo_, ctx_, delivery_count_key_from(delivery_count_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -211,11 +247,18 @@ delivery_count_service::put_delivery_count(const messaging::put_delivery_count_r
 messaging::put_many_delivery_counts_response delivery_count_service::put_many_delivery_counts(
     const messaging::put_many_delivery_counts_request& request) {
     messaging::put_many_delivery_counts_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::delivery_count_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(delivery_count_key_from(delivery_count_to_domain(change.write)));
+    const auto current = delivery_count_read_many(repo_, ctx_, keys);
     std::vector<domain::delivery_count> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::delivery_count value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -233,9 +276,12 @@ messaging::put_many_delivery_counts_response delivery_count_service::put_many_de
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.delivery_counts.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = delivery_count_read_one(repo_, ctx_, delivery_count_key_from(value));
-        response.delivery_counts.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = delivery_count_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.delivery_counts.push_back(written[i].empty() ? batch[i] :
+                                                                std::move(written[i].front()));
     }
     return response;
 }
@@ -311,10 +357,13 @@ messaging::delete_many_delivery_counts_response delivery_count_service::delete_m
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::delivery_count_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::delivery_count> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = delivery_count_read_one(repo_, ctx_, removal.key);
+    for (auto& named : delivery_count_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -382,12 +431,12 @@ messaging::get_delivery_count_version_response delivery_count_service::get_deliv
 ores::utility::domain::result
 delivery_count_service::prepare_change(const messaging::delivery_count_change& change,
                                        const ores::utility::domain::change_intent& intent,
+                                       const std::vector<domain::delivery_count>& current,
                                        domain::delivery_count& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = delivery_count_to_domain(change.write);
-    const auto current = delivery_count_read_one(repo_, ctx_, delivery_count_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

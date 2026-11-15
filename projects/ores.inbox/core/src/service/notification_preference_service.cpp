@@ -31,9 +31,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,60 @@ notification_preference_read_one(repository::notification_preference_repository&
                                  const messaging::notification_preference_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.account_id), key.kind_code, key.channel_code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::notification_preference>>
+notification_preference_read_many(repository::notification_preference_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<messaging::notification_preference_key>& keys) {
+    std::vector<std::vector<domain::notification_preference>> found(keys.size());
+    using key_tuple = std::tuple<std::string, std::string, std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> account_id_keys;
+        account_id_keys.reserve(end - begin);
+        std::vector<std::string> kind_code_keys;
+        kind_code_keys.reserve(end - begin);
+        std::vector<std::string> channel_code_keys;
+        channel_code_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            account_id_keys.push_back(boost::uuids::to_string(key.account_id));
+            kind_code_keys.push_back(key.kind_code);
+            channel_code_keys.push_back(key.channel_code);
+        }
+        std::map<key_tuple, std::vector<domain::notification_preference>> by_key;
+        for (auto& row :
+             repo.read_latest(ctx, account_id_keys, kind_code_keys, channel_code_keys)) {
+            key_tuple named(
+                boost::uuids::to_string(row.account_id), row.kind_code, row.channel_code);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(
+                boost::uuids::to_string(key.account_id), key.kind_code, key.channel_code));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -195,16 +251,23 @@ messaging::get_many_notification_preferences_response
 notification_preference_service::get_many_notification_preferences(
     const messaging::get_many_notification_preferences_request& request) {
     messaging::get_many_notification_preferences_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = notification_preference_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::notification_preference_lookup entry;
-        entry.key = k;
-        auto found = notification_preference_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.notification_preference = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.notification_preference = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -215,7 +278,11 @@ notification_preference_service::put_notification_preference(
     const messaging::put_notification_preference_request& request) {
     messaging::put_notification_preference_response response;
     domain::notification_preference value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = notification_preference_read_one(
+        repo_,
+        ctx_,
+        notification_preference_key_from(notification_preference_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -230,11 +297,19 @@ messaging::put_many_notification_preferences_response
 notification_preference_service::put_many_notification_preferences(
     const messaging::put_many_notification_preferences_request& request) {
     messaging::put_many_notification_preferences_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::notification_preference_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            notification_preference_key_from(notification_preference_to_domain(change.write)));
+    const auto current = notification_preference_read_many(repo_, ctx_, keys);
     std::vector<domain::notification_preference> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::notification_preference value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -252,10 +327,12 @@ notification_preference_service::put_many_notification_preferences(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.preferences.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            notification_preference_read_one(repo_, ctx_, notification_preference_key_from(value));
-        response.preferences.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = notification_preference_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.preferences.push_back(written[i].empty() ? batch[i] :
+                                                            std::move(written[i].front()));
     }
     return response;
 }
@@ -394,13 +471,12 @@ notification_preference_service::get_notification_preference_version(
 ores::utility::domain::result notification_preference_service::prepare_change(
     const messaging::notification_preference_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::notification_preference>& current,
     domain::notification_preference& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = notification_preference_to_domain(change.write);
-    const auto current =
-        notification_preference_read_one(repo_, ctx_, notification_preference_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

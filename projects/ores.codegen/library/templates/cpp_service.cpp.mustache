@@ -15,8 +15,12 @@
 #include <string_view>
 {{/gated}}
 {{#protocol_derived}}
+#include <algorithm>
+#include <cstddef>
+#include <map>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 {{/protocol_derived}}
@@ -98,6 +102,60 @@ std::vector<domain::{{entity_singular}}> {{entity_singular}}{{^entity_singular}}
 {{^key_is_primary}}
     return repo.read_latest_by_{{declared_key}}(ctx, {{{declared_key_text}}});
 {{/key_is_primary}}
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::{{entity_singular}}>> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_many(repository::{{entity_singular}}_repository& repo,
+                                                const ores::database::context& ctx,
+                                                const std::vector<messaging::{{entity_singular}}_key>& keys) {
+    std::vector<std::vector<domain::{{entity_singular}}>> found(keys.size());
+{{#key_is_primary}}
+    using key_tuple = std::tuple<{{{primary_key.batch_tuple_type}}}>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+{{#primary_key.key_columns}}
+        std::vector<std::string> {{column}}_keys;
+        {{column}}_keys.reserve(end - begin);
+{{/primary_key.key_columns}}
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+{{#primary_key.key_columns}}
+            {{column}}_keys.push_back({{{key_text}}});
+{{/primary_key.key_columns}}
+        }
+        std::map<key_tuple, std::vector<domain::{{entity_singular}}>> by_key;
+        for (auto& row : repo.read_latest(ctx, {{{primary_key.batch_keys_args}}})) {
+            key_tuple named({{#primary_key.key_columns}}{{{row_text}}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple({{#primary_key.key_columns}}{{{key_text}}}{{^last}}, {{/last}}{{/primary_key.key_columns}}));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+{{/key_is_primary}}
+{{^key_is_primary}}
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo, ctx, keys[i]);
+{{/key_is_primary}}
+    return found;
 }
 {{#put_operations}}
 
@@ -369,48 +427,25 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
-    // One entry per requested key, in the order asked for, so the reply is
-    // positional and a caller reads absence from an empty entry rather than
-    // from a missing one.
-    response.entries.reserve(request.keys.size());
-{{#service_batch_reads_by_trade_id}}
-    // One read for the whole key set. The store returns every row the keys
-    // name, and the reply joins them back to the order asked for, so a caller
-    // sees the same positional answer without a round trip per key. The set is
-    // capped for the reason the list filter's is: one statement carries every
-    // key, and the store's bind count is finite.
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
     if (request.keys.size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "keys", .limit = "1000"});
         return response;
     }
-    std::vector<std::string> keys;
-    keys.reserve(request.keys.size());
-    for (const auto& k : request.keys)
-        keys.push_back(boost::uuids::to_string(k.trade_id));
-    const auto rows = repo_.read_latest(ctx_, keys);
-    for (const auto& k : request.keys) {
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::{{entity_singular}}_lookup entry;
-        entry.key = k;
-        for (const auto& row : rows) {
-            if (row.identity.trade_id == k.trade_id) {
-                entry.{{entity_singular}} = row;
-                break;
-            }
-        }
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.{{entity_singular}} = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
-{{/service_batch_reads_by_trade_id}}
-{{^service_batch_reads_by_trade_id}}
-    for (const auto& k : request.keys) {
-        messaging::{{entity_singular}}_lookup entry;
-        entry.key = k;
-        auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.{{entity_singular}} = std::move(found.front());
-        response.entries.push_back(std::move(entry));
-    }
-{{/service_batch_reads_by_trade_id}}
     return response;
 }
 
@@ -420,7 +455,9 @@ messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
     domain::{{entity_singular}} value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(
+        repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -436,11 +473,18 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::{{entity_singular}}_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(change.write)));
+    const auto current = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_many(repo_, ctx_, keys);
     std::vector<domain::{{entity_singular}}> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::{{entity_singular}} value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -459,30 +503,13 @@ messaging::{{response}}
     repo_.write(ctx_, batch, claims);
 <<paste:C379A38A-666B-4130-BE6C-419F00081322>>
     response.{{entity_plural_short}}.reserve(batch.size());
-{{#service_batch_reads_by_trade_id}}
-    // One read for the whole written set, for the same reason as the batch
-    // get: the store already holds every row the write just landed.
-    std::vector<std::string> written_keys;
-    written_keys.reserve(batch.size());
-    for (const auto& value : batch)
-        written_keys.push_back(boost::uuids::to_string(value.identity.trade_id));
-    const auto written_rows = repo_.read_latest(ctx_, written_keys);
-    for (const auto& value : batch) {
-        const auto row = std::find_if(written_rows.begin(), written_rows.end(),
-                                      [&](const auto& candidate) {
-                                          return candidate.identity.trade_id ==
-                                                 value.identity.trade_id;
-                                      });
-        response.{{entity_plural_short}}.push_back(row == written_rows.end() ? value : *row);
-    }
-{{/service_batch_reads_by_trade_id}}
-{{^service_batch_reads_by_trade_id}}
-    for (const auto& value : batch) {
-        auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
         response.{{entity_plural_short}}.push_back(
-            written.empty() ? value : std::move(written.front()));
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
-{{/service_batch_reads_by_trade_id}}
     return response;
 }
 
@@ -580,10 +607,16 @@ messaging::{{response}}
 {{#gated}}
     // A batch carries no versions, so an approved line that claims one never
     // matches here. The applier removes one row at a time, with its version.
-    for (const auto& removal : request.removals) {
-        if (const auto refused = gate_delete({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, removal.key), std::nullopt)) {
-            response.result = *refused;
-            return response;
+    {
+        std::vector<messaging::{{entity_singular}}_key> keys;
+        keys.reserve(request.removals.size());
+        for (const auto& removal : request.removals)
+            keys.push_back(removal.key);
+        for (const auto& live : {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_many(repo_, ctx_, keys)) {
+            if (const auto refused = gate_delete(live, std::nullopt)) {
+                response.result = *refused;
+                return response;
+            }
         }
     }
 {{/gated}}
@@ -593,10 +626,13 @@ messaging::{{response}}
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::{{entity_singular}}_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::{{entity_singular}}> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, removal.key);
+    for (auto& named : {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -691,12 +727,12 @@ ores::utility::domain::result
 {{entity_singular}}_service::prepare_change(
     const messaging::{{entity_singular}}_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::{{entity_singular}}>& current,
     domain::{{entity_singular}}& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(change.write);
-    const auto current = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(out));
 {{#gated}}
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.

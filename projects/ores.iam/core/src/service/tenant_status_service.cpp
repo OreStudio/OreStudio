@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -74,6 +76,51 @@ tenant_status_read_one(repository::tenant_status_repository& repo,
                        const ores::database::context& ctx,
                        const messaging::tenant_status_key& key) {
     return repo.read_latest(ctx, key.status);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::tenant_status>>
+tenant_status_read_many(repository::tenant_status_repository& repo,
+                        const ores::database::context& ctx,
+                        const std::vector<messaging::tenant_status_key>& keys) {
+    std::vector<std::vector<domain::tenant_status>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> status_keys;
+        status_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            status_keys.push_back(key.status);
+        }
+        std::map<key_tuple, std::vector<domain::tenant_status>> by_key;
+        for (auto& row : repo.read_latest(ctx, status_keys)) {
+            key_tuple named(row.status);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.status));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -155,16 +202,23 @@ tenant_status_service::get_tenant_status(const messaging::get_tenant_status_requ
 messaging::get_many_tenant_statuses_response tenant_status_service::get_many_tenant_statuses(
     const messaging::get_many_tenant_statuses_request& request) {
     messaging::get_many_tenant_statuses_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = tenant_status_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::tenant_status_lookup entry;
-        entry.key = k;
-        auto found = tenant_status_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.tenant_status = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.tenant_status = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -174,7 +228,9 @@ messaging::put_tenant_status_response
 tenant_status_service::put_tenant_status(const messaging::put_tenant_status_request& request) {
     messaging::put_tenant_status_response response;
     domain::tenant_status value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = tenant_status_read_one(
+        repo_, ctx_, tenant_status_key_from(tenant_status_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -187,11 +243,18 @@ tenant_status_service::put_tenant_status(const messaging::put_tenant_status_requ
 messaging::put_many_tenant_statuses_response tenant_status_service::put_many_tenant_statuses(
     const messaging::put_many_tenant_statuses_request& request) {
     messaging::put_many_tenant_statuses_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::tenant_status_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(tenant_status_key_from(tenant_status_to_domain(change.write)));
+    const auto current = tenant_status_read_many(repo_, ctx_, keys);
     std::vector<domain::tenant_status> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::tenant_status value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -209,9 +272,11 @@ messaging::put_many_tenant_statuses_response tenant_status_service::put_many_ten
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.statuses.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = tenant_status_read_one(repo_, ctx_, tenant_status_key_from(value));
-        response.statuses.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = tenant_status_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.statuses.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -323,12 +388,12 @@ messaging::get_tenant_status_version_response tenant_status_service::get_tenant_
 ores::utility::domain::result
 tenant_status_service::prepare_change(const messaging::tenant_status_change& change,
                                       const ores::utility::domain::change_intent& intent,
+                                      const std::vector<domain::tenant_status>& current,
                                       domain::tenant_status& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = tenant_status_to_domain(change.write);
-    const auto current = tenant_status_read_one(repo_, ctx_, tenant_status_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

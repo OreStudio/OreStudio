@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -73,6 +75,51 @@ std::vector<domain::adapter> adapter_read_one(repository::adapter_repository& re
                                               const ores::database::context& ctx,
                                               const messaging::adapter_key& key) {
     return repo.read_latest(ctx, key.code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::adapter>>
+adapter_read_many(repository::adapter_repository& repo,
+                  const ores::database::context& ctx,
+                  const std::vector<messaging::adapter_key>& keys) {
+    std::vector<std::vector<domain::adapter>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> code_keys;
+        code_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            code_keys.push_back(key.code);
+        }
+        std::map<key_tuple, std::vector<domain::adapter>> by_key;
+        for (auto& row : repo.read_latest(ctx, code_keys)) {
+            key_tuple named(row.code);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.code));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 }
@@ -124,16 +171,23 @@ adapter_service::get_adapter(const messaging::get_adapter_request& request) {
 messaging::get_many_adapters_response
 adapter_service::get_many_adapters(const messaging::get_many_adapters_request& request) {
     messaging::get_many_adapters_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = adapter_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::adapter_lookup entry;
-        entry.key = k;
-        auto found = adapter_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.adapter = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.adapter = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

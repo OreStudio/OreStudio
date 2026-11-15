@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,31 @@ configuration_parameter_read_one(repository::configuration_parameter_repository&
                                  const ores::database::context& ctx,
                                  const messaging::configuration_parameter_key& key) {
     return repo.read_latest_by_value(ctx, key.value);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::configuration_parameter>>
+configuration_parameter_read_many(repository::configuration_parameter_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<messaging::configuration_parameter_key>& keys) {
+    std::vector<std::vector<domain::configuration_parameter>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = configuration_parameter_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 /**
@@ -258,16 +285,23 @@ messaging::get_many_configuration_parameters_response
 configuration_parameter_service::get_many_configuration_parameters(
     const messaging::get_many_configuration_parameters_request& request) {
     messaging::get_many_configuration_parameters_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = configuration_parameter_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::configuration_parameter_lookup entry;
-        entry.key = k;
-        auto found = configuration_parameter_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.configuration_parameter = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.configuration_parameter = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -278,7 +312,11 @@ configuration_parameter_service::put_configuration_parameter(
     const messaging::put_configuration_parameter_request& request) {
     messaging::put_configuration_parameter_response response;
     domain::configuration_parameter value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = configuration_parameter_read_one(
+        repo_,
+        ctx_,
+        configuration_parameter_key_from(configuration_parameter_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -293,11 +331,19 @@ messaging::put_many_configuration_parameters_response
 configuration_parameter_service::put_many_configuration_parameters(
     const messaging::put_many_configuration_parameters_request& request) {
     messaging::put_many_configuration_parameters_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::configuration_parameter_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            configuration_parameter_key_from(configuration_parameter_to_domain(change.write)));
+    const auto current = configuration_parameter_read_many(repo_, ctx_, keys);
     std::vector<domain::configuration_parameter> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::configuration_parameter value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -315,10 +361,12 @@ configuration_parameter_service::put_many_configuration_parameters(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.parameter_values.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            configuration_parameter_read_one(repo_, ctx_, configuration_parameter_key_from(value));
-        response.parameter_values.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = configuration_parameter_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.parameter_values.push_back(written[i].empty() ? batch[i] :
+                                                                 std::move(written[i].front()));
     }
     return response;
 }
@@ -397,10 +445,13 @@ configuration_parameter_service::delete_many_configuration_parameters(
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::configuration_parameter_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::configuration_parameter> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = configuration_parameter_read_one(repo_, ctx_, removal.key);
+    for (auto& named : configuration_parameter_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -472,13 +523,12 @@ configuration_parameter_service::get_configuration_parameter_version(
 ores::utility::domain::result configuration_parameter_service::prepare_change(
     const messaging::configuration_parameter_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::configuration_parameter>& current,
     domain::configuration_parameter& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = configuration_parameter_to_domain(change.write);
-    const auto current =
-        configuration_parameter_read_one(repo_, ctx_, configuration_parameter_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

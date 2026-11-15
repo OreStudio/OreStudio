@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -77,6 +79,30 @@ std::vector<domain::app> app_read_one(repository::app_repository& repo,
                                       const ores::database::context& ctx,
                                       const messaging::app_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::app>> app_read_many(repository::app_repository& repo,
+                                                    const ores::database::context& ctx,
+                                                    const std::vector<messaging::app_key>& keys) {
+    std::vector<std::vector<domain::app>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = app_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 /**
@@ -153,16 +179,23 @@ messaging::get_app_response app_service::get_app(const messaging::get_app_reques
 messaging::get_many_apps_response
 app_service::get_many_apps(const messaging::get_many_apps_request& request) {
     messaging::get_many_apps_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = app_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::app_lookup entry;
-        entry.key = k;
-        auto found = app_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.app = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.app = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -171,7 +204,9 @@ app_service::get_many_apps(const messaging::get_many_apps_request& request) {
 messaging::put_app_response app_service::put_app(const messaging::put_app_request& request) {
     messaging::put_app_response response;
     domain::app value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current =
+        app_read_one(repo_, ctx_, app_key_from(app_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -184,11 +219,18 @@ messaging::put_app_response app_service::put_app(const messaging::put_app_reques
 messaging::put_many_apps_response
 app_service::put_many_apps(const messaging::put_many_apps_request& request) {
     messaging::put_many_apps_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::app_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(app_key_from(app_to_domain(change.write)));
+    const auto current = app_read_many(repo_, ctx_, keys);
     std::vector<domain::app> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::app value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -206,9 +248,11 @@ app_service::put_many_apps(const messaging::put_many_apps_request& request) {
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.apps.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = app_read_one(repo_, ctx_, app_key_from(value));
-        response.apps.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = app_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.apps.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -284,10 +328,13 @@ app_service::delete_many_apps(const messaging::delete_many_apps_request& request
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::app_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::app> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = app_read_one(repo_, ctx_, removal.key);
+    for (auto& named : app_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -354,12 +401,12 @@ app_service::get_apps_version(const messaging::get_apps_version_request& request
 ores::utility::domain::result
 app_service::prepare_change(const messaging::app_change& change,
                             const ores::utility::domain::change_intent& intent,
+                            const std::vector<domain::app>& current,
                             domain::app& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = app_to_domain(change.write);
-    const auto current = app_read_one(repo_, ctx_, app_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

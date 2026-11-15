@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -77,6 +79,31 @@ std::vector<domain::run_grant> run_grant_read_one(repository::run_grant_reposito
                                                   const ores::database::context& ctx,
                                                   const messaging::run_grant_key& key) {
     return repo.read_latest_by_resource(ctx, key.resource);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::run_grant>>
+run_grant_read_many(repository::run_grant_repository& repo,
+                    const ores::database::context& ctx,
+                    const std::vector<messaging::run_grant_key>& keys) {
+    std::vector<std::vector<domain::run_grant>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = run_grant_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 }
@@ -166,16 +193,23 @@ run_grant_service::get_run_grant(const messaging::get_run_grant_request& request
 messaging::get_many_run_grants_response
 run_grant_service::get_many_run_grants(const messaging::get_many_run_grants_request& request) {
     messaging::get_many_run_grants_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = run_grant_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::run_grant_lookup entry;
-        entry.key = k;
-        auto found = run_grant_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.run_grant = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.run_grant = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

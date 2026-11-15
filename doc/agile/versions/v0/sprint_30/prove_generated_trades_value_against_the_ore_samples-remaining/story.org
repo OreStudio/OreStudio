@@ -81,6 +81,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 - Only the script body is text. A scripted trade's variables are =scripted_parameter= rows, their list values =scripted_parameter_value= rows, and an underlying block an =instrument_underlying= row, with no migration: the database is dropped and recreated. An index variable holds an oresmd address, because a name ORE spells is a boundary spelling and not an identity inside ORE Studio. The user chose this on 2026-11-14.
 - A product ORE reads through a class of its own, =DoubleDigitalOption= and =PerformanceOption_01=, keeps the members its element states rather than the script variables ORE derives from them. The derivation is not invertible, because a call and a collar differ only by a bound of =QL_MAX_REAL=, and the members are what a round trip can prove.
 - The two basket products needed no special case in the projection: their elements are free style, so the named product's path reads them once the hand written branches are gone. The corpus content round trip proves it over every trade of ORE's example portfolios.
+- An underlying row's role names the element the document states the block in, which for one product is its own element: =DoubleDigitalOption= states =Underlying1= to =Underlying4=, so those rows hold =underlying1= to =underlying4= and the shared table's rule admits them beside the plain =underlying=. A row that named only the list would leave the writer guessing which element to write a block into.
 
 * Out of scope
 

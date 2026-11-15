@@ -3603,7 +3603,11 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
                                    std::string address) {
         ores::trading::domain::instrument_underlying underlying;
         underlying.underlying_role = std::move(role);
-        underlying.sequence_number = static_cast<int>(data.instrument_underlyings.size()) + 1;
+        int sequence_number = 0;
+        for (const auto& row : data.instrument_underlyings)
+            if (row.underlying_role == underlying.underlying_role)
+                ++sequence_number;
+        underlying.sequence_number = ++sequence_number;
         underlying.underlying_type = std::move(underlying_type);
         underlying.name = std::move(address);
         data.instrument_underlyings.push_back(std::move(underlying));
@@ -3635,6 +3639,14 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     CHECK(generic_again.parameters[2].name == "Underlying");
     CHECK(generic_again.parameters[2].value ==
           std::optional<std::string>(equity_address_of("GB0005405286")));
+
+    // A body without the variable its result lands in is still the body the row
+    // read, so the export states it rather than losing it.
+    auto body_only = scripted_data("ScriptedTrade", "heston");
+    body_only.instrument.script_body = "Payoff = 1;";
+    const auto body_only_again = rebuilt_data(std::move(body_only));
+    CHECK(body_only_again.instrument.script_body == "Payoff = 1;");
+    CHECK(body_only_again.instrument.script_npv.empty());
 
     auto digital = scripted_data("DoubleDigitalOption", "DoubleDigitalOption");
     add_parameter(digital, "Expiry", "text", "2029-10-31");
@@ -3683,6 +3695,90 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     REQUIRE(performance_again.instrument_underlyings.size() == 2);
     CHECK(performance_again.instrument_underlyings[1].underlying_role == "underlying");
     CHECK(performance_again.instrument_underlyings[1].sequence_number == 2);
+}
+
+TEST_CASE("a_named_product_names_its_index_variable_by_address",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    // The generic form capitalises its kinds and a named product states the type
+    // attribute its schema gives the variable, so the same index kind is spelled
+    // two ways. Both name market data, and inside the store that is an address.
+    const std::string text = R"(<Portfolio>
+  <Trade id="basket-1">
+    <TradeType>ScriptedTrade</TradeType>
+    <AsianBasketOptionData>
+      <Expiry type="event">2025-08-31</Expiry>
+      <Settlement type="event">2025-09-05</Settlement>
+      <ObservationDates type="event">
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-08-22</StartDate>
+            <EndDate>2025-08-22</EndDate>
+            <Tenor>1D</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </ObservationDates>
+      <PutCall type="optionType">Call</PutCall>
+      <LongShort type="longShort">Long</LongShort>
+      <Notional type="number">1000000</Notional>
+      <Strike type="number">5000</Strike>
+      <Underlyings type="index">
+        <Value>EQ-RIC:.SPX</Value>
+        <Value>EQ-RIC:.STOXX50E</Value>
+      </Underlyings>
+      <Weights type="number"><Value>1.0</Value><Value>1.0</Value></Weights>
+      <PayCcy type="currency">USD</PayCcy>
+    </AsianBasketOptionData>
+  </Trade>
+</Portfolio>)";
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(items.size() == 1);
+    const auto* basket = scripted_data_of(items[0].instrument);
+    REQUIRE(basket != nullptr);
+    CHECK(basket->instrument.script_name == "AsianBasketOption");
+    CHECK(basket->instrument.data_element == std::optional<std::string>("AsianBasketOptionData"));
+
+    const auto parameter_named = [](const ores::trading::domain::scripted_instrument_data& data,
+                                    std::string_view name) {
+        const auto found = std::ranges::find_if(
+            data.parameters, [&](const auto& parameter) { return parameter.name == name; });
+        return found == data.parameters.end() ? nullptr : &*found;
+    };
+    const auto* underlyings = parameter_named(*basket, "Underlyings");
+    REQUIRE(underlyings != nullptr);
+    CHECK(underlyings->declared_type == "index");
+    CHECK(underlyings->shape == "vector");
+
+    const auto values_of = [&](const ores::trading::domain::scripted_instrument_data& data,
+                               int parameter_sequence_number) {
+        std::vector<std::string> values;
+        for (const auto& row : data.parameter_values)
+            if (row.parameter_sequence_number == parameter_sequence_number)
+                values.push_back(row.value);
+        return values;
+    };
+    const auto addresses = values_of(*basket, underlyings->sequence_number);
+    REQUIRE(addresses.size() == 2);
+    for (const auto& address : addresses) {
+        INFO("value " << address);
+        CHECK(address.starts_with("oresmd://equity/"));
+    }
+    CHECK(addresses[0].find("RIC:.SPX") != std::string::npos);
+
+    // The address is the store's spelling; the document keeps ORE's.
+    const auto written = portfolio_projection::write(exported(items[0]));
+    CHECK(written.find("<Value>EQ-RIC:.SPX</Value>") != std::string::npos);
+    const auto basket_round = rebuild(items[0]);
+    const auto* again = scripted_data_of(basket_round.instrument);
+    REQUIRE(again != nullptr);
+    const auto* again_underlyings = parameter_named(*again, "Underlyings");
+    REQUIRE(again_underlyings != nullptr);
+    CHECK(values_of(*again, again_underlyings->sequence_number) == addresses);
 }
 
 TEST_CASE("a_cms_spread_leg_holds_both_indices_as_addresses_and_writes_them_back",

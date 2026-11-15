@@ -33,7 +33,11 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/domain/origin.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.api/domain/scripted_parameter.hpp"
+#include "ores.trading.api/domain/scripted_parameter_value.hpp"
 #include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_conversion_target_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_generator.hpp"
@@ -1070,6 +1074,107 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
         CHECK(legs[i].day_count_fraction_code == original[i].day_count_fraction_code);
     }
     CHECK(ores::trading::domain::find(again.rate_instruments, second.anchor.id) != nullptr);
+}
+
+TEST_CASE("a_scripted_trade_books_its_variables_and_underlyings_back", "[service]") {
+    fixture f;
+    auto first = f.request();
+    first.anchor.trade_type = "ScriptedTrade";
+
+    ores::trading::domain::scripted_instrument row;
+    row.identity.trade_type_code = "ScriptedTrade";
+    row.script_name = "AsianBasketOption";
+    first.instruments.scripted_instruments.push_back(row);
+
+    const auto add_parameter = [](ores::trading::domain::instrument_batch& batch,
+                                  std::string name,
+                                  std::string declared_type,
+                                  std::string value) {
+        ores::trading::domain::scripted_parameter parameter;
+        parameter.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+        parameter.name = std::move(name);
+        parameter.declared_type = std::move(declared_type);
+        parameter.shape = "scalar";
+        parameter.value = std::move(value);
+        batch.scripted_parameters.push_back(std::move(parameter));
+    };
+    const auto add_list = [](ores::trading::domain::instrument_batch& batch,
+                             std::string name,
+                             std::string declared_type,
+                             const std::vector<std::string>& values) {
+        ores::trading::domain::scripted_parameter parameter;
+        parameter.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+        parameter.name = std::move(name);
+        parameter.declared_type = std::move(declared_type);
+        parameter.shape = "vector";
+        const auto parameter_sequence_number = parameter.sequence_number;
+        batch.scripted_parameters.push_back(std::move(parameter));
+
+        int sequence_number = 0;
+        for (const auto& value : values) {
+            ores::trading::domain::scripted_parameter_value member;
+            member.parameter_sequence_number = parameter_sequence_number;
+            member.sequence_number = ++sequence_number;
+            member.value = value;
+            batch.scripted_parameter_values.push_back(std::move(member));
+        }
+    };
+    const auto add_underlying = [](ores::trading::domain::instrument_batch& batch,
+                                   std::string role,
+                                   std::string underlying_type,
+                                   std::string address) {
+        ores::trading::domain::instrument_underlying underlying;
+        underlying.underlying_role = std::move(role);
+        underlying.sequence_number = 1;
+        underlying.underlying_type = std::move(underlying_type);
+        underlying.name = std::move(address);
+        batch.instrument_underlyings.push_back(std::move(underlying));
+    };
+
+    add_parameter(first.instruments, "Notional", "Number", "1000000");
+    add_parameter(first.instruments,
+                  "Underlying",
+                  "Index",
+                  "oresmd://equity/RIC:.SPX?type=fixing&index=equity");
+    add_list(first.instruments, "Weights", "Number", {"0.6", "0.4"});
+    add_underlying(first.instruments,
+                   "underlying",
+                   "Equity",
+                   "oresmd://equity/RIC:.STOXX50E?type=fixing&index=equity");
+
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(first, {}).result.outcome ==
+            outcome::ok);
+
+    ores::trading::domain::instrument_batch exported;
+    ores::trading::service::trade_export_service(f.ctx).export_books(
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+
+    const auto parameters =
+        ores::trading::domain::find_all(exported.scripted_parameters, first.anchor.id);
+    REQUIRE(parameters.size() == 3);
+    CHECK(parameters[0].name == "Notional");
+    CHECK(parameters[0].declared_type == "Number");
+    CHECK(parameters[0].value == std::optional<std::string>("1000000"));
+    CHECK(parameters[1].name == "Underlying");
+    CHECK(parameters[1].value ==
+          std::optional<std::string>("oresmd://equity/RIC:.SPX?type=fixing&index=equity"));
+    CHECK(parameters[2].name == "Weights");
+    CHECK(parameters[2].shape == "vector");
+
+    const auto values =
+        ores::trading::domain::find_all(exported.scripted_parameter_values, first.anchor.id);
+    REQUIRE(values.size() == 2);
+    CHECK(values[0].parameter_sequence_number == 3);
+    CHECK(values[0].value == "0.6");
+    CHECK(values[1].sequence_number == 2);
+    CHECK(values[1].value == "0.4");
+
+    const auto underlyings =
+        ores::trading::domain::find_all(exported.instrument_underlyings, first.anchor.id);
+    REQUIRE(underlyings.size() == 1);
+    CHECK(underlyings[0].underlying_role == "underlying");
+    CHECK(underlyings[0].underlying_type == "Equity");
+    CHECK(underlyings[0].name == "oresmd://equity/RIC:.STOXX50E?type=fixing&index=equity");
 }
 
 TEST_CASE("a_child_array_with_no_header_is_refused_by_name", "[service]") {

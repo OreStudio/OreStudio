@@ -41,9 +41,10 @@ namespace ores::trading::domain {
  * ScriptedTrade with its inline or library script, Autocallable_01,
  * DoubleDigitalOption and PerformanceOption_01. trade_type_code
  * discriminates the exact product and script_name names the payoff
- * script. The script body is the only text the trade keeps: a variable is a
- * scripted_parameter row and an underlying block is an
- * instrument_underlying row, so the trade states no blob.
+ * script. The only free text the trade keeps is the script itself, with the name
+ * of the variable its result lands in: a variable is a scripted_parameter row
+ * and an underlying block is an instrument_underlying row, so the trade states
+ * no blob.
  *
  * The table stays flat by design: it holds no nested sub-struct, because
  * what a script reads is a list of named variables and a list of underlying

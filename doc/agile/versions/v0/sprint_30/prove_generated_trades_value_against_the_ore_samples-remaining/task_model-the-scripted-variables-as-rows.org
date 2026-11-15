@@ -39,6 +39,7 @@ Only the script body is text. The parameters, their types and their array values
 - scripted_parameter and scripted_parameter_value hold every scripted trade's variables, an index one holding an oresmd URI
 - the ORE export builds the four typed lists from the rows and the import writes rows from the document
 - every trade of ORE's example portfolios survives a read and a write through the rows, value for value
+- a scripted trade booked into the database exports its variables, list values and underlying rows back unchanged
 - a report over the provisioned book exports the scripted trades whole, from their rows
 
 The acceptance this task first stated, that the scripted products price with
@@ -89,11 +90,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Projection round trips | 1368 assertions, 39 cases, all pass | =ores.ore.core.tests "[projection]"= | =9070878093= |
+| Projection round trips | 1386 assertions, 40 cases, all pass | =ores.ore.core.tests "[projection]"= | =pending= |
 | Every trade of ORE's example portfolios, value for value | 266 assertions, 1 case, all pass | =ores.ore.core.tests "every trade in the ORE example corpus comes back as it was read"= | =9070878093= |
 | The ORE core suite | 520110 assertions, 539 cases, all pass | =ores.ore.core.tests= | =cf010d9c18= |
 | The planner's population | 1828 assertions, 59 cases, all pass | =ores.synthetic.core.tests "[trade_population]"= | =9070878093= |
 | The trading API suite | 16383 assertions, 4429 cases, all pass | =ores.trading.api.tests= | =cf010d9c18= |
+| A scripted trade's rows, booked and exported through the database | 18 assertions, 1 case, all pass | =ores.trading.core.tests "a_scripted_trade_books_its_variables_and_underlyings_back"= | =pending= |
 | The shell's trading suite | 3756 assertions, 1330 cases, all pass | =ores.shell.trading.tests= | =cf010d9c18= |
 | The report over the provisioned book | completed; 1440 metric rows; 538 errors, 311 warnings, 577 infos | =report_operations trigger-report-instance=, then =ores_reporting_report_error_events_tbl= | =cf010d9c18= |
 | The trades the report exported | 475 trades, and the scripted products' elements are stated whole from their rows | =Input/portfolio.xml= of the run's job | =cf010d9c18= |

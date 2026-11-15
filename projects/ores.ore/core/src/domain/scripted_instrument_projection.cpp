@@ -68,18 +68,18 @@ auto scripted_instrument_projection_make_base(std::string_view trade_type_code)
  * into the variables the script needs. So the members are the trade's terms and
  * each is a parameter row.
  */
-struct scripted_legacy_product {
+struct class_read_product {
     std::string_view trade_type;
     std::string_view element;
 };
 
-constexpr scripted_legacy_product legacy_products[] = {
+constexpr class_read_product class_read_products[] = {
     {"DoubleDigitalOption", "DoubleDigitalOptionData"},
     {"PerformanceOption_01", "PerformanceOption01Data"},
 };
 
-auto legacy_product_of(std::string_view trade_type) -> const scripted_legacy_product* {
-    for (const auto& product : legacy_products)
+auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
+    for (const auto& product : class_read_products)
         if (product.trade_type == trade_type)
             return &product;
     return nullptr;
@@ -203,14 +203,33 @@ auto script_index_address_of(const std::string& name) -> std::string {
     return address.starts_with("oresmd://inflation/") ? name : address;
 }
 
+/**
+ * @brief Whether a parameter's declared type is the kind that names an index.
+ *
+ * The two forms of the document spell that kind differently: the generic form
+ * capitalises its kind (=Index=), and a named product states the type attribute
+ * its schema gives the variable (=index=). They are one kind, so the comparison
+ * is on the word and not on the spelling.
+ */
+auto names_an_index(std::string_view declared_type) -> bool {
+    constexpr std::string_view index = "Index";
+    if (declared_type.size() != index.size())
+        return false;
+    for (std::size_t i = 0; i < index.size(); ++i)
+        if (std::tolower(static_cast<unsigned char>(declared_type[i])) !=
+            std::tolower(static_cast<unsigned char>(index[i])))
+            return false;
+    return true;
+}
+
 /// An Index parameter names an index. Any other declared type stays text, even if it
 /// happens to spell an index.
 auto stored_value_of(const scripted_parameter& parameter, const std::string& value) -> std::string {
-    return parameter.declared_type == "Index" ? script_index_address_of(value) : value;
+    return names_an_index(parameter.declared_type) ? script_index_address_of(value) : value;
 }
 
 auto stated_value_of(const scripted_parameter& parameter, const std::string& value) -> std::string {
-    return parameter.declared_type == "Index" ? ore_name_of(value) : value;
+    return names_an_index(parameter.declared_type) ? ore_name_of(value) : value;
 }
 
 auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
@@ -404,9 +423,10 @@ void write_named_parameters(xml::record_writer& product, const scripted_instrume
 }
 
 // ---------------------------------------------------------------------------
-// A legacy product's element: its members are the trade's terms, the element
-// states no type on any of them, and the schema is what says how each is
-// written. An Underlying block is an entity of its own and never a parameter.
+// A product ORE reads through its own class: its members are the trade's terms,
+// the element states no type on any of them, and the schema is what says how
+// each is written. An Underlying block is an entity of its own and never a
+// parameter.
 // ---------------------------------------------------------------------------
 
 /// The kind of leaf a field states, by the schema's name for it.
@@ -464,7 +484,7 @@ auto container_leaf_of(const xml::record_type& type, std::string_view member) ->
     return f == nullptr ? nullptr : container_leaf_of(*f);
 }
 
-/// The type a member of a legacy product's element states, which the schema gives it.
+/// The type a member of such a product's element states, which the schema gives it.
 auto declared_type_of(const xml::field& member) -> std::string {
     if (const auto* leaf = container_leaf_of(member))
         return std::string(leaf_kind_name(leaf->scalar));
@@ -475,6 +495,20 @@ auto declared_type_of(const xml::field& member) -> std::string {
 auto states_an_underlying(const xml::field& member) -> bool {
     return member.kind == xml::field_kind::nested && member.type != nullptr &&
            member.type->name == "underlying";
+}
+
+/// Whether the member states its value as one leaf, which is what a parameter holds.
+auto states_a_leaf(const xml::field& member) -> bool {
+    switch (member.kind) {
+        case xml::field_kind::text:
+        case xml::field_kind::integer:
+        case xml::field_kind::decimal:
+        case xml::field_kind::real:
+        case xml::field_kind::enumeration:
+            return true;
+        default:
+            return false;
+    }
 }
 
 /// The repeated Underlying block a member states, for a member that states a list.
@@ -503,16 +537,22 @@ auto underlying_role_of(std::string_view element) -> std::string {
     return role;
 }
 
-void read_legacy_members(scripted_instrument_data& data, const xml::record_reader& product) {
+void read_class_members(scripted_instrument_data& data, const xml::record_reader& product) {
     const auto& type = product.type();
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
         if (f.is_attribute || states_an_underlying(f) || repeated_underlying_of(f) != nullptr)
             continue;
+        // A member is a parameter only when it states a leaf, or a list of leaves.
+        // Anything else is content the projection holds no row for, and reading it
+        // as a leaf would refuse the document.
+        const auto* leaf = container_leaf_of(f);
+        if (leaf == nullptr && !states_a_leaf(f))
+            continue;
         if (!product.has(f.name))
             continue;
         auto& parameter = make_parameter(data, std::string(f.name), declared_type_of(f));
-        if (const auto* leaf = container_leaf_of(f)) {
+        if (leaf != nullptr) {
             parameter.shape = "vector";
             add_values(data, parameter, leaf_list(*product.child(f.name), leaf->name));
         } else if (const auto value = scalar_text(product, f.name)) {
@@ -521,7 +561,7 @@ void read_legacy_members(scripted_instrument_data& data, const xml::record_reade
     }
 }
 
-void read_legacy_underlyings(scripted_instrument_data& data, const xml::record_reader& product) {
+void read_class_underlyings(scripted_instrument_data& data, const xml::record_reader& product) {
     const auto& type = product.type();
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
@@ -537,7 +577,7 @@ void read_legacy_underlyings(scripted_instrument_data& data, const xml::record_r
     }
 }
 
-void write_legacy_members(xml::record_writer& product, const scripted_instrument_data& data) {
+void write_class_members(xml::record_writer& product, const scripted_instrument_data& data) {
     for (const auto* parameter : ordered_parameters(data)) {
         if (!product.declares(parameter->name))
             continue;
@@ -554,14 +594,13 @@ void write_legacy_members(xml::record_writer& product, const scripted_instrument
     }
 }
 
-void write_legacy_underlyings(xml::record_writer& product, const scripted_instrument_data& data) {
+void write_class_underlyings(xml::record_writer& product, const scripted_instrument_data& data) {
     const auto& type = product.type();
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
         if (states_an_underlying(f)) {
-            const auto rows = underlying_block::underlyings_of(data, underlying_role_of(f.name));
-            if (!rows.empty())
-                underlying_block::write_underlying(product.child(f.name), *rows.front());
+            // The element states one block, which is the first row under its role.
+            underlying_block::write_underlyings(product, f.name, data, underlying_role_of(f.name));
         } else if (const auto* block = repeated_underlying_of(f)) {
             const auto rows =
                 underlying_block::underlyings_of(data, underlying_role_of(block->name));
@@ -609,15 +648,14 @@ auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
 
 auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument> {
-    const auto* legacy = legacy_product_of(trade_type);
-    if (legacy != nullptr) {
+    const auto* class_read = class_read_product_of(trade_type);
+    if (class_read != nullptr) {
         auto row = scripted_instrument_projection_make_base(trade_type);
         row.script_name = std::string(trade_type);
-        row.data_element = std::string(legacy->element);
         scripted_instrument_data data{std::move(row)};
-        if (const auto product = trade.child(legacy->element)) {
-            read_legacy_members(data, *product);
-            read_legacy_underlyings(data, *product);
+        if (const auto product = trade.child(class_read->element)) {
+            read_class_members(data, *product);
+            read_class_underlyings(data, *product);
         }
         return trading::domain::trade_instrument{std::move(data)};
     }
@@ -645,10 +683,10 @@ auto write_scripted_instrument(xml::record_writer& trade,
         return false;
     const auto* r = &carrier->instrument;
 
-    if (const auto* legacy = legacy_product_of(trade_type)) {
-        auto product = trade.child(legacy->element);
-        write_legacy_members(product, *carrier);
-        write_legacy_underlyings(product, *carrier);
+    if (const auto* class_read = class_read_product_of(trade_type)) {
+        auto product = trade.child(class_read->element);
+        write_class_members(product, *carrier);
+        write_class_underlyings(product, *carrier);
         return true;
     }
 
@@ -666,12 +704,15 @@ auto write_scripted_instrument(xml::record_writer& trade,
     auto data = trade.child("ScriptedTradeData");
     if (!r->script_name.empty())
         data.set_text("ScriptName", r->script_name);
-    // The schema requires the variable the script's result lands in beside the
-    // body, so the two are written together or not at all.
-    if (!r->script_body.empty() && !r->script_npv.empty()) {
+    // A row states the body and the variable its result lands in, and each is
+    // written when it is held: a body the document gave without a result name is
+    // still the body the row read, and dropping it would lose what the import kept.
+    if (!r->script_body.empty() || !r->script_npv.empty()) {
         auto script = data.child("Script");
-        script.set_text("Code", r->script_body);
-        script.set_text("NPV", r->script_npv);
+        if (!r->script_body.empty())
+            script.set_text("Code", r->script_body);
+        if (!r->script_npv.empty())
+            script.set_text("NPV", r->script_npv);
     }
     // The schema requires the data element even when the trade states no
     // variable, so it is stated before anything fills it.

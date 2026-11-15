@@ -325,6 +325,24 @@ swap_result balance_guaranteed_swap_builder::build() const {
     if (!out)
         return out;
 
+    /*
+     * Both legs pay on the floating leg's tenor, as ORE's own example does.
+     * ORE's builder reads the fixed coupon at the floating coupon's position,
+     * so a fixed leg that pays less often than the floating one is read past
+     * its end and the engine crashes.
+     */
+    int floating_leg = 0;
+    for (const auto& leg : out->legs)
+        if (leg.leg_type_code == "Floating")
+            floating_leg = leg.identity.leg_number;
+    std::optional<std::string> floating_tenor;
+    for (const auto& row : out->schedules)
+        if (row.owner_role == "swap" && row.owner_number == floating_leg)
+            floating_tenor = row.tenor;
+    for (auto& row : out->schedules)
+        if (row.owner_role == "swap")
+            row.tenor = floating_tenor;
+
     domain::balance_guaranteed_swap_instrument fact{};
     fact.reference_security = security;
     out->facts = std::move(fact);

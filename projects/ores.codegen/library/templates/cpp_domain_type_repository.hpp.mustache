@@ -348,8 +348,10 @@ public:
 {{#history}}
 #include <chrono>
 {{/history}}
+#include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
@@ -553,6 +555,13 @@ public:
 
     void remove_by_{{left.column_short}}(
         const {{left.cpp_type}}& {{left.column}});
+
+    /**
+     * @brief The current rows of a set of links, by the text form of each
+     * link's key.
+     */
+    using rows_by_pair =
+        std::map<std::pair<std::string, std::string>, std::vector<domain::{{name_singular}}>>;
 {{/read_only}}
 
 private:
@@ -567,13 +576,10 @@ private:
     replace_claim(const domain::{{name_singular}}& v);
 
     /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
+     * @brief The current rows the links of a set name, read in one query for
+     * each part of at most 1,000 links.
      */
-    domain::{{name_singular}}
-    apply_claim(const domain::{{name_singular}}& v,
-                const ores::utility::domain::precondition& claim);
+    rows_by_pair read_current(const std::vector<domain::{{name_singular}}>& of);
 {{/read_only}}
 };
 

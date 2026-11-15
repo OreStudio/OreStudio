@@ -8,12 +8,12 @@
 #+filetags: :resolve_batch_write_claims_in_one_read:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-junction-claims-in-one-query
-#+pr:
+#+pr: 4762
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A junction batch write reads the current rows of all its pairs in one query and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -40,9 +40,13 @@ A junction batch write reads the current rows of all its pairs in one query and 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add a private =read_current(rows)= to the junction repository: one query for
+  each part of at most 1,000 links, an IN on each key column, filtered down to
+  the requested pairs, as the entity compound keys do.
+- Build every claim of the plain batch write from that read, and read once for
+  the =any= claims of the claim-taking batch write.
+- Make =apply_claim= a file-local function that takes the current rows, so no
+  claim path reads a row on its own.
 
 * Measurements
 
@@ -75,12 +79,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4762][#4762]] | [codegen] Read the claims of a junction batch in one query |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The date-keyed junction has no test of the new read | service_calendar_materialisation_service_tests.cpp | Accepted | ca0974e9c0: a plain batch over a live day and a new day stores versions 2 and 1. |
+| 2 | write(rows, claims) reads claims[i] with no size check | cpp_domain_type_repository.cpp.mustache | Deferred | Task 3 of this story adds the check to every generated batch write. |
+| 3 | Comment on a pair that appears twice in one batch | cpp_domain_type_repository.cpp.mustache | Declined | Behaviour is unchanged; the insert decides. |
+| 4 | A query-count test would prove the one read | tests | Declined | The read is one call per part in the code; not needed to merge. |
+| 5 | Single-row write(row, any) still reads once | cpp_domain_type_repository.cpp.mustache | Acknowledged | Correct as is. |
+| 6 | (Own finding) The materialiser comment said a racing run writes a second version | calendar_materialisation_service.cpp | Fixed | d94615ae5c: since PR 4760 the racing run is refused and none of its batch lands. |
 
 * Result
+
+A junction batch write reads the current rows of its links in one query for
+each part of at most 1,000 links, not one query for each row. The plain batch
+write states every claim from that read; the claim-taking batch write reads
+once for its =any= claims. All 27 junction repositories are regenerated.
+
+Evidence, on the build of 2026-11-15 20:28: the new tests prove a plain batch
+and a batch of =any= claims replace a live link and create a new one, and a
+batch with a stale version is refused and writes nothing. The core suites of
+every component with a junction pass: refdata 551/551, iam 306/306, dq 126/126,
+inbox 84/84, assets 48/48, compute 81/81, reporting 307/307, trading 248/248,
+and the three marketdata asset-class tests.

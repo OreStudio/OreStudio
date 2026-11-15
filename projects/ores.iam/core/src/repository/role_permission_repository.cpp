@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,36 @@ std::string role_permission_repository::sql() {
 role_permission_repository::role_permission_repository(const context& ctx)
     : ctx_(ctx) {}
 
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string> role_permission_pair_of(const domain::role_permission& v) {
+    return {boost::uuids::to_string(v.role_id), boost::uuids::to_string(v.permission_id)};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
 ores::utility::domain::precondition
-role_permission_repository::replace_claim(const domain::role_permission& v) {
-    const auto current = read_latest(v.role_id, v.permission_id);
+role_permission_replace_claim_of(const std::vector<domain::role_permission>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::role_permission
-role_permission_repository::apply_claim(const domain::role_permission& v,
-                                        const ores::utility::domain::precondition& claim) {
+role_permission_apply_claim(const domain::role_permission& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::role_permission>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +101,76 @@ role_permission_repository::apply_claim(const domain::role_permission& v,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.role_id, v.permission_id);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::role_permission>&
+role_permission_rows_of(const role_permission_repository::rows_by_pair& current,
+                        const domain::role_permission& v) {
+    static const std::vector<domain::role_permission> none;
+    const auto found = current.find(role_permission_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+role_permission_repository::rows_by_pair
+role_permission_repository::read_current(const std::vector<domain::role_permission>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = role_permission_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<role_permission_entity>> |
+            query_builder::where("tenant_id"_c == tid && "role_id"_c.in(lefts) &&
+                                 "permission_id"_c.in(rights) && "valid_to"_c == max);
+        auto rows =
+            query_builder::execute_read_query<role_permission_entity, domain::role_permission>(
+                ctx_,
+                query,
+                [](const auto& entities) { return role_permission_mapper::map(entities); },
+                lg(),
+                "Reading current role permissions by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = role_permission_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+role_permission_repository::replace_claim(const domain::role_permission& v) {
+    return role_permission_replace_claim_of(read_latest(v.role_id, v.permission_id));
 }
 
 void role_permission_repository::write(const domain::role_permission& role_permission) {
@@ -99,10 +179,13 @@ void role_permission_repository::write(const domain::role_permission& role_permi
 
 void role_permission_repository::write(
     const std::vector<domain::role_permission>& role_permissions) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(role_permissions);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(role_permissions.size());
     for (const auto& item : role_permissions)
-        claims.push_back(replace_claim(item));
+        claims.push_back(role_permission_replace_claim_of(role_permission_rows_of(current, item)));
     write(role_permissions, claims);
 }
 
@@ -110,7 +193,10 @@ void role_permission_repository::write(const domain::role_permission& role_permi
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role permission to database: " << role_permission.role_id
                                << "/" << role_permission.permission_id;
-    const auto t = apply_claim(role_permission, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(role_permission.role_id, role_permission.permission_id) :
+                             std::vector<domain::role_permission>{};
+    const auto t = role_permission_apply_claim(role_permission, claim, current);
     query_builder::execute_write_query(
         ctx_, role_permission_mapper::map(t), lg(), "writing role permission to database");
 }
@@ -120,10 +206,17 @@ void role_permission_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role permissions to database. Count: "
                                << role_permissions.size();
+    std::vector<domain::role_permission> to_read;
+    for (std::size_t i = 0; i < role_permissions.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(role_permissions[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::role_permission> batch;
     batch.reserve(role_permissions.size());
     for (std::size_t i = 0; i < role_permissions.size(); ++i)
-        batch.push_back(apply_claim(role_permissions[i], claims[i]));
+        batch.push_back(role_permission_apply_claim(
+            role_permissions[i], claims[i], role_permission_rows_of(current, role_permissions[i])));
     query_builder::execute_write_query(
         ctx_, role_permission_mapper::map(batch), lg(), "writing role permissions to database");
 }

@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,35 @@ std::string account_role_repository::sql() {
 account_role_repository::account_role_repository(const context& ctx)
     : ctx_(ctx) {}
 
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string> account_role_pair_of(const domain::account_role& v) {
+    return {boost::uuids::to_string(v.account_id), boost::uuids::to_string(v.role_id)};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
 ores::utility::domain::precondition
-account_role_repository::replace_claim(const domain::account_role& v) {
-    const auto current = read_latest(v.account_id, v.role_id);
+account_role_replace_claim_of(const std::vector<domain::account_role>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::account_role
-account_role_repository::apply_claim(const domain::account_role& v,
-                                     const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
+domain::account_role account_role_apply_claim(const domain::account_role& v,
+                                              const ores::utility::domain::precondition& claim,
+                                              const std::vector<domain::account_role>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +100,74 @@ account_role_repository::apply_claim(const domain::account_role& v,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.account_id, v.role_id);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::account_role>&
+account_role_rows_of(const account_role_repository::rows_by_pair& current,
+                     const domain::account_role& v) {
+    static const std::vector<domain::account_role> none;
+    const auto found = current.find(account_role_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+account_role_repository::rows_by_pair
+account_role_repository::read_current(const std::vector<domain::account_role>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = account_role_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query = query_builder::read<std::vector<account_role_entity>> |
+                           query_builder::where("tenant_id"_c == tid && "account_id"_c.in(lefts) &&
+                                                "role_id"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<account_role_entity, domain::account_role>(
+            ctx_,
+            query,
+            [](const auto& entities) { return account_role_mapper::map(entities); },
+            lg(),
+            "Reading current account roles by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = account_role_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+account_role_repository::replace_claim(const domain::account_role& v) {
+    return account_role_replace_claim_of(read_latest(v.account_id, v.role_id));
 }
 
 void account_role_repository::write(const domain::account_role& account_role) {
@@ -98,10 +175,13 @@ void account_role_repository::write(const domain::account_role& account_role) {
 }
 
 void account_role_repository::write(const std::vector<domain::account_role>& account_roles) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(account_roles);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(account_roles.size());
     for (const auto& item : account_roles)
-        claims.push_back(replace_claim(item));
+        claims.push_back(account_role_replace_claim_of(account_role_rows_of(current, item)));
     write(account_roles, claims);
 }
 
@@ -109,7 +189,10 @@ void account_role_repository::write(const domain::account_role& account_role,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account role to database: " << account_role.account_id
                                << "/" << account_role.role_id;
-    const auto t = apply_claim(account_role, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(account_role.account_id, account_role.role_id) :
+                             std::vector<domain::account_role>{};
+    const auto t = account_role_apply_claim(account_role, claim, current);
     query_builder::execute_write_query(
         ctx_, account_role_mapper::map(t), lg(), "writing account role to database");
 }
@@ -119,10 +202,17 @@ void account_role_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account roles to database. Count: "
                                << account_roles.size();
+    std::vector<domain::account_role> to_read;
+    for (std::size_t i = 0; i < account_roles.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(account_roles[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::account_role> batch;
     batch.reserve(account_roles.size());
     for (std::size_t i = 0; i < account_roles.size(); ++i)
-        batch.push_back(apply_claim(account_roles[i], claims[i]));
+        batch.push_back(account_role_apply_claim(
+            account_roles[i], claims[i], account_role_rows_of(current, account_roles[i])));
     query_builder::execute_write_query(
         ctx_, account_role_mapper::map(batch), lg(), "writing account roles to database");
 }

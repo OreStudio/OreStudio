@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,37 @@ std::string notification_recipient_repository::sql() {
 notification_recipient_repository::notification_recipient_repository(const context& ctx)
     : ctx_(ctx) {}
 
-ores::utility::domain::precondition
-notification_recipient_repository::replace_claim(const domain::notification_recipient& v) {
-    const auto current = read_latest(v.notification_id, v.account_id);
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string>
+notification_recipient_pair_of(const domain::notification_recipient& v) {
+    return {boost::uuids::to_string(v.notification_id), boost::uuids::to_string(v.account_id)};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
+ores::utility::domain::precondition notification_recipient_replace_claim_of(
+    const std::vector<domain::notification_recipient>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::notification_recipient
-notification_recipient_repository::apply_claim(const domain::notification_recipient& v,
-                                               const ores::utility::domain::precondition& claim) {
+notification_recipient_apply_claim(const domain::notification_recipient& v,
+                                   const ores::utility::domain::precondition& claim,
+                                   const std::vector<domain::notification_recipient>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +102,76 @@ notification_recipient_repository::apply_claim(const domain::notification_recipi
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.notification_id, v.account_id);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::notification_recipient>&
+notification_recipient_rows_of(const notification_recipient_repository::rows_by_pair& current,
+                               const domain::notification_recipient& v) {
+    static const std::vector<domain::notification_recipient> none;
+    const auto found = current.find(notification_recipient_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+notification_recipient_repository::rows_by_pair notification_recipient_repository::read_current(
+    const std::vector<domain::notification_recipient>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = notification_recipient_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<notification_recipient_entity>> |
+            query_builder::where("tenant_id"_c == tid && "notification_id"_c.in(lefts) &&
+                                 "account_id"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<notification_recipient_entity,
+                                                      domain::notification_recipient>(
+            ctx_,
+            query,
+            [](const auto& entities) { return notification_recipient_mapper::map(entities); },
+            lg(),
+            "Reading current notification recipients by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = notification_recipient_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+notification_recipient_repository::replace_claim(const domain::notification_recipient& v) {
+    return notification_recipient_replace_claim_of(read_latest(v.notification_id, v.account_id));
 }
 
 void notification_recipient_repository::write(const domain::notification_recipient& recipient) {
@@ -99,10 +180,14 @@ void notification_recipient_repository::write(const domain::notification_recipie
 
 void notification_recipient_repository::write(
     const std::vector<domain::notification_recipient>& recipients) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(recipients);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(recipients.size());
     for (const auto& item : recipients)
-        claims.push_back(replace_claim(item));
+        claims.push_back(
+            notification_recipient_replace_claim_of(notification_recipient_rows_of(current, item)));
     write(recipients, claims);
 }
 
@@ -110,7 +195,10 @@ void notification_recipient_repository::write(const domain::notification_recipie
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notification recipient to database: "
                                << recipient.notification_id << "/" << recipient.account_id;
-    const auto t = apply_claim(recipient, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(recipient.notification_id, recipient.account_id) :
+                             std::vector<domain::notification_recipient>{};
+    const auto t = notification_recipient_apply_claim(recipient, claim, current);
     query_builder::execute_write_query(ctx_,
                                        notification_recipient_mapper::map(t),
                                        lg(),
@@ -122,10 +210,17 @@ void notification_recipient_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notification recipients to database. Count: "
                                << recipients.size();
+    std::vector<domain::notification_recipient> to_read;
+    for (std::size_t i = 0; i < recipients.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(recipients[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::notification_recipient> batch;
     batch.reserve(recipients.size());
     for (std::size_t i = 0; i < recipients.size(); ++i)
-        batch.push_back(apply_claim(recipients[i], claims[i]));
+        batch.push_back(notification_recipient_apply_claim(
+            recipients[i], claims[i], notification_recipient_rows_of(current, recipients[i])));
     query_builder::execute_write_query(ctx_,
                                        notification_recipient_mapper::map(batch),
                                        lg(),

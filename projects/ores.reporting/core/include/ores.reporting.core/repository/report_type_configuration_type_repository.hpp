@@ -31,8 +31,10 @@
 #include "ores.reporting.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -169,6 +171,13 @@ public:
 
     void remove_by_report_type(const std::string& report_type_code);
 
+    /**
+     * @brief The current rows of a set of links, by the text form of each
+     * link's key.
+     */
+    using rows_by_pair = std::map<std::pair<std::string, std::string>,
+                                  std::vector<domain::report_type_configuration_type>>;
+
 private:
     context ctx_;
 
@@ -180,13 +189,10 @@ private:
     replace_claim(const domain::report_type_configuration_type& v);
 
     /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
+     * @brief The current rows the links of a set name, read in one query for
+     * each part of at most 1,000 links.
      */
-    domain::report_type_configuration_type
-    apply_claim(const domain::report_type_configuration_type& v,
-                const ores::utility::domain::precondition& claim);
+    rows_by_pair read_current(const std::vector<domain::report_type_configuration_type>& of);
 };
 
 }

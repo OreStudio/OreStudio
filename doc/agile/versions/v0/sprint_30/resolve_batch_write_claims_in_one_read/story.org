@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: DBCB9D0E-2592-4968-95FC-A2EE2C3536AD
+:END:
+#+title: Story: Make every generated batch write check its claims
+#+description: A junction table accepts a duplicate create and reads each row's version with its own query, and no generated batch write checks that it has one claim per row; the entity tables already read once and refuse a duplicate.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every generated write states a claim about each row, and the store checks it.
+The entity tables already do this: commit 63d68fc470 reads the claims of a batch
+in one query, and commit 4d36229a81 makes the trigger refuse a duplicate create.
+The junction tables do neither, and no generated batch write checks that it has
+one claim for each row.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Reading the claims of a junction batch in one query. |
+| Waiting on    | Nothing.                               |
+| Next          | Refuse a batch write whose claims do not match its rows. |
+| Last touched  | 2026-11-15                               |
+
+* Acceptance
+
+- A junction write that claims no row exists is refused with =already_exists= when a live row exists, and writes nothing. A writer that means to replace a row says so with the replace signal.
+- A junction batch write reads the current rows of all its pairs in one query, not one query for each row.
+- Every generated =write(rows, claims)= refuses a call whose two lists differ in size, before it reads or writes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A7D5070-891B-4610-A33C-27AF39F5AE50][Refuse a duplicate create in the junction trigger]] | DONE | 2026-11-15 | 2026-11-15 | The junction insert trigger checks a version only when it is not 0, so a create over a live link closes it and writes a new version; it must refuse with already_exists unless the writer states the replace signal. |
+| [[id:62E6D572-2056-4EF5-B95A-F412759922D3][Read the claims of a junction batch in one query]] | BACKLOG | | | A junction batch write calls replace_claim for each row, and apply_claim reads each row again for an any claim, so a batch of N links costs N reads before its insert. |
+| [[id:CAA018DB-1B79-4340-88C0-345728525E9F][Refuse a batch write whose claims do not match its rows]] | BACKLOG | | | Every generated write(rows, claims) reads claims[i] with no check that the two lists have the same size, which is undefined behaviour on a mismatch. |
+
+* Decisions
+
+- A junction version of zero means what an entity version of zero means: no
+  current row exists. A writer that replaces whatever is there states the
+  transaction-local replace signal; it never overloads the version.
+
+* Out of scope
+
+- The entity tables' read per row and duplicate create. Commits 63d68fc470 and 4d36229a81 fixed them.
+- The hand-written repositories. They do not use the template.
+
+* Promoted from capture
+
+Captured 2026-11-10 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Make the generated batch =write(vector)= of a repository resolve the claims of all its rows with one read, such as one query for the current version of each key in the batch, and not with one =replace_claim= read for each row. The template is =projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache=, and 27 repositories carry the loop.
+
+
+Two more defects of the same generated code, found in the review of PR #4561:
+- =write(rows, claims)= indexes =claims[i]= with no check that the two vectors have the same size. A mismatch is undefined behaviour, where it must be an error.
+- A =must_not_exist= claim maps to version 0, and the generated insert trigger checks a version only when it is not 0. So the store cannot refuse a duplicate create: it closes the current row and writes a new version. A real check needs the trigger to tell "no claim" apart from "must not exist".
+
+** Why
+
+Each =replace_claim= read is its own transaction: =begin=, =set_config= for the tenant, a =select=, and =commit=, in sequence. A batch of N rows so costs N round trips before its insert, which is one pipelined batch. On 2026-11-10 this made each holiday calendar of 13,515 days take about 35 s, and the =build_calendars= step of provisioning timed out at 600 s. The calendar materialiser now states its claims, because it knows which days exist. Every other batch writer still pays one round trip for each row.
+
+** References
+
+- =projects/ores.refdata/core/src/repository/calendar_date_repository.cpp=, =write(const std::vector<domain::calendar_date>&)=, an instance of the template.
+- [[id:6EA15737-5413-46FB-9660-9C279B42B454][Build the calendars without a read per day]], which measured the cost and fixed the calendar writer only.
+
+** See also
+
+- [[id:27439333-B0FF-40A0-80AE-D61026E0BEC1][Store only the closed days of a calendar]]

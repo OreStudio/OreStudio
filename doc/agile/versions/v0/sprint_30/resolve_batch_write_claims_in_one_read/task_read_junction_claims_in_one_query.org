@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 62E6D572-2056-4EF5-B95A-F412759922D3
+:END:
+#+title: Task: Read the claims of a junction batch in one query
+#+description: A junction batch write calls replace_claim for each row, and apply_claim reads each row again for an any claim, so a batch of N links costs N reads before its insert.
+#+type: task
+#+level: s1
+#+filetags: :resolve_batch_write_claims_in_one_read:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-junction-claims-in-one-query
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A junction batch write reads the current rows of all its pairs in one query and resolves every claim from that read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The junction write(vector) and write(vector, claims) read the current rows of the batch once.
+- A repository test proves the claims of a batch are still checked: a stale version is refused and writes nothing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

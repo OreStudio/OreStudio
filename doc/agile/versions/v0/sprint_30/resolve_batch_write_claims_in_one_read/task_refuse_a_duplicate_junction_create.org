@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 8A7D5070-891B-4610-A33C-27AF39F5AE50
+:END:
+#+title: Task: Refuse a duplicate create in the junction trigger
+#+description: The junction insert trigger checks a version only when it is not 0, so a create over a live link closes it and writes a new version; it must refuse with already_exists unless the writer states the replace signal.
+#+type: task
+#+level: s1
+#+filetags: :resolve_batch_write_claims_in_one_read:sprint_30:v0:
+#+owner: marco
+#+branch: feature/resolve-batch-write-claims-in-one-read
+#+pr: 4760
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A junction write that claims no row exists is refused when a live row exists, and every writer that means to replace a link says so.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The junction insert trigger refuses version 0 on a live row with already_exists, unless the transaction allows a replace.
+- Every writer that relies on replacing a live link either states its claim or sets the replace signal.
+- A repository test proves a duplicate junction create is refused and writes nothing.
+
+* Plan
+
+- Mirror the entity trigger in the junction trigger template: a version of zero
+  on a live link raises =already_exists= unless
+  =ores_utility_version_replace_allowed_fn()= is on. Regenerate the 27 junction
+  tables.
+- List the writers of the junction tables. The SQL publish functions already
+  state the replace signal; the seed scripts run on an empty database. The C++
+  tenant provisioner states =any=.
+- Prove it by observation rather than by reading every writer: recreate the
+  database, which runs every seed script, and provision Acme, which runs every
+  provisioning writer. A writer that relied on the old replace fails there.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4760][#4760]] | [sql] Refuse a duplicate create in the junction trigger |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Use total_slots - 1 rather than slot 10 | repository_currency_country_repository_tests.cpp | Declined | Every test in the file names its own slot index. |
+| 2 | Assert the outcome name, not only SQLSTATE 23505 | repository_currency_country_repository_tests.cpp | Declined | The catalogue fixes already_exists at 23505, and repository_exception carries the SQLSTATE only. |
+| 3 | Check client paths that re-create a live link | shell, http, qt, web | Checked | Shell add states must_not_exist (create); save/update state any or a version; the HTTP business-centre route puts only links not held; Qt and web build none. |
+| 4 | Only one of 27 junction tables tested | tests | Accepted as is | The 27 scripts come from one template. |
+
+* Result
+
+The junction insert trigger refuses a create over a live link with
+=already_exists= (SQLSTATE 23505) unless the transaction states the replace
+signal, as the entity trigger does. All 27 junction tables carry the check.
+
+Evidence, on the build of 2026-11-15 18:51:
+- The new test =a_duplicate_currency_country_create_is_refused_and_writes_nothing=
+  failed on the old schema ("a create over a live link was not refused") and
+  passes on the new one.
+- =compass db recreate= ran every seed script with no error and no refusal.
+- Acme provisioning completed all 17 steps; the service logs hold no
+  =already_exists= refusal.
+- refdata core 549/549 and iam core 306/306 passed.

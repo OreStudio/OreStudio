@@ -49,7 +49,7 @@ generate_synthetic_bond_issue_call_date(utility::generation::generation_context&
     r.sequence_number = 0;
     r.call_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.style = std::string("Bermudan");
-    r.price = ores::utility::decimal::decimal("1");
+    r.price = ores::utility::decimal::decimal::from_string("1").value();
     r.price_type = std::string("Clean");
     r.include_accrual = std::string("true");
     r.modified_by = modified_by;

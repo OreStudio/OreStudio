@@ -3802,8 +3802,8 @@ package "trading" #E8F5E9 {
     ScriptedTrade.
     The row is the golden source for what a product type is. It carries the name a
     desk uses, the description and the source that description came from, the
-    product family that names its contract shape, the construction method that says
-    how the payoff is expressed, and the instrument table that holds a trade of the
+    product family that names its contract shape, the construction that says which
+    form ORE reads the type in, and the instrument table that holds a trade of the
     kind. The markets it references are a junction, because a kind may reference
     more than one.
     The catalogue is declared once, in ores.trading.trade_type_catalogue, and

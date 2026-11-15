@@ -121,7 +121,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local gate: the trading ER diagram still described the old construction | =ores_schema.trading.puml= | Accept | Regenerated with =plantuml_er_generate.sh= |
+| 2 | Local review: the test cut the element out of a path at a bare offset 6 | =generated_trade_export_tests.cpp= | Accept | The offset is the length of a named =Trade/= prefix |
+| 3 | Local review: misspell over the changed files | - | Accept | Clean |
 
 * Result
 

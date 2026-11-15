@@ -579,11 +579,12 @@ TEST_CASE("every recorded trade writes the element ORE reads for its type",
             found.insert(type + " has no element in trade_types.tsv");
             continue;
         }
-        const auto prefix = "Trade/" + it->second + "/";
+        constexpr std::string_view trade = "Trade/";
+        const auto prefix = std::string(trade) + it->second + "/";
         for (const auto& paths : recorded_trades(type))
             for (const auto& path : paths)
                 if (!path.starts_with(prefix))
-                    found.insert(type + " writes " + path.substr(0, path.find('/', 6)));
+                    found.insert(type + " writes " + path.substr(0, path.find('/', trade.size())));
     }
     INFO("Recorded types that write outside the element ORE reads:" << listed(found));
     CHECK(found.empty());

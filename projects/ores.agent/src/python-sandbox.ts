@@ -17,11 +17,14 @@ export const pythonTool = {
                 .string()
                 .min(1)
                 .max(4096)
-                .describe('Read the data variable and assign a JSON-compatible value to result.'),
+                .describe(
+                    'Read data if needed and assign a JSON-compatible value to result. If result is not set, printed output is returned as text.',
+                ),
             data: z
                 .unknown()
+                .optional()
                 .describe(
-                    'JSON from the user or an authorized tool result. Pass null if the snippet needs no input.',
+                    'JSON from the user or an authorized tool result. Omit or pass null if the snippet needs no input.',
                 ),
         })
         .strict(),
@@ -29,16 +32,43 @@ export const pythonTool = {
 
 // Only this fixed program is passed as an argument to Wasmtime. Model code and
 // data travel over stdin. The WASI guest receives neither mounts nor host env.
+const outputLimit = 8192;
+const outputLimitExit = 73;
+const missingOutputExit = 74;
+const invalidResultExit = 75;
+
 const bootstrap = `
-import contextlib, json, sys
+import contextlib, io, json, sys
+
+class BoundedStdout(io.StringIO):
+    remaining = ${outputLimit}
+
+    def write(self, text):
+        self.remaining -= len(text.encode('utf-8'))
+        if self.remaining < 0:
+            raise SystemExit(${outputLimitExit})
+        return super().write(text)
 
 request = json.load(sys.stdin)
 scope = {'data': request['data']}
-with contextlib.redirect_stdout(sys.stderr):
+with contextlib.redirect_stdout(BoundedStdout()) as printed:
     exec(compile(request['code'], '<analysis>', 'exec'), scope)
-print(json.dumps(scope['result'], allow_nan=False, separators=(',', ':')))
+if printed.remaining < 0:
+    sys.exit(${outputLimitExit})
+text = printed.getvalue()
+if 'result' in scope:
+    sys.stderr.write(text)
+    value = scope['result']
+elif text:
+    value = text
+else:
+    sys.exit(${missingOutputExit})
+try:
+    encoded = json.dumps(value, allow_nan=False, ensure_ascii=False, separators=(',', ':'))
+except (TypeError, ValueError, OverflowError):
+    sys.exit(${invalidResultExit})
+print(encoded)
 `;
-const outputLimit = 8192;
 
 export class PythonSandbox {
     private busy = false;
@@ -146,6 +176,30 @@ export class PythonSandbox {
                 clearTimeout(timer);
                 signal?.removeEventListener('abort', abort);
                 if (failure) reject(failure);
+                else if (code === outputLimitExit)
+                    reject(
+                        new AppError(
+                            'python_output_limit',
+                            'Python produced too much output.',
+                            422,
+                        ),
+                    );
+                else if (code === missingOutputExit)
+                    reject(
+                        new AppError(
+                            'python_missing_output',
+                            'Set result or print the requested output.',
+                            422,
+                        ),
+                    );
+                else if (code === invalidResultExit)
+                    reject(
+                        new AppError(
+                            'invalid_python_result',
+                            'Set result to a JSON-compatible value.',
+                            422,
+                        ),
+                    );
                 else if (code !== 0)
                     reject(
                         new AppError(

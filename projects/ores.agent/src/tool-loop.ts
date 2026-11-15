@@ -238,7 +238,12 @@ export async function runToolLoop(options: {
                                           .join('; ')
                                     : error instanceof SyntaxError
                                       ? 'Arguments must be valid JSON.'
-                                      : 'Tool did not produce data. Inspect its schema and correct the arguments; do not invent a result.',
+                                      : call.function.name === 'run_python' &&
+                                          error instanceof AppError &&
+                                          (error.code.startsWith('python_') ||
+                                              error.code === 'invalid_python_result')
+                                        ? error.message
+                                        : 'Tool did not produce data. Inspect its schema and correct the arguments; do not invent a result.',
                         },
                     };
                 }

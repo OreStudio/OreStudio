@@ -224,6 +224,28 @@ test('Python runs through chat when configured', { skip: !runtime }, async () =>
     assert.deepEqual(response.evidence, [{ tool: 'run_python', status: 'ok', value: 4 }]);
 });
 
+test('Python returns printed output through chat when data is omitted', { skip: !runtime }, async () => {
+    let turn = 0;
+    const code = 'import random\nprint([random.randint(1, 1000) for _ in range(4)])';
+    const agent = new Agent({ complete: async messages => {
+        if (turn++) {
+            const output = JSON.parse(messages.at(-1).content);
+            assert.equal(output.status, 'ok', JSON.stringify(output));
+            const values = JSON.parse(output.value);
+            assert.equal(values.length, 4);
+            assert.ok(values.every(n => Number.isInteger(n) && n >= 1 && n <= 1000));
+            return { role: 'assistant', content: output.value };
+        }
+        return { role: 'assistant', content: null, tool_calls: [{
+            id: 'random', type: 'function', function: { name: 'run_python', arguments: JSON.stringify({ code }) },
+        }] };
+    } }, new ToolExecutor(backend, () => {}, runtime), undefined, undefined, undefined, true);
+    const response = await agent.chat({ message: 'Print four random integers using Python.' }, fixtureSession(), signal);
+    assert.equal(response.answer, response.evidence[0].value);
+    assert.equal((await runtime.run({ code: 'print("debug")\nresult = None', data: null })).value, null);
+    await assert.rejects(runtime.run({ code: 'x = 1' }), { code: 'python_missing_output' });
+});
+
 test('Python has no host filesystem, network, subprocesses, environment, or cross-call state', { skip: !runtime }, async () => {
     const data = fileURLToPath(import.meta.url);
     const check = await runtime.run({ data, code: `
@@ -252,6 +274,7 @@ test('Python enforces input, execution, memory, output, and cancellation limits'
     await assert.rejects(runtime.run({ code: 'while True: pass', data: null }), { code: 'python_failed' });
     await assert.rejects(runtime.run({ code: 'result = len(bytearray(80 * 1024 * 1024))', data: null }), { code: 'python_failed' });
     await assert.rejects(runtime.run({ code: "result = 'x' * 9000", data: null }), { code: 'python_output_limit' });
+    await assert.rejects(runtime.run({ code: "print('x' * 9000)" }), { code: 'python_output_limit' });
     await assert.rejects(runtime.run({ code: 'result = 2 ** 53', data: null }), { code: 'python_result_precision' });
     const controller = new AbortController();
     const pending = runtime.run({ code: 'while True: pass', data: null }, controller.signal);

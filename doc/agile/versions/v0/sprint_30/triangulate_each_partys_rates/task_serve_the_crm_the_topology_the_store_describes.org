@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-crm-the-topology-the-store-describes
-#+pr:
+#+pr: 4763
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4763][#4763]] | [marketdata] Build the CRM's topology from the series a party holds |
 
 * Review
 

@@ -145,7 +145,11 @@ TEST_CASE("the_prior_close_is_the_published_set_that_was_current_then", analytic
     const auto verdict = verdict_on_publish(maker.ctx, id, subject);
     REQUIRE(verdict.approved);
     REQUIRE(verdict.record.has_value());
-    curve_republish_service::republish(*f.party, subject.bootstrap_config_id, subject.as_of);
+    // The test publishes the curve in order to read it back, so a deferral would leave the
+    // premise of every assertion below unmet.
+    const auto republished =
+        curve_republish_service::republish(*f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(republished.has_value());
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
     REQUIRE(published.published_at.has_value());
 

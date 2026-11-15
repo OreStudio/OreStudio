@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/draw-the-montage-like-the-prototype
-#+pr:
+#+pr: 4759
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4759][#4759]] | [web] Draw the montage's providers, shapes and day ends |
 
 * Review
 

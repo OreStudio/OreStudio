@@ -8,7 +8,7 @@
 #+filetags: :resolve_batch_write_claims_in_one_read:sprint_30:v0:
 #+owner: marco
 #+branch: feature/resolve-batch-write-claims-in-one-read
-#+pr:
+#+pr: 4760
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4760][#4760]] | [sql] Refuse a duplicate create in the junction trigger |
 
 * Review
 

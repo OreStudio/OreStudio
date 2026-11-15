@@ -9,44 +9,88 @@ import { baseNpvCurrency, npvMetric } from './npv-units.js';
 export const reportingTools = {
     find_report_runs: {
         description:
-            'Find selected-party stored runs. With tradeId, shows only runs linked by stored result rows, not every attempted run. Shows health and actual pricing dates, not values. No execution.',
+            'List or find stored report runs in the selected party. “Show me the last few completed runs” → {"status":"completed"}; omit query when no report name was given. Returns run IDs, health and pricing dates. For one known run use read_run_status; for a trade’s stored NPV use read_trade_results.',
         schema: z
             .object({
-                tradeId: marketId.optional(),
-                query: z.string().max(120).default(''),
+                tradeId: marketId
+                    .optional()
+                    .describe(
+                        'Filter by trades with stored result rows. Resolve a trade name or reference with find_trades first. Omit for general run discovery.',
+                    ),
+                query: z
+                    .string()
+                    .max(120)
+                    .default('')
+                    .describe(
+                        'Literal text from a report name. Omit for general listings; words like “latest”, “completed” and “report runs” are not names.',
+                    ),
                 status: z
                     .enum(['all', 'completed', 'clean'])
                     .default('all')
                     .describe(
-                        'Use completed when the user asks for completed/finished runs. Includes clean completions and completions with errors, never running or failed runs. Ordered by completion time.',
+                        'Use completed for finished runs, including completions with errors. Use clean only for successful or error-free runs. Default all includes other states.',
                     ),
                 offset: z.number().int().min(0).max(1000).default(0),
                 limit: z.number().int().min(1).max(10).default(5),
-                valuationDate: z.iso.date().optional(),
-                orderBy: z.enum(['completion', 'pricing']).optional(),
+                valuationDate: z.iso
+                    .date()
+                    .optional()
+                    .describe(
+                        'Actual pricing date, YYYY-MM-DD. Omit when the user did not specify one.',
+                    ),
+                orderBy: z
+                    .enum(['completion', 'pricing'])
+                    .optional()
+                    .describe(
+                        'Use pricing for latest by pricing date. Completed and clean listings default to completion order.',
+                    ),
             })
             .strict(),
     },
     read_run_status: {
         description:
-            'Read health and provenance of an exact selected-party report run UUID. Completed with errors is partial, not clean.',
-        schema: z.object({ runId: marketId }).strict(),
+            'Check the status, health and provenance of one stored run. “Did run <UUID> finish?” → read_run_status. Use find_report_runs first if only a report name is known. Completed with errors is partial.',
+        schema: z
+            .object({
+                runId: marketId.describe(
+                    'Exact report run UUID, distinct from the report definition UUID.',
+                ),
+            })
+            .strict(),
     },
     read_trade_results: {
         description:
-            'Read stored trade NPV or base NPV with exact run/date/currency/source. Defaults to clean completed runs only. A partial value requires explicit runId and allowPartial=true; failed/running values are withheld. No pricing or report execution.',
+            'Read one trade’s stored NPV. Resolve a trade reference with find_trades first. Omit runId to search eligible clean runs. Use summarize_scope_results for book or portfolio totals. This tool reads existing results.',
         schema: z
             .object({
-                tradeId: marketId,
-                runId: marketId.optional(),
-                measure: z.enum(['npv', 'npv_base']).default('npv'),
+                tradeId: marketId.describe('Exact trade UUID from the request or find_trades.'),
+                runId: marketId
+                    .optional()
+                    .describe(
+                        'Exact report run UUID if selected. Omit to discover an eligible run.',
+                    ),
+                measure: z
+                    .enum(['npv', 'npv_base'])
+                    .default('npv')
+                    .describe('Use npv for native currency, npv_base for report base currency.'),
                 currency: z
                     .string()
                     .regex(/^[A-Za-z]{3}$/)
                     .transform((s) => s.toUpperCase())
-                    .optional(),
-                valuationDate: z.iso.date().optional(),
-                allowPartial: z.boolean().default(false),
+                    .optional()
+                    .describe(
+                        'Currency filter if explicitly requested. Omit to read the stored currency.',
+                    ),
+                valuationDate: z.iso
+                    .date()
+                    .optional()
+                    .describe('Explicit pricing date, YYYY-MM-DD.'),
+                allowPartial: z
+                    .boolean()
+                    .default(false)
+                    .describe(
+                        'Set true only when the user explicitly requests partial results for the given runId.',
+                    ),
                 maxAgeDays: z.number().int().min(0).max(365).default(3),
             })
             .strict(),

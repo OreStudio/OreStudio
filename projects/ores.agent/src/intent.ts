@@ -237,11 +237,16 @@ export function readIntent(message: string): RequestPlan {
             intent.clarification = `Please select one ${key} for this request.`;
         else intent[key] = values[0];
     }
+    const scopeText = message.replace(/[“”]/g, '"');
+    const quotedScope = /(?:"([^"]+)"|'([^']+)')\s+(book|portfolio)\b/i.exec(scopeText);
     const namedScope =
         /\b(book|portfolio)\s+(?:"([^"]+)"|'([^']+)'|(.+?)(?=\s+(?:from|in|using)\s+(?:run|report)\b|\s+(?:on|as of|at|for)\s+\d{4}-\d{2}-\d{2}|\s+for\s+(?:factor|scenario|[A-Z]{3}\s*\/)\b|\s+(?:and|with|including)\s+(?:(?:its|the|top)\s+)*(?:contributors?|breakdown)\b|[?.!]|$))/i.exec(
-            message,
+            scopeText,
         );
-    if (namedScope) {
+    if (quotedScope && scope) {
+        intent.scopeType = quotedScope[3]!.toLowerCase() as 'book' | 'portfolio';
+        intent.scope = (quotedScope[1] ?? quotedScope[2])!.trim();
+    } else if (namedScope) {
         intent.scopeType = namedScope[1]!.toLowerCase() as 'book' | 'portfolio';
         intent.scope = (namedScope[2] ?? namedScope[3] ?? namedScope[4])!.trim();
         if (
@@ -254,7 +259,7 @@ export function readIntent(message: string): RequestPlan {
         const kind = /\b(book|portfolio)\b/i.exec(message)?.[1]?.toLowerCase();
         if (kind === 'book' || kind === 'portfolio') intent.scopeType = kind;
     }
-    const measureText = message.replace(/"[^"]*"|'[^']*'/g, '');
+    const measureText = scopeText.replace(/"[^"]*"|'[^']*'/g, '');
     const riskText = intent.scope ? measureText.replace(intent.scope, ' ') : measureText;
     const measureQuery = riskText.replace(/\b\d{1,3}[- ]delta\b/gi, '');
     const greeks = [
@@ -291,12 +296,6 @@ export function readIntent(message: string): RequestPlan {
         )
             intent.clarification =
                 'The verified output contains cash finite differences at the reported target shifts. Per-unit sensitivities are unavailable.';
-        const limit = /\btop\s+(\d+)\s+contributors?\b/i.exec(riskText)?.[1];
-        if (limit) {
-            const value = Number(limit);
-            if (value >= 1 && value <= 25) intent.contributorLimit = value;
-            else intent.clarification = 'Choose 1 to 25 contributors per page.';
-        }
     } else if (scope || /\b(npv|npv_base|valuation)\b/i.test(measureText)) {
         intent.measure = /\b(?:base(?:[- ]currency)?|npv_base)\b/i.test(measureText)
             ? 'npv_base'
@@ -353,6 +352,25 @@ export function readIntent(message: string): RequestPlan {
             else intent.irPoint = parsed.args;
         }
     }
+    if (scope) {
+        const numbers = 'one two three four five six seven eight nine ten'.split(' ');
+        const limit =
+            /\b(?:show|list|include|display|give|with)\s+(?:(?:me|its|the)\s+)*top\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:trade\s+)?contributors?\b/i.exec(
+                riskText,
+            )?.[1] ??
+            (/\b(?:share|concentration|proportion|percentage)\b/i.test(riskText)
+                ? undefined
+                : /\btop\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:trade\s+)?contributors?\b/i.exec(
+                      riskText,
+                  )?.[1]);
+        if (limit) {
+            const value = /^\d+$/.test(limit)
+                ? Number(limit)
+                : numbers.indexOf(limit.toLowerCase()) + 1;
+            if (value >= 1 && value <= 25) intent.contributorLimit = value;
+            else intent.clarification = 'Choose 1 to 25 contributors per page.';
+        }
+    }
     return intent;
 }
 
@@ -360,6 +378,7 @@ export function preserveReadSelectors(
     name: string,
     raw: unknown,
     intent: RequestPlan,
+    references?: { has(key: string, value: string): boolean },
 ): ToolArguments {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw))
         throw new AppError('invalid_arguments', 'Tool arguments must be an object.', 400);
@@ -461,7 +480,8 @@ export function preserveReadSelectors(
             typeof value === 'string' &&
             value &&
             value !== selected &&
-            !intent.message.toLowerCase().includes(value.toLowerCase())
+            !intent.message.toLowerCase().includes(value.toLowerCase()) &&
+            !references?.has(key, value)
         ) {
             throw new AppError(
                 'selection_not_requested',

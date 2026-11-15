@@ -14,8 +14,17 @@ export const currencyInput = z
             .trim()
             .regex(/^[a-z]{1,3}$/i)
             .toUpperCase()
-            .optional(),
-        country: z.string().trim().min(1).max(100).optional(),
+            .optional()
+            .describe('ISO currency-code prefix if requested. For a country use country instead.'),
+        country: z
+            .string()
+            .trim()
+            .min(1)
+            .max(100)
+            .optional()
+            .describe(
+                'Literal country name or ISO country code. The tool finds its linked currency records.',
+            ),
     })
     .strict();
 

@@ -6,41 +6,69 @@ import { AppError, type Backend, type Operation } from './backend.js';
 import type { Session } from './auth.js';
 import { marketId } from './market.js';
 const search = {
-    query: z.string().max(120).default(''),
+    query: z
+        .string()
+        .max(120)
+        .default('')
+        .describe(
+            'Literal name, ID or reference being searched for. Omit to list records without a text filter.',
+        ),
     offset: z.number().int().min(0).max(1000).default(0),
     limit: z.number().int().min(1).max(25).default(10),
 };
 export const discoveryTools = {
     find_trades: {
         description:
-            'Find selected-party trades by ID, origin reference or trade type. Optional book/portfolio names or IDs use authoritative booking membership. Does not search currency economics.',
+            'List trades or discover trade IDs by origin reference, trade type or booking scope. “Show trades in Group FX Hedges” → {"book":"Group FX Hedges"} when it is a book. For a known trade UUID use read_trade for economics or read_trade_results for stored NPV. This search does not filter currency economics.',
         schema: z
             .object({
                 ...search,
-                tradeType: z.string().max(80).optional(),
-                book: z.string().max(120).optional(),
-                portfolio: z.string().max(120).optional(),
+                tradeType: z
+                    .string()
+                    .max(80)
+                    .optional()
+                    .describe('Trade type only when requested; omit to include all types.'),
+                book: z
+                    .string()
+                    .max(120)
+                    .optional()
+                    .describe(
+                        'Literal book name or UUID. The agent resolves the name; keep it out of query.',
+                    ),
+                portfolio: z
+                    .string()
+                    .max(120)
+                    .optional()
+                    .describe(
+                        'Literal portfolio name or UUID. The agent resolves booking membership; keep it out of query.',
+                    ),
             })
             .strict(),
     },
     read_trade: {
         description:
-            'Read an exact discovered trade UUID, booking, direct portfolio links and supported instrument economics. FxForward economics supported; Bond returns issue reference/notional only. No pricing or writes.',
-        schema: z.object({ tradeId: marketId }).strict(),
+            'Read one trade’s booking, direct portfolio links and instrument details. Find the trade with find_trades if only a reference is known. FX forward economics are supported; bond details include issue reference and notional. Use read_trade_results for NPV.',
+        schema: z
+            .object({
+                tradeId: marketId.describe(
+                    'Exact trade UUID from the request or discovery result.',
+                ),
+            })
+            .strict(),
     },
     find_books: {
         description:
-            'Find selected-party books by literal name or UUID. Multiple matches need explicit selection.',
+            'List selected-party books or resolve a book name to its ID. “Show my books” → {}. Use find_trades with book to list its trades, or summarize_scope_results for its stored NPV or Greeks.',
         schema: z.object(search).strict(),
     },
     find_portfolios: {
         description:
-            'Find selected-party portfolios by literal name or UUID. Membership comes from server records, not name similarity.',
+            'List selected-party portfolios or resolve a portfolio name to its ID. Omit query for a general list. Use find_trades with portfolio for trades or summarize_scope_results for stored totals.',
         schema: z.object(search).strict(),
     },
     find_counterparties: {
         description:
-            'Find entitled tenant-wide counterparties by exact short code/UUID or literal name within a catalogue page. offset is the catalogue offset; follow nextOffset for more. Partial name search cannot prove absence or uniqueness.',
+            'Find accessible counterparties by short code, UUID or literal name. Omit query to browse. Name matching is limited to the returned catalogue page; follow nextOffset before concluding a partial name is absent or unique.',
         schema: z
             .object({ ...search, offset: z.number().int().min(0).max(1000000).default(0) })
             .strict(),

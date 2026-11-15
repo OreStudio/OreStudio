@@ -118,6 +118,26 @@ The tool deadline is 30 seconds. Independent reference/smoke scripts remain in
 
 ## API, MCP and request handling
 
+### Calculations
+
+`calculate` uses decimal strings for sums, differences, products, quotients,
+percentages and basis-point changes. Division and percentages round to a
+specified number of decimal places, with ties rounded away from zero. For
+example, ask “Calculate the change from 2% to 2.125%
+in basis points.” The result is 12.5 basis points. Chat and authenticated tool
+clients can use it without any Python installation.
+
+`run_python` is an optional chat tool for custom analysis on supplied JSON.
+For example, ask “Compute the median of [1, 4, 6] using Python.” A snippet reads
+its input from `data` and assigns a JSON-compatible value to `result`. Return
+exact decimals and large integers as strings. Each call starts a fresh worker
+with no host mounts, network, OreStudio connections, or inherited guest
+environment. The worker uses a fixed standard library and returns results in
+tool evidence. Official valuation and risk calculations use OreStudio tools.
+See [deployment](deployment.md#optional-python-analysis) for setup.
+
+### Protocols
+
 `POST /chat` accepts `{ "message": "..." }` with an agent Bearer token. It returns
 `answer`, safe `answerHtml`, `evidence` and timing fields. `x-request-id` links timing.
 

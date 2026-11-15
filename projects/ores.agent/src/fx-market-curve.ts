@@ -16,7 +16,7 @@ import {
 export const marketCurveTools = {
     build_fx_curve_from_market: {
         description:
-            'Resolve EUR/USD spot and market forward quotes from the selected provider and a named USD discount curve through read-only NATS, on an explicit UTC valuation date. Ask for missing/ambiguous data and settlement/quote conventions. Never substitute synthetic inputs or inferred discount factors. Construct and validate the EUR curve inside the agent.',
+            'Build a EUR/USD forward curve from stored market inputs. Give the provider, named USD discount curve and valuation date when known. The agent resolves spot and forward series and can ask for missing conventions; omit unknown values and IDs. Use build_fx_forward_curve for supplied quotes and discount factors.',
         schema: marketCurveInput,
     },
 } as const;

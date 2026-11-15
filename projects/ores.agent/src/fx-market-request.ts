@@ -5,13 +5,28 @@ import { marketId } from './market.js';
 export const marketCurveInput = z
     .object({
         provider: z.string().trim().min(1).max(100).optional(),
-        spotSeriesId: marketId.optional(),
-        forwardSeriesId: marketId.optional(),
+        spotSeriesId: marketId
+            .optional()
+            .describe('Exact selected spot series UUID. Omit for discovery.'),
+        forwardSeriesId: marketId
+            .optional()
+            .describe('Exact selected forward series UUID. Omit for discovery.'),
         usdCurve: z.string().trim().min(1).max(200).optional(),
-        asOf: z.iso.date().optional(),
-        spotDate: z.iso.date().optional(),
+        asOf: z.iso.date().optional().describe('UTC valuation date chosen by the user.'),
+        spotDate: z.iso
+            .date()
+            .optional()
+            .describe('Spot settlement date, separate from the valuation date.'),
         forwardQuote: z.enum(['outright', 'points']).optional(),
-        pointSize: z.number().finite().positive().max(1).optional(),
+        pointSize: z
+            .number()
+            .finite()
+            .positive()
+            .max(1)
+            .optional()
+            .describe(
+                'Rate change per quoted point. Supply for points when known; omit for outrights.',
+            ),
         calendar: z
             .enum(['unadjusted', 'weekends_following', 'weekends_modified_following'])
             .optional(),

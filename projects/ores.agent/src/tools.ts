@@ -10,11 +10,14 @@ import { FxAnalytics, analyticsTools } from './fx-analytics.js';
 import { FxMarketCurve, marketCurveTools } from './fx-market-curve.js';
 import { helpTool, searchHelp } from './help.js';
 import { currencyInput, readCurrencies } from './currency-reference.js';
+import { calculate, calculationTool } from './calculation.js';
+import { pythonTool, type PythonSandbox } from './python-sandbox.js';
 
 const page = { offset: 0, order: { field: '', descending: false }, filter: null, as_of: null };
 const limit = z.number().int().min(1).max(50).default(10);
 export const tools = {
     search_help: helpTool,
+    calculate: calculationTool,
     ...marketCurveTools,
     ...analyticsTools,
     ...discoveryTools,
@@ -22,25 +25,29 @@ export const tools = {
     ...scopeTools,
     read_fx_spot: {
         description:
-            'Look up an exact directed FX spot pair in the selected party. Returns value, units, observation date, provider, source and freshness. Ask the user to choose when ambiguous; stale means historical, never a current quote. No inversion or cross-rate calculation.',
+            'Read a stored FX spot quote for a directed pair. “EUR/USD spot” → {"baseCurrency":"EUR","quoteCurrency":"USD"}. Omit provider and seriesId unless selected; the tool looks up matching series and reports choices if needed. A stale quote is historical. Does not invert pairs or calculate crosses.',
         schema: fxInput,
     },
     read_ir_rate: {
         description:
-            'Read a stored IR point by currency and point maturity, e.g. 5Y. Preserve explicit instrument (ir_swap/mm/zero/discount), curve, index, floating-leg tenor and forward start. Returns provider, dated source and freshness; asks for clarification if ambiguous. No interpolation or pricing.',
+            'Read a stored interest-rate or discount point. “USD 5Y swap rate” → {"currency":"USD","term":"5Y","instrument":"ir_swap"}. Omit unspecified provider, index and curve so the tool can look for matches. Returns dated evidence or matching choices. Does not interpolate.',
         schema: irInput,
     },
     list_currencies: {
         description:
-            'Read configured currency codes and names from OreStudio, optionally filtered by an ISO code prefix or an exact country name or code. Results may be paginated.',
+            'List configured currencies, not FX quotes or pair availability. “What currency does Japan use?” → {"country":"Japan"}. The tool resolves the country and its linked currencies. Omit both filters to list currencies; use codePrefix only for a requested ISO currency-code prefix.',
         schema: currencyInput,
     },
     list_market_series: {
         description:
-            'Discover market series IDs and oresmd URIs. Search is a literal case-insensitive match within one page; paginate to continue. Never assume an absent match is globally absent.',
+            'List available market series and discover their IDs and oresmd URIs. Use for inventory questions; use read_fx_spot or read_ir_rate for a specific quote. Search matches literal text within one page, so paginate before concluding there is no match.',
         schema: z
             .object({
-                query: z.string().max(100).default(''),
+                query: z
+                    .string()
+                    .max(100)
+                    .default('')
+                    .describe('Literal series search text. Omit to browse.'),
                 limit,
                 offset: z.number().int().min(0).max(10000).default(0),
             })
@@ -48,8 +55,15 @@ export const tools = {
     },
     read_market_observations: {
         description:
-            'Read observations for an exact discovered series ID, including date and source. No observations means no quote is available; do not invent values.',
-        schema: z.object({ seriesId: marketId, limit }).strict(),
+            'Read the latest observations and their dates and sources for one known series. If the series ID is unknown, call list_market_series first. For a point-in-time FX or IR lookup, use the dedicated point tool.',
+        schema: z
+            .object({
+                seriesId: marketId.describe(
+                    'Exact series UUID from the user or list_market_series.',
+                ),
+                limit,
+            })
+            .strict(),
     },
 } as const;
 const series = z.object({
@@ -79,6 +93,7 @@ export class ToolExecutor {
         private backend: Backend,
         private audit: (event: Record<string, unknown>) => void = (e) =>
             console.log(JSON.stringify(e)),
+        private python?: PythonSandbox,
     ) {
         this.market = new MarketLookup(backend);
         this.discovery = new Discovery(backend);
@@ -95,9 +110,13 @@ export class ToolExecutor {
     ): Promise<unknown> {
         if (!session.active || session.expires <= Date.now())
             throw new AppError('session_expired', 'Sign in again.', 401);
-        if (!Object.hasOwn(tools, name))
-            throw new AppError('unknown_tool', 'Tool is not available.', 400);
-        const spec = tools[name as keyof typeof tools];
+        const spec =
+            name === 'run_python' && this.python
+                ? pythonTool
+                : Object.hasOwn(tools, name)
+                  ? tools[name as keyof typeof tools]
+                  : undefined;
+        if (!spec) throw new AppError('unknown_tool', 'Tool is not available.', 400);
         const input = Object.hasOwn(analyticsTools, name)
             ? (args as Record<string, unknown>)
             : spec.schema.parse(args);
@@ -113,6 +132,21 @@ export class ToolExecutor {
         let outcome = 'failed';
         try {
             signal?.throwIfAborted();
+            if (name === 'run_python' && this.python) {
+                const output = await this.python.run(
+                    input as z.infer<typeof pythonTool.schema>,
+                    signal,
+                );
+                if (!session.active || session.expires <= Date.now())
+                    throw new AppError('session_expired', 'Sign in again.', 401);
+                outcome = 'ok';
+                return output;
+            }
+            if (name === 'calculate') {
+                const output = calculate(input as z.infer<typeof calculationTool.schema>);
+                outcome = 'ok';
+                return output;
+            }
             if (name === 'search_help') {
                 const { query } = input as z.infer<typeof helpTool.schema>;
                 outcome = 'ok';

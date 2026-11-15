@@ -18,9 +18,18 @@ const period = z
     .regex(/^[1-9][0-9]{0,3}[DWMY]$/i)
     .transform((s) => s.toUpperCase());
 const common = {
-    provider: z.string().min(1).max(100).optional(),
-    seriesId: marketId.optional(),
-    asOf: date.optional().describe('Optional UTC valuation date, YYYY-MM-DD. Omit for now.'),
+    provider: z
+        .string()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe('Literal provider code if requested or selected. Omit to discover matches.'),
+    seriesId: marketId
+        .optional()
+        .describe('Exact series UUID if selected. Omit to search by the other fields.'),
+    asOf: date
+        .optional()
+        .describe('UTC lookup cutoff date, YYYY-MM-DD. Omit for the latest available observation.'),
     maxAgeHours: z
         .number()
         .min(0)
@@ -29,7 +38,11 @@ const common = {
         .describe('Staleness threshold, default 72 hours; never suppress stale warnings.'),
 };
 export const fxInput = z
-    .object({ baseCurrency: currency, quoteCurrency: currency, ...common })
+    .object({
+        baseCurrency: currency.describe('First currency in the directed pair, EUR in EUR/USD.'),
+        quoteCurrency: currency.describe('Second currency in the directed pair, USD in EUR/USD.'),
+        ...common,
+    })
     .strict();
 export const irInput = z
     .object({
@@ -37,16 +50,33 @@ export const irInput = z
         instrument: z
             .enum(['ir_swap', 'mm', 'zero', 'discount'])
             .optional()
-            .describe('Omit to ask the user to choose a stored instrument or series.'),
+            .describe(
+                'Swap rate = ir_swap, money market = mm, zero rate = zero, discount factor = discount. Omit if unspecified to discover matching instruments.',
+            ),
         term: period.describe('Requested point maturity, e.g. 5Y; not the floating-leg tenor.'),
-        indexName: z.string().min(1).max(100).optional(),
-        curveId: z.string().min(1).max(100).optional(),
-        floatingTenor: period.optional().describe('Optional swap floating-leg tenor, e.g. 3M.'),
+        indexName: z
+            .string()
+            .min(1)
+            .max(100)
+            .optional()
+            .describe('Literal index name if specified. Omit to look for matching series.'),
+        curveId: z
+            .string()
+            .min(1)
+            .max(100)
+            .optional()
+            .describe('Named curve if specified. Omit to look for matching series.'),
+        floatingTenor: period
+            .optional()
+            .describe('Swap floating-leg tenor, e.g. 3M. Omit unless supplied.'),
         forwardStart: z
             .string()
             .regex(/^(0|[1-9][0-9]{0,3})[DWMY]$/i)
             .transform((s) => s.toUpperCase())
-            .optional(),
+            .optional()
+            .describe(
+                'Explicit forward start, e.g. 1Y for a 1Y-forward swap. Omit unless supplied.',
+            ),
         ...common,
     })
     .strict();

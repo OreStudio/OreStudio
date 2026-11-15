@@ -225,3 +225,34 @@ Downloads, including restored caches, must pass SHA-256 checks.
 
 CI starts this profile only on its temporary runner. It does not install anything
 on the local laptop or change the existing CUDA deployment.
+## Optional Python analysis
+
+Install a supported Wasmtime CLI and a trusted, standalone WASI CPython module
+with its standard library bundled inside the module. Use absolute paths to both
+files in the agent configuration. For example, on Windows:
+
+```json
+{
+  "pythonSandbox": {
+    "executable": "C:/ores/tools/wasmtime.exe",
+    "module": "C:/ores/tools/python.wasm"
+  }
+}
+```
+
+Add this property to the existing configuration and restart the agent. For a
+container deployment, provision both artifacts inside the agent container and
+use their in-container paths. Keep the binaries and configuration writable only
+by trusted administrators. Use current patched builds. The Windows integration
+test used Wasmtime 50.0.1 and the standalone Wasm Labs CPython 3.12.0 module as a
+compatibility fixture.
+
+The agent starts one worker at a time. Each call gets up to 16 KiB of JSON input,
+64 MiB of WebAssembly linear memory, one billion Wasmtime fuel units, five
+seconds of wall time, and 8 KiB of combined output. The service kills workers on
+cancellation or deadline. The tool is available through authenticated chat.
+The MCP and direct tool endpoints expose `calculate`.
+
+To verify your artifacts, build the agent, set `ORES_TEST_WASMTIME` and
+`ORES_TEST_PYTHON_WASM` to the same absolute paths, and run
+`node --test tests/computation.test.mjs`.

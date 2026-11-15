@@ -28,7 +28,7 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         if (op === 'observations') return { result: { outcome: 'ok' }, total: 1, market_observations: [{ series_id: seriesId, tenant_id: tenant, party_id: party, oresmd_uri: uri.replace('type=series', 'type=quote'), value: '1.0552', observation_datetime: '2016-12-30 00:00:00.000000Z', source: 'labelled.fixture' }] };
         return { result: { outcome: 'ok' }, currencies: [{ iso_code: 'GBP', name: 'test fixture' }], total: 1 };
     } };
-    const server = createApp(config, backend); server.listen(0, '127.0.0.1'); await once(server, 'listening');
+    const server = createApp({ ...config, pythonSandbox: { executable: 'unused', module: 'unused' } }, backend); server.listen(0, '127.0.0.1'); await once(server, 'listening');
     const base = `http://127.0.0.1:${server.address().port}`;
     const client = new Client({ name: 'independent-test-client', version: '1.0.0' });
     try {
@@ -36,7 +36,10 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         const login = await (await fetch(base + '/auth/login', { method: 'POST', body: JSON.stringify({ principal: 'alice', password: 'fixture' }) })).json();
         const headers = { Authorization: 'Bearer ' + login.accessToken };
         await client.connect(new StreamableHTTPClientTransport(new URL(base + '/mcp'), { requestInit: { headers } }));
-        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['build_fx_curve_from_market', 'build_fx_forward_curve', 'build_fx_volatility_surface', 'list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results', 'summarize_scope_results', 'search_help'].sort());
+        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['calculate', 'build_fx_curve_from_market', 'build_fx_forward_curve', 'build_fx_volatility_surface', 'list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results', 'summarize_scope_results', 'search_help'].sort());
+        const resultOfCalculation = await client.callTool({ name: 'calculate', arguments: { operation: 'sum', values: ['0.1', '0.2'] } });
+        assert.equal(JSON.parse(resultOfCalculation.content[0].text).value, '0.3');
+        assert.equal((await fetch(base + '/tools/run_python', { method: 'POST', headers, body: '{}' })).status, 400);
         const beforeHelp = calls.length;
         const help = await client.callTool({ name: 'search_help', arguments: { query: 'books add shell' } });
         const guidance = JSON.parse(help.content[0].text);

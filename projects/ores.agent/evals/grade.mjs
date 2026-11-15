@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from 'zod';
 const check=z.object({path:z.string().min(1),equals:z.unknown()}).strict();
-const expectation=z.object({tool:z.string().optional(),statuses:z.array(z.string()).min(1).optional(),arguments:z.record(z.string(),z.unknown()).optional(),checks:z.array(check).optional(),contains:z.array(z.string()).optional(),anyContains:z.array(z.string()).min(1).optional(),notContains:z.array(z.string()).optional(),selectionRequired:z.string().optional(),noFigures:z.boolean().optional(),noTools:z.boolean().optional(),error:z.string().optional()}).strict().refine(x=>x.tool||x.selectionRequired||x.noTools||x.error,'Each turn needs a substantive tool/selection/refusal/error oracle.');
+const expectation=z.object({incomplete:z.literal(true).optional(),tool:z.string().optional(),statuses:z.array(z.string()).min(1).optional(),arguments:z.record(z.string(),z.unknown()).optional(),checks:z.array(check).optional(),evidenceOrder:z.array(z.string()).min(1).optional(),resultChecks:z.array(check).optional(),contains:z.array(z.string()).optional(),anyContains:z.array(z.string()).min(1).optional(),notContains:z.array(z.string()).optional(),selectionRequired:z.string().optional(),noFigures:z.boolean().optional(),noTools:z.boolean().optional(),error:z.string().optional()}).strict().refine(x=>x.tool||x.selectionRequired||x.noTools||x.error||x.incomplete,'Each turn needs a substantive tool/selection/refusal/error oracle.');
 const step=z.object({tool:z.string().optional(),arguments:z.union([z.string(),z.record(z.string(),z.unknown())]).optional(),content:z.string().optional(),error:z.string().optional()}).strict();
 const turn=z.object({message:z.string().min(1).max(2000),replay:z.array(step).min(1),expect:expectation,cancelBefore:z.boolean().optional()}).strict();
 const override=z.object({turns:z.array(turn).min(1).optional(),capability:z.object({status:z.enum(['available','not_applicable','blocked_backend','blocked_data','blocked_identity']),reason:z.string().optional()}).strict().optional()}).strict();
@@ -13,15 +13,18 @@ function hasFigure(value){if(!value||typeof value!=='object')return false;return
 export function gradeTurn(expect,result,trace,error){
  const failures=[],assert=(ok,message)=>{if(!ok)failures.push(message);};
  if(expect.error){assert(error?.code===expect.error,`Expected error ${expect.error}; got ${error?.code??'none'}.`);if(expect.noTools)assert(!trace.some(t=>t.type==='tool'),'Unexpected tool invocation before error.');return failures;}
+ if(expect.incomplete)assert(result?.incomplete===true,'Expected explicit incomplete outcome.');
  if(error)return [`Unexpected execution error: ${error.code}.`];
  const evidence=result?.evidence??[],calls=trace.filter(t=>t.type==='tool');
  if(expect.noTools)assert(calls.length===0&&evidence.length===0,'Unexpected tool invocation/evidence.');
  if(expect.selectionRequired)assert(result?.selectionRequired===expect.selectionRequired||evidence.some(e=>e.status==='selection_required'&&e.field===expect.selectionRequired),'Expected explicit clarification.');
- const found=expect.tool?evidence.find(e=>e.tool===expect.tool):undefined;
- if(expect.tool){assert(Boolean(found),`Missing evidence from ${expect.tool}.`);assert(calls.every(c=>c.name===expect.tool),'Unrequested tool was invoked.');}
+ const found=expect.tool?[...evidence].reverse().find(e=>e.tool===expect.tool):undefined;
+ if(expect.tool){assert(Boolean(found),`Missing evidence from ${expect.tool}.`);assert(calls.every(c=>(expect.evidenceOrder??[expect.tool]).includes(c.name)),'Unrequested tool was invoked.');}
  if(expect.statuses)assert(expect.statuses.includes(found?.status),`Expected status ${expect.statuses.join('/')}; got ${found?.status??'none'}.`);
  if(expect.arguments)for(const [key,value] of Object.entries(expect.arguments))assert(calls.some(c=>c.name===expect.tool&&same(c.arguments?.[key],value)),`Argument ${key} differs from the requested value.`);
  for(const c of expect.checks??[])assert(same(at(found,c.path),c.equals),`Evidence ${c.path} differs from reference.`);
+ if(expect.evidenceOrder)assert(same(evidence.map(e=>e.tool),expect.evidenceOrder),'Evidence order differs from the expected tool chain.');
+ for(const c of expect.resultChecks??[])assert(same(at(result,c.path),c.equals),`Result ${c.path} differs from reference.`);
  const answer=result?.answer??'';
  for(const text of expect.contains??[])assert(answer.includes(text),`Answer lacks required fact: ${text}.`);
  if(expect.anyContains)assert(expect.anyContains.some(s=>answer.toLowerCase().includes(s.toLowerCase())),'Expected explicit limitation/refusal text.');

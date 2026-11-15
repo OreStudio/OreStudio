@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
+import { pythonSandboxConfig } from './python-sandbox.js';
 
 function httpUrl(value: string): URL | undefined {
     try {
@@ -29,6 +30,7 @@ const configSchema = z
         host: z.enum(['127.0.0.1', '::1', '0.0.0.0']),
         port: z.number().int().min(0).max(65535),
         allowedOrigins: z.array(origin),
+        pythonSandbox: pythonSandboxConfig.optional(),
         nats: z
             .object({
                 server: z.string().min(1),

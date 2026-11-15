@@ -12,12 +12,12 @@ import { markdownTable, markdownText } from './markdown.js';
 export const analyticsTools = {
     build_fx_forward_curve: {
         description:
-            'Agent-local EUR/USD curve construction from supplied spot, forwards and USD discount factors. Explicit dates/calendar, quote units and tolerances required. Numeric inputs may instead name an exact OreStudio series observation by seriesId, observedAt, source and uri. Returns spot-relative EUR discounts, 2M/4M/9M forwards, repricing residuals and reproducible inputs; never publishes or books.',
+            'Build a EUR/USD forward curve from supplied spot, forwards and USD discount factors. Requires dates, calendar, quote units and tolerances. An exact stored observation can replace a numeric input when seriesId, observedAt, source and URI are known. For lookup by provider and named USD curve use build_fx_curve_from_market. Returns interpolated forwards and repricing residuals.',
         schema: curveInput,
     },
     build_fx_volatility_surface: {
         description:
-            'Agent-local EUR/USD Black volatility surface from a validated forward-curve input and ATM/10RR/10BF/25RR/25BF quotes. Explicit delta, ATM and butterfly conventions required. Fits exact smile nodes using a natural cubic total-variance spline, recovers broker or smile butterflies, reports quote errors, finite-grid arbitrage diagnostics and extrapolation warnings. No pricing/booking execution.',
+            'Build a EUR/USD Black volatility surface using validated curve inputs and supplied ATM, 10-delta and 25-delta risk reversals and butterflies. Requires explicit delta, ATM and butterfly conventions. Returns smile nodes, quote recovery, arbitrage checks and extrapolation warnings. Use a forward-curve tool first if only forwards were requested.',
         schema: surfaceInput,
     },
 } as const;

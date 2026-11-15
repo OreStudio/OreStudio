@@ -42,8 +42,16 @@ export function fixtureBackend(scenario='default'){
 }
 export function replayInference(turn){
  let index=0;
- return {complete:async(_messages,_tools,signal)=>{
-  signal.throwIfAborted();const step=turn.replay[Math.min(index++,turn.replay.length-1)];
+ return {complete:async(messages,_tools,signal)=>{
+  signal.throwIfAborted();
+  const last=messages.at(-1);
+  const observed=last?.role==='tool'?JSON.parse(last.content):undefined;
+  // A clarification handler may already have executed the scripted first read.
+  if(index===0 && observed?.tool && observed.tool===turn.replay[0]?.tool) index++;
+  if(index>=turn.replay.length){
+   return {role:'assistant',content:observed?.formattedAnswer??observed?.definition??'Replay finished; inspect tool evidence.'};
+  }
+  const step=turn.replay[index++];
   if(step.error)throw new AppError(step.error,'LABELLED REPLAY inference failure.',503);
   if(step.content!==undefined)return {role:'assistant',content:step.content};
   return {role:'assistant',content:null,tool_calls:[{id:'replay-'+index,type:'function',function:{name:step.tool,arguments:typeof step.arguments==='string'?step.arguments:JSON.stringify(step.arguments)}}]};

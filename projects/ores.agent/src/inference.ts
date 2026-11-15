@@ -162,11 +162,12 @@ export class HttpInference implements Inference {
                         model: this.config.model,
                         messages,
                         tools,
-                        tool_choice: options?.tool
-                            ? { type: 'function', function: { name: options.tool } }
-                            : options
-                              ? 'required'
-                              : 'auto',
+                        tool_choice:
+                            tools.length === 0
+                                ? 'none'
+                                : options?.tool
+                                  ? { type: 'function', function: { name: options.tool } }
+                                  : 'auto',
                         ...(options?.disableThinking
                             ? { chat_template_kwargs: { enable_thinking: false } }
                             : {}),

@@ -28,6 +28,13 @@ test('chat delivers reasoning before completion and executes a streamed tool cal
         res.writeHead(200, { 'content-type': 'text/event-stream' });
         const emit = (delta, finish_reason = null) =>
             res.write('data: ' + JSON.stringify({ choices: [{ delta, finish_reason }] }) + '\n\n');
+        if (input.messages.at(-1).role === 'tool') {
+            const result = JSON.parse(input.messages.at(-1).content);
+            assert.equal(result.tool, 'list_currencies');
+            emit({ reasoning_content: 'Using the retrieved currencies.' });
+            emit({ content: 'GBP is configured, according to OreStudio.' }, 'stop');
+            return res.end('data: [DONE]\n\n');
+        }
         emit({ reasoning_content: 'Checking the configured catalogue.' });
         await canFinish;
         emit({ tool_calls: [{ index: 0, id: 'call-1', function: { name: 'list_currencies', arguments: '{"limit":' } }] });
@@ -78,6 +85,7 @@ test('chat delivers reasoning before completion and executes a streamed tool cal
             type: 'reasoning', text: 'Checking the configured catalogue.',
         });
         finish();
+        assert.deepEqual(await readEvent(), { type: 'reasoning', text: 'Using the retrieved currencies.' });
         const { type, result } = await readEvent();
         assert.equal(type, 'result');
         assert.match(result.answer, /GBP/);

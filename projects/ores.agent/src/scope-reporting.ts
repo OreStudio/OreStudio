@@ -15,24 +15,56 @@ export { decimalSum, decimalParts } from './decimal.js';
 export const scopeTools = {
     summarize_scope_results: {
         description:
-            'Read stored NPV or raw Greek buckets for a book/booking-portfolio subtree at run start. Preserve literal scope and run UUID. For an explicit latest NPV request, latest=true checks clean runs and selects only with verified coverage. Default npv_base uses npv.csv and explicit base units. Greeks/delta/gamma/vega/dv01 use sensitivity.csv cash finite differences grouped by exact factor, target shifts, scenario and currency. Never sum different buckets or infer missing as zero. Vega selects volatility Delta; dv01 selects rate Delta at a 0.0001 bump with signed engine convention. Optional literal factor/factor2/scenario select buckets; bucketOffset/bucketLimit page buckets; offset/limit page contributors. Totals require one figure per expected trade in a bucket.',
+            'Only for stored NPV or risk reports for a book or portfolio using booking membership at run start. For trade Bought/Sold amounts use read_trade; for statistics on retrieved fields use run_python. “Latest NPV for book FX Hedges” → {"scopeType":"book","scope":"FX Hedges","latest":true}. The tool resolves the scope name and checks coverage. Use read_trade_results for one trade. Greek results are cash differences grouped by factor, bump, scenario and currency. Keep buckets separate.',
         schema: z
             .object({
                 scopeType: z.enum(['book', 'portfolio']),
-                scope: z.string().min(1).max(120),
-                runId: marketId.transform((v) => v.toLowerCase()).optional(),
-                latest: z.literal(true).optional(),
+                scope: z
+                    .string()
+                    .min(1)
+                    .max(120)
+                    .describe(
+                        'Literal book or portfolio name or UUID. Names can be resolved by this tool.',
+                    ),
+                runId: marketId
+                    .transform((v) => v.toLowerCase())
+                    .optional()
+                    .describe(
+                        'Exact run UUID if supplied or selected. Omit when no run has been chosen.',
+                    ),
+                latest: z
+                    .literal(true)
+                    .optional()
+                    .describe(
+                        'Use only for an explicit latest NPV request without runId. Checks clean runs for verified scope coverage. Omit for Greeks.',
+                    ),
                 measure: z
                     .enum(['npv', 'npv_base', 'greeks', 'delta', 'gamma', 'vega', 'dv01'])
-                    .default('npv_base'),
+                    .default('npv_base')
+                    .describe(
+                        'Default npv_base is in the report base currency. npv is native currency. vega selects volatility Delta; dv01 selects signed rate Delta at a 1 bp target shift.',
+                    ),
                 currency: z
                     .string()
                     .regex(/^[A-Za-z]{3}$/)
                     .transform((s) => s.toUpperCase())
                     .optional(),
-                factor: z.string().min(1).max(256).optional(),
-                factor2: z.string().max(256).optional(),
-                scenario: z.string().max(120).optional(),
+                factor: z
+                    .string()
+                    .min(1)
+                    .max(256)
+                    .optional()
+                    .describe('Literal requested risk factor. Omit to show matching buckets.'),
+                factor2: z
+                    .string()
+                    .max(256)
+                    .optional()
+                    .describe('Literal second risk factor when requested.'),
+                scenario: z
+                    .string()
+                    .max(120)
+                    .optional()
+                    .describe('Literal scenario when requested.'),
                 riskMeasures: z.array(riskMeasure).min(1).max(4).optional(),
                 fxPair: riskPair.optional(),
                 maturity: riskMaturity.optional(),
@@ -40,7 +72,8 @@ export const scopeTools = {
                 bucketId: z
                     .string()
                     .regex(/^[a-f\d]{24}$/)
-                    .optional(),
+                    .optional()
+                    .describe('Bucket ID returned by the tool. Omit until a bucket is selected.'),
                 bucketOffset: z.number().int().min(0).max(2000).default(0),
                 bucketLimit: z.number().int().min(1).max(10).default(5),
                 offset: z.number().int().min(0).max(1000).default(0),

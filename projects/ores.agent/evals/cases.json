@@ -1240,11 +1240,22 @@
             {
               "tool": "find_books",
               "arguments": "{broken"
+            },
+            {
+              "tool": "find_books",
+              "arguments": "{broken"
+            },
+            {
+              "tool": "find_books",
+              "arguments": "{broken"
             }
           ],
           "expect": {
-            "error": "turn_budget",
-            "noTools": true
+            "noTools": true,
+            "incomplete": true,
+            "contains": [
+              "incomplete"
+            ]
           }
         }
       ]
@@ -1577,10 +1588,21 @@
             {
               "tool": "find_books",
               "arguments": {}
+            },
+            {
+              "tool": "find_books",
+              "arguments": {}
+            },
+            {
+              "tool": "find_books",
+              "arguments": {}
             }
           ],
           "expect": {
-            "error": "turn_budget"
+            "incomplete": true,
+            "contains": [
+              "incomplete"
+            ]
           }
         }
       ],

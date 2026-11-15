@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { Session } from './auth.js';
 import type { RequestPlan, ToolArguments } from './intent.js';
+import type { TradeTotalRequest } from './trade-total.js';
 import type { MarketPointChoice } from './market-dialogue.js';
 import { marketId } from './market.js';
 import { type MarketCurveRequest, type MarketCurveField } from './fx-market-request.js';
+import type { WorkflowState } from './tool-loop.js';
 
 export interface Candidate {
     id: string;
     name: string;
     aliases?: string[];
 }
-export type PendingChoice =
+type Choice =
     | {
           kind: 'market_curve';
           args: MarketCurveRequest;
@@ -18,6 +20,7 @@ export type PendingChoice =
           candidates: Candidate[];
       }
     | { kind: 'run'; plan: RequestPlan }
+    | { kind: 'trade_total'; request: TradeTotalRequest }
     | {
           kind: 'analytics';
           name: 'build_fx_forward_curve' | 'build_fx_volatility_surface';
@@ -29,6 +32,7 @@ export type PendingChoice =
           args: ToolArguments;
           field: 'scope' | 'runId' | 'book' | 'portfolio' | 'currency' | 'factor';
           candidates: Candidate[];
+          computationRequest?: string;
       }
     | { kind: 'contributors'; args: ToolArguments }
     | {
@@ -38,9 +42,17 @@ export type PendingChoice =
           buckets: { number: number; id: string; nextOffset: number | null }[];
       }
     | MarketPointChoice;
+export type PendingChoice = Choice & { workflow?: WorkflowState };
 export type Continuation =
     | { kind: 'plan'; plan: RequestPlan }
-    | { kind: 'call'; name: string; args: ToolArguments }
+    | { kind: 'trade_total'; request: TradeTotalRequest }
+    | {
+          kind: 'call';
+          name: string;
+          args: ToolArguments;
+          computationRequest?: string;
+          workflow?: WorkflowState;
+      }
     | { kind: 'prompt'; answer: string };
 const identity = (session: Session) =>
     JSON.stringify([session.tenantId, session.partyId, session.sessionId]);
@@ -77,6 +89,16 @@ export class Conversations {
         return choice?.kind === 'market_point' ? structuredClone(choice) : undefined;
     }
 
+    workflow(session: Session) {
+        const state = this.currentChoice(session)?.workflow;
+        return state ? structuredClone(state) : undefined;
+    }
+
+    suspend(session: Session, workflow: WorkflowState) {
+        const choice = this.currentChoice(session);
+        if (choice) this.set(session, { ...choice, workflow });
+    }
+
     private currentChoice(session: Session) {
         const pending = this.pending.get(session);
         if (!pending || pending.expires <= Date.now() || pending.identity !== identity(session))
@@ -111,6 +133,11 @@ export class Conversations {
         if (!pending || pending.expires <= Date.now() || pending.identity !== identity(session))
             return;
         const choice = pending.choice;
+        if (choice.kind === 'trade_total') {
+            const runId = runSelector(message);
+            if (runId) return { kind: 'trade_total', request: { ...choice.request, runId } };
+            return;
+        }
         // Market replies are interpreted contextually by the LLM in Agent.
         if (choice.kind === 'market_curve' || choice.kind === 'market_point') return;
         if (choice.kind === 'analytics') {
@@ -119,7 +146,12 @@ export class Conversations {
                     message.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, ''),
                 );
                 if (data && typeof data === 'object' && !Array.isArray(data))
-                    return { kind: 'call', name: choice.name, args: { ...choice.args, ...data } };
+                    return {
+                        kind: 'call',
+                        name: choice.name,
+                        args: { ...choice.args, ...data },
+                        workflow: choice.workflow,
+                    };
             } catch {
                 /* An unrelated message clears the pending request. */
             }
@@ -214,6 +246,8 @@ export class Conversations {
             return {
                 kind: 'call',
                 name: choice.name,
+                computationRequest: choice.computationRequest,
+                workflow: choice.workflow,
                 args: {
                     ...choice.args,
                     [choice.field]: run ?? matches[0]!.id,

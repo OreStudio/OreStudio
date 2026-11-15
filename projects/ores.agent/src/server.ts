@@ -17,6 +17,7 @@ import { NpvRuns } from './npv-runs.js';
 import { BookingDrafts } from './booking-drafts.js';
 import { TradeBookings } from './trade-bookings.js';
 import { marketId } from './market.js';
+import { PythonSandbox } from './python-sandbox.js';
 
 export function json(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, {
@@ -55,7 +56,8 @@ export async function body(req: IncomingMessage): Promise<unknown> {
 export function createApp(config: Config, backend?: Backend, submissionDirectory?: string) {
     if (backend) backend = tracedBackend(backend);
     const sessions = backend ? new Sessions(backend) : undefined;
-    const executor = backend ? new ToolExecutor(backend) : undefined;
+    const python = config.pythonSandbox ? new PythonSandbox(config.pythonSandbox) : undefined;
+    const executor = backend ? new ToolExecutor(backend, undefined, python) : undefined;
     const mcp = sessions && executor ? createMcp(sessions, executor) : undefined;
     const inference = new HttpInference(config.inference);
     const reportRuns =
@@ -74,6 +76,7 @@ export function createApp(config: Config, backend?: Backend, submissionDirectory
                   backend ? new TradeBookings(backend) : undefined,
                   backend,
               ),
+              Boolean(python),
           )
         : undefined;
     const server = createServer((req, res) => {
@@ -155,6 +158,9 @@ export function createApp(config: Config, backend?: Backend, submissionDirectory
                     })),
                 );
             if (req.method === 'POST' && req.url?.startsWith('/tools/')) {
+                const name = req.url.slice(7);
+                if (!Object.hasOwn(tools, name))
+                    throw new AppError('unknown_tool', 'Tool is not available.', 400);
                 const abort = new AbortController();
                 res.on('close', () => {
                     if (!res.writableFinished) abort.abort();
@@ -162,12 +168,7 @@ export function createApp(config: Config, backend?: Backend, submissionDirectory
                 return json(
                     res,
                     200,
-                    await executor.execute(
-                        req.url.slice(7),
-                        await body(req),
-                        session,
-                        abort.signal,
-                    ),
+                    await executor.execute(name, await body(req), session, abort.signal),
                 );
             }
             return json(res, 404, { error: 'Not found.', requestId });

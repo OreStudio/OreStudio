@@ -131,6 +131,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
 #include <format>
 #include <set>
 #include <unordered_map>

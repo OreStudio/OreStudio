@@ -37,6 +37,7 @@ the reply, so it would be a second command for one read.
 * Includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <string_view>

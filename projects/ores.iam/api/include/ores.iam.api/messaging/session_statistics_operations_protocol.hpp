@@ -28,6 +28,7 @@
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <span>

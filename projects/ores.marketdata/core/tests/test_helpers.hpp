@@ -19,6 +19,7 @@
 #ifndef ORES_MARKETDATA_CORE_TESTS_TEST_HELPERS_HPP_
 #define ORES_MARKETDATA_CORE_TESTS_TEST_HELPERS_HPP_
 
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"

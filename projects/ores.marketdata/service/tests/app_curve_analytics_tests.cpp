@@ -122,7 +122,7 @@ TEST_CASE("a_comparison_with_no_published_set_draws_no_prior_and_says_so", analy
     REQUIRE(resp.success);
     // Nothing was current then, so there is nothing to compare against: the fields
     // stay absent rather than carrying a zero, which a person would read as a flat day.
-    CHECK(resp.compare_at == std::chrono::system_clock::time_point{});
+    CHECK(resp.compare_at.has_value() == false);
     for (const auto& point : resp.bootstrapped) {
         CHECK(point.prior_zero_rate.has_value() == false);
         CHECK(point.change_bps.has_value() == false);
@@ -157,7 +157,7 @@ TEST_CASE("the_prior_close_is_the_published_set_that_was_current_then", analytic
     REQUIRE(resp.success);
     // The set was current then, so every pillar states what it held and how far the
     // curve ahead of it has moved.
-    CHECK(resp.compare_at != std::chrono::system_clock::time_point{});
+    CHECK(resp.compare_at.has_value());
     REQUIRE(resp.bootstrapped.empty() == false);
     CHECK(resp.bootstrapped.front().prior_zero_rate.has_value());
     CHECK(resp.bootstrapped.front().change_bps.has_value());

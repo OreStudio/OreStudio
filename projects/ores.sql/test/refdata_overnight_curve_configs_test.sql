@@ -24,6 +24,10 @@
  * engine's code, ladders the seven pillars every curve shares, reads one ladder
  * series of the synthetic Bloomberg feed, and writes its own output series.
  *
+ * The seeded set holds the currency's projection curves too -- one per IBOR
+ * index, each naming the overnight curve it discounts off -- so the assertions
+ * below select the fundings, which is the set they are about.
+ *
  * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/refdata_overnight_curve_configs_test.sql
  */
 
@@ -38,6 +42,7 @@ select c.id, c.name, c.currency_code, c.day_count_convention, c.output_series_id
 from ores_refdata_ir_curve_bootstrap_configs_tbl c
 where c.tenant_id = ores_utility_system_tenant_id_fn()
   and c.change_reason_code = 'system.initial_load'
+  and c.curve_family_role = 'FUNDING'
   and c.valid_to = ores_utility_infinity_timestamp_fn();
 
 select is(

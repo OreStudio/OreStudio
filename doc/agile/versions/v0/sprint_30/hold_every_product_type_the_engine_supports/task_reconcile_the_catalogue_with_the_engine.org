@@ -26,11 +26,11 @@ A reader can tell, for every product type, what ORE does with it: the trade type
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -43,9 +43,16 @@ A reader can tell, for every product type, what ORE does with it: the trade type
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Ask ORE itself rather than read its registrations as text. A harness,
+=trade_catalogue=, calls ORE's =dataBuilders()=, builds every type the trade
+factory holds and prints its class and whether it derives from
+=ScriptedTrade=. A miner, =mine_trade_types.py=, joins that with ORE's source
+(the element =fromXML= reads), the XSD, the Products script library, two
+curated lists (the twins and the elements that break ORE's naming
+convention) and the catalogue. Twins are graded by comparing the library
+script's code with the code ORE's class embeds. The result is checked in
+beside the other mined catalogues, and a generator turns it into the coverage
+note, with a =--check= mode wired into the local gate.
 
 * Measurements
 
@@ -59,9 +66,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trade types ORE registers | 120 | =trade_catalogue= built against ORE =3d75a6908= | ORE =3d75a6908= |
+| Read through a ScriptedTrade class | 39 | the same, =form= column | ORE =3d75a6908= |
+| Catalogue types ORE registers | 119 of 121 | =mine_trade_types.py=, then =generate_trade_type_coverage.py= | =7c5602951b= |
+| Registered types whose catalogue form disagrees with ORE's | 34 | the coverage page's counts | =7c5602951b= |
+| Types with a library script for the same product | 35 | the same | =7c5602951b= |
+| Twin matches: identical, near, named | 9, 12, 14 | =awk -F'\t' '{print $10}' trade_types.tsv= | ORE =3d75a6908= |
 
 * Notes
+
+** A check that reproduces the catalogue
+
+=regenerate.sh= run end to end at =3d75a6908= reproduces =trade_types.tsv=
+byte for byte. It also rewrites the index catalogue, which is stale against
+its own tool; that is captured separately and reverted here.
 
 * Test Scenarios
 
@@ -87,3 +105,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every catalogue type now states what ORE does with it, from ORE itself. The
+=trade_catalogue= harness asks ORE's trade factory for each registered type
+and the class it builds; =mine_trade_types.py= adds the data element read in
+ORE's source, whether the XSD declares it, and the library scripts that carry
+the same product, graded by comparing their code with the class's own. The
+result is =external/ore/catalogue/trade_types.tsv= at ORE =3d75a6908=, and
+[[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] renders it with the table that holds each type, whether the generator
+books it, and the task that closes each gap. A =trade-type-coverage= check in
+the local gate fails when the page drifts from its sources.
+
+What it found: ORE reads 39 types through a =ScriptedTrade= class and the
+catalogue states 5 of them so; =CommodityPairwiseVarianceSwap= and the bare
+=ForwardVolatilityAgreement= have no builder but are carried by library
+scripts; =CommodityWindowBarrierOptionData= is read by ORE and missing from
+the XSD; three types read an element other than the convention's; and 35 types
+have a library twin, 9 of them in identical code.

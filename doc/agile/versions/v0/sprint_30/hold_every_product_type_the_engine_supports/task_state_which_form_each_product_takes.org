@@ -61,6 +61,14 @@ task and name that file in the Command column.
 
 * Notes
 
+** From the reconcile task
+
+ORE's trade factory reads 39 types through a =ScriptedTrade= class, and the
+catalogue states 5 of them as scripted: 34 registered types state a form ORE
+does not read them as. [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] lists each, from
+=external/ore/catalogue/trade_types.tsv=.
+
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -21,8 +21,8 @@ ORE uses. One row per kind: a =BondOption=, a =CrossCurrencySwap=, a
 
 The row is the golden source for what a product type is. It carries the name a
 desk uses, the description and the source that description came from, the
-product family that names its contract shape, the construction method that says
-how the payoff is expressed, and the instrument table that holds a trade of the
+product family that names its contract shape, the construction that says which
+form ORE reads the type in, and the instrument table that holds a trade of the
 kind. The markets it references are a junction, because a kind may reference
 more than one.
 
@@ -144,7 +144,7 @@ std::string("swap")
 :nullable:     false
 :END:
 
-How the payoff is expressed: native, scripted or container.
+The form ORE reads the type in: native, scripted, script or container.
 
 #+begin_src cpp :name generator
 std::string("native")
@@ -230,7 +230,7 @@ std::string("00000000-0000-0000-0000-000000000000")
 
 | expression |
 |------------|
-| "construction" in ('native', 'scripted', 'container') |
+| "construction" in ('native', 'scripted', 'script', 'container') |
 | "deal_class" is null or "deal_class" in ('flow', 'non_flow') |
 
 ** Extra drops

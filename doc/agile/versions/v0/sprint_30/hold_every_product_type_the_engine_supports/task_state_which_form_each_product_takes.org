@@ -8,12 +8,12 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/state-which-form-each-product-takes
-#+pr:
+#+pr: 4755
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every routed type states the form ORE reads it as, and a test proves the element
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,26 @@ Every routed type states the form ORE reads it as, and a test proves the element
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The =construction= column names the form ORE reads the type in. ORE's trade
+  factory gives three forms a type can take, plus our container: =native= (a
+  trade class with its own element), =scripted= (a =ScriptedTrade= subclass with
+  its own element), =script= (the generic =ScriptedTrade= that names a library
+  script) and =container=. =script= is new: the generic ScriptedTrade was stated
+  as =scripted=, which hid that it is the only type whose product lives in a
+  library script, not in its element.
+- Set the column from =external/ore/catalogue/trade_types.tsv= with a script,
+  not by hand: every registered type ORE builds as a ScriptedTrade subclass
+  becomes =scripted=, and =ScriptedTrade= becomes =script=.
+- Add =script= where the value set is declared: the codegen loader, the product
+  type model's check and its documentation. Regenerate the =trade= and
+  =trading-cpp= components.
+- The trade type coverage check fails when a registered type states a
+  construction its ORE form does not allow (=native= allows =native= or
+  =container=; =scripted= allows =scripted= or =script=). The catalogue cannot
+  drift from ORE again without the gate failing.
+- A Catch2 test in =generated_trade_export_tests.cpp= checks that every recorded
+  trade writes all of its product under the element =trade_types.tsv= records
+  for its type.
 
 * Measurements
 
@@ -57,9 +74,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue rows whose construction changed | 35 (34 to =scripted=, =ScriptedTrade= to =script=) | the row script in the Plan; =git diff --stat= on the catalogue | 8fd3563251 |
+| Registered types whose construction disagrees with ORE | 0 (was 34) | =python3 build/scripts/generate_trade_type_coverage.py --check= | 8fd3563251 |
+| Recorded types that write an element other than the one ORE reads | 0 of 83 | prototype over =generated_trades/*.xml=, then the new Catch2 test | 8fd3563251 |
 
 * Notes
+
+** Nothing branches on construction
+
+Before the change, only the database check and the codegen loader read the
+=construction= value; no C++ or SQL code chose a path by it. Changing 35 rows is
+a change to data and documentation, with no behaviour to migrate.
+
+** The test detects the defect it exists for
+
+With =FxTaRFData= renamed to =ScriptedTradeData= in the recorded =FxTaRF.xml=,
+the new test fails with "FxTaRF writes Trade/ScriptedTradeData". The file was
+restored afterwards.
 
 ** From the reconcile task
 
@@ -84,12 +115,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4755][#4755]] | [trading,synthetic] State the form ORE reads each product type in |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local gate: the trading ER diagram still described the old construction | =ores_schema.trading.puml= | Accept | Regenerated with =plantuml_er_generate.sh= |
+| 2 | Local review: the test cut the element out of a path at a bare offset 6 | =generated_trade_export_tests.cpp= | Accept | The offset is the length of a named =Trade/= prefix |
+| 3 | Local review: misspell over the changed files | - | Accept | Clean |
+| 4 | PR review 1: an existing database keeps the old check, so a =script= row fails to insert | =trading_product_types_create.sql= | Decline | The schema has no migrations: databases are recreated from =create/=, and =schema_fingerprint.cmake= flags a stale one |
+| 5 | PR review 2: an unknown mined form raises a bare =KeyError= | =generate_trade_type_coverage.py= | Accept | Raises an error naming the TSV, the type and the form (tested) |
+| 6 | PR review 3: reuse an existing reader of =trade_types.tsv= | =generated_trade_export_tests.cpp= | Decline | No other C++ code reads the file |
+| 7 | PR review 3: =<algorithm>= breaks alphabetical include order | =generated_trade_export_tests.cpp= | Decline | The project's clang-format sorts includes (=SortIncludes=, =IncludeBlocks: Merge=) and accepts this order |
+| 8 | PR review 4 and 5: known baseline failure; shallow clone diff | - | Accept | No change: the failure is a later task in the story; the PR has no merge commits beyond its base |
 
 * Result
+
+The catalogue states the form ORE reads every registered type in: 34 types moved
+from =native= to =scripted=, and the generic =ScriptedTrade= takes the new value
+=script=, so the four forms (=native=, =scripted=, =script=, =container=) are
+distinct in the model, the SQL check and the codegen loader. The trade type
+coverage check now fails when a registered type states a construction its ORE
+form does not allow, and reports 0 disagreements. The test "every recorded trade
+writes the element ORE reads for its type" passes for all 83 recorded types and
+fails when one writes another element. The generic =ScriptedTrade= keeps its own
+row and route, so both forms of a product stay available.

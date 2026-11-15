@@ -7058,7 +7058,7 @@ _PRODUCT_FAMILIES = frozenset({
     "option", "swap", "forward", "position", "swaption", "future", "repo",
     "security"})
 
-_PRODUCT_CONSTRUCTIONS = frozenset({"native", "scripted", "container"})
+_PRODUCT_CONSTRUCTIONS = frozenset({"native", "scripted", "script", "container"})
 
 
 def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dict[str, str]]:

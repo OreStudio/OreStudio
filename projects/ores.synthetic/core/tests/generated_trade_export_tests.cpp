@@ -38,6 +38,7 @@
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <filesystem>
@@ -485,6 +486,40 @@ std::set<std::string> known_missing_paths() {
     return known_lines("generated_trades_known_missing_paths.txt");
 }
 
+/*
+ * The data element ORE's trade class reads for each trade type, from the
+ * catalogue mined out of ORE itself.
+ */
+std::map<std::string, std::string> ore_elements() {
+    const auto path =
+        ores::testing::project_root::resolve("external/ore/catalogue/trade_types.tsv");
+    std::istringstream lines(file::read_content(path));
+    const auto cells = [](const std::string& line) {
+        std::vector<std::string> out;
+        std::istringstream in(line);
+        for (std::string cell; std::getline(in, cell, '\t');)
+            out.push_back(cell);
+        return out;
+    };
+    std::string line;
+    std::getline(lines, line);
+    const auto header = cells(line);
+    const auto column = [&](std::string_view name) {
+        const auto it = std::ranges::find(header, name);
+        REQUIRE(it != header.end());
+        return static_cast<std::size_t>(it - header.begin());
+    };
+    const auto type_column = column("trade_type");
+    const auto element_column = column("element");
+    std::map<std::string, std::string> out;
+    while (std::getline(lines, line)) {
+        const auto row = cells(line);
+        if (row.size() > element_column && row[element_column] != "-")
+            out.emplace(row[type_column], row[element_column]);
+    }
+    return out;
+}
+
 }
 
 TEST_CASE("the generated trades are the ones recorded", "[synthetic][ore][generated]") {
@@ -531,6 +566,28 @@ TEST_CASE("every recorded trade states its product", "[synthetic][ore][generated
             if (paths.empty())
                 found.insert(type);
     check_known(found, known_passthroughs());
+}
+
+TEST_CASE("every recorded trade writes the element ORE reads for its type",
+          "[synthetic][ore][generated]") {
+    auto lg(make_logger(test_suite));
+    const auto elements = ore_elements();
+    std::set<std::string> found;
+    for (const auto& type : recorded_types()) {
+        const auto it = elements.find(type);
+        if (it == elements.end()) {
+            found.insert(type + " has no element in trade_types.tsv");
+            continue;
+        }
+        constexpr std::string_view trade = "Trade/";
+        const auto prefix = std::string(trade) + it->second + "/";
+        for (const auto& paths : recorded_trades(type))
+            for (const auto& path : paths)
+                if (!path.starts_with(prefix))
+                    found.insert(type + " writes " + path.substr(0, path.find('/', trade.size())));
+    }
+    INFO("Recorded types that write outside the element ORE reads:" << listed(found));
+    CHECK(found.empty());
 }
 
 TEST_CASE("a recorded trade states every path the ORE examples of its type state",

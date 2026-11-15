@@ -30,8 +30,8 @@
  *
  * The row is the golden source for what a product type is. It carries the name a
  * desk uses, the description and the source that description came from, the
- * product family that names its contract shape, the construction method that says
- * how the payoff is expressed, and the instrument table that holds a trade of the
+ * product family that names its contract shape, the construction that says which
+ * form ORE reads the type in, and the instrument table that holds a trade of the
  * kind. The markets it references are a junction, because a kind may reference
  * more than one.
  *
@@ -70,7 +70,7 @@ create table if not exists "ores_trading_product_types_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("construction" in ('native', 'scripted', 'container')),
+    check ("construction" in ('native', 'scripted', 'script', 'container')),
     check ("deal_class" is null or "deal_class" in ('flow', 'non_flow'))
 );
 

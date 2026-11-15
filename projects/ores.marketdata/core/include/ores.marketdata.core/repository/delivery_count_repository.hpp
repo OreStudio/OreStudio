@@ -114,6 +114,15 @@ public:
                                                                   const std::string& oresmd_uri);
 
     /**
+     * @brief Reads latest delivery counts filtered by a set of oresmd_uri values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::delivery_count>
+    read_latest_by_oresmd_uri(const context& ctx, const std::vector<std::string>& oresmd_uris);
+
+    /**
      * @brief Reads the newest delivery counts filtered by oresmd_uri, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

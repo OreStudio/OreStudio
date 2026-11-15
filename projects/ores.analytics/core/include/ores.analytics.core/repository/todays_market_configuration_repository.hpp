@@ -115,6 +115,17 @@ public:
     read_latest_by_configuration_id(const context& ctx, const std::string& configuration_id);
 
     /**
+     * @brief Reads latest today's market configuration blocks filtered by a set of configuration_id
+     * values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::todays_market_configuration>
+    read_latest_by_configuration_id(const context& ctx,
+                                    const std::vector<std::string>& configuration_ids);
+
+    /**
      * @brief Reads the newest today's market configuration blocks filtered by configuration_id,
      * current or not.
      *

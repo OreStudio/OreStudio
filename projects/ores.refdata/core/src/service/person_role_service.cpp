@@ -88,8 +88,9 @@ std::vector<domain::person_role> person_role_read_one(repository::person_role_re
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::person_role>>
 person_role_read_many(repository::person_role_repository& repo,

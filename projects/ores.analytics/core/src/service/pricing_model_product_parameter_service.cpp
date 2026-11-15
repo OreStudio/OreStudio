@@ -93,8 +93,9 @@ std::vector<domain::pricing_model_product_parameter> pricing_model_product_param
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::pricing_model_product_parameter>>
 pricing_model_product_parameter_read_many(
@@ -102,8 +103,19 @@ pricing_model_product_parameter_read_many(
     const ores::database::context& ctx,
     const std::vector<messaging::pricing_model_product_parameter_key>& keys) {
     std::vector<std::vector<domain::pricing_model_product_parameter>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = pricing_model_product_parameter_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> parameter_name_keys;
+    parameter_name_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        parameter_name_keys.push_back(key.parameter_name);
+    std::map<std::string, std::vector<domain::pricing_model_product_parameter>> by_key;
+    for (auto& row : repo.read_latest_by_parameter_name(ctx, parameter_name_keys))
+        by_key[row.parameter_name].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.parameter_name);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

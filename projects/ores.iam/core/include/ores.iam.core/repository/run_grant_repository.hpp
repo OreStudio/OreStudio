@@ -113,6 +113,15 @@ public:
                                                            const std::string& resource);
 
     /**
+     * @brief Reads latest run grants filtered by a set of resource values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::run_grant>
+    read_latest_by_resource(const context& ctx, const std::vector<std::string>& resources);
+
+    /**
      * @brief Reads the newest run grants filtered by resource, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

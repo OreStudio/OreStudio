@@ -276,6 +276,41 @@ permission_repository::read_latest_by_code(const context& ctx, const std::string
         "Reading latest permission by code.");
 }
 
+std::vector<domain::permission>
+permission_repository::read_latest_by_code(const context& ctx,
+                                           const std::vector<std::string>& codes) {
+    if (codes.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::permission> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest_by_code(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest permissions by code. Count: " << codes.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<permission_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<permission_entity, domain::permission>(
+        ctx,
+        query,
+        [](const auto& entities) { return permission_mapper::map(entities); },
+        lg(),
+        "Reading latest permissions by code.");
+    return found;
+}
+
 std::vector<domain::permission> permission_repository::read_any_by_code(const context& ctx,
                                                                         const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any permission by code: " << code;

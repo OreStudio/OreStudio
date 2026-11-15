@@ -337,6 +337,50 @@ credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
 }
 
 std::vector<domain::credit_simulation_matrix_row_config>
+credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
+    const context& ctx, const std::vector<std::string>& from_ratings) {
+    if (from_ratings.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (from_ratings.size() > chunk_size) {
+        std::vector<domain::credit_simulation_matrix_row_config> all;
+        for (std::size_t begin = 0; begin < from_ratings.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, from_ratings.size());
+            auto part = read_latest_by_from_rating(
+                ctx,
+                std::vector<std::string>(from_ratings.begin() + begin, from_ratings.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix rows by from_rating. Count: "
+                               << from_ratings.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_rating"_c.in(from_ratings) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                                   domain::credit_simulation_matrix_row_config>(
+        ctx,
+        query,
+        [](const auto& entities) {
+            return credit_simulation_matrix_row_config_mapper::map(entities);
+        },
+        lg(),
+        "Reading latest matrix rows by from_rating.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
     const context& ctx, const std::string& from_rating) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any matrix row by from_rating: " << from_rating;

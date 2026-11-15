@@ -323,6 +323,43 @@ account_contact_information_repository::read_latest_by_email(const context& ctx,
 }
 
 std::vector<domain::account_contact_information>
+account_contact_information_repository::read_latest_by_email(
+    const context& ctx, const std::vector<std::string>& emails) {
+    if (emails.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (emails.size() > chunk_size) {
+        std::vector<domain::account_contact_information> all;
+        for (std::size_t begin = 0; begin < emails.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, emails.size());
+            auto part = read_latest_by_email(
+                ctx, std::vector<std::string>(emails.begin() + begin, emails.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact informations by email. Count: "
+                               << emails.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<account_contact_information_entity>> |
+        query_builder::where("tenant_id"_c == tid && "email"_c.in(emails) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<account_contact_information_entity,
+                                                   domain::account_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest account contact informations by email.");
+    return found;
+}
+
+std::vector<domain::account_contact_information>
 account_contact_information_repository::read_any_by_email(const context& ctx,
                                                           const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any account contact information by email: " << email;

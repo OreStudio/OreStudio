@@ -356,6 +356,47 @@ market_data_vendor_instrument_repository::read_latest_by_external_id(
 }
 
 std::vector<domain::market_data_vendor_instrument>
+market_data_vendor_instrument_repository::read_latest_by_external_id(
+    const context& ctx, const std::vector<std::string>& external_ids) {
+    if (external_ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (external_ids.size() > chunk_size) {
+        std::vector<domain::market_data_vendor_instrument> all;
+        for (std::size_t begin = 0; begin < external_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, external_ids.size());
+            auto part = read_latest_by_external_id(
+                ctx,
+                std::vector<std::string>(external_ids.begin() + begin, external_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest market data vendor instruments by external_id. Count: "
+        << external_ids.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "external_id"_c.in(external_ids) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                                   domain::market_data_vendor_instrument>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
+        lg(),
+        "Reading latest market data vendor instruments by external_id.");
+    return found;
+}
+
+std::vector<domain::market_data_vendor_instrument>
 market_data_vendor_instrument_repository::read_any_by_external_id(const context& ctx,
                                                                   const std::string& external_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any market data vendor instrument by external_id: "

@@ -118,6 +118,15 @@ public:
      */
     std::vector<domain::session> read_latest_by_id(const context& ctx, const std::string& id);
 
+    /**
+     * @brief Reads latest sessions filtered by a set of id values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::session> read_latest_by_id(const context& ctx,
+                                                   const std::vector<std::string>& ids);
+
 
     /**
      * @brief Reads the session rows for the given primary key.

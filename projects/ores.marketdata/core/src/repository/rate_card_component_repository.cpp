@@ -323,6 +323,43 @@ rate_card_component_repository::read_latest_by_driver(const context& ctx,
 }
 
 std::vector<domain::rate_card_component>
+rate_card_component_repository::read_latest_by_driver(const context& ctx,
+                                                      const std::vector<std::string>& drivers) {
+    if (drivers.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (drivers.size() > chunk_size) {
+        std::vector<domain::rate_card_component> all;
+        for (std::size_t begin = 0; begin < drivers.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, drivers.size());
+            auto part = read_latest_by_driver(
+                ctx, std::vector<std::string>(drivers.begin() + begin, drivers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest rate card components by driver. Count: "
+                               << drivers.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<rate_card_component_entity>> |
+        query_builder::where("tenant_id"_c == tid && "driver"_c.in(drivers) && "valid_to"_c == max);
+    auto found =
+        query_builder::execute_read_query<rate_card_component_entity, domain::rate_card_component>(
+            ctx,
+            query,
+            [](const auto& entities) { return rate_card_component_mapper::map(entities); },
+            lg(),
+            "Reading latest rate card components by driver.");
+    return found;
+}
+
+std::vector<domain::rate_card_component>
 rate_card_component_repository::read_any_by_driver(const context& ctx, const std::string& driver) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any rate card component by driver: " << driver;
     const auto tid = ctx.tenant_id().to_string();

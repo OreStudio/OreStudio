@@ -116,6 +116,16 @@ public:
     read_latest_by_netting_set_id(const context& ctx, const std::string& netting_set_id);
 
     /**
+     * @brief Reads latest netting sets filtered by a set of netting_set_id values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::credit_simulation_netting_set_config>
+    read_latest_by_netting_set_id(const context& ctx,
+                                  const std::vector<std::string>& netting_set_ids);
+
+    /**
      * @brief Reads the newest netting sets filtered by netting_set_id, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

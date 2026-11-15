@@ -208,6 +208,9 @@ public:
     std::vector<domain::account> read_latest_by_username(const context& ctx,
                                                          const std::string& username);
 
+    std::vector<domain::account> read_latest_by_username(const context& ctx,
+                                                         const std::vector<std::string>& usernames);
+
     std::vector<domain::account> read_latest_by_email(const context& ctx, const std::string& email);
 };
 

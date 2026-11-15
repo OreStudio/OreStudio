@@ -111,6 +111,15 @@ public:
     std::vector<domain::image> read_latest_by_code(const context& ctx, const std::string& code);
 
     /**
+     * @brief Reads latest asset images filtered by a set of code values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::image> read_latest_by_code(const context& ctx,
+                                                   const std::vector<std::string>& codes);
+
+    /**
      * @brief Reads the newest asset images filtered by code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

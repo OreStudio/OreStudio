@@ -343,6 +343,43 @@ counterparty_identifier_repository::read_latest_by_id_value(const context& ctx,
 }
 
 std::vector<domain::counterparty_identifier>
+counterparty_identifier_repository::read_latest_by_id_value(
+    const context& ctx, const std::vector<std::string>& id_values) {
+    if (id_values.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (id_values.size() > chunk_size) {
+        std::vector<domain::counterparty_identifier> all;
+        for (std::size_t begin = 0; begin < id_values.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, id_values.size());
+            auto part = read_latest_by_id_value(
+                ctx, std::vector<std::string>(id_values.begin() + begin, id_values.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers by id_value. Count: "
+                               << id_values.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id_value"_c.in(id_values) &&
+                                            "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<counterparty_identifier_entity,
+                                                   domain::counterparty_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty identifiers by id_value.");
+    return found;
+}
+
+std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_any_by_id_value(const context& ctx,
                                                          const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any counterparty identifier by id_value: " << id_value;

@@ -96,16 +96,28 @@ std::vector<domain::counterparty> counterparty_read_one(repository::counterparty
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::counterparty>>
 counterparty_read_many(repository::counterparty_repository& repo,
                        const ores::database::context& ctx,
                        const std::vector<messaging::counterparty_key>& keys) {
     std::vector<std::vector<domain::counterparty>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = counterparty_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> short_code_keys;
+    short_code_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        short_code_keys.push_back(key.short_code);
+    std::map<std::string, std::vector<domain::counterparty>> by_key;
+    for (auto& row : repo.read_latest_by_short_code(ctx, short_code_keys))
+        by_key[row.short_code].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.short_code);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

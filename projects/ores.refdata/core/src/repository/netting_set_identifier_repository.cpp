@@ -344,6 +344,46 @@ netting_set_identifier_repository::read_latest_by_id_value(const context& ctx,
 }
 
 std::vector<domain::netting_set_identifier>
+netting_set_identifier_repository::read_latest_by_id_value(
+    const context& ctx, const std::vector<std::string>& id_values) {
+    if (id_values.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (id_values.size() > chunk_size) {
+        std::vector<domain::netting_set_identifier> all;
+        for (std::size_t begin = 0; begin < id_values.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, id_values.size());
+            auto part = read_latest_by_id_value(
+                ctx, std::vector<std::string>(id_values.begin() + begin, id_values.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set identifiers by id_value. Count: "
+                               << id_values.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<netting_set_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id_value"_c.in(id_values) &&
+                                            "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<netting_set_identifier_entity,
+                                                   domain::netting_set_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return netting_set_identifier_mapper::map(entities); },
+        lg(),
+        "Reading latest netting set identifiers by id_value.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::netting_set_identifier>
 netting_set_identifier_repository::read_any_by_id_value(const context& ctx,
                                                         const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any netting set identifier by id_value: " << id_value;

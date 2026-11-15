@@ -301,6 +301,41 @@ ore_parameter_repository::read_latest_by_name(const context& ctx, const std::str
 }
 
 std::vector<domain::ore_parameter>
+ore_parameter_repository::read_latest_by_name(const context& ctx,
+                                              const std::vector<std::string>& names) {
+    if (names.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (names.size() > chunk_size) {
+        std::vector<domain::ore_parameter> all;
+        for (std::size_t begin = 0; begin < names.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, names.size());
+            auto part = read_latest_by_name(
+                ctx, std::vector<std::string>(names.begin() + begin, names.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest ore parameters by name. Count: " << names.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<ore_parameter_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<ore_parameter_entity, domain::ore_parameter>(
+        ctx,
+        query,
+        [](const auto& entities) { return ore_parameter_mapper::map(entities); },
+        lg(),
+        "Reading latest ore parameters by name.");
+    return found;
+}
+
+std::vector<domain::ore_parameter>
 ore_parameter_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any ore parameter by name: " << name;
     const auto tid = ctx.tenant_id().to_string();

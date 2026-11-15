@@ -114,6 +114,16 @@ public:
     read_latest_by_provider_code(const context& ctx, const std::string& provider_code);
 
     /**
+     * @brief Reads latest subscriptions filtered by a set of provider_code values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::subscription>
+    read_latest_by_provider_code(const context& ctx,
+                                 const std::vector<std::string>& provider_codes);
+
+    /**
      * @brief Reads the newest subscriptions filtered by provider_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

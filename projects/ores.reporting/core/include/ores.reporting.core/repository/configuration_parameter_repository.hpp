@@ -115,6 +115,15 @@ public:
                                                                       const std::string& value);
 
     /**
+     * @brief Reads latest configuration parameters filtered by a set of value values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::configuration_parameter>
+    read_latest_by_value(const context& ctx, const std::vector<std::string>& values);
+
+    /**
      * @brief Reads the newest configuration parameters filtered by value, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

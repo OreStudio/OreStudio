@@ -504,6 +504,42 @@ account_repository::read_latest_by_username(const context& ctx, const std::strin
         "Reading latest account by username");
 }
 
+std::vector<domain::account>
+account_repository::read_latest_by_username(const context& ctx,
+                                            const std::vector<std::string>& usernames) {
+    if (usernames.empty())
+        return {};
+    constexpr std::size_t chunk_size = 1000;
+    if (usernames.size() > chunk_size) {
+        std::vector<domain::account> all;
+        for (std::size_t begin = 0; begin < usernames.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, usernames.size());
+            auto part = read_latest_by_username(
+                ctx, std::vector<std::string>(usernames.begin() + begin, usernames.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts by username. Count: "
+                               << usernames.size();
+
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<account_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "username"_c.in(usernames) &&
+                                            "valid_to"_c == max) |
+                       query_builder::order_by("valid_from"_c.desc());
+
+    return query_builder::execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading latest accounts by username");
+}
+
 std::vector<domain::account> account_repository::read_latest_by_email(const context& ctx,
                                                                       const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;

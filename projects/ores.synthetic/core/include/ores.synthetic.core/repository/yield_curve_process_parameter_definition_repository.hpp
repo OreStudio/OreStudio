@@ -117,6 +117,17 @@ public:
     read_latest_by_parameter_name(const context& ctx, const std::string& parameter_name);
 
     /**
+     * @brief Reads latest yield curve process parameter definitions filtered by a set of
+     * parameter_name values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::yield_curve_process_parameter_definition>
+    read_latest_by_parameter_name(const context& ctx,
+                                  const std::vector<std::string>& parameter_names);
+
+    /**
      * @brief Reads the newest yield curve process parameter definitions filtered by parameter_name,
      * current or not.
      *

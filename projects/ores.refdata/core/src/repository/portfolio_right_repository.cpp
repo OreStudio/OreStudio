@@ -313,6 +313,43 @@ portfolio_right_repository::read_latest_by_right_code(const context& ctx,
 }
 
 std::vector<domain::portfolio_right>
+portfolio_right_repository::read_latest_by_right_code(const context& ctx,
+                                                      const std::vector<std::string>& right_codes) {
+    if (right_codes.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (right_codes.size() > chunk_size) {
+        std::vector<domain::portfolio_right> all;
+        for (std::size_t begin = 0; begin < right_codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, right_codes.size());
+            auto part = read_latest_by_right_code(
+                ctx,
+                std::vector<std::string>(right_codes.begin() + begin, right_codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights by right_code. Count: "
+                               << right_codes.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "right_code"_c.in(right_codes) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<portfolio_right_entity, domain::portfolio_right>(
+        ctx,
+        query,
+        [](const auto& entities) { return portfolio_right_mapper::map(entities); },
+        lg(),
+        "Reading latest portfolio rights by right_code.");
+    return found;
+}
+
+std::vector<domain::portfolio_right>
 portfolio_right_repository::read_any_by_right_code(const context& ctx,
                                                    const std::string& right_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any portfolio right by right_code: " << right_code;

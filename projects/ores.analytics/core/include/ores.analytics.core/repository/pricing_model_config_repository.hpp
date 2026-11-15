@@ -121,6 +121,15 @@ public:
                                                                   const std::string& name);
 
     /**
+     * @brief Reads latest pricing model configurations filtered by a set of name values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::pricing_model_config>
+    read_latest_by_name(const context& ctx, const std::vector<std::string>& names);
+
+    /**
      * @brief Reads the newest pricing model configurations filtered by name, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

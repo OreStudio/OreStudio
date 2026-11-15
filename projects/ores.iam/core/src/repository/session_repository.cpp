@@ -304,6 +304,38 @@ std::vector<domain::session> session_repository::read_latest_by_id(const context
         "Reading latest session by id.");
 }
 
+std::vector<domain::session>
+session_repository::read_latest_by_id(const context& ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::session> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part = read_latest_by_id(
+                ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest sessions by id. Count: " << ids.size();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<session_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
+    auto found = query_builder::execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading latest sessions by id.");
+    return found;
+}
+
 
 std::vector<domain::session> session_repository::read_all(const context& ctx,
                                                           const std::string& id,

@@ -319,6 +319,46 @@ csa_eligible_currency_repository::read_latest_by_currency_code(const context& ct
 }
 
 std::vector<domain::csa_eligible_currency>
+csa_eligible_currency_repository::read_latest_by_currency_code(
+    const context& ctx, const std::vector<std::string>& currency_codes) {
+    if (currency_codes.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (currency_codes.size() > chunk_size) {
+        std::vector<domain::csa_eligible_currency> all;
+        for (std::size_t begin = 0; begin < currency_codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, currency_codes.size());
+            auto part = read_latest_by_currency_code(
+                ctx,
+                std::vector<std::string>(currency_codes.begin() + begin,
+                                         currency_codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest CSA eligible currencies by currency_code. Count: "
+                               << currency_codes.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<csa_eligible_currency_entity>> |
+        query_builder::where("tenant_id"_c == tid && "currency_code"_c.in(currency_codes) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<csa_eligible_currency_entity,
+                                                   domain::csa_eligible_currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return csa_eligible_currency_mapper::map(entities); },
+        lg(),
+        "Reading latest CSA eligible currencies by currency_code.");
+    return found;
+}
+
+std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_repository::read_any_by_currency_code(const context& ctx,
                                                             const std::string& currency_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any CSA eligible currency by currency_code: "

@@ -92,16 +92,28 @@ std::vector<domain::netting_set> netting_set_read_one(repository::netting_set_re
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::netting_set>>
 netting_set_read_many(repository::netting_set_repository& repo,
                       const ores::database::context& ctx,
                       const std::vector<messaging::netting_set_key>& keys) {
     std::vector<std::vector<domain::netting_set>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = netting_set_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> code_keys;
+    code_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        code_keys.push_back(key.code);
+    std::map<std::string, std::vector<domain::netting_set>> by_key;
+    for (auto& row : repo.read_latest_by_code(ctx, code_keys))
+        by_key[row.code].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.code);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

@@ -344,6 +344,51 @@ todays_market_configuration_binding_repository::read_latest_by_reference(
 }
 
 std::vector<domain::todays_market_configuration_binding>
+todays_market_configuration_binding_repository::read_latest_by_reference(
+    const context& ctx, const std::vector<std::string>& references) {
+    if (references.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (references.size() > chunk_size) {
+        std::vector<domain::todays_market_configuration_binding> all;
+        for (std::size_t begin = 0; begin < references.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, references.size());
+            auto part = read_latest_by_reference(
+                ctx,
+                std::vector<std::string>(references.begin() + begin, references.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest today's market configuration bindings by reference. Count: "
+        << references.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
+        query_builder::where("tenant_id"_c == tid && "reference"_c.in(references) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                                   domain::todays_market_configuration_binding>(
+        ctx,
+        query,
+        [](const auto& entities) {
+            return todays_market_configuration_binding_mapper::map(entities);
+        },
+        lg(),
+        "Reading latest today's market configuration bindings by reference.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_repository::read_any_by_reference(
     const context& ctx, const std::string& reference) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any today's market configuration binding by reference: "

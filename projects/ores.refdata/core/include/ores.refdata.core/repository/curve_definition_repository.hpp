@@ -114,6 +114,15 @@ public:
                                                                   const std::string& curve_id);
 
     /**
+     * @brief Reads latest curve definitions filtered by a set of curve_id values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::curve_definition>
+    read_latest_by_curve_id(const context& ctx, const std::vector<std::string>& curve_ids);
+
+    /**
      * @brief Reads the newest curve definitions filtered by curve_id, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

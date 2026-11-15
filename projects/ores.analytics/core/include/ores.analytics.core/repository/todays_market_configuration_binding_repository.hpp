@@ -116,6 +116,16 @@ public:
     read_latest_by_reference(const context& ctx, const std::string& reference);
 
     /**
+     * @brief Reads latest today's market configuration bindings filtered by a set of reference
+     * values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::todays_market_configuration_binding>
+    read_latest_by_reference(const context& ctx, const std::vector<std::string>& references);
+
+    /**
      * @brief Reads the newest today's market configuration bindings filtered by reference, current
      * or not.
      *

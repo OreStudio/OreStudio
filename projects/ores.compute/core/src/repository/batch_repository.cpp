@@ -333,6 +333,50 @@ batch_repository::read_latest_by_external_ref(const context& ctx, const std::str
 }
 
 std::vector<domain::batch>
+batch_repository::read_latest_by_external_ref(const context& ctx,
+                                              const std::vector<std::string>& external_refs) {
+    if (external_refs.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (external_refs.size() > chunk_size) {
+        std::vector<domain::batch> all;
+        for (std::size_t begin = 0; begin < external_refs.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, external_refs.size());
+            auto part =
+                read_latest_by_external_ref(ctx,
+                                            std::vector<std::string>(external_refs.begin() + begin,
+                                                                     external_refs.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute batches by external_ref. Count: "
+                               << external_refs.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<batch_entity>> |
+        query_builder::where("tenant_id"_c == tid && "external_ref"_c.in(external_refs) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<batch_entity, domain::batch>(
+        ctx,
+        query,
+        [](const auto& entities) { return batch_mapper::map(entities); },
+        lg(),
+        "Reading latest compute batches by external_ref.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) {
+            return row.party_id.has_value() && *row.party_id != *party;
+        });
+    return found;
+}
+
+std::vector<domain::batch>
 batch_repository::read_any_by_external_ref(const context& ctx, const std::string& external_ref) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any compute batch by external_ref: " << external_ref;
     const auto tid = ctx.tenant_id().to_string();

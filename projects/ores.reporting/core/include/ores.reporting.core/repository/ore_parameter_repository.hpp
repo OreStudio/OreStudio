@@ -114,6 +114,15 @@ public:
                                                            const std::string& name);
 
     /**
+     * @brief Reads latest ore parameters filtered by a set of name values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::ore_parameter> read_latest_by_name(const context& ctx,
+                                                           const std::vector<std::string>& names);
+
+    /**
      * @brief Reads the newest ore parameters filtered by name, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

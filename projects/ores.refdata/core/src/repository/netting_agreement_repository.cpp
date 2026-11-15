@@ -316,6 +316,49 @@ netting_agreement_repository::read_latest_by_agreement_number(const context& ctx
 }
 
 std::vector<domain::netting_agreement>
+netting_agreement_repository::read_latest_by_agreement_number(
+    const context& ctx, const std::vector<std::string>& agreement_numbers) {
+    if (agreement_numbers.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (agreement_numbers.size() > chunk_size) {
+        std::vector<domain::netting_agreement> all;
+        for (std::size_t begin = 0; begin < agreement_numbers.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, agreement_numbers.size());
+            auto part = read_latest_by_agreement_number(
+                ctx,
+                std::vector<std::string>(agreement_numbers.begin() + begin,
+                                         agreement_numbers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreements by agreement_number. Count: "
+                               << agreement_numbers.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<netting_agreement_entity>> |
+        query_builder::where("tenant_id"_c == tid && "agreement_number"_c.in(agreement_numbers) &&
+                             "valid_to"_c == max);
+    auto found =
+        query_builder::execute_read_query<netting_agreement_entity, domain::netting_agreement>(
+            ctx,
+            query,
+            [](const auto& entities) { return netting_agreement_mapper::map(entities); },
+            lg(),
+            "Reading latest netting agreements by agreement_number.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::netting_agreement>
 netting_agreement_repository::read_any_by_agreement_number(const context& ctx,
                                                            const std::string& agreement_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any netting agreement by agreement_number: "

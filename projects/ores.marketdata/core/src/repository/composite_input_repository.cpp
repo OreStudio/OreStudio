@@ -318,6 +318,44 @@ composite_input_repository::read_latest_by_oresmd_uri(const context& ctx,
 }
 
 std::vector<domain::composite_input>
+composite_input_repository::read_latest_by_oresmd_uri(const context& ctx,
+                                                      const std::vector<std::string>& oresmd_uris) {
+    if (oresmd_uris.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (oresmd_uris.size() > chunk_size) {
+        std::vector<domain::composite_input> all;
+        for (std::size_t begin = 0; begin < oresmd_uris.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, oresmd_uris.size());
+            auto part = read_latest_by_oresmd_uri(
+                ctx,
+                std::vector<std::string>(oresmd_uris.begin() + begin, oresmd_uris.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest composite inputs by oresmd_uri. Count: "
+                               << oresmd_uris.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<composite_input_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "oresmd_uri"_c.in(oresmd_uris) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<composite_input_entity, domain::composite_input>(
+        ctx,
+        query,
+        [](const auto& entities) { return composite_input_mapper::map(entities); },
+        lg(),
+        "Reading latest composite inputs by oresmd_uri.");
+    return found;
+}
+
+std::vector<domain::composite_input>
 composite_input_repository::read_any_by_oresmd_uri(const context& ctx,
                                                    const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any composite input by oresmd_uri: " << oresmd_uri;

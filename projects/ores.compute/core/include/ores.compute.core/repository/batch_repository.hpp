@@ -112,6 +112,15 @@ public:
                                                            const std::string& external_ref);
 
     /**
+     * @brief Reads latest compute batches filtered by a set of external_ref values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::batch>
+    read_latest_by_external_ref(const context& ctx, const std::vector<std::string>& external_refs);
+
+    /**
      * @brief Reads the newest compute batches filtered by external_ref, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

@@ -284,6 +284,44 @@ host_repository::read_latest_by_external_id(const context& ctx, const std::strin
         "Reading latest compute host by external_id.");
 }
 
+std::vector<domain::host>
+host_repository::read_latest_by_external_id(const context& ctx,
+                                            const std::vector<std::string>& external_ids) {
+    if (external_ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (external_ids.size() > chunk_size) {
+        std::vector<domain::host> all;
+        for (std::size_t begin = 0; begin < external_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, external_ids.size());
+            auto part = read_latest_by_external_id(
+                ctx,
+                std::vector<std::string>(external_ids.begin() + begin, external_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute hosts by external_id. Count: "
+                               << external_ids.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<host_entity>> |
+        query_builder::where("tenant_id"_c == tid && "external_id"_c.in(external_ids) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<host_entity, domain::host>(
+        ctx,
+        query,
+        [](const auto& entities) { return host_mapper::map(entities); },
+        lg(),
+        "Reading latest compute hosts by external_id.");
+    return found;
+}
+
 std::vector<domain::host> host_repository::read_any_by_external_id(const context& ctx,
                                                                    const std::string& external_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any compute host by external_id: " << external_id;

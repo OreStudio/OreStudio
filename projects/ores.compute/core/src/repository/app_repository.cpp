@@ -289,6 +289,41 @@ std::vector<domain::app> app_repository::read_latest_by_name(const context& ctx,
         "Reading latest compute app by name.");
 }
 
+std::vector<domain::app>
+app_repository::read_latest_by_name(const context& ctx, const std::vector<std::string>& names) {
+    if (names.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (names.size() > chunk_size) {
+        std::vector<domain::app> all;
+        for (std::size_t begin = 0; begin < names.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, names.size());
+            auto part = read_latest_by_name(
+                ctx, std::vector<std::string>(names.begin() + begin, names.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute apps by name. Count: " << names.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<app_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "name"_c.in(names) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<app_entity, domain::app>(
+        ctx,
+        query,
+        [](const auto& entities) { return app_mapper::map(entities); },
+        lg(),
+        "Reading latest compute apps by name.");
+    return found;
+}
+
 std::vector<domain::app> app_repository::read_any_by_name(const context& ctx,
                                                           const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any compute app by name: " << name;

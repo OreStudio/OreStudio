@@ -121,6 +121,15 @@ public:
                                                                 const std::string& short_code);
 
     /**
+     * @brief Reads latest counterparties filtered by a set of short_code values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::counterparty>
+    read_latest_by_short_code(const context& ctx, const std::vector<std::string>& short_codes);
+
+    /**
      * @brief Reads the newest counterparties filtered by short_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

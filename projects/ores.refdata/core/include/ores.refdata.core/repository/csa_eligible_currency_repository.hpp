@@ -115,6 +115,16 @@ public:
     read_latest_by_currency_code(const context& ctx, const std::string& currency_code);
 
     /**
+     * @brief Reads latest CSA eligible currencies filtered by a set of currency_code values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::csa_eligible_currency>
+    read_latest_by_currency_code(const context& ctx,
+                                 const std::vector<std::string>& currency_codes);
+
+    /**
      * @brief Reads the newest CSA eligible currencies filtered by currency_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

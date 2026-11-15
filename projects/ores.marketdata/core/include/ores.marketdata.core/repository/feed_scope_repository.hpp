@@ -113,6 +113,15 @@ public:
                                                         const std::string& item);
 
     /**
+     * @brief Reads latest feed scopes filtered by a set of item values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::feed_scope> read_latest_by_item(const context& ctx,
+                                                        const std::vector<std::string>& items);
+
+    /**
      * @brief Reads the newest feed scopes filtered by item, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

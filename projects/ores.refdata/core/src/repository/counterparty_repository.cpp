@@ -311,6 +311,43 @@ counterparty_repository::read_latest_by_short_code(const context& ctx,
 }
 
 std::vector<domain::counterparty>
+counterparty_repository::read_latest_by_short_code(const context& ctx,
+                                                   const std::vector<std::string>& short_codes) {
+    if (short_codes.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (short_codes.size() > chunk_size) {
+        std::vector<domain::counterparty> all;
+        for (std::size_t begin = 0; begin < short_codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, short_codes.size());
+            auto part = read_latest_by_short_code(
+                ctx,
+                std::vector<std::string>(short_codes.begin() + begin, short_codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties by short_code. Count: "
+                               << short_codes.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<counterparty_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "short_code"_c.in(short_codes) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<counterparty_entity, domain::counterparty>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparties by short_code.");
+    return found;
+}
+
+std::vector<domain::counterparty>
 counterparty_repository::read_any_by_short_code(const context& ctx, const std::string& short_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any counterparty by short_code: " << short_code;
     const auto tid = ctx.tenant_id().to_string();

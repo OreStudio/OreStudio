@@ -114,6 +114,15 @@ public:
                                                                    const std::string& driver);
 
     /**
+     * @brief Reads latest rate card components filtered by a set of driver values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::rate_card_component>
+    read_latest_by_driver(const context& ctx, const std::vector<std::string>& drivers);
+
+    /**
      * @brief Reads the newest rate card components filtered by driver, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

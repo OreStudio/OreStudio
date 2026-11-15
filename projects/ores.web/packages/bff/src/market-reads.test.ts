@@ -338,6 +338,28 @@ describe('the market read routes', () => {
         expect(response.json().bootstrapped[0]).toMatchObject({ discount_factor: 0.9964 });
     });
 
+    it('carries the reason a curve is deferred rather than an empty page', async () => {
+        const harness = buildTestServer({
+            ...REPLIES,
+            'marketdata.v1.ops.get_curve_analytics': {
+                ...ANALYTICS,
+                success: false,
+                message: "curve 'USD-LIBOR-1M' has no quote for pillar '2Y'",
+                market_pillars: [],
+                bootstrapped: [],
+            },
+        });
+        const response = await post(harness, '/api/market/curve-analytics', {
+            instrument_id: 'c0000000-0000-0000-0000-000000000001',
+            as_of: '2026-11-13 23:59:59Z',
+        });
+
+        expect(response.statusCode).toBe(422);
+        expect(response.json()).toMatchObject({
+            message: "curve 'USD-LIBOR-1M' has no quote for pillar '2Y'",
+        });
+    });
+
     it('carries a refusal in the server words', async () => {
         const harness = buildTestServer({
             ...REPLIES,

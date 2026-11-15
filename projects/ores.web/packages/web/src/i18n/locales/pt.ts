@@ -5765,10 +5765,17 @@ const pt: SourceCatalogue = {
             comparedWith: 'Medido a partir do conjunto publicado em {at}.',
             noPriorSet:
                 'Nenhum conjunto publicado estava em vigor nesse instante, por isso nenhuma variação é traçada.',
+            besideCurve: 'Ao lado',
+            compareNone: 'Nenhuma segunda curva',
             readingFor: 'A ler para {party}',
             axes: {
                 tenor: 'Por prazo',
                 maturity: 'Por maturidade',
+            },
+            views: {
+                both: 'As duas curvas',
+                curve: 'Apenas {curve}',
+                beside: 'Apenas {beside}',
             },
             asOf: 'Em',
             index: 'Índice',
@@ -5789,6 +5796,11 @@ const pt: SourceCatalogue = {
             impliedForward: 'Forward implícito (%)',
             discountFactor: 'Fator de atualização',
             shift: 'Desvio (pb)',
+            pairTable: 'Pilar a pilar',
+            difference: 'Diferença',
+            pairLegend:
+                '{curve} é desenhada a traço cheio e {beside} a tracejado ao lado. A sobreposição de mercado é omitida, porque o gráfico passa a ser sobre duas curvas.',
+            besideFailed: 'Não foi possível ler a curva {curve}: {reason}',
             shiftNote:
                 'O desvio é a taxa zero menos a taxa de mercado no pilar: a distância entre a curva e o mercado, e não um deslocamento paralelo aplicado.',
             noPriorClose:

@@ -90,6 +90,7 @@
 \echo '--- IR Curve Bootstrap Configs Seed Data ---'
 \ir ./refdata_ir_curve_bootstrap_configs_populate.sql
 \ir ./refdata_ir_curve_overnight_configs_populate.sql
+\ir ./refdata_ir_curve_bootstrap_ibor_configs_populate.sql
 
 \echo ''
 \echo '--- FX Volatility Surface Blueprints ---'

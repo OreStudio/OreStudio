@@ -28,6 +28,7 @@
 #include "ores.marketdata.api/domain/curve_publish.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
+#include "published_curve.hpp"
 #include <chrono>
 #include <expected>
 #include <optional>
@@ -84,11 +85,6 @@ struct usd_leg final {
 ORES_MARKETDATA_SERVICE_EXPORT std::optional<domain::curve_publish>
 select_published_set(std::span<const domain::curve_publish> sets,
                      std::chrono::system_clock::time_point as_of);
-
-/// Adds the curve's reference date at a discount factor of one, which a stored curve leaves out.
-ORES_MARKETDATA_SERVICE_EXPORT std::vector<analytics::quant::service::bootstrapped_point>
-anchor_curve(std::vector<analytics::quant::service::bootstrapped_point> points,
-             std::chrono::year_month_day reference_date);
 
 struct fx_ladder_dates final {
     std::chrono::year_month_day spot_date{};

@@ -22,6 +22,7 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { api, type CurveAnalytics } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { show } from '../refdata/records.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS, type ChartSeries } from './LineChart.js';
@@ -40,14 +41,40 @@ import { HEAD_CELL, DATA_CELL, asOfInstant, oneOf, todayIso, useReadParty } from
 
 const CONFIGS = 'ir-curve-bootstrap-configs';
 
+/** What the address says when the reader has asked for no curve beside this one. */
+const NO_SECOND_CURVE = 'none';
+
 /** What the chart draws: the curve's own numbers, one metric at a time, as the prototype does. */
 const METRICS = ['zero', 'forward', 'discount'] as const;
 
 /// What the chart's x axis counts: the tenor code, or the days to maturity.
 const AXES = ['tenor', 'maturity'] as const;
 
+/**
+ * Which of the two curves the chart draws. One at a time is the prototype's own
+ * offer: two curves that sit far apart on one axis can hide the shape of either.
+ */
+const VIEWS = ['both', 'curve', 'beside'] as const;
+
 type Metric = (typeof METRICS)[number];
 type ChartAxis = (typeof AXES)[number];
+type PairView = (typeof VIEWS)[number];
+
+/**
+ * One curve configuration, as the picker and the pair both need it.
+ *
+ * A name alone does not say what a curve is: USD-SOFR-FOMC and USD-LIBOR-1M are
+ * two names in a list until the role and the index tenor beside them say which
+ * one is the overnight and which one is a tenor of LIBOR projected off it.
+ */
+interface CurveOption {
+    readonly id: string;
+    readonly name: string;
+    readonly role: string;
+    readonly indexTenor: string;
+    /** The funding curve a projection names as the one it discounts off. */
+    readonly discountId: string;
+}
 
 function percent(value: number, language: string): string {
     return (value * 100).toLocaleString(language, {
@@ -64,10 +91,11 @@ export function CurveAnalyticsPage(): ReactNode {
     const { t, language } = useTranslation();
     const party = useReadParty();
     const [search, setSearch] = useSearchParams();
-    const set = (values: Readonly<Record<string, string>>): void => {
+    const set = (values: Readonly<Record<string, string | undefined>>): void => {
         const next = new URLSearchParams(search);
         Object.entries(values).forEach(([key, value]) => {
-            next.set(key, value);
+            if (value === undefined) next.delete(key);
+            else next.set(key, value);
         });
         setSearch(next, { replace: true });
     };
@@ -77,17 +105,47 @@ export function CurveAnalyticsPage(): ReactNode {
         queryFn: async () => api.records(CONFIGS),
         retry: false,
     });
-    const options = (configs.data ?? []).map((row) => ({
-        id: String(row['id']),
-        name: String(row['name']),
+    const options: readonly CurveOption[] = (configs.data ?? []).map((row) => ({
+        id: show(row['id']),
+        name: show(row['name']),
+        role: show(row['curve_family_role']),
+        indexTenor: show(row['index_tenor']),
+        discountId: show(row['discount_curve_config_id']),
     }));
+    const labelOf = (option: CurveOption): string => {
+        const role = option.role === '' ? '' : t(`marketdata.curveBlueprints.roles.${option.role}`);
+        return [option.name, role, option.indexTenor].filter((part) => part !== '').join(' · ');
+    };
     const stated = search.get('curve') ?? '';
     const chosen =
         options.find((option) => option.id === stated || option.name === stated) ?? options[0];
+
+    /**
+     * The curve drawn beside the chosen one: for a projection, the funding curve
+     * it names as the one it discounts off, which is the currency's overnight
+     * curve. Anything else starts with nothing beside it.
+     */
+    const fundingOf = (curve: CurveOption | undefined): CurveOption | undefined =>
+        curve === undefined || curve.discountId === ''
+            ? undefined
+            : options.find((option) => option.id === curve.discountId);
+    const statedAgainst = search.get('against');
+    const namedAgainst =
+        statedAgainst === null
+            ? fundingOf(chosen)
+            : statedAgainst === NO_SECOND_CURVE
+              ? undefined
+              : options.find(
+                    (option) => option.id === statedAgainst || option.name === statedAgainst,
+                );
+    /** A curve is not drawn beside itself. */
+    const beside = namedAgainst === chosen ? undefined : namedAgainst;
+
     const asOf = search.get('asof') ?? todayIso();
-    const metric = oneOf(search.get('m'), METRICS, 'zero');
+    const metric = oneOf(search.get('m'), METRICS, beside === undefined ? 'zero' : 'forward');
     const axis = oneOf(search.get('axis'), AXES, 'tenor');
     const compare = search.get('compare') ?? '';
+    const view = oneOf(search.get('view'), VIEWS, 'both');
 
     const key = ['curve-analytics', chosen?.id ?? '', asOf, compare] as const;
     const analytics = useQuery({
@@ -96,15 +154,47 @@ export function CurveAnalyticsPage(): ReactNode {
             api.curveAnalytics({
                 instrumentId: chosen?.id ?? '',
                 asOf: asOfInstant(asOf),
-                compareAt: compare === '' ? '' : asOfInstant(compare),
+                compareAt: compare === '' ? null : asOfInstant(compare),
             }),
         enabled: chosen !== undefined,
         retry: false,
     });
+    const besideAnalytics = useQuery({
+        // The empty fourth slot is "no prior set": the second curve is read at
+        // one instant, since a pair of changes over time is not this screen.
+        queryKey: ['curve-analytics', beside?.id ?? '', asOf, ''] as const,
+        queryFn: () =>
+            api.curveAnalytics({
+                instrumentId: beside?.id ?? '',
+                asOf: asOfInstant(asOf),
+                compareAt: null,
+            }),
+        enabled: beside !== undefined,
+        retry: false,
+    });
 
     const data: CurveAnalytics | undefined = analytics.data;
+    const besideData: CurveAnalytics | undefined = besideAnalytics.data;
     const market = data?.market_pillars ?? [];
     const bootstrapped = data?.bootstrapped ?? [];
+    const labels = data === undefined ? [] : pairLabels(data, besideData, axis);
+    const showing = data === undefined ? [] : alignedCurve(data, metric, axis, labels);
+    const sideBySide =
+        besideData === undefined ? [] : alignedCurve(besideData, metric, axis, labels);
+    const quoted = data === undefined ? [] : marketCurve(data, axis, labels);
+
+    /**
+     * The curve that discounts leads the pair, so the difference reads the same
+     * way whichever curve the reader opened: what the term curve adds to the
+     * overnight it is projected off, not a sign that depends on the order of two
+     * selections.
+     */
+    const discounts = (option: CurveOption | undefined): boolean => option?.role === 'FUNDING';
+    const fundingLeads = data !== undefined && discounts(beside) && !discounts(chosen);
+    const leftValues = fundingLeads ? sideBySide : showing;
+    const rightValues = fundingLeads ? showing : sideBySide;
+    const leftName = (fundingLeads ? besideData?.name : data?.name) ?? '';
+    const rightName = (fundingLeads ? data?.name : besideData?.name) ?? '';
     const head = HEAD_CELL;
     const cell = DATA_CELL;
 
@@ -127,14 +217,35 @@ export function CurveAnalyticsPage(): ReactNode {
                     <Select
                         value={chosen?.id ?? ''}
                         onChange={(event) => {
-                            set({ curve: event.target.value });
+                            // The pair belongs to the curve, so a new curve starts from
+                            // its own funding curve rather than carrying the last one.
+                            set({ curve: event.target.value, against: undefined });
                         }}
                     >
                         {options.map((option) => (
                             <option key={option.id} value={option.id}>
-                                {option.name}
+                                {labelOf(option)}
                             </option>
                         ))}
+                    </Select>
+                </Field>
+                <Field label={t('marketdata.curveAnalytics.besideCurve')}>
+                    <Select
+                        value={beside?.id ?? NO_SECOND_CURVE}
+                        onChange={(event) => {
+                            set({ against: event.target.value });
+                        }}
+                    >
+                        <option value={NO_SECOND_CURVE}>
+                            {t('marketdata.curveAnalytics.compareNone')}
+                        </option>
+                        {options
+                            .filter((option) => option.id !== chosen?.id)
+                            .map((option) => (
+                                <option key={option.id} value={option.id}>
+                                    {labelOf(option)}
+                                </option>
+                            ))}
                     </Select>
                 </Field>
                 <Field label={t('marketdata.curveAnalytics.compare')}>
@@ -184,8 +295,16 @@ export function CurveAnalyticsPage(): ReactNode {
                 <Notice tone="info">{t('marketdata.curveAnalytics.noCurves')}</Notice>
             )}
             {analytics.isError && <Notice tone="error">{analytics.error.message}</Notice>}
-            {data !== undefined && compare !== '' && data.compare_at === '' && (
+            {data !== undefined && compare !== '' && data.compare_at === null && (
                 <Notice tone="info">{t('marketdata.curveAnalytics.noPriorSet')}</Notice>
+            )}
+            {besideAnalytics.isError && (
+                <Notice tone="error">
+                    {t('marketdata.curveAnalytics.besideFailed', {
+                        curve: beside?.name ?? '',
+                        reason: besideAnalytics.error.message,
+                    })}
+                </Notice>
             )}
             {data !== undefined && data.stale && (
                 <Notice tone="warn">{t('marketdata.curveAnalytics.stale')}</Notice>
@@ -221,18 +340,38 @@ export function CurveAnalyticsPage(): ReactNode {
                                     </option>
                                 ))}
                             </Select>
+                            {besideData !== undefined && (
+                                <Select
+                                    value={view}
+                                    onChange={(event) => {
+                                        set({ view: event.target.value });
+                                    }}
+                                >
+                                    {VIEWS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {t(`marketdata.curveAnalytics.views.${option}`, {
+                                                curve: data.name,
+                                                beside: besideData.name,
+                                            })}
+                                        </option>
+                                    ))}
+                                </Select>
+                            )}
                         </div>
                     </div>
                     <p className="text-xs text-ink-faint">
-                        {t(`marketdata.curveAnalytics.chartLegend.${metric}`, {
-                            dayCount: data.conventions.day_count,
-                        })}
+                        {besideData === undefined
+                            ? t(`marketdata.curveAnalytics.chartLegend.${metric}`, {
+                                  dayCount: data.conventions.day_count,
+                              })
+                            : t('marketdata.curveAnalytics.pairLegend', {
+                                  curve: data.name,
+                                  beside: besideData.name,
+                              })}
                     </p>
                     <LineChart
-                        series={chartSeries(data, metric)}
-                        categories={data.bootstrapped.map((point) =>
-                            axis === 'tenor' ? point.tenor : point.maturity_date,
-                        )}
+                        series={chartSeries(showing, sideBySide, quoted, metric, view)}
+                        categories={labels}
                         format={(value) =>
                             metric === 'discount' ? value.toFixed(4) : `${value.toFixed(3)}%`
                         }
@@ -241,6 +380,58 @@ export function CurveAnalyticsPage(): ReactNode {
                     />
                 </section>
             )}
+            {data !== undefined &&
+                besideData !== undefined &&
+                besideData.bootstrapped.length > 0 && (
+                    <section className="space-y-2 rounded-md border border-line p-4">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <h2 className="text-sm font-semibold">
+                                {t('marketdata.curveAnalytics.pairTable')}
+                            </h2>
+                            <p className="text-xs text-ink-faint">
+                                {t(`marketdata.curveAnalytics.metrics.${metric}`)}
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-line">
+                                        <th className={cx(head, 'text-left')}>
+                                            {t('marketdata.curveAnalytics.tenor')}
+                                        </th>
+                                        <th className={head}>{leftName}</th>
+                                        <th className={head}>{rightName}</th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.difference')}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {labels.map((label, at) => (
+                                        <tr key={label} className="border-b border-line-subtle">
+                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
+                                                {label}
+                                            </td>
+                                            <td className={cell}>
+                                                {written(metric, leftValues[at] ?? null, language)}
+                                            </td>
+                                            <td className={cell}>
+                                                {written(metric, rightValues[at] ?? null, language)}
+                                            </td>
+                                            <td className={cell}>
+                                                {gapOf(
+                                                    metric,
+                                                    leftValues[at] ?? null,
+                                                    rightValues[at] ?? null,
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                )}
             {data !== undefined && (
                 <>
                     <section className="space-y-2 rounded-md border border-line p-4">
@@ -314,7 +505,7 @@ export function CurveAnalyticsPage(): ReactNode {
                                         <th className={head}>
                                             {t('marketdata.curveAnalytics.impliedForward')}
                                         </th>
-                                        {data.compare_at !== '' && (
+                                        {data.compare_at !== null && (
                                             <>
                                                 <th className={head}>
                                                     {t('marketdata.curveAnalytics.priorZero')}
@@ -351,7 +542,7 @@ export function CurveAnalyticsPage(): ReactNode {
                                             <td className={cell}>
                                                 {percent(point.implied_forward, language)}
                                             </td>
-                                            {data.compare_at !== '' && (
+                                            {data.compare_at !== null && (
                                                 <>
                                                     <td className={cell}>
                                                         {point.prior_zero_rate === null
@@ -385,7 +576,7 @@ export function CurveAnalyticsPage(): ReactNode {
                             </table>
                         </div>
                     </section>
-                    {data.compare_at !== '' && (
+                    {data.compare_at !== null && (
                         <p className="text-xs text-ink-faint">
                             {t('marketdata.curveAnalytics.comparedWith', {
                                 at: data.compare_at,
@@ -393,7 +584,7 @@ export function CurveAnalyticsPage(): ReactNode {
                         </p>
                     )}
                     <Notice tone="info">{t('marketdata.curveAnalytics.shiftNote')}</Notice>
-                    {data.compare_at === '' && (
+                    {data.compare_at === null && (
                         <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
                     )}
                 </>
@@ -403,36 +594,126 @@ export function CurveAnalyticsPage(): ReactNode {
 }
 
 /**
- * The metric's own numbers, and for a rate the market's beside them.
- *
- * The market overlay is dashed because it is a different kind of fact: the
- * curve is what the bootstrap made of the quotes, and the overlay is what the
- * quotes said. A discount, factor by factor, has no market counterpart to draw.
+ * The x positions the chart draws: every tenor either curve holds, in maturity
+ * order and once each. A tenor only one curve has stays a gap in the other, so
+ * the two lines share one axis rather than being drawn over each other's labels.
  */
-function chartSeries(data: CurveAnalytics, metric: Metric): readonly ChartSeries[] {
-    const percent = (value: number): number => value * 100;
-    const curve = data.bootstrapped.map((point) =>
-        metric === 'zero'
-            ? percent(point.zero_rate)
-            : metric === 'forward'
-              ? percent(point.implied_forward)
-              : point.discount_factor,
+function pairLabels(
+    data: CurveAnalytics,
+    beside: CurveAnalytics | undefined,
+    axis: ChartAxis,
+): readonly string[] {
+    const first = new Map<string, number>();
+    for (const point of [...data.bootstrapped, ...(beside?.bootstrapped ?? [])]) {
+        const label = axis === 'tenor' ? point.tenor : point.maturity_date;
+        const seen = first.get(label);
+        if (seen === undefined || point.year_fraction < seen) first.set(label, point.year_fraction);
+    }
+    return [...first.entries()].sort((one, other) => one[1] - other[1]).map(([label]) => label);
+}
+
+/** One curve's numbers, one for each x, with null where the curve holds no point. */
+function alignedCurve(
+    data: CurveAnalytics,
+    metric: Metric,
+    axis: ChartAxis,
+    labels: readonly string[],
+): readonly (number | null)[] {
+    const at = new Map(
+        data.bootstrapped.map((point) => [
+            axis === 'tenor' ? point.tenor : point.maturity_date,
+            metric === 'zero'
+                ? point.zero_rate
+                : metric === 'forward'
+                  ? point.implied_forward
+                  : point.discount_factor,
+        ]),
     );
+    return labels.map((label) => at.get(label) ?? null);
+}
+
+/**
+ * What the market quoted at each pillar, matched to the same x as the curve.
+ *
+ * The quote is per tenor, so a point the market did not quote is a gap rather
+ * than a fallback to the curve's own number.
+ */
+function marketCurve(
+    data: CurveAnalytics,
+    axis: ChartAxis,
+    labels: readonly string[],
+): readonly (number | null)[] {
+    const quote = new Map(data.market_pillars.map((pillar) => [pillar.tenor, pillar.rate]));
+    const at = new Map(
+        data.bootstrapped.map((point) => [
+            axis === 'tenor' ? point.tenor : point.maturity_date,
+            quote.get(point.tenor) ?? null,
+        ]),
+    );
+    return labels.map((label) => at.get(label) ?? null);
+}
+
+/**
+ * The series the chart draws: the curve, then either the curve beside it or the
+ * market it was bootstrapped from.
+ *
+ * The second curve is dashed and dotted for the same reason the market overlay
+ * always was: it is a different kind of fact. A chart of two curves leaves the
+ * quotes out, because three lines say nothing clearly.
+ */
+function chartSeries(
+    showing: readonly (number | null)[],
+    sideBySide: readonly (number | null)[],
+    quoted: readonly (number | null)[],
+    metric: Metric,
+    view: PairView,
+): readonly ChartSeries[] {
+    const scale = (points: readonly (number | null)[]): (number | null)[] =>
+        points.map((value) => (value === null || metric === 'discount' ? value : value * 100));
     const series: ChartSeries[] = [
-        { points: curve, colour: SERIES_COLOURS[0], fill: metric !== 'discount', strong: true },
+        {
+            points: scale(showing),
+            colour: SERIES_COLOURS[0],
+            fill: metric !== 'discount',
+            strong: true,
+        },
     ];
+    if (sideBySide.length > 0) {
+        const beside: ChartSeries = {
+            points: scale(sideBySide),
+            colour: SERIES_COLOURS[1],
+            dashed: true,
+            dots: true,
+        };
+        if (view === 'curve') return series;
+        if (view === 'beside') {
+            return [{ ...beside, dashed: false, strong: true, fill: metric !== 'discount' }];
+        }
+        series.push(beside);
+        return series;
+    }
     if (metric !== 'discount') {
-        // The market's own quote at each pillar, matched by tenor so the two lines
-        // share an x. A pillar the market did not quote is a gap, not a zero.
-        const market = new Map(
-            data.market_pillars.map((pillar) => [pillar.tenor, percent(pillar.rate)]),
-        );
         series.push({
-            points: data.bootstrapped.map((point) => market.get(point.tenor) ?? null),
+            points: scale(quoted),
             colour: SERIES_COLOURS[2],
             dashed: true,
             dots: true,
         });
     }
     return series;
+}
+
+/** One curve's number at one pillar, written the way the metric reads. */
+function written(metric: Metric, value: number | null, language: string): string {
+    if (value === null) return '—';
+    return metric === 'discount' ? value.toFixed(6) : percent(value, language);
+}
+
+/** The two curves' difference at one pillar, in the metric's own unit. */
+function gapOf(metric: Metric, left: number | null, right: number | null): string {
+    if (left === null || right === null) return '—';
+    const gap = right - left;
+    return metric === 'discount'
+        ? `${gap >= 0 ? '+' : ''}${gap.toFixed(6)}`
+        : basisPoints(gap * 10000);
 }

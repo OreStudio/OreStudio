@@ -73,7 +73,7 @@ const uuid = z
 const curveAnalyticsBody = z.strictObject({
     instrument_id: uuid,
     as_of: instant,
-    compare_at: z.union([instant, z.literal('')]).default(''),
+    compare_at: z.union([instant, z.null()]).default(null),
 });
 
 const sourceSchema = z.looseObject({
@@ -218,7 +218,7 @@ const curveAnalyticsReply = z.looseObject({
     instrument_id: z.string().default(''),
     name: z.string().default(''),
     as_of: z.string().default(''),
-    compare_at: z.string().default(''),
+    compare_at: z.string().nullable().default(null),
     stale: z.boolean().default(false),
     conventions: conventionsSchema,
     market_pillars: z.array(marketPillarSchema).default([]),
@@ -353,6 +353,7 @@ export function registerMarketReadRoutes(
             },
             curveAnalyticsReply,
         );
+        if (!reply.success) throw refused(reply.message);
         return factsOf(reply);
     });
 }

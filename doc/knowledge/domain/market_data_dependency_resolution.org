@@ -172,6 +172,8 @@ descriptive:
 
 * See also
 
+- [[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]] — the same closure and topological order, applied by the producer that builds market data.
+
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; a reading-order guide for the full cluster.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where the closure defined here fits into the full valuation-scoped set derivation.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the elements the "depends on" relation is defined over.

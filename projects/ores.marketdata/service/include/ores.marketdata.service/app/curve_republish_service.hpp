@@ -26,9 +26,24 @@
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <expected>
+#include <string>
 #include <vector>
 
 namespace ores::marketdata::service::app {
+
+/**
+ * @brief Why a build did not run: one of its declared inputs is not there.
+ *
+ * A deferral is not a failure. The build did not start, so the curve keeps the
+ * set it published before, and the next firing tries again: a projection curve
+ * is deferred in the pass that builds its funding curve, and any curve is
+ * deferred until its quotes arrive.
+ */
+struct ORES_MARKETDATA_SERVICE_EXPORT curve_deferral final {
+    /// The input that was not there, named so a read of the log says which.
+    std::string reason;
+};
 
 /**
  * @brief Computes and publishes an IR curve bootstrap config's output -- the "republish/remap"
@@ -69,15 +84,13 @@ public:
      * @param ctx Database context, already tenant-scoped by the caller.
      * @param bootstrap_config_id The ir_curve_bootstrap_config to bootstrap.
      * @param as_of The raw grid's as-of snapshot to bootstrap from.
-     * @return One bootstrapped_point per pillar.
+     * @return One bootstrapped_point per pillar, or the deferral that says which
+     * input is not there yet.
      * @throws std::invalid_argument if the config, its pillars, or the raw grid's observed rates
      * are missing or malformed.
-     * @throws ores::analytics::quant::service::discount_curve_required_error if @p
-     * bootstrap_config_id is a PROJECTION config and its discount_curve_config_id's own output
-     * does not yet cover every pillar's dates as of @p as_of -- propagated uncaught, per the
-     * engine's own "fails/defers cleanly" contract; callers must not treat this as a bug.
      */
-    static std::vector<ores::analytics::quant::service::bootstrapped_point>
+    static std::expected<std::vector<ores::analytics::quant::service::bootstrapped_point>,
+                         curve_deferral>
     compute(const context& ctx,
             const boost::uuids::uuid& bootstrap_config_id,
             std::chrono::system_clock::time_point as_of);
@@ -90,13 +103,15 @@ public:
      * @param bootstrap_config_id The ir_curve_bootstrap_config to republish.
      * @param as_of The raw grid's as-of snapshot to bootstrap from; also stamped as both the
      * published observations' own observation_datetime and observation_lineage's source_as_of.
+     * @return Nothing on a publish, or the deferral that says which input is not there yet. A
+     * deferred build writes nothing, so the curve keeps its previous set.
      * @throws std::invalid_argument if the config, its pillars, its output market_series row, or
      * the raw grid's observed rates are missing or malformed.
-     * @throws ores::analytics::quant::service::discount_curve_required_error -- see compute().
      */
-    static void republish(const context& ctx,
-                          const boost::uuids::uuid& bootstrap_config_id,
-                          std::chrono::system_clock::time_point as_of);
+    static std::expected<void, curve_deferral>
+    republish(const context& ctx,
+              const boost::uuids::uuid& bootstrap_config_id,
+              std::chrono::system_clock::time_point as_of);
 };
 
 }

@@ -8,12 +8,12 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-every-ibor-curve
-#+pr:
+#+pr: 4737
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
-#+updated: 2026-11-13
-#+environment:
+#+updated: 2026-11-14
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every IBOR feed of every currency has a bootstrapped curve that reads its own IB
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 
@@ -58,9 +58,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IBOR bootstrap configs seeded | 10 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl where curve_family_role='PROJECTION'= | eb9acd465c |
+| IBOR bootstrap pillars seeded | 70 | same table joined to the pillars where the role is =PROJECTION= | eb9acd465c |
+| IBOR market series seeded | 40 (10 output, 30 quote) | =select count(*) from ores_marketdata_market_series_tbl where oresmd_uri like 'oresmd://ir/%tenor=1M'...= | eb9acd465c |
+| Fresh database with the seeds | recreate passes | =./compass.sh db recreate -y -k= | ca20a1be68 |
+| Curves a fresh database seeds | 30 (20 funding, 10 projection) | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl where valid_to = ... and tenant_id = <system>= | ca20a1be68 |
+| Curves one firing published | 30 of 30 (20 funding, 10 projection) | marketdata log: =Curve republish sweep: published 30 of 30 curve(s): deferred 0, failed 0, raised 0= | ca20a1be68 |
+| Curves a firing left unbuilt on a database with no quotes | 0 published, 30 deferred, 0 failed | marketdata log: =published 0 of 30 curve(s): deferred 30, failed 0, raised 0= | ca20a1be68 |
+| Service suites | 257 cases, all pass | =./compass.sh test run -- -R ores.marketdata.service.tests= | ca20a1be68 |
 
 * Notes
+
+- The seeds: =marketdata_market_series_ibor_curves_populate.sql= holds the 40 series and
+  their junctions, and =refdata_ir_curve_bootstrap_ibor_configs_populate.sql= the ten configs
+  and their seventy pillars. The IBOR config seed must run *after* the overnight config seed,
+  because a projection config resolves its discount curve by name as the file runs; the first
+  order put it before and the insert failed with a NULL discount.
+- The ordering is the remaining change, and it is not a role sort: the sweep takes its order
+  from a build plan derived from the inputs each curve declares, and a curve whose input is not
+  live is deferred rather than failed. The design, its three outcomes and the one planner every
+  builder shares are [[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]].
+- The quotes themselves need the synthetic feeds started: after a fresh recreate the dataset
+  must be published and the synthetic service restarted so the adapters announce and the feeds
+  run, as the previous task's live run showed.
 
 - The overnight chain is the template: two market_series rows (the curve output with
   =instrument=discount...curve_id=<name>= and the quote ladder with =instrument=ir_swap=), one
@@ -98,12 +118,189 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4737][#4737]] | [marketdata,iam,web] Bootstrap every IBOR curve beside its overnight curve |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The engine's refusal was turned into a deferral, so a projection that can never build waits for ever and the sweep reports success | =curve_republish_service.cpp= | fixed | =31a4fcf53d=: thrown with both curves named; a projection reaching past its funding curve has its own test |
+| 2 | =publish_all= lists, plans, sweeps and counts in one function | =publish_due_curves_handler.hpp= | partial | =31a4fcf53d= aliases the map it reads through; splitting the sweep is its own task |
+| 3 | =find(...) != npos= where =contains()= reads better | =messaging_publish_due_curves_tests.cpp= | fixed | =31a4fcf53d= |
+| 4 | The new cases declare no suite and log nothing | =curve_build_planner_tests.cpp=, =messaging_party_curve_blueprints_tests.cpp= | fixed | =1e2a15b291=: fifteen cases now name the suite and log what they assert |
+| 5 | A party's batch appends what it cannot order, leaving the store to refuse it | =party_curve_blueprints.hpp= | fixed | =43a7777b47=: the drop pass already removes those and names them; the append is gone |
+| 6 | =status= is a string over five constants | =curve_publish_gate.hpp= | declined | It is a protocol field: an enum is a wire change and belongs with the model, not with this PR |
+| 7 | Two commits omit the =Environment:= trailer | git history | declined | Rewriting pushed history mid-review churns the branch; the round's own commits carry it |
+| 8 | A set the plan refuses as a cycle is untested through the sweep | =publish_due_curves_handler.hpp= | declined | The schema refuses a projection off a projection, so no configuration can reach it; the planner's own cases cover the refusal |
+| 9 | The anchor uses the projection's horizon rather than the funding set's as-of | =curve_republish_service.cpp= | declined | The stored points are re-dated to the read's own reference date, so the anchor date is the one the curve it anchors was built at |
+| 10 | Raised is =success=false= at the gate but not a failure in the sweep | =publish_due_curves_handler.hpp= | fixed | =31a4fcf53d=: the sweep says why a raise is somebody else's to answer |
 
 * Result
+The task shipped. One firing of the scheduled sweep planned the thirty seeded
+curves, built the twenty funding curves, then built the ten IBOR projections
+against the funding curves it had just published, and published all thirty. No
+curve was deferred and none failed.
+
+** The order is a plan, not a role sort
+
+=curve_build_planner= (=ores.marketdata.core=) orders a set of artefacts by the
+inputs each one declares, and states the nodes no input allows: an input the set
+does not hold, or one that is itself held out. Its three parts are pure, so order,
+missing inputs and cycles are decided without a database.
+
+The sweep builds its nodes from the configs it reads -- a projection declares the
+funding config it discounts off -- and visits the plan's levels in order. A node
+no level holds is deferred unvisited, and a cyclic set is refused rather than
+retried, naming the curves. The plan and the outcomes are
+[[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]].
+
+** A deferred curve is not a failure
+
+=curve_republish_service= returns a =curve_deferral= rather than throwing when a
+pillar has no quote or the funding curve has published nothing: the build did not
+start, so the curve keeps the set it had, and the next firing tries again. The
+publish path answers in the same words -- published, raised, deferred, refused,
+failed -- so the sweep reports a curve's fate without restating it, and counts the
+three outcomes apart.
+
+On the fresh database, before any quote existed, a firing reported =published 0 of
+30 curve(s): deferred 30, failed 0=. Before this change the ten projections failed
+in the pass that published their funding curves, and the log could not tell that
+ordering from a break.
+
+** A projection reads its funding curve from that curve's reference date
+
+The funding curves' first pillar is a three month deposit; every IBOR ladder starts
+with a one month deposit. The engine refuses a discount curve that does not span a
+pillar's dates, and a stored set leaves out its own reference date, where the
+discount factor is one. The projection now anchors the funding curve it reads at
+the as-of before the engine judges coverage
+(=curve_republish_service.cpp=). Without the anchor the ten projections deferred
+with =discount_curve does not cover pillar '1M'=; with it they publish.
+
+** Evidence
+
+A firing on the recreated database, at 2026-11-14 00:45, in plan order: the twenty
+funding curves first (KRW-KOFR, MXN-TIIE, COP-IBR, HKD-HONIA, CZK-CZEONIA,
+SEK-SWESTR, SGD-SORA, EUR-ESTR, AUD-AONIA, CHF-SARON, TRY-TLREF, GBP-SONIA,
+ZAR-ZARONIA, NZD-NZONIA, CAD-CORRA, DKK-DESTR, CLP-CAMARA, USD-SOFR-FOMC,
+INR-MIBOR, JPY-TONA), then the ten projections (EUR-EURIBOR-1M, EUR-EURIBOR-6M,
+CHF-LIBOR-3M, CHF-LIBOR-6M, GBP-LIBOR-3M, GBP-LIBOR-1M, USD-LIBOR-1M,
+USD-LIBOR-6M, JPY-LIBOR-3M, JPY-LIBOR-1M). Every one published.
+
+=select curve_family_role, count(distinct c.id), count(distinct p.output_series_id)
+filter (where p.valid_to = ores_utility_infinity_timestamp_fn()) ...= answers 20
+funding and 10 projection curves with a live publish each, for the system tenant.
+
+** What the quotes were, and what is still provisioning's
+
+This environment was recreated and not provisioned. Nothing the installation
+publishes was there: the adapter and supplier catalogues are DQ datasets of the
+=system_core= bundle, and the =system_provision= step of the provisioning run is
+what publishes them into the system tenant. A bare database therefore knows no
+adapter, refuses every announce, and demands nothing from any feed. Provider terms
+are not the cause: the simulated vendors carry no terms at all (=ice=, =tradeweb=,
+=bloomberg=, =lseg=, =demo=, =composite=), and the terms a person must accept
+belong to the public single-source providers (=boe=, =ecb=, =nyfed= and the rest).
+
+The bring-up is =compass shell -f
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=, which runs
+=system_provision= and then the tenant's own steps. It did not run after the
+recreate, and =compass db status= says so: =bootstrap mode true -- system
+provisioning wizard not yet run=.
+
+Publishing the catalogues by hand -- =marketdata.adapters=, =marketdata.suppliers=,
+=synthetic.market_data_providers= and the synthetic feeds datasets -- got the
+adapters as far as announcing and being accepted, and the environment stops there:
+the synthetic service does not answer the market data service's demand subjects
+inside the supervisor's two second wait, so no feed starts and no quote series
+holds an observation. That is
+[[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]],
+which is in flight elsewhere.
+
+So that this task's own chain could be proved, the live run seeded one flat quote
+per pillar directly: 210 observations, =source = 'provisioning hack: flat quote'=.
+They are not the feeds' work and stand in for it. Deleting them
+(=delete from ores_marketdata_market_observations_tbl where source = 'provisioning
+hack: flat quote'=) returns the environment to the feeds, after which the curves
+defer until the synthetic service serves them.
+
+** The party copies, and what provisioning needed
+
+The system tenant's thirty curves are not the whole story: a party bootstraps its own copy of
+each, from the quotes its own subscriptions deliver, and the first full provisioning run found
+two things wrong with that copy.
+
+- *Every party was on the wrong feeds.* The =acme_demo= profile subscribed each entity to
+  Bloomberg, the uniform demo collection, LSEG and the derived FX volatility source -- none of
+  them to ICE or Tradeweb, whose feeds quote the IBOR ladders. A curve reads the quotes of its
+  own party, so every party's IBOR curves waited with =no series of ice ...= and never
+  published. The profile now subscribes every entity to both.
+- *The copies were written in name order.* The store checks a projection's discount curve as
+  each row lands, and the batch named =USD-LIBOR-1M= before =USD-SOFR-FOMC=, so the party's
+  whole copy was refused with =Must reference an active FUNDING config=. The plan now sorts its
+  batch so each config follows the one it names (commit =893acad5d7=), which the schema's
+  funding-only rule makes a two-pass sort.
+
+After both, a clean =compass db recreate -y -k= and the documented bring-up published twenty
+funding curves and the ten IBOR curves for each of the four entities, plus the system tenant's
+thirty: =select curve_family_role, count(*) ...= answers 20 and 10 per party, every projection
+with a live publish.
+
+The bring-up still stops one step later, at =publish_party_surfaces=, on a defect of the
+volatility surfaces rather than of the curves: =expiry 1W: the row dated 2026-11-17 is before
+the spot date 2026-11-18=, forty surfaces across the four parties. The feed's spot and the
+calibration's spot differ by one business day, which belongs to
+[[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces -- the remaining work]].
+
+** Where the branch ended
+
+Rebased onto =main= at =af771c49bd= and rebuilt, the tree is clean and the
+provisioning run is clean end to end: the seventeen steps of
+=compass shell -f
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores= all
+complete, =publish_party_surfaces= included, which was the one step that failed
+when this task last measured it. The measures, taken at =bf8a469d2e= on
+2026-11-14:
+
+| What | Value | Command |
+|------+-------+---------|
+| Provisioning steps carrying an error | 0 of 858 | =select count(*) from ores_workflow_workflow_steps_tbl where error <> ''= |
+| Error-level lines in every service log | 0 | =grep -c '\[error\]' publish/log/*.log= |
+| System curves published | 30 of 30 | the sweep's own log line |
+| Live curve publishes | 60 per Acme entity, 30 for the system tenant | =select party_id, count(*) ... where withdrawn_at is null and superseded_at is null= |
+| Projection configs naming a funding curve | 50 of 50 | =select count(*), count(discount_curve_config_id) ... where curve_family_role = 'PROJECTION'= |
+
+One read of the pair the screens draw, as =tenant_admin@acme_corporation= through
+the BFF at =2026-11-14 23:59:59Z=: =USD-LIBOR-1M= answers seven pillars with
+the first at =1M= and a zero of 4.2428%, and =USD-SOFR-FOMC= answers seven with
+the first at =3M= and a zero of 3.9545%. The projection's one month pillar is the
+case the anchor above exists for.
+
+** After the review
+
+The first review round found one fault that changes behaviour and a set of
+smaller ones. The fault: the engine's "the funding curve does not cover this
+pillar" was turned into a deferral, so a projection whose funding curve had
+published and could still not span it waited for ever, and the sweep reported
+success because nothing failed. It is now thrown, with both curves named, which
+is what the sweep counts as a break; a projection whose ladder reaches past its
+funding curve has a test of its own, with every pillar quoted so nothing else
+can be the reason.
+
+The rest were cheap: two =contains()= calls, fifteen test cases that now name
+their suite and log what they assert, the map a firing reads its curves through
+aliased, and a party batch that no longer ends with a silent append of what it
+could not order -- the drop pass above already removed those and named them.
+
+Three findings were declined with reasons, and they are in the review table
+above: the status string is a protocol field rather than a local type, the
+anchor date is consistent with how a stored set is re-dated on read, and a
+cyclic configuration cannot be expressed at all, because the schema refuses a
+projection that discounts off another projection.
+
+After the fixes, =ores.iam.core.tests=, =ores.marketdata.core.tests= and
+=ores.marketdata.service.tests= pass. The sweep's own suite failed once under
+three suites in parallel, on
+=app_feed_ingest_loop_tests.cpp:1325= (=writer->held() >= 1=), and passes
+alone: it is a timing check in the ingest loop, untouched here.

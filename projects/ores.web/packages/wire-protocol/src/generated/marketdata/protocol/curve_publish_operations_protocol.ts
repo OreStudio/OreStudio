@@ -67,6 +67,16 @@ export interface PublishCurveResponse {
      */
     success: boolean;
     /**
+     * @brief What the call did, as one of published, raised, deferred, refused or
+     * failed.
+     *
+     * Published moved the set. Raised waits on a decision and moved nothing.
+     * Deferred did not run because an input the curve declares is not there yet --
+     * the set it published before is still the set in force, and the next firing
+     * tries again. Refused is the gate's no. Failed is an error.
+     */
+    status: string;
+    /**
      * @brief Why the publish did not happen, or empty when it did.
      */
     message: string;

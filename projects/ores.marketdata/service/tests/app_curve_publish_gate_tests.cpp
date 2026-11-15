@@ -205,8 +205,9 @@ TEST_CASE("an_approved_subject_publishes_exactly_that_and_records_the_publisher"
     REQUIRE(verdict.record.has_value());
 
     // The gate publishes the subject it checked, and only then records the act.
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     CHECK(f.output_point_count() == 2);
 
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
@@ -360,8 +361,9 @@ TEST_CASE("the_read_that_serves_the_curve_states_the_publisher_and_the_time", ta
 
     const auto verdict = verdict_on_publish(maker.ctx, id, subject);
     REQUIRE(verdict.approved);
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
 
     const auto snapshot = f.snapshot();
@@ -427,8 +429,9 @@ TEST_CASE("a_kind_that_needs_no_approval_publishes_on_the_raise_itself", tags) {
     CHECK(verdict.state_code == "approved");
     REQUIRE(verdict.record.has_value());
 
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
     CHECK(published.published_by == maker.account.username);
     REQUIRE(published.published_at.has_value());

@@ -188,7 +188,7 @@ public:
         write_series(output_series_id, output_series_uri());
         write_config();
         write_pillar_series();
-        write_pillars();
+        write_pillars(config_id, pillar_series, pillar_ladder());
         write_market();
     }
 
@@ -210,6 +210,40 @@ public:
         write_series(series_id, output_series_uri("USD-SOFR-SECOND"));
         write_config(id, series_id);
         return id;
+    }
+
+    /**
+     * @brief Seeds a projection curve that discounts off a funding curve.
+     *
+     * The projection walks the fixture's own ladder and reads its own quotes, so
+     * the funding curve's points cover every date the projection needs: one
+     * firing can build both, provided it visits the funding curve first.
+     *
+     * @param discounts_off The funding curve it reads; the fixture's own by
+     * default.
+     */
+    boost::uuids::uuid
+    seed_projection_curve(const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
+        return seed_projection_curve(pillar_ladder(), discounts_off);
+    }
+
+    /// @brief Seeds a projection whose first deposit is shorter than the funding
+    /// curve's first point.
+    boost::uuids::uuid seed_projection_curve_with_a_short_pillar(
+        const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
+        return seed_projection_curve(projection_ladder(), discounts_off);
+    }
+
+    /// @brief Seeds a projection whose ladder reaches past the funding curve's last
+    /// point, with its own quotes in place.
+    ///
+    /// Every pillar is quoted, so nothing waits for the market: what it reads is a
+    /// curve that cannot span the build.
+    boost::uuids::uuid seed_projection_curve_past_its_funding_curve(
+        const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
+        return seed_projection_curve(
+            {std::tuple{"SPOT", "6M", "DEPOSIT"}, std::tuple{"SPOT", "5Y", "SWAP"}},
+            discounts_off);
     }
 
     /// @brief The output series, as the resolver names it.
@@ -243,7 +277,9 @@ public:
     boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     boost::uuids::uuid output_series_id;
-    /// The market series each pillar reads, by the pillar's end tenor.
+    /// The market series each pillar of a ladder reads, by its "START>END" pair.
+    /// A ladder is one series and its rungs are terms, so the spot-starting rungs
+    /// of every ladder share the series the spot quote lives in.
     std::map<std::string, boost::uuids::uuid> pillar_series;
 
     /// The party's context: a curve, its quotes and its publish record are one party's.
@@ -252,6 +288,19 @@ public:
 private:
     static std::string output_series_uri(const std::string& curve_id = "USD-SOFR-FIXTURE") {
         return "oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=" + curve_id;
+    }
+
+    boost::uuids::uuid seed_projection_curve(
+        const std::vector<std::tuple<std::string, std::string, std::string>>& ladder,
+        const std::optional<boost::uuids::uuid>& discounts_off) {
+        const auto id = uuid_gen();
+        const auto series_id = uuid_gen();
+        write_series(series_id,
+                     output_series_uri("USD-LIBOR-3M-PROJECTION-" +
+                                       boost::uuids::to_string(id).substr(0, 8)));
+        write_config(id, series_id, "PROJECTION", discounts_off.value_or(config_id));
+        write_pillars(id, pillar_series, ladder);
+        return id;
     }
 
     void write_party() {
@@ -297,19 +346,24 @@ private:
         write_config(config_id, output_series_id);
     }
 
-    void write_config(const boost::uuids::uuid& id, const boost::uuids::uuid& series) {
+    void write_config(const boost::uuids::uuid& id,
+                      const boost::uuids::uuid& series,
+                      const std::string& role = "FUNDING",
+                      const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
         ores::refdata::domain::ir_curve_bootstrap_config c;
         c.id = id;
         c.version = 0;
         c.tenant_id = h.tenant_id();
         c.party_id = party_id;
         // The name is unique per party among the active rows, and a fixture may
-        // write more than one config, so it is taken from the id it writes.
-        c.name = "USD-SOFR-" + boost::uuids::to_string(id).substr(0, 8);
+        // write more than one config, so it is taken from the id it writes. The
+        // family reads in the name, so a failure names which curve broke.
+        c.name = (role == "FUNDING" ? "USD-SOFR-" : "USD-LIBOR-3M-") +
+                 boost::uuids::to_string(id).substr(0, 8);
         c.currency_code = "USD";
         c.index_tenor = "1D";
-        c.curve_family_role = "FUNDING";
-        c.discount_curve_config_id = std::nullopt;
+        c.curve_family_role = role;
+        c.discount_curve_config_id = discounts_off;
         c.interpolation_method = "FLAT_FORWARD_THEN_LOG_LINEAR";
         c.day_count_convention = "A360";
         c.tenor_convention_code = "RATES_SPOT_FORWARD";
@@ -326,6 +380,18 @@ private:
     /// The ladder every pillar-writing step walks: start tenor, end tenor, role.
     static std::vector<std::tuple<std::string, std::string, std::string>> pillar_ladder() {
         return {std::tuple{"SPOT", "12M", "DEPOSIT"}, std::tuple{"12M", "2Y", "SWAP"}};
+    }
+
+    /**
+     * @brief The ladder a projection walks: its first deposit is shorter than any
+     * the funding curve has.
+     *
+     * That is the shape of a three month curve against an overnight one, and the
+     * shorter pillar falls between the funding curve's reference date and its first
+     * point -- which is the range a stored curve does not state.
+     */
+    static std::vector<std::tuple<std::string, std::string, std::string>> projection_ladder() {
+        return {std::tuple{"SPOT", "6M", "DEPOSIT"}, std::tuple{"SPOT", "2Y", "SWAP"}};
     }
 
     /// The quote of one pillar of the ladder, as the feed states it.
@@ -366,30 +432,39 @@ private:
         return *uri;
     }
 
-    /// One series per pillar's quote, written before the pillar that names it.
+    /// One series per ladder, written before the pillar that names it.
     void write_pillar_series() {
         for (const auto& [start, end, role] : pillar_ladder()) {
             const auto id = uuid_gen();
             write_series(id, quote_series_uri(start, end));
-            pillar_series.emplace(end, id);
+            pillar_series.emplace(start + ">" + end, id);
         }
+        // Every spot-starting rung of every ladder is one series: the term is what
+        // says which rung a point is. The projection's shorter deposit is therefore
+        // another term of the funding curve's own spot series.
+        pillar_series.emplace("SPOT>6M", pillar_series.at("SPOT>12M"));
+        pillar_series.emplace("SPOT>2Y", pillar_series.at("SPOT>12M"));
+        pillar_series.emplace("SPOT>5Y", pillar_series.at("SPOT>12M"));
     }
 
-    void write_pillars() {
+    void
+    write_pillars(const boost::uuids::uuid& config,
+                  const std::map<std::string, boost::uuids::uuid>& series_by_pillar,
+                  const std::vector<std::tuple<std::string, std::string, std::string>>& ladder) {
         ores::refdata::repository::ir_curve_bootstrap_pillar_repository repo;
         int seq = 0;
-        for (const auto& [start, end, role] : pillar_ladder()) {
+        for (const auto& [start, end, role] : ladder) {
             ores::refdata::domain::ir_curve_bootstrap_pillar p;
             p.id = uuid_gen();
             p.version = 0;
             p.tenant_id = h.tenant_id();
             p.party_id = party_id;
-            p.bootstrap_config_id = config_id;
+            p.bootstrap_config_id = config;
             p.sequence_index = seq++;
             p.start_tenor_code = start;
             p.end_tenor_code = end;
             p.curve_role_code = role;
-            p.market_series_id = pillar_series.at(end);
+            p.market_series_id = series_by_pillar.at(start + ">" + end);
             p.modified_by = h.db_user();
             p.performed_by = h.db_user();
             p.change_reason_code = "system.test";
@@ -401,9 +476,12 @@ private:
     /// @brief The quotes: one observation in the series each pillar names.
     void write_market() {
         ores::marketdata::repository::market_observation_repository obs_repo;
-        for (const auto& [start, end, value] :
-             {std::tuple{"SPOT", "12M", "0.0432"}, std::tuple{"12M", "2Y", "0.0395"}}) {
-            const auto series_id = pillar_series.at(end);
+        for (const auto& [start, end, value] : {std::tuple{"SPOT", "6M", "0.0425"},
+                                                std::tuple{"SPOT", "12M", "0.0432"},
+                                                std::tuple{"SPOT", "2Y", "0.0405"},
+                                                std::tuple{"SPOT", "5Y", "0.0410"},
+                                                std::tuple{"12M", "2Y", "0.0395"}}) {
+            const auto series_id = pillar_series.at(std::string(start) + ">" + end);
 
             ores::marketdata::domain::market_observation o;
             o.id = uuid_gen();

@@ -123,6 +123,7 @@ public:
             BOOST_LOG_SEV(curve_publish_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
+            resp.status = service::app::publish_status_failed;
             resp.message = e.what();
         }
         BOOST_LOG_SEV(curve_publish_handler_lg(), debug) << "Completed " << msg.subject;
@@ -158,7 +159,8 @@ public:
             resp.approval_request_id = id;
             resp.state_code = raised.state_code;
             if (raised.state_code != "approved") {
-                resp.success = true;
+                resp.success = false;
+                resp.status = service::app::publish_status_raised;
                 resp.message = "Raised. The publish waits on the decision.";
                 BOOST_LOG_SEV(curve_publish_handler_lg(), info)
                     << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
@@ -192,16 +194,30 @@ private:
         const auto verdict = verdict_on_publish(req_ctx, request_id, attempted);
         resp.state_code = verdict.state_code;
         if (!verdict.approved) {
+            resp.status = service::app::publish_status_refused;
             resp.message = verdict.message;
             return;
         }
 
-        curve_republish_service::republish(req_ctx, attempted.bootstrap_config_id, attempted.as_of);
+        // A deferred build writes nothing and stamps nothing, so the request is not
+        // spent on a curve whose inputs have not arrived: the next firing applies it.
+        const auto built = curve_republish_service::republish(
+            req_ctx, attempted.bootstrap_config_id, attempted.as_of);
+        if (!built) {
+            resp.status = service::app::publish_status_deferred;
+            resp.message = "Deferred. " + built.error().reason;
+            BOOST_LOG_SEV(curve_publish_handler_lg(), info)
+                << "Deferred curve " << attempted.bootstrap_config_id << ": "
+                << built.error().reason;
+            return;
+        }
+
         const auto published = record_publication(
             req_ctx,
             *verdict.record,
             req_ctx.actor().empty() ? req_ctx.service_account() : req_ctx.actor());
         resp.success = true;
+        resp.status = service::app::publish_status_published;
         resp.published_at = published.published_at;
         resp.published_by = published.published_by;
     }

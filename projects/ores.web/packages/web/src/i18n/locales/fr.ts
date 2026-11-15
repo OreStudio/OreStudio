@@ -5806,10 +5806,17 @@ const fr: SourceCatalogue = {
             comparedWith: 'Mesuré depuis l’ensemble publié au {at}.',
             noPriorSet:
                 'Aucun ensemble publié n’était en vigueur à cet instant ; aucune variation n’est tracée.',
+            besideCurve: 'À côté',
+            compareNone: 'Aucune seconde courbe',
             readingFor: 'Lecture pour {party}',
             axes: {
                 tenor: 'Par échéance',
                 maturity: 'Par maturité',
+            },
+            views: {
+                both: 'Les deux courbes',
+                curve: '{curve} seule',
+                beside: '{beside} seule',
             },
             asOf: 'Au',
             index: 'Indice',
@@ -5830,6 +5837,11 @@ const fr: SourceCatalogue = {
             impliedForward: 'Forward implicite (%)',
             discountFactor: "Facteur d'actualisation",
             shift: 'Écart (pb)',
+            pairTable: 'Pilier par pilier',
+            difference: 'Différence',
+            pairLegend:
+                '{curve} est tracée en trait plein et {beside} en pointillés à côté. La surcouche de marché est omise, car le graphique porte désormais sur deux courbes.',
+            besideFailed: "La courbe {curve} n'a pas pu être lue : {reason}",
             shiftNote:
                 "L'écart est le taux zéro moins le taux de marché au pilier : la distance entre la courbe et le marché, et non un décalage parallèle appliqué.",
             noPriorClose:

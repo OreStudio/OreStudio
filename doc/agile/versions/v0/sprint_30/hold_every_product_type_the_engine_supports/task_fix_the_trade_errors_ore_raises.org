@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-the-trade-errors-ore-raises
+#+pr: 4758
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ Every error ORE raises reading or building a recorded trade is either fixed, bec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -48,9 +48,16 @@ Every error ORE raises reading or building a recorded trade is either fixed, bec
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The ORE engine test gives each error a kind from a fixed table of ORE's
+  message patterns: =market_data= for a missing curve, quote, index or
+  reference data; =engine_configuration= for a missing pricing engine or engine
+  builder; =trade= for any other message. The known list gains the kind as its
+  first column, and the test fails on any error of the =trade= kind.
+- Trace each =trade= error to its cause in ORE's source, fix it in the
+  generator, re-record the generated trades, and rewrite the known list from a
+  fresh run.
+- Give every known missing path a reason, from ORE's schema, and make the
+  export test require one.
 
 * Measurements
 
@@ -64,9 +71,48 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE errors by kind before the fixes | 40 market_data, 3 engine_configuration, 6 trade | scratch =ore_errors.py= (stages the test's run and applies the same patterns) over the recorded trades less BalanceGuaranteedSwap | 02fbc3fb93 base |
+| ORE errors by kind after the fixes | 44 market_data, 3 engine_configuration, 0 trade; no crash with BalanceGuaranteedSwap included | the same, every recorded trade | 3d15ed9b15 |
+| ORE engine test | passes, 171 assertions; fails naming the BondOption error when its VolatilityCurveId is removed | =ores.synthetic.core.tests "the ORE engine raises only the known errors on the recorded trades"= | 3d15ed9b15 |
+| Generated trade tests | 6 pass, 1 skipped | =ores.synthetic.core.tests "[generated]"= | 3d15ed9b15 |
+| Known missing paths with a reason | 101 of 101: 96 optional in ORE's schema, 3 dated notionals, 2 underlying form | scratch =path_optional.py= over =external/ore/xsd=, the rest checked by hand | 6c56b9a763 |
 
 * Notes
+
+** What caused each trade error
+
+- /ScriptedTrade/: the generic trade named its index =.SPX= and stated three of
+  the variables =AsianBasketOption= reads, with =PutCall= as =Call=. ORE's own
+  example (=Example_Trades/Scripted_BasketOption.xml=) states =Expiry=,
+  =Settlement=, an =ObservationDates= schedule, =PutCall= and =LongShort= as
+  signs, =Notional=, =Strike=, =Underlyings= and =Weights= lists and =PayCcy=.
+  The generator now states all of them; the export writes =EQ-= names since
+  =cf010d9c18=. ORE now reports only the missing =.SPX= equity curve.
+- /BondOption/: =BondOptionEngineBuilder= requires the bond's
+  =VolatilityCurveId= (=OREData/ored/portfolio/builders/bondoption.hpp:68=), which
+  ORE's examples take from reference data and our inline bond left empty. The
+  issue of a bond option now names =BondOptionVols-<ccy>=; the trade prices.
+- /CallableBond/: with no =CreditCurveId= the engine builder leaves the default
+  curve, recovery and spread handles empty
+  (=OREData/ored/portfolio/builders/callablebond.cpp:348-370=) and pricing
+  dereferences them. The issue now names the credit curve a credit trade on
+  the same entity names; ORE reports that curve missing, which is market data.
+- /BalanceGuaranteedSwap/: ORE crashed with signal 11 in
+  =BalanceGuaranteedSwap::build=. The builder reads =fixLeg[i]= at the floating
+  coupon's index (=OREData/ored/portfolio/balanceguaranteedswap.cpp:191=), past
+  the end of an annual fixed leg against a semi-annual floating one. ORE's own
+  BGS example (both legs 6M) runs clean under the same configuration. Both legs
+  now pay on the floating tenor; ORE reports the missing CPR, market data, and
+  the test runs the type again.
+- /DoubleDigitalOption/: the parse error no longer occurs on main; the trade
+  now reaches the missing =.SPX= and =.STOXX50E= equity curves.
+
+** Credit curves named by address
+
+A generated credit curve is named by its oresmd address, so ORE reports
+=did not find object 'oresmd://credit/...'=. The planner says so on purpose:
+the market data work gives each entity its curve. The pattern table counts it
+as market data.
 
 ** The state of the scripted index on main
 
@@ -100,12 +146,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4758][#4758]] | [synthetic,trading] Fix the trade errors ORE raises on the generated trades |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the commit message counted 98 optional missing paths; the list holds 96 | commit 6c56b9a763 | Accept | Amended before push |
+| 2 | Local review: three Notional lines named Notionals as optional, but the trade states the element; the example's dated startDate entries are what it lacks | =generated_trades_known_missing_paths.txt= | Accept | Reason rewritten for the three lines |
+| 3 | Local review: misspell over the changed files | - | Accept | Clean |
+| 4 | PR review 1: the BGS tenor rewrite erases every tenor when no floating leg is found | =rate_builders.cpp= | Accept | The leg is an optional; the builder refuses a swap with no floating tenor |
+| 5 | PR review 2: a callable bond names no credit curve when the scope holds no entity | =trade_population_planner.cpp= | Accept | Throws, as the credit planner does; the entity is chosen by =slot % size=, as the credit planner chooses |
+| 6 | PR review 3: the forward declaration of =credit_curve_of= is brittle | =trade_population_planner.cpp= | Decline | Every unnamed namespace of a translation unit is one namespace, so the declaration and the definition always agree |
+| 7 | PR review 4: anchor the bond reference-data pattern; reject old three-field lines | =generated_trade_ore_engine_tests.cpp= | Accept in part | The pattern names =BondFactory:=; a three-field line can never equal a four-field raised line, so it fails as no longer raised |
+| 8 | PR review 5: a line with a leading tab has an empty path | =generated_trade_export_tests.cpp= | Accept | The test checks the path is not empty |
+| 9 | PR review 6: Weights may not match the underlyings | =trade_population_planner.cpp= | Decline | The trade always states two underlyings, so two weights match by construction |
+| 10 | PR review: run the 95-check gate | - | Decline | Run only the checks the change reads, as the user asked |
 
 * Result
+
+Every error ORE raises on the recorded trades has a kind from a fixed table of
+ORE's message patterns, and the known list states it: 44 market data and 3
+engine configuration lines, none of the trade kind. The trade's own errors are
+fixed in the generator: the generic ScriptedTrade states every variable its
+library script reads, a bond option names its yield volatility, a callable bond
+names its credit curve, and a balance guaranteed swap pays both legs on the
+floating tenor, which stops ORE's builder crashing and lets the test run it
+again. The ORE engine test fails on any new error of the trade kind. Every known
+missing path names the reason the generator leaves it out, and the export test
+fails on a line with none. The recorded trades are re-recorded, which also
+clears the scripted trade failure main carried.

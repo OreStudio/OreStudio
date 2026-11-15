@@ -482,8 +482,22 @@ std::set<std::string> known_lines(const std::string& name) {
     return known;
 }
 
+/*
+ * Each line is a trade type and the path it leaves out, then a tab and the
+ * reason the generator leaves it out. A line with no reason fails the test.
+ */
 std::set<std::string> known_missing_paths() {
-    return known_lines("generated_trades_known_missing_paths.txt");
+    std::set<std::string> paths;
+    for (const auto& line : known_lines("generated_trades_known_missing_paths.txt")) {
+        const auto tab = line.find('\t');
+        INFO("Known missing path: " << line);
+        CHECK(tab != std::string::npos);
+        CHECK(tab != 0);
+        CHECK(line.find_first_not_of(" \t", tab == std::string::npos ? line.size() : tab) !=
+              std::string::npos);
+        paths.insert(line.substr(0, tab));
+    }
+    return paths;
 }
 
 /*

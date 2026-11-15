@@ -554,6 +554,13 @@ std::size_t bond_trade_planner::code_count() const {
     return bond_type_count;
 }
 
+namespace {
+
+ores::marketdata::datum::market_reference credit_curve_of(const std::string& lei,
+                                                          const std::string& currency);
+
+}
+
 domain::trade_population_plan
 bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -604,6 +611,29 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             throw trade_population_error("The bond issue builder refuses the drawn " +
                                          security.error().term + ": " + security.error().message);
         auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
+        /*
+         * ORE prices a bond option on the yield volatility its bond names, and
+         * refuses the trade when the bond names none. The name follows the
+         * Products market's BondOptionVols-<currency>.
+         */
+        if (entry.trade_type_code == "BondOption")
+            security->issue.volatility_curve_id = "BondOptionVols-" + entry.currency;
+        /*
+         * A callable bond's engine reads its default curve, recovery and
+         * spread from the credit curve its bond names, and dereferences an
+         * empty handle when it names none. The curve is the one a credit trade
+         * on the same entity names.
+         */
+        if (entry.trade_type_code == "CallableBond" && scope.credit_reference_entities.empty())
+            throw trade_population_error(
+                "The tenant holds no legal entity, so no callable bond can name a credit "
+                "curve. Publish the LEI dataset first.");
+        if (entry.trade_type_code == "CallableBond")
+            security->issue.credit_curve_id =
+                credit_curve_of(
+                    scope.credit_reference_entities[slot % scope.credit_reference_entities.size()],
+                    entry.currency)
+                    .uri();
         entry.bond_issue = std::move(security->issue);
         entry.bond_issue_legs = std::move(security->legs);
         entry.bond_issue_leg_amounts = std::move(security->amounts);
@@ -2337,6 +2367,34 @@ void add_scripted_list(ores::trading::domain::instrument_batch& batch,
     }
 }
 
+/// Adds one event variable stated as a schedule of rules, one date a tenor.
+void add_scripted_schedule(ores::trading::domain::instrument_batch& batch,
+                           std::string name,
+                           const std::chrono::year_month_day& start,
+                           const std::chrono::year_month_day& end,
+                           std::string tenor) {
+    namespace tdom = ores::trading::domain;
+    tdom::scripted_parameter row;
+    row.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+    row.name = std::move(name);
+    row.declared_type = "Event";
+    row.shape = "schedule";
+    tdom::instrument_schedule schedule;
+    schedule.owner_role = "scripted";
+    schedule.owner_number = row.sequence_number;
+    schedule.schedule_role = "event";
+    schedule.sequence_number = 1;
+    schedule.schedule_kind = "rules";
+    schedule.start_date = start;
+    schedule.end_date = end;
+    schedule.tenor = std::move(tenor);
+    schedule.calendar = "TARGET";
+    schedule.convention = "F";
+    schedule.rule = "Forward";
+    batch.scripted_parameters.push_back(std::move(row));
+    batch.instrument_schedules.push_back(std::move(schedule));
+}
+
 /// Adds one Underlying block under the role the document states it in.
 void add_scripted_underlying(ores::trading::domain::instrument_batch& batch,
                              std::string role,
@@ -2399,12 +2457,21 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
     if (trade_type == "ScriptedTrade") {
         /*
          * The generic form of the script: the trade names the library script
-         * and states the variables it reads. The index one is an address, so
-         * the projection writes the ORE name it resolves to.
+         * and states every variable it reads, as ORE's own AsianBasketOption
+         * example does. PutCall and LongShort are signs, 1 or -1. The index
+         * ones are addresses, so the projection writes the ORE names they
+         * resolve to.
          */
+        add_scripted_value(batch, "Expiry", "Event", expiry);
+        add_scripted_value(batch, "Settlement", "Event", settlement);
+        add_scripted_schedule(batch, "ObservationDates", scope.as_of_date, end, "1M");
+        add_scripted_value(batch, "PutCall", "Number", "1");
+        add_scripted_value(batch, "LongShort", "Number", "1");
         add_scripted_value(batch, "Notional", "Number", money);
-        add_scripted_value(batch, "PutCall", "Number", "Call");
-        add_scripted_value(batch, "Underlying", "Index", first_address);
+        add_scripted_value(batch, "Strike", "Number", level);
+        add_scripted_list(batch, "Underlyings", "Index", {first_address, second_address});
+        add_scripted_list(batch, "Weights", "Number", {"0.5", "0.5"});
+        add_scripted_value(batch, "PayCcy", "Currency", scope.currency_code);
         return batch;
     }
 

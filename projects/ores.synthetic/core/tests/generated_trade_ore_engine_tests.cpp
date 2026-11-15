@@ -35,6 +35,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 /**
@@ -65,19 +66,12 @@ std::string text_of(const fs::path& path) {
     return ores::platform::filesystem::file::read_content(path);
 }
 
-/*
- * The recorded types the run leaves out. ORE crashes building a balance
- * guaranteed swap when the engine factory has no builder for its model, as the
- * Products configuration has none, and the crash ends the whole run.
- */
-const std::set<std::string> crash_ore = {"BalanceGuaranteedSwap"};
-
 /// Every recorded trade, each renamed for its file so the merged ids are unique.
 std::string merged_portfolio() {
     std::vector<fs::path> files;
     for (const auto& entry :
          fs::directory_iterator(ores::testing::project_root::resolve(recorded_dir)))
-        if (entry.path().extension() == ".xml" && !crash_ore.contains(entry.path().stem()))
+        if (entry.path().extension() == ".xml")
             files.push_back(entry.path());
     std::sort(files.begin(), files.end());
 
@@ -155,13 +149,46 @@ std::set<std::string> known_errors() {
     return lines;
 }
 
+/*
+ * The kind of an error, from its message alone. A message that names something
+ * the run's market or reference data lacks is market data; one that names a
+ * pricing engine or builder the configuration lacks is engine configuration.
+ * Anything else is the trade's own fault, which no known list may hold.
+ */
+struct error_pattern {
+    std::string_view kind;
+    std::regex message;
+};
+
+const std::vector<error_pattern>& error_patterns() {
+    static const std::vector<error_pattern> patterns = {
+        {"market_data", std::regex(R"(^did not find object '.*' of type .* under configuration )")},
+        {"market_data", std::regex(R"(^did not find object \S+ in \w+Curves$)")},
+        {"market_data", std::regex(R"(^No CreditIndex (reference|constituents) data for )")},
+        {"market_data",
+         std::regex(
+             R"(BondFactory: could not build bond '.*': no reference data given or no suitable builder)")},
+        {"engine_configuration",
+         std::regex(R"(^No Pricing Engine configuration was provided for trade type )")},
+        {"engine_configuration", std::regex(R"(^No EngineBuilder for )")},
+    };
+    return patterns;
+}
+
+std::string kind_of(const std::string& message) {
+    for (const auto& pattern : error_patterns())
+        if (std::regex_search(message, pattern.message))
+            return std::string(pattern.kind);
+    return "trade";
+}
+
 std::set<std::string> raised_errors(const fs::path& structured_log) {
     using namespace ores::ore::log;
     std::set<std::string> lines;
     for (const auto& event : parse_engine_log_json(text_of(structured_log), "log_structured.json"))
         if (event.scope == "Trade")
-            lines.insert(field_of(event, "tradeType") + "\t" + field_of(event, "exceptionType") +
-                         "\t" + event.message);
+            lines.insert(kind_of(event.message) + "\t" + field_of(event, "tradeType") + "\t" +
+                         field_of(event, "exceptionType") + "\t" + event.message);
     return lines;
 }
 
@@ -204,10 +231,17 @@ TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
     std::ranges::set_difference(
         known, raised, std::inserter(no_longer_raised, no_longer_raised.end()));
 
+    std::set<std::string> of_the_trade;
+    for (const auto& line : raised)
+        if (line.starts_with("trade\t"))
+            of_the_trade.insert(line);
+
     INFO("raised but not known:" << lines_of(unexpected));
     INFO("known but no longer raised:" << lines_of(no_longer_raised));
+    INFO("errors the trade causes, which must be fixed, not listed:" << lines_of(of_the_trade));
     CHECK(unexpected.empty());
     CHECK(no_longer_raised.empty());
+    CHECK(of_the_trade.empty());
     fs::remove_all(run_dir);
 #endif
 }

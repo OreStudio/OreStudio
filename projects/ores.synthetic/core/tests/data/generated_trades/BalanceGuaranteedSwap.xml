@@ -16,7 +16,7 @@
           <Rules>
             <StartDate>2026-01-02</StartDate>
             <EndDate>2029-01-02</EndDate>
-            <Tenor>1Y</Tenor>
+            <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
             <TermConvention>MF</TermConvention>
@@ -37,7 +37,7 @@
           <Rules>
             <StartDate>2026-01-02</StartDate>
             <EndDate>2029-01-02</EndDate>
-            <Tenor>1Y</Tenor>
+            <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
             <TermConvention>MF</TermConvention>
@@ -97,7 +97,7 @@
           <Rules>
             <StartDate>2025-10-02</StartDate>
             <EndDate>2029-10-02</EndDate>
-            <Tenor>1Y</Tenor>
+            <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
             <TermConvention>MF</TermConvention>
@@ -118,7 +118,7 @@
           <Rules>
             <StartDate>2025-10-02</StartDate>
             <EndDate>2029-10-02</EndDate>
-            <Tenor>1Y</Tenor>
+            <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
             <TermConvention>MF</TermConvention>

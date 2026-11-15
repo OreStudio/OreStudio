@@ -187,6 +187,12 @@ struct derived_fx_day final {
  * whose window the returns up to its day do not cover, and a quote that is not finite.
  * The days come oldest first. A day whose quotes could not be derived at all is named
  * among the underived. Refuses a convention the derivation cannot quote.
+ *
+ * @param newest_days How many of the newest days the caller wants, or zero for every day it
+ * does not hold. A feed that publishes the current day asks for one; materialising a history
+ * for a vintage asks for all of them. The grid is filled in one pass either way, because a day
+ * costs a constant-time moment lookup and asking for one month of a ten-year history day by day
+ * is what made a fresh tenant wait hours.
  */
 /// The days of a pair's history derived, and the days whose quotes could not be derived.
 struct derived_history final {
@@ -200,7 +206,8 @@ derive_missing_days(const derived_fx_pair& pair,
                     const refdata::domain::fx_option_convention& convention,
                     const std::set<std::chrono::year_month_day>& stored,
                     const analytics::quant::math::fx_derivation_settings& settings,
-                    int minimum_returns);
+                    int minimum_returns,
+                    std::size_t newest_days = 0);
 
 }
 

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 2F4819FA-682E-4126-A91A-7FCD93BD3456
+:END:
+#+title: Task: Play the build's sounds
+#+description: compass build plays the desktop's freedesktop sounds when it starts and when it finishes green or red, without ever holding the build up.
+#+type: task
+#+level: s1
+#+filetags: :build:tooling:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-party-curve-step-in-marketdata
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:121ADEE3-E1C1-44E8-BE65-00FA19350E2B][Hear how a build went]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass build= tells a person who is not watching it that it started, and how
+it ended, by playing the desktop's own sounds. Green and red are different
+sounds, so the outcome is heard and not read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:121ADEE3-E1C1-44E8-BE65-00FA19350E2B][Hear how a build went]] |
+| Now          | The sounds play and the suite covers the choice and the spawn. |
+| Waiting on   | Nothing.                               |
+| Next         | A real build's start and finish, heard from the shell that started it. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- =compass build= plays =dialog-information= when it starts.
+- It plays =complete= when the build succeeds and =dialog-error= when it fails
+  or is interrupted.
+- The player is spawned detached, so no build waits on a sound.
+- A machine with no player, no theme file, or =ORES_BUILD_SOUND=0= builds in
+  silence.
+
+* Plan
+
+- Name the three sounds once, as file names in the freedesktop theme, and map a
+  finished build's outcome onto green or red.
+- Choose the player from the ones a machine may have: =pw-play=, =paplay=,
+  =canberra-gtk-play=, =ffplay=. =aplay= is left out because the theme is Ogg
+  Vorbis and aplay plays raw WAV.
+- Spawn the player detached with every stream dropped, so neither a missing
+  player nor a slow one reaches the build.
+- Let =ORES_BUILD_SOUND=0= in the environment or in =.env= turn them off, since
+  a build on a headless machine has nobody to tell.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The sounds a build plays | =dialog-information=, =complete=, =dialog-error= | =compass build_sound_command= for each event in =BUILD_SOUND_FILES= | =62e846b123= |
+| The player this machine uses | =pw-play= | the same call, which resolves the first player =shutil.which= finds | =62e846b123= |
+| The suite | 14 cases, all pass | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_build_sound.py -q= | =62e846b123= |
+| The sound plays on this machine | exit 0 | =pw-play /usr/share/sounds/freedesktop/stereo/complete.oga= | =62e846b123= |
+
+* Notes
+
+- The sounds are the theme's, so nothing is added to the repository and the
+  vocabulary is one the desktop already taught its owner. A build on a machine
+  without the theme is silent rather than broken.
+- The start sound plays once the build lock is held, so it means "the work is
+  beginning" and not "this command was typed": a build that waits a long time
+  for a slot stays silent until it starts.
+- =--direct= builds are emacs script runs and play no sound: there is no
+  compile to wait for.
+- Verified by the suite and by playing the green sound by hand. The end-to-end
+  proof is the next real build, heard from the shell that started it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

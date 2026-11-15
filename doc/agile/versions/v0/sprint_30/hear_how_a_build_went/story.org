@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 121ADEE3-E1C1-44E8-BE65-00FA19350E2B
+:END:
+#+title: Story: Hear how a build went
+#+description: A build plays the desktop's own sound when it starts, when it ends green and when it ends red, so a person hears the outcome from another window.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A build reports itself to a person who is not watching it. A local build runs
+for minutes to an hour and is usually started and then left; the log answers
+what happened only to someone who goes looking. The build plays the desktop's
+own freedesktop sounds instead: information when it starts, complete when it
+ends green, error when it ends red, so the vocabulary is the machine's and not
+one this project invents. CI pays nothing: the sounds are local, and a machine
+with no player or no theme builds in silence.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The sounds play; the first real build proves the wiring. |
+| Waiting on    | Nothing.                               |
+| Next          | Hear a build start and finish in the shell that started it. |
+| Last touched  | 2026-11-15                               |
+
+* Acceptance
+
+- Starting a build plays one sound, and a finished build plays another that
+  says whether it succeeded.
+- The sounds are the desktop's own theme, so they are recognisable and do not
+  ship audio in the repository.
+- A build never waits on a sound, and a machine with no player or no theme
+  builds in silence.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2F4819FA-682E-4126-A91A-7FCD93BD3456][Play the build's sounds]] | STARTED | 2026-11-15 | | compass build plays the desktop's freedesktop sounds when it starts and when it finishes green or red, without ever holding the build up. |
+
+* Decisions
+
+- *The desktop's sounds, not this project's.* =dialog-information= when a build
+  starts, =complete= when it ends green, =dialog-error= when it ends red, from
+  the freedesktop theme every desktop already installs. A person learns nothing
+  new to read the outcome, and the repository carries no audio.
+- *The sound never costs the build anything.* The player is spawned detached
+  with its output dropped. A missing player, a missing theme file or a dead
+  sound server leaves the build exactly as it was, which is why the sounds need
+  no failure path and cannot fail a build.
+
+* Out of scope
+
+- Desktop notifications (=notify-send=). The sound answers "is it done"; a
+  notification would answer "what did it say", and the log already does.
+- A sound for the build lock's wait, or for tests and other long commands.
+

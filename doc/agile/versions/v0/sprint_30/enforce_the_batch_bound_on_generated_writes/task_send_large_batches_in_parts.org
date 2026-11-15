@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every hand-written caller that can send a put-many or delete-many of more than 1
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Every hand-written caller that can send a put-many or delete-many of more than 1
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Name the bound once. =ores::utility::domain::max_batch_size= in
+   =protocol.hpp= holds 1,000, and =batches_of= splits a vector into spans of at
+   most that size, in order. The service template's three get-many and one-of
+   refusals read the constant instead of the literal.
+2. Find the callers. A scan of every hand-written file that names a
+   =put_many_*_request= or =delete_many_*_request= found six C++ files and five
+   web files. Generated handlers only decode and dispatch, and the shell and
+   HTTP surfaces pass a caller's request through.
+3. Split each caller that can exceed the bound. Each split caller sends
+   changes or removals that are safe to repeat: they claim =any=, or claim
+   absence over rows the step skips once recorded.
+4. Leave the callers that cannot exceed the bound. The web screens send a
+   screen's rows, the GMM components are a mixture's few components, and the
+   derived source already writes 1,000 at a time.
 
 * Measurements
 
@@ -57,7 +68,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Largest batch per party or input in the provisioned Acme environment (ir pillars, ir configs, fx vol blueprints, pillars, pillar sources, counterparties, variance input points) | 140, 20, 10, 350, 350, 453, 1 | =compass sql -u ddl -- -f sizes.sql= (counts of distinct ids grouped by party or input) | 1997fc3c12 |
+| Variance window of a calibration policy by default | 1,826 days, about 1,260 fixings | =ores.sql/create/synthetic/synthetic_calibration_policies_create.sql:44= | 1997fc3c12 |
 
 * Notes
 
@@ -85,3 +97,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores::utility::domain::max_batch_size= names the protocol's 1,000-element
+bound, and =batches_of= splits a vector into spans of at most that size, in
+order. The rvalue overload is deleted, so a part cannot view a set that is gone.
+Four tests prove the split: each part is bounded, the parts keep the order and
+together hold every element, an exact-size set is one part, and an empty set has
+none.
+
+The service template's get-many and one-of refusals read the constant, and
+every generated service is regenerated.
+
+These callers now send in parts: the variance calibration input points, the
+synthetic trade-type and counterparty scope, the seven iam provisioning curve
+and surface plan writes, and the ORE import rollback's four delete-many calls.
+The derived FX volatility source sizes its writes from the constant.
+
+Verification: the whole tree builds. The utility protocol tests pass (4 of 4).
+The iam core (305), ORE service (10), marketdata core (413) and dq core (126)
+suites pass. The synthetic service suite passes 78 of 79. The one failure is an
+adapter test that expects no answer to its announce, and this environment's
+marketdata service answers it. With that service stopped, the 20 adapter tests
+pass. The light local checks pass, 46 of 46.

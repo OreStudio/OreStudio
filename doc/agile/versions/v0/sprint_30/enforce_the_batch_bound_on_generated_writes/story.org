@@ -39,7 +39,7 @@ The generated put-many and delete-many refuse a batch of more than 1,000 element
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:36A50342-6DFB-4132-90AC-04813470CBCF][Send every batch write of more than 1,000 elements in parts]] | DONE | 2026-11-15 | 2026-11-15 | Name the protocol's 1,000-element bound once, and make the callers that can exceed it send their put-many and delete-many in parts of at most 1,000. |
-| [[id:CEF633F0-9BA8-4B7A-B0FC-937C9CD4099A][Refuse a put-many or delete-many of more than 1,000 elements]] | BACKLOG | | | The generated put-many and delete-many refuse a batch of more than 1,000 elements as invalid, with a catalogue code that names the bound, before they read or write any row. |
+| [[id:CEF633F0-9BA8-4B7A-B0FC-937C9CD4099A][Refuse a put-many or delete-many of more than 1,000 elements]] | STARTED | 2026-11-15 | | The generated put-many and delete-many refuse a batch of more than 1,000 elements as invalid, with a catalogue code that names the bound, before they read or write any row. |
 
 * Decisions
 

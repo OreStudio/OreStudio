@@ -142,6 +142,12 @@ via its "Verifies task" field.
 | 2 | Local review: test cases do not log | service_market_observation_batch_tests.cpp | Accept | Each case logs the size of its put, not the rows. |
 | 3 | Local review: misspell-fixer exits 1 on the repository | (repository) | Decline | Run on this branch's own files it exits 0; the hit is outside this diff. |
 | 4 | Local audit: a test file must end in =_tests.cpp= | service_market_observation_batch_benchmark.cpp | Accept | The benchmark moved into the batch tests file as a hidden case. |
+| 5 | Claude review 1: a get-many key set is no longer bounded | ores.cpp.service.service_impl.org | Accept | The protocol bounds a key set at 1,000. Every generated get-many now refuses more with =filter_too_large=. The put-many and delete-many bound is a capture: callers may send more today. |
+| 6 | Claude review 2: the text-form join could drop a row quietly | ores.cpp.service.service_impl.org | Accept | No key column uses citext or a collation, and both sides convert the typed value with one function. The helper's comment now says so. |
+| 7 | Claude review 3: each row is copied into the result | ores.cpp.service.service_impl.org | Decline | One copy per key next to a database read per chunk. The next task reworks the read. |
+| 8 | Claude review 4: name the services that still read per key | ores.cpp.service.service_impl.org | Decline | The helper's comment states the rule; the services are those whose declared key is not the storage key. |
+| 9 | Claude review 5: a single put now reads before the gate | ores.cpp.service.service_impl.org | Decline | It always did: =prepare_change= read the row and then called =gate_put= with it. Only the place of the read moved. |
+| 10 | Claude review 6: split template and regeneration commits | (branch) | Decline | They are separate commits already. |
 
 * Result
 

@@ -128,6 +128,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the import handler refused the type a second time | =ore_import_execute_handler.cpp= | Accept | Dropped: the import books through =book_trade_request=, and =nats_call= returns the refusal's message as the item error |
 | 2 | Local review: misspell over the changed files | - | Accept | Clean |
+| 3 | PR review 1: an existing database still holds the old commodity check | SQL | Decline | No migrations: databases are recreated from =create/=; no row of the type can exist, since the generator never booked it and booking refuses it |
+| 4 | PR review 2: the reason may hold a newline or non-ASCII text | =org_loader.py= | Decline | An org table cell is one line, and a UTF-8 C++ literal holds non-ASCII text |
+| 5 | PR review 3: the coverage script parses the table apart from the loader | =generate_trade_type_coverage.py= | Decline | The script runs on the system Python with no entity models; it reads the catalogue's tables the same way already |
+| 6 | PR review 4: a row with a blank code is skipped | =org_loader.py= | Decline | The trade types table skips a blank code the same way; the two tables stay consistent |
+| 7 | PR review 5: the reason is given before the book permission checks | =trade_operations_service.cpp= | Decline | The reason is catalogue reference data every tenant reads; the routing check already runs first |
+| 8 | PR review 6: no end-to-end import test | import | Decline | Needs NATS and the services; stated as a limitation, and the path is booking plus =nats_call= |
 
 * Result
 

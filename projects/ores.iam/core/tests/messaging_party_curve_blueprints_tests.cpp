@@ -20,6 +20,8 @@
 #include "ores.iam.core/messaging/party_curve_blueprints.hpp"
 #include "ores.testing/uuid_of.hpp"
 #include "party_blueprint_fixture.hpp"
+#include "test_suite.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -82,6 +84,8 @@ system_curve_blueprints eur_estr() {
 
 TEST_CASE("a party's copy of a curve reads its own series of the same item and provider",
           "[party_curves]") {
+    auto lg(make_logger(test_suite));
+
     const auto own_quotes = uuid_of("00000000-0000-4000-8000-0000000000b1");
     party_curve_holdings acme;
     acme.party_id = acme_us;
@@ -119,6 +123,8 @@ TEST_CASE("a party's copy of a curve reads its own series of the same item and p
 
 TEST_CASE("a curve whose quotes have not reached the party waits and writes nothing",
           "[party_curves]") {
+    auto lg(make_logger(test_suite));
+
     party_curve_holdings acme;
     acme.party_id = acme_us;
     acme.series = {market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b1"),
@@ -143,6 +149,8 @@ TEST_CASE("a curve whose quotes have not reached the party waits and writes noth
 }
 
 TEST_CASE("a party that already holds its copy is planned no row twice", "[party_curves]") {
+    auto lg(make_logger(test_suite));
+
     party_curve_holdings acme;
     acme.party_id = acme_us;
     acme.series = {market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b2"),
@@ -165,6 +173,8 @@ TEST_CASE("a party that already holds its copy is planned no row twice", "[party
 }
 
 TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[party_curves]") {
+    auto lg(make_logger(test_suite));
+
     auto system = eur_estr();
     const auto projection_config = uuid_of("00000000-0000-4000-8000-0000000000c2");
     const auto projection_output = uuid_of("00000000-0000-4000-8000-0000000000d2");
@@ -214,6 +224,8 @@ TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[
 }
 
 TEST_CASE("two parties get different copies of one system row", "[party_curves]") {
+    auto lg(make_logger(test_suite));
+
     CHECK(party_copy_id(acme_us, "ir_curve_bootstrap_config", eur_config) ==
           party_copy_id(acme_us, "ir_curve_bootstrap_config", eur_config));
     CHECK(party_copy_id(acme_us, "ir_curve_bootstrap_config", eur_config) !=
@@ -224,6 +236,8 @@ TEST_CASE("two parties get different copies of one system row", "[party_curves]"
 
 TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off",
           "[party_curves]") {
+    auto lg(make_logger(test_suite));
+
     // The system states its configs in name order, so a projection can sort before the funding
     // curve it names -- USD-LIBOR-1M before USD-SOFR-FOMC. The store checks the discount curve
     // as each row lands, so the batch must name the funding curve first however the system
@@ -278,3 +292,4 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     CHECK(plan.configs_to_write[1].name == "AAA-EURIBOR-6M");
     CHECK(plan.configs_to_write[1].discount_curve_config_id == plan.configs_to_write[0].id);
 }
+

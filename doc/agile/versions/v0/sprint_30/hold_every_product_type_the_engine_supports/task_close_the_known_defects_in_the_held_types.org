@@ -152,6 +152,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An unparseable call price becomes 0 and fails at insert with no name | bond_instrument_projection.cpp | Accepted | The reader refuses a price that is not positive, naming the price and date; a test proves the trade maps no bond. |
+| 2 | Only the second entry decides whether a term list is dated | bond_instrument_projection.cpp | Declined | ORE's buildScheduledVector decides the same way (legdata.hpp lines 1261-1270) and itself refuses a mixed list, so the reading and the engine agree. |
+| 3 | include_accrual is free text | ores.trading.bond_issue_call_date.org | Declined | ORE reads the flag as its loose bool with thirteen spellings; the model says the column keeps the document's spelling, as bond_issue.credit_risk does. |
+| 4 | The family match is case-sensitive while the prefix match is not | ores.trading.swap_leg.org | Accepted | The family match uses ~* too. The family is a closed set the leg type check limits, so it is safe in the pattern. |
+| 5 | The barrier trigger skips a null direction and runs on insert only | ores.trading.fx_barrier_option_instrument.org | Accepted | The model says a null direction has no rule and that rows are versioned by insert. The missing blank line is the paste template's, as in every pasted block. |
+| 6 | The range bound note is out of scope | ores.trading.range_bound.org | Accepted | The task's Notes name it; the PR reply says so. |
 
 * Result

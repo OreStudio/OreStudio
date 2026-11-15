@@ -138,8 +138,8 @@ auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto bond_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto bond_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
@@ -167,8 +167,8 @@ auto decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
-auto bond_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto bond_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -628,9 +628,8 @@ struct call_term_entry {
     std::optional<std::chrono::year_month_day> start_date;
 };
 
-auto read_call_term(const record_reader& call,
-                    std::string_view list,
-                    std::string_view item) -> std::vector<call_term_entry> {
+auto read_call_term(const record_reader& call, std::string_view list, std::string_view item)
+    -> std::vector<call_term_entry> {
     std::vector<call_term_entry> result;
     const auto holder = call.child(list);
     if (!holder)
@@ -1037,9 +1036,8 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w,
-                      std::string_view name,
-                      std::string_view value) -> bool {
+auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
+    -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -1442,9 +1440,8 @@ void write_call_term(record_writer call,
                      Value value_of) {
     auto holder = call.child(list);
     const auto first = value_of(dates.front());
-    const bool uniform = std::all_of(dates.begin(), dates.end(), [&](const auto& row) {
-        return value_of(row) == first;
-    });
+    const bool uniform = std::all_of(
+        dates.begin(), dates.end(), [&](const auto& row) { return value_of(row) == first; });
     if (uniform) {
         holder.append(item).set_own_text(first);
         return;

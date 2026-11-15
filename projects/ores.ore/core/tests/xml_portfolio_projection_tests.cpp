@@ -1286,9 +1286,8 @@ TEST_CASE("a_portfolio_document_projects_an_inflation_swap_on_a_year_on_year_leg
 
     const auto items = portfolio_projection::map(portfolio_projection::read(text));
     check(items);
-    const auto again =
-        portfolio_projection::map(portfolio_projection::read(
-            portfolio_projection::write(exported(items[0]))));
+    const auto again = portfolio_projection::map(
+        portfolio_projection::read(portfolio_projection::write(exported(items[0]))));
     check(again);
 }
 

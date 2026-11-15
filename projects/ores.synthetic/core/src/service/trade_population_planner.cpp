@@ -525,17 +525,16 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
     if (type == "CallableBond")
         return built(tb::callable_bond_builder(
                          {.holding = holding,
-                          .calls = std::vector<tb::bond_call>{
-                              {.date = add_years(maturity, -2),
-                               .style = "American",
-                               .price = money(1.02),
-                               .price_type = "Clean",
-                               .include_accrual = true},
-                              {.date = add_years(maturity, -1),
-                               .style = "Bermudan",
-                               .price = money(1.0),
-                               .price_type = "Dirty",
-                               .include_accrual = false}}})
+                          .calls = std::vector<tb::bond_call>{{.date = add_years(maturity, -2),
+                                                               .style = "American",
+                                                               .price = money(1.02),
+                                                               .price_type = "Clean",
+                                                               .include_accrual = true},
+                                                              {.date = add_years(maturity, -1),
+                                                               .style = "Bermudan",
+                                                               .price = money(1.0),
+                                                               .price_type = "Dirty",
+                                                               .include_accrual = false}}})
                          .build());
     if (type == "ConvertibleBond")
         return built(tb::convertible_bond_builder(convertible()).build());

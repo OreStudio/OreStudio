@@ -397,8 +397,7 @@ bond_result callable_bond_builder::build() const {
     const auto& calls = terms_.calls.get();
     if (calls.empty())
         return std::unexpected(build_error{"calls", "must state at least one date"});
-    if (std::ranges::adjacent_find(calls, std::greater_equal<>{}, &bond_call::date) !=
-        calls.end())
+    if (std::ranges::adjacent_find(calls, std::greater_equal<>{}, &bond_call::date) != calls.end())
         return std::unexpected(build_error{"calls", "must be in order with no date twice"});
     // ORE refuses an American call on a single date: the style needs a window
     // from one date to the next.

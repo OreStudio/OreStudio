@@ -1032,6 +1032,7 @@ package "marketdata" #E3F2FD {
         * kind : text
         * description : text
         * display_order : integer
+        * precedence : integer
         * terms_url : text
         * terms_credit : text
         * allows_storage : boolean

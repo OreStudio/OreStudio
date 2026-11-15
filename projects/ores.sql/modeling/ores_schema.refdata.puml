@@ -5598,6 +5598,7 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
           description : text
+          index_family : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

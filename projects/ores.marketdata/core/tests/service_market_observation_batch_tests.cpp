@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
@@ -26,6 +27,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -33,6 +35,8 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+
+using namespace ores::logging;
 
 namespace {
 
@@ -69,8 +73,8 @@ std::vector<market_observation> observations_of_a_new_series(ores::testing::data
 
 }
 
-TEST_CASE("a put of more rows than one read chunk answers every row in the order written",
-          "[service][batch]") {
+TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][batch]") {
+    auto lg(ores::logging::make_logger(test_suite));
     ores::testing::database_helper h;
     ores::marketdata::service::market_observation_service svc(h.context());
     const auto observations = observations_of_a_new_series(h, 1001);
@@ -78,6 +82,7 @@ TEST_CASE("a put of more rows than one read chunk answers every row in the order
     ores::marketdata::messaging::put_many_market_observations_request put;
     for (const auto& o : observations)
         put.changes.push_back(change_for(o));
+    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " market observations.";
     const auto written = svc.put_many_market_observations(put);
 
     REQUIRE(written.result.outcome == outcome::ok);
@@ -100,8 +105,8 @@ TEST_CASE("a put of more rows than one read chunk answers every row in the order
     }
 }
 
-TEST_CASE("a put of many refuses the whole set when one row already exists, and writes nothing",
-          "[service][batch]") {
+TEST_CASE("put_many_with_one_existing_row_refuses_the_set_and_writes_nothing", "[service][batch]") {
+    auto lg(ores::logging::make_logger(test_suite));
     ores::testing::database_helper h;
     ores::marketdata::service::market_observation_service svc(h.context());
     const auto observations = observations_of_a_new_series(h, 4);
@@ -113,6 +118,8 @@ TEST_CASE("a put of many refuses the whole set when one row already exists, and 
     ores::marketdata::messaging::put_many_market_observations_request put;
     for (const auto& o : observations)
         put.changes.push_back(change_for(o));
+    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size()
+                            << " market observations, one of which exists.";
     const auto refused = svc.put_many_market_observations(put);
 
     CHECK(refused.result.outcome != outcome::ok);
@@ -132,7 +139,7 @@ TEST_CASE("a put of many refuses the whole set when one row already exists, and 
 // Hidden from the suite: it times a write rather than checking one. Run it by
 // its tag, "[.benchmark]", to measure a batch put of the size the derived
 // sources write.
-TEST_CASE("a put of 1,000 market observations, timed", "[.benchmark]") {
+TEST_CASE("put_many_of_one_thousand_market_observations_timed", "[.benchmark]") {
     constexpr std::size_t batch_size = 1000;
     constexpr int batches = 5;
 

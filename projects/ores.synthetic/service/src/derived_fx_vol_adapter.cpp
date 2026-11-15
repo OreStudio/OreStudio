@@ -23,6 +23,7 @@
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/uuid/name_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -54,8 +55,9 @@ constexpr int window_days = 1830;
 /// of one reply.
 constexpr int stored_chunk_days = 120;
 
-/// The observations one write carries, well under the broker's megabyte.
-constexpr std::size_t write_batch = 1000;
+/// The observations one write carries: as many as the protocol lets a batch carry, which stays
+/// well under the broker's megabyte.
+constexpr std::size_t write_batch = ores::utility::domain::max_batch_size;
 
 /// An id read from text, or nothing for text that is not one.
 std::optional<boost::uuids::uuid> uuid_of(const std::string& text) {

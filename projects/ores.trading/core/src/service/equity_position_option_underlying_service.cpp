@@ -54,6 +54,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::trading::service {
 
@@ -183,9 +184,10 @@ equity_position_option_underlying_service::list_equity_position_option_underlyin
         return response;
     }
     if (request.filter && request.filter->trade_id_one_of &&
-        request.filter->trade_id_one_of->size() > 1000) {
+        request.filter->trade_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "trade_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -219,9 +221,10 @@ equity_position_option_underlying_service::list_by_trade_id_equity_position_opti
         return response;
     }
     if (request.filter && request.filter->trade_id_one_of &&
-        request.filter->trade_id_one_of->size() > 1000) {
+        request.filter->trade_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "trade_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -255,11 +258,11 @@ messaging::get_many_equity_position_option_underlyings_response
 equity_position_option_underlying_service::get_many_equity_position_option_underlyings(
     const messaging::get_many_equity_position_option_underlyings_request& request) {
     messaging::get_many_equity_position_option_underlyings_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

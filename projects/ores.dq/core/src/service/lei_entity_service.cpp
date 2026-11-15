@@ -48,6 +48,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::dq::service {
 
@@ -125,9 +126,10 @@ lei_entity_service::list_lei_entities(const messaging::list_lei_entities_request
                                  {.entity = "LEI entities", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->lei_one_of && request.filter->lei_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "lei_one_of", .limit = "1000"});
+    if (request.filter && request.filter->lei_one_of &&
+        request.filter->lei_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "lei_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     response.entities =
@@ -151,11 +153,11 @@ lei_entity_service::get_lei_entity(const messaging::get_lei_entity_request& requ
 messaging::get_many_lei_entities_response
 lei_entity_service::get_many_lei_entities(const messaging::get_many_lei_entities_request& request) {
     messaging::get_many_lei_entities_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

@@ -88,6 +88,7 @@
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -1374,6 +1375,22 @@ private:
         return holdings;
     }
 
+    /// Sends a put-many in parts of a batch's size, and answers with the reply to the first
+    /// part refused, or else to the last part. Every plan write claims any, so a run that stopped
+    /// after some parts writes them all again.
+    template <typename Request>
+    static auto request_in_parts(internal_request_client& client, Request& request) {
+        const auto changes = std::move(request.changes);
+        typename Request::response_type reply;
+        for (const auto part : ores::utility::domain::batches_of(changes)) {
+            request.changes.assign(part.begin(), part.end());
+            reply = client.request(request);
+            if (reply.result.outcome != ores::utility::domain::outcome::ok)
+                break;
+        }
+        return reply;
+    }
+
     /// Writes the rows a plan names, series first, because a config names its output series
     /// and a pillar names its config.
     static void write_party_curve_plan(internal_request_client& party_client,
@@ -1396,7 +1413,7 @@ private:
                      .precondition = {.kind = ores::utility::domain::precondition_kind::any}});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            const auto saved = party_client.request(put);
+            const auto saved = request_in_parts(party_client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The curve output series of '" + party_name +
                                          "' were not saved: " + saved.result.message);
@@ -1419,7 +1436,7 @@ private:
                      .precondition = {.kind = ores::utility::domain::precondition_kind::any}});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            const auto saved = party_client.request(put);
+            const auto saved = request_in_parts(party_client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The curve configs of '" + party_name +
                                          "' were not saved: " + saved.result.message);
@@ -1439,7 +1456,7 @@ private:
                      .precondition = {.kind = ores::utility::domain::precondition_kind::any}});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            const auto saved = party_client.request(put);
+            const auto saved = request_in_parts(party_client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The curve pillars of '" + party_name +
                                          "' were not saved: " + saved.result.message);
@@ -2017,7 +2034,7 @@ private:
                      .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "output series");
+            check(request_in_parts(party_client, put), "output series");
         }
         if (!plan.blueprints_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_blueprints_request put;
@@ -2036,7 +2053,7 @@ private:
                      .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "blueprints");
+            check(request_in_parts(party_client, put), "blueprints");
         }
         if (!plan.pillars_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_pillars_request put;
@@ -2049,7 +2066,7 @@ private:
                                        .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "pillars");
+            check(request_in_parts(party_client, put), "pillars");
         }
         if (!plan.sources_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_pillar_sources_request put;
@@ -2063,7 +2080,7 @@ private:
                                        .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "pillar sources");
+            check(request_in_parts(party_client, put), "pillar sources");
         }
     }
 

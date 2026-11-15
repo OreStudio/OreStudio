@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: CEF633F0-9BA8-4B7A-B0FC-937C9CD4099A
+:END:
+#+title: Task: Refuse a put-many or delete-many of more than 1,000 elements
+#+description: The generated put-many and delete-many refuse a batch of more than 1,000 elements as invalid, with a catalogue code that names the bound, before they read or write any row.
+#+type: task
+#+level: s1
+#+filetags: :enforce_the_batch_bound_on_generated_writes:sprint_30:v0:
+#+owner: marco
+#+branch: feature/refuse-an-oversized-batch-write
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generated put-many or delete-many of more than 1,000 elements is refused as invalid before any row is read or written, and the refusal names the bound.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The outcome catalogue holds batch_too_large, an invalid request outcome whose message names the entity and the limit.
+- Every generated put-many and delete-many refuses more than 1,000 elements with it, and accepts exactly 1,000.
+- A service test proves a refused put-many writes nothing and a refused delete-many removes nothing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

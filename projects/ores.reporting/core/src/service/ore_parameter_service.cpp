@@ -55,6 +55,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::reporting::service {
 
@@ -170,16 +171,17 @@ ore_parameter_service::list_ore_parameters(const messaging::list_ore_parameters_
                                  {.entity = "ore parameters", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->ore_parameter_value_domain_code_one_of &&
-        request.filter->ore_parameter_value_domain_code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "ore_parameter_value_domain_code_one_of", .limit = "1000"});
+        request.filter->ore_parameter_value_domain_code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "ore_parameter_value_domain_code_one_of",
+                                  .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -209,16 +211,17 @@ ore_parameter_service::list_by_ore_parameter_value_domain_code_ore_parameters(
                                  {.entity = "ore parameters", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->ore_parameter_value_domain_code_one_of &&
-        request.filter->ore_parameter_value_domain_code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "ore_parameter_value_domain_code_one_of", .limit = "1000"});
+        request.filter->ore_parameter_value_domain_code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "ore_parameter_value_domain_code_one_of",
+                                  .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -248,11 +251,11 @@ ore_parameter_service::get_ore_parameter(const messaging::get_ore_parameter_requ
 messaging::get_many_ore_parameters_response ore_parameter_service::get_many_ore_parameters(
     const messaging::get_many_ore_parameters_request& request) {
     messaging::get_many_ore_parameters_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

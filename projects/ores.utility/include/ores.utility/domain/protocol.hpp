@@ -20,8 +20,11 @@
 #ifndef ORES_UTILITY_DOMAIN_PROTOCOL_HPP
 #define ORES_UTILITY_DOMAIN_PROTOCOL_HPP
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -91,6 +94,36 @@ struct precondition {
  * version.
  */
 inline constexpr precondition removal_precondition{precondition_kind::any, std::nullopt};
+
+/**
+ * @brief The most elements one batch carries, and the most keys one key set
+ * carries.
+ *
+ * The protocol states the bound so a caller can size its parts and one request
+ * cannot hold the store without limit. A request over it is invalid.
+ */
+inline constexpr std::size_t max_batch_size = 1000;
+
+/**
+ * @brief The parts of at most @ref max_batch_size elements that a caller sends
+ * a longer set in, in the set's order.
+ *
+ * Each part is its own request, so a set sent in parts is atomic per part
+ * only. A caller splits only a set whose writes are safe to repeat.
+ */
+template <typename T>
+[[nodiscard]] std::vector<std::span<const T>> batches_of(const std::vector<T>& items) {
+    std::vector<std::span<const T>> parts;
+    for (std::size_t from = 0; from < items.size(); from += max_batch_size)
+        parts.emplace_back(items.data() + from, std::min(max_batch_size, items.size() - from));
+    return parts;
+}
+
+/**
+ * @brief The parts would view a set that is gone by the time they are sent.
+ */
+template <typename T>
+std::vector<std::span<const T>> batches_of(const std::vector<T>&&) = delete;
 
 /**
  * @brief Why a write is being made. User-owned, unlike the audit provenance,

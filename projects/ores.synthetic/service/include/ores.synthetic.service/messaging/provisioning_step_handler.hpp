@@ -584,9 +584,7 @@ private:
                                    std::nullopt};
             request.changes.push_back(std::move(change));
         }
-        if (!request.changes.empty())
-            require_recorded(ask(client, request).result,
-                             "the trade types of '" + entry.name + "'");
+        send_in_parts(client, request, "the trade types of '" + entry.name + "'");
     }
 
     /// Records the scope the entry describes: the party's book of that name,
@@ -641,8 +639,21 @@ private:
                                    std::nullopt};
             request.changes.push_back(std::move(change));
         }
-        require_recorded(ask(client, request).result,
-                         "the counterparty scope of '" + entry.name + "'");
+        send_in_parts(client, request, "the counterparty scope of '" + entry.name + "'");
+    }
+
+    /// Sends a put-many in parts of a batch's size. Each change claims its row
+    /// is absent and the step skips what is recorded, so a run that stopped
+    /// after some parts records the rest when it runs again.
+    template <typename Request>
+    static void send_in_parts(ores::nats::service::nats_client& client,
+                              Request& request,
+                              const std::string& what) {
+        const auto changes = std::move(request.changes);
+        for (const auto part : ores::utility::domain::batches_of(changes)) {
+            request.changes.assign(part.begin(), part.end());
+            require_recorded(ask(client, request).result, what);
+        }
     }
 
     /// Finds a party by the exact full name the LEI import created it with.

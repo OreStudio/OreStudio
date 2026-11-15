@@ -51,6 +51,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::marketdata::service {
 
@@ -164,27 +165,30 @@ session_service::list_sessions(const messaging::list_sessions_request& request) 
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
-        request.filter->code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        request.filter->code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->supplier_code_one_of &&
-        request.filter->supplier_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "supplier_code_one_of", .limit = "1000"});
+        request.filter->supplier_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "supplier_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->adapter_code_one_of &&
-        request.filter->adapter_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "adapter_code_one_of", .limit = "1000"});
+        request.filter->adapter_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "adapter_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->environment_one_of &&
-        request.filter->environment_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "environment_one_of", .limit = "1000"});
+        request.filter->environment_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "environment_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {
@@ -224,11 +228,11 @@ session_service::get_session(const messaging::get_session_request& request) {
 messaging::get_many_sessions_response
 session_service::get_many_sessions(const messaging::get_many_sessions_request& request) {
     messaging::get_many_sessions_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

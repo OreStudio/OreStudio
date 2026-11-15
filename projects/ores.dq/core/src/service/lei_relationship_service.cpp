@@ -48,6 +48,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::dq::service {
 
@@ -127,10 +128,10 @@ messaging::list_lei_relationships_response lei_relationship_service::list_lei_re
         return response;
     }
     if (request.filter && request.filter->relationship_start_node_node_id_one_of &&
-        request.filter->relationship_start_node_node_id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "relationship_start_node_node_id_one_of", .limit = "1000"});
+        request.filter->relationship_start_node_node_id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "relationship_start_node_node_id_one_of",
+                                  .limit = std::to_string(max_batch_size)});
         return response;
     }
     response.relationships =
@@ -154,11 +155,11 @@ messaging::get_lei_relationship_response lei_relationship_service::get_lei_relat
 messaging::get_many_lei_relationships_response lei_relationship_service::get_many_lei_relationships(
     const messaging::get_many_lei_relationships_request& request) {
     messaging::get_many_lei_relationships_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

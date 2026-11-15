@@ -48,6 +48,7 @@
 #include "ores.synthetic.core/service/variance_calibration_input_point_service.hpp"
 #include "ores.synthetic.core/service/variance_calibration_input_service.hpp"
 #include "ores.synthetic.core/service/variance_calibration_service.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -1171,9 +1172,9 @@ private:
                 if (written.result.outcome != outcome::ok)
                     throw std::runtime_error("the input was not stored: " + written.result.message);
             }
-            // The points name their input, so they are written after it, in one call. A run that
-            // stopped between the two left an input without its points; the last point's id
-            // tells, and the points are written again.
+            // The points name their input, so they are written after it, in date order and in
+            // parts of a batch's size. A run that stopped before the last part left an input
+            // without its last point; that point's id tells, and the points are written again.
             const bool points_stored =
                 points.empty() ||
                 (input_stored &&
@@ -1192,11 +1193,15 @@ private:
                                                          .used = p.used,
                                                          .exclusion_reason = p.exclusion_reason},
                                                .precondition = {.kind = precondition_kind::any}});
-                const auto stored = svc::variance_calibration_input_point_service(req_ctx)
-                                        .put_many_variance_calibration_input_points(request);
-                if (stored.result.outcome != outcome::ok)
-                    throw std::runtime_error("the points were not stored: " +
-                                             stored.result.message);
+                const auto changes = std::move(request.changes);
+                for (const auto part : ores::utility::domain::batches_of(changes)) {
+                    request.changes.assign(part.begin(), part.end());
+                    const auto stored = svc::variance_calibration_input_point_service(req_ctx)
+                                            .put_many_variance_calibration_input_points(request);
+                    if (stored.result.outcome != outcome::ok)
+                        throw std::runtime_error("the points were not stored: " +
+                                                 stored.result.message);
+                }
             }
             v.input_id = boost::uuids::to_string(input_id);
 

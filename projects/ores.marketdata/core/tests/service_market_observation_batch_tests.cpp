@@ -29,7 +29,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace {
@@ -125,4 +127,38 @@ TEST_CASE("a put of many refuses the whole set when one row already exists, and 
     REQUIRE(read.entries.size() == get.keys.size());
     for (const auto& entry : read.entries)
         CHECK(!entry.market_observation);
+}
+
+// Hidden from the suite: it times a write rather than checking one. Run it by
+// its tag, "[.benchmark]", to measure a batch put of the size the derived
+// sources write.
+TEST_CASE("a put of 1,000 market observations, timed", "[.benchmark]") {
+    constexpr std::size_t batch_size = 1000;
+    constexpr int batches = 5;
+
+    ores::testing::database_helper h;
+    ores::marketdata::service::market_observation_service svc(h.context());
+
+    for (int b = 0; b < batches; ++b) {
+        const auto observations = observations_of_a_new_series(h, batch_size);
+        ores::marketdata::messaging::put_many_market_observations_request put;
+        for (const auto& o : observations)
+            put.changes.push_back(change_for(o));
+
+        const auto started = std::chrono::steady_clock::now();
+        const auto written = svc.put_many_market_observations(put);
+        const auto seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
+
+        REQUIRE(written.result.outcome == outcome::ok);
+        ores::marketdata::messaging::get_many_market_observations_request get;
+        for (const auto& o : observations)
+            get.keys.push_back(market_observation_key{.id = o.id});
+        std::size_t stored = 0;
+        for (const auto& entry : svc.get_many_market_observations(get).entries)
+            stored += entry.market_observation ? 1 : 0;
+        REQUIRE(stored == batch_size);
+        WARN("batch " + std::to_string(b) + ": " + std::to_string(batch_size) + " rows put in " +
+             std::to_string(seconds) + " s");
+    }
 }

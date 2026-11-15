@@ -20,7 +20,7 @@
 #define ORES_DATABASE_PQ_CODEC_HPP
 
 #include "ores.database/export.hpp"
-#include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/result.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>

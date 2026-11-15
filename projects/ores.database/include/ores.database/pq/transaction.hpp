@@ -20,6 +20,8 @@
 #define ORES_DATABASE_PQ_TRANSACTION_HPP
 
 #include "ores.database/export.hpp"
+#include "ores.database/pq/connection_fwd.hpp"
+#include "ores.database/pq/result.hpp"
 #include "ores.database/pq/statement.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>

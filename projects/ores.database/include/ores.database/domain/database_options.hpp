@@ -26,7 +26,7 @@
 #define ORES_DATABASE_DOMAIN_DATABASE_OPTIONS_HPP
 
 #include "ores.database/export.hpp"
-#include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/options.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>

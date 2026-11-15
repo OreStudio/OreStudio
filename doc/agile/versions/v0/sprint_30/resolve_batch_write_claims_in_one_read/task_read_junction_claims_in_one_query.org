@@ -85,7 +85,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The date-keyed junction has no test of the new read | service_calendar_materialisation_service_tests.cpp | Accepted | ca0974e9c0: a plain batch over a live day and a new day stores versions 2 and 1. |
+| 2 | write(rows, claims) reads claims[i] with no size check | cpp_domain_type_repository.cpp.mustache | Deferred | Task 3 of this story adds the check to every generated batch write. |
+| 3 | Comment on a pair that appears twice in one batch | cpp_domain_type_repository.cpp.mustache | Declined | Behaviour is unchanged; the insert decides. |
+| 4 | A query-count test would prove the one read | tests | Declined | The read is one call per part in the code; not needed to merge. |
+| 5 | Single-row write(row, any) still reads once | cpp_domain_type_repository.cpp.mustache | Acknowledged | Correct as is. |
+| 6 | (Own finding) The materialiser comment said a racing run writes a second version | calendar_materialisation_service.cpp | Fixed | d94615ae5c: since PR 4760 the racing run is refused and none of its batch lands. |
 
 * Result
 

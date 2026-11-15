@@ -81,3 +81,14 @@ def test_a_file_that_is_not_a_group_diagram_is_left_alone(tmp_path):
     assert _main(tmp_path) == 0
     assert _main(tmp_path, "--check") == 0
     assert other.exists()
+
+
+def test_the_check_names_an_orphan_and_a_stale_group_together(tmp_path, capsys):
+    out = _regenerated(tmp_path)
+    (out / "ores_schema.alpha.puml").write_text("drifted\n", encoding="utf-8")
+    (out / "ores_schema.removed.puml").write_text("old\n", encoding="utf-8")
+
+    assert _main(tmp_path, "--check") == 1
+    err = capsys.readouterr().err
+    assert "ores_schema.alpha.puml (1 line differs)" in err
+    assert "ores_schema.removed.puml (no group of the model draws this file)" in err

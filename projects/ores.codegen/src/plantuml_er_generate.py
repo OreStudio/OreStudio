@@ -29,6 +29,7 @@ Modes:
 
 import argparse
 import difflib
+import glob
 import json
 import sys
 import tempfile
@@ -154,7 +155,7 @@ def orphan_group_files(output_path: Path, renders: list) -> list:
     stay committed and be drawn by the wrapper.
     """
     expected = {path.resolve() for path, _ in renders}
-    pattern = f"{output_path.stem}.*{output_path.suffix}"
+    pattern = f"{glob.escape(output_path.stem)}.*{glob.escape(output_path.suffix)}"
     return sorted(path for path in output_path.parent.glob(pattern)
                   if path.resolve() not in expected)
 

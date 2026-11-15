@@ -219,6 +219,9 @@ void currency_pair_convention_calendar_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair convention calendars to database. Count: "
                                << pair_convention_calendars.size();
+    if (claims.size() != pair_convention_calendars.size())
+        throw std::invalid_argument("currency_pair_convention_calendar_repository::write: one "
+                                    "claim is needed for each row");
     std::vector<domain::currency_pair_convention_calendar> to_read;
     for (std::size_t i = 0; i < pair_convention_calendars.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

@@ -246,6 +246,9 @@ void inflation_cap_floor_volatility_config_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing inflation cap floor volatility configs. Count: "
                                << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("inflation_cap_floor_volatility_config_repository::write: one "
+                                    "claim is needed for each row");
     std::vector<domain::inflation_cap_floor_volatility_config> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (inflation_cap_floor_volatility_config_claim_reads_current(claims[i]))

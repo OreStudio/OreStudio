@@ -252,6 +252,9 @@ void trade_additional_field_repository::write(
     const std::vector<domain::trade_additional_field>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade additional fields. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "trade_additional_field_repository::write: one claim is needed for each row");
     std::vector<domain::trade_additional_field> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (trade_additional_field_claim_reads_current(claims[i]))

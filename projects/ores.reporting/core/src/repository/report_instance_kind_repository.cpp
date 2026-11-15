@@ -234,6 +234,9 @@ void report_instance_kind_repository::write(
     const std::vector<domain::report_instance_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report instance kinds. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "report_instance_kind_repository::write: one claim is needed for each row");
     std::vector<domain::report_instance_kind> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (report_instance_kind_claim_reads_current(claims[i]))

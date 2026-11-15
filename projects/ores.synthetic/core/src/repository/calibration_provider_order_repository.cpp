@@ -259,6 +259,9 @@ void calibration_provider_order_repository::write(
     const std::vector<domain::calibration_provider_order>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calibration provider orders. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "calibration_provider_order_repository::write: one claim is needed for each row");
     std::vector<domain::calibration_provider_order> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (calibration_provider_order_claim_reads_current(claims[i]))

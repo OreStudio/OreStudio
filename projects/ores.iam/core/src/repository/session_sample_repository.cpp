@@ -222,6 +222,9 @@ void session_sample_repository::write(
     const std::vector<domain::session_sample>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing session samples. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "session_sample_repository::write: one claim is needed for each row");
     std::vector<domain::session_sample> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (session_sample_claim_reads_current(claims[i]))

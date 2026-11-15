@@ -236,6 +236,9 @@ void inflation_swap_convention_repository::write(
     const std::vector<domain::inflation_swap_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing inflation swap conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "inflation_swap_convention_repository::write: one claim is needed for each row");
     std::vector<domain::inflation_swap_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (inflation_swap_convention_claim_reads_current(claims[i]))

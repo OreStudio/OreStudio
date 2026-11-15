@@ -234,6 +234,9 @@ void cds_volatility_term_repository::write(
     const std::vector<domain::cds_volatility_term>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing CDS volatility terms. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "cds_volatility_term_repository::write: one claim is needed for each row");
     std::vector<domain::cds_volatility_term> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cds_volatility_term_claim_reads_current(claims[i]))

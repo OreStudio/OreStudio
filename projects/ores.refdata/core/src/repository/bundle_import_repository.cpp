@@ -226,6 +226,9 @@ void bundle_import_repository::write(
     const std::vector<domain::bundle_import>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bundle imports. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "bundle_import_repository::write: one claim is needed for each row");
     std::vector<domain::bundle_import> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (bundle_import_claim_reads_current(claims[i]))

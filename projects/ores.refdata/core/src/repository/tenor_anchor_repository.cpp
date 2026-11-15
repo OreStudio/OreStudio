@@ -225,6 +225,9 @@ void tenor_anchor_repository::write(
     const std::vector<domain::tenor_anchor>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor anchors. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "tenor_anchor_repository::write: one claim is needed for each row");
     std::vector<domain::tenor_anchor> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (tenor_anchor_claim_reads_current(claims[i]))

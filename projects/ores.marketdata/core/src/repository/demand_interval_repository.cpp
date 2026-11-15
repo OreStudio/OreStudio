@@ -256,6 +256,9 @@ void demand_interval_repository::write(
     const std::vector<domain::demand_interval>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing demand intervals. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "demand_interval_repository::write: one claim is needed for each row");
     std::vector<domain::demand_interval> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (demand_interval_claim_reads_current(claims[i]))

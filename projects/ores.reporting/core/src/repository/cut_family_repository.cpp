@@ -223,6 +223,9 @@ void cut_family_repository::write(const context& ctx,
                                   const std::vector<domain::cut_family>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cut families. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "cut_family_repository::write: one claim is needed for each row");
     std::vector<domain::cut_family> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cut_family_claim_reads_current(claims[i]))

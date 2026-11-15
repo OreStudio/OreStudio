@@ -247,6 +247,9 @@ void netting_set_repository::write(const context& ctx,
                                    const std::vector<domain::netting_set>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing netting sets. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "netting_set_repository::write: one claim is needed for each row");
     std::vector<domain::netting_set> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (netting_set_claim_reads_current(claims[i]))

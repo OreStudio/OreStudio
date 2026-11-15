@@ -230,6 +230,9 @@ void future_convention_repository::write(
     const std::vector<domain::future_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing future conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "future_convention_repository::write: one claim is needed for each row");
     std::vector<domain::future_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (future_convention_claim_reads_current(claims[i]))

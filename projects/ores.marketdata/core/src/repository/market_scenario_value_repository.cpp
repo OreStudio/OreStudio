@@ -280,6 +280,9 @@ void market_scenario_value_repository::write(
     const std::vector<domain::market_scenario_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market scenario values. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "market_scenario_value_repository::write: one claim is needed for each row");
     std::vector<domain::market_scenario_value> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (market_scenario_value_claim_reads_current(claims[i]))

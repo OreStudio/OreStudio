@@ -231,6 +231,9 @@ void stress_shift_family_repository::write(
     const std::vector<domain::stress_shift_family>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing stress shift families. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "stress_shift_family_repository::write: one claim is needed for each row");
     std::vector<domain::stress_shift_family> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (stress_shift_family_claim_reads_current(claims[i]))

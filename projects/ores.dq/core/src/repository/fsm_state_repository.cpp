@@ -223,6 +223,9 @@ void fsm_state_repository::write(const context& ctx,
                                  const std::vector<domain::fsm_state>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing fsm states. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fsm_state_repository::write: one claim is needed for each row");
     std::vector<domain::fsm_state> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fsm_state_claim_reads_current(claims[i]))

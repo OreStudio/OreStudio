@@ -240,6 +240,9 @@ void swaption_volatility_config_repository::write(
     const std::vector<domain::swaption_volatility_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swaption volatility configs. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "swaption_volatility_config_repository::write: one claim is needed for each row");
     std::vector<domain::swaption_volatility_config> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (swaption_volatility_config_claim_reads_current(claims[i]))

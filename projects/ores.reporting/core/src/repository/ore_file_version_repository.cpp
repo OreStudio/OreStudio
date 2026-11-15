@@ -248,6 +248,9 @@ void ore_file_version_repository::write(
     const std::vector<domain::ore_file_version>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ORE file versions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "ore_file_version_repository::write: one claim is needed for each row");
     std::vector<domain::ore_file_version> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (ore_file_version_claim_reads_current(claims[i]))

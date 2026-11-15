@@ -251,6 +251,9 @@ void trade_authorisation_request_repository::write(
     const std::vector<domain::trade_authorisation_request>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade authorisation requests. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "trade_authorisation_request_repository::write: one claim is needed for each row");
     std::vector<domain::trade_authorisation_request> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (trade_authorisation_request_claim_reads_current(claims[i]))

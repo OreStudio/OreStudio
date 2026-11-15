@@ -285,6 +285,9 @@ void report_cashflow_repository::write(
     const std::vector<domain::report_cashflow>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report cashflows. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "report_cashflow_repository::write: one claim is needed for each row");
     std::vector<domain::report_cashflow> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (report_cashflow_claim_reads_current(claims[i]))

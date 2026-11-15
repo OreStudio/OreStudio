@@ -228,6 +228,9 @@ void pricing_method_repository::write(
     const std::vector<domain::pricing_method>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing methods. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "pricing_method_repository::write: one claim is needed for each row");
     std::vector<domain::pricing_method> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (pricing_method_claim_reads_current(claims[i]))

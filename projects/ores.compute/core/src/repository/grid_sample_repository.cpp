@@ -215,6 +215,9 @@ void grid_sample_repository::write(const context& ctx,
                                    const std::vector<domain::grid_sample>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing grid samples. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "grid_sample_repository::write: one claim is needed for each row");
     std::vector<domain::grid_sample> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (grid_sample_claim_reads_current(claims[i]))

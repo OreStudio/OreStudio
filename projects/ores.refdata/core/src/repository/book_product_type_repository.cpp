@@ -209,6 +209,9 @@ void book_product_type_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing allowed product types to database. Count: "
                                << book_product_types.size();
+    if (claims.size() != book_product_types.size())
+        throw std::invalid_argument(
+            "book_product_type_repository::write: one claim is needed for each row");
     std::vector<domain::book_product_type> to_read;
     for (std::size_t i = 0; i < book_product_types.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

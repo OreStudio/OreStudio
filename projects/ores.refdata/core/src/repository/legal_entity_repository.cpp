@@ -225,6 +225,9 @@ void legal_entity_repository::write(
     const std::vector<domain::legal_entity>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing legal entities. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "legal_entity_repository::write: one claim is needed for each row");
     std::vector<domain::legal_entity> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (legal_entity_claim_reads_current(claims[i]))

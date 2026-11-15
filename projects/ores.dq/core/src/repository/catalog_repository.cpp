@@ -221,6 +221,8 @@ void catalog_repository::write(const context& ctx,
                                const std::vector<domain::catalog>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing catalogs. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("catalog_repository::write: one claim is needed for each row");
     std::vector<domain::catalog> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (catalog_claim_reads_current(claims[i]))

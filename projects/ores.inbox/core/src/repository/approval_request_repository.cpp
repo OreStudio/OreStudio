@@ -268,6 +268,9 @@ void approval_request_repository::write(
     const std::vector<domain::approval_request>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval requests. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "approval_request_repository::write: one claim is needed for each row");
     std::vector<domain::approval_request> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (approval_request_claim_reads_current(claims[i]))

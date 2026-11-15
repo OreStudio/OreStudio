@@ -237,6 +237,9 @@ void default_curve_cds_terms_repository::write(
     const std::vector<domain::default_curve_cds_terms>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing default curve cds terms. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "default_curve_cds_terms_repository::write: one claim is needed for each row");
     std::vector<domain::default_curve_cds_terms> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (default_curve_cds_terms_claim_reads_current(claims[i]))

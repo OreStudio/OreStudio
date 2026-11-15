@@ -244,6 +244,9 @@ void fx_spot_fixing_item_repository::write(
     const std::vector<domain::fx_spot_fixing_item>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX spot fixing items. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fx_spot_fixing_item_repository::write: one claim is needed for each row");
     std::vector<domain::fx_spot_fixing_item> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fx_spot_fixing_item_claim_reads_current(claims[i]))

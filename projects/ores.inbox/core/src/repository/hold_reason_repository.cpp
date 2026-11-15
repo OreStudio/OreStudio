@@ -223,6 +223,9 @@ void hold_reason_repository::write(const context& ctx,
                                    const std::vector<domain::hold_reason>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing hold reasons. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "hold_reason_repository::write: one claim is needed for each row");
     std::vector<domain::hold_reason> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (hold_reason_claim_reads_current(claims[i]))

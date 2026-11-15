@@ -237,6 +237,9 @@ void cms_spread_option_convention_repository::write(
     const std::vector<domain::cms_spread_option_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing CMS spread option conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "cms_spread_option_convention_repository::write: one claim is needed for each row");
     std::vector<domain::cms_spread_option_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cms_spread_option_convention_claim_reads_current(claims[i]))

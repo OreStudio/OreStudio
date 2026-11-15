@@ -207,6 +207,9 @@ void currency_calendar_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency calendars to database. Count: "
                                << currency_calendars.size();
+    if (claims.size() != currency_calendars.size())
+        throw std::invalid_argument(
+            "currency_calendar_repository::write: one claim is needed for each row");
     std::vector<domain::currency_calendar> to_read;
     for (std::size_t i = 0; i < currency_calendars.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

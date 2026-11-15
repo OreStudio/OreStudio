@@ -233,6 +233,9 @@ void series_classification_rule_repository::write(
     const std::vector<domain::series_classification_rule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rules. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "series_classification_rule_repository::write: one claim is needed for each row");
     std::vector<domain::series_classification_rule> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (series_classification_rule_claim_reads_current(claims[i]))

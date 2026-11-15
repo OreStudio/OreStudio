@@ -232,6 +232,9 @@ void cut_resolution_rule_repository::write(
     const std::vector<domain::cut_resolution_rule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cut resolution rules. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "cut_resolution_rule_repository::write: one claim is needed for each row");
     std::vector<domain::cut_resolution_rule> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cut_resolution_rule_claim_reads_current(claims[i]))

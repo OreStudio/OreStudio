@@ -228,6 +228,9 @@ void party_id_scheme_repository::write(
     const std::vector<domain::party_id_scheme>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party ID schemes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "party_id_scheme_repository::write: one claim is needed for each row");
     std::vector<domain::party_id_scheme> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (party_id_scheme_claim_reads_current(claims[i]))

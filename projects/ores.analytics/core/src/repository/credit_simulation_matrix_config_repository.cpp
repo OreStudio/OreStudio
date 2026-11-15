@@ -240,6 +240,9 @@ void credit_simulation_matrix_config_repository::write(
     const std::vector<domain::credit_simulation_matrix_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing transition matrices. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "credit_simulation_matrix_config_repository::write: one claim is needed for each row");
     std::vector<domain::credit_simulation_matrix_config> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (credit_simulation_matrix_config_claim_reads_current(claims[i]))

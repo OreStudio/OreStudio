@@ -251,6 +251,9 @@ void account_contact_information_repository::write(
     const std::vector<domain::account_contact_information>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account contact informations. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "account_contact_information_repository::write: one claim is needed for each row");
     std::vector<domain::account_contact_information> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (account_contact_information_claim_reads_current(claims[i]))

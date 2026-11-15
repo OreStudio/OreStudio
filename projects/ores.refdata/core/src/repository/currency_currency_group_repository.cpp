@@ -211,6 +211,9 @@ void currency_currency_group_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency groups to database. Count: "
                                << currency_groups.size();
+    if (claims.size() != currency_groups.size())
+        throw std::invalid_argument(
+            "currency_currency_group_repository::write: one claim is needed for each row");
     std::vector<domain::currency_currency_group> to_read;
     for (std::size_t i = 0; i < currency_groups.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

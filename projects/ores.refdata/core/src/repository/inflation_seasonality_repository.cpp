@@ -237,6 +237,9 @@ void inflation_seasonality_repository::write(
     const std::vector<domain::inflation_seasonality>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing inflation seasonalities. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "inflation_seasonality_repository::write: one claim is needed for each row");
     std::vector<domain::inflation_seasonality> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (inflation_seasonality_claim_reads_current(claims[i]))

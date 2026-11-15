@@ -232,6 +232,9 @@ void equity_basket_constituent_repository::write(
     const std::vector<domain::equity_basket_constituent>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity basket constituents. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "equity_basket_constituent_repository::write: one claim is needed for each row");
     std::vector<domain::equity_basket_constituent> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (equity_basket_constituent_claim_reads_current(claims[i]))

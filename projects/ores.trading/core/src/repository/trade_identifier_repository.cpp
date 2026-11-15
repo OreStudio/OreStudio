@@ -244,6 +244,9 @@ void trade_identifier_repository::write(
     const std::vector<domain::trade_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade identifiers. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "trade_identifier_repository::write: one claim is needed for each row");
     std::vector<domain::trade_identifier> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (trade_identifier_claim_reads_current(claims[i]))

@@ -219,6 +219,8 @@ void tenor_repository::write(const context& ctx,
                              const std::vector<domain::tenor>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenors. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("tenor_repository::write: one claim is needed for each row");
     std::vector<domain::tenor> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (tenor_claim_reads_current(claims[i]))

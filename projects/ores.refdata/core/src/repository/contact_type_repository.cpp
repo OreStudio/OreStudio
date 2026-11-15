@@ -225,6 +225,9 @@ void contact_type_repository::write(
     const std::vector<domain::contact_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing contact types. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "contact_type_repository::write: one claim is needed for each row");
     std::vector<domain::contact_type> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (contact_type_claim_reads_current(claims[i]))

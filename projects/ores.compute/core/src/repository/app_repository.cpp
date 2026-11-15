@@ -223,6 +223,8 @@ void app_repository::write(const context& ctx,
                            const std::vector<domain::app>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute apps. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("app_repository::write: one claim is needed for each row");
     std::vector<domain::app> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (app_claim_reads_current(claims[i]))

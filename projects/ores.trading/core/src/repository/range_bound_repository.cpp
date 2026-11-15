@@ -242,6 +242,9 @@ void range_bound_repository::write(const context& ctx,
                                    const std::vector<domain::range_bound>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing range bounds. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "range_bound_repository::write: one claim is needed for each row");
     std::vector<domain::range_bound> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (range_bound_claim_reads_current(claims[i]))

@@ -234,6 +234,9 @@ void approval_decision_type_repository::write(
     const std::vector<domain::approval_decision_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval decision types. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "approval_decision_type_repository::write: one claim is needed for each row");
     std::vector<domain::approval_decision_type> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (approval_decision_type_claim_reads_current(claims[i]))

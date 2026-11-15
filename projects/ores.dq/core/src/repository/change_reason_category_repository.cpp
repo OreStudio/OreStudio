@@ -234,6 +234,9 @@ void change_reason_category_repository::write(
     const std::vector<domain::change_reason_category>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing change reason categories. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "change_reason_category_repository::write: one claim is needed for each row");
     std::vector<domain::change_reason_category> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (change_reason_category_claim_reads_current(claims[i]))

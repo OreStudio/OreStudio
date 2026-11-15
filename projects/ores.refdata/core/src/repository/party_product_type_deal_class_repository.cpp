@@ -249,6 +249,9 @@ void party_product_type_deal_class_repository::write(
     const std::vector<domain::party_product_type_deal_class>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party product type deal classes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "party_product_type_deal_class_repository::write: one claim is needed for each row");
     std::vector<domain::party_product_type_deal_class> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (party_product_type_deal_class_claim_reads_current(claims[i]))

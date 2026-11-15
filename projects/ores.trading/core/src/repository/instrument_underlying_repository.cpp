@@ -263,6 +263,9 @@ void instrument_underlying_repository::write(
     const std::vector<domain::instrument_underlying>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument underlyings. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "instrument_underlying_repository::write: one claim is needed for each row");
     std::vector<domain::instrument_underlying> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (instrument_underlying_claim_reads_current(claims[i]))

@@ -228,6 +228,9 @@ void asset_class_code_repository::write(
     const std::vector<domain::asset_class_code>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset class codes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "asset_class_code_repository::write: one claim is needed for each row");
     std::vector<domain::asset_class_code> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (asset_class_code_claim_reads_current(claims[i]))

@@ -247,6 +247,9 @@ void workflow_plan_dependency_repository::write(
     const std::vector<domain::workflow_plan_dependency>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan dependencies. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "workflow_plan_dependency_repository::write: one claim is needed for each row");
     std::vector<domain::workflow_plan_dependency> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (workflow_plan_dependency_claim_reads_current(claims[i]))

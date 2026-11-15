@@ -247,6 +247,9 @@ void sandbox_member_repository::write(
     const std::vector<domain::sandbox_member>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sandbox members. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "sandbox_member_repository::write: one claim is needed for each row");
     std::vector<domain::sandbox_member> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (sandbox_member_claim_reads_current(claims[i]))

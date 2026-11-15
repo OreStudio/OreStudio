@@ -254,6 +254,9 @@ void flexi_swap_lower_notional_repository::write(
     const std::vector<domain::flexi_swap_lower_notional>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing flexi swap lower notionals. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "flexi_swap_lower_notional_repository::write: one claim is needed for each row");
     std::vector<domain::flexi_swap_lower_notional> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (flexi_swap_lower_notional_claim_reads_current(claims[i]))

@@ -208,6 +208,9 @@ void series_axis_repository::write(const context& ctx,
                                    const std::vector<domain::series_axis>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series axes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "series_axis_repository::write: one claim is needed for each row");
     std::vector<domain::series_axis> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (series_axis_claim_reads_current(claims[i]))

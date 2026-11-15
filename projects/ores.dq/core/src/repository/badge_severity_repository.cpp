@@ -228,6 +228,9 @@ void badge_severity_repository::write(
     const std::vector<domain::badge_severity>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge severities. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "badge_severity_repository::write: one claim is needed for each row");
     std::vector<domain::badge_severity> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (badge_severity_claim_reads_current(claims[i]))

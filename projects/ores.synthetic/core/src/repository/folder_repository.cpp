@@ -226,6 +226,8 @@ void folder_repository::write(const context& ctx,
                               const std::vector<domain::folder>& v,
                               const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing folders. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("folder_repository::write: one claim is needed for each row");
     std::vector<domain::folder> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (folder_claim_reads_current(claims[i]))

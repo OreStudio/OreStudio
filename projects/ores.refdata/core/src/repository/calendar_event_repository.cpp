@@ -249,6 +249,9 @@ void calendar_event_repository::write(
     const std::vector<domain::calendar_event>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar events. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "calendar_event_repository::write: one claim is needed for each row");
     std::vector<domain::calendar_event> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (calendar_event_claim_reads_current(claims[i]))

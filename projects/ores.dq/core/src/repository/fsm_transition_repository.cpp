@@ -229,6 +229,9 @@ void fsm_transition_repository::write(
     const std::vector<domain::fsm_transition>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing fsm transitions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fsm_transition_repository::write: one claim is needed for each row");
     std::vector<domain::fsm_transition> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fsm_transition_claim_reads_current(claims[i]))

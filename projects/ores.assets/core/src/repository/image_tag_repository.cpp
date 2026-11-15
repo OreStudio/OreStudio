@@ -198,6 +198,9 @@ void image_tag_repository::write(const domain::image_tag& image_tag,
 void image_tag_repository::write(const std::vector<domain::image_tag>& image_tags,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing image tags to database. Count: " << image_tags.size();
+    if (claims.size() != image_tags.size())
+        throw std::invalid_argument(
+            "image_tag_repository::write: one claim is needed for each row");
     std::vector<domain::image_tag> to_read;
     for (std::size_t i = 0; i < image_tags.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

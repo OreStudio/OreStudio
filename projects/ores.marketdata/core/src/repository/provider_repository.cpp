@@ -223,6 +223,8 @@ void provider_repository::write(const context& ctx,
                                 const std::vector<domain::provider>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing providers. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("provider_repository::write: one claim is needed for each row");
     std::vector<domain::provider> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (provider_claim_reads_current(claims[i]))

@@ -219,6 +219,9 @@ void local_jurisdiction_repository::write(
     const std::vector<domain::local_jurisdiction>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing local jurisdictions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "local_jurisdiction_repository::write: one claim is needed for each row");
     std::vector<domain::local_jurisdiction> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (local_jurisdiction_claim_reads_current(claims[i]))

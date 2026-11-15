@@ -240,6 +240,9 @@ void netting_agreement_repository::write(
     const std::vector<domain::netting_agreement>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing netting agreements. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "netting_agreement_repository::write: one claim is needed for each row");
     std::vector<domain::netting_agreement> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (netting_agreement_claim_reads_current(claims[i]))

@@ -254,6 +254,9 @@ void variance_calibration_input_point_repository::write(
     const std::vector<domain::variance_calibration_input_point>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing variance calibration input points. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "variance_calibration_input_point_repository::write: one claim is needed for each row");
     std::vector<domain::variance_calibration_input_point> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (variance_calibration_input_point_claim_reads_current(claims[i]))

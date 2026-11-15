@@ -241,6 +241,9 @@ void knock_out_swap_instrument_repository::write(
     const std::vector<domain::knock_out_swap_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing knock-out swap instruments. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "knock_out_swap_instrument_repository::write: one claim is needed for each row");
     std::vector<domain::knock_out_swap_instrument> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (knock_out_swap_instrument_claim_reads_current(claims[i]))

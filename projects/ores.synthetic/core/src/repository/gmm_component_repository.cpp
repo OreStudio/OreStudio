@@ -236,6 +236,9 @@ void gmm_component_repository::write(
     const std::vector<domain::gmm_component>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing GMM components. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "gmm_component_repository::write: one claim is needed for each row");
     std::vector<domain::gmm_component> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (gmm_component_claim_reads_current(claims[i]))

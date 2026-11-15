@@ -237,6 +237,9 @@ void zero_inflation_index_convention_repository::write(
     const std::vector<domain::zero_inflation_index_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing zero inflation index conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "zero_inflation_index_convention_repository::write: one claim is needed for each row");
     std::vector<domain::zero_inflation_index_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (zero_inflation_index_convention_claim_reads_current(claims[i]))

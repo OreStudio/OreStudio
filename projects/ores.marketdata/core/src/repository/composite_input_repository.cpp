@@ -248,6 +248,9 @@ void composite_input_repository::write(
     const std::vector<domain::composite_input>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing composite inputs. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "composite_input_repository::write: one claim is needed for each row");
     std::vector<domain::composite_input> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (composite_input_claim_reads_current(claims[i]))

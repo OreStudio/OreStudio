@@ -202,6 +202,9 @@ void account_role_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account roles to database. Count: "
                                << account_roles.size();
+    if (claims.size() != account_roles.size())
+        throw std::invalid_argument(
+            "account_role_repository::write: one claim is needed for each row");
     std::vector<domain::account_role> to_read;
     for (std::size_t i = 0; i < account_roles.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

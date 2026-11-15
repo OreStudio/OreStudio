@@ -226,6 +226,8 @@ void image_repository::write(const context& ctx,
                              const std::vector<domain::image>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset images. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("image_repository::write: one claim is needed for each row");
     std::vector<domain::image> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (image_claim_reads_current(claims[i]))

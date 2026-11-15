@@ -210,6 +210,9 @@ void party_counterparty_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party counterparties to database. Count: "
                                << party_counterparties.size();
+    if (claims.size() != party_counterparties.size())
+        throw std::invalid_argument(
+            "party_counterparty_repository::write: one claim is needed for each row");
     std::vector<domain::party_counterparty> to_read;
     for (std::size_t i = 0; i < party_counterparties.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

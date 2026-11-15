@@ -260,6 +260,9 @@ void fx_vol_surface_blueprint_repository::write(
     const std::vector<domain::fx_vol_surface_blueprint>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface blueprints. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fx_vol_surface_blueprint_repository::write: one claim is needed for each row");
     std::vector<domain::fx_vol_surface_blueprint> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fx_vol_surface_blueprint_claim_reads_current(claims[i]))

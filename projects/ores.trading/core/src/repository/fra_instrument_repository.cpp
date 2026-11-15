@@ -233,6 +233,9 @@ void fra_instrument_repository::write(
     const std::vector<domain::fra_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FRA instruments. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fra_instrument_repository::write: one claim is needed for each row");
     std::vector<domain::fra_instrument> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fra_instrument_claim_reads_current(claims[i]))

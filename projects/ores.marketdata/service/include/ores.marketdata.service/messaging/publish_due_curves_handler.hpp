@@ -88,6 +88,10 @@ using namespace ores::logging;
  */
 class publish_due_curves_handler {
 public:
+    /// The curves one firing holds, by the identifier a plan names them with.
+    using config_by_id =
+        std::unordered_map<std::string, const ores::refdata::domain::ir_curve_bootstrap_config*>;
+
     publish_due_curves_handler(ores::nats::service::client& nats,
                                const ores::database::context& ctx,
                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
@@ -149,8 +153,7 @@ public:
         ores::refdata::repository::ir_curve_bootstrap_config_repository repo;
         const auto configs = repo.read_latest(req_ctx);
 
-        std::unordered_map<std::string, const ores::refdata::domain::ir_curve_bootstrap_config*>
-            configs_by_id;
+        config_by_id configs_by_id;
         std::vector<curve_build_node> nodes;
         configs_by_id.reserve(configs.size());
         nodes.reserve(configs.size());
@@ -244,9 +247,10 @@ public:
             }
         }
 
-        // The sweep succeeded when nothing broke: a deferred curve is a curve whose
-        // inputs have not arrived, which the next firing tries again, and calling
-        // that a failure would hide an ordering behind a break.
+        // The sweep succeeded when nothing broke. A deferred curve is one whose inputs
+        // have not arrived, which the next firing tries again; a raised one is a publish
+        // the approval gate took, which is somebody else's to answer. Calling either a
+        // failure would hide an ordering, or an approval queue, behind a break.
         resp.success = failed == 0;
         resp.message = "published " + std::to_string(published) + " of " +
                        std::to_string(configs.size()) + " curve(s): deferred " +
@@ -264,22 +268,15 @@ public:
 private:
     /// The name a curve is known by, or the identifier when the firing does not
     /// hold the curve the edge names.
-    static std::string
-    name_of(const std::string& config_id,
-            const std::unordered_map<std::string,
-                                     const ores::refdata::domain::ir_curve_bootstrap_config*>&
-                configs_by_id) {
+    static std::string name_of(const std::string& config_id, const config_by_id& configs_by_id) {
         const auto it = configs_by_id.find(config_id);
         return it == configs_by_id.end() ? config_id : it->second->name;
     }
 
     /// Why the firing could not order its curves, naming them so the fault is
     /// read from the log rather than looked up by re-running the sweep.
-    static std::string refusal_message(
-        const curve_build_refusal& refusal,
-        const std::unordered_map<std::string,
-                                 const ores::refdata::domain::ir_curve_bootstrap_config*>&
-            configs_by_id) {
+    static std::string refusal_message(const curve_build_refusal& refusal,
+                                       const config_by_id& configs_by_id) {
         std::string names;
         for (const auto& id : refusal.node_ids)
             names += (names.empty() ? "" : ", ") + std::string("'") + name_of(id, configs_by_id) +

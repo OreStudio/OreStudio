@@ -234,6 +234,18 @@ public:
         return seed_projection_curve(projection_ladder(), discounts_off);
     }
 
+    /// @brief Seeds a projection whose ladder reaches past the funding curve's last
+    /// point, with its own quotes in place.
+    ///
+    /// Every pillar is quoted, so nothing waits for the market: what it reads is a
+    /// curve that cannot span the build.
+    boost::uuids::uuid seed_projection_curve_past_its_funding_curve(
+        const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
+        return seed_projection_curve(
+            {std::tuple{"SPOT", "6M", "DEPOSIT"}, std::tuple{"SPOT", "5Y", "SWAP"}},
+            discounts_off);
+    }
+
     /// @brief The output series, as the resolver names it.
     ores::marketdata::messaging::resolve_series_identity_request identity() const {
         ores::marketdata::messaging::resolve_series_identity_request id;
@@ -432,6 +444,7 @@ private:
         // another term of the funding curve's own spot series.
         pillar_series.emplace("SPOT>6M", pillar_series.at("SPOT>12M"));
         pillar_series.emplace("SPOT>2Y", pillar_series.at("SPOT>12M"));
+        pillar_series.emplace("SPOT>5Y", pillar_series.at("SPOT>12M"));
     }
 
     void
@@ -466,6 +479,7 @@ private:
         for (const auto& [start, end, value] : {std::tuple{"SPOT", "6M", "0.0425"},
                                                 std::tuple{"SPOT", "12M", "0.0432"},
                                                 std::tuple{"SPOT", "2Y", "0.0405"},
+                                                std::tuple{"SPOT", "5Y", "0.0410"},
                                                 std::tuple{"12M", "2Y", "0.0395"}}) {
             const auto series_id = pillar_series.at(std::string(start) + ">" + end);
 

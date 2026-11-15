@@ -218,10 +218,13 @@ compute_curve(const ores::database::context& ctx,
                                                      interpolation_method,
                                                      is_projection ? &discount_curve : nullptr);
     } catch (const quant::discount_curve_required_error& e) {
-        // The funding curve is published but does not reach a pillar's date, so what
-        // this curve reads is not there yet. The engine states the date; the build
-        // waits for a funding curve that covers it.
-        return std::unexpected(curve_deferral{"curve '" + config.name + "': " + e.what()});
+        // The funding curve has published, and it still does not span a pillar's
+        // dates once its own reference date is put back. The next firing reads the
+        // same set and refuses it the same way, so this is a break in the pair, not
+        // an input that has not arrived: it is reported as one.
+        throw std::runtime_error("curve '" + config.name + "' discounts off '" +
+                                 (discount_config ? discount_config->name : std::string{}) +
+                                 "', which does not cover it: " + e.what());
     }
     return out;
 }

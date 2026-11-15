@@ -95,7 +95,7 @@ TEST_CASE("one_firing_builds_the_funding_curve_and_the_projection_that_reads_it"
 
     REQUIRE(resp.success);
     REQUIRE(resp.curves.size() == 2);
-    CHECK(resp.message.find("published 2 of 2") != std::string::npos);
+    CHECK(resp.message.contains("published 2 of 2"));
 
     CHECK(resp.curves[0].bootstrap_config_id == boost::uuids::to_string(f.config_id));
     CHECK(resp.curves[0].status == "published");
@@ -155,13 +155,36 @@ TEST_CASE("a_projection_whose_funding_curve_cannot_build_is_deferred_not_failed"
     });
     REQUIRE(projection != resp.curves.end());
     CHECK(projection->status == "deferred");
-    CHECK(projection->message.find("published nothing yet") != std::string::npos);
+    CHECK(projection->message.contains("published nothing yet"));
 
     const auto broken = std::ranges::find_if(resp.curves, [&](const auto& one) {
         return one.bootstrap_config_id == boost::uuids::to_string(broken_id);
     });
     REQUIRE(broken != resp.curves.end());
     CHECK(broken->status == "failed");
+}
+
+TEST_CASE("a_projection_the_funding_curve_cannot_span_fails_rather_than_waits",
+          curve_republish_tags) {
+    curve_fixture f;
+    zero_approval_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
+    // The projection's ladder reaches 5Y and the funding curve's last point is 2Y.
+    // Its own pillars are quoted, so nothing waits for the market: the pair itself
+    // does not hold, and a deferral here would retry the same refusal for ever.
+    const auto projection_id = f.seed_projection_curve_past_its_funding_curve();
+
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto resp = publish_due_curves_handler::publish_all(ctx);
+
+    CHECK_FALSE(resp.success);
+    const auto projection = std::ranges::find_if(resp.curves, [&](const auto& one) {
+        return one.bootstrap_config_id == boost::uuids::to_string(projection_id);
+    });
+    REQUIRE(projection != resp.curves.end());
+    CHECK(projection->status == "failed");
+    CHECK(projection->message.contains("does not cover it"));
 }
 
 TEST_CASE("each_firing_supersedes_the_publish_the_one_before_it_made", curve_republish_tags) {

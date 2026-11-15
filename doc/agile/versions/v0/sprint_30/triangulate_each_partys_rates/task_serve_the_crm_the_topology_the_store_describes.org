@@ -26,11 +26,11 @@ The CRM's drivers are hand-listed in refdata, and the identity the store holds i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -85,3 +85,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The CRM's driver pairs are no longer only a list somebody typed.
+=read_fixing_sources= reads the store once per refresh: it takes every series
+whose identity is an index of the FX class, groups it by publisher and by the
+base that publisher quotes against, and attaches the rank the publisher
+carries. =crm_ingest_bridge::refresh()= then asks the topology policy to choose,
+and where a party holds fixings they decide both its topology and its pivot.
+Where a party holds none, its configured pairs stand.
+
+A series that states no =ccy= or no =unit_ccy= refuses that party by name,
+quoting the series URI and both fields, rather than being skipped; and a
+publisher whose series quote against two bases at once refuses the party too,
+since no base would cancel. A failure to read the store at all is logged and
+leaves every party on its configured pairs, so a database fault cannot stop the
+fleet serving rates.
+
+Measured: =ores.marketdata.core.tests= passes in 749 seconds and
+=ores.marketdata.service.tests= in 106, which includes the montage and curve
+analytics cases that build engines through =refresh()=. Both changed files were
+compiled with the flags the build itself uses before the build ran, and
+clang-format is clean.
+
+What this does not yet prove, and why: no party in this environment holds both
+an enabled CRM config and fixing series. The System Party holds 34 fixing
+series and no config; every other party holds at most one fixing series and no
+config. So the demo exercises the configured-pairs path, and the identity path
+is armed but idle until configuration and data meet. That is the per-party
+derivation question, and it is where this becomes visible.

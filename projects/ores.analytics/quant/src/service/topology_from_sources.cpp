@@ -20,7 +20,9 @@
 #include "ores.analytics.quant/service/topology_from_sources.hpp"
 #include <algorithm>
 #include <format>
+#include <optional>
 #include <set>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
@@ -36,13 +38,9 @@ std::vector<std::string> quoted_by(const fixing_source& source) {
     return {distinct.begin(), distinct.end()};
 }
 
-}
-
-std::expected<source_topology, std::string>
-topology_from_sources(const std::vector<fixing_source>& sources) {
-    if (sources.empty())
-        return std::unexpected("No fixing source was offered to build a topology from.");
-
+/// The sources in the order resolution reads them: the rank first, then the code,
+/// so an equal rank is broken by a name rather than by the order of the input.
+std::vector<const fixing_source*> ranked(const std::vector<fixing_source>& sources) {
     std::vector<const fixing_source*> ordered;
     ordered.reserve(sources.size());
     for (const auto& source : sources)
@@ -52,15 +50,41 @@ topology_from_sources(const std::vector<fixing_source>& sources) {
             return lhs->precedence < rhs->precedence;
         return lhs->provider_code < rhs->provider_code;
     });
+    return ordered;
+}
 
+/// Why a source states too little for a star to be rooted at it, or nothing when it
+/// states a provider and a base.
+std::optional<std::string> unstated(const fixing_source& source) {
+    if (source.provider_code.empty())
+        return "A fixing source was offered with no provider code.";
+    if (source.base_code.empty())
+        return std::format("The {} fixing source quotes nothing against a base currency.",
+                           source.provider_code);
+    return std::nullopt;
+}
+
+/// The currencies whose rate a source can express: its base, and every currency it
+/// quotes against that base.
+std::set<std::string> expressible_by(const fixing_source& source) {
+    auto held = std::set<std::string>{source.base_code};
+    for (const auto& currency : quoted_by(source))
+        held.insert(currency);
+    return held;
+}
+
+}
+
+std::expected<source_topology, std::string>
+topology_from_sources(const std::vector<fixing_source>& sources) {
+    if (sources.empty())
+        return std::unexpected("No fixing source was offered to build a topology from.");
+
+    const auto ordered = ranked(sources);
     std::string refused;
     for (const auto* source : ordered) {
-        if (source->provider_code.empty())
-            return std::unexpected("A fixing source was offered with no provider code.");
-        if (source->base_code.empty())
-            return std::unexpected(
-                std::format("The {} fixing source quotes nothing against a base currency.",
-                            source->provider_code));
+        if (const auto why = unstated(*source); why)
+            return std::unexpected(*why);
 
         const auto quotes = quoted_by(*source);
         if (quotes.empty()) {
@@ -83,6 +107,52 @@ topology_from_sources(const std::vector<fixing_source>& sources) {
         std::format("No fixing source quotes enough currencies against one base to anchor a "
                     "topology: {}.",
                     refused.empty() ? "none was offered" : refused));
+}
+
+std::expected<pair_sources, std::string>
+sources_for_pairs(const std::vector<fixing_source>& sources,
+                  const std::vector<domain::ccy_pair_input>& pairs) {
+    if (pairs.empty())
+        return std::unexpected("No pair was offered to choose a fixing source for.");
+    if (sources.empty())
+        return std::unexpected("No fixing source was offered to choose a source from.");
+
+    for (const auto& source : sources)
+        if (const auto why = unstated(source); why)
+            return std::unexpected(*why);
+
+    for (const auto& pair : pairs) {
+        if (pair.base_code.empty() || pair.quote_code.empty())
+            return std::unexpected("A pair was offered with one side left empty.");
+        if (pair.base_code == pair.quote_code)
+            return std::unexpected(
+                std::format("The pair {}/{} names one currency twice, so it has no rate.",
+                            pair.base_code,
+                            pair.quote_code));
+    }
+
+    // What each source can express is worked out once and not once per pair, because a
+    // party asks for many pairs over the same few sources.
+    std::vector<std::pair<const fixing_source*, std::set<std::string>>> candidates;
+    for (const auto* source : ranked(sources))
+        candidates.emplace_back(source, expressible_by(*source));
+
+    pair_sources out;
+    out.choices.reserve(pairs.size());
+    for (const auto& pair : pairs) {
+        const auto found = std::ranges::find_if(candidates, [&](const auto& candidate) {
+            const auto& held = candidate.second;
+            return held.contains(pair.base_code) && held.contains(pair.quote_code);
+        });
+        if (found == candidates.end()) {
+            out.unserved.push_back(pair);
+            continue;
+        }
+        out.choices.push_back({.provider_code = found->first->provider_code,
+                               .pivot_code = found->first->base_code,
+                               .pair = pair});
+    }
+    return out;
 }
 
 }

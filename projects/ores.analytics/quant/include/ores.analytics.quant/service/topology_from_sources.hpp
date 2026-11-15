@@ -74,6 +74,48 @@ struct source_topology {
 [[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::expected<source_topology, std::string>
 topology_from_sources(const std::vector<fixing_source>& sources);
 
+/// The source one pair is read from, and the star whose base the pair composes in.
+struct pair_source {
+    std::string provider_code;
+    /// The base every series of the source is quoted against, which becomes the pivot.
+    std::string pivot_code;
+    /// The pair as it was asked for.
+    domain::ccy_pair_input pair;
+};
+
+/// The source each pair is read from, and the pairs no source can express.
+struct pair_sources {
+    std::vector<pair_source> choices;
+    /// The pairs no source quotes both sides of, in the order they were asked for.
+    std::vector<domain::ccy_pair_input> unserved;
+};
+
+/**
+ * @brief Chooses the source each pair is read from, over the sources a party holds.
+ *
+ * A party can hold several publishers, and each quotes everything against its own
+ * base. A rate never mixes two publishers, because their bases would not cancel, so
+ * the choice is made once per pair and not once for the whole party: a pair is read
+ * from the lowest-ranked source whose star can express both of its currencies, which
+ * is the base itself or one of the currencies the source quotes. A party that holds
+ * one publisher therefore reads every pair it can express from it, and a pair only a
+ * second publisher quotes is read from that one rather than left underived.
+ *
+ * This is why a pair one publisher omits still reaches a surface: the sources of a
+ * party are not one tree, and a pair no single tree carries is carried by the tree
+ * that does. @c topology_from_sources stays the choice for a consumer that needs one
+ * tree, such as the live engine.
+ *
+ * Nothing here names a currency or a publisher: the caller supplies both from data.
+ *
+ * @param sources The party's sources, each stating its base, its currencies and its rank.
+ * @param pairs The pairs to choose a source for, as the caller reads them.
+ * @return The choice for each pair it can serve and the ones it cannot.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::expected<pair_sources, std::string>
+sources_for_pairs(const std::vector<fixing_source>& sources,
+                  const std::vector<domain::ccy_pair_input>& pairs);
+
 }
 
 #endif

@@ -26,11 +26,11 @@ A generated put-many or delete-many of more than 1,000 elements is refused as in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,16 @@ A generated put-many or delete-many of more than 1,000 elements is refused as in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add =batch_too_large= to the outcome catalogue as an invalid request outcome
+  with the arguments entity and limit, and render it into =outcome_code.hpp=.
+- In the service template, check the size of the batch at the top of every
+  put-many block (entity, junction, aggregate) and every delete-many block
+  (entity, junction), before any read or write, against =max_batch_size=.
+- Regenerate every service.
+- Replace the two marketdata service tests that put 1,001 rows to span read
+  chunks: the service now refuses such a batch, and the repository tests keep
+  the chunked-read cases. Add a test for exactly the bound, one for a refused
+  put-many and one for a refused delete-many.
 
 * Measurements
 
@@ -85,3 +92,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every generated put-many, aggregate put-many and delete-many refuses a batch of
+more than 1,000 elements with =batch_too_large= before it reads or writes a row.
+The refusal is an invalid outcome, and its message names the entity and the
+bound. A batch of exactly 1,000 is accepted. The marketdata service tests prove
+the three cases: exactly the bound is answered in order, a refused put-many
+writes nothing, and a refused delete-many removes nothing.

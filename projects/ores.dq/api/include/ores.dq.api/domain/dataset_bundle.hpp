@@ -40,10 +40,12 @@ namespace ores::dq::domain {
  * of reference data. Bundles provide a way to group related datasets that
  * should be installed together.
  *
- * A bundle carries one level and one scope, and the two decide the tenant it
+ * A bundle belongs to one level and one scope, and the two decide the tenant it
  * writes into: a platform or world bundle publishes into the system tenant once,
  * a tenant-wide bundle into a tenant, and a party bundle into the tenant that
- * holds the party.
+ * holds the party. The table does not carry either as a column yet: the bundle's
+ * documentation states them, and the knowledge page "Reference data classification
+ * by publication level" holds the rule that assigns them.
  *
  * Examples:
  * - "system_core": the platform's own vocabulary, published at bring-up

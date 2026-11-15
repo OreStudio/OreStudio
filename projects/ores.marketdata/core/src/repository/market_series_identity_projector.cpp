@@ -22,14 +22,20 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
+#include "ores.marketdata.api/domain/market_series_identity_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -37,6 +43,97 @@ namespace ores::marketdata::repository {
 namespace {
 
 using datum::field;
+
+/**
+ * @brief The text one column of an identity row holds, read by name.
+ *
+ * The name is the column the shape table states, and the type's own field list is
+ * what turns it into a member, so a column the table names and the type does not
+ * hold reads as empty rather than needing a second mapping.
+ */
+std::string text_of(const domain::market_series_identity& row, std::string_view column) {
+    std::string out;
+    ores::utility::codec::apply_fields(
+        [&](const auto&... one) {
+            ([&] {
+                if (one.name != column)
+                    return;
+                using member_type = std::remove_cvref_t<decltype(row.*(one.member))>;
+                if constexpr (std::is_same_v<member_type, std::string>)
+                    out = row.*(one.member);
+            }(),
+             ...);
+        },
+        wire_fields(std::type_identity<domain::market_series_identity>{}));
+    return out;
+}
+
+/// The fields one family requires and the ones it forbids.
+struct family_shape final {
+    std::set<std::string, std::less<>> required;
+    std::set<std::string, std::less<>> forbidden;
+};
+
+/// A family, as the shape table keys it: the asset class, the subclass, the index family.
+using family_key = std::tuple<std::string, std::string, std::string>;
+
+/**
+ * @brief What the shape table says about the families it states.
+ *
+ * Read once per call, because a projection writes a batch and the table is small.
+ * A family the table does not state is not enforced: the shape is a catalogue that
+ * grows, and refusing every family nobody has stated yet would stop an ingest for
+ * a reason that is the catalogue's, not the data's.
+ */
+class shape_book final {
+public:
+    explicit shape_book(const ores::database::context& ctx) {
+        for (const auto& row : repository::series_identity_shape_repository{}.read_latest(ctx)) {
+            const auto key = family_key{row.asset_class, row.series_subclass, row.index_family};
+            if (row.requirement == "required")
+                shapes_[key].required.insert(row.field);
+            else if (row.requirement == "forbidden")
+                shapes_[key].forbidden.insert(row.field);
+        }
+    }
+
+    /**
+     * @brief Refuses a row its family's shape does not admit, naming the family and the field.
+     *
+     * A missing required field is not an identity of that family, and a forbidden
+     * one states something untrue about it. Both are the boundary's to refuse: the
+     * row is a projection of external data, and a sparse one surfaces much later as
+     * a curve that cannot find the series it names.
+     */
+    void check(const domain::market_series& series,
+               const domain::market_series_identity& row) const {
+        const auto key = family_key{row.asset_class, series.series_subclass, row.index};
+        const auto found = shapes_.find(key);
+        if (found == shapes_.end())
+            return;
+        for (const auto& field : found->second.required) {
+            if (text_of(row, field).empty())
+                throw std::invalid_argument("series '" + series.oresmd_uri + "' is not a " +
+                                            row.asset_class + "/" + series.series_subclass +
+                                            " identity: field '" + field + "' is required");
+        }
+        for (const auto& field : found->second.forbidden) {
+            if (!text_of(row, field).empty())
+                throw std::invalid_argument("series '" + series.oresmd_uri + "' is not a " +
+                                            row.asset_class + "/" + series.series_subclass +
+                                            " identity: field '" + field + "' is forbidden");
+        }
+    }
+
+    /// Whether any row states this series' family, so a caller can count the ones nobody has.
+    [[nodiscard]] bool states(const domain::market_series& series,
+                              const domain::market_series_identity& row) const {
+        return shapes_.contains(family_key{row.asset_class, series.series_subclass, row.index});
+    }
+
+private:
+    std::map<family_key, family_shape> shapes_;
+};
 
 constexpr std::string_view kind_series = "series";
 constexpr std::string_view kind_index = "index";
@@ -330,6 +427,7 @@ market_series_identity_projector::project(const ores::database::context& ctx,
                                           const std::vector<domain::market_series>& series) {
     if (series.empty())
         return 0;
+    const shape_book shapes(ctx);
     std::vector<domain::market_series_identity> rows;
     rows.reserve(series.size());
     std::size_t unknown = 0;
@@ -337,6 +435,9 @@ market_series_identity_projector::project(const ores::database::context& ctx,
         auto p = project_one(ctx, s);
         if (!p.understood)
             ++unknown;
+        // A series written through the repository is refused here or nowhere: the
+        // store's own columns cannot say which fields a family requires.
+        shapes.check(s, p.row);
         rows.push_back(std::move(p.row));
     }
     market_series_identity_repository{}.write(ctx, rows);
@@ -367,10 +468,32 @@ market_series_identity_projector::project_missing(const ores::database::context&
             missing.push_back(s);
     }
 
+    // A backfill is a repair, and a repair that aborts on the first legacy row it
+    // cannot state is no repair: the rows the shape refuses are counted and left
+    // as they are, so the caller can report them while the rest are projected.
+    const shape_book shapes(ctx);
+    std::vector<domain::market_series> accepted;
+    accepted.reserve(missing.size());
     backfill_result result;
-    result.projected = missing.size();
+    for (const auto& s : missing) {
+        auto p = project_one(ctx, s);
+        if (!p.understood)
+            ++result.unreadable;
+        if (!shapes.states(s, p.row))
+            ++result.unstated;
+        try {
+            shapes.check(s, p.row);
+        } catch (const std::invalid_argument&) {
+            ++result.refused;
+            continue;
+        }
+        accepted.push_back(s);
+    }
     result.already_projected = series.size() - missing.size();
-    result.unreadable = project(ctx, missing);
+    result.projected = accepted.size();
+    market_series_identity_projector::project(ctx, accepted);
+    // project() counts the unreadable rows again from its own projection; the count
+    // this call reports is the one it made above, so the two are not added twice.
     return result;
 }
 
@@ -388,12 +511,14 @@ market_series_identity_projector::reproject(const ores::database::context& ctx,
     for (const auto& row : market_series_identity_repository{}.read_latest(ctx))
         stored[boost::uuids::to_string(row.series_id)] = row;
 
+    const shape_book shapes(ctx);
     std::vector<domain::market_series_identity> changed;
     changed.reserve(series.size());
     for (const auto& s : series) {
         auto p = project_one(ctx, s);
         if (!p.understood)
             ++result.unreadable;
+        shapes.check(s, p.row);
         const auto it = stored.find(boost::uuids::to_string(s.id));
         if (it != stored.end() && it->second == p.row) {
             ++result.unchanged;

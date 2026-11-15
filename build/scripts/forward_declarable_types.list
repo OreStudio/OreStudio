@@ -22,8 +22,8 @@
 # pointer or not at all, so a header that only names it needs the declaration.
 
 ores::database::context            class   ores.database/domain/context.hpp        ores.database/domain/context_fwd.hpp
-ores::database::pq::connection     class   ores.database/pq/connection.hpp         -
+ores::database::pq::connection     class   ores.database/pq/connection.hpp         ores.database/pq/connection_fwd.hpp
 ores::database::pq::pool           class   ores.database/pq/pool.hpp               -
-ores::database::pq::result         class   ores.database/pq/connection.hpp         -
+ores::database::pq::result         class   ores.database/pq/result.hpp             -
 ores::database::pq::session_context struct  ores.database/pq/transaction.hpp        -
 ores::database::pq::transaction    class   ores.database/pq/transaction.hpp        -

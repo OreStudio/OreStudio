@@ -20,7 +20,7 @@
 #define ORES_DATABASE_PQ_POOL_HPP
 
 #include "ores.database/export.hpp"
-#include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/connection_fwd.hpp"
 #include "ores.database/pq/options.hpp"
 #include <chrono>
 #include <condition_variable>
@@ -67,9 +67,6 @@ public:
     };
 
     /**
-     * @brief Opens @p size connections; a failure to open any is retryable.
-     */
-    /**
      * @brief Opens @p size connections, retrying a failure to connect under
      * @p policy.
      */
@@ -80,6 +77,14 @@ public:
 
     pool(const pool&) = delete;
     pool& operator=(const pool&) = delete;
+
+    /**
+     * @brief Closes the connections the pool still holds.
+     *
+     * Declared here and defined in the .cpp, where a connection is complete:
+     * the header names the type without defining it.
+     */
+    ~pool();
 
     /**
      * @brief Leases a connection, waiting at most the acquire timeout. A pool

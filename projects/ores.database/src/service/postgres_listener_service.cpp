@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/service/postgres_listener_service.hpp"
+#include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.platform/process/pid.hpp"
 #include <boost/algorithm/string/join.hpp>

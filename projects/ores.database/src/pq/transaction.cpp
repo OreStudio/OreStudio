@@ -17,6 +17,7 @@
  *
  */
 #include "ores.database/pq/transaction.hpp"
+#include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>

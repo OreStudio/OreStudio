@@ -17,6 +17,7 @@
  *
  */
 #include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/result.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <charconv>

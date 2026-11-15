@@ -124,6 +124,7 @@
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -521,6 +522,27 @@ resolve_portfolio(Nats& nats, const std::string& name, std::string& out_error) {
 }
 
 /**
+ * @brief Sends a delete-many in parts of a batch's size, in the order its
+ * removals are listed.
+ *
+ * A removal states no version, so each part stands alone.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats, typename Request>
+std::string remove_in_parts(Nats& nats, Request& req) {
+    const auto removals = std::move(req.removals);
+    for (const auto part : ores::utility::domain::batches_of(removals)) {
+        req.removals.assign(part.begin(), part.end());
+        std::string error;
+        auto r = nats_call(nats, req, error);
+        if (!r || r->result.outcome != ores::utility::domain::outcome::ok)
+            return (r && !r->result.message.empty()) ? r->result.message : error;
+    }
+    return {};
+}
+
+/**
  * @brief Closes the live bookings of the given trades.
  *
  * The anchor is immutable, so this is how an import takes a trade it booked
@@ -537,11 +559,7 @@ std::string close_bookings(Nats& nats, const std::vector<boost::uuids::uuid>& tr
                                                  .commentary = "Rolling back a failed ORE import"}};
     for (const auto& id : trade_ids)
         req.removals.push_back({.key = {.trade_id = id}});
-    std::string error;
-    auto r = nats_call(nats, req, error);
-    if (!r || r->result.outcome != ores::utility::domain::outcome::ok)
-        return (r && !r->result.message.empty()) ? r->result.message : error;
-    return {};
+    return remove_in_parts(nats, req);
 }
 
 /**
@@ -2788,14 +2806,11 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
                                                                "Rolling back a failed ORE import"}};
         for (const auto& name : req.saved_book_names)
             del_req.removals.push_back({.key = {.name = name}});
-        std::string err;
-        auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
-            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
+        const auto reason = remove_in_parts(delegated_nats, del_req);
+        if (!reason.empty())
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_books failed | corr=" << req.correlation_id
                 << " error=" << reason;
-        }
     }
 
     // ── Delete portfolios (reverse order — children before parents) ──────────
@@ -2810,14 +2825,11 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
         for (auto it = req.saved_portfolio_names.rbegin(); it != req.saved_portfolio_names.rend();
              ++it)
             del_req.removals.push_back({.key = {.name = *it}});
-        std::string err;
-        auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
-            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
+        const auto reason = remove_in_parts(delegated_nats, del_req);
+        if (!reason.empty())
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_portfolios failed | corr=" << req.correlation_id
                 << " error=" << reason;
-        }
     }
 
     // ── Delete currencies ────────────────────────────────────────────────────
@@ -2831,14 +2843,11 @@ void ore_import_execute_handler::rollback(ores::nats::delivery delivery) {
                                                                "Rolling back a failed ORE import"}};
         for (const auto& iso : req.saved_currency_iso_codes)
             del_req.removals.push_back({.key = {.iso_code = iso}});
-        std::string err;
-        auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
-            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
+        const auto reason = remove_in_parts(delegated_nats, del_req);
+        if (!reason.empty())
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_currencies failed | corr=" << req.correlation_id
                 << " error=" << reason;
-        }
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.rollback complete | corr=" << req.correlation_id;

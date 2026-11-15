@@ -1927,6 +1927,38 @@ TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates",
     }
 }
 
+TEST_CASE("a_callable_bond_whose_call_price_is_not_positive_maps_no_bond",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="callable-bond-zero">
+    <TradeType>CallableBond</TradeType>
+    <CallableBondData>
+      <BondData>
+        <SecurityId>CallableBond_ZERO</SecurityId>
+        <BondNotional>100</BondNotional>
+      </BondData>
+      <CallData>
+        <ScheduleData>
+          <Dates><Dates><Date>2027-04-01</Date></Dates></Dates>
+        </ScheduleData>
+        <Styles><Style>Bermudan</Style></Styles>
+        <Prices><Price>0</Price></Prices>
+        <PriceTypes><PriceType>Clean</PriceType></PriceTypes>
+        <IncludeAccruals><IncludeAccrual>true</IncludeAccrual></IncludeAccruals>
+      </CallData>
+    </CallableBondData>
+  </Trade>
+</Portfolio>)";
+
+    // The table refuses a call price that is not positive, so the reading
+    // refuses it first and the trade carries no bond a store would reject.
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(items.size() == 1);
+    CHECK(std::holds_alternative<std::monostate>(items[0].instrument));
+}
+
 TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

@@ -8,7 +8,7 @@
 #+filetags: :enforce_the_batch_bound_on_generated_writes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/refuse-an-oversized-batch-write
-#+pr:
+#+pr: 4754
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4754][#4754]] | [codegen] Refuse a put-many or delete-many of more than 1,000 elements |
 
 * Review
 

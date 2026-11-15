@@ -33,6 +33,7 @@ import {
     subjects,
     type MarketObservationsFilter,
 } from '@ores/wire-protocol/generated/marketdata/protocol/market_observation_protocol';
+import { fromWireTimestamp, wireTimestampSchema } from '@ores/wire-protocol/time';
 import { NO_ORDER, idSchema, input, refusal, resultSchema } from './refdata-calls.js';
 import { observedSince } from './series-window.js';
 import type { LiveSession } from './sessions.js';
@@ -49,11 +50,17 @@ import type { LiveSession } from './sessions.js';
  * than the cap returns its newest observations. A request for more than the cap
  * is clamped, not refused, because the page asks for what it can draw and the
  * answer says how many the window holds.
+ *
+ * A request that names an instant reads the window ending at it, and reads
+ * nothing after it. A screen that draws a chosen day names that day's end, so
+ * the path it draws is the one its table stated rather than whatever the clock
+ * has done since.
  */
 
 const querySchema = z.object({
     limit: z.coerce.number().pipe(z.int().min(1)).default(DEFAULT_OBSERVATIONS),
     window: seriesWindowSchema.default(DEFAULT_SERIES_WINDOW),
+    as_of: wireTimestampSchema.optional(),
 });
 
 const replySchema = z.looseObject({
@@ -77,8 +84,9 @@ export function registerSeriesRoutes(
     server.get('/api/series/:id/observations', async (request): Promise<SeriesObservations> => {
         const session = requireSession(request);
         const id = input(idSchema, (request.params as { id: string }).id);
-        const { limit, window } = input(querySchema, request.query);
-        const since = observedSince(window, Date.now());
+        const { limit, window, as_of } = input(querySchema, request.query);
+        const anchor = as_of === undefined ? Date.now() : fromWireTimestamp(as_of).getTime();
+        const since = observedSince(window, anchor);
         const reply = await session.client.callAuthenticated(
             subjects.list_by_series_id_market_observations_request,
             {
@@ -94,7 +102,7 @@ export function registerSeriesRoutes(
                     series_id_one_of: null,
                     observation_datetime_one_of: null,
                     observation_datetime_from: since,
-                    observation_datetime_to: null,
+                    observation_datetime_to: as_of ?? null,
                 } satisfies MarketObservationsFilter,
             },
             replySchema,

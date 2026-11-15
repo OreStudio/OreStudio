@@ -17,15 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { api, type FxMontagePair } from '../api/client.js';
+import { useQuery } from '@tanstack/react-query';
+import type { FxMontagePair } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { pointsOf } from '../market/seriesView.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { formatDateTime, relativeTime } from '../ui/Time.js';
-import { DATA_CELL, HEAD_CELL, asOfInstant, oneOf, todayIso, useReadParty } from './readScreen.js';
+import { chosenDayQuery, drawnSpot, montageQuery, newestSpot } from './fxMontage.js';
+import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { DATA_CELL, HEAD_CELL, oneOf, todayIso, useReadParty } from './readScreen.js';
 
 /**
  * One base currency's crosses, from
@@ -35,6 +38,10 @@ import { DATA_CELL, HEAD_CELL, asOfInstant, oneOf, todayIso, useReadParty } from
  * the pair the base sits on. The instant a row's change is measured from is the
  * server's, stated once for the whole answer, so the screen does not decide what
  * "today" means.
+ *
+ * The chosen pair's day is a second read, of the series the montage already
+ * named: the observations over the twenty four hours that end at the as-of the
+ * montage answered for.
  */
 
 const BASES = ['EUR', 'USD', 'GBP', 'AUD', 'JPY', 'CHF', 'CAD', 'NZD'] as const;
@@ -55,7 +62,7 @@ function sorted(rows: readonly FxMontagePair[], sort: Sort): readonly FxMontageP
 }
 
 function rowAge(pair: FxMontagePair, language: string): string {
-    const newest = [...pair.spot_by_provider].sort((a, b) => a.age_seconds - b.age_seconds)[0];
+    const newest = newestSpot(pair);
     if (newest === undefined) return '—';
     const now = new Date();
     return relativeTime(new Date(now.getTime() - newest.age_seconds * 1000), now, language);
@@ -114,7 +121,7 @@ function RangeBar({
 }
 
 export function FxMontagePage(): ReactNode {
-    const { t, language } = useTranslation();
+    const { t, language, plural } = useTranslation();
     const party = useReadParty();
     const [search, setSearch] = useSearchParams();
     const set = (values: Readonly<Record<string, string>>): void => {
@@ -128,15 +135,18 @@ export function FxMontagePage(): ReactNode {
     const base = (search.get('base') ?? 'EUR').toUpperCase();
     const asOf = search.get('asof') ?? todayIso();
     const sort = oneOf(search.get('sort'), SORTS, 'pair');
-    const key = ['fx-montage', base, asOf] as const;
 
-    const montage = useQuery({
-        queryKey: key,
-        queryFn: () => api.fxMontage({ baseCurrency: base, asOf: asOfInstant(asOf) }),
-        retry: false,
-    });
+    const montage = useQuery(montageQuery(base, asOf));
 
     const rows = montage.data === undefined ? [] : sorted(montage.data.pairs, sort);
+    // The pair that is open is the one the address names, or the answer's own first
+    // pair: the display's sort must not decide which day is drawn.
+    const chosenPair = search.get('pair') ?? montage.data?.pairs[0]?.pair_name ?? '';
+    const chosen = rows.find((pair) => pair.pair_name === chosenPair);
+    const drawn = drawnSpot(chosen);
+    const seriesId = drawn?.series_id ?? '';
+    const day = useQuery(chosenDayQuery(seriesId, asOf));
+    const dayPoints = day.data === undefined ? [] : pointsOf(day.data.observations);
     const places = 4;
     const head = HEAD_CELL;
     const cell = DATA_CELL;
@@ -236,7 +246,21 @@ export function FxMontagePage(): ReactNode {
                                             className="border-b border-line-subtle"
                                         >
                                             <td className="whitespace-nowrap px-2 py-1 font-semibold">
-                                                {pair.pair_name}
+                                                <button
+                                                    type="button"
+                                                    className={cx(
+                                                        'text-left',
+                                                        pair.pair_name === chosenPair
+                                                            ? 'text-accent-bright underline'
+                                                            : 'text-accent',
+                                                    )}
+                                                    aria-pressed={pair.pair_name === chosenPair}
+                                                    onClick={() => {
+                                                        set({ pair: pair.pair_name });
+                                                    }}
+                                                >
+                                                    {pair.pair_name}
+                                                </button>
                                                 {quoted === 0 && (
                                                     <Tag tone="muted" small>
                                                         {t('marketdata.fxMontage.unquoted')}
@@ -315,6 +339,47 @@ export function FxMontagePage(): ReactNode {
                             </tbody>
                         </table>
                     </div>
+                </section>
+            )}
+            {day.isError && <Notice tone="error">{day.error.message}</Notice>}
+            {day.isSuccess && chosen !== undefined && dayPoints.length === 0 && (
+                <Notice tone="info">
+                    {t('marketdata.fxMontage.dayEmpty', { pair: chosen.pair_name })}
+                </Notice>
+            )}
+            {/* One value is stated, not drawn: a chart of one point is a line the
+                source never drew. */}
+            {day.isSuccess && chosen !== undefined && dayPoints.length > 0 && (
+                <section className="space-y-2 rounded-md border border-line p-4">
+                    <h2 className="text-sm font-semibold">
+                        {t('marketdata.fxMontage.chosenDay', {
+                            pair: chosen.pair_name,
+                            provider: drawn?.provider_code ?? '',
+                        })}
+                    </h2>
+                    <p className="text-xs text-ink-faint">
+                        {plural('marketdata.fxMontage.chosenDayLead', dayPoints.length)}
+                    </p>
+                    {dayPoints.length >= 2 && (
+                        <LineChart
+                            series={[
+                                {
+                                    points: dayPoints.map((point) => point.value),
+                                    colour: SERIES_COLOURS[0],
+                                    fill: true,
+                                    strong: true,
+                                },
+                            ]}
+                            xs={dayPoints.map((point) => point.at)}
+                            format={(value) => fixed(value, places, language)}
+                            xFormat={(value) => new Date(value).toLocaleTimeString(language)}
+                            label={t('marketdata.fxMontage.chosenDay', {
+                                pair: chosen.pair_name,
+                                provider: drawn?.provider_code ?? '',
+                            })}
+                            padding={0.08}
+                        />
+                    )}
                 </section>
             )}
         </div>

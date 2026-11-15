@@ -49,6 +49,7 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 | [[id:EE3F60A3-2823-42FC-9C93-FF558B905B66][State staleness on the server]] | DONE | 2026-11-13 | 2026-11-14 | Make the staleness threshold configuration and state age_seconds and stale on every value block, so no client keeps its own threshold. |
 | [[id:C8307585-34F4-467B-8195-DBB5827DEC64][Implement the market data screens in ores.web]] | DONE | 2026-11-13 | 2026-11-14 | Draw the four market-data journeys the port added - find an instrument, read a rate ladder, read the FX montage and inspect a curve's analytics - as screens in ores.web, over the reads the marketdata service now answers, through the BFF and the client the existing market-data screens use. |
 | [[id:A155248C-1586-4554-B4D6-D24471CDE336][Compare a curve to its prior publish]] | DONE | 2026-11-14 | 2026-11-14 | Let the curve analytics read answer at a second instant: the party's published set at or before it, and the change from that set to the curve as it stands now, so the inspector draws the prior close the prototype carries. |
+| [[id:75C8F9DA-0E8F-4685-809A-67206ACE5B37][Draw the rest of the FX montage the way the prototype does]] | BACKLOG | | | The montage screen draws the pairs, the range and the chosen pair's day, but the prototype draws more: a provider set the person chooses, a Today sparkline on every row, and the day's high and low marked on the chart with the provider's last, high, low and change beside it. |
 
 * Decisions
 

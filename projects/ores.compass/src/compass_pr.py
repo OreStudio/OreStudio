@@ -10,6 +10,9 @@ Subcommands:
                 to the * PRs table. The task is found by matching
                 #+branch: against the current branch (override with
                 --task); idempotent when the PR is already recorded.
+  unrecord [pr] Take a PR off a task doc: drop its row from the * PRs
+                table and move #+pr: to the row that remains first. For a
+                PR recorded on the wrong task, which record cannot undo.
   create        Open a PR with the conventions built in: validated
                 [component] title, fixed body template (Summary /
                 Changes / Traceability / Testing, then the footer) with
@@ -114,6 +117,25 @@ def _find_task_doc(project_root, branch, task_ref):
     return candidates[0] if candidates else (None, None)
 
 
+def _without_pr(text, number):
+    """The task doc text with PR @p number's row removed.
+
+    #+pr: follows the first row that remains, because the table is written
+    newest first and the field names the task's latest PR. A doc that does
+    not record the PR comes back unchanged.
+
+    @return (text, whether a row was removed)
+    """
+    row = re.compile(rf"^\| \[\[[^\]]*\]\[#{number}\]\] \|.*\|\n", re.M)
+    found = row.search(text) is not None
+    text = row.sub("", text, count=1)
+    rows = re.findall(r"^\| \[\[[^\]]*\]\[#(\d+)\]\] \|", text, re.M)
+    latest = rows[0] if rows else ""
+    text = re.sub(r"^#\+pr:.*$", f"#+pr: {latest}".rstrip(), text, count=1,
+                  flags=re.M)
+    return text, found
+
+
 def _cmd_record(args, project_root):
     if args.pr is not None and args.pr <= 0:
         print("❌ PR number must be a positive integer.", file=sys.stderr)
@@ -154,6 +176,30 @@ def _cmd_record(args, project_root):
     path.write_text(text, encoding="utf-8")
     print(f"✅ PR #{number} recorded in {rel}")
     print(f"   #+pr: {number}  +  * PRs row: {title}")
+    return 0
+
+
+def _cmd_unrecord(args, project_root):
+    if args.pr is None:
+        print("❌ A PR number is needed: the doc cannot name what to drop.",
+              file=sys.stderr)
+        return 1
+    if args.pr <= 0:
+        print("❌ PR number must be a positive integer.", file=sys.stderr)
+        return 1
+    branch = _current_branch(project_root)
+    path, text = _find_task_doc(project_root, branch, args.task)
+    if path is None:
+        print(f"❌ No task doc found for branch '{branch}' "
+              "(set #+branch:, or pass --task).", file=sys.stderr)
+        return 1
+    rel = path.relative_to(project_root)
+    text, found = _without_pr(text, args.pr)
+    if not found:
+        print(f"✅ PR #{args.pr} is not recorded in {rel}")
+        return 0
+    path.write_text(text, encoding="utf-8")
+    print(f"✅ PR #{args.pr} dropped from {rel}")
     return 0
 
 
@@ -673,6 +719,15 @@ def run(argv, project_root):
                     help="Task UUID or slug (default: match #+branch: "
                          "against the current branch)")
 
+    ur = sub.add_parser("unrecord",
+                        help="Take a PR off a task doc (#+pr: and the "
+                             "* PRs table)")
+    ur.add_argument("pr", nargs="?", type=int,
+                    help="PR number to drop")
+    ur.add_argument("--task", default="",
+                    help="Task UUID or slug (default: match #+branch: "
+                         "against the current branch)")
+
     cr = sub.add_parser("create",
                         help="Open a PR with the conventions built in")
     cr.add_argument("--title", required=True,
@@ -731,6 +786,8 @@ def run(argv, project_root):
         return _cmd_checks(args, project_root)
     if args.subcmd == "record":
         return _cmd_record(args, project_root)
+    if args.subcmd == "unrecord":
+        return _cmd_unrecord(args, project_root)
     if args.subcmd == "create":
         return _cmd_create(args, project_root)
     if args.subcmd == "merge":

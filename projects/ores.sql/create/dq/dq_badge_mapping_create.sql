@@ -107,7 +107,17 @@ begin
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        -- Version zero means one thing: no current link exists. So a create
+        -- that collides with a live link is refused here, unless the writer
+        -- states that it replaces whatever is there.
+        if new.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                perform ores_outcome_raise_fn(
+                    'already_exists',
+                    'badge_mappings',
+                    'code_domain_code');
+            end if;
+        elsif new.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'badge_mappings',

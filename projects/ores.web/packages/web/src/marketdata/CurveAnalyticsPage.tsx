@@ -42,7 +42,7 @@ import { HEAD_CELL, DATA_CELL, asOfInstant, oneOf, todayIso, useReadParty } from
 const CONFIGS = 'ir-curve-bootstrap-configs';
 
 /** What the address says when the reader has asked for no curve beside this one. */
-const NOTHING = 'none';
+const NO_SECOND_CURVE = 'none';
 
 /** What the chart draws: the curve's own numbers, one metric at a time, as the prototype does. */
 const METRICS = ['zero', 'forward', 'discount'] as const;
@@ -133,7 +133,7 @@ export function CurveAnalyticsPage(): ReactNode {
     const namedAgainst =
         statedAgainst === null
             ? fundingOf(chosen)
-            : statedAgainst === NOTHING
+            : statedAgainst === NO_SECOND_CURVE
               ? undefined
               : options.find(
                     (option) => option.id === statedAgainst || option.name === statedAgainst,
@@ -231,12 +231,12 @@ export function CurveAnalyticsPage(): ReactNode {
                 </Field>
                 <Field label={t('marketdata.curveAnalytics.besideCurve')}>
                     <Select
-                        value={beside?.id ?? NOTHING}
+                        value={beside?.id ?? NO_SECOND_CURVE}
                         onChange={(event) => {
                             set({ against: event.target.value });
                         }}
                     >
-                        <option value={NOTHING}>
+                        <option value={NO_SECOND_CURVE}>
                             {t('marketdata.curveAnalytics.compareNone')}
                         </option>
                         {options

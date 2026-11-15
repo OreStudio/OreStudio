@@ -28,6 +28,7 @@ import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primiti
 import { formatDateTime, relativeTime } from '../ui/Time.js';
 import { chosenDayQuery, drawnSpot, montageQuery, newestSpot } from './fxMontage.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { Sparkline } from './Sparkline.js';
 import { DATA_CELL, HEAD_CELL, oneOf, todayIso, useReadParty } from './readScreen.js';
 
 /**
@@ -120,14 +121,40 @@ function RangeBar({
     );
 }
 
+/**
+ * One row's day, drawn small.
+ *
+ * It reads the same series the day panel reads, under the same key, so the
+ * open pair's shape costs nothing and every other pair costs one read of its
+ * freshest provider. A pair with no series, or too few observations, states a
+ * dash: a shape made of one point would say the pair stood still.
+ */
+function PairSpark({
+    seriesId,
+    asOf,
+    label,
+}: {
+    readonly seriesId: string;
+    readonly asOf: string;
+    readonly label: string;
+}): ReactNode {
+    const day = useQuery(chosenDayQuery(seriesId, asOf));
+    const points = day.data === undefined ? [] : pointsOf(day.data.observations);
+    if (points.length < 2) {
+        return <span>—</span>;
+    }
+    return <Sparkline points={points.map((point) => point.value)} label={label} />;
+}
+
 export function FxMontagePage(): ReactNode {
     const { t, language, plural } = useTranslation();
     const party = useReadParty();
     const [search, setSearch] = useSearchParams();
-    const set = (values: Readonly<Record<string, string>>): void => {
+    const set = (values: Readonly<Record<string, string | null>>): void => {
         const next = new URLSearchParams(search);
         Object.entries(values).forEach(([key, value]) => {
-            next.set(key, value);
+            if (value === null) next.delete(key);
+            else next.set(key, value);
         });
         setSearch(next, { replace: true });
     };
@@ -135,8 +162,23 @@ export function FxMontagePage(): ReactNode {
     const base = (search.get('base') ?? 'EUR').toUpperCase();
     const asOf = search.get('asof') ?? todayIso();
     const sort = oneOf(search.get('sort'), SORTS, 'pair');
+    const asked = (search.get('provider') ?? '').split(',').filter((code) => code !== '');
 
-    const montage = useQuery(montageQuery(base, asOf));
+    const montage = useQuery(montageQuery(base, asOf, asked));
+    // Every provider the answer quotes, plus the ones the address names, so a
+    // provider taken out can be put back without clearing the filter.
+    const quoted = [
+        ...new Set(
+            (montage.data?.pairs ?? []).flatMap((pair) =>
+                pair.spot_by_provider.map((spot) => spot.provider_code),
+            ),
+        ),
+    ];
+    const providerSet = [...new Set([...quoted, ...asked])].sort();
+    const chooseProvider = (code: string): void => {
+        const next = asked.includes(code) ? asked.filter((one) => one !== code) : [...asked, code];
+        set({ provider: next.length === 0 ? null : next.join(',') });
+    };
 
     const rows = montage.data === undefined ? [] : sorted(montage.data.pairs, sort);
     // The pair that is open is the one the address names, or the answer's own first
@@ -147,12 +189,16 @@ export function FxMontagePage(): ReactNode {
     const seriesId = drawn?.series_id ?? '';
     const day = useQuery(chosenDayQuery(seriesId, asOf));
     const dayPoints = day.data === undefined ? [] : pointsOf(day.data.observations);
+    const high = chosen?.day_high ?? null;
+    const low = chosen?.day_low ?? null;
+    const dayChange =
+        chosen?.change_pct == null
+            ? '—'
+            : `${chosen.change_pct >= 0 ? '+' : ''}${chosen.change_pct.toFixed(2)}%`;
     const places = 4;
     const head = HEAD_CELL;
     const cell = DATA_CELL;
-    const providers = [
-        ...new Set(rows.flatMap((pair) => pair.spot_by_provider.map((spot) => spot.provider_code))),
-    ];
+    const providers = quoted;
 
     return (
         <div className="space-y-4">
@@ -204,6 +250,50 @@ export function FxMontagePage(): ReactNode {
                         ))}
                     </Select>
                 </Field>
+                <Field label={t('marketdata.fxMontage.providers')}>
+                    <div
+                        className="flex flex-wrap gap-1"
+                        role="group"
+                        aria-label={t('marketdata.fxMontage.providers')}
+                    >
+                        <button
+                            type="button"
+                            aria-pressed={asked.length === 0}
+                            onClick={() => {
+                                set({ provider: null });
+                            }}
+                            className={cx(
+                                'rounded border px-2 py-1 text-xs',
+                                asked.length === 0
+                                    ? 'border-accent/50 bg-accent/10 text-accent-bright'
+                                    : 'border-line text-ink-muted hover:text-ink',
+                            )}
+                        >
+                            {t('marketdata.fxMontage.providersAll')}
+                        </button>
+                        {providerSet.map((code) => {
+                            const on = asked.includes(code);
+                            return (
+                                <button
+                                    key={code}
+                                    type="button"
+                                    aria-pressed={on}
+                                    onClick={() => {
+                                        chooseProvider(code);
+                                    }}
+                                    className={cx(
+                                        'rounded border px-2 py-1 text-xs',
+                                        on
+                                            ? 'border-accent/50 bg-accent/10 text-accent-bright'
+                                            : 'border-line text-ink-muted hover:text-ink',
+                                    )}
+                                >
+                                    {code}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </Field>
                 {montage.data !== undefined && (
                     <p className="text-xs text-ink-faint">
                         {t('marketdata.fxMontage.measuredFrom', {
@@ -235,6 +325,7 @@ export function FxMontagePage(): ReactNode {
                                     <th className={head}>{t('marketdata.fxMontage.low')}</th>
                                     <th className={head}>{t('marketdata.fxMontage.high')}</th>
                                     <th className={head}>{t('marketdata.fxMontage.age')}</th>
+                                    <th className={head}>{t('marketdata.fxMontage.today')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -333,6 +424,15 @@ export function FxMontagePage(): ReactNode {
                                             <td className={cx(cell, 'text-ink-muted')}>
                                                 {rowAge(pair, language)}
                                             </td>
+                                            <td className="px-2 py-1 text-right text-ink-muted">
+                                                <PairSpark
+                                                    seriesId={drawnSpot(pair)?.series_id ?? ''}
+                                                    asOf={asOf}
+                                                    label={t('marketdata.fxMontage.dayShape', {
+                                                        pair: pair.pair_name,
+                                                    })}
+                                                />
+                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -358,6 +458,15 @@ export function FxMontagePage(): ReactNode {
                         })}
                     </h2>
                     <p className="text-xs text-ink-faint">
+                        {t('marketdata.fxMontage.daySummary', {
+                            provider: drawn?.provider_code ?? '',
+                            last: fixed(drawn?.value ?? 0, places, language),
+                            high: high === null ? '—' : fixed(high, places, language),
+                            low: low === null ? '—' : fixed(low, places, language),
+                            change: dayChange,
+                        })}
+                    </p>
+                    <p className="text-xs text-ink-faint">
                         {plural('marketdata.fxMontage.chosenDayLead', dayPoints.length)}
                     </p>
                     {dayPoints.length >= 2 && (
@@ -369,6 +478,26 @@ export function FxMontagePage(): ReactNode {
                                     fill: true,
                                     strong: true,
                                 },
+                                // The day's ends, as the table stated them, so the
+                                // path can be read against the same two numbers.
+                                ...(high === null
+                                    ? []
+                                    : [
+                                          {
+                                              points: dayPoints.map(() => high),
+                                              colour: 'var(--color-up)',
+                                              dashed: true,
+                                          },
+                                      ]),
+                                ...(low === null
+                                    ? []
+                                    : [
+                                          {
+                                              points: dayPoints.map(() => low),
+                                              colour: 'var(--color-down)',
+                                              dashed: true,
+                                          },
+                                      ]),
                             ]}
                             xs={dayPoints.map((point) => point.at)}
                             format={(value) => fixed(value, places, language)}

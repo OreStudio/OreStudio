@@ -5730,6 +5730,11 @@ const pt: SourceCatalogue = {
             title: 'Montagem FX',
             lead: 'Os cruzamentos de uma moeda base, o spot de cada fornecedor ao lado do consenso, e a amplitude do dia.',
             base: 'Base',
+            providers: 'Fornecedores',
+            providersAll: 'Todos',
+            today: 'Hoje',
+            dayShape: 'Forma do dia {pair}',
+            daySummary: '{provider} {last} · alto {high} · baixo {low} · variação {change}',
             chosenDay: 'O dia {pair}, de {provider}',
             chosenDayLead: {
                 one: '{count} valor, do mais antigo para o mais recente.',

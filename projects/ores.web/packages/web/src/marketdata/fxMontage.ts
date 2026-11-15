@@ -31,11 +31,23 @@ import { asOfInstant } from './readScreen.js';
  * would keep passing while the page asked for another one.
  */
 
-/** The montage of one base at an instant. */
-export function montageQuery(base: string, asOf: string) {
+/**
+ * The montage of one base at an instant, over the providers the person asked
+ * for.
+ *
+ * An empty set asks for every provider, which is what the screen shows when the
+ * address names none. Each provider travels as one body member, so the server
+ * filters the crosses and the consensus is the one those providers make.
+ */
+export function montageQuery(base: string, asOf: string, providers: readonly string[]) {
     return queryOptions({
-        queryKey: ['fx-montage', base, asOf] as const,
-        queryFn: () => api.fxMontage({ baseCurrency: base, asOf: asOfInstant(asOf) }),
+        queryKey: ['fx-montage', base, asOf, providers.join(',')] as const,
+        queryFn: () =>
+            api.fxMontage({
+                baseCurrency: base,
+                asOf: asOfInstant(asOf),
+                providers,
+            }),
         retry: false,
     });
 }

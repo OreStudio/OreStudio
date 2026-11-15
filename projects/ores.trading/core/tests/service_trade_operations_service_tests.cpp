@@ -333,6 +333,25 @@ TEST_CASE("a_booking_of_a_product_type_the_book_does_not_allow_is_refused", "[se
               .empty());
 }
 
+TEST_CASE("a_booking_of_a_type_the_engine_cannot_carry_is_refused_with_its_reason", "[service]") {
+    for (const std::string type : {"CommodityPairwiseVarianceSwap", "ForwardVolatilityAgreement"}) {
+        INFO("Trade type " << type);
+        fixture f;
+        auto req = f.request();
+        req.anchor.trade_type = type;
+
+        const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+        CHECK(response.result.outcome == outcome::failed);
+        CHECK(response.result.code == "trade_type_not_supported");
+        CHECK(response.result.message.find("ORE has no trade builder for " + type) !=
+              std::string::npos);
+        CHECK(ores::trading::repository::trade_repository()
+                  .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+                  .empty());
+    }
+}
+
 TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", "[service]") {
     fixture f;
     const auto req = f.request();

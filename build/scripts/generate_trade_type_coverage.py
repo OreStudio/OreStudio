@@ -71,6 +71,33 @@ def catalogue() -> dict[str, dict[str, str]]:
     return rows
 
 
+def unsupported() -> set[str]:
+    """The codes the catalogue's * Unsupported trade types table names."""
+    codes, inside = set(), False
+    for line in CATALOGUE.read_text().splitlines():
+        if line.startswith("* "):
+            inside = line.strip() == "* Unsupported trade types"
+            continue
+        if inside and line.startswith("| ") and not line.startswith("| code"):
+            codes.add(line.strip().strip("|").split("|")[0].strip())
+    return codes
+
+
+def support_errors(rows) -> list[str]:
+    """Where the unsupported table and ORE's registrations disagree, and any
+    recorded trade of an unsupported type."""
+    tagged = unsupported()
+    unregistered = {r["trade_type"] for r in rows if r["in_catalogue"] == "yes" and r["registered"] == "no"}
+    errors = []
+    if missing := sorted(unregistered - tagged):
+        errors.append(f"ORE registers no builder for {', '.join(missing)}; tag them in * Unsupported trade types")
+    if stale := sorted(tagged - unregistered):
+        errors.append(f"ORE now registers {', '.join(stale)}; remove them from * Unsupported trade types")
+    if recorded := sorted(c for c in tagged if (RECORDED / f"{c}.xml").exists()):
+        errors.append(f"the generator records unsupported types: {', '.join(recorded)}")
+    return errors
+
+
 def field(path: Path, text: str, pattern: str) -> str:
     found = re.search(pattern, text, re.MULTILINE)
     if not found:
@@ -204,6 +231,10 @@ def main() -> int:
     if wrong:
         print(f"{CATALOGUE.relative_to(REPO)} states a construction ORE does not read these types in: "
               f"{', '.join(wrong)}", file=sys.stderr)
+        return 1
+    if errors := support_errors(rows):
+        for error in errors:
+            print(f"{CATALOGUE.relative_to(REPO)}: {error}", file=sys.stderr)
         return 1
     head, tail = text.split(BEGIN)[0], text.split(END)[1]
     updated = head + block + tail

@@ -397,16 +397,34 @@ bond_result callable_bond_builder::build() const {
     const auto& calls = terms_.calls.get();
     if (calls.empty())
         return std::unexpected(build_error{"calls", "must state at least one date"});
-    if (std::ranges::adjacent_find(calls, std::greater_equal<>{}) != calls.end())
+    if (std::ranges::adjacent_find(calls, std::greater_equal<>{}, &bond_call::date) !=
+        calls.end())
         return std::unexpected(build_error{"calls", "must be in order with no date twice"});
+    // ORE refuses an American call on a single date: the style needs a window
+    // from one date to the next.
+    for (const auto& call : calls) {
+        if (call.style != "Bermudan" && call.style != "American")
+            return std::unexpected(build_error{"calls", "style must be Bermudan or American"});
+        if (call.style == "American" && calls.size() < 2)
+            return std::unexpected(
+                build_error{"calls", "an American call must state at least two dates"});
+        if (call.price <= utility::decimal::decimal{})
+            return std::unexpected(build_error{"calls", "price must be positive"});
+        if (call.price_type != "Clean" && call.price_type != "Dirty")
+            return std::unexpected(build_error{"calls", "price type must be Clean or Dirty"});
+    }
     auto product = product_of(trade_type, terms_.holding);
     int number = 0;
-    for (const auto& when : terms_.calls.get()) {
-        domain::bond_issue_call_date call{};
-        call.issue_id = terms_.holding.issue_id.get();
-        call.sequence_number = ++number;
-        call.call_date = when;
-        product.call_dates.push_back(std::move(call));
+    for (const auto& call : calls) {
+        domain::bond_issue_call_date row{};
+        row.issue_id = terms_.holding.issue_id.get();
+        row.sequence_number = ++number;
+        row.call_date = call.date;
+        row.style = call.style;
+        row.price = call.price;
+        row.price_type = call.price_type;
+        row.include_accrual = call.include_accrual ? "true" : "false";
+        product.call_dates.push_back(std::move(row));
     }
     return product;
 }

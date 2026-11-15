@@ -183,7 +183,7 @@ TEST_CASE("a_bond_position_holds_its_security_as_a_bond_underlying", bond_tags) 
 
 TEST_CASE("a_callable_bond_with_no_call_fails_and_names_the_term", bond_tags) {
     const auto callable =
-        callable_bond_builder({.holding = holding(), .calls = std::vector<year_month_day>{}})
+        callable_bond_builder({.holding = holding(), .calls = std::vector<bond_call>{}})
             .build();
     REQUIRE_FALSE(callable.has_value());
     CHECK(callable.error().term == "calls");
@@ -215,7 +215,40 @@ TEST_CASE("the_registry_names_every_bond_builder", bond_tags) {
 TEST_CASE("a_callable_bond_with_calls_out_of_order_fails_and_names_the_term", bond_tags) {
     const auto callable =
         callable_bond_builder({.holding = holding(),
-                               .calls = std::vector<year_month_day>{2029y / 1 / 2, 2028y / 1 / 2}})
+                               .calls = std::vector<bond_call>{{.date = 2029y / 1 / 2},
+                                                               {.date = 2028y / 1 / 2}}})
+            .build();
+    REQUIRE_FALSE(callable.has_value());
+    CHECK(callable.error().term == "calls");
+}
+
+TEST_CASE("a_callable_bond_states_each_calls_terms_on_its_row", bond_tags) {
+    const auto price = decimal::from_string("1.02").value();
+    const auto callable = callable_bond_builder({.holding = holding(),
+                                                 .calls = std::vector<bond_call>{
+                                                     {.date = 2028y / 1 / 2,
+                                                      .style = "American",
+                                                      .price = price,
+                                                      .price_type = "Dirty",
+                                                      .include_accrual = false},
+                                                     {.date = 2029y / 1 / 2}}})
+                              .build();
+    REQUIRE(callable.has_value());
+    REQUIRE(callable->call_dates.size() == 2);
+    CHECK(callable->call_dates[0].style == "American");
+    CHECK(callable->call_dates[0].price == price);
+    CHECK(callable->call_dates[0].price_type == "Dirty");
+    CHECK(callable->call_dates[0].include_accrual == "false");
+    CHECK(callable->call_dates[1].style == "Bermudan");
+    CHECK(callable->call_dates[1].price_type == "Clean");
+    CHECK(callable->call_dates[1].include_accrual == "true");
+}
+
+TEST_CASE("an_american_call_on_one_date_fails_and_names_the_term", bond_tags) {
+    const auto callable =
+        callable_bond_builder(
+            {.holding = holding(),
+             .calls = std::vector<bond_call>{{.date = 2028y / 1 / 2, .style = "American"}}})
             .build();
     REQUIRE_FALSE(callable.has_value());
     CHECK(callable.error().term == "calls");

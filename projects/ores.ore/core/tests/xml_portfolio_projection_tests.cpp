@@ -1515,7 +1515,7 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
         <RangeBound startDate="2024-01-20">
           <RangeFrom>1.00</RangeFrom>
           <RangeTo>1.10</RangeTo>
-          <Leverage>2</Leverage>
+          <Leverage>1.05</Leverage>
           <Strike>1.05</Strike>
           <StrikeAdjustment>0.001</StrikeAdjustment>
         </RangeBound>
@@ -1592,7 +1592,7 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
           std::optional<std::chrono::year_month_day>(date_of(2024, 1, 20)));
     CHECK(accumulator->range_bounds[0].range_from->to_string() == "1");
     CHECK(accumulator->range_bounds[0].range_to->to_string() == "1.1");
-    CHECK(accumulator->range_bounds[0].leverage == std::optional<double>(2.0));
+    CHECK(accumulator->range_bounds[0].leverage == std::optional<double>(1.05));
     CHECK(accumulator->range_bounds[0].strike_adjustment->to_string() == "0.001");
 
     const auto* variance =
@@ -1643,7 +1643,12 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
     CHECK(accumulator_round->accumulators[0].knock_out_barrier->to_string() == "1.2");
     REQUIRE(accumulator_round->range_bounds.size() == 1);
     CHECK(accumulator_round->range_bounds[0].range_from->to_string() == "1");
-    CHECK(accumulator_round->range_bounds[0].leverage == std::optional<double>(2.0));
+    CHECK(accumulator_round->range_bounds[0].leverage == std::optional<double>(1.05));
+
+    // A leverage is a multiplier held as a double, and the document it is
+    // written back to states the digits it was read with.
+    const auto accumulator_text = portfolio_projection::write(exported(items[2]));
+    CHECK(accumulator_text.find("<Leverage>1.05</Leverage>") != std::string::npos);
 
     const auto variance_again = rebuild(items[3]);
     const auto* variance_round =
@@ -1797,9 +1802,12 @@ TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates",
           </Dates>
         </ScheduleData>
         <Styles><Style>American</Style></Styles>
-        <Prices><Price>1</Price></Prices>
-        <PriceTypes><PriceType>Clean</PriceType></PriceTypes>
-        <IncludeAccruals><IncludeAccrual>true</IncludeAccrual></IncludeAccruals>
+        <Prices>
+          <Price>1</Price>
+          <Price startDate="2026-01-01">1.01</Price>
+        </Prices>
+        <PriceTypes><PriceType>Dirty</PriceType></PriceTypes>
+        <IncludeAccruals><IncludeAccrual>false</IncludeAccrual></IncludeAccruals>
       </CallData>
     </CallableBondData>
   </Trade>
@@ -1844,6 +1852,18 @@ TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates",
     REQUIRE(again_instrument->call_dates.size() == 2);
     CHECK(again_instrument->call_dates[0].call_date == date_of(2024, 5, 1));
     CHECK(again_instrument->call_dates[1].call_date == date_of(2027, 4, 1));
+
+    // Each call keeps the terms the document states for its date: the dated
+    // price applies from 2026, so the first call is at par and the second is
+    // not, and no term is replaced by a stand-in on the way out.
+    for (const auto* calls : {&instrument->call_dates, &again_instrument->call_dates}) {
+        CHECK((*calls)[0].style == "American");
+        CHECK((*calls)[1].style == "American");
+        CHECK((*calls)[0].price.to_string() == "1");
+        CHECK((*calls)[1].price.to_string() == "1.01");
+        CHECK((*calls)[0].price_type == "Dirty");
+        CHECK((*calls)[1].include_accrual == "false");
+    }
 }
 
 TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption",

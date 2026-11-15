@@ -55,7 +55,7 @@ namespace {
 // test uses a different slice of the fictional currencies/countries
 // lists to avoid interfering with records written by other tests in
 // the same shared tenant database.
-constexpr std::size_t repository_currency_country_repository_total_slots = 11;
+constexpr std::size_t repository_currency_country_repository_total_slots = 15;
 
 currency_country make_currency_country(scoped_database_helper& h,
                                        const std::string& currency_iso_code,
@@ -351,4 +351,81 @@ TEST_CASE("a_duplicate_currency_country_create_is_refused_and_writes_nothing",
     const auto after_replace = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
     REQUIRE(after_replace.size() == 1);
     CHECK(after_replace[0].version == 2);
+}
+
+TEST_CASE("a_batch_write_replaces_live_links_and_creates_new_ones",
+          "[repository][currency_country]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+
+    currency_repository ccy_repo;
+    country_repository cty_repo;
+    currency_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
+    ccy_repo.write(h.context(), {currencies[11]});
+    cty_repo.write(h.context(), {countries[11], countries[12]});
+
+    const auto live = make_currency_country(h, currencies[11].iso_code, countries[11].alpha2_code);
+    const auto added = make_currency_country(h, currencies[11].iso_code, countries[12].alpha2_code);
+    repo.write(live);
+
+    const auto version_of = [&](const currency_country& cc) {
+        const auto rows = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
+        REQUIRE(rows.size() == 1);
+        return rows[0].version;
+    };
+
+    repo.write(std::vector<currency_country>{live, added});
+    CHECK(version_of(live) == 2);
+    CHECK(version_of(added) == 1);
+
+    const ores::utility::domain::precondition any{ores::utility::domain::precondition_kind::any,
+                                                  std::nullopt};
+    repo.write(std::vector<currency_country>{live, added}, {any, any});
+    CHECK(version_of(live) == 3);
+    CHECK(version_of(added) == 2);
+}
+
+TEST_CASE("a_batch_write_with_a_stale_version_is_refused_and_writes_nothing",
+          "[repository][currency_country]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+
+    currency_repository ccy_repo;
+    country_repository cty_repo;
+    currency_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
+    ccy_repo.write(h.context(), {currencies[12]});
+    cty_repo.write(h.context(), {countries[13], countries[14]});
+
+    const auto live = make_currency_country(h, currencies[12].iso_code, countries[13].alpha2_code);
+    const auto added = make_currency_country(h, currencies[12].iso_code, countries[14].alpha2_code);
+    repo.write(live);
+
+    const std::vector<ores::utility::domain::precondition> claims{
+        {ores::utility::domain::precondition_kind::must_match_version, 7},
+        {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt}};
+    try {
+        repo.write(std::vector<currency_country>{live, added}, claims);
+        FAIL("a batch with a stale version was not refused");
+    } catch (const ores::database::repository::repository_exception& e) {
+        BOOST_LOG_SEV(lg, info) << "Refused: " << e.what();
+    }
+
+    const auto live_rows = repo.read_latest(live.currency_iso_code, live.country_alpha2_code);
+    REQUIRE(live_rows.size() == 1);
+    CHECK(live_rows[0].version == 1);
+    CHECK(repo.read_latest(added.currency_iso_code, added.country_alpha2_code).empty());
 }

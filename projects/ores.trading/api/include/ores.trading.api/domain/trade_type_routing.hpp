@@ -217,8 +217,6 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::commodity_instrument;
     if (trade_type == "CommodityVarianceSwap")
         return instrument_table::commodity_instrument;
-    if (trade_type == "CommodityPairwiseVarianceSwap")
-        return instrument_table::commodity_instrument;
     if (trade_type == "CommodityBasketVarianceSwap")
         return instrument_table::commodity_instrument;
     if (trade_type == "CommodityAccumulator")
@@ -249,6 +247,22 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::scripted_instrument;
     if (trade_type == "PerformanceOption_01")
         return instrument_table::scripted_instrument;
+    return std::nullopt;
+}
+
+/**
+ * @brief Why ORE cannot carry a trade of the given type, or nullopt where it
+ * can. Generated from the catalogue's unsupported trade types.
+ */
+[[nodiscard]] inline std::optional<std::string_view>
+unsupported_reason_for(std::string_view trade_type) {
+    if (trade_type == "CommodityPairwiseVarianceSwap")
+        return "ORE has no trade builder for CommodityPairwiseVarianceSwap; book the product as a "
+               "ScriptedTrade over the PairwiseVarianceSwap library script.";
+    if (trade_type == "ForwardVolatilityAgreement")
+        return "ORE has no trade builder for ForwardVolatilityAgreement; use the Equity, Fx or "
+               "Commodity type, or a ScriptedTrade over the ForwardVolatilityAgreement library "
+               "script.";
     return std::nullopt;
 }
 

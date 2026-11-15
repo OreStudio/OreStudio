@@ -557,7 +557,7 @@ insert into ores_trading_product_types_tbl (
     ('CommodityPairwiseVarianceSwap', ores_utility_system_tenant_id_fn(), 0, 'Commodity Pairwise Variance Swap', 'Variance and volatility swaps and options with barriers, corridors, baskets and optionality.',
      'ORE User Guide', 'var_and_vol_derivatives.tex',
      null, 'native', 'non_flow',
-     false, true, 'commodity_instrument', 104,
+     false, true, null, 104,
      'ores_trading_service', 'system.initial_load', 'Seed product types'),
     ('CommodityBasketVarianceSwap', ores_utility_system_tenant_id_fn(), 0, 'Commodity Basket Variance Swap', 'Variance and volatility swaps and options with barriers, corridors, baskets and optionality.',
      'ORE User Guide', 'var_and_vol_derivatives.tex',

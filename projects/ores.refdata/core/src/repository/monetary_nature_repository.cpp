@@ -120,6 +120,22 @@ using monetary_nature_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::monetary_nature>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::monetary_nature>
+monetary_nature_claim_rows(const ores::database::context& ctx,
+                           std::vector<domain::monetary_nature> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -135,7 +151,7 @@ monetary_nature_current_rows(monetary_nature_repository& repo,
         codes.push_back(row.code);
     }
     monetary_nature_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes))
+    for (auto& item : monetary_nature_claim_rows(ctx, repo.read_latest(ctx, codes)))
         current[std::make_tuple(item.code)].push_back(std::move(item));
     return current;
 }
@@ -198,7 +214,9 @@ monetary_nature_apply_claim(const domain::monetary_nature& v,
 }
 
 void monetary_nature_repository::write(const context& ctx, const domain::monetary_nature& v) {
-    write(ctx, v, monetary_nature_replace_claim(read_latest(ctx, v.code)));
+    write(ctx,
+          v,
+          monetary_nature_replace_claim(monetary_nature_claim_rows(ctx, read_latest(ctx, v.code))));
 }
 
 void monetary_nature_repository::write(const context& ctx,
@@ -215,11 +233,12 @@ void monetary_nature_repository::write(const context& ctx,
                                        const domain::monetary_nature& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing monetary nature. " << "code: " << v.code;
-    const auto t = monetary_nature_apply_claim(v,
-                                               claim,
-                                               monetary_nature_claim_reads_current(claim) ?
-                                                   read_latest(ctx, v.code) :
-                                                   std::vector<domain::monetary_nature>{});
+    const auto t =
+        monetary_nature_apply_claim(v,
+                                    claim,
+                                    monetary_nature_claim_reads_current(claim) ?
+                                        monetary_nature_claim_rows(ctx, read_latest(ctx, v.code)) :
+                                        std::vector<domain::monetary_nature>{});
     query_builder::execute_write_query(
         ctx, monetary_nature_mapper::map(t), lg(), "Writing monetary nature to database.");
 }

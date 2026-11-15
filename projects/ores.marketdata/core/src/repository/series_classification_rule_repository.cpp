@@ -107,6 +107,22 @@ using series_classification_rule_rows_by_key =
              std::vector<domain::series_classification_rule>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::series_classification_rule>
+series_classification_rule_claim_rows(const ores::database::context& ctx,
+                                      std::vector<domain::series_classification_rule> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -128,7 +144,8 @@ series_classification_rule_current_rows(series_classification_rule_repository& r
         key_kinds.push_back(row.key_kind);
     }
     series_classification_rule_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, instruments, quotes, key_kinds))
+    for (auto& item : series_classification_rule_claim_rows(
+             ctx, repo.read_latest(ctx, instruments, quotes, key_kinds)))
         current[std::make_tuple(item.instrument, item.quote, item.key_kind)].push_back(
             std::move(item));
     return current;
@@ -195,8 +212,8 @@ void series_classification_rule_repository::write(const context& ctx,
                                                   const domain::series_classification_rule& v) {
     write(ctx,
           v,
-          series_classification_rule_replace_claim(
-              read_latest(ctx, v.instrument, v.quote, v.key_kind)));
+          series_classification_rule_replace_claim(series_classification_rule_claim_rows(
+              ctx, read_latest(ctx, v.instrument, v.quote, v.key_kind))));
 }
 
 void series_classification_rule_repository::write(
@@ -221,7 +238,8 @@ void series_classification_rule_repository::write(
         v,
         claim,
         series_classification_rule_claim_reads_current(claim) ?
-            read_latest(ctx, v.instrument, v.quote, v.key_kind) :
+            series_classification_rule_claim_rows(
+                ctx, read_latest(ctx, v.instrument, v.quote, v.key_kind)) :
             std::vector<domain::series_classification_rule>{});
     query_builder::execute_write_query(ctx,
                                        series_classification_rule_mapper::map(t),

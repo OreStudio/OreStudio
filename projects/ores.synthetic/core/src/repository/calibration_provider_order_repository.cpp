@@ -141,6 +141,22 @@ using calibration_provider_order_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::calibration_provider_order>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::calibration_provider_order>
+calibration_provider_order_claim_rows(const ores::database::context& ctx,
+                                      std::vector<domain::calibration_provider_order> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -156,7 +172,7 @@ calibration_provider_order_current_rows(calibration_provider_order_repository& r
         ids.push_back(boost::uuids::to_string(row.id));
     }
     calibration_provider_order_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, ids))
+    for (auto& item : calibration_provider_order_claim_rows(ctx, repo.read_latest(ctx, ids)))
         current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
     return current;
 }
@@ -220,10 +236,10 @@ domain::calibration_provider_order calibration_provider_order_apply_claim(
 
 void calibration_provider_order_repository::write(const context& ctx,
                                                   const domain::calibration_provider_order& v) {
-    write(
-        ctx,
-        v,
-        calibration_provider_order_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+    write(ctx,
+          v,
+          calibration_provider_order_replace_claim(calibration_provider_order_claim_rows(
+              ctx, read_latest(ctx, boost::uuids::to_string(v.id)))));
 }
 
 void calibration_provider_order_repository::write(
@@ -246,7 +262,8 @@ void calibration_provider_order_repository::write(
         v,
         claim,
         calibration_provider_order_claim_reads_current(claim) ?
-            read_latest(ctx, boost::uuids::to_string(v.id)) :
+            calibration_provider_order_claim_rows(ctx,
+                                                  read_latest(ctx, boost::uuids::to_string(v.id))) :
             std::vector<domain::calibration_provider_order>{});
     query_builder::execute_write_query(ctx,
                                        calibration_provider_order_mapper::map(t),

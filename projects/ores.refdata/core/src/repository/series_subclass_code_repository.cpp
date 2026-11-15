@@ -121,6 +121,22 @@ using series_subclass_code_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::series_subclass_code>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::series_subclass_code>
+series_subclass_code_claim_rows(const ores::database::context& ctx,
+                                std::vector<domain::series_subclass_code> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -136,7 +152,7 @@ series_subclass_code_current_rows(series_subclass_code_repository& repo,
         codes.push_back(row.code);
     }
     series_subclass_code_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes))
+    for (auto& item : series_subclass_code_claim_rows(ctx, repo.read_latest(ctx, codes)))
         current[std::make_tuple(item.code)].push_back(std::move(item));
     return current;
 }
@@ -200,7 +216,10 @@ series_subclass_code_apply_claim(const domain::series_subclass_code& v,
 
 void series_subclass_code_repository::write(const context& ctx,
                                             const domain::series_subclass_code& v) {
-    write(ctx, v, series_subclass_code_replace_claim(read_latest(ctx, v.code)));
+    write(ctx,
+          v,
+          series_subclass_code_replace_claim(
+              series_subclass_code_claim_rows(ctx, read_latest(ctx, v.code))));
 }
 
 void series_subclass_code_repository::write(const context& ctx,
@@ -218,12 +237,12 @@ void series_subclass_code_repository::write(const context& ctx,
                                             const domain::series_subclass_code& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series subclass code. " << "code: " << v.code;
-    const auto t =
-        series_subclass_code_apply_claim(v,
-                                         claim,
-                                         series_subclass_code_claim_reads_current(claim) ?
-                                             read_latest(ctx, v.code) :
-                                             std::vector<domain::series_subclass_code>{});
+    const auto t = series_subclass_code_apply_claim(
+        v,
+        claim,
+        series_subclass_code_claim_reads_current(claim) ?
+            series_subclass_code_claim_rows(ctx, read_latest(ctx, v.code)) :
+            std::vector<domain::series_subclass_code>{});
     query_builder::execute_write_query(ctx,
                                        series_subclass_code_mapper::map(t),
                                        lg(),

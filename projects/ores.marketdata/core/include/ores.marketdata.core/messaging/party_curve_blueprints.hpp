@@ -162,12 +162,16 @@ struct party_curve_plan {
             continue;
         }
 
+        // The party's output series is its own computation, so it keeps the system's
+        // derivation kind -- a curve bootstrap, not an observation -- and names the
+        // party's own copy of the config that computes it. Labelling it observed
+        // would say the party's curve was quoted by somebody rather than built from
+        // the quotes its subscriptions deliver.
         auto series = *output->second;
         series.version = 0;
         series.id = party_copy_id(party.party_id, "market_series", series.id);
         series.party_id = party.party_id;
-        series.derivation_kind = "OBSERVED";
-        series.derivation_config_id = boost::uuids::nil_uuid();
+        series.derivation_config_id = config_id;
         series.derivation_config_version = 0;
         if (!own_ids.contains(series.id))
             plan.series_to_write.push_back(std::move(series));

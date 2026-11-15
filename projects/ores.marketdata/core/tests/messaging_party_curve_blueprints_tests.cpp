@@ -115,8 +115,10 @@ TEST_CASE("a party's copy of a curve reads its own series of the same item and p
     CHECK(output.id == config.output_series_id);
     CHECK(output.party_id == acme_us);
     CHECK(output.provider_code == "ore");
-    CHECK(output.derivation_kind == "OBSERVED");
-    CHECK(output.derivation_config_id == boost::uuids::nil_uuid());
+    // The copy is the party's own bootstrap of that curve, so it carries the system's
+    // kind and the party's config, never the observed label.
+    CHECK(output.derivation_kind == "IR_CURVE_BOOTSTRAP");
+    CHECK(output.derivation_config_id == config.id);
     REQUIRE(plan.ready.size() == 1);
     CHECK(plan.ready.front().config_id == config.id);
 }
@@ -195,13 +197,19 @@ TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
-    system.series.push_back(
+    // The system's output series is a bootstrap of its own config, as every curve's is,
+    // so the party's copy has a derivation to keep.
+    auto projection_output_series =
         market_series_row(projection_output,
                           system_party,
                           "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
                           "&curve_id=EUR-EURIBOR-6M",
                           "ore",
-                          "yield"));
+                          "yield");
+    projection_output_series.derivation_kind = "IR_CURVE_BOOTSTRAP";
+    projection_output_series.derivation_config_id = projection_config;
+    projection_output_series.derivation_config_version = 1;
+    system.series.push_back(projection_output_series);
     system.series.push_back(
         market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
 
@@ -291,4 +299,15 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     CHECK(plan.configs_to_write[0].name == "EUR-ESTR");
     CHECK(plan.configs_to_write[1].name == "AAA-EURIBOR-6M");
     CHECK(plan.configs_to_write[1].discount_curve_config_id == plan.configs_to_write[0].id);
+
+    // The party's output series is its own computation of the same curve, so it keeps
+    // the system's derivation kind rather than claiming to be observed, and it names
+    // the party's own copy of the config that computes it.
+    const auto output = std::ranges::find_if(plan.series_to_write, [&](const auto& s) {
+        return s.id == party_copy_id(acme_us, "market_series", projection_output);
+    });
+    REQUIRE(output != plan.series_to_write.end());
+    CHECK(output->derivation_kind == "IR_CURVE_BOOTSTRAP");
+    CHECK(output->derivation_config_id ==
+          party_copy_id(acme_us, "ir_curve_bootstrap_config", projection_config));
 }

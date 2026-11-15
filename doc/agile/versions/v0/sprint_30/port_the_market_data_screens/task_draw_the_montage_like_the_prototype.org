@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Close the gap between the FX montage prototype and the screen, so a person can c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

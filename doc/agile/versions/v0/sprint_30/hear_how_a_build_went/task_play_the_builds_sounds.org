@@ -28,11 +28,11 @@ sounds, so the outcome is heard and not read.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:121ADEE3-E1C1-44E8-BE65-00FA19350E2B][Hear how a build went]] |
-| Now          | The sounds play and the suite covers the choice and the spawn. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | A real build's start and finish, heard from the shell that started it. |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -110,3 +110,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass build= plays =dialog-information= when it starts, =complete= when it
+ends green and =dialog-error= when it ends red, chosen from the freedesktop
+theme and played through the first of =pw-play=, =paplay=,
+=canberra-gtk-play=, =ffplay= the machine has. Each is spawned detached with
+every stream dropped, so no build waits on a sound, and =ORES_BUILD_SOUND=0= in
+the environment or in =.env= silences them. The start sound plays once the build
+lock is held, and =--direct= builds stay silent.
+
+Fourteen cases in =test_build_sound.py= cover the choice, the theme file, the
+player order, the opt-out from both places, and the detached spawn, including a
+player that refuses to start. The whole compass suite passes (548 passed, 2
+skipped), and the three sounds were played in build order through
+=compass build_sound_command= and signed off by ear.

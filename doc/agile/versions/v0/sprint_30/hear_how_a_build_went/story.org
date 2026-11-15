@@ -27,11 +27,11 @@ with no player or no theme builds in silence.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The sounds play; the first real build proves the wiring. |
+| Now           | Closed: the three sounds play and were signed off by ear. |
 | Waiting on    | Nothing.                               |
-| Next          | Hear a build start and finish in the shell that started it. |
+| Next          | Nothing. A later build hears them in the shell that started it. |
 | Last touched  | 2026-11-15                               |
 
 * Acceptance
@@ -47,7 +47,7 @@ with no player or no theme builds in silence.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2F4819FA-682E-4126-A91A-7FCD93BD3456][Play the build's sounds]] | STARTED | 2026-11-15 | | compass build plays the desktop's freedesktop sounds when it starts and when it finishes green or red, without ever holding the build up. |
+| [[id:2F4819FA-682E-4126-A91A-7FCD93BD3456][Play the build's sounds]] | DONE | 2026-11-15 | 2026-11-15 | compass build plays the desktop's freedesktop sounds when it starts and when it finishes green or red, without ever holding the build up. |
 
 * Decisions
 

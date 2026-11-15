@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 803FA710-42BF-4810-83F0-C41CDBE0A66C
+:END:
+#+title: Task: Close the known defects in the trade generator
+#+description: Six captures name a way the generator draws a trade badly or fails to provision Acme: the bond planner ties a product to a book by parity, a generation config overflows an int, a bond issue once failed with bad_alloc, the forward rate agreement is always Long, a bond issuer holds a party id, and two parties' bond configs name one security. Each is a population that does not exercise what the types allow, or does not provision at all.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generator provisions Acme with every config the seed states, and draws each closed either-or both ways, so the population exercises what the types allow; every defect the captures name is reproduced and fixed, or shown fixed with evidence.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- the bond planner draws its product and its book independently, so every product reaches every book
+- a generation config of any size the seed states is recorded without overflow
+- the bond issue bad_alloc is reproduced and fixed, or a stress run of the bond population shows it no longer occurs
+- a closed either-or such as long or short, payer or receiver, call or put is drawn both ways across a population
+- a bond issue names its issuer by a readable legal entity, and two parties' configs that name one security mean one issue or two named ones, without aborting
+- each named defect has a test that fails without its fix, or evidence that it was already fixed
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Captures folded in
+
+Folded in on 2026-11-15; each capture is discarded with a pointer here.
+
+- [[id:6460F4B3-3223-45FB-9EF1-C61D09873EEF][The bond planner draws its product by the slot's position an…]]
+- [[id:F58DF154-40E9-408F-A03C-61D2BEB1941C][A trade generation config overflows an int]]
+- [[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]]
+- [[id:0CF17FFD-9441-4E20-B7F3-9FB64CA5114A][Let the generators state both directions]]
+- [[id:3E7A9C15-6D42-4B80-9F13-5C28E0B7D461][The population writes a party id into the issuer]]
+- [[id:379BF273-79A4-43FA-B63E-2C125548F0EA][Two parties' bond configs name one security and mean two issues]]
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

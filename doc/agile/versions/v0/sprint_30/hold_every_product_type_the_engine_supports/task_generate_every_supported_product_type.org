@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB
 :END:
-#+title: Task: Generate every supported product type
-#+description: The generator books 83 of the 91 routed types. A type with a table, a builder and no generator is a product the platform can hold but never exercises.
+#+title: Task: Generate the routed types the generator skips
+#+description: Five routed types have a table and a projection but no generator: CompositeTrade, ContractForDifference, TotalReturnSwap, EquityOutperformanceOption and SyntheticCDO. Each is a product the platform can hold but never exercises, and the containers among them embed trades of other types.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The planner books at least one trade of every routed type, each through its builder, so the whole catalogue is exercised by a provisioned book.
+The generator books CompositeTrade, ContractForDifference, TotalReturnSwap,
+EquityOutperformanceOption and SyntheticCDO through their builders, and a test
+holds the coverage as the catalogue's supported types, so a type added without a
+generator fails.
 
 * Status
 
@@ -35,9 +38,13 @@ The planner books at least one trade of every routed type, each through its buil
 
 * Acceptance
 
-- every routed type appears in a plan of one book long enough to reach the catalogue
-- every booked type is built by its builder, and a type with no builder fails loudly
-- a test asserts the coverage as catalogue minus the recorded exclusions, so adding a type without a generator fails
+- each of the five types has a builder, and the generator books one trade of
+  each; a container embeds trades of types the generator already books
+- the ORE engine test reads and builds each, with no error of the trade kind
+- every booked type is built by its builder, and a type with no builder fails
+  loudly
+- a test asserts the generated types equal the catalogue's supported types, so
+  adding a type without a generator fails
 
 * Plan
 

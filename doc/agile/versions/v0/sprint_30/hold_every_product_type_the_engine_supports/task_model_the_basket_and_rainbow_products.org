@@ -39,6 +39,9 @@ The four basket and rainbow products have a data model, a projection reader and 
 - the projection reads the element into rows and writes it back, value for value
 - each type has a builder, and a term a builder is not given does not compile
 - the catalogue routes all four, and a test asserts the routing
+- the generator books one trade of each type through its builder, and the recorded trades hold it
+- the ORE engine test reads and builds each, with no error of the trade kind
+- every fact the element states is a column or a row: no list, basket or schedule is held as text
 
 * Plan
 

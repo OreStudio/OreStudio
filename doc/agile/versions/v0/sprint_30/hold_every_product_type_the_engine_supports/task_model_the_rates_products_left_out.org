@@ -38,6 +38,9 @@ Both types have a data model under the rates header, a projection reader and wri
 - each of the two types names an instrument table, with its own terms in the rates family's fact rows
 - the projection reads and writes each element, value for value
 - each type has a builder, and the catalogue routes both
+- the generator books one trade of each type through its builder, and the recorded trades hold it
+- the ORE engine test reads and builds each, with no error of the trade kind
+- every fact the element states is a column or a row: no list, basket or schedule is held as text
 
 * Plan
 

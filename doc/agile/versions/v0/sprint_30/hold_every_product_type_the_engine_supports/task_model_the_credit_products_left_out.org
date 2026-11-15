@@ -38,6 +38,9 @@ Both types have a data model, a projection reader and writer, and a builder, and
 - each of the two types names an instrument table carrying its basket or its option terms in rows
 - the projection reads and writes each element, value for value
 - each type has a builder, and the catalogue routes both
+- the generator books one trade of each type through its builder, and the recorded trades hold it
+- the ORE engine test reads and builds each, with no error of the trade kind
+- every fact the element states is a column or a row: no list, basket or schedule is held as text
 
 * Plan
 
@@ -60,6 +63,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Captures folded in
+
+Folded in on 2026-11-15; each capture is discarded with a pointer here.
+
+- [[id:5186FE2D-2F3E-432B-A270-1EAE7FF2FA35][The corpus roundtrip does not cover the CBO example]]
 
 * Test Scenarios
 

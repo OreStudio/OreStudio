@@ -2,7 +2,7 @@
 :ID: 4017DBBE-006E-4D37-BA93-E44182D53517
 :END:
 #+title: Task: Show the coverage in the UI
-#+description: The catalogue is served and a trade summary names its products, but nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types left the catalogue because the engine cannot carry them. That answer belongs on the catalogue's own page.
+#+description: The catalogue is served and a trade summary names its products, but nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types the engine cannot carry. That answer belongs on the catalogue's own page.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person can open one page and see every product type with the form ORE reads it as, the table that holds it, whether a builder and a generator exist for it, and the types that left the catalogue with their reasons, with the counts of declared, routed and excluded.
+A person can open one page and see every product type with the form ORE reads it as, the table that holds it, whether a builder and a generator exist for it, and the unsupported types with their reasons, with the counts of declared, supported and unsupported.
 
 * Status
 
@@ -35,10 +35,16 @@ A person can open one page and see every product type with the form ORE reads it
 
 * Acceptance
 
-- the page lists every catalogue type with its form, instrument table, builder and generator state
-- the page lists the excluded types with the reason each left, so the removal is visible rather than silent
-- the counts of declared, routed and excluded types are stated, and they reconcile
-- the page is reachable from the catalogue's own screen, and its data comes from the served catalogue rather than a hand-kept list
+- the page lists every catalogue type with its form or forms, its instrument
+  table, and whether a builder and a generator exist for it
+- the page states each type's level, measured rather than claimed: held, built,
+  generated, read by ORE, built by ORE, each from the tests that prove it
+- the page lists the unsupported types, tagged, with the reason each is not
+  carried, so the gap is visible rather than silent
+- the counts of declared, supported and unsupported types are stated, and they
+  reconcile
+- the page is reachable from the catalogue's own screen, and its data comes from
+  the served catalogue rather than a hand-kept list
 
 * Plan
 

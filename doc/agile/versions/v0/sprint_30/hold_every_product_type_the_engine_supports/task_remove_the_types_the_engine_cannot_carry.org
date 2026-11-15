@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 80315472-7360-4C53-B6F7-57F7BCE78A1C
 :END:
-#+title: Task: Remove the types the engine cannot carry
-#+description: A catalogue type ORE cannot read routes nowhere, so nothing can hold a trade of it, and the row is dead weight a reader has to interpret. Remove the ones the reconcile task proves unsupported and keep the reason where a reader can find it.
+#+title: Task: Tag the types the engine cannot carry
+#+description: Two catalogue trade types have no ORE trade builder at ORE v1.8.17.0-8 (c3ffbae78): CommodityPairwiseVarianceSwap, for which ORE has only the equity and FX classes, and the bare ForwardVolatilityAgreement, which ORE replaced in release 1.123.0 (merge 3477d435d) with its FX, equity and commodity types. Both products are still carried by ORE as a generic ScriptedTrade over the library scripts PairwiseVarianceSwap and ForwardVolatilityAgreement. The type names must stay visible, tagged, with the route that carries the product.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The catalogue holds only types the engine supports. A type that leaves keeps its reason, its ORE evidence, and a curation entry that fails a check when a later ORE release starts supporting it.
+The catalogue states, for every type, whether ORE supports it. A type ORE cannot
+read stays in the catalogue, tagged unsupported with its reason and ORE's
+evidence, so a person sees it; nothing can route, book, import or generate it;
+and a check fails when a later ORE release starts supporting it.
 
 * Status
 
@@ -35,9 +38,17 @@ The catalogue holds only types the engine supports. A type that leaves keeps its
 
 * Acceptance
 
-- no catalogue row names a type ORE cannot read, and nothing in the tree references the removed types
-- each removal is recorded in the coverage note with the evidence from ORE's source
-- a curation exclusion list names each removed type, and a check fails when ORE gains support for one
+- the catalogue states a support status per type, and CommodityPairwiseVarianceSwap
+  and ForwardVolatilityAgreement are tagged unsupported as trade types, each with
+  its reason, the ORE source that shows it, and the library script that carries
+  the product as a generic ScriptedTrade
+- the generator books the product of each through its library script, in the
+  script tasks, so the product is still tested
+- an unsupported type routes to no table: booking, importing or generating a
+  trade of it is refused with the reason
+- the generator books no unsupported type, and the recorded trades hold none
+- a check reads ORE's trade builder registrations and fails when an unsupported
+  type gains a builder, or a supported type loses one
 
 * Plan
 

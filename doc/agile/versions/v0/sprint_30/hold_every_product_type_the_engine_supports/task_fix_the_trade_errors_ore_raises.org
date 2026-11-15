@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A
+:END:
+#+title: Task: Fix the trade errors ORE raises on the recorded trades
+#+description: The ORE engine test's known list mixes errors in the trade (DoubleDigitalOption fails to parse, the ScriptedTrade names its index .SPX where ORE wants EQ-.SPX, a CallableBond dereferences an empty handle) with errors in the market data the Products example lacks. Fix every error the trade causes, and tag every line that stays with its kind.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every error ORE raises reading or building a recorded trade is either fixed, because the trade caused it, or tagged as market data or engine configuration, because the trade is correct and the run lacks what prices it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- the known ORE error list states a kind on every line: market data or engine configuration; no line is a parse error and no build error names a field of the trade
+- the DoubleDigitalOption parse error, the ScriptedTrade index named .SPX, the CallableBond empty handle and the BondOption volatility curve id are each fixed or proven to be market data, with the evidence in the task
+- BalanceGuaranteedSwap runs in the ORE engine test, or its crash is shown to come from the engine configuration, with ORE's message
+- every line of the known missing-paths list is filled by the generator, or names the reason the generator leaves it out
+- a test fails when a new line of the trade kind appears
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Captures folded in
+
+Folded in on 2026-11-15; each capture is discarded with a pointer here.
+
+- [[id:DD3D3A81-50FE-4F80-978C-5C60DA169EAD][Generated scripted trades lose the Strike and write the index as an address]]
+- [[id:14F18AD6-BB84-4B4E-B100-C580AF9CDCED][Synthetic balance guaranteed swaps have no tranches, so an export of them fails]]
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

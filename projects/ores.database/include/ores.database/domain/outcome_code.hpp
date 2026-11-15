@@ -67,6 +67,7 @@ enum class outcome_code {
     order_not_supported,
     filter_not_supported,
     filter_too_large,
+    batch_too_large,
     as_of_invalid,
     filter_range_invalid,
     scope_not_supported,
@@ -109,6 +110,8 @@ enum class outcome_code {
             return "filter_not_supported";
         case outcome_code::filter_too_large:
             return "filter_too_large";
+        case outcome_code::batch_too_large:
+            return "batch_too_large";
         case outcome_code::as_of_invalid:
             return "as_of_invalid";
         case outcome_code::filter_range_invalid:
@@ -168,6 +171,8 @@ enum class outcome_code {
         case outcome_code::filter_not_supported:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::filter_too_large:
+            return ores::utility::domain::outcome::invalid;
+        case outcome_code::batch_too_large:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::as_of_invalid:
             return ores::utility::domain::outcome::invalid;
@@ -271,6 +276,8 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
             return detail::fill("Filtering is not served for this {entity} yet.", a);
         case outcome_code::filter_too_large:
             return detail::fill("The filter on {field} lists more than {limit} values.", a);
+        case outcome_code::batch_too_large:
+            return detail::fill("A batch of {entity} carries more than {limit} elements.", a);
         case outcome_code::as_of_invalid:
             return detail::fill("The as-of time {value} is not a valid instant.", a);
         case outcome_code::filter_range_invalid:

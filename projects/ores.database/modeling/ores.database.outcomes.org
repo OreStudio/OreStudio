@@ -237,6 +237,22 @@ request cannot ask the store to match an unbounded set.
 The filter on {field} lists more than {limit} values.
 #+end_src
 
+** batch_too_large
+:PROPERTIES:
+:code: batch_too_large
+:outcome: invalid
+:producer: request
+:args: entity, limit
+:END:
+
+A batch write carries more elements than the protocol bounds a batch at. The
+bound exists so a caller can size its parts and one request cannot hold the
+store without limit; a caller sends a longer set in parts.
+
+#+begin_src text :name message
+A batch of {entity} carries more than {limit} elements.
+#+end_src
+
 ** as_of_invalid
 :PROPERTIES:
 :code: as_of_invalid

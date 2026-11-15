@@ -1230,6 +1230,68 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
     CHECK(callable_again->call_dates[1].call_date == date_of(2026, 1, 15));
 }
 
+TEST_CASE("a_portfolio_document_projects_an_inflation_swap_on_a_year_on_year_leg",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="yy-1">
+    <TradeType>InflationSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+      <NettingSetId>NS-1</NettingSetId>
+    </Envelope>
+    <InflationSwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>YY</LegType>
+        <Currency>EUR</Currency>
+        <Notionals><Notional>1000000</Notional></Notionals>
+        <DayCounter>ACT/ACT</DayCounter>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-01-15</StartDate>
+            <EndDate>2034-01-15</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <YYLegData>
+          <Index>EUHICPXT</Index>
+          <FixingDays>2</FixingDays>
+          <ObservationLag>3M</ObservationLag>
+        </YYLegData>
+      </LegData>
+    </InflationSwapData>
+  </Trade>
+</Portfolio>)";
+
+    // The swap's fact states the index and lag the leg states, so the row the
+    // table refuses with no index is never written for a year-on-year swap.
+    const auto check = [](const auto& items) {
+        REQUIRE(items.size() == 1);
+        const auto* swap =
+            std::get_if<ores::trading::domain::swap_instrument_data>(&items[0].instrument);
+        REQUIRE(swap != nullptr);
+        const auto* fact =
+            std::get_if<ores::trading::domain::inflation_swap_instrument>(&swap->facts);
+        REQUIRE(fact != nullptr);
+        CHECK(fact->inflation_index_code == "EUHICPXT");
+        CHECK(fact->lag_convention == "3M");
+        CHECK_FALSE(fact->base_cpi.has_value());
+        REQUIRE(swap->legs.size() == 1);
+        CHECK(swap->legs[0].leg_type_code == "YY");
+        CHECK(swap->legs[0].observation_lag == std::optional<std::string>("3M"));
+    };
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    check(items);
+    const auto again =
+        portfolio_projection::map(portfolio_projection::read(
+            portfolio_projection::write(exported(items[0]))));
+    check(again);
+}
+
 TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

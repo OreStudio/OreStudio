@@ -58,6 +58,10 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 | Rows the tenant bootstrap publishes into a new tenant | 144 badge definitions, 187 badge mappings, 6 badge severities, 49 code domains | `select * from ores_dq_tenant_bootstrap_fn('<tenant>')` | this commit |
 | pgTAP, the tenant bootstrap | 9 of 9 | `pg_prove -d <database> test/dq_tenant_bootstrap_test.sql` | this commit |
 | pgTAP, every SQL test | 93 files, 882 tests, all pass; =test.sql= is a loader with no plan | `pg_prove -d <database> projects/ores.sql/test/*.sql` | this commit |
+| Existence checks widened to the shared catalogue | 38, in 13 models' foreign keys and 3 DQ validation functions | `grep -c "system_tenant_visible: true" projects/ores.*/modeling/*.org` | this commit |
+| pgTAP, every SQL test, on a recreated database | 92 files, 882 tests, all pass; =test.sql= is a loader with no plan | `projects/ores.sql/test/run_tests.sh` | this commit |
+| C++ suites, on a recreated database | 103 of 103 | `ctest -j 4` in the build tree | this commit |
+| The ticks smoke | passes: a tenant is provisioned and the reference feeds ingest | `compass smoke ticks --fresh` | this commit |
 
 * Notes
 
@@ -142,6 +146,27 @@ The catalogues and the bootstrap followed.
   and a second bootstrap that inserts nothing. A recreate passed end to end and
   the whole SQL suite passes, 882 tests in 93 files.
 
+The C++ side had to follow, and the compiler suite found it.
+
+- Thirty-eight existence checks a write passes read the caller's tenant alone,
+  so a tenant that named a platform code the system tenant publishes was refused
+  even though it can read the code. They read the caller's own catalogue and the
+  system tenant's now. The models state it — a foreign key that names a platform
+  vocabulary carries “system_tenant_visible”, and the three DQ registries whose
+  own validation function checks a code carry “tenant_scope: both” — so the files
+  the generator owns are not edited by hand and a regeneration keeps the rule.
+- A repository read that admits the system tenant's rows returns them beside the
+  caller's, and a version claim that took the first row stated the system
+  tenant's version for a row the caller owns. The claim keeps the caller's own
+  rows now, which is what lets a tenant write a code the platform also holds;
+  every component's repositories are regenerated with the rule.
+- A convention's tenor resolutions are published into the system tenant, and the
+  repository filtered them to the caller's tenant, so a tenant resolved no tenor
+  and every curve republish stopped on its first pillar. Its model declares the
+  system tenant visible.
+- The compiler suite passes: 103 of 103 suites on a database recreated from the
+  tree, and the ticks smoke provisions a tenant and ingests on a fresh database.
+
 Three tests that this branch's earlier commits invalidated were repaired here:
 the currency groups test still named the =base= bundle, the conventions test
 asserted that the system tenant holds no convention, which the bring-up now
@@ -163,3 +188,8 @@ What remains is not this task's.
   by this bootstrap, into a tenant: the system tenant holds 138 badge definitions
   and a tenant is seeded with the 144 the artefacts state.
   [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] owns that.
+- Seven generated-artefact checks fail against a tree whose inputs are main's
+  own, so the generated files main holds are stale rather than the branch being
+  wrong. The evidence is captured as
+  =doc/agile/product_backlog/inbox/stale-generated-artefacts-on-main.org=, which
+  a regeneration and a commit closes.

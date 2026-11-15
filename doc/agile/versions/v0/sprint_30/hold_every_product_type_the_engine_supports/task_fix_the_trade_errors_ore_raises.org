@@ -36,6 +36,11 @@ Every error ORE raises reading or building a recorded trade is either fixed, bec
 * Acceptance
 
 - the known ORE error list states a kind on every line: market data or engine configuration; no line is a parse error and no build error names a field of the trade
+- the kind of an error is decided by a fixed rule, not by hand: the test
+  classifies each message against a table of ORE's message patterns (a missing
+  curve, quote, index or reference data is market data; a missing pricing engine
+  or engine builder is engine configuration), and a message no pattern matches is
+  of the trade kind
 - the DoubleDigitalOption parse error, the ScriptedTrade index named .SPX, the CallableBond empty handle and the BondOption volatility curve id are each fixed or proven to be market data, with the evidence in the task
 - BalanceGuaranteedSwap runs in the ORE engine test, or its crash is shown to come from the engine configuration, with ORE's message
 - every line of the known missing-paths list is filled by the generator, or names the reason the generator leaves it out

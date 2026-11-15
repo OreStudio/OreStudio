@@ -94,6 +94,10 @@ via its "Verifies task" field.
 | 2 | Local review: the story's Now line still said the paperwork was in progress | story.org | Accept | Updated |
 | 3 | Local review: the .SPX acceptance did not state the state on main (EQ- written, Strike lost, files not re-recorded) | task_fix_the_trade_errors_ore_raises.org | Accept | Stated in the task's Notes |
 | 4 | Local review: misspell over the changed files | — | Accept | Clean, exit 0 |
+| 5 | PR review: task file names drift from their titles | three task files | Accept | Renamed to tag, generate the routed types, close out the trade coverage |
+| 6 | PR review: confirm the abandoned task names its replacement | task_close_out_the_coverage.org | Decline | Its Notes already state the reason and link the replacement |
+| 7 | PR review: counts should name the ORE commit they came from | story.org | Accept in part | Cites the packaged engine 3d75a6908; scoping estimates are replaced by mined counts in the reconcile task |
+| 8 | PR review: who decides an error's kind | task_fix_the_trade_errors_ore_raises.org | Accept | A fixed table of ORE message patterns decides it; an unmatched message is the trade's |
 
 * Result
 

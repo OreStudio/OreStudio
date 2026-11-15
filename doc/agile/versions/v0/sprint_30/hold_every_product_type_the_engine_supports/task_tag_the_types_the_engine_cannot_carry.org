@@ -2,7 +2,7 @@
 :ID: 80315472-7360-4C53-B6F7-57F7BCE78A1C
 :END:
 #+title: Task: Tag the types the engine cannot carry
-#+description: Two catalogue trade types have no ORE trade builder at ORE v1.8.17.0-8 (c3ffbae78): CommodityPairwiseVarianceSwap, for which ORE has only the equity and FX classes, and the bare ForwardVolatilityAgreement, which ORE replaced in release 1.123.0 (merge 3477d435d) with its FX, equity and commodity types. Both products are still carried by ORE as a generic ScriptedTrade over the library scripts PairwiseVarianceSwap and ForwardVolatilityAgreement. The type names must stay visible, tagged, with the route that carries the product.
+#+description: Two catalogue trade types have no ORE trade builder at ORE 1.8.17.0 (3d75a6908), the engine the tests run: CommodityPairwiseVarianceSwap, for which ORE has only the equity and FX classes, and the bare ForwardVolatilityAgreement, which ORE replaced in release 1.123.0 (merge 3477d435d) with its FX, equity and commodity types. Both products are still carried by ORE as a generic ScriptedTrade over the library scripts PairwiseVarianceSwap and ForwardVolatilityAgreement. The type names must stay visible, tagged, with the route that carries the product.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:

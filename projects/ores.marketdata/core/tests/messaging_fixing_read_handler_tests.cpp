@@ -76,6 +76,9 @@ struct fixing_handler_fixture {
         auto s = ores::marketdata::generators::generate_synthetic_market_series(generation);
         s.party_id = party;
         s.oresmd_uri = item;
+        // The item is a fixing, so the row states the subclass every fixing holds
+        // rather than the one the generator drew.
+        s.series_subclass = "index_fixing";
         ores::marketdata::repository::market_series_repository{}.write(db.context(), s);
         auto f = ores::marketdata::generators::generate_synthetic_market_fixing(generation);
         f.party_id = party;

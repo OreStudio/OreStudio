@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/replay-fixings-into-daily-levels
-#+pr:
+#+pr: 4765
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4765][#4765]] | [quant] Replay a publisher's fixings into daily levels |
 
 * Review
 

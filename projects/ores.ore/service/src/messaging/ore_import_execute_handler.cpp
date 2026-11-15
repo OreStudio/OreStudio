@@ -1981,6 +1981,10 @@ std::string save_bond_instrument(
         child_req.change.write.issue_id = call_date.issue_id;
         child_req.change.write.sequence_number = call_date.sequence_number;
         child_req.change.write.call_date = call_date.call_date;
+        child_req.change.write.style = call_date.style;
+        child_req.change.write.price = call_date.price;
+        child_req.change.write.price_type = call_date.price_type;
+        child_req.change.write.include_accrual = call_date.include_accrual;
         child_req.change.write.issue_id = issue.issue_id;
         child_req.change.write.sequence_number = ++sequence_number;
         auto child_resp = nats_call(nats, child_req, error);

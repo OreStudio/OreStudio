@@ -621,6 +621,63 @@ void read_conversion_targets(const record_reader& data,
     }
 }
 
+// One entry of a call term list: its text and the date it is in force from,
+// when the document dates it.
+struct call_term_entry {
+    std::string text;
+    std::optional<std::chrono::year_month_day> start_date;
+};
+
+auto read_call_term(const record_reader& call,
+                    std::string_view list,
+                    std::string_view item) -> std::vector<call_term_entry> {
+    std::vector<call_term_entry> result;
+    const auto holder = call.child(list);
+    if (!holder)
+        return result;
+    for (const auto& entry : holder->children(item)) {
+        call_term_entry e;
+        if (item == "Price")
+            e.text = decimal_text(entry).to_string();
+        else
+            e.text = entry.own_text().value_or(std::string{});
+        if (entry.has("startDate"))
+            e.start_date =
+                to_optional_domain_date(bond_instrument_projection_text_of(entry, "startDate"));
+        result.push_back(std::move(e));
+    }
+    return result;
+}
+
+/*
+ * The value of a call term on each call date, resolved the way ORE's
+ * buildCallabilityData does: no entry gives ORE's default, undated entries
+ * apply by position and the last one repeats, and dated entries apply from
+ * their start date, the first one before any. ORE adjusts a start date to the
+ * schedule's calendar first; the dates here are compared as stated.
+ */
+auto resolve_call_term(const std::vector<call_term_entry>& entries,
+                       const std::vector<std::chrono::year_month_day>& dates,
+                       const std::string& fallback) -> std::vector<std::string> {
+    std::vector<std::string> result;
+    result.reserve(dates.size());
+    const bool dated = entries.size() > 1 && entries[1].start_date.has_value();
+    for (std::size_t i = 0; i < dates.size(); ++i) {
+        if (entries.empty()) {
+            result.push_back(fallback);
+        } else if (!dated) {
+            result.push_back(entries[std::min(i, entries.size() - 1)].text);
+        } else {
+            std::size_t j = 0;
+            while (j + 1 < entries.size() && entries[j + 1].start_date &&
+                   dates[i] >= *entries[j + 1].start_date)
+                ++j;
+            result.push_back(entries[j].text);
+        }
+    }
+    return result;
+}
+
 void read_call_dates(const record_reader& data,
                      boost::uuids::uuid issue_id,
                      std::vector<bond_issue_call_date>& dates) {
@@ -630,19 +687,32 @@ void read_call_dates(const record_reader& data,
     const auto schedule = call->child("ScheduleData");
     if (!schedule)
         return;
-    int sequence = 0;
+    std::vector<std::chrono::year_month_day> stated;
     for (const auto& block : schedule->children("Dates")) {
         const auto list = block.child("Dates");
         if (!list)
             continue;
-        for (const auto& date : list->values("Date")) {
-            bond_issue_call_date row;
-            row.issue_id = issue_id;
-            row.sequence_number = ++sequence;
-            row.call_date = to_domain_date(date);
-            stamp_row(row);
-            dates.push_back(std::move(row));
-        }
+        for (const auto& date : list->values("Date"))
+            stated.push_back(to_domain_date(date));
+    }
+    const auto styles =
+        resolve_call_term(read_call_term(*call, "Styles", "Style"), stated, "Bermudan");
+    const auto prices = resolve_call_term(read_call_term(*call, "Prices", "Price"), stated, "1");
+    const auto price_types =
+        resolve_call_term(read_call_term(*call, "PriceTypes", "PriceType"), stated, "Clean");
+    const auto accruals = resolve_call_term(
+        read_call_term(*call, "IncludeAccruals", "IncludeAccrual"), stated, "true");
+    for (std::size_t i = 0; i < stated.size(); ++i) {
+        bond_issue_call_date row;
+        row.issue_id = issue_id;
+        row.sequence_number = static_cast<int>(i) + 1;
+        row.call_date = stated[i];
+        row.style = styles[i];
+        row.price = decimal_from_text(prices[i]).value_or(decimal{});
+        row.price_type = price_types[i];
+        row.include_accrual = accruals[i];
+        stamp_row(row);
+        dates.push_back(std::move(row));
     }
 }
 
@@ -1359,6 +1429,30 @@ void write_conversion_targets(const std::vector<bond_issue_conversion_target>& t
     }
 }
 
+/*
+ * Writes one call term list. A term that is the same on every call date is
+ * one undated entry, which ORE repeats over the schedule. A term that changes
+ * is one undated entry per call date, which ORE applies by position.
+ */
+template <typename Value>
+void write_call_term(record_writer call,
+                     std::string_view list,
+                     std::string_view item,
+                     const std::vector<bond_issue_call_date>& dates,
+                     Value value_of) {
+    auto holder = call.child(list);
+    const auto first = value_of(dates.front());
+    const bool uniform = std::all_of(dates.begin(), dates.end(), [&](const auto& row) {
+        return value_of(row) == first;
+    });
+    if (uniform) {
+        holder.append(item).set_own_text(first);
+        return;
+    }
+    for (const auto& row : dates)
+        holder.append(item).set_own_text(value_of(row));
+}
+
 void write_call_dates(const std::vector<bond_issue_call_date>& dates, record_writer call) {
     if (dates.empty())
         return;
@@ -1368,15 +1462,14 @@ void write_call_dates(const std::vector<bond_issue_call_date>& dates, record_wri
     for (const auto& row : dates)
         list.append_value("Date", to_ore_date(row.call_date));
 
-    // The schema requires the call block's styles, prices, price types and
-    // include-accrual lists beside its schedule, and no row holds any of them.
-    // The emitter refuses a required list with no entry, so one entry stands in
-    // for each: a call on dated days is Bermudan, at par, on the clean price,
-    // paying the accrued coupon, as the Products example's reference data does.
-    call.child("Styles").append("Style").set_own_text("Bermudan");
-    call.child("Prices").append("Price").set_own_text("1");
-    call.child("PriceTypes").append("PriceType").set_own_text("Clean");
-    call.child("IncludeAccruals").append("IncludeAccrual").set_own_text("true");
+    write_call_term(call, "Styles", "Style", dates, [](const auto& r) { return r.style; });
+    write_call_term(
+        call, "Prices", "Price", dates, [](const auto& r) { return r.price.to_string(); });
+    write_call_term(
+        call, "PriceTypes", "PriceType", dates, [](const auto& r) { return r.price_type; });
+    write_call_term(call, "IncludeAccruals", "IncludeAccrual", dates, [](const auto& r) {
+        return r.include_accrual;
+    });
 }
 
 void write_bond_terms(record_writer bd,

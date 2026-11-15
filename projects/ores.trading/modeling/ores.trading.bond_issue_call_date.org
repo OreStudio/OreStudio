@@ -103,7 +103,7 @@ std::string("Bermudan")
 The price the bond is called at on this date, as a fraction of par.
 
 #+begin_src cpp :name generator
-ores::utility::decimal::decimal("1")
+ores::utility::decimal::decimal::from_string("1").value()
 #+end_src
 
 ** price_type

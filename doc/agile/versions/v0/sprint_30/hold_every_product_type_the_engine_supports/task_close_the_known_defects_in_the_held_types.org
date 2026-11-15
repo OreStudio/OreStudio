@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/close-the-known-defects-in-the-held-types
-#+pr:
+#+pr: 4766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -146,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4766][#4766]] | [trading,refdata,ore] Keep the facts held trade types lose and check what they state |
 
 * Review
 

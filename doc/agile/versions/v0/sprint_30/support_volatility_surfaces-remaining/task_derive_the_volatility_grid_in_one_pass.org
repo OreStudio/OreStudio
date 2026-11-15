@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :synthetic:quant:volatility:surfaces:performance:support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/derive-the-volatility-grid-in-one-pass
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,20 +26,20 @@ One pass over the fixings fills the whole volatility grid in memory in under a s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Designed; not started.                 |
+| Now          | Implemented and verified.              |
 | Waiting on   | Nothing.                               |
-| Next         | The pure function in quant, then the feed's as-of-day path. |
+| Next         | Nothing here. The horizon, the per-party derivation and the calibration's tolerance of a silent expiry are their own tasks. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
 
 - The derivation is a pure function over flat arrays: returns and four prefix sums per pair, then per day and expiry a constant-time moment lookup, the shrink, the Gram-Charlier clamp and the five labels.
-- The feed derives the as-of day only, and publishes it in the same tick shape it does today.
-- A separate operation materialises a whole history: the same function over the full day range, written with one bulk copy.
-- The grid the old walk produced and the grid the pass produces agree, expiry by expiry, on the fixture the old tests already use.
-- A provisioning run of a fresh tenant completes the blueprint and surface steps with 39 pairs and a 10Y grid.
+- The feed derives the newest days of the sample and publishes them in the same tick shape it does today, and a second pass over the same days writes nothing. The tail is five days rather than the as-of day alone, so a day that arrives twice owes nothing twice.
+- A separate operation materialises a whole history: the same function over the full day range, written with one bulk copy. *Not done here*: no such operation exists yet, and a model or window change leaves the stored days in place. Captured in the backlog as the derived source failing to warm a tenant inside the blueprint step's wait.
+- The grid the old walk produced and the grid the pass produces agree, expiry by expiry, to a level of 1e-12 and a wing margin of 1e-9.
+- A provisioning run of a fresh tenant completes the blueprint and surface steps with 39 pairs and a 10Y grid. *Moved* to the sizing story's task that publishes every pair out to the horizon its data allows: it needs the horizon, the per-party derivation and the calibration's tolerance, and this branch changes neither the ladder nor the catalogue, so what provisioning publishes is what main publishes.
 
 * Plan
 
@@ -169,3 +169,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The derivation is one pass over flat arrays. `derive_grid` in
+ores.analytics.quant takes the pair's returns and the expiries and fills
+the whole grid: prefix sums of x, x squared, x cubed and x to the fourth
+give every day's window moments in constant time, then the shrink, the
+Gram-Charlier clamp and the five labels follow per cell. A cell is left
+unquoted where the window does not fit, where fewer than four returns are
+available, or where the smile has no positive spread.
+
+The feed asks for the newest days rather than the whole sample.
+`derive_missing_days` fills the grid once and emits the last
+`newest_days` days that the store does not already hold, and the feed
+keeps a five-day tail: a second pass over the same days writes nothing,
+and a day that arrives twice owes nothing twice.
+
+Measured on this environment, a full 39-pair pass:
+
+- `Kept the derived history of 39 pair(s) in 1.8s: 0 day(s) written, 2 failure(s)`, the two failures being USD/CLP and USD/COP, whose fixings the ECB does not publish.
+- Ten point seven seconds for the pass that also read the fixings and the stored days of every pair.
+- A repeat pass writes zero days.
+
+The grid agrees with the day-at-a-time model cell for cell: a test derives
+600 skewed returns over six expiries both ways and matches the level to
+1e-12 and the wings to 1e-9, the wing margin being the difference of two
+butterflies of about six per cent volatility. `ores.analytics.quant.tests`
+and `ores.synthetic.api.tests` pass, 1018 cases between them.
+
+What this deliberately does not do: it does not materialise a whole
+history in one operation, and it does not change the ladder or the
+catalogue, so what provisioning publishes is unchanged. Both belong to
+the sizing story.

@@ -52,7 +52,7 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 | [[id:291FE4D0-4B05-48BF-97A4-E39FD458DBA6][Split the context into its connection and request parts]] | BACKLOG | | | Give the 1305 services the per-request identity part only, so their headers stop parsing the connection part, and decide what a service stores. |
 | [[id:93457275-4215-44DE-B8B5-555A2F2E6909][Move the codec text forms out of line]] | BACKLOG | | | End the inline text forms the codec chain parses: text_form.hpp moves its definitions to a .cpp, and protocol_codec.hpp and json_codec.hpp stop reaching it. |
 | [[id:AE2E77E7-5E09-436A-817E-66FB7064BA28][Delete the unused includes the analysis found]] | DONE | 2026-11-14 | 2026-11-14 | Remove the dead includes and the two inline functions that force them: the string generator in tenant_id.hpp, and the two magic_enum users in error_code.hpp. |
-| [[id:F185ECD2-FFD9-416E-9179-10E96BE8F634][Stop the pool and statement headers reaching the connection header]] | STARTED | 2026-11-14 | | Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers. |
+| [[id:F185ECD2-FFD9-416E-9179-10E96BE8F634][Stop the pool and statement headers reaching the connection header]] | DONE | 2026-11-14 | 2026-11-15 | Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers. |
 | [[id:9C9D7D89-1114-4111-9A0B-DAFDF59E19F2][Split the unit of work header]] | BACKLOG | | | Separate pq::transaction from pq::session_context so unit_of_work.hpp takes the declaration and the forward-declaration check reaches zero. |
 | [[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] | BACKLOG | | | Hold the logger behind a small handle so the typedef does not pull Boost.Log's sources into 565 objects. |
 
@@ -90,6 +90,21 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   with =pq/pool.hpp= and =pq/statement.hpp=, because each of those reaches it.
 - =libpq-fe.h= costs 0.04 s to parse and still sits under 375 objects. It is a
   blast-radius problem, not a parse-time problem.
+- How far a header reaches cannot be inferred from who includes it directly.
+  =pq/connection.hpp= had four includers that did not need it, not the two the
+  analysis named, and the one it did not name (the Postgres listener service,
+  which the eventing core carries into every service) held 101 of the
+  objects. This corrects the count in the bullet above.
+- Cutting an include edge does not remove a definition from the tree: the
+  objects that read =pq/connection.hpp= now read =pq/result.hpp=, 185 each.
+  What falls is the radius of the header that changes — 279 objects to 2 — so
+  the gain is that a change to the libpq wrapper rebuilds the database
+  library's unity object instead of a third of the build.
+- The one cut that removed libpq outright was =database_options.hpp= and the
+  listener taking the declaration or the small options header: 94 objects
+  stopped reading =libpq-fe.h=, which the analysis judged unreachable. The
+  analysis's *Keep* for =result= did not survive: the statement layer calls
+  =rows()= and =value()= on a result, so no declaration cuts that edge.
 - The rest of the header cost is parse time, in three shapes: the codec chain,
   =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
 

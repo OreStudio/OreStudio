@@ -26,11 +26,11 @@ The context header no longer includes pq/pool.hpp or pq/transaction.hpp, but the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | PR #4738 open; the review's findings are addressed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. This repo runs CI on main, not on pull requests, so the build, the suites and the gate above are the evidence. |
-| Next         | Merge, then close this task.           |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                             |
 
 * Acceptance

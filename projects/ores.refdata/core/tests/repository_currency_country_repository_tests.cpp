@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/repository_exception.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
@@ -54,7 +55,7 @@ namespace {
 // test uses a different slice of the fictional currencies/countries
 // lists to avoid interfering with records written by other tests in
 // the same shared tenant database.
-constexpr std::size_t repository_currency_country_repository_total_slots = 10;
+constexpr std::size_t repository_currency_country_repository_total_slots = 11;
 
 currency_country make_currency_country(scoped_database_helper& h,
                                        const std::string& currency_iso_code,
@@ -308,4 +309,46 @@ TEST_CASE("read_nonexistent_currency_country", "[repository][currency_country]")
     const auto keeper_rows = repo.read_latest_by_currency(keeper.currency_iso_code);
     REQUIRE(keeper_rows.size() == 1);
     CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
+}
+
+TEST_CASE("a_duplicate_currency_country_create_is_refused_and_writes_nothing",
+          "[repository][currency_country]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+
+    currency_repository ccy_repo;
+    country_repository cty_repo;
+    currency_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
+    ccy_repo.write(h.context(), {currencies[10]});
+    cty_repo.write(h.context(), {countries[10]});
+
+    const auto cc = make_currency_country(h, currencies[10].iso_code, countries[10].alpha2_code);
+    repo.write(cc);
+
+    const ores::utility::domain::precondition create{
+        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    try {
+        repo.write(cc, create);
+        FAIL("a create over a live link was not refused");
+    } catch (const ores::database::repository::repository_exception& e) {
+        BOOST_LOG_SEV(lg, info) << "Refused: " << e.what();
+        CHECK(e.sqlstate() == "23505");
+    }
+
+    const auto after_refusal = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
+    REQUIRE(after_refusal.size() == 1);
+    CHECK(after_refusal[0].version == 1);
+
+    // A plain write still replaces the link: it states the version it read.
+    repo.write(cc);
+    const auto after_replace = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
+    REQUIRE(after_replace.size() == 1);
+    CHECK(after_replace[0].version == 2);
 }

@@ -244,23 +244,6 @@ public:
     std::vector<report_instance_health_facts>
     read_health_facts_by_instance_ids(const context& ctx,
                                       const std::vector<boost::uuids::uuid>& instance_ids);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::report_instance& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::report_instance apply_claim(const context& ctx,
-                                        const domain::report_instance& v,
-                                        const ores::utility::domain::precondition& claim);
 };
 
 }

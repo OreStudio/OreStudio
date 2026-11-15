@@ -237,22 +237,6 @@ public:
 
     std::optional<domain::cut> read_latest_by_request(const context& ctx,
                                                       const std::string& request_id);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::cut& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::cut apply_claim(const context& ctx,
-                            const domain::cut& v,
-                            const ores::utility::domain::precondition& claim);
 };
 
 }

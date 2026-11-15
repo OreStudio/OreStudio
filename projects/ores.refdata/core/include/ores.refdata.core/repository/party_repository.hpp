@@ -237,22 +237,6 @@ public:
                                                      const boost::uuids::uuid& root_id);
 
     std::optional<domain::party> read_registration_default(const context& ctx);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::party& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::party apply_claim(const context& ctx,
-                              const domain::party& v,
-                              const ores::utility::domain::precondition& claim);
 };
 
 }

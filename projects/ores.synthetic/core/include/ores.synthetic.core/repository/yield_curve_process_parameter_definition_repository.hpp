@@ -215,25 +215,6 @@ public:
      * @brief Deletes yield curve process parameter definitions by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition
-    replace_claim(const context& ctx, const domain::yield_curve_process_parameter_definition& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::yield_curve_process_parameter_definition
-    apply_claim(const context& ctx,
-                const domain::yield_curve_process_parameter_definition& v,
-                const ores::utility::domain::precondition& claim);
 };
 
 }

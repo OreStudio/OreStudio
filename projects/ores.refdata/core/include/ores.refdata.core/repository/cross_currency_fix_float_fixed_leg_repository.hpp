@@ -242,25 +242,6 @@ public:
      * @brief Deletes cross currency fix float fixed legs by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition
-    replace_claim(const context& ctx, const domain::cross_currency_fix_float_fixed_leg& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::cross_currency_fix_float_fixed_leg
-    apply_claim(const context& ctx,
-                const domain::cross_currency_fix_float_fixed_leg& v,
-                const ores::utility::domain::precondition& claim);
 };
 
 }

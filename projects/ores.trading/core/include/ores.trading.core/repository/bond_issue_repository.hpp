@@ -190,24 +190,6 @@ public:
      * @brief Deletes bond issues by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& issue_ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::bond_issue& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::bond_issue apply_claim(const context& ctx,
-                                   const domain::bond_issue& v,
-                                   const ores::utility::domain::precondition& claim);
 };
 
 }

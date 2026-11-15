@@ -38,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,19 +103,72 @@ legal_entity_filter_condition(const std::optional<messaging::legal_entities_filt
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool legal_entity_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using legal_entity_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::legal_entity>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+legal_entity_rows_by_key legal_entity_current_rows(legal_entity_repository& repo,
+                                                   const ores::database::context& ctx,
+                                                   const std::vector<domain::legal_entity>& of) {
+    std::vector<std::string> leis;
+    leis.reserve(of.size());
+    for (const auto& row : of) {
+        leis.push_back(row.lei);
+    }
+    legal_entity_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, leis))
+        current[std::make_tuple(item.lei)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::legal_entity>&
+legal_entity_rows_of(const legal_entity_rows_by_key& current, const domain::legal_entity& item) {
+    static const std::vector<domain::legal_entity> none;
+    const auto found = current.find(std::make_tuple(item.lei));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-legal_entity_repository::replace_claim(const context& ctx, const domain::legal_entity& v) {
-    const auto current = read_latest(ctx, v.lei);
+legal_entity_replace_claim(const std::vector<domain::legal_entity>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::legal_entity
-legal_entity_repository::apply_claim(const context& ctx,
-                                     const domain::legal_entity& v,
-                                     const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::legal_entity legal_entity_apply_claim(const domain::legal_entity& v,
+                                              const ores::utility::domain::precondition& claim,
+                                              const std::vector<domain::legal_entity>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -124,29 +180,30 @@ legal_entity_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.lei);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void legal_entity_repository::write(const context& ctx, const domain::legal_entity& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, legal_entity_replace_claim(read_latest(ctx, v.lei)));
 }
 
 void legal_entity_repository::write(const context& ctx,
                                     const std::vector<domain::legal_entity>& v) {
+    const auto current = legal_entity_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(legal_entity_replace_claim(legal_entity_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -154,7 +211,11 @@ void legal_entity_repository::write(const context& ctx,
                                     const domain::legal_entity& v,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing legal entity. " << "lei: " << v.lei;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = legal_entity_apply_claim(v,
+                                            claim,
+                                            legal_entity_claim_reads_current(claim) ?
+                                                read_latest(ctx, v.lei) :
+                                                std::vector<domain::legal_entity>{});
     query_builder::execute_write_query(
         ctx, legal_entity_mapper::map(t), lg(), "Writing legal entity to database.");
 }
@@ -164,10 +225,17 @@ void legal_entity_repository::write(
     const std::vector<domain::legal_entity>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing legal entities. Count: " << v.size();
+    std::vector<domain::legal_entity> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (legal_entity_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = legal_entity_current_rows(*this, ctx, to_read);
     std::vector<domain::legal_entity> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            legal_entity_apply_claim(v[i], claims[i], legal_entity_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, legal_entity_mapper::map(batch), lg(), "Writing legal entities to database.");
 }
@@ -325,6 +393,21 @@ std::vector<domain::legal_entity>
 legal_entity_repository::read_latest(const context& ctx, const std::vector<std::string>& leis) {
     if (leis.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (leis.size() > chunk_size) {
+        std::vector<domain::legal_entity> all;
+        for (std::size_t begin = 0; begin < leis.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, leis.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(leis.begin() + begin, leis.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

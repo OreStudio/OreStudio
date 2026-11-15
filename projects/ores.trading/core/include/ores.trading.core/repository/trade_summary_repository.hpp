@@ -215,23 +215,6 @@ public:
      * a page can start after a row the order places between two values of its own.
      */
     static std::string blotter_page_key(const domain::trade_summary& row, const std::string& field);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::trade_summary& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::trade_summary apply_claim(const context& ctx,
-                                      const domain::trade_summary& v,
-                                      const ores::utility::domain::precondition& claim);
 };
 
 }

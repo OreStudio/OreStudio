@@ -39,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -85,47 +87,108 @@ query_builder::order grid_sample_list_order(const ores::utility::domain::order& 
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool grid_sample_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using grid_sample_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::grid_sample>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+grid_sample_rows_by_key grid_sample_current_rows(grid_sample_repository& repo,
+                                                 const ores::database::context& ctx,
+                                                 const std::vector<domain::grid_sample>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    std::vector<std::string> sampled_ats;
+    sampled_ats.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+        sampled_ats.push_back(ores::platform::time::datetime::to_db_string(row.sampled_at));
+    }
+    grid_sample_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids, sampled_ats))
+        current[std::make_tuple(boost::uuids::to_string(item.id),
+                                ores::platform::time::datetime::to_db_string(item.sampled_at))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::grid_sample>& grid_sample_rows_of(const grid_sample_rows_by_key& current,
+                                                            const domain::grid_sample& item) {
+    static const std::vector<domain::grid_sample> none;
+    const auto found = current.find(
+        std::make_tuple(boost::uuids::to_string(item.id),
+                        ores::platform::time::datetime::to_db_string(item.sampled_at)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-grid_sample_repository::replace_claim(const context& ctx, const domain::grid_sample& v) {
-    const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.id),
-                                     ores::platform::time::datetime::to_db_string(v.sampled_at));
+grid_sample_replace_claim(const std::vector<domain::grid_sample>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::grid_sample
-grid_sample_repository::apply_claim(const context& ctx,
-                                    const domain::grid_sample& v,
-                                    const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::grid_sample grid_sample_apply_claim(const domain::grid_sample& v,
+                                            const ores::utility::domain::precondition& claim,
+                                            const std::vector<domain::grid_sample>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "grid_sample_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx,
-                     boost::uuids::to_string(v.id),
-                     ores::platform::time::datetime::to_db_string(v.sampled_at))
-             .empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument("grid_sample_repository::write: a current row already exists");
     return t;
 }
 
+}
+
 void grid_sample_repository::write(const context& ctx, const domain::grid_sample& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          grid_sample_replace_claim(
+              read_latest(ctx,
+                          boost::uuids::to_string(v.id),
+                          ores::platform::time::datetime::to_db_string(v.sampled_at))));
 }
 
 void grid_sample_repository::write(const context& ctx, const std::vector<domain::grid_sample>& v) {
+    const auto current = grid_sample_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(grid_sample_replace_claim(grid_sample_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -134,7 +197,14 @@ void grid_sample_repository::write(const context& ctx,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "id: " << v.id
                                << " sampled_at: " << v.sampled_at;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = grid_sample_apply_claim(
+        v,
+        claim,
+        grid_sample_claim_reads_current(claim) ?
+            read_latest(ctx,
+                        boost::uuids::to_string(v.id),
+                        ores::platform::time::datetime::to_db_string(v.sampled_at)) :
+            std::vector<domain::grid_sample>{});
     query_builder::execute_write_op(ctx,
                                     query_builder::insert_or_replace(grid_sample_mapper::map(t)),
                                     lg(),
@@ -145,10 +215,17 @@ void grid_sample_repository::write(const context& ctx,
                                    const std::vector<domain::grid_sample>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing grid samples. Count: " << v.size();
+    std::vector<domain::grid_sample> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (grid_sample_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = grid_sample_current_rows(*this, ctx, to_read);
     std::vector<domain::grid_sample> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            grid_sample_apply_claim(v[i], claims[i], grid_sample_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(grid_sample_mapper::map(batch)),
@@ -281,6 +358,26 @@ grid_sample_repository::read_latest(const context& ctx,
                                     const std::vector<std::string>& sampled_ats) {
     if (ids.empty() || sampled_ats.empty())
         return {};
+    if (sampled_ats.size() != ids.size())
+        throw std::invalid_argument(
+            "grid_sample_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::grid_sample> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(ids.begin() + begin, ids.begin() + end),
+                std::vector<std::string>(sampled_ats.begin() + begin, sampled_ats.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto query = query_builder::read<std::vector<grid_sample_entity>> |
                        query_builder::where("id"_c.in(ids) && "sampled_at"_c.in(sampled_ats));
     auto result = query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
@@ -292,9 +389,6 @@ grid_sample_repository::read_latest(const context& ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (sampled_ats.size() != ids.size())
-        throw std::invalid_argument(
-            "grid_sample_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < ids.size(); ++i)
         requested.emplace(ids[i], sampled_ats[i]);

@@ -225,23 +225,6 @@ public:
     std::vector<messaging::report_error_count>
     read_counts_by_report_instance_ids(const context& ctx,
                                        const std::vector<boost::uuids::uuid>& report_instance_ids);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::report_error_event& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::report_error_event apply_claim(const context& ctx,
-                                           const domain::report_error_event& v,
-                                           const ores::utility::domain::precondition& claim);
 };
 
 }

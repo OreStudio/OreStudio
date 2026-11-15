@@ -209,22 +209,6 @@ public:
                                                          const std::string& username);
 
     std::vector<domain::account> read_latest_by_email(const context& ctx, const std::string& email);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::account& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::account apply_claim(const context& ctx,
-                                const domain::account& v,
-                                const ores::utility::domain::precondition& claim);
 };
 
 }

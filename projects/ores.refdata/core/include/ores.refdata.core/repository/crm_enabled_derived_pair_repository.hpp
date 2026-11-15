@@ -196,23 +196,6 @@ public:
     void remove(const context& ctx, const std::vector<std::string>& ids);
 
     std::vector<domain::crm_enabled_derived_pair> read_latest_all_tenants(const context& ctx);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::crm_enabled_derived_pair& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::crm_enabled_derived_pair apply_claim(const context& ctx,
-                                                 const domain::crm_enabled_derived_pair& v,
-                                                 const ores::utility::domain::precondition& claim);
 };
 
 }

@@ -39,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -102,19 +105,76 @@ std::optional<query_builder::condition> intraday_power_load_convention_filter_co
 
 }
 
-ores::utility::domain::precondition intraday_power_load_convention_repository::replace_claim(
-    const context& ctx, const domain::intraday_power_load_convention& v) {
-    const auto current = read_latest(ctx, v.id);
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool intraday_power_load_convention_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using intraday_power_load_convention_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::intraday_power_load_convention>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+intraday_power_load_convention_rows_by_key intraday_power_load_convention_current_rows(
+    intraday_power_load_convention_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<domain::intraday_power_load_convention>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(row.id);
+    }
+    intraday_power_load_convention_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(item.id)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::intraday_power_load_convention>&
+intraday_power_load_convention_rows_of(const intraday_power_load_convention_rows_by_key& current,
+                                       const domain::intraday_power_load_convention& item) {
+    static const std::vector<domain::intraday_power_load_convention> none;
+    const auto found = current.find(std::make_tuple(item.id));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition intraday_power_load_convention_replace_claim(
+    const std::vector<domain::intraday_power_load_convention>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::intraday_power_load_convention intraday_power_load_convention_repository::apply_claim(
-    const context& ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::intraday_power_load_convention intraday_power_load_convention_apply_claim(
     const domain::intraday_power_load_convention& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::intraday_power_load_convention>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -126,30 +186,32 @@ domain::intraday_power_load_convention intraday_power_load_convention_repository
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.id);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void intraday_power_load_convention_repository::write(
     const context& ctx, const domain::intraday_power_load_convention& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, intraday_power_load_convention_replace_claim(read_latest(ctx, v.id)));
 }
 
 void intraday_power_load_convention_repository::write(
     const context& ctx, const std::vector<domain::intraday_power_load_convention>& v) {
+    const auto current = intraday_power_load_convention_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(intraday_power_load_convention_replace_claim(
+            intraday_power_load_convention_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -158,7 +220,12 @@ void intraday_power_load_convention_repository::write(
     const domain::intraday_power_load_convention& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing intraday power load convention. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = intraday_power_load_convention_apply_claim(
+        v,
+        claim,
+        intraday_power_load_convention_claim_reads_current(claim) ?
+            read_latest(ctx, v.id) :
+            std::vector<domain::intraday_power_load_convention>{});
     query_builder::execute_write_query(ctx,
                                        intraday_power_load_convention_mapper::map(t),
                                        lg(),
@@ -170,10 +237,17 @@ void intraday_power_load_convention_repository::write(
     const std::vector<domain::intraday_power_load_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing intraday power load conventions. Count: " << v.size();
+    std::vector<domain::intraday_power_load_convention> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (intraday_power_load_convention_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = intraday_power_load_convention_current_rows(*this, ctx, to_read);
     std::vector<domain::intraday_power_load_convention> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(intraday_power_load_convention_apply_claim(
+            v[i], claims[i], intraday_power_load_convention_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        intraday_power_load_convention_mapper::map(batch),
                                        lg(),
@@ -371,6 +445,21 @@ intraday_power_load_convention_repository::read_latest(const context& ctx,
                                                        const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::intraday_power_load_convention> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

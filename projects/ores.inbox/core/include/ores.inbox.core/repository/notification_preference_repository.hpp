@@ -237,24 +237,6 @@ public:
                 const std::vector<std::string>& account_ids,
                 const std::vector<std::string>& kind_codes,
                 const std::vector<std::string>& channel_codes);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::notification_preference& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::notification_preference apply_claim(const context& ctx,
-                                                const domain::notification_preference& v,
-                                                const ores::utility::domain::precondition& claim);
 };
 
 }

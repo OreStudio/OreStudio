@@ -41,10 +41,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -224,44 +227,98 @@ trade_summary_filter_condition(const std::optional<messaging::trade_summaries_fi
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool trade_summary_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using trade_summary_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::trade_summary>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+trade_summary_rows_by_key trade_summary_current_rows(trade_summary_repository& repo,
+                                                     const ores::database::context& ctx,
+                                                     const std::vector<domain::trade_summary>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    trade_summary_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::trade_summary>&
+trade_summary_rows_of(const trade_summary_rows_by_key& current, const domain::trade_summary& item) {
+    static const std::vector<domain::trade_summary> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-trade_summary_repository::replace_claim(const context& ctx, const domain::trade_summary& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+trade_summary_replace_claim(const std::vector<domain::trade_summary>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::trade_summary
-trade_summary_repository::apply_claim(const context& ctx,
-                                      const domain::trade_summary& v,
-                                      const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::trade_summary trade_summary_apply_claim(const domain::trade_summary& v,
+                                                const ores::utility::domain::precondition& claim,
+                                                const std::vector<domain::trade_summary>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "trade_summary_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "trade_summary_repository::write: a current row already exists");
     return t;
 }
 
+}
+
 void trade_summary_repository::write(const context& ctx, const domain::trade_summary& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, trade_summary_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void trade_summary_repository::write(const context& ctx,
                                      const std::vector<domain::trade_summary>& v) {
+    const auto current = trade_summary_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(trade_summary_replace_claim(trade_summary_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -269,7 +326,11 @@ void trade_summary_repository::write(const context& ctx,
                                      const domain::trade_summary& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade summary. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = trade_summary_apply_claim(v,
+                                             claim,
+                                             trade_summary_claim_reads_current(claim) ?
+                                                 read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                 std::vector<domain::trade_summary>{});
     query_builder::execute_write_op(ctx,
                                     query_builder::insert_or_replace(trade_summary_mapper::map(t)),
                                     lg(),
@@ -281,10 +342,17 @@ void trade_summary_repository::write(
     const std::vector<domain::trade_summary>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade summaries. Count: " << v.size();
+    std::vector<domain::trade_summary> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (trade_summary_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = trade_summary_current_rows(*this, ctx, to_read);
     std::vector<domain::trade_summary> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            trade_summary_apply_claim(v[i], claims[i], trade_summary_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(trade_summary_mapper::map(batch)),
@@ -399,6 +467,21 @@ std::vector<domain::trade_summary>
 trade_summary_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::trade_summary> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_summary_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));

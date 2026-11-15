@@ -205,23 +205,6 @@ public:
 
     std::vector<domain::series_axis_value>
     read_latest_for_series(const context& ctx, const std::vector<std::string>& series_ids);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::series_axis_value& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::series_axis_value apply_claim(const context& ctx,
-                                          const domain::series_axis_value& v,
-                                          const ores::utility::domain::precondition& claim);
 };
 
 }

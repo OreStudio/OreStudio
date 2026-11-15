@@ -232,23 +232,6 @@ public:
     std::vector<std::string> get_book_scope(const context& ctx, const std::string& config_id);
 
     std::vector<std::string> get_portfolio_scope(const context& ctx, const std::string& config_id);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::risk_report_config& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::risk_report_config apply_claim(const context& ctx,
-                                           const domain::risk_report_config& v,
-                                           const ores::utility::domain::precondition& claim);
 };
 
 }

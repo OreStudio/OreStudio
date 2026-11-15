@@ -208,23 +208,6 @@ public:
      */
     std::vector<ores::utility::domain::hierarchy_flat_row>
     get_hierarchy(const context& ctx, const boost::uuids::uuid& root_id, bool from_root);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::folder& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::folder apply_claim(const context& ctx,
-                               const domain::folder& v,
-                               const ores::utility::domain::precondition& claim);
 };
 
 }

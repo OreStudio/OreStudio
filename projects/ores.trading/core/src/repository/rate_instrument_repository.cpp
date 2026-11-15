@@ -40,10 +40,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -102,19 +105,77 @@ rate_instrument_filter_condition(const std::optional<messaging::rate_instruments
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool rate_instrument_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using rate_instrument_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::rate_instrument>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+rate_instrument_rows_by_key
+rate_instrument_current_rows(rate_instrument_repository& repo,
+                             const ores::database::context& ctx,
+                             const std::vector<domain::rate_instrument>& of) {
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(of.size());
+    for (const auto& row : of) {
+        trade_ids.push_back(boost::uuids::to_string(row.identity.trade_id));
+    }
+    rate_instrument_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, trade_ids))
+        current[std::make_tuple(boost::uuids::to_string(item.identity.trade_id))].push_back(
+            std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::rate_instrument>&
+rate_instrument_rows_of(const rate_instrument_rows_by_key& current,
+                        const domain::rate_instrument& item) {
+    static const std::vector<domain::rate_instrument> none;
+    const auto found =
+        current.find(std::make_tuple(boost::uuids::to_string(item.identity.trade_id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-rate_instrument_repository::replace_claim(const context& ctx, const domain::rate_instrument& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
+rate_instrument_replace_claim(const std::vector<domain::rate_instrument>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().identity.version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::rate_instrument
-rate_instrument_repository::apply_claim(const context& ctx,
-                                        const domain::rate_instrument& v,
-                                        const ores::utility::domain::precondition& claim) {
+rate_instrument_apply_claim(const domain::rate_instrument& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::rate_instrument>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -126,29 +187,33 @@ rate_instrument_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
             t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void rate_instrument_repository::write(const context& ctx, const domain::rate_instrument& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          rate_instrument_replace_claim(
+              read_latest(ctx, boost::uuids::to_string(v.identity.trade_id))));
 }
 
 void rate_instrument_repository::write(const context& ctx,
                                        const std::vector<domain::rate_instrument>& v) {
+    const auto current = rate_instrument_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(rate_instrument_replace_claim(rate_instrument_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -157,7 +222,12 @@ void rate_instrument_repository::write(const context& ctx,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing rate instrument. "
                                << "trade_id: " << v.identity.trade_id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = rate_instrument_apply_claim(
+        v,
+        claim,
+        rate_instrument_claim_reads_current(claim) ?
+            read_latest(ctx, boost::uuids::to_string(v.identity.trade_id)) :
+            std::vector<domain::rate_instrument>{});
     query_builder::execute_write_query(
         ctx, rate_instrument_mapper::map(t), lg(), "Writing rate instrument to database.");
 }
@@ -167,10 +237,17 @@ void rate_instrument_repository::write(
     const std::vector<domain::rate_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing rate instruments. Count: " << v.size();
+    std::vector<domain::rate_instrument> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (rate_instrument_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = rate_instrument_current_rows(*this, ctx, to_read);
     std::vector<domain::rate_instrument> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            rate_instrument_apply_claim(v[i], claims[i], rate_instrument_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, rate_instrument_mapper::map(batch), lg(), "Writing rate instruments to database.");
 }
@@ -333,6 +410,21 @@ rate_instrument_repository::read_latest(const context& ctx,
                                         const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (trade_ids.size() > chunk_size) {
+        std::vector<domain::rate_instrument> all;
+        for (std::size_t begin = 0; begin < trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, trade_ids.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(trade_ids.begin() + begin, trade_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<rate_instrument_entity>> |

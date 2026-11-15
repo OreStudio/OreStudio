@@ -78,6 +78,7 @@ set(files
     "service/tenor_resolution_engine.cpp"
     "service/tick_scheduler.cpp"
     "service/topology_builder.cpp"
+    "service/topology_from_sources.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -178,4 +179,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tenor_resolution_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_scheduler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/topology_builder.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/topology_from_sources.hpp"
 )

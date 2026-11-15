@@ -79,6 +79,7 @@ set(files
     "ssvi_calibration_engine_tests.cpp"
     "tick_scheduler_tests.cpp"
     "topology_builder_tests.cpp"
+    "topology_from_sources_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"
     "vasicek_process_tests.cpp"
 )

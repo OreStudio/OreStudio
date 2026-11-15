@@ -25,13 +25,16 @@
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::country;
@@ -215,4 +218,21 @@ TEST_CASE("read_latest_country_includes_the_written_row", "[repository]") {
     const auto found = std::ranges::any_of(
         read_countries, [&](const auto& v) { return v.alpha2_code == cntry.alpha2_code; });
     CHECK(found);
+}
+
+TEST_CASE("a_batch_write_with_fewer_claims_than_rows_is_refused_and_writes_nothing",
+          "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto countries = generate_synthetic_countries(2, ctx);
+
+    country_repository repo;
+    const std::vector<ores::utility::domain::precondition> one_claim{
+        {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt}};
+    CHECK_THROWS_AS(repo.write(h.context(), countries, one_claim), std::invalid_argument);
+
+    for (const auto& c : countries)
+        CHECK(repo.read_latest(h.context(), c.alpha2_code).empty());
 }

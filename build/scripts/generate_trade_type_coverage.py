@@ -94,8 +94,12 @@ def story_tasks() -> list[tuple[str, str, str]]:
     return tasks
 
 
+# The catalogue constructions each form ORE's trade factory reports allows.
+FORMS = {"native": {"native", "container"}, "scripted": {"scripted", "script"}}
+
+
 def disagrees(row: dict[str, str], entry: dict[str, str]) -> bool:
-    return row["registered"] == "yes" and (row["form"] == "scripted") != (entry["construction"] == "scripted")
+    return row["registered"] == "yes" and entry["construction"] not in FORMS[row["form"]]
 
 
 def closing(row: dict[str, str], entry: dict[str, str], tasks) -> str:
@@ -189,6 +193,12 @@ def main() -> int:
     text = DOCUMENT.read_text()
     if text.count(BEGIN) != 1 or text.count(END) != 1:
         print(f"{DOCUMENT} needs one '{BEGIN}' and one '{END}' line", file=sys.stderr)
+        return 1
+    rows, cat = mined_rows(), catalogue()
+    wrong = [r["trade_type"] for r in rows if r["in_catalogue"] == "yes" and disagrees(r, cat[r["trade_type"]])]
+    if wrong:
+        print(f"{CATALOGUE.relative_to(REPO)} states a construction ORE does not read these types in: "
+              f"{', '.join(wrong)}", file=sys.stderr)
         return 1
     head, tail = text.split(BEGIN)[0], text.split(END)[1]
     updated = head + block + tail

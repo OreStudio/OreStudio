@@ -59,6 +59,15 @@ on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
+-- Resolution reads the providers in the order this file lists them: the rank it follows is the
+-- one the catalogue already states in display_order, where a data vendor comes before a
+-- reference set and the reference sets follow in the order below.
+update ores_marketdata_providers_tbl
+set precedence = display_order
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and valid_to = ores_utility_infinity_timestamp_fn()
+  and precedence = 1000;
+
 \echo '--- Official Rates Sources ---'
 
 insert into ores_marketdata_feeds_tbl (

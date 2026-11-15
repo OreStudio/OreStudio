@@ -54,6 +54,7 @@ namespace ores::marketdata::domain {
         utility::codec::field{"kind", &provider::kind},
         utility::codec::field{"description", &provider::description},
         utility::codec::field{"display_order", &provider::display_order},
+        utility::codec::field{"precedence", &provider::precedence},
         utility::codec::field{"terms_url", &provider::terms_url},
         utility::codec::field{"terms_credit", &provider::terms_credit},
         utility::codec::field{"allows_storage", &provider::allows_storage},

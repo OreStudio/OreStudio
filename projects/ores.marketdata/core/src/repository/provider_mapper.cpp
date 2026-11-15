@@ -49,6 +49,7 @@ domain::provider provider_mapper::map(const provider_entity& v) {
     r.kind = v.kind;
     r.description = v.description;
     r.display_order = v.display_order;
+    r.precedence = v.precedence;
     r.terms_url = v.terms_url;
     r.terms_credit = v.terms_credit;
     r.allows_storage = v.allows_storage;
@@ -77,6 +78,7 @@ provider_entity provider_mapper::map(const domain::provider& v) {
     r.kind = v.kind;
     r.description = v.description;
     r.display_order = v.display_order;
+    r.precedence = v.precedence;
     r.terms_url = v.terms_url;
     r.terms_credit = v.terms_credit;
     r.allows_storage = v.allows_storage;

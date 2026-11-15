@@ -41,6 +41,7 @@ std::vector<ores::diff::domain::field_value> render_provider_fields(const domain
     fields.push_back({.name = "Kind", .value = v.kind});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
+    fields.push_back({.name = "Precedence", .value = std::to_string(v.precedence)});
     fields.push_back({.name = "Terms Url", .value = v.terms_url});
     fields.push_back({.name = "Terms Credit", .value = v.terms_credit});
     fields.push_back({.name = "Allows Storage", .value = v.allows_storage ? "true" : "false"});

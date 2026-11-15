@@ -87,24 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit>
-     * <allows_storage> <credential_ref> <reason> <commentary>
+     * @brief add <code> <name> <kind> <description> <display_order> <precedence> <terms_url>
+     * <terms_credit> <allows_storage> <credential_ref> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit>
-     * <allows_storage> <credential_ref> <reason> <commentary> [--version <n>]
+     * @brief set <code> <name> <kind> <description> <display_order> <precedence> <terms_url>
+     * <terms_credit> <allows_storage> <credential_ref> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <code> <name> <kind> <description> <display_order> <terms_url>
-     * <terms_credit> <allows_storage> <credential_ref> <reason> <commentary>
+     * @brief put-many --count <n> <code> <name> <kind> <description> <display_order> <precedence>
+     * <terms_url> <terms_credit> <allows_storage> <credential_ref> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -54,6 +54,7 @@ struct provider_write {
     std::string kind;
     std::string description;
     int display_order{};
+    int precedence{};
     std::string terms_url;
     std::string terms_credit;
     bool allows_storage{};
@@ -381,6 +382,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
         utility::codec::field{"kind", &provider_write::kind},
         utility::codec::field{"description", &provider_write::description},
         utility::codec::field{"display_order", &provider_write::display_order},
+        utility::codec::field{"precedence", &provider_write::precedence},
         utility::codec::field{"terms_url", &provider_write::terms_url},
         utility::codec::field{"terms_credit", &provider_write::terms_credit},
         utility::codec::field{"allows_storage", &provider_write::allows_storage},

@@ -87,6 +87,14 @@ struct provider final {
     int display_order = 0;
 
     /**
+     * @brief The provider's rank when more than one of them quotes the same item: the lower the
+     * number, the earlier the provider is read, and a provider nobody ranked sits at the default
+     * and is read last. It is the rank resolution follows, and it is not the same thing as
+     * display_order, which orders a screen and says nothing about which source answers a read.
+     */
+    int precedence = 1000;
+
+    /**
      * @brief The page that states the provider's terms of use. Empty for a provider whose terms are
      * a contract outside the system, such as a vendor's licence, which the system does not check
      * before it takes data.

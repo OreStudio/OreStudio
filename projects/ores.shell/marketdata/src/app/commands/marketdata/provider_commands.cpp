@@ -139,24 +139,24 @@ void provider_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit> "
-        "<allows_storage> <credential_ref> <reason> <commentary>");
+        "add <code> <name> <kind> <description> <display_order> <precedence> <terms_url> "
+        "<terms_credit> <allows_storage> <credential_ref> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit> "
-        "<allows_storage> <credential_ref> <reason> <commentary> [--version <n>]");
+        "set <code> <name> <kind> <description> <display_order> <precedence> <terms_url> "
+        "<terms_credit> <allows_storage> <credential_ref> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <name> <kind> <description> <display_order> <terms_url> "
-        "<terms_credit> <allows_storage> <credential_ref> <reason> <commentary>");
+        "put-many --count <n> <code> <name> <kind> <description> <display_order> <precedence> "
+        "<terms_url> <terms_credit> <allows_storage> <credential_ref> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +357,8 @@ void provider_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +369,7 @@ void provider_commands::process_add(std::ostream& out,
             req.change.write.description, parsed->positionals[next++], "description");
         provider_read_token(
             req.change.write.display_order, parsed->positionals[next++], "display_order");
+        provider_read_token(req.change.write.precedence, parsed->positionals[next++], "precedence");
         provider_read_token(req.change.write.terms_url, parsed->positionals[next++], "terms_url");
         provider_read_token(
             req.change.write.terms_credit, parsed->positionals[next++], "terms_credit");
@@ -420,8 +421,8 @@ void provider_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,6 +433,7 @@ void provider_commands::process_set(std::ostream& out,
             req.change.write.description, parsed->positionals[next++], "description");
         provider_read_token(
             req.change.write.display_order, parsed->positionals[next++], "display_order");
+        provider_read_token(req.change.write.precedence, parsed->positionals[next++], "precedence");
         provider_read_token(req.change.write.terms_url, parsed->positionals[next++], "terms_url");
         provider_read_token(
             req.change.write.terms_credit, parsed->positionals[next++], "terms_credit");
@@ -495,8 +497,8 @@ void provider_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -509,6 +511,7 @@ void provider_commands::process_put_many(std::ostream& out,
                 change.write.description, parsed->positionals[next++], "description");
             provider_read_token(
                 change.write.display_order, parsed->positionals[next++], "display_order");
+            provider_read_token(change.write.precedence, parsed->positionals[next++], "precedence");
             provider_read_token(change.write.terms_url, parsed->positionals[next++], "terms_url");
             provider_read_token(
                 change.write.terms_credit, parsed->positionals[next++], "terms_credit");

@@ -99,7 +99,12 @@ FORMS = {"native": {"native", "container"}, "scripted": {"scripted", "script"}}
 
 
 def disagrees(row: dict[str, str], entry: dict[str, str]) -> bool:
-    return row["registered"] == "yes" and entry["construction"] not in FORMS[row["form"]]
+    if row["registered"] != "yes":
+        return False
+    if row["form"] not in FORMS:
+        raise SourceError(f"{MINED.relative_to(REPO)}: {row['trade_type']} has form {row['form']!r},"
+                          f" which is not one of {', '.join(sorted(FORMS))}")
+    return entry["construction"] not in FORMS[row["form"]]
 
 
 def closing(row: dict[str, str], entry: dict[str, str], tasks) -> str:

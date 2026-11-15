@@ -124,6 +124,11 @@ via its "Verifies task" field.
 | 1 | Local gate: the trading ER diagram still described the old construction | =ores_schema.trading.puml= | Accept | Regenerated with =plantuml_er_generate.sh= |
 | 2 | Local review: the test cut the element out of a path at a bare offset 6 | =generated_trade_export_tests.cpp= | Accept | The offset is the length of a named =Trade/= prefix |
 | 3 | Local review: misspell over the changed files | - | Accept | Clean |
+| 4 | PR review 1: an existing database keeps the old check, so a =script= row fails to insert | =trading_product_types_create.sql= | Decline | The schema has no migrations: databases are recreated from =create/=, and =schema_fingerprint.cmake= flags a stale one |
+| 5 | PR review 2: an unknown mined form raises a bare =KeyError= | =generate_trade_type_coverage.py= | Accept | Raises an error naming the TSV, the type and the form (tested) |
+| 6 | PR review 3: reuse an existing reader of =trade_types.tsv= | =generated_trade_export_tests.cpp= | Decline | No other C++ code reads the file |
+| 7 | PR review 3: =<algorithm>= breaks alphabetical include order | =generated_trade_export_tests.cpp= | Decline | The project's clang-format sorts includes (=SortIncludes=, =IncludeBlocks: Merge=) and accepts this order |
+| 8 | PR review 4 and 5: known baseline failure; shallow clone diff | - | Accept | No change: the failure is a later task in the story; the PR has no merge commits beyond its base |
 
 * Result
 

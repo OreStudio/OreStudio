@@ -28,9 +28,9 @@ A pair is composed from two legs of one publisher that share a base, so the base
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Half done: the policy that reads a topology from the identity a source states, with nine tests and the quant suite green. The reader and the bridge wiring remain. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Read a party's identity rows and the provider rank into fixing sources, then have crm_ingest_bridge::refresh() build from those instead of crm_driver_pair. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance

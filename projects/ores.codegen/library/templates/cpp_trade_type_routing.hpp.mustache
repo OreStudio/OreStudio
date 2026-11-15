@@ -37,6 +37,21 @@ instrument_table_for(std::string_view trade_type) {
     return std::nullopt;
 }
 
+/**
+ * @brief Why ORE cannot carry a trade of the given type, or nullopt where it
+ * can. Generated from the catalogue's unsupported trade types.
+ */
+[[nodiscard]] inline std::optional<std::string_view>
+unsupported_reason_for(std::string_view trade_type) {
+{{#trade_type_catalogue}}
+{{#unsupported}}
+    if (trade_type == "{{code}}")
+        return "{{{reason}}}";
+{{/unsupported}}
+{{/trade_type_catalogue}}
+    return std::nullopt;
+}
+
 }
 
 #endif

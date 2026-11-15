@@ -7138,6 +7138,44 @@ def _trade_type_classes(path: Path, doc, codes: list[str]) -> dict[str, str]:
     return {code: stated.get(code, "non_flow") for code in codes}
 
 
+def _trade_type_unsupported(path: Path, doc, rows: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """The trade types ORE cannot carry, each with the reason a refusal gives.
+
+    The ``* Unsupported trade types`` table names a type the catalogue keeps so
+    a person sees it, with the reason, ORE's evidence and the library script
+    that carries the product instead. Such a type routes to no table, because
+    no trade of it can be held. The reason becomes a C++ string literal, so it
+    may not hold a quote or a backslash.
+    """
+    section = _section(doc.root, "Unsupported trade types")
+    if not section or not section.tables:
+        return []
+    instrument_of = {row["code"]: row["instrument"] for row in rows}
+    out: list[dict[str, str]] = []
+    for r in _parse_org_table_rows(section):
+        code = (r.get("code") or "").strip()
+        if not code:
+            continue
+        reason = (r.get("reason") or "").strip()
+        if code not in instrument_of:
+            raise ValueError(
+                f"{path.name}: unsupported trade type {code} is not in the "
+                f"* Trade types table.")
+        if instrument_of[code]:
+            raise ValueError(
+                f"{path.name}: unsupported trade type {code} routes to "
+                f"{instrument_of[code]}; it must route to no table.")
+        if not reason or '"' in reason or "\\" in reason:
+            raise ValueError(
+                f"{path.name}: unsupported trade type {code} needs a reason "
+                f"with no quote or backslash.")
+        if any(entry["code"] == code for entry in out):
+            raise ValueError(
+                f"{path.name}: unsupported trade type {code} is stated twice.")
+        out.append({"code": code, "reason": reason})
+    return out
+
+
 def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     """Load the trade-type catalogue into the shape its readers want.
 
@@ -7276,6 +7314,7 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
         entities_by_table)
     catalogue["routes"] = [
         {"code": row["code"], "instrument": row["instrument"]} for row in routes]
+    catalogue["unsupported"] = _trade_type_unsupported(path, doc, rows)
     market_rows = [
         {
             "product_type_code": row["code"],

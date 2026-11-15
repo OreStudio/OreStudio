@@ -161,7 +161,7 @@ absent: it is a placeholder, not a product.
 | CommoditySwap | Commodity Swap | swap | native | commodity! | false | false | commodity_instrument |
 | CommoditySwaption | Commodity Swaption | swaption | native | commodity! | false | true | commodity_instrument |
 | CommodityVarianceSwap | Commodity Variance Swap | swap | native | commodity! | false | true | commodity_instrument |
-| CommodityPairwiseVarianceSwap | Commodity Pairwise Variance Swap |   | native | commodity! | false | true | commodity_instrument |
+| CommodityPairwiseVarianceSwap | Commodity Pairwise Variance Swap |   | native | commodity! | false | true |  |
 | CommodityBasketVarianceSwap | Commodity Basket Variance Swap |   | scripted | commodity! | false | true | commodity_instrument |
 | CommodityAccumulator | Commodity Accumulator | forward | scripted | commodity! | false | true | commodity_instrument |
 | CommodityTaRF | Commodity Target Redemption Forward | forward | scripted | commodity! | false | false | commodity_instrument |
@@ -179,6 +179,20 @@ absent: it is a placeholder, not a product.
 | DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | scripted_instrument |
 | EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false |  |
 | PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | scripted_instrument |
+
+* Unsupported trade types
+
+A type ORE's trade factory has no builder for. The catalogue keeps it, so a
+person sees the name, and routes it to no table, so no trade of it can be held.
+Booking and import refuse it with the reason below. The product is still
+carried, as the generic =ScriptedTrade= over the named library script. The trade
+type coverage check fails when this table differs from the types ORE does not
+register, so a later ORE release that adds a builder fails the gate.
+
+| code | reason | evidence | carried_by |
+|------+--------+----------+------------|
+| CommodityPairwiseVarianceSwap | ORE has no trade builder for CommodityPairwiseVarianceSwap; book the product as a ScriptedTrade over the PairwiseVarianceSwap library script. | ORE 3d75a6908 =OREData/ored/portfolio/pairwisevarianceswap.hpp= defines only =EqPairwiseVarSwap= and =FxPairwiseVarSwap=, and =OREData/ored/utilities/databuilders.cpp= registers only the equity and FX builders (lines 403-404) | =PairwiseVarianceSwap= |
+| ForwardVolatilityAgreement | ORE has no trade builder for ForwardVolatilityAgreement; use the Equity, Fx or Commodity type, or a ScriptedTrade over the ForwardVolatilityAgreement library script. | ORE 3d75a6908 =OREData/ored/portfolio/forwardvolatilityagreement.hpp= keeps the class only as the base of the Equity, Fx and Commodity types, which release 1.123.0 (merge 3477d435d) introduced; =OREData/ored/utilities/databuilders.cpp= registers only those three (lines 302-304) | =ForwardVolatilityAgreement= |
 
 * Classes
 

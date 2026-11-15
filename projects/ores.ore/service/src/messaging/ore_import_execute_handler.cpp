@@ -39,6 +39,7 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/bond_document_ops.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
@@ -2495,6 +2496,17 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
                 << "ore.import.execute trade save failed | corr=" << req.correlation_id
                 << " trade_id=" << tid << " source=" << src << " error=" << failure;
             result.item_errors.push_back({.source_file = src, .item_id = tid, .message = failure});
+            continue;
+        }
+
+        if (const auto reason =
+                ores::trading::domain::unsupported_reason_for(item.anchor.trade_type)) {
+            const auto failure = std::string(*reason);
+            BOOST_LOG_SEV(lg(), warn)
+                << "ore.import.execute trade save failed | corr=" << req.correlation_id
+                << " trade_id=" << tid << " source=" << src << " error=" << failure;
+            result.item_errors.push_back(
+                {.source_file = src, .item_id = ext_id, .message = failure});
             continue;
         }
 

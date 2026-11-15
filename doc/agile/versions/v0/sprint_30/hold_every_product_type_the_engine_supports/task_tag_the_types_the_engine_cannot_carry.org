@@ -29,11 +29,11 @@ and a check fails when a later ORE release starts supporting it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -82,7 +82,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue types ORE registers no builder for | 2 | =trade_types.tsv=, rows with =registered= no and =in_catalogue= yes | 730781bdc7 |
+| Booking service tests | 56 of 56 pass, the new one with 8 assertions | =ores.trading.core.tests "[service]"= | 730781bdc7 |
+| Generated trade tests | 5 pass, 1 skipped, 1 fails: ScriptedTrade =.SPX= became =EQ-.SPX=, the failure main already has | =ores.synthetic.core.tests "[generated]"= | 730781bdc7 |
+| Codegen catalogue tests | 28 of 28 pass, 7 new | =pytest projects/ores.codegen/tests/test_trade_type_catalogue.py= | 730781bdc7 |
 
 * Notes
 
@@ -123,6 +126,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the import handler refused the type a second time | =ore_import_execute_handler.cpp= | Accept | Dropped: the import books through =book_trade_request=, and =nats_call= returns the refusal's message as the item error |
+| 2 | Local review: misspell over the changed files | - | Accept | Clean |
 
 * Result
+
+The catalogue's =* Unsupported trade types= table tags =CommodityPairwiseVarianceSwap=
+and =ForwardVolatilityAgreement= with the reason, ORE's evidence and the library
+script that carries each product. Both stay visible in the catalogue and the
+coverage page, route to no table, and are refused at booking, and so at import,
+with =trade_type_not_supported= and the reason. The generator books neither and
+no recorded trade holds either. The coverage gate fails when the table and ORE's
+builder registrations disagree in either direction. Booking the products as a
+generic =ScriptedTrade= over their library scripts is the work of the script
+tasks.

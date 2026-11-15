@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/triangulate-each-partys-rates
-#+pr:
+#+pr: 4751
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4751][#4751]] | [agile] Split the derived-market work into three stories |
 
 * Review
 

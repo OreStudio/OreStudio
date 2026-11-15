@@ -35,6 +35,7 @@ set(files
     "curve_instrument_pricer_tests.cpp"
     "day_count_calculator_tests.cpp"
     "domain_date_convention_tests.cpp"
+    "fixing_replay_tests.cpp"
     "forward_rate_calculator_tests.cpp"
     "fx_delta_tests.cpp"
     "fx_forward_calculator_tests.cpp"

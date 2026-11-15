@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
-#+branch: feature/surface-every-pair-out-to-ten-years
-#+pr:
+#+branch: feature/replay-fixings-into-daily-levels
+#+pr: 4765
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The rate engine holds current state and answers rate() and rates() for now. A vo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4765][#4765]] | [quant] Replay a publisher's fixings into daily levels |
 
 * Review
 
@@ -85,3 +85,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=replay_fixings= steps the same =rate_engine= the live path uses through a
+publisher's fixings: each day's quotes go in through =update()= and every pair is
+read through =rate()= at that day's close, so a caller gets one level per day with
+no second triangulation and no change to the streaming path.
+
+Four decisions the tests pin:
+
+- The replay stamps every quote with its day's close, whatever clock the caller
+  set, because a fixing is known when its day ends.
+- Days may arrive in any order and are stepped oldest first.
+- A day a pair could not be read keeps its row, carrying =fresh=, =stale=,
+  =disconnected= or =unavailable=, so a gap reads as a gap rather than as a
+  shorter series.
+- The pairs are resolved against the topology before anything is stepped, so a
+  pair nobody quotes is refused by name instead of returning a history quietly
+  short of one series.
+
+Measured: =ores.analytics.quant.tests= passes in 16.19 seconds. The six new cases
+state the cross read from each day's own drivers (150/0.90, 151/0.91, 152/0.92),
+out-of-order days stepped correctly, a day without the yen tick keeping its row
+and ageing to =stale= under a one-hour tolerance, an unknown pair refused naming
+it, an empty pair list refused, and no days being an empty history rather than a
+failure. Both changed files were compiled with the build's own flags before the
+build ran, and clang-format is clean.

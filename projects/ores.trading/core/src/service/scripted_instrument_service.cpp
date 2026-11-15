@@ -108,9 +108,7 @@ scripted_instrument_to_domain(const messaging::scripted_instrument_write& write)
     v.identity.trade_activity_id = write.trade_activity_id;
     v.script_name = write.script_name;
     v.script_body = write.script_body;
-    v.events_json = write.events_json;
-    v.underlyings_json = write.underlyings_json;
-    v.parameters_json = write.parameters_json;
+    v.script_npv = write.script_npv;
     v.description = write.description;
     v.data_element = write.data_element;
     return v;

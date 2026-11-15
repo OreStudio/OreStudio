@@ -45,9 +45,7 @@ render_scripted_instrument_fields(const domain::scripted_instrument& v) {
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Script Name", .value = v.script_name});
     fields.push_back({.name = "Script Body", .value = v.script_body});
-    fields.push_back({.name = "Events Json", .value = v.events_json});
-    fields.push_back({.name = "Underlyings Json", .value = v.underlyings_json});
-    fields.push_back({.name = "Parameters Json", .value = v.parameters_json});
+    fields.push_back({.name = "Script Npv", .value = v.script_npv});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Data Element", .value = v.data_element.value_or(std::string{})});
     using ores::history::domain::provenance_fields;

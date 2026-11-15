@@ -2264,6 +2264,20 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 
 namespace {
 
+/// The oresmd address of an equity the catalogue names, which the projection
+/// writes as ORE names it.
+ores::marketdata::datum::market_reference equity_address_of(const std::string& code) {
+    namespace md = ores::marketdata::datum;
+    auto index = md::market_index::make(md::index_family::equity, code, {});
+    if (!index)
+        throw trade_population_error("The equity " + code + " has no address: " + index.error());
+    auto reference = md::market_reference::of(std::move(*index));
+    if (!reference)
+        throw trade_population_error("The equity " + code +
+                                     " has no address: " + reference.error());
+    return std::move(*reference);
+}
+
 /*
  * The scripted codes the population books, in the order the routing table
  * states them. Autocallable_01 is routed like the others and is left out
@@ -2287,57 +2301,67 @@ std::string_view script_of(std::string_view trade_type) {
     return "PerformanceOption_01";
 }
 
-/*
- * The parameters the script needs. They are the document's own keys, because
- * the projection writes each key into the element and reads it back from it, so
- * a trade that states them exports whole rather than as a name with nothing
- * behind it.
- */
-std::string parameters_of(std::string_view trade_type,
-                          const std::string& currency,
-                          const std::chrono::year_month_day& end,
-                          double notional,
-                          double strike) {
-    const auto money = std::format("{:.2f}", notional);
-    const auto level = std::format("{:.4f}", strike);
-    const auto expiry = std::format("{:%Y-%m-%d}", end);
-    const auto settlement = std::format("{:%Y-%m-%d}", add_months(end, 2));
-    if (trade_type == "ScriptedTrade")
-        return std::format(R"({{"Notional":"{}","PutCall":"Call","Strike":"{}"}})", money, level);
-    if (trade_type == "DoubleDigitalOption")
-        /*
-         * The document's own members, which is what the projection writes from
-         * these keys and reads back into them. A key the document has no member
-         * for is written as an element the schema does not hold.
-         */
-        return std::format(
-            /*
-             * Type1 and Type2 are the option types, not the asset class: ORE reads
-             * them as Call, Put or Collar, and refuses 'Equity' before it prices
-             * anything. The underlying's kind is stated by Underlying1Type.
-             */
-            R"({{"Type1":"Call","Type2":"Put","Expiry":"{}","Settlement":"{}","Position":"Long","PayCcy":"{}","BinaryPayout":"{}","BinaryLevel1":"{}","BinaryLevel2":"{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
-            expiry,
-            settlement,
-            currency,
-            money,
-            level,
-            std::format("{:.4f}", strike * 1.2));
-    return std::format(
-        R"({{"NotionalAmount":"{}","ParticipationRate":"1.0","Strike":"{}","ValuationDate":"{}","SettlementDate":"{}","Position":"Long","PayCcy":"{}","StrikePrices":"{},{},{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
-        money,
-        level,
-        expiry,
-        settlement,
-        currency,
-        level,
-        std::format("{:.4f}", strike * 1.1),
-        std::format("{:.4f}", strike * 1.2));
+/// Adds one variable the script reads, in the order the document states them.
+void add_scripted_value(ores::trading::domain::instrument_batch& batch,
+                        std::string name,
+                        std::string declared_type,
+                        std::string value) {
+    namespace tdom = ores::trading::domain;
+    tdom::scripted_parameter row;
+    row.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+    row.name = std::move(name);
+    row.declared_type = std::move(declared_type);
+    row.shape = "scalar";
+    row.value = std::move(value);
+    batch.scripted_parameters.push_back(std::move(row));
+}
+
+/// Adds one list variable, one value row per member.
+void add_scripted_list(ores::trading::domain::instrument_batch& batch,
+                       std::string name,
+                       std::string declared_type,
+                       const std::vector<std::string>& values) {
+    namespace tdom = ores::trading::domain;
+    tdom::scripted_parameter row;
+    row.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+    row.name = std::move(name);
+    row.declared_type = std::move(declared_type);
+    row.shape = "vector";
+    const auto parameter_sequence_number = row.sequence_number;
+    batch.scripted_parameters.push_back(std::move(row));
+
+    int sequence_number = 0;
+    for (const auto& value : values) {
+        tdom::scripted_parameter_value member;
+        member.parameter_sequence_number = parameter_sequence_number;
+        member.sequence_number = ++sequence_number;
+        member.value = value;
+        batch.scripted_parameter_values.push_back(std::move(member));
+    }
+}
+
+/// Adds one Underlying block under the role the document states it in.
+void add_scripted_underlying(ores::trading::domain::instrument_batch& batch,
+                             std::string role,
+                             std::string underlying_type,
+                             std::string address) {
+    namespace tdom = ores::trading::domain;
+    int sequence_number = 0;
+    for (const auto& row : batch.instrument_underlyings)
+        if (row.underlying_role == role)
+            ++sequence_number;
+    tdom::instrument_underlying row;
+    row.underlying_role = std::move(role);
+    row.sequence_number = ++sequence_number;
+    row.underlying_type = std::move(underlying_type);
+    row.name = std::move(address);
+    batch.instrument_underlyings.push_back(std::move(row));
 }
 
 /*
- * The scripted family states its row here, where it draws it: the table is flat
- * and the script's own fields are text, so the row is what the plan carries.
+ * The scripted family states its row here, where it draws it: the script body
+ * is the only text the trade keeps, so the variables and the underlyings are
+ * rows the plan carries beside it.
  */
 ores::trading::domain::instrument_batch
 construct_scripted_batch(const domain::trade_generation_scope& scope,
@@ -2359,20 +2383,68 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
      */
     const auto& first = scope.equity_underlyings[slot % scope.equity_underlyings.size()];
     const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
-    const auto names_two =
-        trade_type == "DoubleDigitalOption" || trade_type == "PerformanceOption_01";
-    const auto underlyings = names_two ? std::format(R"(["{}","{}"])", first.code, second.code) :
-                                         std::format(R"(["{}"])", first.code);
+    const auto first_address = equity_address_of(first.code).uri();
+    const auto second_address = equity_address_of(second.code).uri();
 
     tdom::scripted_instrument row;
     row.identity.trade_type_code = std::string(trade_type);
     row.script_name = std::string(script_of(trade_type));
-    row.underlyings_json = underlyings;
-    row.parameters_json = parameters_of(trade_type, scope.currency_code, end, notional, strike);
     row.description = "Generated scripted trade.";
 
     tdom::instrument_batch batch;
     batch.scripted_instruments.push_back(std::move(row));
+
+    const auto money = std::format("{:.2f}", notional);
+    const auto level = std::format("{:.4f}", strike);
+    const auto expiry = std::format("{:%Y-%m-%d}", end);
+    const auto settlement = std::format("{:%Y-%m-%d}", add_months(end, 2));
+
+    if (trade_type == "ScriptedTrade") {
+        /*
+         * The generic form of the script: the trade names the library script
+         * and states the variables it reads. The index one is an address, so
+         * the projection writes the ORE name it resolves to.
+         */
+        add_scripted_value(batch, "Notional", "Number", money);
+        add_scripted_value(batch, "PutCall", "Number", "Call");
+        add_scripted_value(batch, "Underlying", "Index", first_address);
+        return batch;
+    }
+
+    if (trade_type == "DoubleDigitalOption") {
+        /*
+         * Type1 and Type2 are the option types, not the asset class: ORE reads
+         * them as Call, Put or Collar, and refuses 'Equity' before it prices
+         * anything. The underlying's kind is the block's own Type.
+         */
+        add_scripted_value(batch, "Expiry", "text", expiry);
+        add_scripted_value(batch, "Settlement", "text", settlement);
+        add_scripted_value(batch, "BinaryPayout", "decimal", money);
+        add_scripted_value(batch, "BinaryLevel1", "decimal", level);
+        add_scripted_value(batch, "BinaryLevel2", "decimal", std::format("{:.4f}", strike * 1.2));
+        add_scripted_value(batch, "Type1", "text", "Call");
+        add_scripted_value(batch, "Type2", "text", "Put");
+        add_scripted_value(batch, "Position", "enumeration", "Long");
+        add_scripted_value(batch, "PayCcy", "enumeration", scope.currency_code);
+        add_scripted_underlying(batch, "underlying1", "Equity", first_address);
+        add_scripted_underlying(batch, "underlying2", "Equity", second_address);
+        return batch;
+    }
+
+    add_scripted_value(batch, "NotionalAmount", "decimal", money);
+    add_scripted_value(batch, "ParticipationRate", "decimal", "1.0");
+    add_scripted_value(batch, "ValuationDate", "text", expiry);
+    add_scripted_value(batch, "SettlementDate", "text", settlement);
+    add_scripted_list(
+        batch,
+        "StrikePrices",
+        "decimal",
+        {level, std::format("{:.4f}", strike * 1.1), std::format("{:.4f}", strike * 1.2)});
+    add_scripted_value(batch, "Strike", "decimal", level);
+    add_scripted_value(batch, "Position", "enumeration", "Long");
+    add_scripted_value(batch, "PayCcy", "enumeration", scope.currency_code);
+    add_scripted_underlying(batch, "underlying", "Equity", first_address);
+    add_scripted_underlying(batch, "underlying", "Equity", second_address);
     return batch;
 }
 
@@ -2530,20 +2602,6 @@ const domain::equity_underlying_reference& equity_for(const domain::trade_genera
 }
 
 namespace {
-
-/// The oresmd address of an equity the catalogue names, which the projection writes as ORE names
-/// it.
-ores::marketdata::datum::market_reference equity_address_of(const std::string& code) {
-    namespace md = ores::marketdata::datum;
-    auto index = md::market_index::make(md::index_family::equity, code, {});
-    if (!index)
-        throw trade_population_error("The equity " + code + " has no address: " + index.error());
-    auto reference = md::market_reference::of(std::move(*index));
-    if (!reference)
-        throw trade_population_error("The equity " + code +
-                                     " has no address: " + reference.error());
-    return std::move(*reference);
-}
 
 /**
  * @brief The first index the tenant's swap conventions name with a tenor in

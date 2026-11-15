@@ -38,9 +38,7 @@ export interface ScriptedInstrumentWrite {
     trade_activity_id: string;
     script_name: string;
     script_body: string;
-    events_json: string;
-    underlyings_json: string;
-    parameters_json: string;
+    script_npv: string;
     description: string;
     data_element: string | null;
 }

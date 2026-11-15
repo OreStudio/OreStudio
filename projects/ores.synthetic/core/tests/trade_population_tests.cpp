@@ -1096,7 +1096,8 @@ TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_popula
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[trade_population]") {
+TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
+          "[trade_population]") {
     const auto scope = scripted_scope();
     const auto plan = plan_of(scope);
 
@@ -1107,21 +1108,34 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[t
         const auto& row = slot.instruments.scripted_instruments.front();
         CHECK(row.identity.trade_type_code == slot.trade_type_code);
         CHECK_FALSE(row.script_name.empty());
+
+        const auto& parameters = slot.instruments.scripted_parameters;
+        REQUIRE_FALSE(parameters.empty());
+        for (std::size_t i = 0; i < parameters.size(); ++i) {
+            CHECK(parameters[i].sequence_number == static_cast<int>(i) + 1);
+            CHECK_FALSE(parameters[i].name.empty());
+            CHECK_FALSE(parameters[i].declared_type.empty());
+        }
+
         /*
-         * The projection writes the script's own fields into the document and
-         * reads them back, so both carry the tenant's names rather than a
-         * placeholder.
+         * A script that reads an index names it by address, so the projection
+         * writes the ORE name the address resolves to. The address names an
+         * equity of the tenant's catalogue rather than one the planner invents.
          */
-        CHECK(row.underlyings_json.starts_with("["));
-        CHECK(row.underlyings_json.ends_with("]"));
-        CHECK(row.parameters_json.starts_with("{"));
-        CHECK(row.parameters_json.ends_with("}"));
-        const auto names = row.underlyings_json;
-        CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
-            return names.find(underlying.code) != std::string::npos;
-        }));
+        const auto index = std::ranges::find_if(
+            parameters, [](const auto& parameter) { return parameter.declared_type == "Index"; });
+        if (index != parameters.end()) {
+            REQUIRE(index->value.has_value());
+            CHECK(index->value->starts_with("oresmd://equity/"));
+            CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
+                return index->value->find(underlying.code) != std::string::npos;
+            }));
+            observed.insert(*index->value);
+        }
+        // A product that states Underlying blocks names them there instead.
+        for (const auto& underlying : slot.instruments.instrument_underlyings)
+            observed.insert(underlying.name);
         types.insert(row.identity.trade_type_code);
-        observed.insert(row.underlyings_json);
     }
 
     /*
@@ -1136,28 +1150,30 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[t
 
 TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade_population]") {
     /*
-     * The double digital and the performance option name two underlying types
-     * in their parameters, and the engine reads one underlying for each. A
-     * trade given one name exports with no second underlying, and the engine
-     * refuses it with a null node, so the count decides whether the trade is
-     * priced at all.
+     * The double digital and the performance option state an Underlying block
+     * for each name, and the engine reads one underlying for each. A trade given
+     * one name exports with no second underlying, and the engine refuses it with
+     * a null node, so the count decides whether the trade is priced at all.
      */
     const auto scope = scripted_scope();
     const auto plan = plan_of(scope);
 
-    const auto names_in = [](const std::string& stated) {
-        return static_cast<std::size_t>(std::ranges::count(stated, '"')) / 2;
-    };
     std::map<std::string, std::size_t> names_by_type;
     for (const auto& slot : plan.slots) {
         REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
         const auto& row = slot.instruments.scripted_instruments.front();
-        names_by_type[row.identity.trade_type_code] = names_in(row.underlyings_json);
+        names_by_type[row.identity.trade_type_code] =
+            slot.instruments.instrument_underlyings.size();
+        for (const auto& underlying : slot.instruments.instrument_underlyings) {
+            INFO("underlying " << underlying.name);
+            CHECK(underlying.underlying_type == "Equity");
+            CHECK(underlying.name.starts_with("oresmd://equity/"));
+        }
     }
 
     CHECK(names_by_type["DoubleDigitalOption"] == 2u);
     CHECK(names_by_type["PerformanceOption_01"] == 2u);
-    CHECK(names_by_type["ScriptedTrade"] == 1u);
+    CHECK(names_by_type["ScriptedTrade"] == 0u);
 }
 
 TEST_CASE("a_scripted_population_that_names_no_underlying_is_refused", "[trade_population]") {

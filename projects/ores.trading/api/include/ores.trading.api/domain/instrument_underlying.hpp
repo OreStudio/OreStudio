@@ -69,7 +69,9 @@ struct instrument_underlying final {
 
     /**
      * @brief Which list of the product states the underlying: underlying for the product's
-     * Underlying or Underlyings.
+     * Underlying or Underlyings. A product that states each block as its own element names that
+     * element instead: DoubleDigitalOption states Underlying1 to Underlying4, so a row of it holds
+     * underlying1 to underlying4 and the element it belongs to is the row's role.
      */
     std::string underlying_role;
 

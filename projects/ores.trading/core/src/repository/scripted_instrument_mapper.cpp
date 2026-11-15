@@ -52,9 +52,7 @@ domain::scripted_instrument scripted_instrument_mapper::map(const scripted_instr
     r.identity.trade_activity_id = v.trade_activity_id;
     r.script_name = v.script_name;
     r.script_body = v.script_body.value_or("");
-    r.events_json = v.events_json.value_or("");
-    r.underlyings_json = v.underlyings_json.value_or("");
-    r.parameters_json = v.parameters_json.value_or("");
+    r.script_npv = v.script_npv.value_or("");
     r.description = v.description.value_or("");
     r.data_element = v.data_element;
     r.audit.modified_by = v.modified_by;
@@ -79,10 +77,7 @@ scripted_instrument_entity scripted_instrument_mapper::map(const domain::scripte
     r.trade_activity_id = v.identity.trade_activity_id;
     r.script_name = v.script_name;
     r.script_body = v.script_body.empty() ? std::nullopt : std::optional(v.script_body);
-    r.events_json = v.events_json.empty() ? std::nullopt : std::optional(v.events_json);
-    r.underlyings_json =
-        v.underlyings_json.empty() ? std::nullopt : std::optional(v.underlyings_json);
-    r.parameters_json = v.parameters_json.empty() ? std::nullopt : std::optional(v.parameters_json);
+    r.script_npv = v.script_npv.empty() ? std::nullopt : std::optional(v.script_npv);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.data_element = v.data_element;
     r.modified_by = v.audit.modified_by;

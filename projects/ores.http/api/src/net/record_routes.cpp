@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http.api/net/record_routes.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>

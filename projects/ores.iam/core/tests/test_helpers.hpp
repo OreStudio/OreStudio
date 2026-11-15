@@ -25,6 +25,7 @@
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 using ores::database::context;
 using ores::refdata::repository::party_repository;

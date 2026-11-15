@@ -18,7 +18,10 @@
  *
  */
 #include "ores.utility/codec/msgpack_codec.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <msgpack.h>

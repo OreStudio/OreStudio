@@ -21,7 +21,7 @@
 #define ORES_UTILITY_DOMAIN_PROTOCOL_CODEC_HPP
 
 #include "ores.utility/codec/member_count.hpp"
-#include "ores.utility/codec/text_form.hpp"
+#include "ores.utility/codec/text_form_fwd.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <array>

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-codec-text-forms-out-of-line
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The codec chain parses the inline text forms in every translation unit that enco
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,60 @@ The codec chain parses the inline text forms in every translation unit that enco
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=codec/text_form.hpp= costs 4.99 s and sits under 715 objects. Most of
+that is not the forms themselves: the header defines eight concrete
+specialisations inline, and each definition needs a header the
+declaration does not.
+
+| Include | Cost | Needed by |
+|---------+------+-----------|
+| =decimal.hpp= | 4.03 s | the decimal form's body, and nothing else in the header |
+| =boost/asio/ip/address.hpp= | 2.81 s | =make_address=, in the address form's body |
+| =boost/lexical_cast.hpp= | 1.94 s | the uuid form's body |
+| =<filesystem>= | 1.94 s | the path form names =std::filesystem::path= |
+| =<format>= | 1.49 s | the date form's body |
+| =datetime.hpp= | | the date and instant forms' bodies |
+| =magic_enum/magic_enum.hpp= | 0.77 s | the enumerator form |
+| =boost/uuid/uuid_io.hpp= | | =to_string=, in the uuid form's body |
+
+A specialisation of =text_form= is a class, so its members can be
+declared here and defined in a =.cpp=. Only the concrete forms can move:
+the enumerator form is a partial specialisation over any enumerated type, so
+it stays in the header with =magic_enum=, and it is where the codec's
+instantiation is.
+
+* The move
+
+The eight concrete forms — string, path, tenant id, date, decimal, address,
+instant and uuid — keep their =wire_name= and their declarations here, and
+their bodies move to =src/codec/text_form.cpp=. The header forward-declares
+the four types whose definitions it no longer needs to name them in a
+declaration: =ores::utility::decimal::decimal=,
+=ores::utility::uuid::tenant_id=, =boost::uuids::uuid= and
+=boost::asio::ip::address=. A declaration may name an incomplete type in a
+parameter and return, and the caller always has the definition because it
+built the value.
+
+=<filesystem>= stays: =std::filesystem::path= cannot be forward-declared
+portably. =<chrono>= stays, because both chrono forms take a type
+=<chrono>= already completes.
+
+* The cost, stated
+
+A call to a text form is now a call across a translation unit instead of an
+inline expansion, on the path a JSON or MessagePack message takes for every
+value that travels as text. The call is a few nanoseconds against the
+serialise and the round trip around it, and it buys the parse time back for
+every object that encodes a message without touching a decimal.
+
+* How it is verified
+
+=evidence/header_cost.py headers= measures the cost of a header by compiling
+a translation unit that includes only it, with the build's own flags. The
+before and after numbers come from that instrument on the same tree, using
+a copy of the old header beside the new one so neither measurement depends
+on the other. The reach numbers, which are what the rebuild side cares
+about, come from =evidence/header_blast_radius.py=.
 
 * Measurements
 

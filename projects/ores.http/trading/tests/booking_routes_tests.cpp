@@ -24,6 +24,7 @@
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>

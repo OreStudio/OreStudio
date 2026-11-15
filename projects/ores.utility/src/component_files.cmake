@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec/text_form.cpp"
     "compression/gzip.cpp"
     "convert/base64_converter.cpp"
     "crypto/sha256.cpp"
@@ -53,6 +54,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/shaped_wire_traits.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/struct_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/text_form.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/text_form_fwd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/wire_fields.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/wire_traits_fwd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/compression/gzip.hpp"

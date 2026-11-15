@@ -9,6 +9,7 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
@@ -63,6 +64,7 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"

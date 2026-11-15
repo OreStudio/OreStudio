@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :gate-every-er-diagram:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/gate-every-er-diagram
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-11-08
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FD9192F9-10B1-492B-915B-B53F813B277C][Gate every ER diagram]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A model change that is not regenerated turns the er-diagram check red, whichever
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FD9192F9-10B1-492B-915B-B53F813B277C][Gate every ER diagram]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -41,9 +41,16 @@ A model change that is not regenerated turns the er-diagram check red, whichever
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Ground first. Since adc5954e60 (2026-10-09) the generator renders one file
+  per package of the model and the index, and =--check= compares every render.
+  The local gate, the CI step in =codegen-drift.yml= and
+  =plantuml_er_generate.sh= all pass =--index-template=, so all three compare
+  every group. Acceptance 1 and 2 already held; prove them rather than redo them.
+- One gap is left: a renamed or removed package leaves its old file beside
+  the index. Nothing renders it, so the check never sees it, and the wrapper
+  still draws it. =orphan_group_files= finds such files; =--check= fails on
+  them, and a regeneration removes them and their drawing, so regenerating
+  clears the check.
 
 * Measurements
 
@@ -57,7 +64,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Diagrams the check compares | 22: 21 groups and the index, no orphan | =plantuml_er_generate.py ... --index-template ... --check= | 9c92287441 plus the branch |
+| A table added to the iam package without regenerating | check fails: iam group (45 lines) and index (3 lines) | the same check over a model copy with one table added | 9c92287441 |
+| A package added without regenerating | check fails: its file does not exist, index 8 lines | the same check over a model copy with one package added | 9c92287441 |
+| Time of the render and comparison | 0.17 s; the gate's er-diagram check, parse included, 2.2 s | =time=; =compass check --only er-diagram= | 9c92287441 plus the branch |
 
 * Notes
 
@@ -85,3 +95,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The er-diagram check compares every group diagram and the index, discovered
+from the model, and now also fails on a group file no package draws, which a
+regeneration removes.
+
+- Acceptance 1 holds: the 22 diagrams are discovered from the model's packages
+  in all three callers (local gate, CI, wrapper).
+- Acceptance 2 holds: an added table and an added package each turn the check
+  red, measured on copies of the model.
+- Acceptance 3 holds: the check runs where it did, in 2.2 s.
+- =test_plantuml_er_generate_orphans.py= pins the orphan rule; a detection that
+  finds nothing fails two of its four tests.
+

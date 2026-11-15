@@ -66,7 +66,9 @@ TEST_CASE("a_set_of_exactly_the_bound_is_one_part", "[protocol]") {
 }
 
 TEST_CASE("an_empty_set_has_no_part", "[protocol]") {
-    CHECK(batches_of(std::vector<int>{}).empty());
+    const std::vector<int> items;
+
+    CHECK(batches_of(items).empty());
 }
 
 TEST_CASE("the_bound_is_the_one_the_protocol_states", "[protocol]") {

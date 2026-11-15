@@ -120,6 +120,12 @@ template <typename T>
 }
 
 /**
+ * @brief The parts would view a set that is gone by the time they are sent.
+ */
+template <typename T>
+std::vector<std::span<const T>> batches_of(const std::vector<T>&&) = delete;
+
+/**
  * @brief Why a write is being made. User-owned, unlike the audit provenance,
  * which the service derives from the authenticated context.
  */

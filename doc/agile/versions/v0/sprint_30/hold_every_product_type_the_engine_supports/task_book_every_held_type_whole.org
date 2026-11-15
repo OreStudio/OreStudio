@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: E7E74289-0E3C-4C1C-9AA3-2CFC8D852BF2
+:END:
+#+title: Task: Book every held trade type whole
+#+description: The ORE import books a bond through separate requests that copy fields by hand and carry no audit, and it books a parent's embedded trades apart from the parent. Book_trade should write every member the export reads, the import should book every family through it, and a parent and its embedded trades should land as one unit.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ORE import books every family through =book_trade=, as the generator does, so no instrument write is copied field by field and every row carries its audit. A parent and its embedded trades are written as one unit, and the export-and-rebook round trip holds for every family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- =book_trade= writes every member of a bond row the export reads, and the import books a bond through it; the import's hand-built bond requests are gone
+- each instrument row the import writes carries the caller's audit, and no request leaves a field of its write struct unset
+- an ORE import writes a parent and its embedded trades as one unit, so a failure leaves none of them behind
+- the export-and-rebook round trip holds for every family, comparing the whole row apart from keys, version and audit
+- each named defect has a test that fails without its fix, or evidence that it was already fixed
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Split from the held-type defects task
+
+Split from [[id:87282F95-BA5B-40CF-8D41-D4996BEE27BC][Close the known defects in the held trade types]] on 2026-11-15, which kept the representation defects. A child array of the wrong family is already refused by name (=instrument_not_routed=, trade_operations_service.cpp), so that part of the booked-trade capture is done.
+
+The generator books a bond as =put_bond_issue_composite= for the security plus the trade's flat rows through =book_trade=. The import still sends the nested =bond_instrument_data= and writes its remainder through about thirty hand-built requests (ore_import_execute_handler.cpp). Flattening the import's bond the way the generator does removes those requests.
+
+** Captures folded in
+
+- [[id:E4317BA1-D252-4F7B-B2EA-7D7A84B67883][An embedded trade outlives a parent that failed to import]]
+- [[id:96BE10E0-0EF1-4AA9-82B3-16E63B699E98][An instrument cannot be saved through the trading service]]
+- [[id:88ECFA85-6865-42B8-83A7-CDF1B28F953E][Let one builder per request carry every field]]
+- [[id:AEF17C45-3FE6-4139-83BE-A264A9C5879F][Write the rest of a booked trade]]
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

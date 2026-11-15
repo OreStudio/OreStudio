@@ -66,6 +66,16 @@ struct barrier_type final {
     std::string description;
 
     /**
+     * @brief The side of the spot a single barrier of this style sits on: Up for a level above it,
+     * Down for a level below it. A style with no side, such as KnockIn or a profit cap, states
+     * none.
+     *
+     * A check that ties a barrier's level to its side reads the side from here, so a style added to
+     * the table carries its side with it and the check cannot disagree with the table.
+     */
+    std::optional<std::string> direction;
+
+    /**
      * @brief Username of the person who last modified this barrier type.
      */
     std::string modified_by;

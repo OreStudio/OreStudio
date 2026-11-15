@@ -51,6 +51,7 @@ struct barrier_type_key {
 struct barrier_type_write {
     std::string code;
     std::string description;
+    std::optional<std::string> direction;
 
     friend bool operator==(const barrier_type_write&, const barrier_type_write&) = default;
 };
@@ -377,6 +378,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.barrier_types.del
     return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &barrier_type_write::code},
         utility::codec::field{"description", &barrier_type_write::description},
+        utility::codec::field{"direction", &barrier_type_write::direction},
     };
 }
 

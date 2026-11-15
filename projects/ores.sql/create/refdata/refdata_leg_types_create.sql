@@ -40,6 +40,7 @@ create table if not exists "ores_refdata_leg_types_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "description" text null,
+    "index_family" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -53,7 +54,8 @@ create table if not exists "ores_refdata_leg_types_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> '')
+    check ("code" <> ''),
+    check ("index_family" is null or "index_family" in ('ibor', 'swap', 'inflation', 'fx', 'equity', 'commodity', 'power', 'bond', 'bond_future', 'cmb', 'generic'))
 );
 
 -- Version uniqueness for optimistic concurrency

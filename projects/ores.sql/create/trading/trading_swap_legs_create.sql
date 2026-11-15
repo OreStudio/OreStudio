@@ -224,6 +224,34 @@ begin
         NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
     end if;
 
+    if coalesce(NEW.floating_index_code, '') <> '' then
+        if NEW.floating_index_code ~* '^\s*oresmd:' and exists (
+            select 1 from ores_refdata_leg_types_tbl t
+            where t.tenant_id = ores_utility_system_tenant_id_fn()
+              and t.code = NEW.leg_type_code
+              and t.index_family is not null
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+              and NEW.floating_index_code !~* ('[?&]index=' || t.index_family || '(&|$)')
+        ) then
+            raise exception 'Invalid floating_index_code: %. A % leg observes an index of another family.',
+                NEW.floating_index_code, NEW.leg_type_code using errcode = '23503';
+        end if;
+        if NEW.floating_index_code !~* '^\s*oresmd:' and exists (
+            select 1 from ores_refdata_leg_types_tbl t
+            where t.tenant_id = ores_utility_system_tenant_id_fn()
+              and t.code = NEW.leg_type_code
+              and t.index_family = 'ibor'
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+        ) and not exists (
+            select 1 from ores_refdata_floating_index_types_tbl f
+            where f.tenant_id = ores_utility_system_tenant_id_fn()
+              and f.code = NEW.floating_index_code
+              and f.valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid floating_index_code: %. No active floating index type found with this code.',
+                NEW.floating_index_code using errcode = '23503';
+        end if;
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

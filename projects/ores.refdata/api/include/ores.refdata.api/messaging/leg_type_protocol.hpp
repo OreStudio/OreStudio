@@ -51,6 +51,7 @@ struct leg_type_key {
 struct leg_type_write {
     std::string code;
     std::string description;
+    std::optional<std::string> index_family;
 
     friend bool operator==(const leg_type_write&, const leg_type_write&) = default;
 };
@@ -371,6 +372,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.leg_types.deleted
     return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &leg_type_write::code},
         utility::codec::field{"description", &leg_type_write::description},
+        utility::codec::field{"index_family", &leg_type_write::index_family},
     };
 }
 

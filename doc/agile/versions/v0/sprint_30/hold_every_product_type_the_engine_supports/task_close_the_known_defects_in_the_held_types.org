@@ -2,13 +2,13 @@
 :ID: 87282F95-BA5B-40CF-8D41-D4996BEE27BC
 :END:
 #+title: Task: Close the known defects in the held trade types
-#+description: Eleven captures name a fact a held trade type loses, mis-states or fails to check: a callable bond's call terms, a year-on-year inflation leg, a range bound's leverage digits, a swap leg's index check, a barrier's direction, a family part's cardinality, the typed vocabulary of trade key fields, the fields an import request drops, the instrument writes the service refuses, the rest of a booked trade, and an embedded trade that outlives its parent. Each is a place where a type is held but not held completely.
+#+description: Five captures name a fact a held trade type loses or fails to check: a callable bond's call terms, a year-on-year inflation leg, a range bound's leverage digits, a swap leg's index check and a barrier's direction. Each is a place where a type is held but not held completely.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/close-the-known-defects-in-the-held-types
+#+pr: 4766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every defect the captures name in a type we already hold is reproduced and fixed, or shown fixed with evidence, so a held type keeps every fact ORE states, checks it, and imports, books and exports it whole.
+Every representation defect the captures name in a type we already hold is reproduced and fixed, or shown fixed with evidence, so a held type keeps every fact ORE states and checks it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -39,16 +39,43 @@ Every defect the captures name in a type we already hold is reproduced and fixed
 - an inflation swap on a year-on-year leg is stored and roundtrips
 - a range bound's leverage exports with the digits the document states
 - a swap leg's index is checked against the table its leg type names, and a barrier's direction is read from its lookup
-- a family write that breaks a part's cardinality is refused, and trade key fields such as product type and call or put are typed vocabularies
-- an ORE import writes a parent and its embedded trades as one unit, and each import request carries every field its write struct declares
-- the trading service saves every instrument it is sent, book_trade writes whatever the export reads, and the export-and-rebook round trip holds for every family
 - each named defect has a test that fails without its fix, or evidence that it was already fixed
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The eleven captures fell into three groups. This task does the first; the
+other two are their own tasks, [[id:E7E74289-0E3C-4C1C-9AA3-2CFC8D852BF2][Book every held trade type whole]] and
+[[id:CD45F3CE-AD94-4259-891A-E10B5340C1C6][Type the trade vocabularies and check convention parts]], because the merge
+guard holds one PR to one closed task.
+
+1. *Representation.* The facts a held type loses or fails to check.
+   - Callable bond call terms. ORE resolves each call term list (style,
+     price, price type, accrual) to one value per call date
+     (=buildCallabilityData=, callablebond.cpp lines 44-87). The call date
+     row holds the four resolved values. The writer states a term once
+     when it is the same on every date, and once per date when it changes.
+   - Year-on-year inflation swap. The leg block already reads and writes a
+     YY leg. The swap's fact took its index and lag from a CPI leg only, so
+     the table refused a YY swap. The reader now takes them from a YY leg.
+   - Leverage digits. The record binding now reads =Leverage= as a decimal,
+     so the capture's defect is gone. A test proves 1.05 exports as 1.05.
+   - Barrier direction. The barrier type row states its direction (Up,
+     Down or none). The FX barrier option's insert trigger reads it in
+     place of the two hard-coded style lists.
+   - Swap leg index. The leg type row states the index family it observes.
+     The swap leg's insert trigger refuses an address of another family,
+     and an IBOR name that did not read as an address and is not in the
+     floating index table.
+2. *Booking.* =book_trade= writes the bond remainder, so the import books
+   a bond through it as it books every other family. That deletes the
+   import's field-by-field bond requests, which is where the dropped
+   fields and the missing audit live. The import writes a parent and its
+   embedded trades as one unit. A child array of the wrong family is
+   refused by name. The export-and-rebook round trip runs for every
+   family.
+3. *Conventions and vocabularies.* A family put refuses a write that
+   breaks a part's cardinality. The trade key fields that are still free
+   text get their lookup.
 
 * Measurements
 
@@ -62,9 +89,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading core tests | 249 cases, 1598 assertions, all pass | =ores.trading.core.tests= | 983547e531 |
+| Generated trades against ORE | 7 cases, 819 assertions, all pass | =ORES_ORE_EXECUTABLE=... ores.synthetic.core.tests "[generated]"= | 983547e531 |
+| ORE core tests | 541 cases, all pass | =ores.ore.core.tests= | 983547e531 |
+| Trading API tests | 4431 cases, all pass | =ores.trading.api.tests= | 983547e531 |
+| Local checks for the change | 17 of 17 pass | =compass check --only ...= (17 ids) | 983547e531 |
 
 * Notes
+
+** Left out of the representation group
+
+A callable bond's =PutData= and a call schedule stated by rules rather than
+dates are still dropped: =read_call_dates= reads dated call schedules only.
+Neither is named by this task. They go to the story's close-out.
+
+The generated inflation swap is CPI only, so no generated trade exercises a
+YY leg; the projection test does.
 
 ** A stale model note
 
@@ -76,19 +116,14 @@ regenerated with this task's first codegen run.
 
 ** Captures folded in
 
-Folded in on 2026-11-15; each capture is discarded with a pointer here.
+Folded in on 2026-11-15; each capture is discarded with a pointer here. The
+booking and vocabulary captures moved to the two tasks the Plan names.
 
 - [[id:2BDB5385-3A9E-48A7-BD4C-765183AA1BE4][The barrier direction belongs on the lookup table]]
 - [[id:23A830C9-770C-4D5C-8F67-4BB169397228][A leverage loses its digits at the ORE binding]]
 - [[id:4011E491-AC56-48C7-8B32-1DC4E7AB3C69][A swap leg's index is checked against no table]]
 - [[id:8B67D21A-30B0-4B3C-BC91-D7DC03E0759A][An inflation swap on a YY leg cannot be stored]]
-- [[id:E4317BA1-D252-4F7B-B2EA-7D7A84B67883][An embedded trade outlives a parent that failed to import]]
-- [[id:96BE10E0-0EF1-4AA9-82B3-16E63B699E98][An instrument cannot be saved through the trading service]]
-- [[id:88ECFA85-6865-42B8-83A7-CDF1B28F953E][Let one builder per request carry every field]]
-- [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]
 - [[id:A75186C1-ECE1-4CD2-8511-64F4EA2ED729][Store a callable bond's call terms]]
-- [[id:AEF17C45-3FE6-4139-83BE-A264A9C5879F][Write the rest of a booked trade]]
-- [[id:A1105ED1-A491-4C76-AE0C-D320B989E397][Add proper enumerations for trade key fields]]
 
 * Test Scenarios
 
@@ -105,12 +140,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4766][#4766]] | [trading,refdata,ore] Keep the facts held trade types lose and check what they state |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An unparseable call price becomes 0 and fails at insert with no name | bond_instrument_projection.cpp | Accepted | The reader refuses a price that is not positive, naming the price and date; a test proves the trade maps no bond. |
+| 2 | Only the second entry decides whether a term list is dated | bond_instrument_projection.cpp | Declined | ORE's buildScheduledVector decides the same way (legdata.hpp lines 1261-1270) and itself refuses a mixed list, so the reading and the engine agree. |
+| 3 | include_accrual is free text | ores.trading.bond_issue_call_date.org | Declined | ORE reads the flag as its loose bool with thirteen spellings; the model says the column keeps the document's spelling, as bond_issue.credit_risk does. |
+| 4 | The family match is case-sensitive while the prefix match is not | ores.trading.swap_leg.org | Accepted | The family match uses ~* too. The family is a closed set the leg type check limits, so it is safe in the pattern. |
+| 5 | The barrier trigger skips a null direction and runs on insert only | ores.trading.fx_barrier_option_instrument.org | Accepted | The model says a null direction has no rule and that rows are versioned by insert. The missing blank line is the paste template's, as in every pasted block. |
+| 6 | The range bound note is out of scope | ores.trading.range_bound.org | Accepted | The task's Notes name it; the PR reply says so. |
 
 * Result
+
+Shipped in PR #4766.
+
+- A callable bond's call date row holds the call's style, price, price type
+  and accrual flag, resolved per date the way ORE resolves them. The writer
+  states them rather than stand-ins, and a price that is not positive is
+  refused by name. The builder and the generator state per-call terms, and
+  the re-recorded callable bonds pass the ORE engine test.
+- An inflation swap on a YY leg reads its index and lag from the leg, so the
+  table stores it, and it roundtrips through the document.
+- A leverage keeps the digits the document states; the binding already did,
+  and a test now proves it.
+- A swap leg's index is checked against the index family its leg type states,
+  and an FX barrier's levels against the direction its style's row states.
+
+Acceptance met for the five representation captures. The booking and
+vocabulary captures moved to their own tasks. A callable bond's =PutData= and
+a rule-based call schedule are still unread; the story's close-out holds them.

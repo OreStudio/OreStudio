@@ -140,15 +140,15 @@ auto rate_instrument_projection_to_ore_date(const std::optional<std::chrono::yea
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto rate_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto rate_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto rate_instrument_projection_spelling_of(const record_reader& r,
-                                            std::string_view name) -> std::string {
+auto rate_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -160,8 +160,8 @@ auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal 
 }
 
 /// A schema decimal element as the domain's exact decimal.
-auto rate_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto rate_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -287,10 +287,22 @@ auto read_inflation_swap(const record_reader& trade) -> swap_instrument_data {
     auto& fact = std::get<inflation_swap_instrument>(result.facts);
 
     // The document states the index, its base level and the observation lag on
-    // the CPI leg rather than on the swap. A swap states one such leg; the
+    // the inflation leg rather than on the swap: a CPI leg states all three and
+    // a year-on-year leg states no base. A swap states one such leg; the
     // reading takes the first and stops, as the old dispatcher did.
     for (const auto& leg : data->children("LegData")) {
-        if (rate_instrument_projection_spelling_of(leg, "LegType") != "CPI")
+        const auto leg_type = rate_instrument_projection_spelling_of(leg, "LegType");
+        if (leg_type == "YY") {
+            const auto yy = leg.child("YYLegData");
+            if (!yy)
+                continue;
+            if (const auto index = yy->text("Index"))
+                fact.inflation_index_code = *index;
+            if (const auto lag = yy->text("ObservationLag"))
+                fact.lag_convention = *lag;
+            break;
+        }
+        if (leg_type != "CPI")
             continue;
         const auto cpi = leg.child("CPILegData");
         if (!cpi)
@@ -641,10 +653,16 @@ void write_inflation_swap(record_writer& trade, const swap_instrument_data& v) {
     const auto& fact = std::get<inflation_swap_instrument>(v.facts);
     auto data = trade.child("InflationSwapData");
 
-    // A CPI leg keeps its index, base and lag on its own row. A row stored
-    // before the leg kept them states them only on the swap's fact, so the
-    // fact fills them in.
+    // An inflation leg keeps its index, base and lag on its own row. A row
+    // stored before the leg kept them states them only on the swap's fact, so
+    // the fact fills them in.
     for (auto leg : v.legs) {
+        if (leg.leg_type_code == "YY") {
+            if (leg.floating_index_code.empty())
+                leg.floating_index_code = fact.inflation_index_code;
+            if (!leg.observation_lag && !fact.lag_convention.empty())
+                leg.observation_lag = fact.lag_convention;
+        }
         if (leg.leg_type_code == "CPI") {
             if (leg.floating_index_code.empty())
                 leg.floating_index_code = fact.inflation_index_code;

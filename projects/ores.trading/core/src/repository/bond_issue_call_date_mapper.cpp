@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_issue_call_date_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -52,6 +53,10 @@ bond_issue_call_date_mapper::map(const bond_issue_call_date_entity& v) {
     r.issue_id = v.issue_id;
     r.sequence_number = v.sequence_number;
     r.call_date = v.call_date;
+    r.style = v.style;
+    r.price = v.price;
+    r.price_type = v.price_type;
+    r.include_accrual = v.include_accrual;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -72,6 +77,10 @@ bond_issue_call_date_mapper::map(const domain::bond_issue_call_date& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.call_date = v.call_date;
+    r.style = v.style;
+    r.price = v.price;
+    r.price_type = v.price_type;
+    r.include_accrual = v.include_accrual;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

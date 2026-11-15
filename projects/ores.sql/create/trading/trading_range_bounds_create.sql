@@ -47,9 +47,8 @@
  * leaves the column null rather than a zero it never wrote.
  *
  * The rows are keyed by the trade alone, so any instrument whose document
- * states a RangeBounds list can own them. The FX accumulator is the first
- * to write them. The equity accumulator still carries the list as JSON text
- * and moves onto this table in its own unit.
+ * states a RangeBounds list can own them. The FX and equity accumulators
+ * both write them.
  */
 
 create table if not exists "ores_trading_range_bounds_tbl" (

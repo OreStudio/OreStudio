@@ -11,7 +11,7 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
-*Folded into a task* on 2026-11-15: [[id:87282F95-BA5B-40CF-8D41-D4996BEE27BC][Close the known defects in the held trade types]], in [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which owns how every trade is represented. The task's acceptance carries what this capture asks.
+*Folded into a task* on 2026-11-15: [[id:E7E74289-0E3C-4C1C-9AA3-2CFC8D852BF2][Book every held trade type whole]], in [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which owns how every trade is represented. The task's acceptance carries what this capture asks.
 
 * What
 

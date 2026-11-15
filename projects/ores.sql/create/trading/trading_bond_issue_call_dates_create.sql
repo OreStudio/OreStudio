@@ -25,12 +25,12 @@
  * Bond Issue Call Date Table
  *
  * One row per call date of a callable bond issue, family-owned by the
- * issue. The row carries the schedule dates only: the dated styles,
- * prices, price types and include-accrual flags of
- * callableBondCallData and cbCallData (instruments.xsd lines
- * 2365-2429, 2700-2732) have no destination in the nine tables, and a
- * call that reprices is a recorded coverage finding for the mapping
- * task (task D7943D7E wave 1.3).
+ * issue. The row carries the date and the call's terms on it: the style,
+ * price, price type and include-accrual flag of callableBondCallData
+ * (instruments.xsd lines 2430-2494). ORE states each term as a list
+ * beside the schedule and resolves it to one value per call date
+ * (buildCallabilityData in callablebond.cpp); the row holds the
+ * resolved value, so a call that reprices keeps its price.
  */
 
 create table if not exists "ores_trading_bond_issue_call_dates_tbl" (
@@ -39,6 +39,10 @@ create table if not exists "ores_trading_bond_issue_call_dates_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "call_date" date not null,
+    "style" text not null,
+    "price" numeric(38, 12) not null,
+    "price_type" text not null,
+    "include_accrual" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -53,7 +57,11 @@ create table if not exists "ores_trading_bond_issue_call_dates_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("issue_id" <> ores_utility_nil_uuid_fn())
+    check ("issue_id" <> ores_utility_nil_uuid_fn()),
+    check ("style" in ('Bermudan', 'American')),
+    check ("price" > 0),
+    check ("price_type" in ('Clean', 'Dirty')),
+    check ("include_accrual" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -1230,6 +1230,67 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
     CHECK(callable_again->call_dates[1].call_date == date_of(2026, 1, 15));
 }
 
+TEST_CASE("a_portfolio_document_projects_an_inflation_swap_on_a_year_on_year_leg",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="yy-1">
+    <TradeType>InflationSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+      <NettingSetId>NS-1</NettingSetId>
+    </Envelope>
+    <InflationSwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>YY</LegType>
+        <Currency>EUR</Currency>
+        <Notionals><Notional>1000000</Notional></Notionals>
+        <DayCounter>ACT/ACT</DayCounter>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-01-15</StartDate>
+            <EndDate>2034-01-15</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <YYLegData>
+          <Index>EUHICPXT</Index>
+          <FixingDays>2</FixingDays>
+          <ObservationLag>3M</ObservationLag>
+        </YYLegData>
+      </LegData>
+    </InflationSwapData>
+  </Trade>
+</Portfolio>)";
+
+    // The swap's fact states the index and lag the leg states, so the row the
+    // table refuses with no index is never written for a year-on-year swap.
+    const auto check = [](const auto& items) {
+        REQUIRE(items.size() == 1);
+        const auto* swap =
+            std::get_if<ores::trading::domain::swap_instrument_data>(&items[0].instrument);
+        REQUIRE(swap != nullptr);
+        const auto* fact =
+            std::get_if<ores::trading::domain::inflation_swap_instrument>(&swap->facts);
+        REQUIRE(fact != nullptr);
+        CHECK(fact->inflation_index_code == "EUHICPXT");
+        CHECK(fact->lag_convention == "3M");
+        CHECK_FALSE(fact->base_cpi.has_value());
+        REQUIRE(swap->legs.size() == 1);
+        CHECK(swap->legs[0].leg_type_code == "YY");
+        CHECK(swap->legs[0].observation_lag == std::optional<std::string>("3M"));
+    };
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    check(items);
+    const auto again = portfolio_projection::map(
+        portfolio_projection::read(portfolio_projection::write(exported(items[0]))));
+    check(again);
+}
+
 TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
@@ -1515,7 +1576,7 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
         <RangeBound startDate="2024-01-20">
           <RangeFrom>1.00</RangeFrom>
           <RangeTo>1.10</RangeTo>
-          <Leverage>2</Leverage>
+          <Leverage>1.05</Leverage>
           <Strike>1.05</Strike>
           <StrikeAdjustment>0.001</StrikeAdjustment>
         </RangeBound>
@@ -1592,7 +1653,7 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
           std::optional<std::chrono::year_month_day>(date_of(2024, 1, 20)));
     CHECK(accumulator->range_bounds[0].range_from->to_string() == "1");
     CHECK(accumulator->range_bounds[0].range_to->to_string() == "1.1");
-    CHECK(accumulator->range_bounds[0].leverage == std::optional<double>(2.0));
+    CHECK(accumulator->range_bounds[0].leverage == std::optional<double>(1.05));
     CHECK(accumulator->range_bounds[0].strike_adjustment->to_string() == "0.001");
 
     const auto* variance =
@@ -1643,7 +1704,12 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
     CHECK(accumulator_round->accumulators[0].knock_out_barrier->to_string() == "1.2");
     REQUIRE(accumulator_round->range_bounds.size() == 1);
     CHECK(accumulator_round->range_bounds[0].range_from->to_string() == "1");
-    CHECK(accumulator_round->range_bounds[0].leverage == std::optional<double>(2.0));
+    CHECK(accumulator_round->range_bounds[0].leverage == std::optional<double>(1.05));
+
+    // A leverage is a multiplier held as a double, and the document it is
+    // written back to states the digits it was read with.
+    const auto accumulator_text = portfolio_projection::write(exported(items[2]));
+    CHECK(accumulator_text.find("<Leverage>1.05</Leverage>") != std::string::npos);
 
     const auto variance_again = rebuild(items[3]);
     const auto* variance_round =
@@ -1797,9 +1863,12 @@ TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates",
           </Dates>
         </ScheduleData>
         <Styles><Style>American</Style></Styles>
-        <Prices><Price>1</Price></Prices>
-        <PriceTypes><PriceType>Clean</PriceType></PriceTypes>
-        <IncludeAccruals><IncludeAccrual>true</IncludeAccrual></IncludeAccruals>
+        <Prices>
+          <Price>1</Price>
+          <Price startDate="2026-01-01">1.01</Price>
+        </Prices>
+        <PriceTypes><PriceType>Dirty</PriceType></PriceTypes>
+        <IncludeAccruals><IncludeAccrual>false</IncludeAccrual></IncludeAccruals>
       </CallData>
     </CallableBondData>
   </Trade>
@@ -1844,6 +1913,50 @@ TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates",
     REQUIRE(again_instrument->call_dates.size() == 2);
     CHECK(again_instrument->call_dates[0].call_date == date_of(2024, 5, 1));
     CHECK(again_instrument->call_dates[1].call_date == date_of(2027, 4, 1));
+
+    // Each call keeps the terms the document states for its date: the dated
+    // price applies from 2026, so the first call is at par and the second is
+    // not, and no term is replaced by a stand-in on the way out.
+    for (const auto* calls : {&instrument->call_dates, &again_instrument->call_dates}) {
+        CHECK((*calls)[0].style == "American");
+        CHECK((*calls)[1].style == "American");
+        CHECK((*calls)[0].price.to_string() == "1");
+        CHECK((*calls)[1].price.to_string() == "1.01");
+        CHECK((*calls)[0].price_type == "Dirty");
+        CHECK((*calls)[1].include_accrual == "false");
+    }
+}
+
+TEST_CASE("a_callable_bond_whose_call_price_is_not_positive_maps_no_bond",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="callable-bond-zero">
+    <TradeType>CallableBond</TradeType>
+    <CallableBondData>
+      <BondData>
+        <SecurityId>CallableBond_ZERO</SecurityId>
+        <BondNotional>100</BondNotional>
+      </BondData>
+      <CallData>
+        <ScheduleData>
+          <Dates><Dates><Date>2027-04-01</Date></Dates></Dates>
+        </ScheduleData>
+        <Styles><Style>Bermudan</Style></Styles>
+        <Prices><Price>0</Price></Prices>
+        <PriceTypes><PriceType>Clean</PriceType></PriceTypes>
+        <IncludeAccruals><IncludeAccrual>true</IncludeAccrual></IncludeAccruals>
+      </CallData>
+    </CallableBondData>
+  </Trade>
+</Portfolio>)";
+
+    // The table refuses a call price that is not positive, so the reading
+    // refuses it first and the trade carries no bond a store would reject.
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(items.size() == 1);
+    CHECK(std::holds_alternative<std::monostate>(items[0].instrument));
 }
 
 TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption",

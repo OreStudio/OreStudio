@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -55,6 +56,10 @@ struct bond_issue_call_date_entity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::chrono::year_month_day call_date;
+    std::string style;
+    ores::utility::decimal::decimal price;
+    std::string price_type;
+    std::string include_accrual;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -73,6 +78,9 @@ struct bond_issue_call_date_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("call_date", &e::call_date) |
+               query_builder::bind("style", &e::style) | query_builder::bind("price", &e::price) |
+               query_builder::bind("price_type", &e::price_type) |
+               query_builder::bind("include_accrual", &e::include_accrual) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -208,3 +208,44 @@ TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold",
         CHECK_NOTHROW(header_repo.write(ctx, header));
     }
 }
+
+TEST_CASE("a_swap_leg_refuses_an_index_its_leg_type_does_not_observe",
+          "[repository][rate_instrument]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = ores::trading::tests::write_parent_party(h);
+    const auto party_id = *ctx.party_id();
+
+    auto trade = ores::trading::generators::generate_synthetic_trade(gen);
+    trade.party_id = party_id;
+    trade.trade_type = "ForwardRateAgreement";
+    trade_repository().write(ctx, trade);
+    const auto activity_id = ores::trading::tests::write_parent_activity(h);
+    rate_instrument_repository().write(ctx, make_header(h, trade.id, activity_id, party_id));
+
+    const auto refused = [&](const std::string& index, const std::string& expected) {
+        auto leg = make_leg(h, trade.id, activity_id, party_id);
+        leg.leg_type_code = "Floating";
+        leg.floating_index_code = index;
+        try {
+            swap_leg_repository().write(ctx, leg);
+            FAIL("the store accepted the index " << index << " on a floating leg");
+        } catch (const std::exception& e) {
+            CHECK(std::string(e.what()).find(expected) != std::string::npos);
+        }
+    };
+
+    // An inflation index on a floating leg is an address of another family.
+    refused("oresmd://inflation/UKRPI?type=fixing&index=inflation",
+            "observes an index of another family");
+    // A mistyped IBOR name never reads as an address, so the floating index
+    // table is what refuses it.
+    refused("EUR-EURIBR-6M", "No active floating index type found");
+
+    auto leg = make_leg(h, trade.id, activity_id, party_id);
+    leg.leg_type_code = "Floating";
+    leg.floating_index_code = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
+    CHECK_NOTHROW(swap_leg_repository().write(ctx, leg));
+}

@@ -22,7 +22,9 @@
  * Barrier Type Population Script
  *
  * Seeds the closed barrier set. The rows are the ORE barrierType
- * simple type under external/ore/xsd/instruments.xsd.
+ * simple type under external/ore/xsd/instruments.xsd. The direction
+ * names the side of the spot a single barrier sits on, for the styles
+ * that have one.
  *
  * This script is idempotent.
  */
@@ -30,28 +32,28 @@
 \echo '--- Barrier Type ---'
 
 insert into ores_trading_barrier_types_tbl (
-    code, tenant_id, version, description,
+    code, tenant_id, version, description, direction,
     modified_by, change_reason_code, change_commentary
 ) values
-    ('UpAndOut', ores_utility_system_tenant_id_fn(), 0, 'Knocks out when the upper level is breached',
+    ('UpAndOut', ores_utility_system_tenant_id_fn(), 0, 'Knocks out when the upper level is breached', 'Up',
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('UpAndIn', ores_utility_system_tenant_id_fn(), 0, 'Knocks in when the upper level is breached',
+    ('UpAndIn', ores_utility_system_tenant_id_fn(), 0, 'Knocks in when the upper level is breached', 'Up',
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('DownAndOut', ores_utility_system_tenant_id_fn(), 0, 'Knocks out when the lower level is breached',
+    ('DownAndOut', ores_utility_system_tenant_id_fn(), 0, 'Knocks out when the lower level is breached', 'Down',
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('DownAndIn', ores_utility_system_tenant_id_fn(), 0, 'Knocks in when the lower level is breached',
+    ('DownAndIn', ores_utility_system_tenant_id_fn(), 0, 'Knocks in when the lower level is breached', 'Down',
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('KnockIn', ores_utility_system_tenant_id_fn(), 0, 'Knocks in on the stated condition',
+    ('KnockIn', ores_utility_system_tenant_id_fn(), 0, 'Knocks in on the stated condition', null,
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('KnockOut', ores_utility_system_tenant_id_fn(), 0, 'Knocks out on the stated condition',
+    ('KnockOut', ores_utility_system_tenant_id_fn(), 0, 'Knocks out on the stated condition', null,
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('CumulatedProfitCap', ores_utility_system_tenant_id_fn(), 0, 'Caps the cumulated profit',
+    ('CumulatedProfitCap', ores_utility_system_tenant_id_fn(), 0, 'Caps the cumulated profit', null,
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('CumulatedProfitCapPoints', ores_utility_system_tenant_id_fn(), 0, 'Caps the cumulated profit in points',
+    ('CumulatedProfitCapPoints', ores_utility_system_tenant_id_fn(), 0, 'Caps the cumulated profit in points', null,
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('FixingCap', ores_utility_system_tenant_id_fn(), 0, 'Caps a fixing',
+    ('FixingCap', ores_utility_system_tenant_id_fn(), 0, 'Caps a fixing', 'Up',
      current_user, 'system.initial_load', 'Seed barrier_type'),
-    ('FixingFloor', ores_utility_system_tenant_id_fn(), 0, 'Floors a fixing',
+    ('FixingFloor', ores_utility_system_tenant_id_fn(), 0, 'Floors a fixing', 'Down',
      current_user, 'system.initial_load', 'Seed barrier_type')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

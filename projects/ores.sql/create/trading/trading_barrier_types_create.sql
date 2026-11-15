@@ -36,6 +36,7 @@ create table if not exists "ores_trading_barrier_types_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "description" text null,
+    "direction" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -49,7 +50,8 @@ create table if not exists "ores_trading_barrier_types_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> '')
+    check ("code" <> ''),
+    check ("direction" is null or "direction" in ('Up', 'Down'))
 );
 
 -- Version uniqueness for optimistic concurrency

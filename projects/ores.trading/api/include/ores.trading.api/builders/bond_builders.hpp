@@ -197,10 +197,24 @@ private:
     bond_trs_terms terms_;
 };
 
+/**
+ * @brief One call of a callable bond: the date and the terms the issuer
+ * calls on.
+ *
+ * The defaults are ORE's own for a call list that states no entry.
+ */
+struct bond_call final {
+    std::chrono::year_month_day date;
+    std::string style = "Bermudan";
+    utility::decimal::decimal price = utility::decimal::decimal::from_string("1").value();
+    std::string price_type = "Clean";
+    bool include_accrual = true;
+};
+
 /// A callable bond, whose issuer may call it on each call date.
 struct callable_bond_terms final {
     bond_holding holding;
-    required<std::vector<std::chrono::year_month_day>> calls;
+    required<std::vector<bond_call>> calls;
 };
 
 class ORES_TRADING_API_EXPORT callable_bond_builder final {

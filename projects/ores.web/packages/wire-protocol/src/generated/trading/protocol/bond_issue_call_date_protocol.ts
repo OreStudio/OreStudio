@@ -37,6 +37,10 @@ export interface BondIssueCallDateWrite {
     issue_id: string;
     sequence_number: number;
     call_date: string;
+    style: string;
+    price: string;
+    price_type: string;
+    include_accrual: string;
 }
 
 export interface BondIssueCallDateChange {

@@ -51,16 +51,20 @@
           </Dates>
         </ScheduleData>
         <Styles>
+          <Style>American</Style>
           <Style>Bermudan</Style>
         </Styles>
         <Prices>
+          <Price>1.02</Price>
           <Price>1</Price>
         </Prices>
         <PriceTypes>
           <PriceType>Clean</PriceType>
+          <PriceType>Dirty</PriceType>
         </PriceTypes>
         <IncludeAccruals>
           <IncludeAccrual>true</IncludeAccrual>
+          <IncludeAccrual>false</IncludeAccrual>
         </IncludeAccruals>
       </CallData>
     </CallableBondData>
@@ -116,16 +120,20 @@
           </Dates>
         </ScheduleData>
         <Styles>
+          <Style>American</Style>
           <Style>Bermudan</Style>
         </Styles>
         <Prices>
+          <Price>1.02</Price>
           <Price>1</Price>
         </Prices>
         <PriceTypes>
           <PriceType>Clean</PriceType>
+          <PriceType>Dirty</PriceType>
         </PriceTypes>
         <IncludeAccruals>
           <IncludeAccrual>true</IncludeAccrual>
+          <IncludeAccrual>false</IncludeAccrual>
         </IncludeAccruals>
       </CallData>
     </CallableBondData>

@@ -53,6 +53,7 @@ struct leg_type_entity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::optional<std::string> description;
+    std::optional<std::string> index_family;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -70,6 +71,7 @@ struct leg_type_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("description", &e::description) |
+               query_builder::bind("index_family", &e::index_family) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

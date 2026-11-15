@@ -8,7 +8,7 @@
 #+filetags: :sprint_30:v0:
 #+created: 2026-10-13
 #+updated: 2026-11-08
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ Make the er-diagram check compare every generated group diagram and the index, d
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Done: the check gates every group diagram, and an orphan. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-11-08 |
 
 * Acceptance
@@ -38,9 +38,11 @@ Make the er-diagram check compare every generated group diagram and the index, d
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E2FA84AB-7F18-4998-8563-C2E749408B7F][Gate every ER diagram]] | BACKLOG | | | The er-diagram check reads one file. Make it cover every generated diagram, discovered rather than listed. |
+| [[id:E2FA84AB-7F18-4998-8563-C2E749408B7F][Gate every ER diagram]] | DONE | 2026-11-15 | 2026-11-15 | The er-diagram check reads one file. Make it cover every generated diagram, discovered rather than listed. |
 
 * Decisions
+
+- Closed on 2026-11-15. The per-group check had already landed in adc5954e60; this story proved it and added the orphan rule: a group file no package draws fails the check and is removed on regeneration.
 
 * Out of scope
 

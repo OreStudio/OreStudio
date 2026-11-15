@@ -26,11 +26,11 @@ A generated write(rows, claims) whose two lists differ in size is refused before
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -40,9 +40,10 @@ A generated write(rows, claims) whose two lists differ in size is refused before
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- In the repository template, check the size of the claims against the rows at
+  the top of the entity and the junction =write(rows, claims)=, before any read
+  or write, and throw =std::invalid_argument= on a mismatch.
+- Regenerate every repository, and test one entity and one junction batch.
 
 * Measurements
 
@@ -84,3 +85,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every generated =write(rows, claims)=, entity and junction, throws
+=std::invalid_argument= before it reads or writes when the number of claims is
+not the number of rows. The 566 repositories are regenerated, two or three
+added lines each.
+
+Evidence, on the build of 2026-11-15 21:31: a country batch and a currency
+country batch of two rows with one claim are refused and write nothing. The
+core suites of every component with a junction pass: refdata 554/554, iam
+306/306, dq 126/126, inbox 84/84, assets 48/48, compute 81/81, reporting
+307/307, trading 248/248, and the three marketdata asset-class tests.
+=compass check --exclude-heavy= 45/45.

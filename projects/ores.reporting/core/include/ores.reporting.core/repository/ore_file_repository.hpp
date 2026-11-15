@@ -265,24 +265,6 @@ public:
      * @brief Deletes ORE files by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& codes);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::ore_file& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::ore_file apply_claim(const context& ctx,
-                                 const domain::ore_file& v,
-                                 const ores::utility::domain::precondition& claim);
 };
 
 }

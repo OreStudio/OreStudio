@@ -86,9 +86,8 @@ notification_preference_read_one(repository::notification_preference_repository&
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares
@@ -103,35 +102,28 @@ notification_preference_read_many(repository::notification_preference_repository
                                   const std::vector<messaging::notification_preference_key>& keys) {
     std::vector<std::vector<domain::notification_preference>> found(keys.size());
     using key_tuple = std::tuple<std::string, std::string, std::string>;
-    constexpr std::size_t chunk_size = 1000;
-    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
-        const auto end = std::min(begin + chunk_size, keys.size());
-        std::vector<std::string> account_id_keys;
-        account_id_keys.reserve(end - begin);
-        std::vector<std::string> kind_code_keys;
-        kind_code_keys.reserve(end - begin);
-        std::vector<std::string> channel_code_keys;
-        channel_code_keys.reserve(end - begin);
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            account_id_keys.push_back(boost::uuids::to_string(key.account_id));
-            kind_code_keys.push_back(key.kind_code);
-            channel_code_keys.push_back(key.channel_code);
-        }
-        std::map<key_tuple, std::vector<domain::notification_preference>> by_key;
-        for (auto& row :
-             repo.read_latest(ctx, account_id_keys, kind_code_keys, channel_code_keys)) {
-            key_tuple named(
-                boost::uuids::to_string(row.account_id), row.kind_code, row.channel_code);
-            by_key[std::move(named)].push_back(std::move(row));
-        }
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            const auto rows = by_key.find(key_tuple(
-                boost::uuids::to_string(key.account_id), key.kind_code, key.channel_code));
-            if (rows != by_key.end())
-                found[i] = rows->second;
-        }
+    std::vector<std::string> account_id_keys;
+    account_id_keys.reserve(keys.size());
+    std::vector<std::string> kind_code_keys;
+    kind_code_keys.reserve(keys.size());
+    std::vector<std::string> channel_code_keys;
+    channel_code_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        account_id_keys.push_back(boost::uuids::to_string(key.account_id));
+        kind_code_keys.push_back(key.kind_code);
+        channel_code_keys.push_back(key.channel_code);
+    }
+    std::map<key_tuple, std::vector<domain::notification_preference>> by_key;
+    for (auto& row : repo.read_latest(ctx, account_id_keys, kind_code_keys, channel_code_keys)) {
+        key_tuple named(boost::uuids::to_string(row.account_id), row.kind_code, row.channel_code);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(
+            key_tuple(boost::uuids::to_string(key.account_id), key.kind_code, key.channel_code));
+        if (rows != by_key.end())
+            found[i] = rows->second;
     }
     return found;
 }

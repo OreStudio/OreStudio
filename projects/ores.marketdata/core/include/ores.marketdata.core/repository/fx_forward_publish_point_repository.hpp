@@ -196,23 +196,6 @@ public:
 
     std::vector<domain::fx_forward_publish_point>
     read_latest_by_publish(const context& ctx, const boost::uuids::uuid& publish_id);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::fx_forward_publish_point& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::fx_forward_publish_point apply_claim(const context& ctx,
-                                                 const domain::fx_forward_publish_point& v,
-                                                 const ores::utility::domain::precondition& claim);
 };
 
 }

@@ -195,23 +195,6 @@ public:
      * @brief Reads all currencies (all versions), unfiltered.
      */
     std::vector<domain::currency> read_all(const context& ctx);
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::currency& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::currency apply_claim(const context& ctx,
-                                 const domain::currency& v,
-                                 const ores::utility::domain::precondition& claim);
 };
 
 }

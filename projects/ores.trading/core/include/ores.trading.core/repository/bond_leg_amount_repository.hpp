@@ -269,24 +269,6 @@ public:
                 const std::vector<std::string>& leg_numbers,
                 const std::vector<std::string>& amount_roles,
                 const std::vector<std::string>& sequence_numbers);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::bond_leg_amount& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::bond_leg_amount apply_claim(const context& ctx,
-                                        const domain::bond_leg_amount& v,
-                                        const ores::utility::domain::precondition& claim);
 };
 
 }

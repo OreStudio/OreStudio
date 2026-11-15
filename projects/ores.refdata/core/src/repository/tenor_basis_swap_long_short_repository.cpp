@@ -41,10 +41,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -113,19 +116,77 @@ std::optional<query_builder::condition> tenor_basis_swap_long_short_filter_condi
 
 }
 
-ores::utility::domain::precondition tenor_basis_swap_long_short_repository::replace_claim(
-    const context& ctx, const domain::tenor_basis_swap_long_short& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool tenor_basis_swap_long_short_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using tenor_basis_swap_long_short_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::tenor_basis_swap_long_short>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+tenor_basis_swap_long_short_rows_by_key tenor_basis_swap_long_short_current_rows(
+    tenor_basis_swap_long_short_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<domain::tenor_basis_swap_long_short>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.identity.id));
+    }
+    tenor_basis_swap_long_short_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.identity.id))].push_back(
+            std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::tenor_basis_swap_long_short>&
+tenor_basis_swap_long_short_rows_of(const tenor_basis_swap_long_short_rows_by_key& current,
+                                    const domain::tenor_basis_swap_long_short& item) {
+    static const std::vector<domain::tenor_basis_swap_long_short> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.identity.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition tenor_basis_swap_long_short_replace_claim(
+    const std::vector<domain::tenor_basis_swap_long_short>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().identity.version)};
 }
 
-domain::tenor_basis_swap_long_short tenor_basis_swap_long_short_repository::apply_claim(
-    const context& ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::tenor_basis_swap_long_short tenor_basis_swap_long_short_apply_claim(
     const domain::tenor_basis_swap_long_short& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::tenor_basis_swap_long_short>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -137,30 +198,35 @@ domain::tenor_basis_swap_long_short tenor_basis_swap_long_short_repository::appl
         case precondition_kind::must_match_version:
             t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
             t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void tenor_basis_swap_long_short_repository::write(const context& ctx,
                                                    const domain::tenor_basis_swap_long_short& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          tenor_basis_swap_long_short_replace_claim(
+              read_latest(ctx, boost::uuids::to_string(v.identity.id))));
 }
 
 void tenor_basis_swap_long_short_repository::write(
     const context& ctx, const std::vector<domain::tenor_basis_swap_long_short>& v) {
+    const auto current = tenor_basis_swap_long_short_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(tenor_basis_swap_long_short_replace_claim(
+            tenor_basis_swap_long_short_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -170,7 +236,12 @@ void tenor_basis_swap_long_short_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap long short. "
                                << "id: " << v.identity.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = tenor_basis_swap_long_short_apply_claim(
+        v,
+        claim,
+        tenor_basis_swap_long_short_claim_reads_current(claim) ?
+            read_latest(ctx, boost::uuids::to_string(v.identity.id)) :
+            std::vector<domain::tenor_basis_swap_long_short>{});
     query_builder::execute_write_query(ctx,
                                        tenor_basis_swap_long_short_mapper::map(t),
                                        lg(),
@@ -182,10 +253,17 @@ void tenor_basis_swap_long_short_repository::write(
     const std::vector<domain::tenor_basis_swap_long_short>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap long shorts. Count: " << v.size();
+    std::vector<domain::tenor_basis_swap_long_short> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (tenor_basis_swap_long_short_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = tenor_basis_swap_long_short_current_rows(*this, ctx, to_read);
     std::vector<domain::tenor_basis_swap_long_short> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(tenor_basis_swap_long_short_apply_claim(
+            v[i], claims[i], tenor_basis_swap_long_short_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        tenor_basis_swap_long_short_mapper::map(batch),
                                        lg(),
@@ -464,6 +542,21 @@ tenor_basis_swap_long_short_repository::read_latest(const context& ctx,
                                                     const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::tenor_basis_swap_long_short> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

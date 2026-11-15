@@ -249,8 +249,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::approval_decision& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::approval_decision& v, const ores::utility::domain::precondition& claim) : domain::approval_decision
             }
             class approval_decision_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -294,8 +292,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::approval_decision_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::approval_decision_type& v, const ores::utility::domain::precondition& claim) : domain::approval_decision_type
             }
             class approval_kind_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -343,8 +339,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::approval_kind& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::approval_kind& v, const ores::utility::domain::precondition& claim) : domain::approval_kind
             }
             class approval_request_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -390,8 +384,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::approval_request& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::approval_request& v, const ores::utility::domain::precondition& claim) : domain::approval_request
             }
             class approval_request_state_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -435,8 +427,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::approval_request_state& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::approval_request_state& v, const ores::utility::domain::precondition& claim) : domain::approval_request_state
             }
             class delivery_outcome_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -468,8 +458,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::delivery_outcome_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::delivery_outcome_type& v, const ores::utility::domain::precondition& claim) : domain::delivery_outcome_type
             }
             class notification_argument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -560,8 +548,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::notification_channel& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::notification_channel& v, const ores::utility::domain::precondition& claim) : domain::notification_channel
             }
             class notification_delivery_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -608,8 +594,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::notification_delivery& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::notification_delivery& v, const ores::utility::domain::precondition& claim) : domain::notification_delivery
             }
             class notification_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -673,8 +657,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::notification_kind& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::notification_kind& v, const ores::utility::domain::precondition& claim) : domain::notification_kind
             }
             class notification_mapper {
                 -lg() : [[nodiscard]] static auto&
@@ -725,8 +707,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& account_id, const string& kind_code, const string& channel_code) : void
                 +remove(context ctx, const string& account_id, const string& kind_code, const string& channel_code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& account_ids, const vector<string>& kind_codes, const vector<string>& channel_codes) : void
-                -replace_claim(context ctx, const domain::notification_preference& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::notification_preference& v, const ores::utility::domain::precondition& claim) : domain::notification_preference
             }
             class notification_recipient_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -794,8 +774,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::notification& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::notification& v, const ores::utility::domain::precondition& claim) : domain::notification
             }
         }
         namespace service #F2F2F2 {

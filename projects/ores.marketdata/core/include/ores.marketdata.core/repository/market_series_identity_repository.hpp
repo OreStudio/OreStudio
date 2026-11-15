@@ -187,24 +187,6 @@ public:
      * @brief Deletes market series identities permanently.
      */
     void remove(const context& ctx, const std::vector<std::string>& series_ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::market_series_identity& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::market_series_identity apply_claim(const context& ctx,
-                                               const domain::market_series_identity& v,
-                                               const ores::utility::domain::precondition& claim);
 };
 
 }

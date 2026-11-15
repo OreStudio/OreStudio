@@ -39,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -136,38 +139,95 @@ std::optional<query_builder::condition> market_scenario_value_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool market_scenario_value_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using market_scenario_value_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::market_scenario_value>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+market_scenario_value_rows_by_key
+market_scenario_value_current_rows(market_scenario_value_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const std::vector<domain::market_scenario_value>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    market_scenario_value_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::market_scenario_value>&
+market_scenario_value_rows_of(const market_scenario_value_rows_by_key& current,
+                              const domain::market_scenario_value& item) {
+    static const std::vector<domain::market_scenario_value> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-market_scenario_value_repository::replace_claim(const context& ctx,
-                                                const domain::market_scenario_value& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+market_scenario_value_replace_claim(const std::vector<domain::market_scenario_value>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::market_scenario_value
-market_scenario_value_repository::apply_claim(const context& ctx,
-                                              const domain::market_scenario_value& v,
-                                              const ores::utility::domain::precondition& claim) {
+market_scenario_value_apply_claim(const domain::market_scenario_value& v,
+                                  const ores::utility::domain::precondition& claim,
+                                  const std::vector<domain::market_scenario_value>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "market_scenario_value_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "market_scenario_value_repository::write: a current row already exists");
     return t;
 }
 
+}
+
 void market_scenario_value_repository::write(const context& ctx,
                                              const domain::market_scenario_value& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          market_scenario_value_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void market_scenario_value_repository::insert(const context& ctx,
@@ -190,10 +250,12 @@ void market_scenario_value_repository::insert(const context& ctx,
 
 void market_scenario_value_repository::write(const context& ctx,
                                              const std::vector<domain::market_scenario_value>& v) {
+    const auto current = market_scenario_value_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            market_scenario_value_replace_claim(market_scenario_value_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -201,7 +263,12 @@ void market_scenario_value_repository::write(const context& ctx,
                                              const domain::market_scenario_value& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market scenario value. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        market_scenario_value_apply_claim(v,
+                                          claim,
+                                          market_scenario_value_claim_reads_current(claim) ?
+                                              read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                              std::vector<domain::market_scenario_value>{});
     query_builder::execute_write_query(ctx,
                                        market_scenario_value_mapper::map(t),
                                        lg(),
@@ -213,10 +280,17 @@ void market_scenario_value_repository::write(
     const std::vector<domain::market_scenario_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market scenario values. Count: " << v.size();
+    std::vector<domain::market_scenario_value> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (market_scenario_value_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = market_scenario_value_current_rows(*this, ctx, to_read);
     std::vector<domain::market_scenario_value> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(market_scenario_value_apply_claim(
+            v[i], claims[i], market_scenario_value_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        market_scenario_value_mapper::map(batch),
                                        lg(),
@@ -352,6 +426,21 @@ market_scenario_value_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::market_scenario_value> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -38,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,19 +103,75 @@ convention_kind_filter_condition(const std::optional<messaging::convention_kinds
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool convention_kind_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using convention_kind_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::convention_kind>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+convention_kind_rows_by_key
+convention_kind_current_rows(convention_kind_repository& repo,
+                             const ores::database::context& ctx,
+                             const std::vector<domain::convention_kind>& of) {
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
+    for (const auto& row : of) {
+        codes.push_back(row.code);
+    }
+    convention_kind_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, codes))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::convention_kind>&
+convention_kind_rows_of(const convention_kind_rows_by_key& current,
+                        const domain::convention_kind& item) {
+    static const std::vector<domain::convention_kind> none;
+    const auto found = current.find(std::make_tuple(item.code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-convention_kind_repository::replace_claim(const context& ctx, const domain::convention_kind& v) {
-    const auto current = read_latest(ctx, v.code);
+convention_kind_replace_claim(const std::vector<domain::convention_kind>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::convention_kind
-convention_kind_repository::apply_claim(const context& ctx,
-                                        const domain::convention_kind& v,
-                                        const ores::utility::domain::precondition& claim) {
+convention_kind_apply_claim(const domain::convention_kind& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::convention_kind>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -124,29 +183,30 @@ convention_kind_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void convention_kind_repository::write(const context& ctx, const domain::convention_kind& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, convention_kind_replace_claim(read_latest(ctx, v.code)));
 }
 
 void convention_kind_repository::write(const context& ctx,
                                        const std::vector<domain::convention_kind>& v) {
+    const auto current = convention_kind_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(convention_kind_replace_claim(convention_kind_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -154,7 +214,11 @@ void convention_kind_repository::write(const context& ctx,
                                        const domain::convention_kind& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing convention kind. " << "code: " << v.code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = convention_kind_apply_claim(v,
+                                               claim,
+                                               convention_kind_claim_reads_current(claim) ?
+                                                   read_latest(ctx, v.code) :
+                                                   std::vector<domain::convention_kind>{});
     query_builder::execute_write_query(
         ctx, convention_kind_mapper::map(t), lg(), "Writing convention kind to database.");
 }
@@ -164,10 +228,17 @@ void convention_kind_repository::write(
     const std::vector<domain::convention_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing convention kinds. Count: " << v.size();
+    std::vector<domain::convention_kind> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (convention_kind_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = convention_kind_current_rows(*this, ctx, to_read);
     std::vector<domain::convention_kind> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            convention_kind_apply_claim(v[i], claims[i], convention_kind_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, convention_kind_mapper::map(batch), lg(), "Writing convention kinds to database.");
 }
@@ -327,6 +398,21 @@ std::vector<domain::convention_kind>
 convention_kind_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::convention_kind> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

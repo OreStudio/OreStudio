@@ -32,7 +32,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -80,9 +79,8 @@ delivery_outcome_type_read_one(repository::delivery_outcome_type_repository& rep
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares
@@ -97,26 +95,21 @@ delivery_outcome_type_read_many(repository::delivery_outcome_type_repository& re
                                 const std::vector<messaging::delivery_outcome_type_key>& keys) {
     std::vector<std::vector<domain::delivery_outcome_type>> found(keys.size());
     using key_tuple = std::tuple<std::string>;
-    constexpr std::size_t chunk_size = 1000;
-    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
-        const auto end = std::min(begin + chunk_size, keys.size());
-        std::vector<std::string> code_keys;
-        code_keys.reserve(end - begin);
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            code_keys.push_back(key.code);
-        }
-        std::map<key_tuple, std::vector<domain::delivery_outcome_type>> by_key;
-        for (auto& row : repo.read_latest(ctx, code_keys)) {
-            key_tuple named(row.code);
-            by_key[std::move(named)].push_back(std::move(row));
-        }
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            const auto rows = by_key.find(key_tuple(key.code));
-            if (rows != by_key.end())
-                found[i] = rows->second;
-        }
+    std::vector<std::string> code_keys;
+    code_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        code_keys.push_back(key.code);
+    }
+    std::map<key_tuple, std::vector<domain::delivery_outcome_type>> by_key;
+    for (auto& row : repo.read_latest(ctx, code_keys)) {
+        key_tuple named(row.code);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(key.code));
+        if (rows != by_key.end())
+            found[i] = rows->second;
     }
     return found;
 }

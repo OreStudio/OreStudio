@@ -39,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -102,20 +105,75 @@ std::optional<query_builder::condition> fx_volatility_config_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool fx_volatility_config_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using fx_volatility_config_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::fx_volatility_config>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+fx_volatility_config_rows_by_key
+fx_volatility_config_current_rows(fx_volatility_config_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<domain::fx_volatility_config>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    fx_volatility_config_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::fx_volatility_config>&
+fx_volatility_config_rows_of(const fx_volatility_config_rows_by_key& current,
+                             const domain::fx_volatility_config& item) {
+    static const std::vector<domain::fx_volatility_config> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-fx_volatility_config_repository::replace_claim(const context& ctx,
-                                               const domain::fx_volatility_config& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+fx_volatility_config_replace_claim(const std::vector<domain::fx_volatility_config>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::fx_volatility_config
-fx_volatility_config_repository::apply_claim(const context& ctx,
-                                             const domain::fx_volatility_config& v,
-                                             const ores::utility::domain::precondition& claim) {
+fx_volatility_config_apply_claim(const domain::fx_volatility_config& v,
+                                 const ores::utility::domain::precondition& claim,
+                                 const std::vector<domain::fx_volatility_config>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -127,30 +185,34 @@ fx_volatility_config_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void fx_volatility_config_repository::write(const context& ctx,
                                             const domain::fx_volatility_config& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          fx_volatility_config_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void fx_volatility_config_repository::write(const context& ctx,
                                             const std::vector<domain::fx_volatility_config>& v) {
+    const auto current = fx_volatility_config_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            fx_volatility_config_replace_claim(fx_volatility_config_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -158,7 +220,12 @@ void fx_volatility_config_repository::write(const context& ctx,
                                             const domain::fx_volatility_config& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility config. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        fx_volatility_config_apply_claim(v,
+                                         claim,
+                                         fx_volatility_config_claim_reads_current(claim) ?
+                                             read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                             std::vector<domain::fx_volatility_config>{});
     query_builder::execute_write_query(ctx,
                                        fx_volatility_config_mapper::map(t),
                                        lg(),
@@ -170,10 +237,17 @@ void fx_volatility_config_repository::write(
     const std::vector<domain::fx_volatility_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility configs. Count: " << v.size();
+    std::vector<domain::fx_volatility_config> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (fx_volatility_config_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = fx_volatility_config_current_rows(*this, ctx, to_read);
     std::vector<domain::fx_volatility_config> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(fx_volatility_config_apply_claim(
+            v[i], claims[i], fx_volatility_config_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        fx_volatility_config_mapper::map(batch),
                                        lg(),
@@ -341,6 +415,21 @@ fx_volatility_config_repository::read_latest(const context& ctx,
                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::fx_volatility_config> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

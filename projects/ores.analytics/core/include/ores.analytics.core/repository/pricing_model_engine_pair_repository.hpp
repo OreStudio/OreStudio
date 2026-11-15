@@ -193,24 +193,6 @@ public:
      * @brief Deletes pricing model engine pairs by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& codes);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::pricing_model_engine_pair& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::pricing_model_engine_pair apply_claim(const context& ctx,
-                                                  const domain::pricing_model_engine_pair& v,
-                                                  const ores::utility::domain::precondition& claim);
 };
 
 }

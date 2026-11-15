@@ -95,8 +95,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::system_setting& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::system_setting& v, const ores::utility::domain::precondition& claim) : domain::system_setting
             }
         }
         namespace service #F2F2F2 {

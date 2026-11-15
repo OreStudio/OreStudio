@@ -38,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -101,20 +104,75 @@ std::optional<query_builder::condition> entry_channel_type_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool entry_channel_type_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using entry_channel_type_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::entry_channel_type>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+entry_channel_type_rows_by_key
+entry_channel_type_current_rows(entry_channel_type_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<domain::entry_channel_type>& of) {
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
+    for (const auto& row : of) {
+        codes.push_back(row.code);
+    }
+    entry_channel_type_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, codes))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::entry_channel_type>&
+entry_channel_type_rows_of(const entry_channel_type_rows_by_key& current,
+                           const domain::entry_channel_type& item) {
+    static const std::vector<domain::entry_channel_type> none;
+    const auto found = current.find(std::make_tuple(item.code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-entry_channel_type_repository::replace_claim(const context& ctx,
-                                             const domain::entry_channel_type& v) {
-    const auto current = read_latest(ctx, v.code);
+entry_channel_type_replace_claim(const std::vector<domain::entry_channel_type>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::entry_channel_type
-entry_channel_type_repository::apply_claim(const context& ctx,
-                                           const domain::entry_channel_type& v,
-                                           const ores::utility::domain::precondition& claim) {
+entry_channel_type_apply_claim(const domain::entry_channel_type& v,
+                               const ores::utility::domain::precondition& claim,
+                               const std::vector<domain::entry_channel_type>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -126,29 +184,31 @@ entry_channel_type_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void entry_channel_type_repository::write(const context& ctx, const domain::entry_channel_type& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, entry_channel_type_replace_claim(read_latest(ctx, v.code)));
 }
 
 void entry_channel_type_repository::write(const context& ctx,
                                           const std::vector<domain::entry_channel_type>& v) {
+    const auto current = entry_channel_type_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            entry_channel_type_replace_claim(entry_channel_type_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -156,7 +216,11 @@ void entry_channel_type_repository::write(const context& ctx,
                                           const domain::entry_channel_type& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing entry channel type. " << "code: " << v.code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = entry_channel_type_apply_claim(v,
+                                                  claim,
+                                                  entry_channel_type_claim_reads_current(claim) ?
+                                                      read_latest(ctx, v.code) :
+                                                      std::vector<domain::entry_channel_type>{});
     query_builder::execute_write_query(
         ctx, entry_channel_type_mapper::map(t), lg(), "Writing entry channel type to database.");
 }
@@ -166,10 +230,17 @@ void entry_channel_type_repository::write(
     const std::vector<domain::entry_channel_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing entry channel types. Count: " << v.size();
+    std::vector<domain::entry_channel_type> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (entry_channel_type_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = entry_channel_type_current_rows(*this, ctx, to_read);
     std::vector<domain::entry_channel_type> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(entry_channel_type_apply_claim(
+            v[i], claims[i], entry_channel_type_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        entry_channel_type_mapper::map(batch),
                                        lg(),
@@ -322,6 +393,21 @@ entry_channel_type_repository::read_latest(const context& ctx,
                                            const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::entry_channel_type> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<entry_channel_type_entity>> |
                        query_builder::where("code"_c.in(codes) && "valid_to"_c == max);

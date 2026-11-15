@@ -40,10 +40,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -104,20 +107,77 @@ std::optional<query_builder::condition> balance_guaranteed_swap_instrument_filte
 
 }
 
-ores::utility::domain::precondition balance_guaranteed_swap_instrument_repository::replace_claim(
-    const context& ctx, const domain::balance_guaranteed_swap_instrument& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool balance_guaranteed_swap_instrument_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using balance_guaranteed_swap_instrument_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::balance_guaranteed_swap_instrument>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+balance_guaranteed_swap_instrument_rows_by_key balance_guaranteed_swap_instrument_current_rows(
+    balance_guaranteed_swap_instrument_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<domain::balance_guaranteed_swap_instrument>& of) {
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(of.size());
+    for (const auto& row : of) {
+        trade_ids.push_back(boost::uuids::to_string(row.trade_id));
+    }
+    balance_guaranteed_swap_instrument_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, trade_ids))
+        current[std::make_tuple(boost::uuids::to_string(item.trade_id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::balance_guaranteed_swap_instrument>&
+balance_guaranteed_swap_instrument_rows_of(
+    const balance_guaranteed_swap_instrument_rows_by_key& current,
+    const domain::balance_guaranteed_swap_instrument& item) {
+    static const std::vector<domain::balance_guaranteed_swap_instrument> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.trade_id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition balance_guaranteed_swap_instrument_replace_claim(
+    const std::vector<domain::balance_guaranteed_swap_instrument>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::balance_guaranteed_swap_instrument
-balance_guaranteed_swap_instrument_repository::apply_claim(
-    const context& ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::balance_guaranteed_swap_instrument balance_guaranteed_swap_instrument_apply_claim(
     const domain::balance_guaranteed_swap_instrument& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::balance_guaranteed_swap_instrument>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -129,30 +189,35 @@ balance_guaranteed_swap_instrument_repository::apply_claim(
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void balance_guaranteed_swap_instrument_repository::write(
     const context& ctx, const domain::balance_guaranteed_swap_instrument& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          balance_guaranteed_swap_instrument_replace_claim(
+              read_latest(ctx, boost::uuids::to_string(v.trade_id))));
 }
 
 void balance_guaranteed_swap_instrument_repository::write(
     const context& ctx, const std::vector<domain::balance_guaranteed_swap_instrument>& v) {
+    const auto current = balance_guaranteed_swap_instrument_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(balance_guaranteed_swap_instrument_replace_claim(
+            balance_guaranteed_swap_instrument_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -162,7 +227,12 @@ void balance_guaranteed_swap_instrument_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instrument. "
                                << "trade_id: " << v.trade_id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = balance_guaranteed_swap_instrument_apply_claim(
+        v,
+        claim,
+        balance_guaranteed_swap_instrument_claim_reads_current(claim) ?
+            read_latest(ctx, boost::uuids::to_string(v.trade_id)) :
+            std::vector<domain::balance_guaranteed_swap_instrument>{});
     query_builder::execute_write_query(ctx,
                                        balance_guaranteed_swap_instrument_mapper::map(t),
                                        lg(),
@@ -175,10 +245,17 @@ void balance_guaranteed_swap_instrument_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instruments. Count: "
                                << v.size();
+    std::vector<domain::balance_guaranteed_swap_instrument> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (balance_guaranteed_swap_instrument_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = balance_guaranteed_swap_instrument_current_rows(*this, ctx, to_read);
     std::vector<domain::balance_guaranteed_swap_instrument> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(balance_guaranteed_swap_instrument_apply_claim(
+            v[i], claims[i], balance_guaranteed_swap_instrument_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        balance_guaranteed_swap_instrument_mapper::map(batch),
                                        lg(),
@@ -370,6 +447,21 @@ balance_guaranteed_swap_instrument_repository::read_latest(
     const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (trade_ids.size() > chunk_size) {
+        std::vector<domain::balance_guaranteed_swap_instrument> all;
+        for (std::size_t begin = 0; begin < trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, trade_ids.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(trade_ids.begin() + begin, trade_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_instrument_entity>> |

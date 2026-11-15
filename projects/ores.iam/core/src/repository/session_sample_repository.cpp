@@ -39,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -86,49 +88,113 @@ query_builder::order session_sample_list_order(const ores::utility::domain::orde
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool session_sample_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using session_sample_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::session_sample>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+session_sample_rows_by_key
+session_sample_current_rows(session_sample_repository& repo,
+                            const ores::database::context& ctx,
+                            const std::vector<domain::session_sample>& of) {
+    std::vector<std::string> session_ids;
+    session_ids.reserve(of.size());
+    std::vector<std::string> sample_times;
+    sample_times.reserve(of.size());
+    for (const auto& row : of) {
+        session_ids.push_back(boost::uuids::to_string(row.session_id));
+        sample_times.push_back(ores::platform::time::datetime::to_db_string(row.sample_time));
+    }
+    session_sample_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, session_ids, sample_times))
+        current[std::make_tuple(boost::uuids::to_string(item.session_id),
+                                ores::platform::time::datetime::to_db_string(item.sample_time))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::session_sample>&
+session_sample_rows_of(const session_sample_rows_by_key& current,
+                       const domain::session_sample& item) {
+    static const std::vector<domain::session_sample> none;
+    const auto found = current.find(
+        std::make_tuple(boost::uuids::to_string(item.session_id),
+                        ores::platform::time::datetime::to_db_string(item.sample_time)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-session_sample_repository::replace_claim(const context& ctx, const domain::session_sample& v) {
-    const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.session_id),
-                                     ores::platform::time::datetime::to_db_string(v.sample_time));
+session_sample_replace_claim(const std::vector<domain::session_sample>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::session_sample
-session_sample_repository::apply_claim(const context& ctx,
-                                       const domain::session_sample& v,
-                                       const ores::utility::domain::precondition& claim) {
+session_sample_apply_claim(const domain::session_sample& v,
+                           const ores::utility::domain::precondition& claim,
+                           const std::vector<domain::session_sample>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "session_sample_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx,
-                     boost::uuids::to_string(v.session_id),
-                     ores::platform::time::datetime::to_db_string(v.sample_time))
-             .empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "session_sample_repository::write: a current row already exists");
     return t;
 }
 
+}
+
 void session_sample_repository::write(const context& ctx, const domain::session_sample& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          session_sample_replace_claim(
+              read_latest(ctx,
+                          boost::uuids::to_string(v.session_id),
+                          ores::platform::time::datetime::to_db_string(v.sample_time))));
 }
 
 void session_sample_repository::write(const context& ctx,
                                       const std::vector<domain::session_sample>& v) {
+    const auto current = session_sample_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(session_sample_replace_claim(session_sample_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -137,7 +203,14 @@ void session_sample_repository::write(const context& ctx,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "session_id: " << v.session_id
                                << " sample_time: " << v.sample_time;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = session_sample_apply_claim(
+        v,
+        claim,
+        session_sample_claim_reads_current(claim) ?
+            read_latest(ctx,
+                        boost::uuids::to_string(v.session_id),
+                        ores::platform::time::datetime::to_db_string(v.sample_time)) :
+            std::vector<domain::session_sample>{});
     query_builder::execute_write_op(ctx,
                                     query_builder::insert_or_replace(session_sample_mapper::map(t)),
                                     lg(),
@@ -149,10 +222,17 @@ void session_sample_repository::write(
     const std::vector<domain::session_sample>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing session samples. Count: " << v.size();
+    std::vector<domain::session_sample> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (session_sample_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = session_sample_current_rows(*this, ctx, to_read);
     std::vector<domain::session_sample> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            session_sample_apply_claim(v[i], claims[i], session_sample_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(session_sample_mapper::map(batch)),
@@ -279,6 +359,26 @@ session_sample_repository::read_latest(const context& ctx,
                                        const std::vector<std::string>& sample_times) {
     if (session_ids.empty() || sample_times.empty())
         return {};
+    if (sample_times.size() != session_ids.size())
+        throw std::invalid_argument(
+            "session_sample_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (session_ids.size() > chunk_size) {
+        std::vector<domain::session_sample> all;
+        for (std::size_t begin = 0; begin < session_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, session_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(session_ids.begin() + begin, session_ids.begin() + end),
+                std::vector<std::string>(sample_times.begin() + begin, sample_times.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<session_sample_entity>> |
@@ -293,9 +393,6 @@ session_sample_repository::read_latest(const context& ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (sample_times.size() != session_ids.size())
-        throw std::invalid_argument(
-            "session_sample_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < session_ids.size(); ++i)
         requested.emplace(session_ids[i], sample_times[i]);

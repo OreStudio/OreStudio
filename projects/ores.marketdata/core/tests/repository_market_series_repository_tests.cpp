@@ -27,12 +27,16 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 using namespace ores::logging;
 using namespace ores::marketdata::generators;
@@ -566,4 +570,30 @@ TEST_CASE("a_series_needs_a_provider_in_the_catalogue", "[repository]") {
     s.provider_code = "not_a_provider";
     CHECK_THROWS_WITH(repo.write(h.context(), s),
                       Catch::Matchers::ContainsSubstring("Invalid provider"));
+}
+
+TEST_CASE("a_batch_write_states_the_current_version_of_every_row_it_replaces", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository repo;
+    auto series = generate_synthetic_market_series(3, ctx);
+    repo.write(h.context(), series);
+    BOOST_LOG_SEV(lg, info) << "Replacing " << series.size() << " market series without a claim.";
+    CHECK_NOTHROW(repo.write(h.context(), series));
+
+    const std::vector<ores::utility::domain::precondition> nothing(
+        series.size(), {ores::utility::domain::precondition_kind::any, std::nullopt});
+    BOOST_LOG_SEV(lg, info) << "Replacing " << series.size() << " market series claiming nothing.";
+    CHECK_NOTHROW(repo.write(h.context(), series, nothing));
+
+    std::vector<std::string> ids;
+    for (const auto& s : series)
+        ids.push_back(boost::uuids::to_string(s.id));
+    const auto read = repo.read_latest(h.context(), ids);
+    REQUIRE(read.size() == series.size());
+    for (const auto& s : read)
+        CHECK(s.version == 3);
 }

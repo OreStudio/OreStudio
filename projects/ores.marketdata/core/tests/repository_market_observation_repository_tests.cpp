@@ -33,11 +33,13 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -902,4 +904,57 @@ TEST_CASE("read_latest_by_series_id_refuses_a_bound_it_cannot_read", "[repositor
     const auto sid = boost::uuids::to_string(s.id);
     CHECK_THROWS_AS(obs_repo.read_latest_by_series_id(h.context(), sid, 0, 500, {}, filter),
                     std::invalid_argument);
+}
+
+TEST_CASE("a_batch_create_over_a_row_past_the_first_read_chunk_is_refused_and_writes_nothing",
+          "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observation_repository obs_repo;
+    auto observations = generate_synthetic_market_observations(1001, ctx);
+    for (auto& o : observations)
+        o.series_id = s.id;
+    obs_repo.insert(h.context(), observations.back());
+
+    const std::vector<ores::utility::domain::precondition> creates(
+        observations.size(),
+        {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
+    BOOST_LOG_SEV(lg, info) << "Creating " << observations.size()
+                            << " market observations, the last of which exists.";
+    CHECK_THROWS_AS(obs_repo.write(h.context(), observations, creates), std::invalid_argument);
+
+    std::vector<std::string> ids;
+    for (std::size_t i = 0; i + 1 < observations.size(); ++i)
+        ids.push_back(boost::uuids::to_string(observations[i].id));
+    CHECK(obs_repo.read_latest(h.context(), ids).empty());
+}
+
+TEST_CASE("a_batch_read_of_more_than_one_chunk_returns_every_row", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observation_repository obs_repo;
+    auto observations = generate_synthetic_market_observations(1001, ctx);
+    for (auto& o : observations)
+        o.series_id = s.id;
+    obs_repo.insert(h.context(), observations);
+
+    std::vector<std::string> ids;
+    for (const auto& o : observations)
+        ids.push_back(boost::uuids::to_string(o.id));
+    BOOST_LOG_SEV(lg, info) << "Reading " << ids.size() << " market observations by id.";
+    CHECK(obs_repo.read_latest(h.context(), ids).size() == observations.size());
 }

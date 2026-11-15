@@ -39,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -101,19 +104,71 @@ bond_issue_filter_condition(const std::optional<messaging::bond_issues_filter>& 
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool bond_issue_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using bond_issue_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::bond_issue>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+bond_issue_rows_by_key bond_issue_current_rows(bond_issue_repository& repo,
+                                               const ores::database::context& ctx,
+                                               const std::vector<domain::bond_issue>& of) {
+    std::vector<std::string> issue_ids;
+    issue_ids.reserve(of.size());
+    for (const auto& row : of) {
+        issue_ids.push_back(boost::uuids::to_string(row.issue_id));
+    }
+    bond_issue_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, issue_ids))
+        current[std::make_tuple(boost::uuids::to_string(item.issue_id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::bond_issue>& bond_issue_rows_of(const bond_issue_rows_by_key& current,
+                                                          const domain::bond_issue& item) {
+    static const std::vector<domain::bond_issue> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.issue_id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-bond_issue_repository::replace_claim(const context& ctx, const domain::bond_issue& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.issue_id));
+bond_issue_replace_claim(const std::vector<domain::bond_issue>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::bond_issue
-bond_issue_repository::apply_claim(const context& ctx,
-                                   const domain::bond_issue& v,
-                                   const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::bond_issue bond_issue_apply_claim(const domain::bond_issue& v,
+                                          const ores::utility::domain::precondition& claim,
+                                          const std::vector<domain::bond_issue>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -125,28 +180,29 @@ bond_issue_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.issue_id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void bond_issue_repository::write(const context& ctx, const domain::bond_issue& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, bond_issue_replace_claim(read_latest(ctx, boost::uuids::to_string(v.issue_id))));
 }
 
 void bond_issue_repository::write(const context& ctx, const std::vector<domain::bond_issue>& v) {
+    const auto current = bond_issue_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(bond_issue_replace_claim(bond_issue_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -154,7 +210,12 @@ void bond_issue_repository::write(const context& ctx,
                                   const domain::bond_issue& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue. " << "issue_id: " << v.issue_id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        bond_issue_apply_claim(v,
+                               claim,
+                               bond_issue_claim_reads_current(claim) ?
+                                   read_latest(ctx, boost::uuids::to_string(v.issue_id)) :
+                                   std::vector<domain::bond_issue>{});
     query_builder::execute_write_query(
         ctx, bond_issue_mapper::map(t), lg(), "Writing bond issue to database.");
 }
@@ -163,10 +224,16 @@ void bond_issue_repository::write(const context& ctx,
                                   const std::vector<domain::bond_issue>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issues. Count: " << v.size();
+    std::vector<domain::bond_issue> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (bond_issue_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = bond_issue_current_rows(*this, ctx, to_read);
     std::vector<domain::bond_issue> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(bond_issue_apply_claim(v[i], claims[i], bond_issue_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, bond_issue_mapper::map(batch), lg(), "Writing bond issues to database.");
 }
@@ -323,6 +390,21 @@ std::vector<domain::bond_issue>
 bond_issue_repository::read_latest(const context& ctx, const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (issue_ids.size() > chunk_size) {
+        std::vector<domain::bond_issue> all;
+        for (std::size_t begin = 0; begin < issue_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, issue_ids.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(issue_ids.begin() + begin, issue_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_entity>> |

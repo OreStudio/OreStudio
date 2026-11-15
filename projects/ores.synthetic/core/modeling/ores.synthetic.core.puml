@@ -319,8 +319,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::market_data_provider& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::market_data_provider& v, const ores::utility::domain::precondition& claim) : domain::market_data_provider
             }
             class yield_curve_process_parameter_definition_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -494,11 +492,9 @@ class ores::synthetic::repository::folder_repository {
     +remove(ctx, id : string, version : optional<uint32_t>) : remove_status
     +remove(ctx, ids : vector<string>)
     +get_hierarchy(ctx, root_id : uuid, from_root : bool) : vector<hierarchy_flat_row>
-    -replace_claim(ctx, v : folder) : precondition
-    -apply_claim(ctx, v : folder, claim : precondition) : folder
 }
 note right of "ores::synthetic::repository::folder_repository"
-The claim is what makes a write safe: replace_claim states
+The claim is what makes a write safe: a replace's claim states
 the version the caller read (must_match_version), or that
 no row exists (must_not_exist), and the store decides in
 the write's own transaction. A row that moved on is a

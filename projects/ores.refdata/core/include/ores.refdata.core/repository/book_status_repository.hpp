@@ -190,24 +190,6 @@ public:
      * @brief Deletes book statuses by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& codes);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::book_status& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::book_status apply_claim(const context& ctx,
-                                    const domain::book_status& v,
-                                    const ores::utility::domain::precondition& claim);
 };
 
 }

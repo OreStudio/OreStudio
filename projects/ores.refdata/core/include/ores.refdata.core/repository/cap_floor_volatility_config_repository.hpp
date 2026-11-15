@@ -194,25 +194,6 @@ public:
      * @brief Deletes cap floor volatility configs by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::cap_floor_volatility_config& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::cap_floor_volatility_config
-    apply_claim(const context& ctx,
-                const domain::cap_floor_volatility_config& v,
-                const ores::utility::domain::precondition& claim);
 };
 
 }

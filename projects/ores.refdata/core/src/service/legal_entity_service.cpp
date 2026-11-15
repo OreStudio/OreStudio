@@ -81,9 +81,8 @@ std::vector<domain::legal_entity> legal_entity_read_one(repository::legal_entity
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares
@@ -98,26 +97,21 @@ legal_entity_read_many(repository::legal_entity_repository& repo,
                        const std::vector<messaging::legal_entity_key>& keys) {
     std::vector<std::vector<domain::legal_entity>> found(keys.size());
     using key_tuple = std::tuple<std::string>;
-    constexpr std::size_t chunk_size = 1000;
-    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
-        const auto end = std::min(begin + chunk_size, keys.size());
-        std::vector<std::string> lei_keys;
-        lei_keys.reserve(end - begin);
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            lei_keys.push_back(key.lei);
-        }
-        std::map<key_tuple, std::vector<domain::legal_entity>> by_key;
-        for (auto& row : repo.read_latest(ctx, lei_keys)) {
-            key_tuple named(row.lei);
-            by_key[std::move(named)].push_back(std::move(row));
-        }
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            const auto rows = by_key.find(key_tuple(key.lei));
-            if (rows != by_key.end())
-                found[i] = rows->second;
-        }
+    std::vector<std::string> lei_keys;
+    lei_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        lei_keys.push_back(key.lei);
+    }
+    std::map<key_tuple, std::vector<domain::legal_entity>> by_key;
+    for (auto& row : repo.read_latest(ctx, lei_keys)) {
+        key_tuple named(row.lei);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(key.lei));
+        if (rows != by_key.end())
+            found[i] = rows->second;
     }
     return found;
 }

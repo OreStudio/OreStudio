@@ -38,6 +38,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -87,46 +89,113 @@ series_axis_value_list_order(const ores::utility::domain::order& order,
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool series_axis_value_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using series_axis_value_rows_by_key = std::map<std::tuple<std::string, std::string, std::string>,
+                                               std::vector<domain::series_axis_value>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+series_axis_value_rows_by_key
+series_axis_value_current_rows(series_axis_value_repository& repo,
+                               const ores::database::context& ctx,
+                               const std::vector<domain::series_axis_value>& of) {
+    std::vector<std::string> series_ids;
+    series_ids.reserve(of.size());
+    std::vector<std::string> axis_fields;
+    axis_fields.reserve(of.size());
+    std::vector<std::string> values;
+    values.reserve(of.size());
+    for (const auto& row : of) {
+        series_ids.push_back(boost::uuids::to_string(row.series_id));
+        axis_fields.push_back(row.axis_field);
+        values.push_back(row.value);
+    }
+    series_axis_value_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, series_ids, axis_fields, values))
+        current[std::make_tuple(
+                    boost::uuids::to_string(item.series_id), item.axis_field, item.value)]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::series_axis_value>&
+series_axis_value_rows_of(const series_axis_value_rows_by_key& current,
+                          const domain::series_axis_value& item) {
+    static const std::vector<domain::series_axis_value> none;
+    const auto found = current.find(
+        std::make_tuple(boost::uuids::to_string(item.series_id), item.axis_field, item.value));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-series_axis_value_repository::replace_claim(const context& ctx,
-                                            const domain::series_axis_value& v) {
-    const auto current =
-        read_latest(ctx, boost::uuids::to_string(v.series_id), v.axis_field, v.value);
+series_axis_value_replace_claim(const std::vector<domain::series_axis_value>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::series_axis_value
-series_axis_value_repository::apply_claim(const context& ctx,
-                                          const domain::series_axis_value& v,
-                                          const ores::utility::domain::precondition& claim) {
+series_axis_value_apply_claim(const domain::series_axis_value& v,
+                              const ores::utility::domain::precondition& claim,
+                              const std::vector<domain::series_axis_value>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "series_axis_value_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.series_id), v.axis_field, v.value).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "series_axis_value_repository::write: a current row already exists");
     return t;
 }
 
+}
+
 void series_axis_value_repository::write(const context& ctx, const domain::series_axis_value& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          series_axis_value_replace_claim(
+              read_latest(ctx, boost::uuids::to_string(v.series_id), v.axis_field, v.value)));
 }
 
 void series_axis_value_repository::write(const context& ctx,
                                          const std::vector<domain::series_axis_value>& v) {
+    const auto current = series_axis_value_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(series_axis_value_replace_claim(series_axis_value_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -135,7 +204,12 @@ void series_axis_value_repository::write(const context& ctx,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series axis value. " << "series_id: " << v.series_id
                                << " axis_field: " << v.axis_field << " value: " << v.value;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = series_axis_value_apply_claim(
+        v,
+        claim,
+        series_axis_value_claim_reads_current(claim) ?
+            read_latest(ctx, boost::uuids::to_string(v.series_id), v.axis_field, v.value) :
+            std::vector<domain::series_axis_value>{});
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(series_axis_value_mapper::map(t)),
@@ -148,10 +222,17 @@ void series_axis_value_repository::write(
     const std::vector<domain::series_axis_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series axis values. Count: " << v.size();
+    std::vector<domain::series_axis_value> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (series_axis_value_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = series_axis_value_current_rows(*this, ctx, to_read);
     std::vector<domain::series_axis_value> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(series_axis_value_apply_claim(
+            v[i], claims[i], series_axis_value_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(series_axis_value_mapper::map(batch)),
@@ -291,6 +372,27 @@ series_axis_value_repository::read_latest(const context& ctx,
                                           const std::vector<std::string>& values) {
     if (series_ids.empty() || axis_fields.empty() || values.empty())
         return {};
+    if (axis_fields.size() != series_ids.size() || values.size() != series_ids.size())
+        throw std::invalid_argument("series_axis_value_repository::read_latest: key column vectors "
+                                    "must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (series_ids.size() > chunk_size) {
+        std::vector<domain::series_axis_value> all;
+        for (std::size_t begin = 0; begin < series_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, series_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(series_ids.begin() + begin, series_ids.begin() + end),
+                std::vector<std::string>(axis_fields.begin() + begin, axis_fields.begin() + end),
+                std::vector<std::string>(values.begin() + begin, values.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids) &&
@@ -305,9 +407,6 @@ series_axis_value_repository::read_latest(const context& ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (axis_fields.size() != series_ids.size() || values.size() != series_ids.size())
-        throw std::invalid_argument("series_axis_value_repository::read_latest: key column vectors "
-                                    "must be the same length");
     std::set<std::tuple<std::string, std::string, std::string>> requested;
     for (std::size_t i = 0; i < series_ids.size(); ++i)
         requested.emplace(series_ids[i], axis_fields[i], values[i]);

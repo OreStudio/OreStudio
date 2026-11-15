@@ -39,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -109,23 +111,86 @@ std::optional<query_builder::condition> swap_leg_indexing_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool swap_leg_indexing_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using swap_leg_indexing_rows_by_key = std::map<std::tuple<std::string, std::string, std::string>,
+                                               std::vector<domain::swap_leg_indexing>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+swap_leg_indexing_rows_by_key
+swap_leg_indexing_current_rows(swap_leg_indexing_repository& repo,
+                               const ores::database::context& ctx,
+                               const std::vector<domain::swap_leg_indexing>& of) {
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(of.size());
+    std::vector<std::string> leg_numbers;
+    leg_numbers.reserve(of.size());
+    std::vector<std::string> sequence_numbers;
+    sequence_numbers.reserve(of.size());
+    for (const auto& row : of) {
+        trade_ids.push_back(boost::uuids::to_string(row.trade_id));
+        leg_numbers.push_back(std::to_string(row.leg_number));
+        sequence_numbers.push_back(std::to_string(row.sequence_number));
+    }
+    swap_leg_indexing_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, trade_ids, leg_numbers, sequence_numbers))
+        current[std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                std::to_string(item.leg_number),
+                                std::to_string(item.sequence_number))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::swap_leg_indexing>&
+swap_leg_indexing_rows_of(const swap_leg_indexing_rows_by_key& current,
+                          const domain::swap_leg_indexing& item) {
+    static const std::vector<domain::swap_leg_indexing> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                                    std::to_string(item.leg_number),
+                                                    std::to_string(item.sequence_number)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-swap_leg_indexing_repository::replace_claim(const context& ctx,
-                                            const domain::swap_leg_indexing& v) {
-    const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.trade_id),
-                                     std::to_string(v.leg_number),
-                                     std::to_string(v.sequence_number));
+swap_leg_indexing_replace_claim(const std::vector<domain::swap_leg_indexing>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::swap_leg_indexing
-swap_leg_indexing_repository::apply_claim(const context& ctx,
-                                          const domain::swap_leg_indexing& v,
-                                          const ores::utility::domain::precondition& claim) {
+swap_leg_indexing_apply_claim(const domain::swap_leg_indexing& v,
+                              const ores::utility::domain::precondition& claim,
+                              const std::vector<domain::swap_leg_indexing>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -137,32 +202,35 @@ swap_leg_indexing_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx,
-                                             boost::uuids::to_string(v.trade_id),
-                                             std::to_string(v.leg_number),
-                                             std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void swap_leg_indexing_repository::write(const context& ctx, const domain::swap_leg_indexing& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          swap_leg_indexing_replace_claim(read_latest(ctx,
+                                                      boost::uuids::to_string(v.trade_id),
+                                                      std::to_string(v.leg_number),
+                                                      std::to_string(v.sequence_number))));
 }
 
 void swap_leg_indexing_repository::write(const context& ctx,
                                          const std::vector<domain::swap_leg_indexing>& v) {
+    const auto current = swap_leg_indexing_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(swap_leg_indexing_replace_claim(swap_leg_indexing_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -172,7 +240,15 @@ void swap_leg_indexing_repository::write(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg indexing. " << "trade_id: " << v.trade_id
                                << " leg_number: " << v.leg_number
                                << " sequence_number: " << v.sequence_number;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        swap_leg_indexing_apply_claim(v,
+                                      claim,
+                                      swap_leg_indexing_claim_reads_current(claim) ?
+                                          read_latest(ctx,
+                                                      boost::uuids::to_string(v.trade_id),
+                                                      std::to_string(v.leg_number),
+                                                      std::to_string(v.sequence_number)) :
+                                          std::vector<domain::swap_leg_indexing>{});
     query_builder::execute_write_query(
         ctx, swap_leg_indexing_mapper::map(t), lg(), "Writing swap leg indexing to database.");
 }
@@ -182,10 +258,17 @@ void swap_leg_indexing_repository::write(
     const std::vector<domain::swap_leg_indexing>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg indexings. Count: " << v.size();
+    std::vector<domain::swap_leg_indexing> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (swap_leg_indexing_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = swap_leg_indexing_current_rows(*this, ctx, to_read);
     std::vector<domain::swap_leg_indexing> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(swap_leg_indexing_apply_claim(
+            v[i], claims[i], swap_leg_indexing_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, swap_leg_indexing_mapper::map(batch), lg(), "Writing swap leg indexings to database.");
 }
@@ -431,6 +514,28 @@ swap_leg_indexing_repository::read_latest(const context& ctx,
                                           const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || leg_numbers.empty() || sequence_numbers.empty())
         return {};
+    if (leg_numbers.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
+        throw std::invalid_argument("swap_leg_indexing_repository::read_latest: key column vectors "
+                                    "must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (trade_ids.size() > chunk_size) {
+        std::vector<domain::swap_leg_indexing> all;
+        for (std::size_t begin = 0; begin < trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, trade_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(trade_ids.begin() + begin, trade_ids.begin() + end),
+                std::vector<std::string>(leg_numbers.begin() + begin, leg_numbers.begin() + end),
+                std::vector<std::string>(sequence_numbers.begin() + begin,
+                                         sequence_numbers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -448,9 +553,6 @@ swap_leg_indexing_repository::read_latest(const context& ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (leg_numbers.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
-        throw std::invalid_argument("swap_leg_indexing_repository::read_latest: key column vectors "
-                                    "must be the same length");
     std::set<std::tuple<std::string, std::string, std::string>> requested;
     for (std::size_t i = 0; i < trade_ids.size(); ++i)
         requested.emplace(trade_ids[i], leg_numbers[i], sequence_numbers[i]);

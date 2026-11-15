@@ -195,24 +195,6 @@ public:
     void remove(const context& ctx,
                 const std::vector<std::string>& names,
                 const std::vector<std::string>& domain_names);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::subject_area& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::subject_area apply_claim(const context& ctx,
-                                     const domain::subject_area& v,
-                                     const ores::utility::domain::precondition& claim);
 };
 
 }

@@ -206,8 +206,8 @@ The index the leg's payoff observes, of whatever kind its leg type names: an
 IBOR or overnight index for a floating leg (soft FK to
 ores_refdata_floating_index_types_tbl), a swap index for a CMS leg, an
 inflation index for a CPI or YY leg, a commodity for a commodity floating
-leg and the formula itself for a formula based leg. The trigger validates
-none of them, because no one reference table holds every kind.
+leg and the formula itself for a formula based leg. The trigger checks
+the index against the family the leg type's row states, below.
 
 Empty for a fixed leg; validated only when stated.
 
@@ -833,6 +833,45 @@ is immutable.
 | day_count_fraction_code | ores_refdata_validate_day_count_fraction_type_fn |
 | business_day_convention_code | ores_refdata_validate_business_day_convention_type_fn |
 | payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
+
+The leg's index is checked against the family its leg type observes,
+which the leg type's row states. An address names its family, so an
+address of another family is refused: an inflation index on a floating
+leg, say. An ORE name that did not read as an address stays as written;
+on a floating leg it must then be a floating index the reference data
+holds, which is how a mistyped IBOR name is caught.
+
+#+begin_src sql :name swap_leg_index_family :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    if coalesce(NEW.floating_index_code, '') <> '' then
+        if NEW.floating_index_code ~* '^\s*oresmd:' and exists (
+            select 1 from ores_refdata_leg_types_tbl t
+            where t.tenant_id = ores_utility_system_tenant_id_fn()
+              and t.code = NEW.leg_type_code
+              and t.index_family is not null
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+              and NEW.floating_index_code !~ ('[?&]index=' || t.index_family || '(&|$)')
+        ) then
+            raise exception 'Invalid floating_index_code: %. A % leg observes an index of another family.',
+                NEW.floating_index_code, NEW.leg_type_code using errcode = '23503';
+        end if;
+        if NEW.floating_index_code !~* '^\s*oresmd:' and exists (
+            select 1 from ores_refdata_leg_types_tbl t
+            where t.tenant_id = ores_utility_system_tenant_id_fn()
+              and t.code = NEW.leg_type_code
+              and t.index_family = 'ibor'
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+        ) and not exists (
+            select 1 from ores_refdata_floating_index_types_tbl f
+            where f.tenant_id = ores_utility_system_tenant_id_fn()
+              and f.code = NEW.floating_index_code
+              and f.valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid floating_index_code: %. No active floating index type found with this code.',
+                NEW.floating_index_code using errcode = '23503';
+        end if;
+    end if;
+
+#+end_src
 
 * C++
 

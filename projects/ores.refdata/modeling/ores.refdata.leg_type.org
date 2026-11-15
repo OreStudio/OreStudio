@@ -68,6 +68,25 @@ Human-readable description of the leg type.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** index_family
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The family of index a leg of this type observes, as an index address
+names it: ibor for a floating leg, swap for a CMS leg, inflation for a
+CPI or YY leg, commodity for a commodity floating leg, and so on. A leg
+type that observes no index, or a formula, states none.
+
+A swap leg's index is checked against the family its leg type states,
+so the leg type and the check cannot disagree.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("ibor")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -75,6 +94,12 @@ std::string(faker::lorem::sentence())
 :tablename: ores_refdata_leg_types_tbl
 :rls_tenant_isolation: true
 :END:
+
+** Checks
+
+| expression |
+|------------|
+| "index_family" is null or "index_family" in ('ibor', 'swap', 'inflation', 'fx', 'equity', 'commodity', 'power', 'bond', 'bond_future', 'cmb', 'generic') |
 
 * C++
 

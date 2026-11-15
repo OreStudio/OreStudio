@@ -110,6 +110,28 @@ ORES_TRADING_API_EXPORT void assemble_bond(bond_instrument_data& data,
 [[nodiscard]] ORES_TRADING_API_EXPORT std::vector<bond_leg_data>
 bond_legs_of(const issue_leg_rows& rows);
 
+/**
+ * @brief A bond's rows, split by who owns them.
+ *
+ * The trade owns its product's rows; the security owns its legs, which every
+ * trade of the ISIN shares. The issue's call dates and conversion targets are
+ * already rows, so they stay on the container.
+ */
+struct bond_rows final {
+    bond_trade_rows trade;
+    issue_leg_rows issue;
+};
+
+/**
+ * @brief Splits a bond's container into the rows that hold it.
+ *
+ * The inverse of assemble_bond: assembling the result gives back the
+ * container. Each row states the keys of its owner, the trade or the issue,
+ * and numbers its entries from one within its list, so a reader rebuilds the
+ * document's order.
+ */
+[[nodiscard]] ORES_TRADING_API_EXPORT bond_rows disassemble_bond(const bond_instrument_data& data);
+
 }
 
 #endif

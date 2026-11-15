@@ -22,6 +22,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.api/domain/bond_instrument_rows.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
@@ -110,38 +111,51 @@ void stamp_rows(std::vector<Row>& rows, const ores::database::context& ctx) {
         ores::service::messaging::stamp(row, ctx);
 }
 
-/**
- * @brief True when a member of a bond row holds data: an engaged optional or a
- * string or a vector that is not empty.
- */
-template <typename T>
-bool holds_data(const T& value) {
-    if constexpr (requires { value.has_value(); })
-        return value.has_value();
-    else if constexpr (requires { value.empty(); })
-        return !value.empty();
-    else
-        return false;
+template <typename Row>
+void append_rows(std::vector<Row>& to, std::vector<Row>& from) {
+    to.insert(to.end(), std::make_move_iterator(from.begin()), std::make_move_iterator(from.end()));
 }
 
-// Booking writes the header of a bond row. Every other member of the row that
-// can hold data, apart from the issue, which the caller has stored already,
-// belongs to a writer that does not exist yet, so the row names the member in a
-// refusal before anything is written.
-std::vector<std::string> unsupported_bond_parts(const domain::instrument_batch& batch) {
-    std::vector<std::string> names;
-    for (const auto& bond : batch.bond_instruments) {
-        bool refused = false;
-        ores::utility::codec::for_each_field(bond, [&](std::string_view name, const auto& member) {
-            if (name != "instrument" && name != "issue" && holds_data(member)) {
-                names.emplace_back("bond_instruments." + std::string(name));
-                refused = true;
-            }
-        });
-        if (refused)
-            break;
+template <typename Row>
+void append_row(std::vector<Row>& to, std::optional<Row>& from) {
+    if (from)
+        to.push_back(std::move(*from));
+}
+
+/*
+ * A bond row states its product's terms on the container, as the export reads
+ * them. Booking splits the trade's own rows out of it and writes them with the
+ * rest of the batch. The security's rows belong to the issue, which the caller
+ * stores before it books, so they are not written again here.
+ */
+void split_bonds(domain::instrument_batch& batch) {
+    for (auto& bond : batch.bond_instruments) {
+        auto rows = domain::disassemble_bond(bond).trade;
+        append_rows(batch.bond_legs, rows.legs);
+        append_rows(batch.bond_leg_amounts, rows.amounts);
+        append_rows(batch.bond_leg_rates, rows.rates);
+        append_rows(batch.bond_leg_amortizations, rows.amortizations);
+        append_rows(batch.instrument_schedules, rows.schedules);
+        append_rows(batch.instrument_schedule_dates, rows.schedule_dates);
+        append_row(batch.instrument_options, rows.option);
+        append_rows(batch.instrument_option_premiums, rows.option_premiums);
+        append_rows(batch.instrument_option_exercise_fees, rows.option_exercise_fees);
+        append_rows(batch.instrument_option_payment_dates, rows.option_payment_dates);
+        append_rows(batch.instrument_option_exercise_prices, rows.option_exercise_prices);
+        append_row(batch.instrument_strikes, rows.strike);
+        append_row(batch.bond_forwards, rows.forward);
+        append_row(batch.bond_options, rows.bond_option);
+        append_row(batch.bond_trs, rows.trs);
+        append_row(batch.bond_repos, rows.repo);
+        append_row(batch.bond_futures, rows.future);
+        append_row(batch.ascots, rows.ascot);
+        append_rows(batch.instrument_underlyings, rows.underlyings);
+
+        domain::bond_instrument_data header;
+        header.instrument = std::move(bond.instrument);
+        header.issue = std::move(bond.issue);
+        bond = std::move(header);
     }
-    return names;
 }
 
 std::string join(const std::vector<std::string>& names) {
@@ -189,14 +203,6 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.code = "instrument_child_without_header";
         response.result.message =
             "The batch holds rows for " + join(orphans) + " and no instrument header.";
-        return response;
-    }
-    if (const auto unsupported = unsupported_bond_parts(request.instruments);
-        !unsupported.empty()) {
-        response.result.outcome = outcome::failed;
-        response.result.code = "instrument_not_supported";
-        response.result.message =
-            "Booking writes no instrument yet for: " + join(unsupported) + ".";
         return response;
     }
 
@@ -309,6 +315,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     }
 
     auto instruments = request.instruments;
+    split_bonds(instruments);
     const service::instrument_keys keys{anchor.id, anchor.trade_type, activity.id};
     service::write_instrument_batch(
         ctx, instruments, keys, [&](auto& row) { stamp(row, ctx_); }, must_not_exist);

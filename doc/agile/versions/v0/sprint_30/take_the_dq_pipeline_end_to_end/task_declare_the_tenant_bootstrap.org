@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/declare-the-tenant-bootstrap
-#+pr:
+#+pr: 4736
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4736][#4736]] | [dq,refdata,codegen] Publish the reference data by level |
 
 * Review
 

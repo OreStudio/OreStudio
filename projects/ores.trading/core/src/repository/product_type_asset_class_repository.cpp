@@ -34,9 +34,12 @@
 #include "ores.trading.core/repository/product_type_asset_class_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,18 +59,37 @@ std::string product_type_asset_class_repository::sql() {
 product_type_asset_class_repository::product_type_asset_class_repository(const context& ctx)
     : ctx_(ctx) {}
 
-ores::utility::domain::precondition
-product_type_asset_class_repository::replace_claim(const domain::product_type_asset_class& v) {
-    const auto current = read_latest(v.product_type_code, v.asset_class_code);
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string>
+product_type_asset_class_pair_of(const domain::product_type_asset_class& v) {
+    return {v.product_type_code, v.asset_class_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
+ores::utility::domain::precondition product_type_asset_class_replace_claim_of(
+    const std::vector<domain::product_type_asset_class>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::product_type_asset_class
-product_type_asset_class_repository::apply_claim(const domain::product_type_asset_class& v,
-                                                 const ores::utility::domain::precondition& claim) {
+product_type_asset_class_apply_claim(const domain::product_type_asset_class& v,
+                                     const ores::utility::domain::precondition& claim,
+                                     const std::vector<domain::product_type_asset_class>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -79,17 +101,79 @@ product_type_asset_class_repository::apply_claim(const domain::product_type_asse
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.product_type_code, v.asset_class_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::product_type_asset_class>&
+product_type_asset_class_rows_of(const product_type_asset_class_repository::rows_by_pair& current,
+                                 const domain::product_type_asset_class& v) {
+    static const std::vector<domain::product_type_asset_class> none;
+    const auto found = current.find(product_type_asset_class_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+product_type_asset_class_repository::rows_by_pair product_type_asset_class_repository::read_current(
+    const std::vector<domain::product_type_asset_class>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = product_type_asset_class_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+        const auto query =
+            query_builder::read<std::vector<product_type_asset_class_entity>> |
+            query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                 "product_type_code"_c.in(lefts) &&
+                                 "asset_class_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<product_type_asset_class_entity,
+                                                      domain::product_type_asset_class>(
+            ctx_,
+            query,
+            [](const auto& entities) { return product_type_asset_class_mapper::map(entities); },
+            lg(),
+            "Reading current product type markets by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = product_type_asset_class_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+product_type_asset_class_repository::replace_claim(const domain::product_type_asset_class& v) {
+    return product_type_asset_class_replace_claim_of(
+        read_latest(v.product_type_code, v.asset_class_code));
 }
 
 void product_type_asset_class_repository::write(
@@ -99,10 +183,14 @@ void product_type_asset_class_repository::write(
 
 void product_type_asset_class_repository::write(
     const std::vector<domain::product_type_asset_class>& product_type_asset_classes) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(product_type_asset_classes);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(product_type_asset_classes.size());
     for (const auto& item : product_type_asset_classes)
-        claims.push_back(replace_claim(item));
+        claims.push_back(product_type_asset_class_replace_claim_of(
+            product_type_asset_class_rows_of(current, item)));
     write(product_type_asset_classes, claims);
 }
 
@@ -112,7 +200,11 @@ void product_type_asset_class_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing product type market to database: "
                                << product_type_asset_class.product_type_code << "/"
                                << product_type_asset_class.asset_class_code;
-    const auto t = apply_claim(product_type_asset_class, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(product_type_asset_class.product_type_code,
+                                         product_type_asset_class.asset_class_code) :
+                             std::vector<domain::product_type_asset_class>{};
+    const auto t = product_type_asset_class_apply_claim(product_type_asset_class, claim, current);
     query_builder::execute_write_query(ctx_,
                                        product_type_asset_class_mapper::map(t),
                                        lg(),
@@ -124,10 +216,19 @@ void product_type_asset_class_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing product type markets to database. Count: "
                                << product_type_asset_classes.size();
+    std::vector<domain::product_type_asset_class> to_read;
+    for (std::size_t i = 0; i < product_type_asset_classes.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(product_type_asset_classes[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::product_type_asset_class> batch;
     batch.reserve(product_type_asset_classes.size());
     for (std::size_t i = 0; i < product_type_asset_classes.size(); ++i)
-        batch.push_back(apply_claim(product_type_asset_classes[i], claims[i]));
+        batch.push_back(product_type_asset_class_apply_claim(
+            product_type_asset_classes[i],
+            claims[i],
+            product_type_asset_class_rows_of(current, product_type_asset_classes[i])));
     query_builder::execute_write_query(ctx_,
                                        product_type_asset_class_mapper::map(batch),
                                        lg(),

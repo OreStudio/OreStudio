@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,37 @@ std::string role_grant_request_role_repository::sql() {
 role_grant_request_role_repository::role_grant_request_role_repository(const context& ctx)
     : ctx_(ctx) {}
 
-ores::utility::domain::precondition
-role_grant_request_role_repository::replace_claim(const domain::role_grant_request_role& v) {
-    const auto current = read_latest(v.request_id, v.role_id);
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string>
+role_grant_request_role_pair_of(const domain::role_grant_request_role& v) {
+    return {boost::uuids::to_string(v.request_id), boost::uuids::to_string(v.role_id)};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
+ores::utility::domain::precondition role_grant_request_role_replace_claim_of(
+    const std::vector<domain::role_grant_request_role>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::role_grant_request_role
-role_grant_request_role_repository::apply_claim(const domain::role_grant_request_role& v,
-                                                const ores::utility::domain::precondition& claim) {
+role_grant_request_role_apply_claim(const domain::role_grant_request_role& v,
+                                    const ores::utility::domain::precondition& claim,
+                                    const std::vector<domain::role_grant_request_role>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +102,75 @@ role_grant_request_role_repository::apply_claim(const domain::role_grant_request
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.request_id, v.role_id);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::role_grant_request_role>&
+role_grant_request_role_rows_of(const role_grant_request_role_repository::rows_by_pair& current,
+                                const domain::role_grant_request_role& v) {
+    static const std::vector<domain::role_grant_request_role> none;
+    const auto found = current.find(role_grant_request_role_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+role_grant_request_role_repository::rows_by_pair role_grant_request_role_repository::read_current(
+    const std::vector<domain::role_grant_request_role>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = role_grant_request_role_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
+                           query_builder::where("tenant_id"_c == tid && "request_id"_c.in(lefts) &&
+                                                "role_id"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<role_grant_request_role_entity,
+                                                      domain::role_grant_request_role>(
+            ctx_,
+            query,
+            [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
+            lg(),
+            "Reading current role grant request roles by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = role_grant_request_role_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+role_grant_request_role_repository::replace_claim(const domain::role_grant_request_role& v) {
+    return role_grant_request_role_replace_claim_of(read_latest(v.request_id, v.role_id));
 }
 
 void role_grant_request_role_repository::write(
@@ -100,10 +180,14 @@ void role_grant_request_role_repository::write(
 
 void role_grant_request_role_repository::write(
     const std::vector<domain::role_grant_request_role>& role_grant_request_roles) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(role_grant_request_roles);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(role_grant_request_roles.size());
     for (const auto& item : role_grant_request_roles)
-        claims.push_back(replace_claim(item));
+        claims.push_back(role_grant_request_role_replace_claim_of(
+            role_grant_request_role_rows_of(current, item)));
     write(role_grant_request_roles, claims);
 }
 
@@ -113,7 +197,11 @@ void role_grant_request_role_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing role grant request role to database: "
                                << role_grant_request_role.request_id << "/"
                                << role_grant_request_role.role_id;
-    const auto t = apply_claim(role_grant_request_role, claim);
+    const auto current =
+        claim.kind == ores::utility::domain::precondition_kind::any ?
+            read_latest(role_grant_request_role.request_id, role_grant_request_role.role_id) :
+            std::vector<domain::role_grant_request_role>{};
+    const auto t = role_grant_request_role_apply_claim(role_grant_request_role, claim, current);
     query_builder::execute_write_query(ctx_,
                                        role_grant_request_role_mapper::map(t),
                                        lg(),
@@ -125,10 +213,19 @@ void role_grant_request_role_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role grant request roles to database. Count: "
                                << role_grant_request_roles.size();
+    std::vector<domain::role_grant_request_role> to_read;
+    for (std::size_t i = 0; i < role_grant_request_roles.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(role_grant_request_roles[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::role_grant_request_role> batch;
     batch.reserve(role_grant_request_roles.size());
     for (std::size_t i = 0; i < role_grant_request_roles.size(); ++i)
-        batch.push_back(apply_claim(role_grant_request_roles[i], claims[i]));
+        batch.push_back(role_grant_request_role_apply_claim(
+            role_grant_request_roles[i],
+            claims[i],
+            role_grant_request_role_rows_of(current, role_grant_request_roles[i])));
     query_builder::execute_write_query(ctx_,
                                        role_grant_request_role_mapper::map(batch),
                                        lg(),

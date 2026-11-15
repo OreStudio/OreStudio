@@ -33,9 +33,12 @@
 #include "ores.refdata.core/repository/currency_country_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -55,18 +58,36 @@ std::string currency_country_repository::sql() {
 currency_country_repository::currency_country_repository(const context& ctx)
     : ctx_(ctx) {}
 
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string> currency_country_pair_of(const domain::currency_country& v) {
+    return {v.currency_iso_code, v.country_alpha2_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
 ores::utility::domain::precondition
-currency_country_repository::replace_claim(const domain::currency_country& v) {
-    const auto current = read_latest(v.currency_iso_code, v.country_alpha2_code);
+currency_country_replace_claim_of(const std::vector<domain::currency_country>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::currency_country
-currency_country_repository::apply_claim(const domain::currency_country& v,
-                                         const ores::utility::domain::precondition& claim) {
+currency_country_apply_claim(const domain::currency_country& v,
+                             const ores::utility::domain::precondition& claim,
+                             const std::vector<domain::currency_country>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -78,17 +99,77 @@ currency_country_repository::apply_claim(const domain::currency_country& v,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.currency_iso_code, v.country_alpha2_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::currency_country>&
+currency_country_rows_of(const currency_country_repository::rows_by_pair& current,
+                         const domain::currency_country& v) {
+    static const std::vector<domain::currency_country> none;
+    const auto found = current.find(currency_country_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+currency_country_repository::rows_by_pair
+currency_country_repository::read_current(const std::vector<domain::currency_country>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = currency_country_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<currency_country_entity>> |
+            query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c.in(lefts) &&
+                                 "country_alpha2_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows =
+            query_builder::execute_read_query<currency_country_entity, domain::currency_country>(
+                ctx_,
+                query,
+                [](const auto& entities) { return currency_country_mapper::map(entities); },
+                lg(),
+                "Reading current currency countries by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = currency_country_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+currency_country_repository::replace_claim(const domain::currency_country& v) {
+    return currency_country_replace_claim_of(
+        read_latest(v.currency_iso_code, v.country_alpha2_code));
 }
 
 void currency_country_repository::write(const domain::currency_country& currency_country) {
@@ -97,10 +178,14 @@ void currency_country_repository::write(const domain::currency_country& currency
 
 void currency_country_repository::write(
     const std::vector<domain::currency_country>& currency_countries) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(currency_countries);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(currency_countries.size());
     for (const auto& item : currency_countries)
-        claims.push_back(replace_claim(item));
+        claims.push_back(
+            currency_country_replace_claim_of(currency_country_rows_of(current, item)));
     write(currency_countries, claims);
 }
 
@@ -109,7 +194,11 @@ void currency_country_repository::write(const domain::currency_country& currency
     BOOST_LOG_SEV(lg(), debug) << "Writing currency country to database: "
                                << currency_country.currency_iso_code << "/"
                                << currency_country.country_alpha2_code;
-    const auto t = apply_claim(currency_country, claim);
+    const auto current =
+        claim.kind == ores::utility::domain::precondition_kind::any ?
+            read_latest(currency_country.currency_iso_code, currency_country.country_alpha2_code) :
+            std::vector<domain::currency_country>{};
+    const auto t = currency_country_apply_claim(currency_country, claim, current);
     query_builder::execute_write_query(
         ctx_, currency_country_mapper::map(t), lg(), "writing currency country to database");
 }
@@ -119,10 +208,19 @@ void currency_country_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency countries to database. Count: "
                                << currency_countries.size();
+    std::vector<domain::currency_country> to_read;
+    for (std::size_t i = 0; i < currency_countries.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(currency_countries[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::currency_country> batch;
     batch.reserve(currency_countries.size());
     for (std::size_t i = 0; i < currency_countries.size(); ++i)
-        batch.push_back(apply_claim(currency_countries[i], claims[i]));
+        batch.push_back(
+            currency_country_apply_claim(currency_countries[i],
+                                         claims[i],
+                                         currency_country_rows_of(current, currency_countries[i])));
     query_builder::execute_write_query(
         ctx_, currency_country_mapper::map(batch), lg(), "writing currency countries to database");
 }

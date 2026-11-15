@@ -33,9 +33,12 @@
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,18 +59,37 @@ currency_pair_convention_calendar_repository::currency_pair_convention_calendar_
     const context& ctx)
     : ctx_(ctx) {}
 
-ores::utility::domain::precondition currency_pair_convention_calendar_repository::replace_claim(
-    const domain::currency_pair_convention_calendar& v) {
-    const auto current = read_latest(v.pair_code, v.calendar_code);
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string>
+currency_pair_convention_calendar_pair_of(const domain::currency_pair_convention_calendar& v) {
+    return {v.pair_code, v.calendar_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
+ores::utility::domain::precondition currency_pair_convention_calendar_replace_claim_of(
+    const std::vector<domain::currency_pair_convention_calendar>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::currency_pair_convention_calendar currency_pair_convention_calendar_repository::apply_claim(
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
+domain::currency_pair_convention_calendar currency_pair_convention_calendar_apply_claim(
     const domain::currency_pair_convention_calendar& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::currency_pair_convention_calendar>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -79,17 +101,81 @@ domain::currency_pair_convention_calendar currency_pair_convention_calendar_repo
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.pair_code, v.calendar_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::currency_pair_convention_calendar>&
+currency_pair_convention_calendar_rows_of(
+    const currency_pair_convention_calendar_repository::rows_by_pair& current,
+    const domain::currency_pair_convention_calendar& v) {
+    static const std::vector<domain::currency_pair_convention_calendar> none;
+    const auto found = current.find(currency_pair_convention_calendar_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+currency_pair_convention_calendar_repository::rows_by_pair
+currency_pair_convention_calendar_repository::read_current(
+    const std::vector<domain::currency_pair_convention_calendar>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = currency_pair_convention_calendar_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<currency_pair_convention_calendar_entity>> |
+            query_builder::where("tenant_id"_c == tid && "pair_code"_c.in(lefts) &&
+                                 "calendar_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<currency_pair_convention_calendar_entity,
+                                                      domain::currency_pair_convention_calendar>(
+            ctx_,
+            query,
+            [](const auto& entities) {
+                return currency_pair_convention_calendar_mapper::map(entities);
+            },
+            lg(),
+            "Reading current currency pair convention calendars by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = currency_pair_convention_calendar_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition currency_pair_convention_calendar_repository::replace_claim(
+    const domain::currency_pair_convention_calendar& v) {
+    return currency_pair_convention_calendar_replace_claim_of(
+        read_latest(v.pair_code, v.calendar_code));
 }
 
 void currency_pair_convention_calendar_repository::write(
@@ -99,10 +185,14 @@ void currency_pair_convention_calendar_repository::write(
 
 void currency_pair_convention_calendar_repository::write(
     const std::vector<domain::currency_pair_convention_calendar>& pair_convention_calendars) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(pair_convention_calendars);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(pair_convention_calendars.size());
     for (const auto& item : pair_convention_calendars)
-        claims.push_back(replace_claim(item));
+        claims.push_back(currency_pair_convention_calendar_replace_claim_of(
+            currency_pair_convention_calendar_rows_of(current, item)));
     write(pair_convention_calendars, claims);
 }
 
@@ -112,7 +202,12 @@ void currency_pair_convention_calendar_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair convention calendar to database: "
                                << pair_convention_calendar.pair_code << "/"
                                << pair_convention_calendar.calendar_code;
-    const auto t = apply_claim(pair_convention_calendar, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(pair_convention_calendar.pair_code,
+                                         pair_convention_calendar.calendar_code) :
+                             std::vector<domain::currency_pair_convention_calendar>{};
+    const auto t =
+        currency_pair_convention_calendar_apply_claim(pair_convention_calendar, claim, current);
     query_builder::execute_write_query(ctx_,
                                        currency_pair_convention_calendar_mapper::map(t),
                                        lg(),
@@ -124,10 +219,19 @@ void currency_pair_convention_calendar_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair convention calendars to database. Count: "
                                << pair_convention_calendars.size();
+    std::vector<domain::currency_pair_convention_calendar> to_read;
+    for (std::size_t i = 0; i < pair_convention_calendars.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(pair_convention_calendars[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::currency_pair_convention_calendar> batch;
     batch.reserve(pair_convention_calendars.size());
     for (std::size_t i = 0; i < pair_convention_calendars.size(); ++i)
-        batch.push_back(apply_claim(pair_convention_calendars[i], claims[i]));
+        batch.push_back(currency_pair_convention_calendar_apply_claim(
+            pair_convention_calendars[i],
+            claims[i],
+            currency_pair_convention_calendar_rows_of(current, pair_convention_calendars[i])));
     query_builder::execute_write_query(ctx_,
                                        currency_pair_convention_calendar_mapper::map(batch),
                                        lg(),

@@ -33,8 +33,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::inbox::repository {
@@ -197,6 +199,13 @@ public:
 
     void remove_by_notification(const boost::uuids::uuid& notification_id);
 
+    /**
+     * @brief The current rows of a set of links, by the text form of each
+     * link's key.
+     */
+    using rows_by_pair =
+        std::map<std::pair<std::string, std::string>, std::vector<domain::notification_recipient>>;
+
 private:
     context ctx_;
 
@@ -207,12 +216,10 @@ private:
     ores::utility::domain::precondition replace_claim(const domain::notification_recipient& v);
 
     /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
+     * @brief The current rows the links of a set name, read in one query for
+     * each part of at most 1,000 links.
      */
-    domain::notification_recipient apply_claim(const domain::notification_recipient& v,
-                                               const ores::utility::domain::precondition& claim);
+    rows_by_pair read_current(const std::vector<domain::notification_recipient>& of);
 };
 
 }

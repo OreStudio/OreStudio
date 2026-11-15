@@ -32,9 +32,12 @@
 #include "ores.reporting.core/repository/report_type_configuration_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -55,18 +58,37 @@ report_type_configuration_type_repository::report_type_configuration_type_reposi
     const context& ctx)
     : ctx_(ctx) {}
 
-ores::utility::domain::precondition report_type_configuration_type_repository::replace_claim(
-    const domain::report_type_configuration_type& v) {
-    const auto current = read_latest(v.report_type_code, v.configuration_type_code);
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string>
+report_type_configuration_type_pair_of(const domain::report_type_configuration_type& v) {
+    return {v.report_type_code, v.configuration_type_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
+ores::utility::domain::precondition report_type_configuration_type_replace_claim_of(
+    const std::vector<domain::report_type_configuration_type>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::report_type_configuration_type report_type_configuration_type_repository::apply_claim(
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
+domain::report_type_configuration_type report_type_configuration_type_apply_claim(
     const domain::report_type_configuration_type& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::report_type_configuration_type>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -78,17 +100,80 @@ domain::report_type_configuration_type report_type_configuration_type_repository
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.report_type_code, v.configuration_type_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::report_type_configuration_type>& report_type_configuration_type_rows_of(
+    const report_type_configuration_type_repository::rows_by_pair& current,
+    const domain::report_type_configuration_type& v) {
+    static const std::vector<domain::report_type_configuration_type> none;
+    const auto found = current.find(report_type_configuration_type_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+report_type_configuration_type_repository::rows_by_pair
+report_type_configuration_type_repository::read_current(
+    const std::vector<domain::report_type_configuration_type>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = report_type_configuration_type_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<report_type_configuration_type_entity>> |
+            query_builder::where("tenant_id"_c == tid && "report_type_code"_c.in(lefts) &&
+                                 "configuration_type_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<report_type_configuration_type_entity,
+                                                      domain::report_type_configuration_type>(
+            ctx_,
+            query,
+            [](const auto& entities) {
+                return report_type_configuration_type_mapper::map(entities);
+            },
+            lg(),
+            "Reading current report type configuration types by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = report_type_configuration_type_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition report_type_configuration_type_repository::replace_claim(
+    const domain::report_type_configuration_type& v) {
+    return report_type_configuration_type_replace_claim_of(
+        read_latest(v.report_type_code, v.configuration_type_code));
 }
 
 void report_type_configuration_type_repository::write(
@@ -98,10 +183,14 @@ void report_type_configuration_type_repository::write(
 
 void report_type_configuration_type_repository::write(
     const std::vector<domain::report_type_configuration_type>& report_type_configuration_types) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(report_type_configuration_types);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(report_type_configuration_types.size());
     for (const auto& item : report_type_configuration_types)
-        claims.push_back(replace_claim(item));
+        claims.push_back(report_type_configuration_type_replace_claim_of(
+            report_type_configuration_type_rows_of(current, item)));
     write(report_type_configuration_types, claims);
 }
 
@@ -111,7 +200,12 @@ void report_type_configuration_type_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing report type configuration type to database: "
                                << report_type_configuration_type.report_type_code << "/"
                                << report_type_configuration_type.configuration_type_code;
-    const auto t = apply_claim(report_type_configuration_type, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(report_type_configuration_type.report_type_code,
+                                         report_type_configuration_type.configuration_type_code) :
+                             std::vector<domain::report_type_configuration_type>{};
+    const auto t =
+        report_type_configuration_type_apply_claim(report_type_configuration_type, claim, current);
     query_builder::execute_write_query(ctx_,
                                        report_type_configuration_type_mapper::map(t),
                                        lg(),
@@ -123,10 +217,19 @@ void report_type_configuration_type_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report type configuration types to database. Count: "
                                << report_type_configuration_types.size();
+    std::vector<domain::report_type_configuration_type> to_read;
+    for (std::size_t i = 0; i < report_type_configuration_types.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(report_type_configuration_types[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::report_type_configuration_type> batch;
     batch.reserve(report_type_configuration_types.size());
     for (std::size_t i = 0; i < report_type_configuration_types.size(); ++i)
-        batch.push_back(apply_claim(report_type_configuration_types[i], claims[i]));
+        batch.push_back(report_type_configuration_type_apply_claim(
+            report_type_configuration_types[i],
+            claims[i],
+            report_type_configuration_type_rows_of(current, report_type_configuration_types[i])));
     query_builder::execute_write_query(ctx_,
                                        report_type_configuration_type_mapper::map(batch),
                                        lg(),

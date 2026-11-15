@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,36 @@ std::string party_currency_repository::sql() {
 party_currency_repository::party_currency_repository(const context& ctx)
     : ctx_(ctx) {}
 
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string> party_currency_pair_of(const domain::party_currency& v) {
+    return {boost::uuids::to_string(v.party_id), v.currency_iso_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
 ores::utility::domain::precondition
-party_currency_repository::replace_claim(const domain::party_currency& v) {
-    const auto current = read_latest(v.party_id, v.currency_iso_code);
+party_currency_replace_claim_of(const std::vector<domain::party_currency>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::party_currency
-party_currency_repository::apply_claim(const domain::party_currency& v,
-                                       const ores::utility::domain::precondition& claim) {
+party_currency_apply_claim(const domain::party_currency& v,
+                           const ores::utility::domain::precondition& claim,
+                           const std::vector<domain::party_currency>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +101,76 @@ party_currency_repository::apply_claim(const domain::party_currency& v,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.party_id, v.currency_iso_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::party_currency>&
+party_currency_rows_of(const party_currency_repository::rows_by_pair& current,
+                       const domain::party_currency& v) {
+    static const std::vector<domain::party_currency> none;
+    const auto found = current.find(party_currency_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+party_currency_repository::rows_by_pair
+party_currency_repository::read_current(const std::vector<domain::party_currency>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = party_currency_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<party_currency_entity>> |
+            query_builder::where("tenant_id"_c == tid && "party_id"_c.in(lefts) &&
+                                 "currency_iso_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows =
+            query_builder::execute_read_query<party_currency_entity, domain::party_currency>(
+                ctx_,
+                query,
+                [](const auto& entities) { return party_currency_mapper::map(entities); },
+                lg(),
+                "Reading current party currencies by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = party_currency_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+party_currency_repository::replace_claim(const domain::party_currency& v) {
+    return party_currency_replace_claim_of(read_latest(v.party_id, v.currency_iso_code));
 }
 
 void party_currency_repository::write(const domain::party_currency& party_currency) {
@@ -98,10 +178,13 @@ void party_currency_repository::write(const domain::party_currency& party_curren
 }
 
 void party_currency_repository::write(const std::vector<domain::party_currency>& party_currencies) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(party_currencies);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(party_currencies.size());
     for (const auto& item : party_currencies)
-        claims.push_back(replace_claim(item));
+        claims.push_back(party_currency_replace_claim_of(party_currency_rows_of(current, item)));
     write(party_currencies, claims);
 }
 
@@ -109,7 +192,11 @@ void party_currency_repository::write(const domain::party_currency& party_curren
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party currency to database: " << party_currency.party_id
                                << "/" << party_currency.currency_iso_code;
-    const auto t = apply_claim(party_currency, claim);
+    const auto current =
+        claim.kind == ores::utility::domain::precondition_kind::any ?
+            read_latest(party_currency.party_id, party_currency.currency_iso_code) :
+            std::vector<domain::party_currency>{};
+    const auto t = party_currency_apply_claim(party_currency, claim, current);
     query_builder::execute_write_query(
         ctx_, party_currency_mapper::map(t), lg(), "writing party currency to database");
 }
@@ -119,10 +206,17 @@ void party_currency_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party currencies to database. Count: "
                                << party_currencies.size();
+    std::vector<domain::party_currency> to_read;
+    for (std::size_t i = 0; i < party_currencies.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(party_currencies[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::party_currency> batch;
     batch.reserve(party_currencies.size());
     for (std::size_t i = 0; i < party_currencies.size(); ++i)
-        batch.push_back(apply_claim(party_currencies[i], claims[i]));
+        batch.push_back(party_currency_apply_claim(
+            party_currencies[i], claims[i], party_currency_rows_of(current, party_currencies[i])));
     query_builder::execute_write_query(
         ctx_, party_currency_mapper::map(batch), lg(), "writing party currencies to database");
 }

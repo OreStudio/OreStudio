@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,36 @@ std::string role_product_type_repository::sql() {
 role_product_type_repository::role_product_type_repository(const context& ctx)
     : ctx_(ctx) {}
 
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string> role_product_type_pair_of(const domain::role_product_type& v) {
+    return {boost::uuids::to_string(v.role_id), v.product_type_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
 ores::utility::domain::precondition
-role_product_type_repository::replace_claim(const domain::role_product_type& v) {
-    const auto current = read_latest(v.role_id, v.product_type_code);
+role_product_type_replace_claim_of(const std::vector<domain::role_product_type>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
 domain::role_product_type
-role_product_type_repository::apply_claim(const domain::role_product_type& v,
-                                          const ores::utility::domain::precondition& claim) {
+role_product_type_apply_claim(const domain::role_product_type& v,
+                              const ores::utility::domain::precondition& claim,
+                              const std::vector<domain::role_product_type>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +101,76 @@ role_product_type_repository::apply_claim(const domain::role_product_type& v,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.role_id, v.product_type_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::role_product_type>&
+role_product_type_rows_of(const role_product_type_repository::rows_by_pair& current,
+                          const domain::role_product_type& v) {
+    static const std::vector<domain::role_product_type> none;
+    const auto found = current.find(role_product_type_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+role_product_type_repository::rows_by_pair
+role_product_type_repository::read_current(const std::vector<domain::role_product_type>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = role_product_type_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<role_product_type_entity>> |
+            query_builder::where("tenant_id"_c == tid && "role_id"_c.in(lefts) &&
+                                 "product_type_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows =
+            query_builder::execute_read_query<role_product_type_entity, domain::role_product_type>(
+                ctx_,
+                query,
+                [](const auto& entities) { return role_product_type_mapper::map(entities); },
+                lg(),
+                "Reading current permitted product types by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = role_product_type_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition
+role_product_type_repository::replace_claim(const domain::role_product_type& v) {
+    return role_product_type_replace_claim_of(read_latest(v.role_id, v.product_type_code));
 }
 
 void role_product_type_repository::write(const domain::role_product_type& role_product_type) {
@@ -99,10 +179,14 @@ void role_product_type_repository::write(const domain::role_product_type& role_p
 
 void role_product_type_repository::write(
     const std::vector<domain::role_product_type>& role_product_types) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(role_product_types);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(role_product_types.size());
     for (const auto& item : role_product_types)
-        claims.push_back(replace_claim(item));
+        claims.push_back(
+            role_product_type_replace_claim_of(role_product_type_rows_of(current, item)));
     write(role_product_types, claims);
 }
 
@@ -111,7 +195,11 @@ void role_product_type_repository::write(const domain::role_product_type& role_p
     BOOST_LOG_SEV(lg(), debug) << "Writing permitted product type to database: "
                                << role_product_type.role_id << "/"
                                << role_product_type.product_type_code;
-    const auto t = apply_claim(role_product_type, claim);
+    const auto current =
+        claim.kind == ores::utility::domain::precondition_kind::any ?
+            read_latest(role_product_type.role_id, role_product_type.product_type_code) :
+            std::vector<domain::role_product_type>{};
+    const auto t = role_product_type_apply_claim(role_product_type, claim, current);
     query_builder::execute_write_query(
         ctx_, role_product_type_mapper::map(t), lg(), "writing permitted product type to database");
 }
@@ -121,10 +209,19 @@ void role_product_type_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing permitted product types to database. Count: "
                                << role_product_types.size();
+    std::vector<domain::role_product_type> to_read;
+    for (std::size_t i = 0; i < role_product_types.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(role_product_types[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::role_product_type> batch;
     batch.reserve(role_product_types.size());
     for (std::size_t i = 0; i < role_product_types.size(); ++i)
-        batch.push_back(apply_claim(role_product_types[i], claims[i]));
+        batch.push_back(role_product_type_apply_claim(
+            role_product_types[i],
+            claims[i],
+            role_product_type_rows_of(current, role_product_types[i])));
     query_builder::execute_write_query(ctx_,
                                        role_product_type_mapper::map(batch),
                                        lg(),

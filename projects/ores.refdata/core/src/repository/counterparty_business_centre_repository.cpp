@@ -35,9 +35,12 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,18 +60,37 @@ std::string counterparty_business_centre_repository::sql() {
 counterparty_business_centre_repository::counterparty_business_centre_repository(const context& ctx)
     : ctx_(ctx) {}
 
-ores::utility::domain::precondition counterparty_business_centre_repository::replace_claim(
-    const domain::counterparty_business_centre& v) {
-    const auto current = read_latest(v.counterparty_id, v.business_centre_code);
+namespace {
+
+/**
+ * @brief The key of a link in the text form the store compares it in.
+ */
+std::pair<std::string, std::string>
+counterparty_business_centre_pair_of(const domain::counterparty_business_centre& v) {
+    return {boost::uuids::to_string(v.counterparty_id), v.business_centre_code};
+}
+
+/**
+ * @brief The claim a replace makes, from the rows the key names now: the
+ * version the row carries, or that no row exists yet.
+ */
+ores::utility::domain::precondition counterparty_business_centre_replace_claim_of(
+    const std::vector<domain::counterparty_business_centre>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::counterparty_business_centre counterparty_business_centre_repository::apply_claim(
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the rows the key names now whenever the claim is any.
+ */
+domain::counterparty_business_centre counterparty_business_centre_apply_claim(
     const domain::counterparty_business_centre& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::counterparty_business_centre>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -80,17 +102,78 @@ domain::counterparty_business_centre counterparty_business_centre_repository::ap
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(v.counterparty_id, v.business_centre_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
+}
+
+/**
+ * @brief The current rows the key of an object names, or none.
+ */
+const std::vector<domain::counterparty_business_centre>& counterparty_business_centre_rows_of(
+    const counterparty_business_centre_repository::rows_by_pair& current,
+    const domain::counterparty_business_centre& v) {
+    static const std::vector<domain::counterparty_business_centre> none;
+    const auto found = current.find(counterparty_business_centre_pair_of(v));
+    return found == current.end() ? none : found->second;
+}
+
+}
+
+counterparty_business_centre_repository::rows_by_pair
+counterparty_business_centre_repository::read_current(
+    const std::vector<domain::counterparty_business_centre>& of) {
+    rows_by_pair current;
+    static constexpr auto max = db_timestamp::max();
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // set is read one part at a time.
+    constexpr std::size_t part_size = 1000;
+    for (std::size_t begin = 0; begin < of.size(); begin += part_size) {
+        const auto end = std::min(begin + part_size, of.size());
+        std::set<std::pair<std::string, std::string>> requested;
+        std::set<std::string> left_set;
+        std::set<std::string> right_set;
+        for (std::size_t i = begin; i < end; ++i) {
+            auto pair = counterparty_business_centre_pair_of(of[i]);
+            left_set.insert(pair.first);
+            right_set.insert(pair.second);
+            requested.insert(std::move(pair));
+        }
+        const std::vector<std::string> lefts(left_set.begin(), left_set.end());
+        const std::vector<std::string> rights(right_set.begin(), right_set.end());
+        const auto tid = ctx_.tenant_id().to_string();
+        const auto query =
+            query_builder::read<std::vector<counterparty_business_centre_entity>> |
+            query_builder::where("tenant_id"_c == tid && "counterparty_id"_c.in(lefts) &&
+                                 "business_centre_code"_c.in(rights) && "valid_to"_c == max);
+        auto rows = query_builder::execute_read_query<counterparty_business_centre_entity,
+                                                      domain::counterparty_business_centre>(
+            ctx_,
+            query,
+            [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
+            lg(),
+            "Reading current counterparty business centres by key.");
+        // The query matches every left with every right, so a row outside the
+        // requested pairs is dropped here.
+        for (auto& row : rows) {
+            auto pair = counterparty_business_centre_pair_of(row);
+            if (requested.contains(pair))
+                current[std::move(pair)].push_back(std::move(row));
+        }
+    }
+    return current;
+}
+
+ores::utility::domain::precondition counterparty_business_centre_repository::replace_claim(
+    const domain::counterparty_business_centre& v) {
+    return counterparty_business_centre_replace_claim_of(
+        read_latest(v.counterparty_id, v.business_centre_code));
 }
 
 void counterparty_business_centre_repository::write(
@@ -100,10 +183,14 @@ void counterparty_business_centre_repository::write(
 
 void counterparty_business_centre_repository::write(
     const std::vector<domain::counterparty_business_centre>& counterparty_business_centres) {
+    // One read for the set, so a batch states its claims from one read rather
+    // than one read per row.
+    const auto current = read_current(counterparty_business_centres);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(counterparty_business_centres.size());
     for (const auto& item : counterparty_business_centres)
-        claims.push_back(replace_claim(item));
+        claims.push_back(counterparty_business_centre_replace_claim_of(
+            counterparty_business_centre_rows_of(current, item)));
     write(counterparty_business_centres, claims);
 }
 
@@ -113,7 +200,12 @@ void counterparty_business_centre_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty business centre to database: "
                                << counterparty_business_centre.counterparty_id << "/"
                                << counterparty_business_centre.business_centre_code;
-    const auto t = apply_claim(counterparty_business_centre, claim);
+    const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
+                             read_latest(counterparty_business_centre.counterparty_id,
+                                         counterparty_business_centre.business_centre_code) :
+                             std::vector<domain::counterparty_business_centre>{};
+    const auto t =
+        counterparty_business_centre_apply_claim(counterparty_business_centre, claim, current);
     query_builder::execute_write_query(ctx_,
                                        counterparty_business_centre_mapper::map(t),
                                        lg(),
@@ -125,10 +217,19 @@ void counterparty_business_centre_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty business centres to database. Count: "
                                << counterparty_business_centres.size();
+    std::vector<domain::counterparty_business_centre> to_read;
+    for (std::size_t i = 0; i < counterparty_business_centres.size(); ++i) {
+        if (claims[i].kind == ores::utility::domain::precondition_kind::any)
+            to_read.push_back(counterparty_business_centres[i]);
+    }
+    const auto current = read_current(to_read);
     std::vector<domain::counterparty_business_centre> batch;
     batch.reserve(counterparty_business_centres.size());
     for (std::size_t i = 0; i < counterparty_business_centres.size(); ++i)
-        batch.push_back(apply_claim(counterparty_business_centres[i], claims[i]));
+        batch.push_back(counterparty_business_centre_apply_claim(
+            counterparty_business_centres[i],
+            claims[i],
+            counterparty_business_centre_rows_of(current, counterparty_business_centres[i])));
     query_builder::execute_write_query(ctx_,
                                        counterparty_business_centre_mapper::map(batch),
                                        lg(),

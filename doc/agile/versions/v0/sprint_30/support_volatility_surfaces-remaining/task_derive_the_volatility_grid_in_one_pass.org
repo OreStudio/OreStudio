@@ -8,7 +8,7 @@
 #+filetags: :synthetic:quant:volatility:surfaces:performance:support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/derive-the-volatility-grid-in-one-pass
-#+pr:
+#+pr: 4750
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -160,7 +160,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4750][#4750]] | [quant,synthetic] Derive the volatility grid in one pass |
 
 * Review
 

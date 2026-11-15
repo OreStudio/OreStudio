@@ -145,7 +145,21 @@ def render_index(model: dict, template: str, output_path: Path) -> str:
     return render_diagram(context, template)
 
 
-def check_diagrams(renders: list) -> int:
+def orphan_group_files(output_path: Path, renders: list) -> list:
+    """Group diagrams beside the index that no package of the model draws.
+
+    A group's file is named after its package, so a package that is renamed
+    or removed leaves its old file behind. Nothing renders it any more, so a
+    comparison of the renders alone never sees it, and the stale group would
+    stay committed and be drawn by the wrapper.
+    """
+    expected = {path.resolve() for path, _ in renders}
+    pattern = f"{output_path.stem}.*{output_path.suffix}"
+    return sorted(path for path in output_path.parent.glob(pattern)
+                  if path.resolve() not in expected)
+
+
+def check_diagrams(renders: list, orphans: list = ()) -> int:
     """Compare every fresh render with its committed file; write nothing.
 
     Each render passes through the same writer a real run uses, into a
@@ -170,7 +184,7 @@ def check_diagrams(renders: list) -> int:
         if rendered != committed:
             stale.append((output_path, count_differing_lines(committed, rendered)))
 
-    if not stale:
+    if not stale and not orphans:
         print(f"{len(renders)} ER diagram(s) are up to date", file=sys.stderr)
         return 0
 
@@ -181,6 +195,8 @@ def check_diagrams(renders: list) -> int:
         else:
             plural = "line differs" if differing == 1 else "lines differ"
             print(f"  {output_path} ({differing} {plural})", file=sys.stderr)
+    for orphan in orphans:
+        print(f"  {orphan} (no group of the model draws this file)", file=sys.stderr)
     print("\nrun: projects/ores.codegen/plantuml_er_generate.sh", file=sys.stderr)
     return 1
 
@@ -244,12 +260,17 @@ def main(argv=None) -> int:
     else:
         renders = [(output_path, render_diagram(model, template))]
 
+    orphans = orphan_group_files(output_path, renders) if index_template_path else []
     if args.check:
-        return check_diagrams(renders)
+        return check_diagrams(renders, orphans)
 
     # Write output
     for path, diagram in renders:
         write_diagram(diagram, path)
+    for orphan in orphans:
+        orphan.unlink()
+        orphan.with_suffix('.svg').unlink(missing_ok=True)
+        print(f"Removed {orphan}: no group of the model draws it", file=sys.stderr)
 
     print(f"Diagrams written: {len(renders)}", file=sys.stderr)
     print(f"Index: {output_path}", file=sys.stderr)

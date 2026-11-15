@@ -19,6 +19,7 @@
 #ifndef ORES_UTILITY_CODEC_TEXT_FORM_HPP
 #define ORES_UTILITY_CODEC_TEXT_FORM_HPP
 
+#include "ores.utility/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -101,7 +102,7 @@ struct text_form<T> {
  * @brief A string is its own text form.
  */
 template <>
-struct text_form<std::string> {
+struct ORES_UTILITY_EXPORT text_form<std::string> {
     static constexpr std::string_view wire_name = "a string";
 
     static std::string to_text(const std::string& v);
@@ -112,7 +113,7 @@ struct text_form<std::string> {
  * @brief A filesystem path is its native string.
  */
 template <>
-struct text_form<std::filesystem::path> {
+struct ORES_UTILITY_EXPORT text_form<std::filesystem::path> {
     static constexpr std::string_view wire_name = "a path";
 
     static std::string to_text(const std::filesystem::path& v);
@@ -123,7 +124,7 @@ struct text_form<std::filesystem::path> {
  * @brief A tenant id's text form is the uuid it is, spelled the same way.
  */
 template <>
-struct text_form<ores::utility::uuid::tenant_id> {
+struct ORES_UTILITY_EXPORT text_form<ores::utility::uuid::tenant_id> {
     static constexpr std::string_view wire_name = "a tenant id";
 
     static std::string to_text(const ores::utility::uuid::tenant_id& v);
@@ -136,7 +137,7 @@ struct text_form<ores::utility::uuid::tenant_id> {
  * reads back as that same value.
  */
 template <>
-struct text_form<std::chrono::year_month_day> {
+struct ORES_UTILITY_EXPORT text_form<std::chrono::year_month_day> {
     static constexpr std::string_view wire_name = "a date";
 
     static std::string to_text(const std::chrono::year_month_day& v);
@@ -148,7 +149,7 @@ struct text_form<std::chrono::year_month_day> {
  * reader would round through a binary float.
  */
 template <>
-struct text_form<ores::utility::decimal::decimal> {
+struct ORES_UTILITY_EXPORT text_form<ores::utility::decimal::decimal> {
     static constexpr std::string_view wire_name = "a decimal";
 
     static std::string to_text(const ores::utility::decimal::decimal& v);
@@ -159,7 +160,7 @@ struct text_form<ores::utility::decimal::decimal> {
  * @brief An address's text form is the address's own spelling.
  */
 template <>
-struct text_form<boost::asio::ip::address> {
+struct ORES_UTILITY_EXPORT text_form<boost::asio::ip::address> {
     static constexpr std::string_view wire_name = "an address";
 
     static std::string to_text(const boost::asio::ip::address& v);
@@ -171,7 +172,7 @@ struct text_form<boost::asio::ip::address> {
  * states, six digits of microseconds and a UTC designator.
  */
 template <>
-struct text_form<std::chrono::system_clock::time_point> {
+struct ORES_UTILITY_EXPORT text_form<std::chrono::system_clock::time_point> {
     static constexpr std::string_view wire_name = "an instant";
 
     static std::string to_text(const std::chrono::system_clock::time_point& v);
@@ -183,7 +184,7 @@ struct text_form<std::chrono::system_clock::time_point> {
  * dashes, which is what every other layer of the estate writes.
  */
 template <>
-struct text_form<boost::uuids::uuid> {
+struct ORES_UTILITY_EXPORT text_form<boost::uuids::uuid> {
     static constexpr std::string_view wire_name = "a uuid";
 
     static std::string to_text(const boost::uuids::uuid& v);

@@ -82,12 +82,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Stated shapes, system tenant | 29 rows over 7 families | `select asset_class, series_subclass, index_family, count(*) from ores_marketdata_series_identity_shapes_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1,2,3` | pending the record |
+| Stated shapes, system tenant | 29 rows over 7 families | `select asset_class, series_subclass, index_family, count(*) from ores_marketdata_series_identity_shapes_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1,2,3` | 964e4593b8 |
 | Identities that contradict a stated shape | 0 | the =shape_scan= query in =projects/ores.sql/test/marketdata_series_identity_shape_test.sql=, against the 1,374 identity rows of 16 tenants the database held before the rebuild of 2026-11-15 20:19 | 5f052db062 |
 | Rules keyed by an index, per tenant | 1 in each of 17 tenants | `select tenant_id, count(*) from ores_marketdata_series_classification_rules_tbl where key_kind = 'index' and valid_to = ores_utility_infinity_timestamp_fn() group by 1` | 5f052db062 |
 | Identity guard unit tests | 9 assertions in 5 test cases, pass | `./publish/bin/ores.marketdata.core.tests "[series_identity][shape]"` | 5f052db062 |
-| Shape test suite | 8 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | pending the record |
-| Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | pending the record |
+| Shape test suite | 8 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | 964e4593b8 |
+| Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | 964e4593b8 |
 
 * Notes
 

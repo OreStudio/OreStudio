@@ -57,6 +57,21 @@ check_identity_shape(const std::vector<domain::series_identity_shape>& stated,
                      const domain::market_series_identity& row);
 
 /**
+ * @brief Refuses a series whose identity is an index and whose subclass says otherwise.
+ *
+ * A fixing is an index and not a datum, and the taxonomy gives every index series
+ * the one subclass, because a rule keyed by an index family speaks for all of them.
+ * The shape below is keyed on that subclass, so a series that states a different one
+ * is held to no shape at all and the guard cannot see the lie: this is the part of
+ * the shape that has to be checked before a family can be looked up.
+ *
+ * @throws std::invalid_argument naming the series, its index family and both subclasses.
+ */
+ORES_MARKETDATA_CORE_EXPORT void
+check_identity_kind(const domain::market_series& series,
+                    const domain::market_series_identity& row);
+
+/**
  * @brief Whether any stated row speaks for this series' family, so a caller can count
  * the series nobody has stated one for.
  */

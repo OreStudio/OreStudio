@@ -41,6 +41,8 @@ using family_key = std::tuple<std::string, std::string, std::string>;
 
 constexpr std::string_view required_says = "required";
 constexpr std::string_view forbidden_says = "forbidden";
+constexpr std::string_view kind_index = "index";
+constexpr std::string_view index_subclass = "index_fixing";
 
 /// The fields one family requires and the ones it forbids.
 struct family_shape final {
@@ -85,6 +87,15 @@ std::string text_of(const market_series_identity& row, std::string_view column) 
         },
         wire_fields(std::type_identity<market_series_identity>{}));
     return out;
+}
+
+void check_identity_kind(const market_series& series, const market_series_identity& row) {
+    if (row.identity_kind != kind_index || series.series_subclass == index_subclass)
+        return;
+    throw std::invalid_argument("series '" + series.oresmd_uri + "' is a fixing of the index '" +
+                                row.index + "', so its series subclass is '" +
+                                std::string(index_subclass) + "' and not '" +
+                                series.series_subclass + "'");
 }
 
 void check_identity_shape(const std::vector<series_identity_shape>& stated,

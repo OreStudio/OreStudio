@@ -59,6 +59,7 @@ public:
 
     void check(const domain::market_series& series,
                const domain::market_series_identity& row) const {
+        check_identity_kind(series, row);
         check_identity_shape(stated_, series, row);
     }
 

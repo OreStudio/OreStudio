@@ -37,6 +37,7 @@ namespace {
 using ores::marketdata::domain::market_series;
 using ores::marketdata::domain::market_series_identity;
 using ores::marketdata::domain::series_identity_shape;
+using ores::marketdata::repository::check_identity_kind;
 using ores::marketdata::repository::check_identity_shape;
 using ores::marketdata::repository::states_identity_shape;
 
@@ -144,4 +145,29 @@ TEST_CASE("a_forbidden_field_is_refused_while_a_field_nobody_states_is_left_alon
     row.tenor = "3M";
 
     CHECK_NOTHROW(check_identity_shape(shape, series, row));
+}
+
+TEST_CASE("a_fixing_whose_series_subclass_says_something_else_is_refused_by_name", shape_tags) {
+    auto lg(make_logger(test_suite));
+
+    // The shape is keyed on the subclass, so a fixing that states another one is
+    // held to no shape at all: the kind has to be checked before the family is read.
+    const auto series = series_of("yield", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+
+    CHECK_NOTHROW(check_identity_kind(series_of("index_fixing", series.oresmd_uri),
+                                      ibor_fixing("USD", "SOFR")));
+    CHECK_THROWS_WITH(
+        check_identity_kind(series, ibor_fixing("USD", "SOFR")),
+        Catch::Matchers::ContainsSubstring("so its series subclass is 'index_fixing' and not"));
+}
+
+TEST_CASE("a_series_that_is_not_an_index_is_left_to_its_own_writers", shape_tags) {
+    auto lg(make_logger(test_suite));
+
+    // A datum series carries no index, so the kind says nothing about its subclass.
+    auto row = ibor_fixing("USD", "SOFR");
+    row.identity_kind = "series";
+
+    CHECK_NOTHROW(check_identity_kind(
+        series_of("yield", "oresmd://ir/USD?type=series&instrument=swap"), row));
 }

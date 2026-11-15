@@ -95,6 +95,21 @@ The 73 fixing series the classification calls something other than =index_fixing
 are fixtures: every one of them was written by the test DML user with the reason
 =system.test=, and all 162 real fixing series classify as =index_fixing=. There is
 no classifier defect to fix.
+
+Those fixtures are not served. Each test suite provisions a tenant of its own, named
+after the suite and the run, writes its fixtures there, and terminates that tenant at
+the end of the run; a terminated tenant admits nobody, because the login reads the
+tenant's status before it reads the password. Row-level security answers for one
+tenant per session, so no other session reads the rows either.
+
+They were still wrong, and the reason they were wrong is worth keeping: a fixture
+wrote a fixing URI and kept the generated series subclass, and the shape guard could
+not see the lie, because the shape is keyed on that very subclass. The projector now
+refuses an index identity whose series subclass is not =index_fixing= before it looks
+a family up, and the fixtures that did this state the subclass their URI implies: one
+that writes an FX fixing, one that writes an IBOR fixing, and an FX montage fixture
+that called an FX spot series =yield=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

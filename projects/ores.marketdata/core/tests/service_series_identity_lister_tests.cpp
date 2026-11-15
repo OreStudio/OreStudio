@@ -239,9 +239,10 @@ TEST_CASE("a_fixing_series_is_not_listed", "[service][series_identity_lister]") 
     database_helper h;
     const auto party = boost::uuids::random_generator{}();
     const auto name = fresh_curve_id();
-    market_series_repository{}.write(
-        h.context(),
-        series_at(h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=" + name + "&tenor=6M"));
+    auto fixing = series_at(
+        h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=" + name + "&tenor=6M");
+    fixing.series_subclass = "index_fixing";
+    market_series_repository{}.write(h.context(), fixing);
 
     const auto listed = series_identity_lister::list(h.context(), list_series_identities_request{});
 

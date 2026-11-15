@@ -26,11 +26,11 @@ A junction batch write reads the current rows of all its pairs in one query and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -40,9 +40,13 @@ A junction batch write reads the current rows of all its pairs in one query and 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add a private =read_current(rows)= to the junction repository: one query for
+  each part of at most 1,000 links, an IN on each key column, filtered down to
+  the requested pairs, as the entity compound keys do.
+- Build every claim of the plain batch write from that read, and read once for
+  the =any= claims of the claim-taking batch write.
+- Make =apply_claim= a file-local function that takes the current rows, so no
+  claim path reads a row on its own.
 
 * Measurements
 
@@ -84,3 +88,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A junction batch write reads the current rows of its links in one query for
+each part of at most 1,000 links, not one query for each row. The plain batch
+write states every claim from that read; the claim-taking batch write reads
+once for its =any= claims. All 27 junction repositories are regenerated.
+
+Evidence, on the build of 2026-11-15 20:28: the new tests prove a plain batch
+and a batch of =any= claims replace a live link and create a new one, and a
+batch with a stale version is refused and writes nothing. The core suites of
+every component with a junction pass: refdata 551/551, iam 306/306, dq 126/126,
+inbox 84/84, assets 48/48, compute 81/81, reporting 307/307, trading 248/248,
+and the three marketdata asset-class tests.

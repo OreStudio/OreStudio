@@ -28,7 +28,7 @@ Every defect the captures name in a type we already hold is reproduced and fixed
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Representation group built; waiting on a build. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-15                               |
@@ -46,9 +46,37 @@ Every defect the captures name in a type we already hold is reproduced and fixed
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The eleven captures fall into three groups. Each group is one PR, in this
+order, and the task closes with the last one.
+
+1. *Representation.* The facts a held type loses or fails to check.
+   - Callable bond call terms. ORE resolves each call term list (style,
+     price, price type, accrual) to one value per call date
+     (=buildCallabilityData=, callablebond.cpp lines 44-87). The call date
+     row holds the four resolved values. The writer states a term once
+     when it is the same on every date, and once per date when it changes.
+   - Year-on-year inflation swap. The leg block already reads and writes a
+     YY leg. The swap's fact took its index and lag from a CPI leg only, so
+     the table refused a YY swap. The reader now takes them from a YY leg.
+   - Leverage digits. The record binding now reads =Leverage= as a decimal,
+     so the capture's defect is gone. A test proves 1.05 exports as 1.05.
+   - Barrier direction. The barrier type row states its direction (Up,
+     Down or none). The FX barrier option's insert trigger reads it in
+     place of the two hard-coded style lists.
+   - Swap leg index. The leg type row states the index family it observes.
+     The swap leg's insert trigger refuses an address of another family,
+     and an IBOR name that did not read as an address and is not in the
+     floating index table.
+2. *Booking.* =book_trade= writes the bond remainder, so the import books
+   a bond through it as it books every other family. That deletes the
+   import's field-by-field bond requests, which is where the dropped
+   fields and the missing audit live. The import writes a parent and its
+   embedded trades as one unit. A child array of the wrong family is
+   refused by name. The export-and-rebook round trip runs for every
+   family.
+3. *Conventions and vocabularies.* A family put refuses a write that
+   breaks a part's cardinality. The trade key fields that are still free
+   text get their lookup.
 
 * Measurements
 

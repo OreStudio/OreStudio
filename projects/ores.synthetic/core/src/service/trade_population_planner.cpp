@@ -29,7 +29,6 @@
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
-#include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -638,14 +637,17 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.trade_type_code = std::string(*types[slot % types.size()]);
         entry.notional = notional_from(scope, draw(name, 1));
 
-        namespace tdom = ores::trading::domain;
+        const auto money = [](double value) {
+            return ores::utility::decimal::decimal::from_double(std::round(value * 100.0) / 100.0)
+                .value();
+        };
         auto security = ores::trading::builders::bond_issue_builder(
                             {.issue_id = issue_id,
                              .security_id = security_id,
                              .issuer = issuer.name,
                              .currency = entry.currency,
-                             .face_value = tdom::decimal::from_double(security_face_value).value(),
-                             .coupon_rate = tdom::decimal::from_double(coupon_rate).value(),
+                             .face_value = money(security_face_value),
+                             .coupon_rate = money(coupon_rate),
                              .issue_date = issue_date,
                              .maturity = maturity,
                              .calendar = std::string("TARGET"),
@@ -701,6 +703,57 @@ namespace {
  * it as. The shape decides which fields a slot states; the other twenty-odd
  * columns stay empty the way a flat data-oriented row expects.
  */
+/**
+ * @brief One member of a commodity basket, as the catalogue spells it.
+ */
+struct drawn_basket_member final {
+    std::string code;
+    std::optional<double> weight;
+};
+
+/**
+ * @brief What the commodity planner draws for one slot, before it states rows.
+ *
+ * The family states rows in the plan, so this is the drawing's own shape and
+ * never a slot's bag. A commodity table is wide and flat: the same one holds a
+ * forward, an option, an Asian or a variance swap, and each product states the
+ * fields its own terms need and leaves the rest empty.
+ */
+struct drawn_commodity final {
+    /**
+     * @brief The commodity the trade names, as the catalogue spells it, such
+     * as =NYMEX:CL=.
+     */
+    std::string commodity_code;
+    /// The unit the commodity is quoted in, taken from its catalogue row.
+    std::string unit;
+    /// The quantity in that unit.
+    double quantity = 0.0;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
+    /// The price a forward or a fixed leg states.
+    std::optional<double> fixed_price;
+    /// The option's side, as the catalogue spells it: =Call= or =Put=.
+    std::string option_type;
+    std::optional<double> strike_price;
+    std::string exercise_type;
+    std::string average_type;
+    std::optional<std::chrono::year_month_day> averaging_start_date;
+    std::optional<std::chrono::year_month_day> averaging_end_date;
+    std::string spread_commodity_code;
+    std::optional<double> spread_amount;
+    std::string strip_frequency_code;
+    std::optional<double> variance_strike;
+    std::optional<double> accumulation_amount;
+    std::optional<double> knock_out_barrier;
+    std::string barrier_type;
+    std::optional<double> lower_barrier;
+    std::optional<double> upper_barrier;
+    std::optional<std::chrono::year_month_day> swaption_expiry_date;
+    /// The members a basket product names, in the order it draws them.
+    std::vector<drawn_basket_member> basket;
+};
+
 enum class commodity_shape {
     forward,
     option,
@@ -716,173 +769,6 @@ enum class commodity_shape {
     swaption,
     basket_option
 };
-
-
-/*
- * The commodity family states its own rows. The mapping from what the planner
- * draws to each product's constructor lives here, beside the drawing, and not
- * in the writer: the plan carries the rows and the writer persists them.
- */
-ores::trading::domain::instrument_batch
-construct_commodity_batch(const std::string& trade_type_code,
-                          const domain::commodity_terms& drawn,
-                          const std::string& currency) {
-    namespace tdom = ores::trading::domain;
-
-    ores::trading::domain::instrument_batch batch;
-    const auto money = [](std::optional<double> value) -> std::optional<tdom::decimal> {
-        if (!value.has_value())
-            return std::nullopt;
-        return tdom::decimal::from_double(*value).value();
-    };
-
-    tdom::commodity_common_terms common;
-    common.commodity_code = drawn.commodity_code;
-    common.currency = currency;
-    common.quantity = drawn.quantity;
-    common.unit = drawn.unit;
-    common.start_date = drawn.start_date;
-    common.maturity_date = drawn.maturity_date;
-
-    const auto& type = trade_type_code;
-    auto basket_members = std::vector<tdom::commodity_basket_member_terms>{};
-    for (const auto& member : drawn.basket) {
-        tdom::commodity_basket_member_terms terms{member.code, member.weight};
-        basket_members.push_back(terms);
-    }
-    auto built = [&]() -> tdom::commodity_basket_product {
-        if (type == "CommodityForward" || type == "IntradayPowerForward" ||
-            type == "CommodityForwardVolatilityAgreement" || type == "CommodityPosition") {
-            tdom::commodity_forward_terms terms{common, money(drawn.fixed_price)};
-            if (type == "CommodityForward")
-                return {tdom::construct_commodity_forward(terms), {}};
-            if (type == "IntradayPowerForward")
-                return {tdom::construct_intraday_power_forward(terms), {}};
-            if (type == "CommodityForwardVolatilityAgreement")
-                return {tdom::construct_commodity_forward_volatility_agreement(terms), {}};
-            return {tdom::construct_commodity_position(terms), {}};
-        }
-        if (type == "CommodityOption" || type == "CommodityDigitalOption" ||
-            type == "CommodityStrikeResettableOption") {
-            tdom::commodity_option_terms terms{common,
-                                               drawn.option_type,
-                                               money(drawn.strike_price).value_or(tdom::decimal{}),
-                                               drawn.exercise_type};
-            if (type == "CommodityOption")
-                return {tdom::construct_commodity_option(terms), {}};
-            if (type == "CommodityDigitalOption")
-                return {tdom::construct_commodity_digital_option(terms), {}};
-            return {tdom::construct_commodity_strike_resettable_option(terms), {}};
-        }
-        if (type == "CommodityAsianOption") {
-            tdom::commodity_asian_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.average_type,
-                drawn.averaging_start_date,
-                drawn.averaging_end_date};
-            return {tdom::construct_commodity_asian_option(terms), {}};
-        }
-        if (type == "CommodityAveragePriceOption" || type == "CommodityDigitalAveragePriceOption") {
-            tdom::commodity_average_price_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.average_type,
-                drawn.averaging_start_date,
-                drawn.averaging_end_date};
-            if (type == "CommodityAveragePriceOption")
-                return {tdom::construct_commodity_average_price_option(terms), {}};
-            return {tdom::construct_commodity_digital_average_price_option(terms), {}};
-        }
-        if (type == "CommodityOptionStrip") {
-            tdom::commodity_option_strip_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.average_type,
-                drawn.averaging_start_date,
-                drawn.averaging_end_date,
-                drawn.strip_frequency_code};
-            return {tdom::construct_commodity_option_strip(terms), {}};
-        }
-        if (type == "CommodityWindowBarrierOption" || type == "CommodityGenericBarrierOption") {
-            tdom::commodity_barrier_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.barrier_type,
-                money(drawn.lower_barrier).value_or(tdom::decimal{}),
-                money(drawn.upper_barrier)};
-            if (type == "CommodityWindowBarrierOption")
-                return {tdom::construct_commodity_window_barrier_option(terms), {}};
-            return {tdom::construct_commodity_generic_barrier_option(terms), {}};
-        }
-        if (type == "CommodityAccumulator" || type == "CommodityTaRF") {
-            tdom::commodity_accumulation_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.accumulation_amount).value_or(tdom::decimal{}),
-                money(drawn.knock_out_barrier)};
-            if (type == "CommodityAccumulator")
-                return {tdom::construct_commodity_accumulator(terms), {}};
-            return {tdom::construct_commodity_target_redemption_forward(terms), {}};
-        }
-        if (type == "CommoditySpreadOption") {
-            tdom::commodity_spread_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.spread_commodity_code,
-                money(drawn.spread_amount).value_or(tdom::decimal{})};
-            return {tdom::construct_commodity_spread_option(terms), {}};
-        }
-        if (type == "CommodityVarianceSwap" || type == "CommodityBasketVarianceSwap") {
-            tdom::commodity_variance_swap_terms terms{common, drawn.variance_strike.value_or(0.0)};
-            if (type == "CommodityVarianceSwap")
-                return {tdom::construct_commodity_variance_swap(terms), {}};
-            return {tdom::construct_commodity_basket_variance_swap(terms), {}};
-        }
-        if (type == "CommoditySwap") {
-            tdom::commodity_swap_terms terms{common, money(drawn.fixed_price)};
-            return {tdom::construct_commodity_swap(terms), {}};
-        }
-        if (type == "CommodityWorstOfBasketSwap") {
-            tdom::commodity_worst_of_basket_swap_terms terms{
-                common, money(drawn.fixed_price), basket_members};
-            return tdom::construct_commodity_worst_of_basket_swap(terms);
-        }
-        if (type == "CommodityBasketOption" || type == "CommodityRainbowOption" ||
-            type == "CommodityBestEntryOption") {
-            tdom::commodity_basket_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.exercise_type,
-                basket_members};
-            if (type == "CommodityBasketOption")
-                return tdom::construct_commodity_basket_option(terms);
-            if (type == "CommodityRainbowOption")
-                return tdom::construct_commodity_rainbow_option(terms);
-            return tdom::construct_commodity_best_entry_option(terms);
-        }
-        if (type == "CommoditySwaption") {
-            tdom::commodity_swaption_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.swaption_expiry_date};
-            return {tdom::construct_commodity_swaption(terms), {}};
-        }
-        throw trade_population_error("The commodity trade type " + type +
-                                     " states no product this planner knows.");
-    }();
-    batch.commodity_instruments.push_back(built.row);
-    for (const auto& constituent : built.constituents)
-        batch.commodity_basket_constituents.push_back(constituent);
-    return batch;
-}
 
 /// The barrier a drawn barrier type names, as the builder takes it.
 ores::trading::builders::barrier_kind commodity_barrier_kind_of(const std::string& type) {
@@ -913,17 +799,17 @@ ores::marketdata::datum::market_reference commodity_address_of(const std::string
 }
 
 /*
- * The commodity types a builder states. A type that is not built here keeps
- * its constructor until the projection writes it; the builders task deletes
- * that path when the last type moves.
+ * The commodity types a builder states, which is every type the generator
+ * books: a type no builder answers for throws rather than falling back to a
+ * second constructor this planner once carried.
  */
 std::optional<swap_choice> funding_index_in(const domain::trade_generation_scope& scope,
                                             const std::string& currency);
 
-std::optional<ores::trading::domain::instrument_batch>
+ores::trading::domain::instrument_batch
 built_commodity_trade(const domain::trade_generation_scope& scope,
                       const domain::trade_population_slot& entry,
-                      const domain::commodity_terms& drawn,
+                      const drawn_commodity& drawn,
                       const std::string& currency) {
     namespace tb = ores::trading::builders;
     using ores::utility::decimal::decimal;
@@ -1243,7 +1129,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                                           .position = position})
                          .build());
     }
-    return std::nullopt;
+    throw trade_population_error("The commodity trade type " + type +
+                                 " states no builder this planner knows.");
 }
 
 struct commodity_type final {
@@ -1347,7 +1234,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
         const auto tenor_years = std::clamp(drawn, min_years, max_years);
 
-        domain::commodity_terms terms;
+        drawn_commodity terms;
         terms.commodity_code = commodity.code;
         terms.unit = commodity.unit;
         terms.quantity = price_from(name, 3, 1000.0, 100000.0);
@@ -1375,8 +1262,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                     for (std::uint32_t member = 0; member < 3; ++member) {
                         const auto& drawn_member =
                             scope.commodities[(slot + member) % scope.commodities.size()];
-                        terms.basket.push_back(
-                            domain::commodity_basket_member{drawn_member.code, 1.0 / 3.0});
+                        terms.basket.push_back(drawn_basket_member{drawn_member.code, 1.0 / 3.0});
                     }
                 }
                 break;
@@ -1431,8 +1317,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                     for (std::uint32_t member = 0; member < 3; ++member) {
                         const auto& drawn_member =
                             scope.commodities[(slot + member) % scope.commodities.size()];
-                        terms.basket.push_back(
-                            domain::commodity_basket_member{drawn_member.code, 1.0 / 3.0});
+                        terms.basket.push_back(drawn_basket_member{drawn_member.code, 1.0 / 3.0});
                     }
                 }
                 break;
@@ -1442,8 +1327,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                     for (std::uint32_t member = 0; member < 3; ++member) {
                         const auto& drawn_member =
                             scope.commodities[(slot + member) % scope.commodities.size()];
-                        terms.basket.push_back(
-                            domain::commodity_basket_member{drawn_member.code, 1.0 / 3.0});
+                        terms.basket.push_back(drawn_basket_member{drawn_member.code, 1.0 / 3.0});
                     }
                 }
                 break;
@@ -1465,10 +1349,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
         // A commodity trade is in the currency its commodity is quoted in.
         const auto currency =
             commodity.quotation_currency.empty() ? entry.currency : commodity.quotation_currency;
-        auto built = built_commodity_trade(scope, entry, terms, currency);
-        entry.instruments = built ?
-                                std::move(*built) :
-                                construct_commodity_batch(entry.trade_type_code, terms, currency);
+        entry.instruments = built_commodity_trade(scope, entry, terms, currency);
 
         plan.slots.push_back(std::move(entry));
     }

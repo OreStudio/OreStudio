@@ -589,7 +589,8 @@ TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity"
         if (type != "CommodityBasketOption" && type != "CommodityDigitalOption" &&
             type != "CommodityDigitalAveragePriceOption")
             REQUIRE_FALSE(row.unit.empty());
-        // A built row names its commodity by address, a constructed one by code.
+        // Every commodity row is built, so it names its commodity by address.
+        REQUIRE(row.commodity_code.starts_with("oresmd://"));
         const auto query = row.commodity_code.find('?');
         const auto slash = row.commodity_code.rfind('/', query);
         commodities.insert(row.commodity_code.starts_with("oresmd://") ?

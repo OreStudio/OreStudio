@@ -290,8 +290,8 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         BOOST_LOG_SEV(lg(), info) << "Materialising " << to_write.size()
                                   << " calendar_date rows for " << calendar_code;
         // The read above found none of these days, so each is claimed as new without a read of
-        // its own. The insert trigger does not refuse a new claim on a day that exists: a
-        // materialisation that ran since that read gets a second version with the same value.
+        // its own. A materialisation that ran since that read is refused with already_exists,
+        // and none of this batch lands; a run that follows skips the days that exist.
         const std::vector<ores::utility::domain::precondition> claims(
             to_write.size(),
             {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});

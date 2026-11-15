@@ -8,7 +8,7 @@
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -42,7 +42,7 @@ one claim for each row.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8A7D5070-891B-4610-A33C-27AF39F5AE50][Refuse a duplicate create in the junction trigger]] | BACKLOG | | | The junction insert trigger checks a version only when it is not 0, so a create over a live link closes it and writes a new version; it must refuse with already_exists unless the writer states the replace signal. |
+| [[id:8A7D5070-891B-4610-A33C-27AF39F5AE50][Refuse a duplicate create in the junction trigger]] | STARTED | 2026-11-15 | | The junction insert trigger checks a version only when it is not 0, so a create over a live link closes it and writes a new version; it must refuse with already_exists unless the writer states the replace signal. |
 | [[id:62E6D572-2056-4EF5-B95A-F412759922D3][Read the claims of a junction batch in one query]] | BACKLOG | | | A junction batch write calls replace_claim for each row, and apply_claim reads each row again for an any claim, so a batch of N links costs N reads before its insert. |
 | [[id:CAA018DB-1B79-4340-88C0-345728525E9F][Refuse a batch write whose claims do not match its rows]] | BACKLOG | | | Every generated write(rows, claims) reads claims[i] with no check that the two lists have the same size, which is undefined behaviour on a mismatch. |
 

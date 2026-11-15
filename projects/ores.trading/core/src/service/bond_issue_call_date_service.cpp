@@ -154,6 +154,10 @@ bond_issue_call_date_to_domain(const messaging::bond_issue_call_date_write& writ
     v.issue_id = write.issue_id;
     v.sequence_number = write.sequence_number;
     v.call_date = write.call_date;
+    v.style = write.style;
+    v.price = write.price;
+    v.price_type = write.price_type;
+    v.include_accrual = write.include_accrual;
     return v;
 }
 

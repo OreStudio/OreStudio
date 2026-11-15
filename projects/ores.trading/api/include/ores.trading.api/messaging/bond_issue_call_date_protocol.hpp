@@ -54,6 +54,10 @@ struct bond_issue_call_date_write {
     boost::uuids::uuid issue_id;
     int sequence_number{};
     std::chrono::year_month_day call_date;
+    std::string style;
+    ores::utility::decimal::decimal price;
+    std::string price_type;
+    std::string include_accrual;
 
     friend bool operator==(const bond_issue_call_date_write&,
                            const bond_issue_call_date_write&) = default;
@@ -382,6 +386,10 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_issue_call_d
         utility::codec::field{"issue_id", &bond_issue_call_date_write::issue_id},
         utility::codec::field{"sequence_number", &bond_issue_call_date_write::sequence_number},
         utility::codec::field{"call_date", &bond_issue_call_date_write::call_date},
+        utility::codec::field{"style", &bond_issue_call_date_write::style},
+        utility::codec::field{"price", &bond_issue_call_date_write::price},
+        utility::codec::field{"price_type", &bond_issue_call_date_write::price_type},
+        utility::codec::field{"include_accrual", &bond_issue_call_date_write::include_accrual},
     };
 }
 

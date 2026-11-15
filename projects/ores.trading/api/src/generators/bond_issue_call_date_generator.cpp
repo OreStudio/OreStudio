@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -47,6 +48,10 @@ generate_synthetic_bond_issue_call_date(utility::generation::generation_context&
     r.issue_id = ctx.generate_uuid();
     r.sequence_number = 0;
     r.call_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
+    r.style = std::string("Bermudan");
+    r.price = ores::utility::decimal::decimal("1");
+    r.price_type = std::string("Clean");
+    r.include_accrual = std::string("true");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

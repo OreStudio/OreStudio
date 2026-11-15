@@ -25,6 +25,8 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_ISSUE_CALL_DATE_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_ISSUE_CALL_DATE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -37,12 +39,12 @@ namespace ores::trading::domain {
  * @brief One call date of a callable bond issue, keyed to the issue.
  *
  * One row per call date of a callable bond issue, family-owned by the
- * issue. The row carries the schedule dates only: the dated styles,
- * prices, price types and include-accrual flags of
- * callableBondCallData and cbCallData (instruments.xsd lines
- * 2365-2429, 2700-2732) have no destination in the nine tables, and a
- * call that reprices is a recorded coverage finding for the mapping
- * task (task D7943D7E wave 1.3).
+ * issue. The row carries the date and the call's terms on it: the style,
+ * price, price type and include-accrual flag of callableBondCallData
+ * (instruments.xsd lines 2430-2494). ORE states each term as a list
+ * beside the schedule and resolves it to one value per call date
+ * (buildCallabilityData in callablebond.cpp); the row holds the
+ * resolved value, so a call that reprices keeps its price.
  */
 struct bond_issue_call_date final {
     /**
@@ -74,6 +76,36 @@ struct bond_issue_call_date final {
      * @brief The call date (ISO 8601 date string).
      */
     std::chrono::year_month_day call_date;
+
+    /**
+     * @brief The exercise style of the call on this date: Bermudan or American.
+     *
+     * ORE states the style as a list beside the schedule, each entry either positional or in force
+     * from its startDate, and resolves it to one value per call date. The row holds that resolved
+     * value, so the call on each date is stated once and the writer gives it back per date.
+     */
+    std::string style;
+
+    /**
+     * @brief The price the bond is called at on this date, as a fraction of par.
+     */
+    ores::utility::decimal::decimal price;
+
+    /**
+     * @brief Whether the call price is clean or dirty on this date.
+     *
+     * Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set
+     * (Clean, Dirty).
+     */
+    std::string price_type;
+
+    /**
+     * @brief Whether the call on this date pays the accrued coupon.
+     *
+     * ORE reads the flag as its loose bool, so the column holds the spelling the document states,
+     * as bond_issue.credit_risk does.
+     */
+    std::string include_accrual;
 
     /**
      * @brief Username of the person who last modified this bond issue call date.
@@ -120,6 +152,24 @@ struct bond_issue_call_date final {
      */
     friend bool operator==(const bond_issue_call_date&, const bond_issue_call_date&) = default;
 };
+
+/**
+ * @brief The canonical text of the members of bond_issue_call_date the customer agreed to.
+ *
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
+ */
+[[nodiscard]] inline std::string canonical_form(const bond_issue_call_date& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "call_date", v.call_date);
+    ores::utility::digest::append_member(out, "style", v.style);
+    ores::utility::digest::append_member(out, "price", v.price);
+    ores::utility::digest::append_member(out, "price_type", v.price_type);
+    ores::utility::digest::append_member(out, "include_accrual", v.include_accrual);
+    out.push_back('}');
+    return out;
+}
 
 /**
  * @brief Dispatch-key identifier for bond_issue_call_date, e.g. for the

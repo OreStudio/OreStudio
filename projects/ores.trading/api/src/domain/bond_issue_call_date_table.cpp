@@ -33,11 +33,12 @@ std::string convert_to_table(const std::vector<bond_issue_call_date>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Sequence" << "Call Date" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Sequence" << "Call Date" << "Style" << "Price" << "Price Type"
+          << "Accrual" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& cld : v) {
-        table << cld.sequence_number << cld.call_date << cld.modified_by << cld.version
-              << fort::endr;
+        table << cld.sequence_number << cld.call_date << cld.style << cld.price << cld.price_type
+              << cld.include_accrual << cld.modified_by << cld.version << fort::endr;
     }
     return table.to_string();
 }

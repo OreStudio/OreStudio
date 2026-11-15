@@ -28,7 +28,7 @@ Every defect the captures name in a type we already hold is reproduced and fixed
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Representation group built; waiting on a build. |
+| Now          | Representation group in review.        |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-15                               |
@@ -90,9 +90,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading core tests | 249 cases, 1598 assertions, all pass | =ores.trading.core.tests= | 983547e531 |
+| Generated trades against ORE | 7 cases, 819 assertions, all pass | =ORES_ORE_EXECUTABLE=... ores.synthetic.core.tests "[generated]"= | 983547e531 |
+| ORE core tests | 541 cases, all pass | =ores.ore.core.tests= | 983547e531 |
+| Trading API tests | 4431 cases, all pass | =ores.trading.api.tests= | 983547e531 |
+| Local checks for the change | 17 of 17 pass | =compass check --only ...= (17 ids) | 983547e531 |
 
 * Notes
+
+** Left out of the representation group
+
+A callable bond's =PutData= and a call schedule stated by rules rather than
+dates are still dropped: =read_call_dates= reads dated call schedules only.
+Neither is named by this task. They go to the story's close-out.
+
+The generated inflation swap is CPI only, so no generated trade exercises a
+YY leg; the projection test does.
 
 ** A stale model note
 

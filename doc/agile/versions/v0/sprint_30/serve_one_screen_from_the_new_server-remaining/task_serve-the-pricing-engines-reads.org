@@ -1,22 +1,20 @@
 :PROPERTIES:
 :ID: C1830F26-2A60-49CE-AC82-6B784F34F79E
 :END:
-#+ title : Task : Serve the pricing engines' reads
-#+ description : Five routes : the page of engines, one document with its bound reports, \
-    its history, its ORE document as a file,                                             \
-    and the vocabulary the editor draws its controls from.
-#+ type : task
-#+ level : s1
-#+ filetags : : serve_one_screen_from_the_new_server - remaining : sprint_30 : v0:
-#+ owner : marco
-#+ branch : feature / serve - the - pricing - engines - reads
-#+ pr:
-#+ blocked_on:
-#+ blocked_since:
-#+ created : 2026 - 11 - 14
-#+ updated : 2026 - 11 - 14
-#+ environment : brave_hopper
-#+ todo : DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+title: Task: Serve the pricing engines' reads
+#+description: Five routes: the page of engines, one document with its bound reports, its history, its ORE document as a file, and the vocabulary the editor draws its controls from.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-pricing-engines-reads
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-15
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -35,12 +33,12 @@ the last: the lookups the editor draws its controls from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:AA8CAD80-1892-4323-85FD-BBA153B99DF4][Serve the engine settings' writes]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
 
 * Acceptance
 
@@ -91,7 +89,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's suite | 73 cases, 587 assertions | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | b2368f4ce1 |
+| The pricing engines' own cases | 10 cases, 46 assertions | =ores.http.reporting.tests [pricing_engines]= | b2368f4ce1 |
+| The gateway's routes | 1012 of 1340 | =python3 build/scripts/route_inventory.py --check= | b2368f4ce1 |
+| The BFF's routes paired with a C++ one | 246 of 328, reporting 38 of 44 | =python3 build/scripts/route_inventory.py --check= | b2368f4ce1 |
+| The local gate | 44 of 45 checks passed; the one failure is component-drift, a gap on main that this branch does not cause | =compass check --exclude-heavy= | b2368f4ce1 |
 
 * Notes
 
@@ -175,3 +177,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The pricing engines' five reads are served at the BFF's paths, with its member
+names and status codes, and the family's three units that remained share one
+statement each rather than a copy:
+
+- The page states each configuration's party, its version, its variant, and how
+  many products and parameters its document holds.
+- One configuration states the document and the reports that bind it through its
+  reporting configuration.
+- Its timeline states the versions of the configuration, of every product and of
+  every parameter, newest first within each record, and names a parameter by its
+  product and its own name.
+- Its ORE document is answered as =application/xml= under the name the ORE
+  service stated, with the BFF's own header rule, and an export that names more
+  than one file is a 502.
+- The vocabulary answers the fifteen lookup collections the editor draws its
+  controls from, each entry carrying the guide's words and the value set that
+  states which values it accepts.
+
+The read of a record's versions and the read of a setting's allowed values each
+moved to one place, so =/api/history= and this screen's timeline, and the engine
+settings' documentation page and the vocabulary, cannot drift apart.
+
+The reporting part's suite passes 73 cases and 587 assertions, ten of them for
+these routes, and the inventory pairs 246 of the BFF's 328 routes, reporting 38 of
+44. The local gate passes 44 of 45 checks; the failure is =component-drift= on a
+refdata protocol header this branch does not touch.

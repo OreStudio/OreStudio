@@ -39,12 +39,18 @@ A bulk request to a generated service reads the rows it needs in one query per b
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:02E729DE-FEA1-4D7A-9C60-0A6048B43C49][Read each batch in one query in the service template]] | STARTED | 2026-11-14 | | The service template reads each row of a get-many, put-many and delete-many batch by key; read the batch's rows with one query per path, chosen by key shape. |
+| [[id:02E729DE-FEA1-4D7A-9C60-0A6048B43C49][Read each batch in one query in the service template]] | DONE | 2026-11-14 | 2026-11-15 | The service template reads each row of a get-many, put-many and delete-many batch by key; read the batch's rows with one query per path, chosen by key shape. |
+| [[id:A324D93F-A9AE-4C22-9E10-8F53D34CADE6][Check a batch's claims with one read in the repository template]] | BACKLOG | | | The repository's batch write checks each row's claim with its own read, so a 1,000-row put still makes about 1,000 single-row reads; read the batch's current rows once and check every claim against them. |
 
 * Decisions
 
 
 - Reviewed on 2026-11-08 at sprint 30 start. The goal is still open: the service template still loops over the keys. The story has no tasks and needs them.
+- A bulk path reads through one helper, =<entity>_read_many=, beside =_read_one=. It answers one entry per key in the keys' order, so the call sites do not depend on the key shape, and a later batch read by declared key changes only the helper.
+- A storage-keyed batch is read in chunks of 1,000 keys and joined back by the text form of each key column, the conversion the compound-key filter already uses.
+- =prepare_change= takes the current rows from its caller, so put-many reads them once for the set.
+- =:service_batch_reads_by_trade_id:= is removed: the general path covers its seven entities, and the chunked read removes the reason for its 1,000-key refusal.
+- The repository's batch write checks each claim with its own read; that is a second task, measured on the same benchmark.
 
 * Out of scope
 

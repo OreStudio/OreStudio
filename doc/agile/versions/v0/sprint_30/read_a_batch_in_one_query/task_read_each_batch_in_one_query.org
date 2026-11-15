@@ -26,11 +26,11 @@ The generated get-many, put-many and delete-many paths read their rows with one 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -74,7 +74,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A put of 1,000 market observations, before (main's service) | median 16.52 s, range 14.55 to 22.00 s, 25 batches in 5 runs | =LD_LIBRARY_PATH=<before> ores.marketdata.core.tests "[.benchmark]"=, runs alternated with the after side; raw times in =evidence/batch_put_benchmark_service_reads.tsv= | origin/main 735c13adfe service file on 6563dcc713 |
+| A put of 1,000 market observations, after | median 5.89 s, range 5.12 to 12.50 s, 25 batches in 5 runs | the same command with the branch library | 6563dcc713 plus the benchmark test |
+| Load average during the runs | 11 to 34 on 8 cores | =uptime= before each run | |
+| Core suites on the branch | dq 124, trading 246, marketdata 409 test cases, all pass | =compass build test_ores.<component>.core.tests= | 6563dcc713 |
 
 * Notes
 
@@ -84,6 +87,35 @@ task and name that file in the Command column.
   asserted it.
 - =:has_batch_read:= is set on seven trading models, but no template reads it.
   Every repository declares the batch =read_latest=.
+
+** What limits the put after this task
+
+The repository's batch write checks each row's claim with its own read:
+=apply_claim= calls =read_latest= once per row. Before this task a 1,000-row
+put made about 3,000 single-row reads (2,000 in the service, 1,000 in the
+repository); after it, about 1,000. Both sides cost about 5.5 ms a read
+(16.52 s / 3,000 and 5.89 s / 1,000), which is what a read-bound path gives.
+This is inferred from the counts, not profiled. The repository's claim check is
+the next task of the story.
+
+** What the benchmark leaves out
+
+The benchmark calls the service in process, so it leaves out the NATS round
+trip, one message each way per batch on both sides. The end-to-end number is
+the derived source's first history, measured at the end of the story.
+
+** Not in this task
+
+- Services whose declared key is not the storage key read each key on its own,
+  through the same helper. Their repository has no batch read by that key.
+- The 24 junction services and the 4 convention services come from other
+  templates.
+
+** Drift on main
+
+=check_component_drift.py --all= flags
+=ores.refdata.api/messaging/configuration_document_protocol.hpp=. This branch
+changes neither that file nor the protocol templates.
 
 * Test Scenarios
 
@@ -109,3 +141,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generated get-many, put-many and delete-many paths read their rows through
+one helper, =<entity>_read_many=, which reads a storage-keyed batch with one
+query per chunk of 1,000 keys. Put-many reads the current rows once before it
+checks the changes, and reads the written rows once to answer.
+
+- Acceptance 1 holds for every service keyed by its storage key: 528 entity
+  services call the helper. Services keyed by another declared key still read
+  each key on their own, through the same helper.
+- Acceptance 2 holds: a refused row refuses the whole set and nothing is
+  written. =service_market_observation_batch_tests.cpp= proves it, and fails
+  when the service passes no current row to the check.
+- Acceptance 3 holds: the 14 touched core libraries build, the dq, trading and
+  marketdata core suites pass, and the drift gate flags only a protocol file
+  that main already drifts on.
+- Acceptance 4 holds: a 1,000-row put went from a median of 16.52 s to 5.89 s.
+  The repository's per-row claim read is what remains, and is the next task.

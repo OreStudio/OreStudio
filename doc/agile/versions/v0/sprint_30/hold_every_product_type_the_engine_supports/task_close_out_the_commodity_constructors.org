@@ -2,7 +2,7 @@
 :ID: 1F6D904E-2BCA-4336-94F7-3EFD4805CABF
 :END:
 #+title: Task: Close out the commodity constructors
-#+description: The old commodity constructors and terms are deleted, the pairwise variance swap leaves the generator because ORE cannot carry it, and the commodity window barrier option is generated.
+#+description: The old commodity constructors and terms are deleted, CommodityPairwiseVarianceSwap leaves the generator because ORE has no builder for it, and CommodityWindowBarrierOption is generated.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:

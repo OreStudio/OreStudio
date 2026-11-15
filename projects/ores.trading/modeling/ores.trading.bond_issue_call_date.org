@@ -37,6 +37,7 @@ resolved value, so a call that reprices keeps its price.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:economic: false
 :END:
 
 UUID of the issue this call date belongs to.
@@ -49,6 +50,7 @@ The child rows are family-owned and ride the issue's scope.
 :cpp_type:    int
 :primary_key: true
 :nullable:    false
+:economic: false
 :END:
 
 Ordinal of this call date within the issue's schedule.
@@ -62,6 +64,7 @@ emitted SQL shows whether the spelling matters.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:economic: true
 :END:
 
 The call date (ISO 8601 date string).

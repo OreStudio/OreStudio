@@ -8,7 +8,7 @@
 #+filetags: :resolve_batch_write_claims_in_one_read:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-junction-claims-in-one-query
-#+pr:
+#+pr: 4762
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4762][#4762]] | [codegen] Read the claims of a junction batch in one query |
 
 * Review
 

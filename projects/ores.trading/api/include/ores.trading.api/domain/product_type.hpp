@@ -41,8 +41,8 @@ namespace ores::trading::domain {
  *
  * The row is the golden source for what a product type is. It carries the name a
  * desk uses, the description and the source that description came from, the
- * product family that names its contract shape, the construction method that says
- * how the payoff is expressed, and the instrument table that holds a trade of the
+ * product family that names its contract shape, the construction that says which
+ * form ORE reads the type in, and the instrument table that holds a trade of the
  * kind. The markets it references are a junction, because a kind may reference
  * more than one.
  *
@@ -102,7 +102,7 @@ struct product_type final {
     std::string product_family_code;
 
     /**
-     * @brief How the payoff is expressed: native, scripted or container.
+     * @brief The form ORE reads the type in: native, scripted, script or container.
      */
     std::string construction;
 

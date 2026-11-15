@@ -124,7 +124,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The engine's refusal was turned into a deferral, so a projection that can never build waits for ever and the sweep reports success | =curve_republish_service.cpp= | fixed | =31a4fcf53d=: thrown with both curves named; a projection reaching past its funding curve has its own test |
+| 2 | =publish_all= lists, plans, sweeps and counts in one function | =publish_due_curves_handler.hpp= | partial | =31a4fcf53d= aliases the map it reads through; splitting the sweep is its own task |
+| 3 | =find(...) != npos= where =contains()= reads better | =messaging_publish_due_curves_tests.cpp= | fixed | =31a4fcf53d= |
+| 4 | The new cases declare no suite and log nothing | =curve_build_planner_tests.cpp=, =messaging_party_curve_blueprints_tests.cpp= | fixed | =1e2a15b291=: fifteen cases now name the suite and log what they assert |
+| 5 | A party's batch appends what it cannot order, leaving the store to refuse it | =party_curve_blueprints.hpp= | fixed | =43a7777b47=: the drop pass already removes those and names them; the append is gone |
+| 6 | =status= is a string over five constants | =curve_publish_gate.hpp= | declined | It is a protocol field: an enum is a wire change and belongs with the model, not with this PR |
+| 7 | Two commits omit the =Environment:= trailer | git history | declined | Rewriting pushed history mid-review churns the branch; the round's own commits carry it |
+| 8 | A set the plan refuses as a cycle is untested through the sweep | =publish_due_curves_handler.hpp= | declined | The schema refuses a projection off a projection, so no configuration can reach it; the planner's own cases cover the refusal |
+| 9 | The anchor uses the projection's horizon rather than the funding set's as-of | =curve_republish_service.cpp= | declined | The stored points are re-dated to the read's own reference date, so the anchor date is the one the curve it anchors was built at |
+| 10 | Raised is =success=false= at the gate but not a failure in the sweep | =publish_due_curves_handler.hpp= | fixed | =31a4fcf53d=: the sweep says why a raise is somebody else's to answer |
 
 * Result
 The task shipped. One firing of the scheduled sweep planned the thirty seeded
@@ -267,3 +276,31 @@ the BFF at =2026-11-14 23:59:59Z=: =USD-LIBOR-1M= answers seven pillars with
 the first at =1M= and a zero of 4.2428%, and =USD-SOFR-FOMC= answers seven with
 the first at =3M= and a zero of 3.9545%. The projection's one month pillar is the
 case the anchor above exists for.
+
+** After the review
+
+The first review round found one fault that changes behaviour and a set of
+smaller ones. The fault: the engine's "the funding curve does not cover this
+pillar" was turned into a deferral, so a projection whose funding curve had
+published and could still not span it waited for ever, and the sweep reported
+success because nothing failed. It is now thrown, with both curves named, which
+is what the sweep counts as a break; a projection whose ladder reaches past its
+funding curve has a test of its own, with every pillar quoted so nothing else
+can be the reason.
+
+The rest were cheap: two =contains()= calls, fifteen test cases that now name
+their suite and log what they assert, the map a firing reads its curves through
+aliased, and a party batch that no longer ends with a silent append of what it
+could not order -- the drop pass above already removed those and named them.
+
+Three findings were declined with reasons, and they are in the review table
+above: the status string is a protocol field rather than a local type, the
+anchor date is consistent with how a stored set is re-dated on read, and a
+cyclic configuration cannot be expressed at all, because the schema refuses a
+projection that discounts off another projection.
+
+After the fixes, =ores.iam.core.tests=, =ores.marketdata.core.tests= and
+=ores.marketdata.service.tests= pass. The sweep's own suite failed once under
+three suites in parallel, on
+=app_feed_ingest_loop_tests.cpp:1325= (=writer->held() >= 1=), and passes
+alone: it is a timing check in the ingest loop, untouched here.

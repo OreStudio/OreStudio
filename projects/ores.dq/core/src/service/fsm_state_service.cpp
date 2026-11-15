@@ -238,6 +238,11 @@ fsm_state_service::put_fsm_state(const messaging::put_fsm_state_request& request
 messaging::put_many_fsm_states_response
 fsm_state_service::put_many_fsm_states(const messaging::put_many_fsm_states_request& request) {
     messaging::put_many_fsm_states_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "fsm_state", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::fsm_state_key> keys;
@@ -328,6 +333,11 @@ fsm_state_service::delete_fsm_state(const messaging::delete_fsm_state_request& r
 messaging::delete_many_fsm_states_response fsm_state_service::delete_many_fsm_states(
     const messaging::delete_many_fsm_states_request& request) {
     messaging::delete_many_fsm_states_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "fsm_state", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

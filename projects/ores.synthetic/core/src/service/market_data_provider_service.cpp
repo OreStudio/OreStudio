@@ -246,6 +246,12 @@ messaging::put_many_market_data_providers_response
 market_data_provider_service::put_many_market_data_providers(
     const messaging::put_many_market_data_providers_request& request) {
     messaging::put_many_market_data_providers_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "market_data_provider", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::market_data_provider_key> keys;
@@ -332,6 +338,12 @@ messaging::delete_many_market_data_providers_response
 market_data_provider_service::delete_many_market_data_providers(
     const messaging::delete_many_market_data_providers_request& request) {
     messaging::delete_many_market_data_providers_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "market_data_provider", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

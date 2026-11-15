@@ -46,6 +46,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 
 image_tag_service::image_tag_service(const context& ctx)
@@ -184,6 +185,11 @@ image_tag_service::put_image_tag(const messaging::put_image_tag_request& request
 messaging::put_many_image_tags_response
 image_tag_service::put_many_image_tags(const messaging::put_many_image_tags_request& request) {
     messaging::put_many_image_tags_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "image_tag", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     std::vector<domain::image_tag> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
@@ -259,6 +265,11 @@ image_tag_service::delete_image_tag(const messaging::delete_image_tag_request& r
 messaging::delete_many_image_tags_response image_tag_service::delete_many_image_tags(
     const messaging::delete_many_image_tags_request& request) {
     messaging::delete_many_image_tags_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "image_tag", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

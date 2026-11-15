@@ -246,6 +246,12 @@ product_type_service::put_product_type(const messaging::put_product_type_request
 messaging::put_many_product_types_response product_type_service::put_many_product_types(
     const messaging::put_many_product_types_request& request) {
     messaging::put_many_product_types_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "product_type", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::product_type_key> keys;
@@ -330,6 +336,12 @@ product_type_service::delete_product_type(const messaging::delete_product_type_r
 messaging::delete_many_product_types_response product_type_service::delete_many_product_types(
     const messaging::delete_many_product_types_request& request) {
     messaging::delete_many_product_types_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "product_type", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

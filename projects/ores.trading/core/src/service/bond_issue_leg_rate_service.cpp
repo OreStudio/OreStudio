@@ -271,6 +271,12 @@ messaging::put_many_bond_issue_leg_rates_response
 bond_issue_leg_rate_service::put_many_bond_issue_leg_rates(
     const messaging::put_many_bond_issue_leg_rates_request& request) {
     messaging::put_many_bond_issue_leg_rates_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "bond_issue_leg_rate", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::bond_issue_leg_rate_key> keys;
@@ -361,6 +367,12 @@ messaging::delete_many_bond_issue_leg_rates_response
 bond_issue_leg_rate_service::delete_many_bond_issue_leg_rates(
     const messaging::delete_many_bond_issue_leg_rates_request& request) {
     messaging::delete_many_bond_issue_leg_rates_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "bond_issue_leg_rate", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

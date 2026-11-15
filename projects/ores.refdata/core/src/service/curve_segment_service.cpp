@@ -242,6 +242,12 @@ curve_segment_service::put_curve_segment(const messaging::put_curve_segment_requ
 messaging::put_many_curve_segments_response curve_segment_service::put_many_curve_segments(
     const messaging::put_many_curve_segments_request& request) {
     messaging::put_many_curve_segments_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "curve_segment", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::curve_segment_key> keys;
@@ -326,6 +332,12 @@ messaging::delete_curve_segment_response curve_segment_service::delete_curve_seg
 messaging::delete_many_curve_segments_response curve_segment_service::delete_many_curve_segments(
     const messaging::delete_many_curve_segments_request& request) {
     messaging::delete_many_curve_segments_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "curve_segment", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

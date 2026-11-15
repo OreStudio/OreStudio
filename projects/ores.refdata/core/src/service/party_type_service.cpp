@@ -237,6 +237,11 @@ party_type_service::put_party_type(const messaging::put_party_type_request& requ
 messaging::put_many_party_types_response
 party_type_service::put_many_party_types(const messaging::put_many_party_types_request& request) {
     messaging::put_many_party_types_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "party_type", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::party_type_key> keys;
@@ -321,6 +326,11 @@ party_type_service::delete_party_type(const messaging::delete_party_type_request
 messaging::delete_many_party_types_response party_type_service::delete_many_party_types(
     const messaging::delete_many_party_types_request& request) {
     messaging::delete_many_party_types_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "party_type", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

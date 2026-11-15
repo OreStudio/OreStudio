@@ -355,6 +355,12 @@ netting_set_service::put_netting_set(const messaging::put_netting_set_request& r
 messaging::put_many_netting_sets_response netting_set_service::put_many_netting_sets(
     const messaging::put_many_netting_sets_request& request) {
     messaging::put_many_netting_sets_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "netting_set", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::netting_set_key> keys;
@@ -446,6 +452,12 @@ netting_set_service::delete_netting_set(const messaging::delete_netting_set_requ
 messaging::delete_many_netting_sets_response netting_set_service::delete_many_netting_sets(
     const messaging::delete_many_netting_sets_request& request) {
     messaging::delete_many_netting_sets_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "netting_set", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

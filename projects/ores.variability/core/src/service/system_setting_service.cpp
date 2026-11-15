@@ -240,6 +240,12 @@ system_setting_service::put_system_setting(const messaging::put_system_setting_r
 messaging::put_many_system_settings_response system_setting_service::put_many_system_settings(
     const messaging::put_many_system_settings_request& request) {
     messaging::put_many_system_settings_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "system_setting", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::system_setting_key> keys;
@@ -330,6 +336,12 @@ messaging::delete_system_setting_response system_setting_service::delete_system_
 messaging::delete_many_system_settings_response system_setting_service::delete_many_system_settings(
     const messaging::delete_many_system_settings_request& request) {
     messaging::delete_many_system_settings_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "system_setting", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

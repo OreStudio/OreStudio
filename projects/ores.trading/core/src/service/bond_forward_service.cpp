@@ -251,6 +251,12 @@ bond_forward_service::put_bond_forward(const messaging::put_bond_forward_request
 messaging::put_many_bond_forwards_response bond_forward_service::put_many_bond_forwards(
     const messaging::put_many_bond_forwards_request& request) {
     messaging::put_many_bond_forwards_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "bond_forward", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::bond_forward_key> keys;
@@ -336,6 +342,12 @@ bond_forward_service::delete_bond_forward(const messaging::delete_bond_forward_r
 messaging::delete_many_bond_forwards_response bond_forward_service::delete_many_bond_forwards(
     const messaging::delete_many_bond_forwards_request& request) {
     messaging::delete_many_bond_forwards_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "bond_forward", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

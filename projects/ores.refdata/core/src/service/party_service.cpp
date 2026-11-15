@@ -251,6 +251,11 @@ party_service::put_party(const messaging::put_party_request& request) {
 messaging::put_many_parties_response
 party_service::put_many_parties(const messaging::put_many_parties_request& request) {
     messaging::put_many_parties_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "party", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::party_key> keys;
@@ -341,6 +346,11 @@ party_service::delete_party(const messaging::delete_party_request& request) {
 messaging::delete_many_parties_response
 party_service::delete_many_parties(const messaging::delete_many_parties_request& request) {
     messaging::delete_many_parties_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "party", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

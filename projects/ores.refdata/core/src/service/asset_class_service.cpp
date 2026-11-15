@@ -235,6 +235,12 @@ asset_class_service::put_asset_class(const messaging::put_asset_class_request& r
 messaging::put_many_asset_classes_response asset_class_service::put_many_asset_classes(
     const messaging::put_many_asset_classes_request& request) {
     messaging::put_many_asset_classes_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "asset_class", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::asset_class_key> keys;
@@ -321,6 +327,12 @@ asset_class_service::delete_asset_class(const messaging::delete_asset_class_requ
 messaging::delete_many_asset_classes_response asset_class_service::delete_many_asset_classes(
     const messaging::delete_many_asset_classes_request& request) {
     messaging::delete_many_asset_classes_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "asset_class", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

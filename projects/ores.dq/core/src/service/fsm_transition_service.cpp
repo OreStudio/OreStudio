@@ -240,6 +240,12 @@ fsm_transition_service::put_fsm_transition(const messaging::put_fsm_transition_r
 messaging::put_many_fsm_transitions_response fsm_transition_service::put_many_fsm_transitions(
     const messaging::put_many_fsm_transitions_request& request) {
     messaging::put_many_fsm_transitions_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "fsm_transition", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::fsm_transition_key> keys;
@@ -331,6 +337,12 @@ messaging::delete_fsm_transition_response fsm_transition_service::delete_fsm_tra
 messaging::delete_many_fsm_transitions_response fsm_transition_service::delete_many_fsm_transitions(
     const messaging::delete_many_fsm_transitions_request& request) {
     messaging::delete_many_fsm_transitions_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "fsm_transition", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

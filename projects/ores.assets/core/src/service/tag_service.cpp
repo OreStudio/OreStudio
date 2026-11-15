@@ -232,6 +232,11 @@ messaging::put_tag_response tag_service::put_tag(const messaging::put_tag_reques
 messaging::put_many_tags_response
 tag_service::put_many_tags(const messaging::put_many_tags_request& request) {
     messaging::put_many_tags_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "tag", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::tag_key> keys;
@@ -322,6 +327,11 @@ tag_service::delete_tag(const messaging::delete_tag_request& request) {
 messaging::delete_many_tags_response
 tag_service::delete_many_tags(const messaging::delete_many_tags_request& request) {
     messaging::delete_many_tags_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "tag", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

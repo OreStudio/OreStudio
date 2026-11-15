@@ -236,6 +236,12 @@ draft_reason_service::put_draft_reason(const messaging::put_draft_reason_request
 messaging::put_many_draft_reasons_response draft_reason_service::put_many_draft_reasons(
     const messaging::put_many_draft_reasons_request& request) {
     messaging::put_many_draft_reasons_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "draft_reason", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::draft_reason_key> keys;
@@ -321,6 +327,12 @@ draft_reason_service::delete_draft_reason(const messaging::delete_draft_reason_r
 messaging::delete_many_draft_reasons_response draft_reason_service::delete_many_draft_reasons(
     const messaging::delete_many_draft_reasons_request& request) {
     messaging::delete_many_draft_reasons_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "draft_reason", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

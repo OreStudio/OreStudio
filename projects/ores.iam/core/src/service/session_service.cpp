@@ -234,6 +234,11 @@ session_service::put_session(const messaging::put_session_request& request) {
 messaging::put_many_sessions_response
 session_service::put_many_sessions(const messaging::put_many_sessions_request& request) {
     messaging::put_many_sessions_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "session", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::session_key> keys;
@@ -324,6 +329,11 @@ session_service::delete_session(const messaging::delete_session_request& request
 messaging::delete_many_sessions_response
 session_service::delete_many_sessions(const messaging::delete_many_sessions_request& request) {
     messaging::delete_many_sessions_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "session", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

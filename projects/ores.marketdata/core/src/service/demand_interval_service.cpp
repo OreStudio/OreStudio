@@ -262,6 +262,12 @@ messaging::put_demand_interval_response demand_interval_service::put_demand_inte
 messaging::put_many_demand_intervals_response demand_interval_service::put_many_demand_intervals(
     const messaging::put_many_demand_intervals_request& request) {
     messaging::put_many_demand_intervals_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "demand_interval", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::demand_interval_key> keys;
@@ -354,6 +360,12 @@ messaging::delete_many_demand_intervals_response
 demand_interval_service::delete_many_demand_intervals(
     const messaging::delete_many_demand_intervals_request& request) {
     messaging::delete_many_demand_intervals_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "demand_interval", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

@@ -43,6 +43,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 
 dataset_bundle_member_service::dataset_bundle_member_service(const context& ctx)
@@ -195,6 +196,12 @@ messaging::put_many_dataset_bundle_members_response
 dataset_bundle_member_service::put_many_dataset_bundle_members(
     const messaging::put_many_dataset_bundle_members_request& request) {
     messaging::put_many_dataset_bundle_members_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "dataset_bundle_member", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     std::vector<domain::dataset_bundle_member> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
@@ -274,6 +281,12 @@ messaging::delete_many_dataset_bundle_members_response
 dataset_bundle_member_service::delete_many_dataset_bundle_members(
     const messaging::delete_many_dataset_bundle_members_request& request) {
     messaging::delete_many_dataset_bundle_members_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "dataset_bundle_member", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

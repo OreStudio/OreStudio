@@ -485,6 +485,11 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "{{entity_singular}}", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::{{entity_singular}}_key> keys;
@@ -602,6 +607,11 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "{{entity_singular}}", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {
@@ -1251,6 +1261,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 {{#party_id_is_target}}
 namespace {
@@ -1474,6 +1485,11 @@ messaging::{{response}}
 messaging::{{response}}
 {{name_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "{{name_singular}}", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     std::vector<domain::{{name_singular}}> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
@@ -1562,6 +1578,11 @@ messaging::{{response}}
 messaging::{{response}}
 {{name_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "{{name_singular}}", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {
@@ -1772,6 +1793,7 @@ std::optional<ores::utility::domain::result>
 
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 using ores::service::messaging::stamp;
 
 namespace ores::{{component}}::service {
@@ -1966,6 +1988,11 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    if (request.items.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "{{entity_singular}}", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One transaction for the whole batch. Each element states its own claim,
     // and the store checks each row's claim as it is written; an element that
     // is refused leaves the transaction uncommitted and nothing lands.

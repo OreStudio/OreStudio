@@ -292,6 +292,12 @@ ore_parameter_service::put_ore_parameter(const messaging::put_ore_parameter_requ
 messaging::put_many_ore_parameters_response ore_parameter_service::put_many_ore_parameters(
     const messaging::put_many_ore_parameters_request& request) {
     messaging::put_many_ore_parameters_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "ore_parameter", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::ore_parameter_key> keys;
@@ -383,6 +389,12 @@ messaging::delete_ore_parameter_response ore_parameter_service::delete_ore_param
 messaging::delete_many_ore_parameters_response ore_parameter_service::delete_many_ore_parameters(
     const messaging::delete_many_ore_parameters_request& request) {
     messaging::delete_many_ore_parameters_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "ore_parameter", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

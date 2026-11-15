@@ -232,6 +232,11 @@ messaging::put_app_response app_service::put_app(const messaging::put_app_reques
 messaging::put_many_apps_response
 app_service::put_many_apps(const messaging::put_many_apps_request& request) {
     messaging::put_many_apps_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "app", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::app_key> keys;
@@ -322,6 +327,11 @@ app_service::delete_app(const messaging::delete_app_request& request) {
 messaging::delete_many_apps_response
 app_service::delete_many_apps(const messaging::delete_many_apps_request& request) {
     messaging::delete_many_apps_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "app", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

@@ -248,6 +248,12 @@ curve_quote_service::put_curve_quote(const messaging::put_curve_quote_request& r
 messaging::put_many_curve_quotes_response curve_quote_service::put_many_curve_quotes(
     const messaging::put_many_curve_quotes_request& request) {
     messaging::put_many_curve_quotes_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "curve_quote", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::curve_quote_key> keys;
@@ -332,6 +338,12 @@ curve_quote_service::delete_curve_quote(const messaging::delete_curve_quote_requ
 messaging::delete_many_curve_quotes_response curve_quote_service::delete_many_curve_quotes(
     const messaging::delete_many_curve_quotes_request& request) {
     messaging::delete_many_curve_quotes_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "curve_quote", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

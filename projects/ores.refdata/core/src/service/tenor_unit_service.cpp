@@ -237,6 +237,11 @@ tenor_unit_service::put_tenor_unit(const messaging::put_tenor_unit_request& requ
 messaging::put_many_tenor_units_response
 tenor_unit_service::put_many_tenor_units(const messaging::put_many_tenor_units_request& request) {
     messaging::put_many_tenor_units_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "tenor_unit", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::tenor_unit_key> keys;
@@ -321,6 +326,11 @@ tenor_unit_service::delete_tenor_unit(const messaging::delete_tenor_unit_request
 messaging::delete_many_tenor_units_response tenor_unit_service::delete_many_tenor_units(
     const messaging::delete_many_tenor_units_request& request) {
     messaging::delete_many_tenor_units_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "tenor_unit", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

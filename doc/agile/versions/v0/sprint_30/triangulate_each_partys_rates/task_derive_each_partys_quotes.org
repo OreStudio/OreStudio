@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: C330DD6F-258B-4D41-930D-AE00FC60BF2E
+:END:
+#+title: Task: Derive each party's quotes from its own market
+#+description: The derived volatility source names its publisher, its legs and its currencies in code; take the party's triangulated history from CRM instead, so each party derives its own quotes and the constants disappear.
+#+type: task
+#+level: s1
+#+filetags: :triangulate_each_partys_rates:sprint_30:v0:
+#+owner: marco
+#+branch: feature/surface-every-pair-out-to-ten-years
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A surface belongs to a party and reads the party's own series, so the quotes it calibrates must be that party's too. Make the derived source ask CRM for the party's daily levels and keep only the statistics: returns, moments, smile, quotes. Delete ecb_fixing_item, ecb_legs_of, fixing_provider and the URI that names a publisher.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- Each party derives its own fx_option quotes from its own triangulated history.
+- The derived source contains no currency, publisher or leg selection; it asks CRM and does arithmetic.
+- The series it writes record derivation_kind and the config id of the party's build configuration.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

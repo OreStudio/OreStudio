@@ -183,7 +183,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::* column;
+    std::optional<std::string> scripted_parameter::*column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -232,8 +232,9 @@ auto stated_value_of(const scripted_parameter& parameter, const std::string& val
     return names_an_index(parameter.declared_type) ? ore_name_of(value) : value;
 }
 
-auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
-    -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data,
+                    std::string name,
+                    std::string type) -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -345,8 +346,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
-    -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data,
+               int parameter_sequence_number) -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -616,8 +617,8 @@ void write_class_underlyings(xml::record_writer& product, const scripted_instrum
 }
 namespace {
 
-auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
-    -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade,
+                       std::string_view trade_type) -> std::optional<scripted_instrument> {
     if (trade_type != "ScriptedTrade")
         return std::nullopt;
 

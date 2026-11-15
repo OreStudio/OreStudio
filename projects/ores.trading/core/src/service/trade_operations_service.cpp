@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -39,7 +40,6 @@
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include "ores.trading.core/service/structure_service.hpp"

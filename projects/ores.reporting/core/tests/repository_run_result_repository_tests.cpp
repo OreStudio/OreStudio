@@ -177,7 +177,9 @@ TEST_CASE("a run refused part way leaves none of the blocks it wrote", "[reposit
                     written += block.size();
                 },
             .cashflows = [](auto&) {},
-            .text_values = [](auto&) {}};
+            .text_values =
+                [](auto&) {
+                }};
         results::run_output_outcome outcome;
         results::read_run_output(file, run, 1, sinks, outcome);
         REQUIRE_FALSE(outcome.refusals.empty());

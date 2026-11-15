@@ -155,6 +155,13 @@ via its "Verifies task" field.
 | 1 | Local review: the commit message counted 98 optional missing paths; the list holds 96 | commit 6c56b9a763 | Accept | Amended before push |
 | 2 | Local review: three Notional lines named Notionals as optional, but the trade states the element; the example's dated startDate entries are what it lacks | =generated_trades_known_missing_paths.txt= | Accept | Reason rewritten for the three lines |
 | 3 | Local review: misspell over the changed files | - | Accept | Clean |
+| 4 | PR review 1: the BGS tenor rewrite erases every tenor when no floating leg is found | =rate_builders.cpp= | Accept | The leg is an optional; the builder refuses a swap with no floating tenor |
+| 5 | PR review 2: a callable bond names no credit curve when the scope holds no entity | =trade_population_planner.cpp= | Accept | Throws, as the credit planner does; the entity is chosen by =slot % size=, as the credit planner chooses |
+| 6 | PR review 3: the forward declaration of =credit_curve_of= is brittle | =trade_population_planner.cpp= | Decline | Every unnamed namespace of a translation unit is one namespace, so the declaration and the definition always agree |
+| 7 | PR review 4: anchor the bond reference-data pattern; reject old three-field lines | =generated_trade_ore_engine_tests.cpp= | Accept in part | The pattern names =BondFactory:=; a three-field line can never equal a four-field raised line, so it fails as no longer raised |
+| 8 | PR review 5: a line with a leading tab has an empty path | =generated_trade_export_tests.cpp= | Accept | The test checks the path is not empty |
+| 9 | PR review 6: Weights may not match the underlyings | =trade_population_planner.cpp= | Decline | The trade always states two underlyings, so two weights match by construction |
+| 10 | PR review: run the 95-check gate | - | Decline | Run only the checks the change reads, as the user asked |
 
 * Result
 

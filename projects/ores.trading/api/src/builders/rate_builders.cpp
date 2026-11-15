@@ -331,7 +331,7 @@ swap_result balance_guaranteed_swap_builder::build() const {
      * so a fixed leg that pays less often than the floating one is read past
      * its end and the engine crashes.
      */
-    int floating_leg = 0;
+    std::optional<int> floating_leg;
     for (const auto& leg : out->legs)
         if (leg.leg_type_code == "Floating")
             floating_leg = leg.identity.leg_number;
@@ -339,6 +339,9 @@ swap_result balance_guaranteed_swap_builder::build() const {
     for (const auto& row : out->schedules)
         if (row.owner_role == "swap" && row.owner_number == floating_leg)
             floating_tenor = row.tenor;
+    if (!floating_tenor)
+        return std::unexpected(build_error{"swap", "must have a floating leg with a tenor"});
+    // The swap's only schedules are its two legs' rules.
     for (auto& row : out->schedules)
         if (row.owner_role == "swap")
             row.tenor = floating_tenor;

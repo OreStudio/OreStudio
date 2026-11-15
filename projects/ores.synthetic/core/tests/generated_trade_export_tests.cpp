@@ -492,6 +492,7 @@ std::set<std::string> known_missing_paths() {
         const auto tab = line.find('\t');
         INFO("Known missing path: " << line);
         CHECK(tab != std::string::npos);
+        CHECK(tab != 0);
         CHECK(line.find_first_not_of(" \t", tab == std::string::npos ? line.size() : tab) !=
               std::string::npos);
         paths.insert(line.substr(0, tab));

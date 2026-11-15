@@ -167,7 +167,7 @@ const std::vector<error_pattern>& error_patterns() {
         {"market_data", std::regex(R"(^No CreditIndex (reference|constituents) data for )")},
         {"market_data",
          std::regex(
-             R"(could not build bond '.*': no reference data given or no suitable builder)")},
+             R"(BondFactory: could not build bond '.*': no reference data given or no suitable builder)")},
         {"engine_configuration",
          std::regex(R"(^No Pricing Engine configuration was provided for trade type )")},
         {"engine_configuration", std::regex(R"(^No EngineBuilder for )")},

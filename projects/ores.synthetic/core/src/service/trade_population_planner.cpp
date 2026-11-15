@@ -624,7 +624,11 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * empty handle when it names none. The curve is the one a credit trade
          * on the same entity names.
          */
-        if (entry.trade_type_code == "CallableBond" && !scope.credit_reference_entities.empty())
+        if (entry.trade_type_code == "CallableBond" && scope.credit_reference_entities.empty())
+            throw trade_population_error(
+                "The tenant holds no legal entity, so no callable bond can name a credit "
+                "curve. Publish the LEI dataset first.");
+        if (entry.trade_type_code == "CallableBond")
             security->issue.credit_curve_id =
                 credit_curve_of(
                     scope.credit_reference_entities[slot % scope.credit_reference_entities.size()],

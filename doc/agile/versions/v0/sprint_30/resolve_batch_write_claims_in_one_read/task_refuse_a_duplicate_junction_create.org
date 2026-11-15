@@ -89,7 +89,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Use total_slots - 1 rather than slot 10 | repository_currency_country_repository_tests.cpp | Declined | Every test in the file names its own slot index. |
+| 2 | Assert the outcome name, not only SQLSTATE 23505 | repository_currency_country_repository_tests.cpp | Declined | The catalogue fixes already_exists at 23505, and repository_exception carries the SQLSTATE only. |
+| 3 | Check client paths that re-create a live link | shell, http, qt, web | Checked | Shell add states must_not_exist (create); save/update state any or a version; the HTTP business-centre route puts only links not held; Qt and web build none. |
+| 4 | Only one of 27 junction tables tested | tests | Accepted as is | The 27 scripts come from one template. |
 
 * Result
 

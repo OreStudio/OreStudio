@@ -94,7 +94,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generated lines exceed 100 columns; confirm template and output agree | ores.cpp.service.service_impl.org | Declined | Codegen formats its output; check --only format passed, so regeneration does not churn. |
+| 2 | Note that the request is left holding the last part | protocol.hpp | Declined | batches_of never sees a request; no caller reads it after the loop. |
+| 3 | Share one move, split and assign helper across callers | three callers | Declined | Each caller handles failure differently (throw, reply, string); a callback helper adds a layer to save three lines. |
+| 4 | Test batches_of at 0, 1, 999, 1000, 1001, 2000, 2001 | domain_protocol_tests.cpp | Declined | Already covered: 0, 1,000 and 2,001 with per-part sizes and order. |
+| 5 | Name the part index in a partial failure | tenant_provisioning_handler.hpp | Declined | Parts are safe to repeat, so the operator reruns regardless. |
+| 6 | Confirm the other rollback deletes are guarded when empty | ore_import_execute_handler.cpp | Confirmed | All four are guarded by !empty(). |
 
 * Result
 

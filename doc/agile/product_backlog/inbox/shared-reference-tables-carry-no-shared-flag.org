@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: E9342D00-792A-4F77-8E27-BE558F24C094
+:END:
+#+title: The shared-reference read tables carry no shared flag, which…
+#+description: The shared-reference read tables carry no shared flag, which the owner block of doc/knowledge/security/data_read_across_tenants.org requires of a table that holds both tenant rows and shared rows. The flag exists so the system tenant can keep a row that no tenant reads; without it, every system-tenant row of those tables is readable by every tenant. Today that is the intent for the 54 catalogues: each publishes all its system rows for tenants to read, and the per-command policy split means a tenant still cannot write one. The deviation matters the day one of those tables needs a platform-private row, and the closing move is to add the column, have the seed set it, admit a row by owner and flag, and regenerate the 54 tables' policies. The read-across page states the flag, so a reviewer will find the gap.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

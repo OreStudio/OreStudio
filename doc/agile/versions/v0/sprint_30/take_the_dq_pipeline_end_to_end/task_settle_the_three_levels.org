@@ -55,8 +55,8 @@ every question below.
   [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]], the provenance
   fields in [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]], and the
   atomicity of a bundle in
-  [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package
-  catalogue]]. The page links each and says what each completes.
+  [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner
+  count]]. The page links each and says what each completes.
 - It carries UML for the parts a table cannot show, as =*.puml= beside it in
   =doc/knowledge/=:
   - a component diagram of the publish path from request to published row;
@@ -174,8 +174,11 @@ The page is signed off and the names it settled are in the tree.
   and in the five seed profiles that named it.
 - =tenant_defaults= carries what a tenant may change: the badges, the badge
   mappings, the code domains and nothing else. The ORE parameter datasets stay
-  in the world bundle until the reads admit the system tenant's rows, which is
-  task 3's work; the memberships state that.
+  in the world bundle because their readers do not admit the system tenant's
+  rows yet: the reporting tables keep a tenant-scoped read policy, so a tenant
+  still needs its own rows. Moving them to =system_core= is
+  [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]],
+  which owns the reads that replace a copy.
 - =dq_dataset_bundle_retire_base_cleanup.sql= removes the retired bundle and
   its members from a database that predates the rename, so a second populate
   leaves one bundle where the model has one.

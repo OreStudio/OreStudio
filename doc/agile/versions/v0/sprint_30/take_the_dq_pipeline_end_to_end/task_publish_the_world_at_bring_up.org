@@ -97,15 +97,15 @@ A database leaves bring-up with its platform and world catalogues in place.
 - The function derives each publish function from the artefact type's subject,
   with one fallback: DQ's own datasets are written by
   =<component>_<artefact type>_publish_fn= and not by the subject's operation.
-  Six of the seventy-one distinct subjects need the fallback, and the function
+  Six of the seventy-three distinct subjects need the fallback, and the function
   fails loudly when neither name resolves.
 - =populate.sql= calls it last, once every artefact row is staged, and its
   "reference data is NOT published here" block is gone.
-- The three publish calls inside the seed scripts stay, and they are seeding
-  dependencies and not publication policy: the WRLD business centre is validated
-  against the coding schemes the ISO seed publishes, and the system party is
-  validated against the business centres the FpML seed publishes. Both are
-  published by the bring-up run as well, idempotently.
+- One populate script calls a publish function: the images script, whose rows
+  are files the platform ships rather than a catalogue a dataset can stage. Every
+  other seed writes artefact rows and leaves publication to the bring-up, and the
+  tests that used to publish a business centre to make up for a missing catalogue
+  no longer do, because the bring-up publishes the FpML set.
 - Proof, on the development database inside a transaction that was rolled back:
   the three catalogues were emptied in the system tenant, the renamed bundle map
   was applied, and the bring-up wrote 61 calendars, 11 equity underlyings, 160

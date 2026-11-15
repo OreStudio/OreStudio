@@ -59,10 +59,32 @@ to land before the writer goes.
 |------+-------+---------+--------|
 | Tables written both by a direct seed and a DQ publish | 14 | investigation, section 3.3 | e050a2d239 |
 | System-only tables with no tenant route | 11 | investigation, section 3.3 | e050a2d239 |
+| Seed profiles that name the world bundle, so a demo tenant publishes the world catalogue into itself | 5 of 5 | `grep -c '\"world\"' projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql` | this commit |
+| Rows a provisioned demo tenant holds of two world datasets | 61 calendars and 170 currencies of its own, beside the system tenant's | `select tenant_id, count(*) from ores_refdata_calendars_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1` | this commit |
+| Datasets that are a member of more than one bundle | 32, of which 24 are the crypto bundle re-listing world members | `select count(*) from (select dataset_code from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by dataset_code having count(*) > 1) d` | this commit |
 
 * Notes
 
 Defect D5 and D14. This is the task that makes the seeding model stop being two models.
+
+The reader question this task was waiting on is settled: the publication-level
+page's shared-reference read is in the tree, and the vocabularies are read from
+the system tenant. What the review of the tenant bootstrap found is that the
+bundle-level half of the same defect remains, and it is now the first thing this
+task has to do:
+
+- Every seed profile names the =world= bundle, so the demo tenant publishes the
+  world catalogue into itself. A provisioned demo tenant therefore holds 61
+  calendars and 170 currencies of its own beside the system tenant's, which is
+  the second copy the page forbids. The profiles should name only the bundles
+  the tenant owns, and the datasets that write a tenant's rows must move to a
+  tenant-level bundle first: the GLEIF counterparties and the counterparty
+  aliases write a tenant's parties from a world record, so the page classifies
+  them as tenant datasets while the bundle map still lists them under =world=.
+- Thirty-two datasets are a member of more than one bundle, and the page states
+  that a dataset is a member of one bundle and no other. Twenty-four of them are
+  the =crypto= bundle re-listing world members; the rest are worth looking at
+  one by one.
 
 See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
 

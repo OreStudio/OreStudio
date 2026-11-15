@@ -97,6 +97,15 @@ bundle names the tenant that holds the rows. One table carries the whole map.
 | =lei_hierarchy= | Tenant | Tenant-wide | The tenant | When the tenant asks for it | The GLEIF hierarchy imported as the tenant's parties, and the staging datasets it reads |
 | =crypto= | World | World | The system tenant | When the installation asks for it | The cryptocurrency slice, published beside the currencies |
 
+A demonstration carries bundles of its own: =acme_group=, =acme_uk=, =acme_us=,
+=acme_hk=, =acme_lei_import=, =northwind_uk=, =northwind_lei_import=, and the two
+=marketdata.reference_vintage_*= bundles. Each lays out one demo tenant's books,
+portfolios and market data. They take the same levels as the rows above — a
+tenant bundle with party scope, or a tenant bundle with tenant-wide scope — and
+they carry no platform row and no world row. They are left out of the table
+because they name a demonstration and not a kind of reference data, and the
+classification reaches them like any other dataset.
+
 #+caption: The levels: one copy of each row, and who reads it.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/reference_data_levels.png]]
@@ -123,11 +132,14 @@ tenant creates from that record is the tenant's own row. The dataset that
 writes parties is therefore a tenant dataset, whatever it reads.
 
 The deployment's own registers — the services roster, the hosts and wrapper
-nodes, the grid and node samples, the telemetry logs — are shared with no
-tenant and published by no bundle. A service writes them as it observes them.
-They belong to the installation and not to any level of this rule, and a reader
-searching for the dataset that publishes one is searching for something the
-model does not contain.
+nodes, the grid and node samples, the telemetry logs, and the applications the
+grid runs — belong to the installation and not to any level of this rule. A
+service writes them as it observes them, and no bundle publishes them. The
+catalogue of applications is the exception a tenant reads: its rows are shared
+from the system tenant by the same read every other shared row takes, because a
+tenant has to know which application it may ask the grid to run. A reader
+searching for the dataset that publishes a measurement is searching for
+something the model does not contain.
 
 ** The bundle map
 
@@ -138,8 +150,8 @@ are not members. A bundle is a run and not a transaction: each step commits its
 own function call, and a step that fails halts the run without undoing the
 steps that preceded it. The guarantee a bundle gives, and the guarantee it does
 not give, is the subject of
-[[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package
-catalogue]], at B14.
+[[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner
+count]], at B14.
 
 ** The mechanism that writes a level
 

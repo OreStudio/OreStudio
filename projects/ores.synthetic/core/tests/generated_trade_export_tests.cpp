@@ -187,7 +187,7 @@ const std::map<std::string, recorded_type>& generated() {
                         return rows.empty() ? std::optional<row>{} :
                                               std::optional<row>{rows.front()};
                     };
-                    ores::trading::service::bond_trade_rows trade;
+                    ores::trading::domain::bond_trade_rows trade;
                     trade.legs = batch.bond_legs;
                     trade.amounts = batch.bond_leg_amounts;
                     trade.rates = batch.bond_leg_rates;
@@ -202,7 +202,7 @@ const std::map<std::string, recorded_type>& generated() {
                     trade.future = first(batch.bond_futures);
                     trade.ascot = first(batch.ascots);
                     trade.underlyings = batch.instrument_underlyings;
-                    ores::trading::service::assemble_bond(
+                    ores::trading::domain::assemble_bond(
                         bond,
                         trade,
                         {.legs = slot.bond_issue_legs,

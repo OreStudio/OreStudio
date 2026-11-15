@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: CD45F3CE-AD94-4259-891A-E10B5340C1C6
+:END:
+#+title: Task: Type the trade vocabularies and check convention parts
+#+description: A family put accepts a convention with a required part missing, and some trade key fields such as call or put and the product type are still free text in places. Each family part states its cardinality and a write that breaks it is refused, and each key field is a typed vocabulary backed by its lookup.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A convention family write that breaks a part's cardinality is refused with a verdict that names the part, and the trade key fields that are still free text are typed vocabularies backed by their lookups.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- a family model's parts state their cardinality, and the generated family put refuses a write that breaks it, naming the part
+- trade key fields such as product type and call or put are typed vocabularies backed by lookup tables, and the UI offers them from those tables
+- each named defect has a test that fails without its fix, or evidence that it was already fixed
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Split from the held-type defects task
+
+Split from [[id:87282F95-BA5B-40CF-8D41-D4996BEE27BC][Close the known defects in the held trade types]] on 2026-11-15. Lookup tables already exist for option type, long/short and product type (projects/ores.sql/create/trading/), so the vocabulary capture starts by finding the fields that still bypass them.
+
+** Captures folded in
+
+- [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]
+- [[id:A1105ED1-A491-4C76-AE0C-D320B989E397][Add proper enumerations for trade key fields]]
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

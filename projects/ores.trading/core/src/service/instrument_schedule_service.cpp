@@ -90,9 +90,8 @@ instrument_schedule_read_one(repository::instrument_schedule_repository& repo,
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares
@@ -107,51 +106,46 @@ instrument_schedule_read_many(repository::instrument_schedule_repository& repo,
                               const std::vector<messaging::instrument_schedule_key>& keys) {
     std::vector<std::vector<domain::instrument_schedule>> found(keys.size());
     using key_tuple = std::tuple<std::string, std::string, std::string, std::string, std::string>;
-    constexpr std::size_t chunk_size = 1000;
-    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
-        const auto end = std::min(begin + chunk_size, keys.size());
-        std::vector<std::string> trade_id_keys;
-        trade_id_keys.reserve(end - begin);
-        std::vector<std::string> owner_role_keys;
-        owner_role_keys.reserve(end - begin);
-        std::vector<std::string> owner_number_keys;
-        owner_number_keys.reserve(end - begin);
-        std::vector<std::string> schedule_role_keys;
-        schedule_role_keys.reserve(end - begin);
-        std::vector<std::string> sequence_number_keys;
-        sequence_number_keys.reserve(end - begin);
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            trade_id_keys.push_back(boost::uuids::to_string(key.trade_id));
-            owner_role_keys.push_back(key.owner_role);
-            owner_number_keys.push_back(std::to_string(key.owner_number));
-            schedule_role_keys.push_back(key.schedule_role);
-            sequence_number_keys.push_back(std::to_string(key.sequence_number));
-        }
-        std::map<key_tuple, std::vector<domain::instrument_schedule>> by_key;
-        for (auto& row : repo.read_latest(ctx,
-                                          trade_id_keys,
-                                          owner_role_keys,
-                                          owner_number_keys,
-                                          schedule_role_keys,
-                                          sequence_number_keys)) {
-            key_tuple named(boost::uuids::to_string(row.trade_id),
-                            row.owner_role,
-                            std::to_string(row.owner_number),
-                            row.schedule_role,
-                            std::to_string(row.sequence_number));
-            by_key[std::move(named)].push_back(std::move(row));
-        }
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.trade_id),
-                                                    key.owner_role,
-                                                    std::to_string(key.owner_number),
-                                                    key.schedule_role,
-                                                    std::to_string(key.sequence_number)));
-            if (rows != by_key.end())
-                found[i] = rows->second;
-        }
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(keys.size());
+    std::vector<std::string> owner_role_keys;
+    owner_role_keys.reserve(keys.size());
+    std::vector<std::string> owner_number_keys;
+    owner_number_keys.reserve(keys.size());
+    std::vector<std::string> schedule_role_keys;
+    schedule_role_keys.reserve(keys.size());
+    std::vector<std::string> sequence_number_keys;
+    sequence_number_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        trade_id_keys.push_back(boost::uuids::to_string(key.trade_id));
+        owner_role_keys.push_back(key.owner_role);
+        owner_number_keys.push_back(std::to_string(key.owner_number));
+        schedule_role_keys.push_back(key.schedule_role);
+        sequence_number_keys.push_back(std::to_string(key.sequence_number));
+    }
+    std::map<key_tuple, std::vector<domain::instrument_schedule>> by_key;
+    for (auto& row : repo.read_latest(ctx,
+                                      trade_id_keys,
+                                      owner_role_keys,
+                                      owner_number_keys,
+                                      schedule_role_keys,
+                                      sequence_number_keys)) {
+        key_tuple named(boost::uuids::to_string(row.trade_id),
+                        row.owner_role,
+                        std::to_string(row.owner_number),
+                        row.schedule_role,
+                        std::to_string(row.sequence_number));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.trade_id),
+                                                key.owner_role,
+                                                std::to_string(key.owner_number),
+                                                key.schedule_role,
+                                                std::to_string(key.sequence_number)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
     }
     return found;
 }

@@ -82,9 +82,8 @@ regulatory_corporate_sector_read_one(repository::regulatory_corporate_sector_rep
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares
@@ -99,29 +98,24 @@ std::vector<std::vector<domain::regulatory_corporate_sector>> regulatory_corpora
     const std::vector<messaging::regulatory_corporate_sector_key>& keys) {
     std::vector<std::vector<domain::regulatory_corporate_sector>> found(keys.size());
     using key_tuple = std::tuple<std::string, std::string>;
-    constexpr std::size_t chunk_size = 1000;
-    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
-        const auto end = std::min(begin + chunk_size, keys.size());
-        std::vector<std::string> code_keys;
-        code_keys.reserve(end - begin);
-        std::vector<std::string> coding_scheme_code_keys;
-        coding_scheme_code_keys.reserve(end - begin);
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            code_keys.push_back(key.code);
-            coding_scheme_code_keys.push_back(key.coding_scheme_code);
-        }
-        std::map<key_tuple, std::vector<domain::regulatory_corporate_sector>> by_key;
-        for (auto& row : repo.read_latest(ctx, code_keys, coding_scheme_code_keys)) {
-            key_tuple named(row.code, row.coding_scheme_code);
-            by_key[std::move(named)].push_back(std::move(row));
-        }
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            const auto rows = by_key.find(key_tuple(key.code, key.coding_scheme_code));
-            if (rows != by_key.end())
-                found[i] = rows->second;
-        }
+    std::vector<std::string> code_keys;
+    code_keys.reserve(keys.size());
+    std::vector<std::string> coding_scheme_code_keys;
+    coding_scheme_code_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        code_keys.push_back(key.code);
+        coding_scheme_code_keys.push_back(key.coding_scheme_code);
+    }
+    std::map<key_tuple, std::vector<domain::regulatory_corporate_sector>> by_key;
+    for (auto& row : repo.read_latest(ctx, code_keys, coding_scheme_code_keys)) {
+        key_tuple named(row.code, row.coding_scheme_code);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(key.code, key.coding_scheme_code));
+        if (rows != by_key.end())
+            found[i] = rows->second;
     }
     return found;
 }

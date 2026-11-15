@@ -85,9 +85,8 @@ std::vector<domain::host> host_read_one(repository::host_repository& repo,
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares

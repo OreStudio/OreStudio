@@ -87,9 +87,8 @@ std::vector<domain::trade_link> trade_link_read_one(repository::trade_link_repos
  * @brief The current rows a key set names, one entry per key in the keys' order.
  *
  * Each entry holds what the one-key read holds for its key, so a batch checks
- * each row against the same answer a single request gets. A key set is read
- * in chunks, one statement each, because every key is a bind and the store's
- * bind count is finite.
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
  *
  * A row is joined back to its key by the text form of each key column. Both
  * sides convert the typed value with the same function, and the store compares
@@ -104,37 +103,31 @@ trade_link_read_many(repository::trade_link_repository& repo,
                      const std::vector<messaging::trade_link_key>& keys) {
     std::vector<std::vector<domain::trade_link>> found(keys.size());
     using key_tuple = std::tuple<std::string, std::string, std::string>;
-    constexpr std::size_t chunk_size = 1000;
-    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
-        const auto end = std::min(begin + chunk_size, keys.size());
-        std::vector<std::string> from_trade_id_keys;
-        from_trade_id_keys.reserve(end - begin);
-        std::vector<std::string> to_trade_id_keys;
-        to_trade_id_keys.reserve(end - begin);
-        std::vector<std::string> link_type_keys;
-        link_type_keys.reserve(end - begin);
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            from_trade_id_keys.push_back(boost::uuids::to_string(key.from_trade_id));
-            to_trade_id_keys.push_back(boost::uuids::to_string(key.to_trade_id));
-            link_type_keys.push_back(key.link_type);
-        }
-        std::map<key_tuple, std::vector<domain::trade_link>> by_key;
-        for (auto& row :
-             repo.read_latest(ctx, from_trade_id_keys, to_trade_id_keys, link_type_keys)) {
-            key_tuple named(boost::uuids::to_string(row.from_trade_id),
-                            boost::uuids::to_string(row.to_trade_id),
-                            row.link_type);
-            by_key[std::move(named)].push_back(std::move(row));
-        }
-        for (std::size_t i = begin; i < end; ++i) {
-            const auto& key = keys[i];
-            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.from_trade_id),
-                                                    boost::uuids::to_string(key.to_trade_id),
-                                                    key.link_type));
-            if (rows != by_key.end())
-                found[i] = rows->second;
-        }
+    std::vector<std::string> from_trade_id_keys;
+    from_trade_id_keys.reserve(keys.size());
+    std::vector<std::string> to_trade_id_keys;
+    to_trade_id_keys.reserve(keys.size());
+    std::vector<std::string> link_type_keys;
+    link_type_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        from_trade_id_keys.push_back(boost::uuids::to_string(key.from_trade_id));
+        to_trade_id_keys.push_back(boost::uuids::to_string(key.to_trade_id));
+        link_type_keys.push_back(key.link_type);
+    }
+    std::map<key_tuple, std::vector<domain::trade_link>> by_key;
+    for (auto& row : repo.read_latest(ctx, from_trade_id_keys, to_trade_id_keys, link_type_keys)) {
+        key_tuple named(boost::uuids::to_string(row.from_trade_id),
+                        boost::uuids::to_string(row.to_trade_id),
+                        row.link_type);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.from_trade_id),
+                                                boost::uuids::to_string(key.to_trade_id),
+                                                key.link_type));
+        if (rows != by_key.end())
+            found[i] = rows->second;
     }
     return found;
 }

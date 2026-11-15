@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:performance:repository:read_a_batch_in_one_query:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/check-batch-claims-with-one-read
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ A batch write in a generated repository reads the current rows of the batch once
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -42,9 +42,20 @@ A batch write in a generated repository reads the current rows of the batch once
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The claim helpers leave the repository class. =replace_claim= and
+  =apply_claim= become functions in the generated file's anonymous namespace
+  that take the current rows from their caller, so no claim check reads.
+- =claim_reads_current= states which claims need the current row: an =any=
+  claim on an audited table (to state the version it replaces), and a
+  =must_not_exist= claim on a table with no version (to refuse a create over
+  a live row). Every other claim is the store's to check.
+- A batch write reads only the rows whose claim needs them, with one batch
+  read, and a claim-less batch write reads every row once for its replace
+  claims. A single write reads only when its claim needs it, as before.
+- The batch =read_latest= chunks its own key set at 1,000 keys by calling
+  itself per chunk, so every caller is safe from the bind limit and the
+  service helper drops its chunk loop.
+- The class diagrams that listed the two private members drop them.
 
 * Measurements
 
@@ -58,9 +69,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A put of 1,000 market observations, before (main after PR 4739) | median 4.45 s, range 4.24 to 5.47 s, 25 batches in 5 runs | =LD_LIBRARY_PATH=<side> ores.marketdata.core.tests "[.benchmark]"=, sides alternated; =evidence/batch_put_benchmark_repository_claims.tsv= | dd42bb2a85 |
+| A put of 1,000 market observations, after | median 0.52 s, range 0.46 to 1.23 s, 25 batches in 5 runs | the same command | 3c82e72057 |
+| The whole story: before PR 4739 against after this task | median 12.50 s against 0.51 s, ranges 12.00 to 16.98 s and 0.48 to 1.66 s, 25 batches each | the same command; =evidence/batch_put_benchmark_whole_story.tsv= | 735c13adfe against 3c82e72057 |
+| Load average during the runs | 4 to 9 on 8 cores | =uptime= before each run | |
+| The derived FX volatility source's first history on a recreated environment, debug level | 2,590 days (62,300 observations) in 27.13 s over 10 passes; 70 batch writes, 0.37 s each on average, 0 failed | =compass db recreate=, =compass services start=, Acme provisioning; the =Kept the derived history= and =Wrote N derived observation(s)= lines of =ores.synthetic.service.0.log= | 24b5291c2a |
+| Core suites of the 14 touched components | 13 pass; synthetic fails one case that main fails too (see Notes) | =compass build test_ores.<component>.core.tests= | 3c82e72057 |
 
 * Notes
+
+- =ores.synthetic.core.tests= fails on main since cf010d9c18 in
+  =the generated trades are the ones recorded=, for ScriptedTrade: the index is
+  written as its address and the Strike is lost. The test runs in memory and
+  this branch does not touch the generators. It is captured as
+  =generated_scripted_trades_lose_the_strike_and_the_index_name=.
 
 * Test Scenarios
 
@@ -86,3 +108,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A generated repository checks a batch write's claims against one batch read of
+the rows that need it, and its batch read chunks its own key set at 1,000 keys.
+A 1,000-row put of market observations now makes three batch reads and one
+insert.
+
+- Acceptance 1 holds: the batch write reads only the rows whose claim needs
+  them, in one read, and the claim-less batch write reads every row once.
+- Acceptance 2 holds: a create over a row past the first chunk is refused and
+  writes nothing, and an audited replace states each row's current version.
+  =repository_market_observation_repository_tests.cpp= and
+  =repository_market_series_repository_tests.cpp= prove both; a join that finds
+  no row fails them.
+- Acceptance 3 holds: a 1,000-row put went from a median of 4.45 s to 0.52 s,
+  and from 12.50 s to 0.51 s across the whole story, on the same machine.
+- Acceptance 4 holds: 13 of the 14 touched core suites pass, and the one
+  synthetic failure is on main too. The static checks pass, 52 of 52.
+- On a recreated environment the derived FX volatility source wrote its first
+  history, 2,590 days, in 27.13 s. The measurement the story started from was
+  2,600 days in 595.678 s, in another environment.

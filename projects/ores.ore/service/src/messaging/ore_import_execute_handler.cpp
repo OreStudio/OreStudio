@@ -38,30 +38,11 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/bond_document_ops.hpp"
+#include "ores.trading.api/domain/bond_instrument_rows.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
-#include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_protocol.hpp"
-#include "ores.trading.api/messaging/bond_forward_protocol.hpp"
-#include "ores.trading.api/messaging/bond_future_protocol.hpp"
-#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_conversion_target_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_leg_amortization_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_leg_amount_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_leg_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_leg_rate_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_leg_schedule_date_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_leg_schedule_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
-#include "ores.trading.api/messaging/bond_leg_amortization_protocol.hpp"
-#include "ores.trading.api/messaging/bond_leg_amount_protocol.hpp"
-#include "ores.trading.api/messaging/bond_leg_protocol.hpp"
-#include "ores.trading.api/messaging/bond_leg_rate_protocol.hpp"
-#include "ores.trading.api/messaging/bond_option_protocol.hpp"
-#include "ores.trading.api/messaging/bond_repo_protocol.hpp"
-#include "ores.trading.api/messaging/bond_trs_protocol.hpp"
 #include "ores.trading.api/messaging/callable_swap_call_date_protocol.hpp"
 #include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
@@ -95,15 +76,6 @@
 #include "ores.trading.api/messaging/index_credit_default_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/index_credit_default_swap_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/inflation_swap_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_option_exercise_fee_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_option_exercise_price_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_option_payment_date_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_option_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/range_bound_protocol.hpp"
 #include "ores.trading.api/messaging/rate_instrument_protocol.hpp"
@@ -144,41 +116,6 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 namespace {
-
-// The document mirror types carry a date as the ISO spelling the XML
-// states, while the flat protocol writes carry a calendar date. These
-// helpers cross that boundary in both directions; an absent or empty
-// spelling stays an unengaged optional.
-std::optional<std::chrono::year_month_day> parse_date(const std::string& text) {
-    if (text.empty())
-        return std::nullopt;
-    return ores::platform::time::datetime::from_iso8601_date(text);
-}
-
-std::optional<std::chrono::year_month_day>
-parse_optional_date(const std::optional<std::string>& text) {
-    return text ? parse_date(*text) : std::nullopt;
-}
-
-// The schema states a list of numbers as one text, split on the separators
-// the corpus uses.
-std::vector<std::string> split_numbers(const std::string& text) {
-    std::vector<std::string> out;
-    std::string current;
-    for (const char c : text) {
-        if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ',' || c == ';') {
-            if (!current.empty()) {
-                out.push_back(current);
-                current.clear();
-            }
-        } else {
-            current.push_back(c);
-        }
-    }
-    if (!current.empty())
-        out.push_back(current);
-    return out;
-}
 
 // The canonical write record carries what the caller owns. The imported
 // domain objects carry the server's fields too, so each projects by name.
@@ -751,56 +688,6 @@ join_composites(Nats& nats,
     return errors;
 }
 
-template <typename Nats>
-std::string book_imported_trade(Nats& nats,
-                                ores::ore::xml::trade_import_item& item,
-                                const resolved_envelope& resolved,
-                                bool into_sandbox) {
-    using namespace ores::trading::domain;
-    using ores::utility::domain::outcome;
-
-    std::string error;
-    ores::trading::messaging::book_trade_request book_req;
-    book_req.anchor = item.anchor;
-    book_req.anchor.counterparty_id = resolved.counterparty_id;
-    book_req.anchor.counterparty_scope =
-        resolved.counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
-    // A virtual book of a sandbox holds only drafts, tests and hypotheticals,
-    // so a trade imported into a sandbox is a test, not an actual deal.
-    book_req.anchor.booking_nature = into_sandbox ? booking_nature::test : booking_nature::actual;
-    book_req.anchor.entry_channel = entry_channel::stp;
-    /*
-     * The trade names the ORE id it was imported from, so a rollback or a
-     * report can trace it back to the document it came out of.
-     */
-    book_req.anchor.origin = origin::ore_import;
-    book_req.anchor.origin_reference = item.ore_id;
-    book_req.booking = item.booking;
-    book_req.booking.netting_set_id = resolved.netting_set_id;
-    book_req.booking.counterparty_identifier_id = resolved.counterparty_identifier_id;
-    book_req.booking.netting_set_identifier_id = resolved.netting_set_identifier_id;
-    book_req.booking.change_reason_code = "system.external_data_import";
-    book_req.activity_type_code = item.activity_type_code;
-    // The instrument is booked with the trade, through the writer every booking
-    // uses, so each row of every family lands with it. A bond is the exception:
-    // its issue is shared by every trade of the security, and the import
-    // reconciles it below.
-    if (!std::holds_alternative<bond_instrument_data>(item.instrument))
-        append_instrument(book_req.instruments, item.instrument);
-    auto booked = nats_call(nats, book_req, error);
-    if (!booked || booked->result.outcome != outcome::ok || !booked->activity_id)
-        return error.empty() ? "book_trade failed" : error;
-
-    const auto activity_id = *booked->activity_id;
-    const auto written = write_imported_components(nats, item, resolved, activity_id);
-    if (written.empty()) {
-        stamp_ids(item.instrument, item.anchor.id, activity_id);
-        return {};
-    }
-    const auto closed = close_bookings(nats, {item.anchor.id});
-    return closed.empty() ? written : written + " The booking could not be closed: " + closed;
-}
-
 /**
  * @brief The terms one security is held with, and the legs first seen for it.
  *
@@ -905,993 +792,32 @@ read_bond_issues_by_security(Nats& nats, std::string& out_error) {
 }
 
 /**
- * @brief Saves one schedule of one owner: the entries and their dates.
+ * @brief Settles the issue a bond trade is held under, writing it when new.
  *
- * The entries are numbered from one within their role, so a reader
- * reassembles the document's order. Each entry writes its own row and
- * each of its dates writes a child row keyed to that entry's ordinal.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_schedule(Nats& nats,
-                          const boost::uuids::uuid& trade_id,
-                          const boost::uuids::uuid& trade_activity_id,
-                          const std::string& owner_role,
-                          int owner_number,
-                          const std::string& schedule_role,
-                          const ores::trading::domain::bond_schedule_data& schedule) {
-    using ores::trading::messaging::put_instrument_schedule_date_request;
-    using ores::trading::messaging::put_instrument_schedule_request;
-
-    std::string error;
-    int sequence_number = 0;
-    for (const auto& rule : schedule.rules) {
-        put_instrument_schedule_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.trade_activity_id = trade_activity_id;
-        req.change.write.owner_role = owner_role;
-        req.change.write.owner_number = owner_number;
-        req.change.write.schedule_role = schedule_role;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.schedule_kind = "rules";
-        req.change.write.start_date = parse_date(rule.start_date);
-        req.change.write.end_date = parse_optional_date(rule.end_date);
-        req.change.write.adjust_end_date_to_previous_month_end =
-            rule.adjust_end_date_to_previous_month_end;
-        req.change.write.tenor = rule.tenor;
-        req.change.write.calendar = rule.calendar;
-        req.change.write.convention = rule.convention;
-        req.change.write.term_convention = rule.term_convention;
-        req.change.write.rule = rule.rule;
-        req.change.write.end_of_month = rule.end_of_month;
-        req.change.write.end_of_month_convention = rule.end_of_month_convention;
-        req.change.write.first_date = parse_optional_date(rule.first_date);
-        req.change.write.last_date = parse_optional_date(rule.last_date);
-        req.change.write.remove_first_date = rule.remove_first_date;
-        req.change.write.remove_last_date = rule.remove_last_date;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_instrument_schedule failed" : error;
-    }
-
-    for (const auto& dates : schedule.dates) {
-        put_instrument_schedule_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.trade_activity_id = trade_activity_id;
-        req.change.write.owner_role = owner_role;
-        req.change.write.owner_number = owner_number;
-        req.change.write.schedule_role = schedule_role;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.schedule_kind = "dates";
-        req.change.write.calendar = dates.calendar;
-        req.change.write.convention = dates.convention;
-        req.change.write.tenor = dates.tenor;
-        req.change.write.end_of_month = dates.end_of_month;
-        req.change.write.include_duplicate_dates = dates.include_duplicate_dates;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_instrument_schedule failed" : error;
-
-        int date_number = 0;
-        for (const auto& date : dates.dates) {
-            put_instrument_schedule_date_request date_req;
-            date_req.change.write.trade_id = trade_id;
-            date_req.change.write.trade_activity_id = trade_activity_id;
-            date_req.change.write.owner_role = owner_role;
-            date_req.change.write.owner_number = owner_number;
-            date_req.change.write.schedule_role = schedule_role;
-            date_req.change.write.schedule_sequence_number = req.change.write.sequence_number;
-            date_req.change.write.sequence_number = ++date_number;
-            date_req.change.write.schedule_date =
-                ores::platform::time::datetime::from_iso8601_date(date);
-            auto date_resp = nats_call(nats, date_req, error);
-            if (!date_resp || date_resp->result.outcome != ores::utility::domain::outcome::ok)
-                return error.empty() ? "save_instrument_schedule_date failed" : error;
-        }
-    }
-
-    return {};
-}
-
-/**
- * @brief Saves one of a leg's six amount lists under the role that names it.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_leg_amounts(Nats& nats,
-                             const boost::uuids::uuid& trade_id,
-                             const boost::uuids::uuid& trade_activity_id,
-                             const std::string& leg_role,
-                             int leg_number,
-                             const std::string& amount_role,
-                             const std::vector<ores::trading::domain::bond_float_data>& amounts) {
-    using ores::trading::messaging::put_bond_leg_amount_request;
-
-    std::string error;
-    int sequence_number = 0;
-    for (const auto& amount : amounts) {
-        put_bond_leg_amount_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.trade_activity_id = trade_activity_id;
-        req.change.write.leg_role = leg_role;
-        req.change.write.leg_number = leg_number;
-        req.change.write.amount_role = amount_role;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.value = amount.value;
-        req.change.write.start_date = amount.start_date;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_leg_amount failed" : error;
-    }
-    return {};
-}
-
-/**
- * @brief Saves one bond leg: its row, its amounts, its rate, its
- * amortizations and its five schedules.
- *
- * A leg that carries nothing writes no row, which is what a container
- * that came from a row set rather than from a document holds.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_leg(Nats& nats,
-                     const boost::uuids::uuid& trade_id,
-                     const boost::uuids::uuid& trade_activity_id,
-                     const std::string& leg_role,
-                     int leg_number,
-                     const ores::trading::domain::bond_leg_data& leg) {
-    using ores::trading::messaging::put_bond_leg_amortization_request;
-    using ores::trading::messaging::put_bond_leg_rate_request;
-    using ores::trading::messaging::put_bond_leg_request;
-
-    if (is_empty(leg))
-        return {};
-
-    std::string error;
-    put_bond_leg_request leg_req;
-    leg_req.change.write.trade_id = trade_id;
-    leg_req.change.write.trade_activity_id = trade_activity_id;
-    leg_req.change.write.leg_role = leg_role;
-    leg_req.change.write.leg_number = leg_number;
-    leg_req.change.write.payer = leg.payer;
-    leg_req.change.write.leg_type = leg.leg_type;
-    leg_req.change.write.currency = leg.currency;
-    leg_req.change.write.payment_convention = leg.payment_convention;
-    leg_req.change.write.payment_lag = leg.payment_lag;
-    leg_req.change.write.payment_calendar = leg.payment_calendar;
-    leg_req.change.write.day_counter = leg.day_counter;
-    leg_req.change.write.last_period_day_counter = leg.last_period_day_counter;
-    leg_req.change.write.notional_payment_lag = leg.notional_payment_lag;
-    leg_req.change.write.strict_notional_dates = leg.strict_notional_dates;
-    leg_req.change.write.indexings_from_asset_leg = leg.indexings_from_asset_leg;
-    if (leg.settlement) {
-        leg_req.change.write.settlement_fx_index = leg.settlement->fx_index;
-        leg_req.change.write.settlement_fixing_date = leg.settlement->fixing_date;
-    }
-    auto leg_resp = nats_call(nats, leg_req, error);
-    if (!leg_resp || leg_resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_bond_leg failed" : error;
-
-    if (auto failure = save_leg_amounts(
-            nats, trade_id, trade_activity_id, leg_role, leg_number, "notional", leg.notionals);
-        !failure.empty())
-        return failure;
-
-    if (leg.rate && leg.rate->fixed) {
-        if (auto failure = save_leg_amounts(nats,
-                                            trade_id,
-                                            trade_activity_id,
-                                            leg_role,
-                                            leg_number,
-                                            "rate",
-                                            leg.rate->fixed->rates);
-            !failure.empty())
-            return failure;
-    }
-
-    if (leg.rate && leg.rate->floating) {
-        const auto& floating = *leg.rate->floating;
-        const std::pair<std::string, const std::vector<ores::trading::domain::bond_float_data>*>
-            lists[] = {{"spread", &floating.spreads},
-                       {"cap", &floating.caps},
-                       {"floor", &floating.floors},
-                       {"gearing", &floating.gearings}};
-        for (const auto& [role, amounts] : lists) {
-            if (auto failure = save_leg_amounts(
-                    nats, trade_id, trade_activity_id, leg_role, leg_number, role, *amounts);
-                !failure.empty())
-                return failure;
-        }
-
-        put_bond_leg_rate_request rate_req;
-        rate_req.change.write.trade_id = trade_id;
-        rate_req.change.write.trade_activity_id = trade_activity_id;
-        rate_req.change.write.leg_role = leg_role;
-        rate_req.change.write.leg_number = leg_number;
-        rate_req.change.write.rate_kind = "floating";
-        rate_req.change.write.index = floating.index;
-        rate_req.change.write.is_in_arrears = floating.is_in_arrears;
-        rate_req.change.write.last_recent_period = floating.last_recent_period;
-        rate_req.change.write.last_recent_period_calendar = floating.last_recent_period_calendar;
-        if (floating.fixing_days)
-            rate_req.change.write.fixing_days = static_cast<std::int64_t>(*floating.fixing_days);
-        rate_req.change.write.lookback = floating.lookback;
-        rate_req.change.write.rate_cutoff = floating.rate_cutoff;
-        rate_req.change.write.is_averaged = floating.is_averaged;
-        rate_req.change.write.has_sub_periods = floating.has_sub_periods;
-        rate_req.change.write.include_spread = floating.include_spread;
-        rate_req.change.write.is_not_resetting_xccy = floating.is_not_resetting_xccy;
-        rate_req.change.write.naked_option = floating.naked_option;
-        rate_req.change.write.local_cap_floor = floating.local_cap_floor;
-        rate_req.change.write.stub_use_original_curve = floating.stub_use_original_curve;
-        rate_req.change.write.observation_shift = floating.observation_shift;
-        if (floating.front_stub_interpolation) {
-            const auto& stub = *floating.front_stub_interpolation;
-            rate_req.change.write.front_stub_short_index = stub.short_index;
-            rate_req.change.write.front_stub_long_index = stub.long_index;
-            rate_req.change.write.front_stub_rounding_type = stub.rounding_type;
-            rate_req.change.write.front_stub_rounding_precision = stub.rounding_precision;
-        }
-        if (floating.back_stub_interpolation) {
-            const auto& stub = *floating.back_stub_interpolation;
-            rate_req.change.write.back_stub_short_index = stub.short_index;
-            rate_req.change.write.back_stub_long_index = stub.long_index;
-            rate_req.change.write.back_stub_rounding_type = stub.rounding_type;
-            rate_req.change.write.back_stub_rounding_precision = stub.rounding_precision;
-        }
-        auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_leg_rate failed" : error;
-
-        if (auto failure = save_schedule(nats,
-                                         trade_id,
-                                         trade_activity_id,
-                                         leg_role,
-                                         leg_number,
-                                         "fixing_schedule",
-                                         floating.fixing_schedule);
-            !failure.empty())
-            return failure;
-        if (auto failure = save_schedule(nats,
-                                         trade_id,
-                                         trade_activity_id,
-                                         leg_role,
-                                         leg_number,
-                                         "reset_schedule",
-                                         floating.reset_schedule);
-            !failure.empty())
-            return failure;
-    } else if (leg.rate && leg.rate->formula_based) {
-        const auto& formula = *leg.rate->formula_based;
-        put_bond_leg_rate_request rate_req;
-        rate_req.change.write.trade_id = trade_id;
-        rate_req.change.write.trade_activity_id = trade_activity_id;
-        rate_req.change.write.leg_role = leg_role;
-        rate_req.change.write.leg_number = leg_number;
-        rate_req.change.write.rate_kind = "formula_based";
-        rate_req.change.write.index = formula.index;
-        rate_req.change.write.is_in_arrears = formula.is_in_arrears;
-        rate_req.change.write.fixing_days = formula.fixing_days;
-        rate_req.change.write.fixing_calendar = formula.fixing_calendar;
-        auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_leg_rate failed" : error;
-    } else if (leg.rate && leg.rate->fixed) {
-        put_bond_leg_rate_request rate_req;
-        rate_req.change.write.trade_id = trade_id;
-        rate_req.change.write.trade_activity_id = trade_activity_id;
-        rate_req.change.write.leg_role = leg_role;
-        rate_req.change.write.leg_number = leg_number;
-        rate_req.change.write.rate_kind = "fixed";
-        auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_leg_rate failed" : error;
-    }
-
-    int sequence_number = 0;
-    for (const auto& amortization : leg.amortizations) {
-        put_bond_leg_amortization_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.trade_activity_id = trade_activity_id;
-        req.change.write.leg_role = leg_role;
-        req.change.write.leg_number = leg_number;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.amortization_type = amortization.type;
-        req.change.write.value = amortization.value;
-        req.change.write.start_date = amortization.start_date;
-        req.change.write.end_date = amortization.end_date;
-        req.change.write.frequency = amortization.frequency;
-        req.change.write.underflow = amortization.underflow;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_leg_amortization failed" : error;
-    }
-
-    if (auto failure = save_schedule(
-            nats, trade_id, trade_activity_id, leg_role, leg_number, "schedule", leg.schedule);
-        !failure.empty())
-        return failure;
-    if (auto failure = save_schedule(nats,
-                                     trade_id,
-                                     trade_activity_id,
-                                     leg_role,
-                                     leg_number,
-                                     "payment_schedule",
-                                     leg.payment_schedule);
-        !failure.empty())
-        return failure;
-
-    if (!leg.payment_dates.empty()) {
-        ores::trading::domain::bond_schedule_data dates;
-        ores::trading::domain::bond_schedule_dates block;
-        block.dates = leg.payment_dates;
-        dates.dates.push_back(std::move(block));
-        if (auto failure = save_schedule(
-                nats, trade_id, trade_activity_id, leg_role, leg_number, "payment_dates", dates);
-            !failure.empty())
-            return failure;
-    }
-
-    return {};
-}
-
-/**
- * @brief Saves one schedule of one bond issue leg: the entries and their dates.
- *
- * A bond's legs belong to the security, so their schedules key on the
- * issue rather than on the trade. One schedule then serves every
- * instrument of the ISIN.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_issue_schedule(Nats& nats,
-                                const boost::uuids::uuid& issue_id,
-                                int leg_number,
-                                const std::string& schedule_role,
-                                const ores::trading::domain::bond_schedule_data& schedule) {
-    using ores::trading::messaging::put_bond_issue_leg_schedule_date_request;
-    using ores::trading::messaging::put_bond_issue_leg_schedule_request;
-
-    std::string error;
-    int sequence_number = 0;
-    for (const auto& rule : schedule.rules) {
-        put_bond_issue_leg_schedule_request req;
-        req.change.write.issue_id = issue_id;
-        req.change.write.leg_number = leg_number;
-        req.change.write.schedule_role = schedule_role;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.schedule_kind = "rules";
-        req.change.write.start_date = parse_date(rule.start_date);
-        req.change.write.end_date = parse_optional_date(rule.end_date);
-        req.change.write.adjust_end_date_to_previous_month_end =
-            rule.adjust_end_date_to_previous_month_end;
-        req.change.write.tenor = rule.tenor;
-        req.change.write.calendar = rule.calendar;
-        req.change.write.convention = rule.convention;
-        req.change.write.term_convention = rule.term_convention;
-        req.change.write.rule = rule.rule;
-        req.change.write.end_of_month = rule.end_of_month;
-        req.change.write.end_of_month_convention = rule.end_of_month_convention;
-        req.change.write.first_date = parse_optional_date(rule.first_date);
-        req.change.write.last_date = parse_optional_date(rule.last_date);
-        req.change.write.remove_first_date = rule.remove_first_date;
-        req.change.write.remove_last_date = rule.remove_last_date;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_schedule failed" : error;
-    }
-
-    for (const auto& dates : schedule.dates) {
-        put_bond_issue_leg_schedule_request req;
-        req.change.write.issue_id = issue_id;
-        req.change.write.leg_number = leg_number;
-        req.change.write.schedule_role = schedule_role;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.schedule_kind = "dates";
-        req.change.write.calendar = dates.calendar;
-        req.change.write.convention = dates.convention;
-        req.change.write.tenor = dates.tenor;
-        req.change.write.end_of_month = dates.end_of_month;
-        req.change.write.include_duplicate_dates = dates.include_duplicate_dates;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_schedule failed" : error;
-
-        int date_number = 0;
-        for (const auto& date : dates.dates) {
-            put_bond_issue_leg_schedule_date_request date_req;
-            date_req.change.write.issue_id = issue_id;
-            date_req.change.write.leg_number = leg_number;
-            date_req.change.write.schedule_role = schedule_role;
-            date_req.change.write.schedule_sequence_number = req.change.write.sequence_number;
-            date_req.change.write.sequence_number = ++date_number;
-            date_req.change.write.schedule_date =
-                ores::platform::time::datetime::from_iso8601_date(date);
-            auto date_resp = nats_call(nats, date_req, error);
-            if (!date_resp || date_resp->result.outcome != ores::utility::domain::outcome::ok)
-                return error.empty() ? "save_bond_issue_leg_schedule_date failed" : error;
-        }
-    }
-
-    return {};
-}
-
-/**
- * @brief Saves one of an issue leg's six amount lists under the role that names it.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string
-save_issue_leg_amounts(Nats& nats,
-                       const boost::uuids::uuid& issue_id,
-                       int leg_number,
-                       const std::string& amount_role,
-                       const std::vector<ores::trading::domain::bond_float_data>& amounts) {
-    using ores::trading::messaging::put_bond_issue_leg_amount_request;
-
-    std::string error;
-    int sequence_number = 0;
-    for (const auto& amount : amounts) {
-        put_bond_issue_leg_amount_request req;
-        req.change.write.issue_id = issue_id;
-        req.change.write.leg_number = leg_number;
-        req.change.write.amount_role = amount_role;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.value = amount.value;
-        req.change.write.start_date = amount.start_date;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_amount failed" : error;
-    }
-    return {};
-}
-
-/**
- * @brief Saves one bond issue leg: its row, its amounts, its rate, its
- * amortizations and its five schedules.
- *
- * The security owns the bond's legs, so the leg keys on the issue and
- * every child it states does too.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_issue_leg(Nats& nats,
-                           const boost::uuids::uuid& issue_id,
-                           int leg_number,
-                           const ores::trading::domain::bond_leg_data& leg) {
-    using ores::trading::messaging::put_bond_issue_leg_amortization_request;
-    using ores::trading::messaging::put_bond_issue_leg_rate_request;
-    using ores::trading::messaging::put_bond_issue_leg_request;
-
-    if (is_empty(leg))
-        return {};
-
-    std::string error;
-    put_bond_issue_leg_request leg_req;
-    leg_req.change.write.issue_id = issue_id;
-    leg_req.change.write.leg_number = leg_number;
-    leg_req.change.write.payer = leg.payer;
-    leg_req.change.write.leg_type = leg.leg_type;
-    leg_req.change.write.currency = leg.currency;
-    leg_req.change.write.payment_convention = leg.payment_convention;
-    leg_req.change.write.payment_lag = leg.payment_lag;
-    leg_req.change.write.payment_calendar = leg.payment_calendar;
-    leg_req.change.write.day_counter = leg.day_counter;
-    leg_req.change.write.last_period_day_counter = leg.last_period_day_counter;
-    leg_req.change.write.notional_payment_lag = leg.notional_payment_lag;
-    leg_req.change.write.strict_notional_dates = leg.strict_notional_dates;
-    leg_req.change.write.indexings_from_asset_leg = leg.indexings_from_asset_leg;
-    if (leg.settlement) {
-        leg_req.change.write.settlement_fx_index = leg.settlement->fx_index;
-        leg_req.change.write.settlement_fixing_date = leg.settlement->fixing_date;
-    }
-    auto leg_resp = nats_call(nats, leg_req, error);
-    if (!leg_resp || leg_resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_bond_issue_leg failed" : error;
-
-    if (auto failure =
-            save_issue_leg_amounts(nats, issue_id, leg_number, "notional", leg.notionals);
-        !failure.empty())
-        return failure;
-
-    if (leg.rate && leg.rate->fixed) {
-        if (auto failure =
-                save_issue_leg_amounts(nats, issue_id, leg_number, "rate", leg.rate->fixed->rates);
-            !failure.empty())
-            return failure;
-    }
-
-    if (leg.rate && leg.rate->floating) {
-        const auto& floating = *leg.rate->floating;
-        const std::pair<std::string, const std::vector<ores::trading::domain::bond_float_data>*>
-            lists[] = {{"spread", &floating.spreads},
-                       {"cap", &floating.caps},
-                       {"floor", &floating.floors},
-                       {"gearing", &floating.gearings}};
-        for (const auto& [role, amounts] : lists) {
-            if (auto failure = save_issue_leg_amounts(nats, issue_id, leg_number, role, *amounts);
-                !failure.empty())
-                return failure;
-        }
-
-        put_bond_issue_leg_rate_request rate_req;
-        rate_req.change.write.issue_id = issue_id;
-        rate_req.change.write.leg_number = leg_number;
-        rate_req.change.write.rate_kind = "floating";
-        rate_req.change.write.index = floating.index;
-        rate_req.change.write.is_in_arrears = floating.is_in_arrears;
-        rate_req.change.write.last_recent_period = floating.last_recent_period;
-        rate_req.change.write.last_recent_period_calendar = floating.last_recent_period_calendar;
-        if (floating.fixing_days)
-            rate_req.change.write.fixing_days = static_cast<std::int64_t>(*floating.fixing_days);
-        rate_req.change.write.lookback = floating.lookback;
-        rate_req.change.write.rate_cutoff = floating.rate_cutoff;
-        rate_req.change.write.is_averaged = floating.is_averaged;
-        rate_req.change.write.has_sub_periods = floating.has_sub_periods;
-        rate_req.change.write.include_spread = floating.include_spread;
-        rate_req.change.write.is_not_resetting_xccy = floating.is_not_resetting_xccy;
-        rate_req.change.write.naked_option = floating.naked_option;
-        rate_req.change.write.local_cap_floor = floating.local_cap_floor;
-        rate_req.change.write.stub_use_original_curve = floating.stub_use_original_curve;
-        rate_req.change.write.observation_shift = floating.observation_shift;
-        if (floating.front_stub_interpolation) {
-            const auto& stub = *floating.front_stub_interpolation;
-            rate_req.change.write.front_stub_short_index = stub.short_index;
-            rate_req.change.write.front_stub_long_index = stub.long_index;
-            rate_req.change.write.front_stub_rounding_type = stub.rounding_type;
-            rate_req.change.write.front_stub_rounding_precision = stub.rounding_precision;
-        }
-        if (floating.back_stub_interpolation) {
-            const auto& stub = *floating.back_stub_interpolation;
-            rate_req.change.write.back_stub_short_index = stub.short_index;
-            rate_req.change.write.back_stub_long_index = stub.long_index;
-            rate_req.change.write.back_stub_rounding_type = stub.rounding_type;
-            rate_req.change.write.back_stub_rounding_precision = stub.rounding_precision;
-        }
-        auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_rate failed" : error;
-
-        if (auto failure = save_issue_schedule(
-                nats, issue_id, leg_number, "fixing_schedule", floating.fixing_schedule);
-            !failure.empty())
-            return failure;
-        if (auto failure = save_issue_schedule(
-                nats, issue_id, leg_number, "reset_schedule", floating.reset_schedule);
-            !failure.empty())
-            return failure;
-    } else if (leg.rate && leg.rate->formula_based) {
-        const auto& formula = *leg.rate->formula_based;
-        put_bond_issue_leg_rate_request rate_req;
-        rate_req.change.write.issue_id = issue_id;
-        rate_req.change.write.leg_number = leg_number;
-        rate_req.change.write.rate_kind = "formula_based";
-        rate_req.change.write.index = formula.index;
-        rate_req.change.write.is_in_arrears = formula.is_in_arrears;
-        rate_req.change.write.fixing_days = formula.fixing_days;
-        rate_req.change.write.fixing_calendar = formula.fixing_calendar;
-        auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_rate failed" : error;
-    } else if (leg.rate && leg.rate->fixed) {
-        put_bond_issue_leg_rate_request rate_req;
-        rate_req.change.write.issue_id = issue_id;
-        rate_req.change.write.leg_number = leg_number;
-        rate_req.change.write.rate_kind = "fixed";
-        auto rate_resp = nats_call(nats, rate_req, error);
-        if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_rate failed" : error;
-    }
-
-    int sequence_number = 0;
-    for (const auto& amortization : leg.amortizations) {
-        put_bond_issue_leg_amortization_request req;
-        req.change.write.issue_id = issue_id;
-        req.change.write.leg_number = leg_number;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.amortization_type = amortization.type;
-        req.change.write.value = amortization.value;
-        req.change.write.start_date = amortization.start_date;
-        req.change.write.end_date = amortization.end_date;
-        req.change.write.frequency = amortization.frequency;
-        req.change.write.underflow = amortization.underflow;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_leg_amortization failed" : error;
-    }
-
-    if (auto failure = save_issue_schedule(nats, issue_id, leg_number, "schedule", leg.schedule);
-        !failure.empty())
-        return failure;
-    if (auto failure = save_issue_schedule(
-            nats, issue_id, leg_number, "payment_schedule", leg.payment_schedule);
-        !failure.empty())
-        return failure;
-
-    if (!leg.payment_dates.empty()) {
-        ores::trading::domain::bond_schedule_data dates;
-        ores::trading::domain::bond_schedule_dates block;
-        block.dates = leg.payment_dates;
-        dates.dates.push_back(std::move(block));
-        if (auto failure = save_issue_schedule(nats, issue_id, leg_number, "payment_dates", dates);
-            !failure.empty())
-            return failure;
-    }
-
-    return {};
-}
-
-/**
- * @brief Saves an option block: its row, its three child lists and the two
- * spellings of its exercise dates.
- *
- * Every product that states an option block writes the row, not only the
- * one whose fact row carries the type and the strike.
- *
- * The row carries a flag per optional sub-block, because a set of null
- * columns cannot say whether the document stated the sub-block and left
- * it bare or omitted it. An empty block writes nothing.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_option_block(Nats& nats,
-                              const boost::uuids::uuid& trade_id,
-                              const boost::uuids::uuid& trade_activity_id,
-                              const ores::trading::domain::bond_instrument_data& data) {
-    using ores::trading::messaging::put_instrument_option_exercise_fee_request;
-    using ores::trading::messaging::put_instrument_option_exercise_price_request;
-    using ores::trading::messaging::put_instrument_option_payment_date_request;
-    using ores::trading::messaging::put_instrument_option_premium_request;
-    using ores::trading::messaging::put_instrument_option_request;
-
-    std::string error;
-    if (data.option_data) {
-        const auto& block = *data.option_data;
-        put_instrument_option_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.trade_activity_id = trade_activity_id;
-        req.change.write.long_short = block.long_short;
-        req.change.write.option_type = block.option_type;
-        req.change.write.payoff_type = block.payoff_type;
-        req.change.write.payoff_type_2 = block.payoff_type_2;
-        req.change.write.style = block.style;
-        req.change.write.notice_period = block.notice_period;
-        req.change.write.notice_calendar = block.notice_calendar;
-        req.change.write.notice_convention = block.notice_convention;
-        req.change.write.mid_coupon_exercise = block.mid_coupon_exercise;
-        req.change.write.settlement = block.settlement;
-        req.change.write.settlement_method = block.settlement_method;
-        req.change.write.pay_off_at_expiry = block.pay_off_at_expiry;
-        req.change.write.premium_amount = block.premium_amount;
-        req.change.write.premium_currency = block.premium_currency;
-        req.change.write.premium_pay_date = parse_optional_date(block.premium_pay_date);
-        req.change.write.exercise_fee_settlement_period = block.exercise_fee_settlement_period;
-        req.change.write.exercise_fee_settlement_calendar = block.exercise_fee_settlement_calendar;
-        req.change.write.exercise_fee_settlement_convention =
-            block.exercise_fee_settlement_convention;
-        req.change.write.automatic_exercise = block.automatic_exercise;
-
-        req.change.write.has_exercise_data = block.exercise_data.has_value();
-        if (block.exercise_data) {
-            req.change.write.exercise_date = parse_date(block.exercise_data->date);
-            req.change.write.exercise_price = block.exercise_data->price;
-        }
-
-        req.change.write.has_payment_data = block.payment_data.has_value();
-        if (block.payment_data && block.payment_data->rules) {
-            const auto& rules = *block.payment_data->rules;
-            if (!std::in_range<int>(rules.lag))
-                return "Option payment lag exceeds the supported integer range";
-            req.change.write.payment_lag = static_cast<int>(rules.lag);
-            req.change.write.payment_calendar = rules.calendar;
-            req.change.write.payment_convention = rules.convention;
-            req.change.write.payment_relative_to = rules.relative_to;
-        }
-
-        req.change.write.has_settlement_data = block.settlement_data.has_value();
-        if (block.settlement_data) {
-            req.change.write.settlement_pay_currency = block.settlement_data->pay_currency;
-            req.change.write.settlement_fx_index = block.settlement_data->fx_index;
-            req.change.write.settlement_fixing_date =
-                parse_optional_date(block.settlement_data->fixing_date);
-        }
-
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_instrument_option failed" : error;
-
-        int sequence_number = 0;
-        for (const auto& premium : block.premiums) {
-            put_instrument_option_premium_request child;
-            child.change.write.trade_id = trade_id;
-            child.change.write.trade_activity_id = trade_activity_id;
-            child.change.write.sequence_number = ++sequence_number;
-            child.change.write.amount = premium.amount;
-            child.change.write.currency = premium.currency;
-            child.change.write.pay_date =
-                ores::platform::time::datetime::from_iso8601_date(premium.pay_date);
-            child.change.write.has_settlement = premium.settlement.has_value();
-            if (premium.settlement) {
-                child.change.write.settlement_pay_currency = premium.settlement->pay_currency;
-                child.change.write.settlement_fx_index = premium.settlement->fx_index;
-                child.change.write.settlement_fixing_date =
-                    parse_optional_date(premium.settlement->fixing_date);
-            }
-            auto child_resp = nats_call(nats, child, error);
-            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-                return error.empty() ? "save_instrument_option_premium failed" : error;
-        }
-
-        sequence_number = 0;
-        for (const auto& fee : block.exercise_fees) {
-            put_instrument_option_exercise_fee_request child;
-            child.change.write.trade_id = trade_id;
-            child.change.write.trade_activity_id = trade_activity_id;
-            child.change.write.sequence_number = ++sequence_number;
-            child.change.write.amount = fee.amount;
-            child.change.write.type = fee.type;
-            child.change.write.start_date = parse_optional_date(fee.start_date);
-            child.change.write.currency = fee.currency;
-            auto child_resp = nats_call(nats, child, error);
-            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-                return error.empty() ? "save_instrument_option_exercise_fee failed" : error;
-        }
-
-        if (block.payment_data) {
-            int payment_number = 0;
-            for (const auto& date : block.payment_data->dates) {
-                put_instrument_option_payment_date_request child;
-                child.change.write.trade_id = trade_id;
-                child.change.write.trade_activity_id = trade_activity_id;
-                child.change.write.sequence_number = ++payment_number;
-                child.change.write.payment_date =
-                    ores::platform::time::datetime::from_iso8601_date(date);
-                auto child_resp = nats_call(nats, child, error);
-                if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-                    return error.empty() ? "save_instrument_option_payment_date failed" : error;
-            }
-        }
-
-        // The exercise price list pairs one price with each exercise date the
-        // option states, as the option block's fourth child holds it.
-        if (block.exercise_prices && !data.option_exercise_dates.empty()) {
-            const auto prices = split_numbers(*block.exercise_prices);
-            int price_number = 0;
-            for (std::size_t i = 0; i < prices.size() && i < data.option_exercise_dates.size();
-                 ++i) {
-                auto parsed = ores::utility::decimal::decimal::from_string(prices[i]);
-                if (!parsed)
-                    continue;
-                put_instrument_option_exercise_price_request child;
-                child.change.write.trade_id = trade_id;
-                child.change.write.trade_activity_id = trade_activity_id;
-                child.change.write.sequence_number = ++price_number;
-                child.change.write.exercise_date =
-                    ores::platform::time::datetime::from_iso8601_date(
-                        data.option_exercise_dates[i]);
-                child.change.write.price = std::move(*parsed);
-                auto child_resp = nats_call(nats, child, error);
-                if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-                    return error.empty() ? "save_instrument_option_exercise_price failed" : error;
-            }
-        }
-    }
-
-    if (!data.option_exercise_dates.empty()) {
-        ores::trading::domain::bond_schedule_data schedule;
-        ores::trading::domain::bond_schedule_dates dates;
-        dates.dates = data.option_exercise_dates;
-        schedule.dates.push_back(std::move(dates));
-        if (auto failure = save_schedule(
-                nats, trade_id, trade_activity_id, "option", 1, "exercise_dates", schedule);
-            !failure.empty())
-            return failure;
-    }
-
-    if (data.option_exercise_schedule) {
-        if (auto failure = save_schedule(nats,
-                                         trade_id,
-                                         trade_activity_id,
-                                         "option",
-                                         1,
-                                         "exercise_schedule",
-                                         *data.option_exercise_schedule);
-            !failure.empty())
-            return failure;
-    }
-
-    return {};
-}
-
-/**
- * @brief Saves one strike row, which is the one place its request is built.
- *
- * The row's key travels with its values, so a call site cannot write a strike
- * without saying which arm it belongs to and where it sits in that arm.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_instrument_strike(Nats& nats,
-                                   const ores::trading::domain::instrument_strike& strike) {
-    using ores::trading::messaging::put_instrument_strike_request;
-
-    put_instrument_strike_request req;
-    auto& w = req.change.write;
-    w.trade_id = strike.trade_id;
-    w.trade_activity_id = strike.trade_activity_id;
-    w.strike_role = strike.strike_role;
-    w.sequence_number = strike.sequence_number;
-    w.price_value = strike.price_value;
-    w.price_currency = strike.price_currency;
-    w.yield_value = strike.yield_value;
-    w.yield_compounding = strike.yield_compounding;
-    w.bare_value = strike.bare_value;
-    w.bare_currency = strike.bare_currency;
-
-    std::string error;
-    auto resp = nats_call(nats, req, error);
-    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_instrument_strike failed" : error;
-    return {};
-}
-
-/**
- * @brief Saves the strike group, which the option row has no column for.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_strike(Nats& nats,
-                        const boost::uuids::uuid& trade_id,
-                        const boost::uuids::uuid& trade_activity_id,
-                        const ores::trading::domain::bond_strike_data& strike) {
-    // A bond states one strike with no arm to name, and bond_strike_data is a
-    // hand-written carrier that predates the role column.
-    ores::trading::domain::instrument_strike row;
-    row.trade_id = trade_id;
-    row.trade_activity_id = trade_activity_id;
-    row.strike_role = "single";
-    row.sequence_number = 1;
-    row.price_value = strike.price_value;
-    row.price_currency = strike.price_currency;
-    row.yield_value = strike.yield_value;
-    row.yield_compounding = strike.yield_compounding;
-    row.bare_value = strike.bare_value;
-    row.bare_currency = strike.bare_currency;
-    return save_instrument_strike(nats, row);
-}
-
-/**
- * @brief Saves the forward terms the fact row has no column for.
- *
- * A container that states no forward member writes no row, which is what
- * a container built from a row set holds.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_forward(Nats& nats,
-                         const boost::uuids::uuid& trade_id,
-                         const boost::uuids::uuid& trade_activity_id,
-                         const ores::trading::domain::bond_instrument_data& data) {
-    using ores::trading::messaging::put_bond_forward_request;
-
-    if (!data.forward_long_in_forward && !data.forward_settlement && !data.forward_premium)
-        return {};
-
-    put_bond_forward_request req;
-    req.change.write.trade_id = trade_id;
-    req.change.write.trade_activity_id = trade_activity_id;
-    req.change.write.long_in_forward = data.forward_long_in_forward;
-    if (data.forward_settlement) {
-        const auto& settlement = *data.forward_settlement;
-        req.change.write.forward_maturity_date = settlement.forward_maturity_date;
-        req.change.write.forward_settlement_date = settlement.forward_settlement_date;
-        req.change.write.settlement = settlement.settlement;
-        req.change.write.amount = settlement.amount;
-        req.change.write.lock_rate = settlement.lock_rate;
-        req.change.write.dv01 = settlement.dv01;
-        req.change.write.lock_rate_day_counter = settlement.lock_rate_day_counter;
-        req.change.write.settlement_dirty = settlement.settlement_dirty;
-    }
-    if (data.forward_premium) {
-        req.change.write.premium_amount = data.forward_premium->amount;
-        req.change.write.premium_date = data.forward_premium->date;
-    }
-
-    std::string error;
-    auto resp = nats_call(nats, req, error);
-    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_bond_forward failed" : error;
-    return {};
-}
-
-/**
- * @brief Saves one bond instrument: its issue row, its header row, the
- * issue's child rows, its legs, its option block and the product's fact row.
- *
- * The issue row comes first because both the header and the child rows
- * reference it. A document that stated no call dates and no conversion
- * targets writes none of either, and a trade type with no product row
- * writes none.
+ * A trade joins the issue of its security whose terms and legs it agrees
+ * with. When it agrees with none, the issue is minted and written with every
+ * row the security owns, in one call, so the trade is booked against an issue
+ * that is already whole. The trade's container then names that issue.
  *
  * @param security_terms The issues each security is held under, keyed by
  * security id, seeded from the database. A trade joins the one it agrees
  * with, mints an issue when it agrees with none, and warns when it had to.
  * @param warnings Collects what the run should report without failing.
- * @return An empty string on success, or the first failure.
+ * @return An empty string on success, or the failure.
  */
 template <typename Nats>
-std::string save_bond_instrument(
-    Nats& nats,
-    const ores::trading::domain::bond_instrument_data& data,
-    std::unordered_map<std::string, std::vector<bond_security_terms>>& security_terms,
-    std::vector<std::string>& warnings) {
-    using ores::trading::messaging::put_ascot_request;
-    using ores::trading::messaging::put_bond_future_request;
-    using ores::trading::messaging::put_bond_instrument_request;
-    using ores::trading::messaging::put_bond_issue_call_date_request;
-    using ores::trading::messaging::put_bond_issue_conversion_target_request;
-    using ores::trading::messaging::put_bond_issue_request;
-    using ores::trading::messaging::put_bond_option_request;
-    using ores::trading::messaging::put_bond_repo_request;
-    using ores::trading::messaging::put_bond_trs_request;
-
-    std::string error;
-    auto instrument = data.instrument;
-    auto issue = data.issue;
+std::string
+settle_bond_issue(Nats& nats,
+                  ores::trading::domain::bond_instrument_data& data,
+                  std::unordered_map<std::string, std::vector<bond_security_terms>>& security_terms,
+                  std::vector<std::string>& warnings) {
+    auto& issue = data.issue;
 
     // A bond position on a basket names no issue: its bonds are underlying
-    // rows, written after the instrument they belong to.
-    if (instrument.identity.trade_type_code == "BondPosition" &&
-        instrument.issue_id == boost::uuids::uuid{}) {
-        put_bond_instrument_request position_req;
-        position_req.change.write.trade_id = instrument.identity.trade_id;
-        position_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-        position_req.change.write.trade_type_code = instrument.identity.trade_type_code;
-        position_req.change.write.issue_id = instrument.issue_id;
-        position_req.change.write.notional = instrument.notional;
-        position_req.change.write.position_identifier = instrument.position_identifier;
-        auto position_resp = nats_call(nats, position_req, error);
-        if (!position_resp || position_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_instrument failed" : error;
-        for (const auto& row : data.instrument_underlyings) {
-            ores::trading::messaging::put_instrument_underlying_request underlying_req;
-            auto& w = underlying_req.change.write;
-            w.trade_id = instrument.identity.trade_id;
-            w.trade_activity_id = instrument.identity.trade_activity_id;
-            w.underlying_role = row.underlying_role;
-            w.sequence_number = row.sequence_number;
-            w.underlying_type = row.underlying_type;
-            w.name = row.name;
-            w.identifier_type = row.identifier_type;
-            w.currency = row.currency;
-            w.exchange = row.exchange;
-            w.weight = row.weight;
-            w.price_type = row.price_type;
-            w.future_month_offset = row.future_month_offset;
-            w.delivery_roll_days = row.delivery_roll_days;
-            w.delivery_roll_calendar = row.delivery_roll_calendar;
-            w.future_expiry_date = row.future_expiry_date;
-            w.future_contract_month = row.future_contract_month;
-            w.interpolation = row.interpolation;
-            w.bid_ask_adjustment = row.bid_ask_adjustment;
-            auto underlying_resp = nats_call(nats, underlying_req, error);
-            if (!underlying_resp ||
-                underlying_resp->result.outcome != ores::utility::domain::outcome::ok)
-                return error.empty() ? "save_instrument_underlying failed" : error;
-        }
+    // rows of the trade.
+    if (data.instrument.identity.trade_type_code == "BondPosition" &&
+        data.instrument.issue_id == boost::uuids::uuid{})
         return {};
-    }
 
     // A package the system writes names a security by its issue's id. The
     // issue the tenant holds under that id keeps its own security id.
@@ -1922,11 +848,12 @@ std::string save_bond_instrument(
             break;
         }
     }
-    const bool issue_is_new = adopted == nullptr;
-    if (!issue_is_new) {
+    if (adopted != nullptr) {
         issue.issue_id = adopted->issue.issue_id;
-        instrument.issue_id = issue.issue_id;
-    } else if (found != security_terms.end() && !found->second.empty()) {
+        data.instrument.issue_id = issue.issue_id;
+        return {};
+    }
+    if (found != security_terms.end() && !found->second.empty()) {
         // The security id names a shape the tenant holds no issue for, so the
         // trade gets an issue of its own. The document is still imported, and
         // the warning says what to do about it.
@@ -1936,207 +863,115 @@ std::string save_bond_instrument(
                            "one.");
     }
 
-    // A failed save leaves the security id out of the map, so the next
-    // trade of it tries the issue again rather than opening an instrument
-    // against a row that is not there.
-    if (issue_is_new) {
-        put_bond_issue_request issue_req;
-        issue_req.change.write.issue_id = issue.issue_id;
-        issue_req.change.write.security_id = issue.security_id;
-        issue_req.change.write.issuer = issue.issuer;
-        issue_req.change.write.face_value = issue.face_value;
-        issue_req.change.write.issue_date = issue.issue_date;
-        issue_req.change.write.settlement_days = issue.settlement_days;
-        issue_req.change.write.calendar = issue.calendar;
-        issue_req.change.write.credit_curve_id = issue.credit_curve_id;
-        issue_req.change.write.reference_curve_id = issue.reference_curve_id;
-        issue_req.change.write.income_curve_id = issue.income_curve_id;
-        issue_req.change.write.credit_group = issue.credit_group;
-        issue_req.change.write.volatility_curve_id = issue.volatility_curve_id;
-        issue_req.change.write.price_quote_method = issue.price_quote_method;
-        issue_req.change.write.price_quote_base_value = issue.price_quote_base_value;
-        issue_req.change.write.sub_type = issue.sub_type;
-        issue_req.change.write.price_type = issue.price_type;
-        issue_req.change.write.payer = issue.payer;
-        issue_req.change.write.credit_risk = issue.credit_risk;
-        auto resp = nats_call(nats, issue_req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue failed" : error;
-    }
-
-    put_bond_instrument_request instrument_req;
-    instrument_req.change.write.trade_id = instrument.identity.trade_id;
-    instrument_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-    instrument_req.change.write.trade_type_code = instrument.identity.trade_type_code;
-    instrument_req.change.write.issue_id = instrument.issue_id;
-    instrument_req.change.write.notional = instrument.notional;
-    instrument_req.change.write.position_identifier = instrument.position_identifier;
-    auto resp = nats_call(nats, instrument_req, error);
-    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_bond_instrument failed" : error;
-
+    // The security's rows travel in one write with the issue, so a refusal
+    // in any of them leaves no issue behind.
+    auto rows = ores::trading::domain::disassemble_bond(data).issue;
+    ores::trading::messaging::put_bond_issue_composite_request req;
+    req.issue = issue;
+    req.legs = std::move(rows.legs);
+    req.amounts = std::move(rows.amounts);
+    req.rates = std::move(rows.rates);
+    req.schedules = std::move(rows.schedules);
+    req.schedule_dates = std::move(rows.schedule_dates);
+    req.amortizations = std::move(rows.amortizations);
+    req.call_dates = data.call_dates;
+    req.conversion_targets = data.conversion_targets;
     int sequence_number = 0;
-    for (const auto& call_date : data.call_dates) {
-        put_bond_issue_call_date_request child_req;
-        child_req.change.write.issue_id = call_date.issue_id;
-        child_req.change.write.sequence_number = call_date.sequence_number;
-        child_req.change.write.call_date = call_date.call_date;
-        child_req.change.write.style = call_date.style;
-        child_req.change.write.price = call_date.price;
-        child_req.change.write.price_type = call_date.price_type;
-        child_req.change.write.include_accrual = call_date.include_accrual;
-        child_req.change.write.issue_id = issue.issue_id;
-        child_req.change.write.sequence_number = ++sequence_number;
-        auto child_resp = nats_call(nats, child_req, error);
-        if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_call_date failed" : error;
+    for (auto& row : req.call_dates) {
+        row.issue_id = issue.issue_id;
+        row.sequence_number = ++sequence_number;
     }
-
     sequence_number = 0;
-    for (const auto& target : data.conversion_targets) {
-        put_bond_issue_conversion_target_request child_req;
-        child_req.change.write.issue_id = target.issue_id;
-        child_req.change.write.sequence_number = target.sequence_number;
-        child_req.change.write.underlying_id = target.underlying_id;
-        child_req.change.write.conversion_ratio = target.conversion_ratio;
-        child_req.change.write.issue_id = issue.issue_id;
-        child_req.change.write.sequence_number = ++sequence_number;
-        auto child_resp = nats_call(nats, child_req, error);
-        if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_issue_conversion_target failed" : error;
+    for (auto& row : req.conversion_targets) {
+        row.issue_id = issue.issue_id;
+        row.sequence_number = ++sequence_number;
     }
 
-    const auto trade_id = instrument.identity.trade_id;
-    const auto trade_activity_id = instrument.identity.trade_activity_id;
+    std::string error;
+    auto resp = nats_call(nats, req, error);
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
+        return error.empty() ? "put_bond_issue_composite failed" : error;
 
-    // The security owns its legs, so they are written once, when the
-    // issue row is minted: a second trade on the same ISIN would collide
-    // with the first trade's rows, because a leg's parent is the issue.
-    // The three product legs below are the trade's own and are always
-    // written. Recording the terms once the write has landed is what lets
-    // the run's later trades of this security be checked against them, and
-    // a security seeded from the database starts out stating none, so the
-    // first trade to state its legs completes it.
-    if (issue_is_new) {
-        int leg_number = 0;
-        for (const auto& leg : data.bond_legs) {
-            if (auto failure = save_issue_leg(nats, issue.issue_id, ++leg_number, leg);
-                !failure.empty())
-                return failure;
+    // Recording the terms once the write has landed is what lets the run's
+    // later trades of this security be checked against them.
+    data.instrument.issue_id = issue.issue_id;
+    bond_security_terms terms;
+    terms.issue = issue;
+    terms.legs = data.bond_legs;
+    terms.legs_known = true;
+    security_terms[issue.security_id].push_back(std::move(terms));
+    return {};
+}
+
+/**
+ * @brief The issues the import has seen, read from the database on the first
+ * bond and grown as the run mints new ones.
+ */
+struct bond_issues_seen {
+    std::unordered_map<std::string, std::vector<bond_security_terms>> by_security;
+    std::vector<std::string> warnings;
+    bool loaded = false;
+};
+
+template <typename Nats>
+std::string book_imported_trade(Nats& nats,
+                                ores::ore::xml::trade_import_item& item,
+                                const resolved_envelope& resolved,
+                                bool into_sandbox,
+                                bond_issues_seen& issues) {
+    using namespace ores::trading::domain;
+    using ores::utility::domain::outcome;
+
+    std::string error;
+    ores::trading::messaging::book_trade_request book_req;
+    book_req.anchor = item.anchor;
+    book_req.anchor.counterparty_id = resolved.counterparty_id;
+    book_req.anchor.counterparty_scope =
+        resolved.counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
+    // A virtual book of a sandbox holds only drafts, tests and hypotheticals,
+    // so a trade imported into a sandbox is a test, not an actual deal.
+    book_req.anchor.booking_nature = into_sandbox ? booking_nature::test : booking_nature::actual;
+    book_req.anchor.entry_channel = entry_channel::stp;
+    /*
+     * The trade names the ORE id it was imported from, so a rollback or a
+     * report can trace it back to the document it came out of.
+     */
+    book_req.anchor.origin = origin::ore_import;
+    book_req.anchor.origin_reference = item.ore_id;
+    book_req.booking = item.booking;
+    book_req.booking.netting_set_id = resolved.netting_set_id;
+    book_req.booking.counterparty_identifier_id = resolved.counterparty_identifier_id;
+    book_req.booking.netting_set_identifier_id = resolved.netting_set_identifier_id;
+    book_req.booking.change_reason_code = "system.external_data_import";
+    book_req.activity_type_code = item.activity_type_code;
+    // A bond's issue is shared by every trade of the security, so it is
+    // settled first: joined when the tenant holds it, written whole when not.
+    if (auto* bond = std::get_if<bond_instrument_data>(&item.instrument)) {
+        if (!issues.loaded) {
+            issues.by_security = read_bond_issues_by_security(nats, error);
+            if (!error.empty())
+                return error;
+            issues.loaded = true;
         }
-        bond_security_terms terms;
-        terms.issue = issue;
-        terms.legs = data.bond_legs;
-        terms.legs_known = true;
-        security_terms[issue.security_id].push_back(std::move(terms));
-    } else if (!adopted->legs_known) {
-        adopted->legs = data.bond_legs;
-        adopted->legs_known = true;
-    }
-    if (auto failure =
-            save_leg(nats, trade_id, trade_activity_id, "trs_funding", 1, data.trs_funding_leg);
-        !failure.empty())
-        return failure;
-    if (auto failure = save_leg(nats, trade_id, trade_activity_id, "repo", 1, data.repo_leg);
-        !failure.empty())
-        return failure;
-    if (auto failure =
-            save_leg(nats, trade_id, trade_activity_id, "ascot_swap", 1, data.ascot_swap_leg);
-        !failure.empty())
-        return failure;
-
-    if (auto failure = save_option_block(nats, trade_id, trade_activity_id, data); !failure.empty())
-        return failure;
-
-    if (data.strike_data) {
-        if (auto failure = save_strike(nats, trade_id, trade_activity_id, *data.strike_data);
+        if (auto failure = settle_bond_issue(nats, *bond, issues.by_security, issues.warnings);
             !failure.empty())
             return failure;
     }
+    // The instrument is booked with the trade, through the writer every booking
+    // uses, so each row of every family lands with it.
+    append_instrument(book_req.instruments, item.instrument);
+    auto booked = nats_call(nats, book_req, error);
+    if (!booked || booked->result.outcome != outcome::ok || !booked->activity_id)
+        return error.empty() ? "book_trade failed" : error;
 
-    if (auto failure = save_forward(nats, trade_id, trade_activity_id, data); !failure.empty())
-        return failure;
-
-    if (auto failure = save_schedule(
-            nats, trade_id, trade_activity_id, "trs", 1, "schedule", data.trs_schedule);
-        !failure.empty())
-        return failure;
-
-    const auto& ttc = instrument.identity.trade_type_code;
-    if (ttc == "BondOption" && data.option) {
-        put_bond_option_request fact_req;
-        fact_req.change.write.trade_id = (*data.option).trade_id;
-        fact_req.change.write.trade_activity_id = (*data.option).trade_activity_id;
-        fact_req.change.write.option_type = (*data.option).option_type;
-        fact_req.change.write.option_strike = (*data.option).option_strike;
-        fact_req.change.write.redemption = (*data.option).redemption;
-        fact_req.change.write.price_type = (*data.option).price_type;
-        fact_req.change.write.knocks_out = (*data.option).knocks_out;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
-        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-        fact_req.change.write.redemption = data.option_redemption;
-        fact_req.change.write.price_type = data.option_price_type;
-        fact_req.change.write.knocks_out = data.option_knocks_out;
-        auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_option failed" : error;
-    } else if (ttc == "BondTRS" && data.trs) {
-        put_bond_trs_request fact_req;
-        fact_req.change.write.trade_id = (*data.trs).trade_id;
-        fact_req.change.write.trade_activity_id = (*data.trs).trade_activity_id;
-        fact_req.change.write.return_type = (*data.trs).return_type;
-        fact_req.change.write.funding_leg_type = (*data.trs).funding_leg_type;
-        fact_req.change.write.funding_rate = (*data.trs).funding_rate;
-        fact_req.change.write.funding_index = (*data.trs).funding_index;
-        fact_req.change.write.payer = (*data.trs).payer;
-        fact_req.change.write.price_type = (*data.trs).price_type;
-        fact_req.change.write.initial_price = (*data.trs).initial_price;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
-        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-        fact_req.change.write.payer = data.trs_payer;
-        fact_req.change.write.initial_price = data.trs_initial_price;
-        if (!data.trs_price_type.empty())
-            fact_req.change.write.price_type = data.trs_price_type;
-        auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_trs failed" : error;
-    } else if (ttc == "BondRepo" && data.repo) {
-        put_bond_repo_request fact_req;
-        fact_req.change.write.trade_id = (*data.repo).trade_id;
-        fact_req.change.write.trade_activity_id = (*data.repo).trade_activity_id;
-        fact_req.change.write.repo_type = (*data.repo).repo_type;
-        fact_req.change.write.repo_rate = (*data.repo).repo_rate;
-        fact_req.change.write.repo_index = (*data.repo).repo_index;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
-        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-        auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_repo failed" : error;
-    } else if (ttc == "BondFuture" && data.future) {
-        put_bond_future_request fact_req;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
-        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-        fact_req.change.write.contract_name = (*data.future).contract_name;
-        fact_req.change.write.contract_notional = (*data.future).contract_notional;
-        fact_req.change.write.long_short = (*data.future).long_short;
-        fact_req.change.write.apply_conversion_factor = (*data.future).apply_conversion_factor;
-        fact_req.change.write.use_future_price = (*data.future).use_future_price;
-        auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_future failed" : error;
-    } else if (ttc == "Ascot" && data.ascot_row) {
-        put_ascot_request fact_req;
-        fact_req.change.write.trade_id = (*data.ascot_row).trade_id;
-        fact_req.change.write.trade_activity_id = (*data.ascot_row).trade_activity_id;
-        fact_req.change.write.ascot_option_type = (*data.ascot_row).ascot_option_type;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
-        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
-        auto fact_resp = nats_call(nats, fact_req, error);
-        if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_ascot failed" : error;
+    const auto activity_id = *booked->activity_id;
+    const auto written = write_imported_components(nats, item, resolved, activity_id);
+    if (written.empty()) {
+        stamp_ids(item.instrument, item.anchor.id, activity_id);
+        return {};
     }
-
-    return {};
+    const auto closed = close_bookings(nats, {item.anchor.id});
+    return closed.empty() ? written : written + " The booking could not be closed: " + closed;
 }
 
 } // namespace
@@ -2455,6 +1290,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
     // Step 7: save trades (failures collected; saga continues)
     // -------------------------------------------------------------------------
     std::unordered_map<std::string, std::optional<boost::uuids::uuid>> booked_counterparty;
+    bond_issues_seen bond_issues;
     // A parent is its embedded trades as much as its own terms, so they are
     // booked first and a parent any of them failed is not booked at all.
     std::ranges::stable_partition(plan.trades,
@@ -2582,7 +1418,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         // and netting set against one another, so a trade it refuses leaves
         // nothing behind.
         const auto booking_error =
-            book_imported_trade(delegated_nats, item, resolved, into_sandbox);
+            book_imported_trade(delegated_nats, item, resolved, into_sandbox, bond_issues);
         if (!booking_error.empty()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "ore.import.execute trade booking failed | corr=" << req.correlation_id
@@ -2593,6 +1429,43 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         }
         result.saved_trade_ids.push_back(tid);
         booked_counterparty.emplace(tid, resolved.counterparty_id);
+    }
+
+    // A parent is its embedded trades as much as its own terms, so an embedded
+    // trade whose parent did not reach the book comes off it again: the parent
+    // and its trades land together or not at all.
+    std::unordered_set<std::string> booked_parents;
+    for (const auto& item : plan.trades)
+        if (!item.membership &&
+            booked_counterparty.contains(boost::uuids::to_string(item.anchor.id)))
+            booked_parents.insert(item.ore_id);
+    std::vector<boost::uuids::uuid> orphaned;
+    for (const auto& item : plan.trades) {
+        if (!item.membership || booked_parents.contains(item.membership->parent_ore_id))
+            continue;
+        const auto id = boost::uuids::to_string(item.anchor.id);
+        if (booked_counterparty.erase(id) == 0)
+            continue;
+        std::erase(result.saved_trade_ids, id);
+        orphaned.push_back(item.anchor.id);
+        result.item_errors.push_back(
+            {.source_file = item.source_file.string(),
+             .item_id = item.ore_id,
+             .message = "The trade this one is stated inside was not booked, so this one was "
+                        "taken off the book again."});
+    }
+    if (!orphaned.empty()) {
+        if (const auto reason = close_bookings(delegated_nats, orphaned); !reason.empty()) {
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute embedded trades not closed | corr=" << req.correlation_id
+                << " error=" << reason;
+            result.item_errors.push_back(
+                {.source_file = {},
+                 .item_id = {},
+                 .message = "The embedded trades of a parent that was not booked could not be "
+                            "taken off the book: " +
+                            reason});
+        }
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
@@ -2609,64 +1482,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         result.item_errors.push_back(error);
     }
 
-    // -------------------------------------------------------------------------
-    // Step 8: save instruments (non-fatal — collect errors, continue)
-    // -------------------------------------------------------------------------
-    int instruments_saved = 0;
-    std::unordered_map<std::string, std::vector<bond_security_terms>> security_terms;
-    std::vector<std::string> import_warnings;
-    bool bond_issues_loaded = false;
-    const std::unordered_set<std::string> saved_trades(result.saved_trade_ids.begin(),
-                                                       result.saved_trade_ids.end());
-    for (const auto& item : plan.trades) {
-        if (!saved_trades.contains(boost::uuids::to_string(item.anchor.id)))
-            continue;
-        using namespace ores::trading::messaging;
-        using ores::trading::domain::swap_instrument_data;
-        using ores::trading::domain::fx_instrument_data;
-        using ores::trading::domain::bond_instrument_data;
-        using ores::trading::domain::credit_instrument_data;
-        using ores::trading::domain::equity_instrument_data;
-        using ores::trading::domain::commodity_instrument_data;
-        using ores::trading::domain::composite_instrument_data;
-        using ores::trading::domain::scripted_instrument_data;
-        std::string instr_error;
-
-        const auto save_ok = std::visit(
-            [&](const auto& r) -> bool {
-                using T = std::decay_t<decltype(r)>;
-                if constexpr (std::is_same_v<T, std::monostate>) {
-                    return true; // no instrument for this trade type
-                } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
-                    if (!bond_issues_loaded) {
-                        bond_issues_loaded = true;
-                        security_terms = read_bond_issues_by_security(delegated_nats, instr_error);
-                        if (!instr_error.empty())
-                            return false;
-                    }
-                    instr_error =
-                        save_bond_instrument(delegated_nats, r, security_terms, import_warnings);
-                    return instr_error.empty();
-                } else {
-                    return true;
-                }
-            },
-            item.instrument);
-
-        if (save_ok) {
-            ++instruments_saved;
-        } else {
-            BOOST_LOG_SEV(lg(), warn)
-                << "ore.import.execute instrument save failed | corr=" << req.correlation_id
-                << " trade=" << item.ore_id << " error=" << instr_error;
-            result.item_errors.push_back({.source_file = item.source_file.string(),
-                                          .item_id = item.ore_id,
-                                          .message = "Instrument save failed: " + instr_error});
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 8 complete | corr=" << req.correlation_id
-                              << " instruments_saved=" << instruments_saved;
+    const auto& import_warnings = bond_issues.warnings;
 
     // -------------------------------------------------------------------------
     // Done — determine step outcome and publish

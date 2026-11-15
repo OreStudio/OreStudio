@@ -111,53 +111,6 @@ void stamp_rows(std::vector<Row>& rows, const ores::database::context& ctx) {
         ores::service::messaging::stamp(row, ctx);
 }
 
-template <typename Row>
-void append_rows(std::vector<Row>& to, std::vector<Row>& from) {
-    to.insert(to.end(), std::make_move_iterator(from.begin()), std::make_move_iterator(from.end()));
-}
-
-template <typename Row>
-void append_row(std::vector<Row>& to, std::optional<Row>& from) {
-    if (from)
-        to.push_back(std::move(*from));
-}
-
-/*
- * A bond row states its product's terms on the container, as the export reads
- * them. Booking splits the trade's own rows out of it and writes them with the
- * rest of the batch. The security's rows belong to the issue, which the caller
- * stores before it books, so they are not written again here.
- */
-void split_bonds(domain::instrument_batch& batch) {
-    for (auto& bond : batch.bond_instruments) {
-        auto rows = domain::disassemble_bond(bond).trade;
-        append_rows(batch.bond_legs, rows.legs);
-        append_rows(batch.bond_leg_amounts, rows.amounts);
-        append_rows(batch.bond_leg_rates, rows.rates);
-        append_rows(batch.bond_leg_amortizations, rows.amortizations);
-        append_rows(batch.instrument_schedules, rows.schedules);
-        append_rows(batch.instrument_schedule_dates, rows.schedule_dates);
-        append_row(batch.instrument_options, rows.option);
-        append_rows(batch.instrument_option_premiums, rows.option_premiums);
-        append_rows(batch.instrument_option_exercise_fees, rows.option_exercise_fees);
-        append_rows(batch.instrument_option_payment_dates, rows.option_payment_dates);
-        append_rows(batch.instrument_option_exercise_prices, rows.option_exercise_prices);
-        append_row(batch.instrument_strikes, rows.strike);
-        append_row(batch.bond_forwards, rows.forward);
-        append_row(batch.bond_options, rows.bond_option);
-        append_row(batch.bond_trs, rows.trs);
-        append_row(batch.bond_repos, rows.repo);
-        append_row(batch.bond_futures, rows.future);
-        append_row(batch.ascots, rows.ascot);
-        append_rows(batch.instrument_underlyings, rows.underlyings);
-
-        domain::bond_instrument_data header;
-        header.instrument = std::move(bond.instrument);
-        header.issue = std::move(bond.issue);
-        bond = std::move(header);
-    }
-}
-
 std::string join(const std::vector<std::string>& names) {
     std::string joined;
     for (const auto& name : names)
@@ -315,7 +268,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     }
 
     auto instruments = request.instruments;
-    split_bonds(instruments);
+    domain::split_bond_rows(instruments);
     const service::instrument_keys keys{anchor.id, anchor.trade_type, activity.id};
     service::write_instrument_batch(
         ctx, instruments, keys, [&](auto& row) { stamp(row, ctx_); }, must_not_exist);

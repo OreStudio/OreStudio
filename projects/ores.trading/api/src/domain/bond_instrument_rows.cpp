@@ -579,6 +579,17 @@ void apply_option_residue(bond_instrument_data& data) {
 
 namespace {
 
+template <typename Row>
+void append_rows(std::vector<Row>& to, std::vector<Row>& from) {
+    to.insert(to.end(), std::make_move_iterator(from.begin()), std::make_move_iterator(from.end()));
+}
+
+template <typename Row>
+void append_row(std::vector<Row>& to, std::optional<Row>& from) {
+    if (from)
+        to.push_back(std::move(*from));
+}
+
 std::optional<std::chrono::year_month_day> parse_iso(const std::string& text) {
     if (text.empty())
         return std::nullopt;
@@ -1092,6 +1103,37 @@ std::vector<bond_leg_data> bond_legs_of(const issue_leg_rows& rows) {
     for (const auto& row : rows.legs)
         legs.push_back(build_leg(rows, row));
     return legs;
+}
+
+
+void split_bond_rows(instrument_batch& batch) {
+    for (auto& bond : batch.bond_instruments) {
+        auto rows = disassemble_bond(bond).trade;
+        append_rows(batch.bond_legs, rows.legs);
+        append_rows(batch.bond_leg_amounts, rows.amounts);
+        append_rows(batch.bond_leg_rates, rows.rates);
+        append_rows(batch.bond_leg_amortizations, rows.amortizations);
+        append_rows(batch.instrument_schedules, rows.schedules);
+        append_rows(batch.instrument_schedule_dates, rows.schedule_dates);
+        append_row(batch.instrument_options, rows.option);
+        append_rows(batch.instrument_option_premiums, rows.option_premiums);
+        append_rows(batch.instrument_option_exercise_fees, rows.option_exercise_fees);
+        append_rows(batch.instrument_option_payment_dates, rows.option_payment_dates);
+        append_rows(batch.instrument_option_exercise_prices, rows.option_exercise_prices);
+        append_row(batch.instrument_strikes, rows.strike);
+        append_row(batch.bond_forwards, rows.forward);
+        append_row(batch.bond_options, rows.bond_option);
+        append_row(batch.bond_trs, rows.trs);
+        append_row(batch.bond_repos, rows.repo);
+        append_row(batch.bond_futures, rows.future);
+        append_row(batch.ascots, rows.ascot);
+        append_rows(batch.instrument_underlyings, rows.underlyings);
+
+        bond_instrument_data header;
+        header.instrument = std::move(bond.instrument);
+        header.issue = std::move(bond.issue);
+        bond = std::move(header);
+    }
 }
 
 

@@ -37,6 +37,7 @@
 #include "ores.trading.api/domain/bond_option.hpp"
 #include "ores.trading.api/domain/bond_repo.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -131,6 +132,16 @@ struct bond_rows final {
  * document's order.
  */
 [[nodiscard]] ORES_TRADING_API_EXPORT bond_rows disassemble_bond(const bond_instrument_data& data);
+
+/**
+ * @brief Moves the trade's own rows of each bond container into the batch's
+ * arrays, leaving each container its header and its issue.
+ *
+ * A bond row states its product's terms on the container, as the export reads
+ * them, and the batch writer writes arrays. The security's rows belong to the
+ * issue, which is stored before the trade, so they are not moved.
+ */
+ORES_TRADING_API_EXPORT void split_bond_rows(instrument_batch& batch);
 
 }
 

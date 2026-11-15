@@ -12,7 +12,7 @@ async function main() {
   await mkdir(dirname(out), { recursive: true, mode: 448 });
   await mkdir(out, { mode: 448 });
   const reports = [];
-  for (const [name, corpus] of [["replay", "evals/cases.json"], ["holdout", "evals/holdout-stage5.json"], ["review", "evals/review-v2.json"]]) {
+  for (const [name, corpus] of [["replay", "evals/cases.json"], ["holdout", "evals/holdout-stage5.json"], ["review", "evals/review-v2.json"], ["fx-analytics", "evals/fx-analytics.json"], ["fx-market-selection", "evals/fx-market-selection.json"], ["report-run-discovery", "evals/report-run-discovery.json"], ["booking-drafts", "evals/booking-drafts.json"], ["dated-market-queries", "evals/dated-market-queries.json"]]) {
     const result = spawnSync(process.execPath, ["evals/run.mjs", "--profile", "replay", "--corpus", corpus, "--strict", "--min-pass", "0", "--require-handling", "--out", join(out, name)], { cwd: component, stdio: "inherit", timeout: 12e4 });
     if (result.error || result.status !== 0) throw Error("Offline replay integrity gate failed.");
     const report = JSON.parse(await readFile(join(out, name, "results.json"), "utf8"));

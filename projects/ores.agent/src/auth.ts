@@ -11,6 +11,7 @@ const loginInput = z
     })
     .strict();
 const party = z.object({ id: z.uuid(), name: z.string() });
+const accessLifetime = z.number().positive().max(86400);
 const loginReply = z.object({
     success: z.boolean(),
     token: z.string().default(''),
@@ -19,7 +20,7 @@ const loginReply = z.object({
     tenant_id: z.string().default(''),
     selected_party_id: z.string().default(''),
     available_parties: z.array(party).default([]),
-    access_lifetime_s: z.number().positive().max(86400).default(1800),
+    access_lifetime_s: accessLifetime.default(1800),
     password_reset_required: z.boolean().default(false),
 });
 export interface Session extends Identity {
@@ -149,7 +150,7 @@ export class Sessions {
                     .object({
                         success: z.boolean(),
                         token: z.string(),
-                        access_lifetime_s: z.number().positive().max(86400).optional(),
+                        access_lifetime_s: accessLifetime.optional(),
                     })
                     .parse(
                         await this.backend.request('selectParty', { party_id: partyId }, identity),
@@ -157,7 +158,8 @@ export class Sessions {
                 if (!selected.success || !selected.token)
                     throw new AppError('party_denied', 'Party selection failed.', 403);
                 identity.token = selected.token;
-                lifetime = Math.min(lifetime, selected.access_lifetime_s ?? lifetime);
+                // Party selection replaces the temporary login token with a new access token.
+                lifetime = selected.access_lifetime_s ?? lifetime;
             }
             const token = randomBytes(32).toString('base64url');
             const session: Session = {
@@ -165,7 +167,7 @@ export class Sessions {
                 username: r.username,
                 tenantId: r.tenant_id,
                 partyId,
-                expires: Date.now() + Math.min(1800, lifetime) * 1000,
+                expires: Date.now() + lifetime * 1000,
                 active: true,
                 busy: 0,
                 calls: 0,

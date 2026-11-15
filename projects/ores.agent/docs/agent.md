@@ -17,6 +17,21 @@ Replace IDs with stored record IDs. Replies support Markdown headings, tables,
 lists and code blocks. Raw HTML and images are disabled. Open **OreStudio tool
 evidence** to inspect source data. Model text can be wrong.
 
+## OreStudio help
+
+Ask “How do I create a book in OreStudio?” or “Where can I download report
+results?” Use “in the shell” or “in the web app” to specify the interface.
+The `search_help` tool searches curated passages bundled with the agent and
+returns matching excerpts, source links and the agent release. A direct
+match needs no inference. The model can retry an unmatched question once
+with a shorter query. Help lookup makes no calls to OreStudio business
+services or to public search providers. The initial corpus covers web sign-in,
+book and portfolio setup, web report runs and results, and shell book and
+portfolio commands.
+
+The curated sections live in `src/help.ts`. When a workflow changes, update its
+passage and source link and rebuild the agent to publish the new guidance.
+
 The agent does not book trades, start reports or issue executable quotes.
 Scope totals are client-derived analysis, not a server summary API.
 
@@ -103,12 +118,32 @@ The tool deadline is 30 seconds. Independent reference/smoke scripts remain in
 
 ## API, MCP and request handling
 
+### Calculations
+
+`calculate` uses decimal strings for sums, differences, products, quotients,
+percentages and basis-point changes. Division and percentages round to a
+specified number of decimal places, with ties rounded away from zero. For
+example, ask “Calculate the change from 2% to 2.125%
+in basis points.” The result is 12.5 basis points. Chat and authenticated tool
+clients can use it without any Python installation.
+
+`run_python` is an optional chat tool for custom analysis on supplied JSON.
+For example, ask “Compute the median of [1, 4, 6] using Python.” A snippet reads
+its input from `data` and assigns a JSON-compatible value to `result`. Return
+exact decimals and large integers as strings. Each call starts a fresh worker
+with no host mounts, network, OreStudio connections, or inherited guest
+environment. The worker uses a fixed standard library and returns results in
+tool evidence. Official valuation and risk calculations use OreStudio tools.
+See [deployment](deployment.md#optional-python-analysis) for setup.
+
+### Protocols
+
 `POST /chat` accepts `{ "message": "..." }` with an agent Bearer token. It returns
 `answer`, safe `answerHtml`, `evidence` and timing fields. `x-request-id` links timing.
 
 For MCP, sign in through `POST /auth/login` using `principal`, `password` and
 optional `partyId`. Send the returned `accessToken` as `Authorization: Bearer <TOKEN>`
-on every `/mcp` exchange. Sign out through `POST /auth/logout`. The 14 read tools
+on every `/mcp` exchange. Sign out through `POST /auth/logout`. The read tools
 need no model when called through MCP. Backend tokens and NATS keys stay server-side.
 An MCP session ID is not a credential. Supported protocol revisions are
 2026-07-28 and 2025-11-25. This local profile has no OAuth discovery/enrollment.

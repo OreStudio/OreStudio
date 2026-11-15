@@ -1,0 +1,20 @@
+{
+    "deployment": "container",
+    "host": "0.0.0.0",
+    "port": 20100,
+    "allowedOrigins": ["http://127.0.0.1:20100"],
+    "nats": {
+        "server": "tls://host.docker.internal:4222",
+        "tlsServerName": "localhost",
+        "prefix": "ores",
+        "ca": "/run/ores-agent/nats/ca.crt",
+        "cert": "/run/ores-agent/nats/agent.crt",
+        "key": "/run/ores-agent/nats/agent.key"
+    },
+    "inference": {
+        "baseUrl": "http://llama:8080/v1",
+        "model": "lfm3-1.7b",
+        "apiKeyFile": "/run/ores-agent/llama-api-key",
+        "timeoutMs": 60000
+    }
+}

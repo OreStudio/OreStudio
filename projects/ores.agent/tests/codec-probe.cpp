@@ -1,5 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Test helper only. Compile against the candidate checkout's API headers.
+#include "ores.refdata.api/domain/country_codec.hpp"
+#include "ores.refdata.api/domain/currency_country_codec.hpp"
+#include "ores.reporting.api/domain/configuration_analytic_codec.hpp"
+#include "ores.reporting.api/domain/configuration_market_binding_codec.hpp"
+#include "ores.reporting.api/domain/engine_settings_building_codec.hpp"
+#include "ores.reporting.api/domain/engine_settings_codec.hpp"
+#include "ores.reporting.api/domain/engine_settings_execution_codec.hpp"
+#include "ores.reporting.api/domain/engine_settings_fixings_codec.hpp"
+#include "ores.reporting.api/domain/report_configuration_codec.hpp"
+#include "ores.reporting.api/domain/risk_report_config_codec.hpp"
+#include "ores.trading.api/domain/trade_identifier_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include <iostream>
 #include <span>

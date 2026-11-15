@@ -19,13 +19,16 @@ function fixture() {
         assert.equal(s, session); calls.push({ op, args });
         const ok = value => ({ result: { outcome: 'ok' }, ...value });
         if (op === 'runHealth') return ok({ health: f.health, state_name: 'completed' });
+        if (op === 'runHealthBatch') return ok({ health: args.instance_ids.map(runId => ({
+            report_instance_id: runId, health: f.health, state_name: 'completed',
+        })) });
         if (op === 'reportMetrics') {
             if (args.filter.family === 'sensitivity_report') return ok({ total: (f.greekMetrics ?? []).length, metrics: (f.greekMetrics ?? []).slice(args.offset, args.offset + args.limit) });
-            const metrics = rows.filter(r => args.filter.subject_id_one_of.includes(r.subject_id)).map(r => ({ ...r, measure: 'NPV(Base)', family: 'npv_report', scenario: '', factor: '', qualifiers: JSON.stringify({ BaseCurrency: f.metricCurrency ?? r.currency }), value: r.figure }));
+            const metrics = rows.filter(r => r.report_instance_id === args.filter.report_instance_id && args.filter.subject_id_one_of.includes(r.subject_id)).map(r => ({ ...r, measure: 'NPV(Base)', family: 'npv_report', scenario: '', factor: '', qualifiers: JSON.stringify({ BaseCurrency: f.metricCurrency ?? r.currency }), value: r.figure }));
             return ok({ total: metrics.length, metrics: metrics.slice(args.offset, args.offset + args.limit) });
         }
         let list = data[op]; assert.ok(list, op);
-        if (op === 'reportInstances') list = list.filter(r => args.filter.id_one_of.includes(r.id));
+        if (op === 'reportInstances' && args.filter?.id_one_of) list = list.filter(r => args.filter.id_one_of.includes(r.id));
         if (op === 'tradeBookings') list = list.filter(r => args.filter.trade_id_one_of.includes(r.trade_id));
         if (op === 'runResults') list = list.filter(r => Object.entries(args.filter).every(([k, v]) => v === null || (k.endsWith('_one_of') ? v.includes(r[k.slice(0, -7)]) : r[k] === v)));
         return ok({ total: list.length, [keys[op]]: list.slice(args.offset, args.offset + args.limit) });
@@ -33,6 +36,32 @@ function fixture() {
     f.backend = backend; f.report = new ScopeReporting(backend, () => fixedNow); return f;
 }
 const args = { scopeType: 'book', scope: 'FX Book', runId: id(3) };
+test('latest scope requires clean complete coverage and does not guess between configurations or dates', async () => {
+    const f = fixture();
+    const latest = { scopeType: 'portfolio', scope: 'Child Portfolio', latest: true };
+    const verified = await f.report.execute(latest, f.session);
+    assert.equal(verified.selectedLatest, true);
+    assert.equal(verified.total.figure, '0.3');
+    const peer = { ...f.run, id: id(95), definition_id: id(96), completed_at: '2026-11-06T12:00:00Z' };
+    f.data.reportInstances.push(peer);
+    f.rows.push(...f.rows.slice(0, 3).map((row, i) => ({
+        ...row, id: id(97 + i), report_instance_id: peer.id, report_definition_id: peer.definition_id,
+    })));
+    const ambiguous = await f.report.execute(latest, f.session);
+    assert.equal(ambiguous.status, 'selection_required');
+    assert.equal(ambiguous.candidates.length, 2);
+    assert.equal(ambiguous.total, undefined);
+    peer.priced_at = '2026-11-07T00:00:00Z';
+    peer.started_at = '2026-11-07T01:00:00Z';
+    peer.completed_at = '2026-11-07T02:00:00Z';
+    f.rows.splice(3);
+    const absent = await f.report.execute(latest, f.session);
+    assert.equal(absent.total, undefined);
+    assert.match(absent.reason, /exactly one result/);
+    assert.equal((await f.report.execute({ ...latest, valuationDate: '2026-11-06' }, f.session)).total.figure, '0.3');
+    f.health = 'completed with errors';
+    assert.equal((await f.report.execute(latest, f.session)).total, undefined);
+});
 test('scope totals use historical bookings, exact decimal arithmetic and bounded ranked drill-down', async () => {
     const f = fixture(), r = await f.report.execute({ ...args, limit: 1 }, f.session);
     assert.equal(r.status, 'ok'); assert.equal(r.total.figure, '0.3'); assert.equal(r.total.currency, 'GBP');

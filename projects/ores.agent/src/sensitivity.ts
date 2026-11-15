@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { markdownTable } from './markdown.js';
+import { markdownTable, markdownText } from './markdown.js';
 import { createHash } from 'node:crypto';
 import { AppError } from './backend.js';
 import { decimalSum, decimalParts, decimalText } from './decimal.js';
+import { factorPillar, type RiskMeasure } from './sensitivity-selectors.js';
 
 export interface SensitivityMetric {
     id: string;
@@ -30,6 +31,11 @@ interface Request {
     factor?: string;
     factor2?: string;
     scenario?: string;
+    riskMeasures?: RiskMeasure[];
+    fxPair?: string;
+    maturity?: string;
+    smile?: 'ATM';
+    bucketId?: string;
     offset: number;
     limit: number;
     bucketOffset: number;
@@ -55,6 +61,9 @@ export function summarizeSensitivities(
         { dimensions: Record<string, string>; rows: SensitivityMetric[] }
     >();
     const refused: { metricId: string; reason: string }[] = [];
+    const requested = [...new Set(args.riskMeasures ?? [args.measure])];
+    const similar = new Set<string>();
+    const natural = args.fxPair || args.maturity || args.smile;
     for (const row of metrics) {
         if (
             row.tenant_id !== identity.tenantId ||
@@ -73,12 +82,12 @@ export function summarizeSensitivities(
                 'Sensitivity identity, date or canonical source disagrees with the run.',
                 403,
             );
-        if (
-            (args.measure === 'delta' && row.measure !== 'Delta') ||
-            (args.measure === 'gamma' && row.measure !== 'Gamma') ||
-            (['vega', 'dv01'].includes(args.measure) && row.measure !== 'Delta')
-        )
-            continue;
+        const views = requested.filter(
+            (view) =>
+                view === 'greeks' ||
+                (view === 'gamma' ? row.measure === 'Gamma' : row.measure === 'Delta'),
+        );
+        if (!views.length) continue;
         let q: Record<string, unknown>;
         try {
             q = JSON.parse(row.qualifiers);
@@ -94,15 +103,47 @@ export function summarizeSensitivities(
             factor2 = q.Factor_2 ?? '',
             shiftText = q.ShiftSize_1,
             shift2Text = q.ShiftSize_2 ?? '0';
+        const validFactor =
+            typeof factor === 'string' &&
+            /^[A-Za-z][A-Za-z0-9_]*\/[^\r\n]+$/.test(factor) &&
+            factor.length <= 256;
+        const pillar = validFactor ? factorPillar(factor) : undefined;
+        const rateFactor = ['DiscountCurve', 'YieldCurve', 'IndexCurve'].includes(
+            pillar?.type ?? '',
+        );
+        const volatilityFactor = pillar?.type?.endsWith('Volatility');
+        const relevant = views.filter(
+            (view) =>
+                !pillar ||
+                (view === 'vega' ? volatilityFactor : view === 'dv01' ? rateFactor : true),
+        );
+        if (!relevant.length || (args.scenario !== undefined && args.scenario !== row.scenario))
+            continue;
+        if (validFactor && args.factor !== undefined && args.factor !== factor) continue;
+        if (typeof factor2 === 'string' && args.factor2 !== undefined && args.factor2 !== factor2)
+            continue;
+        if (pillar && args.fxPair && pillar.pair !== args.fxPair) {
+            if (!pillar.type?.startsWith('FX') || pillar.pair) continue;
+        }
+        if (
+            validFactor &&
+            pillar &&
+            ((args.maturity && pillar.maturity && pillar.maturity !== args.maturity) ||
+                (args.smile && pillar.smile && pillar.smile !== args.smile))
+        ) {
+            similar.add(factor);
+            continue;
+        }
         const numeric = (v: unknown) =>
             typeof v === 'string' &&
             v.length <= 128 &&
             /^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(v) &&
             Number.isFinite(Number(v));
         if (
-            typeof factor !== 'string' ||
-            !/^[A-Za-z][A-Za-z0-9_]*\/[^\r\n]+$/.test(factor) ||
-            factor.length > 256 ||
+            !validFactor ||
+            (args.fxPair && !pillar?.pair) ||
+            (args.maturity && !pillar?.maturity) ||
+            (args.smile && !pillar?.smile) ||
             typeof factor2 !== 'string' ||
             factor2.length > 256 ||
             (factor2 && !/^[A-Za-z][A-Za-z0-9_]*\/[^\r\n]+$/.test(factor2)) ||
@@ -124,19 +165,6 @@ export function summarizeSensitivities(
         }
         // Cross-gamma rows' Delta column is not a standalone factor Delta.
         if (factor2 && row.measure !== 'Gamma') continue;
-        if (args.measure === 'vega' && !factor.split('/')[0]!.endsWith('Volatility')) continue;
-        if (
-            args.measure === 'dv01' &&
-            (!['DiscountCurve', 'YieldCurve', 'IndexCurve'].includes(factor.split('/')[0]!) ||
-                decimalText(String(shiftText)) !== '0.0001')
-        )
-            continue;
-        if (
-            (args.factor !== undefined && args.factor !== factor) ||
-            (args.factor2 !== undefined && args.factor2 !== factor2) ||
-            (args.scenario !== undefined && args.scenario !== row.scenario)
-        )
-            continue;
         if (!factor2 && decimalText(String(shift2Text)) !== '0') {
             refused.push({ metricId: row.id, reason: 'Second shift has no factor.' });
             continue;
@@ -153,12 +181,18 @@ export function summarizeSensitivities(
             source: row.source,
             family: row.family,
         };
-        const key = JSON.stringify(dimensions);
-        const group: { dimensions: Record<string, string>; rows: SensitivityMetric[] } = groups.get(
-            key,
-        ) ?? { dimensions, rows: [] };
-        group.rows.push(row);
-        groups.set(key, group);
+        for (const view of relevant) {
+            if (view === 'dv01' && dimensions.shift !== '0.0001') continue;
+            const labelled =
+                requested.length > 1 || view === 'vega' || view === 'dv01'
+                    ? { ...dimensions, requestedMeasure: view }
+                    : dimensions;
+            const key = JSON.stringify(labelled);
+            const group: { dimensions: Record<string, string>; rows: SensitivityMetric[] } =
+                groups.get(key) ?? { dimensions: labelled, rows: [] };
+            group.rows.push(row);
+            groups.set(key, group);
+        }
     }
     // Unknown dimensions may conceal a duplicate or a member of a valid bucket.
     // Withhold all figures rather than silently dropping these rows.
@@ -169,15 +203,54 @@ export function summarizeSensitivities(
             refusedMetricCount: refused.length,
             refusedMetrics: refused.slice(0, 10),
         };
+    const factors = [
+        ...new Set([...groups.values()].map((group) => group.dimensions.factor!)),
+    ].sort();
+    if (
+        natural &&
+        !args.factor &&
+        !args.bucketId &&
+        (factors.length > 1 || (!factors.length && similar.size))
+    ) {
+        const options = factors.length ? factors : [...similar].sort();
+        return {
+            status: 'selection_required',
+            field: 'factor',
+            reason: factors.length
+                ? 'Several stored factors match this request. Choose an exact factor by number or name.'
+                : 'No stored factor matches that maturity or smile label. Choose a reported factor to change the selection.',
+            candidates: options.slice(0, 20).map((factor) => ({ id: factor, name: factor })),
+        };
+    }
     if (!groups.size)
         return {
             status: 'unavailable',
             reason: 'No verified stored sensitivity bucket matches the requested measure/factor. Missing or suppressed sensitivities are not zero. Vega needs a volatility-factor Delta; DV01 needs a raw rate-factor Delta at exactly a 0.0001 target shift.',
         };
-    const sorted = [...groups].sort(([a], [b]) => a.localeCompare(b));
+    const sorted = [...groups]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, group]) => ({
+            ...group,
+            bucketId: createHash('sha256').update(key).digest('hex').slice(0, 24),
+        }))
+        .filter((group) => !args.bucketId || group.bucketId === args.bucketId);
+    if (!sorted.length)
+        return {
+            status: 'unavailable',
+            reason: 'That exact sensitivity bucket is no longer available in this run. Request the bucket list again.',
+        };
+    const missingMeasures =
+        requested.length > 1
+            ? requested.filter(
+                  (view) =>
+                      ![...groups.values()].some(
+                          (group) => group.dimensions.requestedMeasure === view,
+                      ),
+              )
+            : [];
     const buckets = sorted
         .slice(args.bucketOffset, args.bucketOffset + args.bucketLimit)
-        .map(([key, { dimensions, rows }]) => {
+        .map(({ bucketId, dimensions, rows }) => {
             const byTrade = new Map<string, SensitivityMetric[]>();
             for (const row of rows)
                 byTrade.set(row.subject_id, [...(byTrade.get(row.subject_id) ?? []), row]);
@@ -201,7 +274,7 @@ export function summarizeSensitivities(
                       : a.row.subject_id.localeCompare(b.row.subject_id),
             );
             return {
-                bucketId: createHash('sha256').update(key).digest('hex').slice(0, 24),
+                bucketId,
                 ...dimensions,
                 status: complete ? 'ok' : 'incomplete',
                 unit: 'cash_finite_difference_at_reported_target_shifts',
@@ -239,9 +312,13 @@ export function summarizeSensitivities(
             };
         });
     return {
-        status: buckets.length && buckets.every((b) => b.status === 'ok') ? 'ok' : 'incomplete',
+        status:
+            buckets.length && !missingMeasures.length && buckets.every((b) => b.status === 'ok')
+                ? 'ok'
+                : 'incomplete',
         reason: 'Each bucket is independent; never sum across factors, bumps, scenarios or currencies. DV01 is the signed ORE rate Delta for the stated +1bp target bump, not a sign-reversed loss measure. Vega is cash Delta for the stated volatility bump, not per-unit vega.',
         buckets,
+        ...(missingMeasures.length ? { missingMeasures } : {}),
         bucketCount: sorted.length,
         bucketOffset: args.bucketOffset,
         nextBucketOffset:
@@ -252,12 +329,18 @@ export function summarizeSensitivities(
 }
 
 export function formatSensitivities(r: any): string {
+    const viewNames: Record<string, string> = {
+        delta: 'Delta',
+        gamma: 'Gamma',
+        vega: 'Vega (stored Delta)',
+        dv01: 'DV01 (stored Delta)',
+    };
     return (
-        `${r.warning ? r.warning + '\n' : ''}## Stored sensitivities\n\n${r.scope.type} ${r.scope.name} [${r.scope.id}]\nRun: ${r.run.id}; health: ${r.health}; actual pricing date: ${r.run.priced_at}\nMembership: bookings at ${r.membershipAt}.\n${r.reason}\n` +
+        `${r.warning ? r.warning + '\n' : ''}## Stored sensitivities\n\n${r.scope.type} ${markdownText(r.scope.name)} [${r.scope.id}]\nRun: ${r.run.id}; health: ${r.health}; actual pricing date: ${r.run.priced_at}\nMembership: bookings at ${r.membershipAt}.\n${r.reason}\n${r.missingMeasures?.length ? 'No verified stored bucket for ' + r.missingMeasures.map((view: string) => viewNames[view]).join(', ') + '.\n' : ''}` +
         r.buckets
             .map(
-                (b: any) =>
-                    `${b.measure}: ${b.factor} (target shift ${b.shift})${b.factor2 ? ` × ${b.factor2} (target shift ${b.shift2})` : ''}; ${b.currency}; scenario ${b.scenario || 'base'}; raw (IsPar=false).\n` +
+                (b: any, index: number) =>
+                    `\n**Bucket ${r.bucketOffset + index + 1} · ${viewNames[b.requestedMeasure] ?? b.measure}**\n${markdownText(b.factor)} (target shift ${b.shift})${b.factor2 ? ` × ${markdownText(b.factor2)} (target shift ${b.shift2})` : ''}; ${b.currency}; scenario ${markdownText(b.scenario || 'base')}; raw (IsPar=false).\n` +
                     `${b.total ? 'Full-scope cash finite difference: ' + b.total.figure + ' ' + b.total.currency : 'No full-scope total. ' + b.reason}\n` +
                     `Coverage: ${b.coverage.valuedTradeCount}/${b.coverage.expectedTradeCount}; missing ${b.coverage.missingTradeCount}; duplicates ${b.coverage.duplicateTradeCount}. Source: ${b.source}.\n` +
                     '\n' +
@@ -266,10 +349,12 @@ export function formatSensitivities(r: any): string {
                         b.contributors.map((c: any) => [c.tradeId, c.figure, c.currency]),
                     ) +
                     '\n' +
-                    (b.nextOffset !== null ? `\nNext contributor offset: ${b.nextOffset}` : ''),
+                    (b.nextOffset !== null
+                        ? `\nSay “Next contributors for bucket ${r.bucketOffset + index + 1}” for more trades.`
+                        : ''),
             )
             .join('\n\n') +
-        (r.nextBucketOffset !== null ? `\nNext bucket offset: ${r.nextBucketOffset}` : '') +
+        (r.nextBucketOffset !== null ? '\nSay “Next buckets” to see more.' : '') +
         '\nStored raw sensitivities only; no repricing, FX conversion, zero fill or cross-bucket total.'
     );
 }

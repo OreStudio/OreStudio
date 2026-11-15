@@ -7,28 +7,73 @@ import type { Session } from './auth.js';
 import { marketId, observationTime } from './market.js';
 import { summarizeSensitivities, formatSensitivities } from './sensitivity.js';
 import { decimalSum, decimalParts } from './decimal.js';
+import { baseNpvCurrency } from './npv-units.js';
+import { Reporting } from './reporting.js';
+import { riskMaturity, riskMeasure, riskPair } from './sensitivity-selectors.js';
 export { decimalSum, decimalParts } from './decimal.js';
 
 export const scopeTools = {
     summarize_scope_results: {
         description:
-            'Read stored NPV or raw Greek buckets for a book/booking-portfolio subtree at an explicit run start. Preserve literal scope and run UUID. Default npv_base uses npv.csv and explicit base units. Greeks/delta/gamma/vega/dv01 use sensitivity.csv cash finite differences grouped by exact factor, target shifts, scenario and currency. Never sum different buckets or infer missing as zero. Vega selects volatility Delta; dv01 selects rate Delta at a 0.0001 bump with signed engine convention. Optional literal factor/factor2/scenario select buckets; bucketOffset/bucketLimit page buckets; offset/limit page contributors. Totals require one figure per expected trade in a bucket.',
+            'Only for stored NPV or risk reports for a book or portfolio using booking membership at run start. For trade Bought/Sold amounts use read_trade; for statistics on retrieved fields use run_python. “Latest NPV for book FX Hedges” → {"scopeType":"book","scope":"FX Hedges","latest":true}. The tool resolves the scope name and checks coverage. Use read_trade_results for one trade. Greek results are cash differences grouped by factor, bump, scenario and currency. Keep buckets separate.',
         schema: z
             .object({
                 scopeType: z.enum(['book', 'portfolio']),
-                scope: z.string().min(1).max(120),
-                runId: marketId.transform((v) => v.toLowerCase()).optional(),
+                scope: z
+                    .string()
+                    .min(1)
+                    .max(120)
+                    .describe(
+                        'Literal book or portfolio name or UUID. Names can be resolved by this tool.',
+                    ),
+                runId: marketId
+                    .transform((v) => v.toLowerCase())
+                    .optional()
+                    .describe(
+                        'Exact run UUID if supplied or selected. Omit when no run has been chosen.',
+                    ),
+                latest: z
+                    .literal(true)
+                    .optional()
+                    .describe(
+                        'Use only for an explicit latest NPV request without runId. Checks clean runs for verified scope coverage. Omit for Greeks.',
+                    ),
                 measure: z
                     .enum(['npv', 'npv_base', 'greeks', 'delta', 'gamma', 'vega', 'dv01'])
-                    .default('npv_base'),
+                    .default('npv_base')
+                    .describe(
+                        'Default npv_base is in the report base currency. npv is native currency. vega selects volatility Delta; dv01 selects signed rate Delta at a 1 bp target shift.',
+                    ),
                 currency: z
                     .string()
                     .regex(/^[A-Za-z]{3}$/)
                     .transform((s) => s.toUpperCase())
                     .optional(),
-                factor: z.string().min(1).max(256).optional(),
-                factor2: z.string().max(256).optional(),
-                scenario: z.string().max(120).optional(),
+                factor: z
+                    .string()
+                    .min(1)
+                    .max(256)
+                    .optional()
+                    .describe('Literal requested risk factor. Omit to show matching buckets.'),
+                factor2: z
+                    .string()
+                    .max(256)
+                    .optional()
+                    .describe('Literal second risk factor when requested.'),
+                scenario: z
+                    .string()
+                    .max(120)
+                    .optional()
+                    .describe('Literal scenario when requested.'),
+                riskMeasures: z.array(riskMeasure).min(1).max(4).optional(),
+                fxPair: riskPair.optional(),
+                maturity: riskMaturity.optional(),
+                smile: z.literal('ATM').optional(),
+                bucketId: z
+                    .string()
+                    .regex(/^[a-f\d]{24}$/)
+                    .optional()
+                    .describe('Bucket ID returned by the tool. Omit until a bucket is selected.'),
                 bucketOffset: z.number().int().min(0).max(2000).default(0),
                 bucketLimit: z.number().int().min(1).max(10).default(5),
                 offset: z.number().int().min(0).max(1000).default(0),
@@ -95,6 +140,11 @@ const metricSchema = z.object({
     qualifiers: z.string().max(16384),
 });
 const nil = '00000000-0000-0000-0000-000000000000';
+const latestRun = runSchema.omit({ started_at: true }).extend({
+    health: z.literal('completed clean'),
+    state_name: z.literal('completed'),
+});
+type ScopeArgs = z.infer<typeof scopeTools.summarize_scope_results.schema>;
 function accepted(raw: unknown) {
     if (z.object({ result: z.object({ outcome: z.string() }) }).parse(raw).result.outcome !== 'ok')
         throw new AppError('scope_read_refused', 'Backend refused the scoped reporting read.', 403);
@@ -120,11 +170,20 @@ export class ScopeReporting {
         const args = scopeTools.summarize_scope_results.schema.parse(raw);
         if (
             ['npv', 'npv_base'].includes(args.measure) &&
-            [args.factor, args.factor2, args.scenario].some((v) => v !== undefined)
+            [
+                args.factor,
+                args.factor2,
+                args.scenario,
+                args.riskMeasures,
+                args.fxPair,
+                args.maturity,
+                args.smile,
+                args.bucketId,
+            ].some((v) => v !== undefined)
         )
             throw new AppError(
                 'invalid_arguments',
-                'Factor/scenario selectors apply only to Greek buckets.',
+                'Sensitivity selectors apply only to Greek buckets.',
                 400,
             );
         const deadline = AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(30000)]),
@@ -152,6 +211,8 @@ export class ScopeReporting {
             partyId: session.partyId,
             retrievedAt,
         };
+        if (!args.runId && args.latest && ['npv', 'npv_base'].includes(args.measure))
+            return this.latest(args, base, session, deadline);
         if (!args.runId)
             return {
                 ...base,
@@ -276,15 +337,25 @@ export class ScopeReporting {
         const exact = catalogue.filter(
             (r) => r.id.toLowerCase() === query || r.name.toLowerCase() === query,
         );
-        const choices = exact.length
-            ? exact
-            : catalogue.filter((r) => r.name.toLowerCase().includes(query));
+        const choices =
+            exact.length || args.latest
+                ? exact
+                : catalogue.filter((r) => r.name.toLowerCase().includes(query));
         if (choices.length !== 1)
             return {
                 ...base,
-                status: choices.length ? 'ambiguous' : 'not_found',
+                status:
+                    choices.length ||
+                    (args.latest && catalogue.some((row) => row.name.toLowerCase().includes(query)))
+                        ? 'ambiguous'
+                        : 'not_found',
                 field: 'scope',
-                candidates: choices.slice(0, 25).map((r) => ({ id: r.id, name: r.name })),
+                candidates: (choices.length
+                    ? choices
+                    : catalogue.filter((row) => row.name.toLowerCase().includes(query))
+                )
+                    .slice(0, 25)
+                    .map((r) => ({ id: r.id, name: r.name })),
                 reason: 'Choose an exact selected-party name or UUID from the run-start catalogue. No scope was selected automatically.',
             };
         const selected = choices[0]!;
@@ -545,29 +616,7 @@ export class ScopeReporting {
                 };
             for (const row of rows) {
                 const metric = byTrade.get(row.subject_id)!;
-                let currency: string;
-                try {
-                    currency = z
-                        .object({ BaseCurrency: z.string().regex(/^[A-Z]{3}$/) })
-                        .parse(JSON.parse(metric.qualifiers)).BaseCurrency;
-                } catch {
-                    throw new AppError(
-                        'invalid_currency_metadata',
-                        'Stored CSV BaseCurrency is missing or invalid; no total calculated.',
-                        422,
-                    );
-                }
-                if (
-                    metric.value !== row.figure ||
-                    (row.currency && row.currency !== currency) ||
-                    (metric.currency && metric.currency !== currency)
-                )
-                    throw new AppError(
-                        'inconsistent_currency_metadata',
-                        'Base figure or currency disagrees between the stored projection and typed metric.',
-                        422,
-                    );
-                row.currency = currency;
+                row.currency = baseNpvCurrency(row, metric);
             }
         }
         const currencies = [...new Set(rows.map((r) => r.currency))].sort();
@@ -638,6 +687,111 @@ export class ScopeReporting {
             nextOffset: args.offset + args.limit < rows.length ? args.offset + args.limit : null,
         };
     }
+
+    private async latest(
+        args: ScopeArgs,
+        base: object,
+        session: Session,
+        signal: AbortSignal,
+    ): Promise<unknown> {
+        const { rows, hasMore } = z
+            .object({ rows: z.array(latestRun), hasMore: z.boolean() })
+            .parse(
+                await new Reporting(this.backend, this.now).execute(
+                    'find_report_runs',
+                    {
+                        status: 'clean',
+                        orderBy: 'pricing',
+                        limit: 6,
+                        valuationDate: args.valuationDate,
+                    },
+                    session,
+                    signal,
+                ),
+            );
+        const candidates = rows.filter(
+            (row) => row.priced_at?.slice(0, 10) === rows[0]?.priced_at?.slice(0, 10),
+        );
+        const choices = candidates.map((row) => ({
+            id: row.id,
+            name: row.name,
+            pricedAt: row.priced_at,
+            health: row.health,
+        }));
+        const selection = (reason: string) => ({
+            ...base,
+            status: 'selection_required',
+            field: 'runId',
+            reason,
+            candidates: choices,
+        });
+        if (!candidates.length)
+            return selection(
+                'No clean completed run matches the requested pricing date. Choose a stored run UUID or a different valuation date.',
+            );
+        if (candidates.length > 5 || (hasMore && candidates.length === rows.length))
+            return selection(
+                'Several clean runs share the newest pricing date. Choose a run UUID to verify the scope.',
+            );
+        const checked = [];
+        for (const candidate of candidates) {
+            signal.throwIfAborted();
+            const raw = await this.execute({ ...args, runId: candidate.id }, session, signal);
+            const status = z
+                .object({
+                    status: z.string(),
+                    reason: z.string().optional(),
+                    field: z.string().optional(),
+                    scope: z.object({ id: marketId }).optional(),
+                    total: z.object({ currency: z.string() }).optional(),
+                })
+                .parse(raw);
+            checked.push({ candidate, raw, ...status });
+        }
+        const complete = checked.filter((item) => item.status === 'ok' || item.status === 'stale');
+        if (!complete.length) {
+            if (
+                checked.length === 1 &&
+                checked[0]!.status === 'ambiguous' &&
+                checked[0]!.field === 'scope'
+            )
+                return checked[0]!.raw;
+            const reason =
+                checked.length === 1 && checked[0]!.reason
+                    ? checked[0]!.reason +
+                      ' Check another run UUID or choose a different valuation date.'
+                    : 'The newest clean runs lack verified full coverage for this scope. Choose a run UUID to inspect it.';
+            return selection(reason);
+        }
+        const selected = complete[0]!;
+        const configuration = (run: z.infer<typeof latestRun>) =>
+            JSON.stringify([
+                run.definition_id,
+                run.cut_id,
+                run.engine_settings_id,
+                run.engine_settings_version,
+            ]);
+        if (
+            checked.some(
+                (item) =>
+                    !['ok', 'stale', 'empty_scope'].includes(item.status) &&
+                    !(item.status === 'not_found' && item.field === 'scope'),
+            ) ||
+            complete.some(
+                (item) =>
+                    configuration(item.candidate) !== configuration(selected.candidate) ||
+                    item.scope?.id !== selected.scope?.id ||
+                    item.total?.currency !== selected.total?.currency,
+            ) ||
+            (complete.length > 1 &&
+                observationTime(selected.candidate.completed_at!) ===
+                    observationTime(complete[1]!.candidate.completed_at!))
+        )
+            return selection(
+                'The newest pricing date has competing configurations, equal completion times or incomplete scope evidence. Choose an exact run UUID.',
+            );
+        return { ...(selected.raw as object), selectedLatest: true };
+    }
 }
 
 export function formatScopeReporting(raw: unknown): string | undefined {
@@ -645,8 +799,8 @@ export function formatScopeReporting(raw: unknown): string | undefined {
     const r = raw as any;
     if (r.buckets) return formatSensitivities(r);
     if (!r.total)
-        return `${r.reason}${r.health ? '\nRun health: ' + r.health : ''}${r.coverage ? `\nCoverage: ${r.coverage.valuedTradeCount}/${r.coverage.expectedTradeCount}; missing ${r.coverage.missingTradeCount}; duplicates ${r.coverage.duplicateTradeCount}.` : ''}${r.candidates?.length ? '\n' + r.candidates.map((c: any) => `${c.name} [${c.id}]`).join('\n') : ''}${r.currencies?.length ? '\nCurrencies: ' + r.currencies.join(', ') : ''}`;
-    return `${r.warning ? r.warning + '\n' : ''}## Scope results\n\n${r.scope.type} ${r.scope.name} [${r.scope.id}]\n${r.total.measure === 'npv_base' ? 'Base NPV' : 'NPV'}: ${r.total.figure} ${r.total.currency}\nCoverage: ${r.coverage.valuedTradeCount}/${r.coverage.expectedTradeCount} trades; missing 0; duplicates 0.\nMembership: bookings at ${r.membershipAt}${r.scope.type === 'portfolio' ? ' in the booking-portfolio subtree; direct trade assignments are separate' : ''}.\nRun: ${r.run.name} [${r.run.id}]\nHealth: ${r.health}; actual pricing date: ${r.run.priced_at}\nCompleted: ${r.run.completed_at}\nMarket cut: ${r.run.cut_label ?? 'not supplied'} (${r.run.cut_timepoint ?? 'time not supplied'})\nPricing-date note: ${r.run.price_note || 'none'}\nSource: ${r.total.source}\nContributors by absolute value; showing ${r.contributors.length} from offset ${r.offset} of ${r.contributorCount}:\n\n${markdownTable(
+        return `${r.reason}${r.health ? '\nRun health: ' + r.health : ''}${r.coverage ? `\nCoverage: ${r.coverage.valuedTradeCount}/${r.coverage.expectedTradeCount}; missing ${r.coverage.missingTradeCount}; duplicates ${r.coverage.duplicateTradeCount}.` : ''}${r.missingTradeIds?.length ? '\nMissing trade IDs (up to 10): ' + r.missingTradeIds.join(', ') : ''}${r.duplicateTradeIds?.length ? '\nDuplicate trade IDs (up to 10): ' + r.duplicateTradeIds.join(', ') : ''}${r.candidates?.length ? '\n\n' + r.candidates.map((c: any, index: number) => `${index + 1}. ${c.name} [${c.id}]${c.pricedAt ? ' — priced ' + c.pricedAt : ''}`).join('\n') : ''}${r.currencies?.length ? '\nCurrencies: ' + r.currencies.join(', ') : ''}`;
+    return `${r.warning ? r.warning + '\n' : ''}${r.selectedLatest ? 'Selected the latest verified clean run for this scope.\n\n' : ''}## Scope results\n\n${r.scope.type} ${r.scope.name} [${r.scope.id}]\n${r.total.measure === 'npv_base' ? 'Base NPV' : 'NPV'}: ${r.total.figure} ${r.total.currency}\nCoverage: ${r.coverage.valuedTradeCount}/${r.coverage.expectedTradeCount} trades; missing 0; duplicates 0.\nMembership: bookings at ${r.membershipAt}${r.scope.type === 'portfolio' ? ' in the booking-portfolio subtree; direct trade assignments are separate' : ''}.\nRun: ${r.run.name} [${r.run.id}]\nHealth: ${r.health}; actual pricing date: ${r.run.priced_at}\nCompleted: ${r.run.completed_at}\nMarket cut: ${r.run.cut_label ?? 'not supplied'} (${r.run.cut_timepoint ?? 'time not supplied'})\nPricing-date note: ${r.run.price_note || 'none'}\nSource: ${r.total.source}\nContributors by absolute value; showing ${r.contributors.length} from offset ${r.offset} of ${r.contributorCount}:\n\n${markdownTable(
         ['Trade ID', 'Value', 'Currency'],
         r.contributors.map((c: any) => [c.tradeId, c.figure, c.currency]),
     )}\n${r.nextOffset !== null ? '\nNext contributor offset: ' + r.nextOffset : ''}\nStored results only; no repricing or currency conversion.`;

@@ -106,27 +106,30 @@ test('failed-login state is bounded and successful identities leave no rate-limi
     await sessions.close();
 });
 
-test('selected-party lifetime caps session expiry without changing the backend reply', async (t) => {
+test('the selected-party token lifetime replaces the temporary login lifetime', async (t) => {
     t.mock.timers.enable({ apis: ['Date'], now: 1000 });
     const reply = Object.freeze({
         success: true,
         token: 'old',
         session_id: 'fixture',
         available_parties: [{ id: party, name: 'Fixture' }],
-        access_lifetime_s: 3600,
+        access_lifetime_s: 300,
     });
     const backend = backendFixture();
     backend.request = async (op) =>
         op === 'login'
             ? reply
             : op === 'selectParty'
-              ? { success: true, token: 'selected', access_lifetime_s: 60 }
+              ? { success: true, token: 'selected', access_lifetime_s: 86400 }
               : {};
     const sessions = new Sessions(backend);
     const login = await sessions.login({ ...input('alice'), partyId: party });
-    assert.equal(login.expiresAt, new Date(61000).toISOString());
-    assert.equal(reply.access_lifetime_s, 3600);
+    assert.equal(login.expiresAt, new Date(86401000).toISOString());
     assert.equal(sessions.require('Bearer ' + login.accessToken).token, 'selected');
+    t.mock.timers.tick(301000);
+    assert.equal(sessions.require('Bearer ' + login.accessToken).token, 'selected');
+    t.mock.timers.tick(86400000 - 301000);
+    assert.throws(() => sessions.require('Bearer ' + login.accessToken), { status: 401 });
     await sessions.close();
 });
 

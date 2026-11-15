@@ -13,6 +13,10 @@ import { HttpInference } from "../dist/inference.js";
 import { loadConfig } from "../dist/config.js";
 import { fixtureBackend, fixtureSession } from "./fixtures.mjs";
 import { fixtureBackend as legacyFixtureBackend } from "./fixtures-v1.mjs";
+import { marketFixtureBackend } from "./fx-market-fixtures.mjs";
+import { datedMarketFixtureBackend } from './dated-market-fixtures.mjs';
+import { reportFixtureBackend } from './report-run-fixtures.mjs';
+import { bookingDraftFixtureBackend } from './booking-draft-fixtures.mjs';
 import { validateCorpus, summarize, redactor, strictFailed } from "./grade.mjs";
 import { evaluateCase, digest, readOnlyBackend } from "./engine.mjs";
 import { metrics } from "./metrics.mjs";
@@ -48,6 +52,10 @@ async function main() {
   const corpusPath = options.corpus ? resolve(options.corpus) : join(component, "evals/cases.json");
   const corpusText = await readFile(corpusPath, "utf8"), corpus = validateCorpus(JSON.parse(corpusText));
   const legacyFixtures = ["1.0.0", "stage5-holdout-1.0.0"].includes(corpus.version);
+  const marketFixtures = corpus.version === "fx-market-selection-1.0.0";
+  const reportFixtures = corpus.version === 'report-run-discovery-1.0.0';
+  const datedMarketFixtures = corpus.version === 'dated-market-queries-1.0.0';
+  const bookingFixtures = corpus.version === 'booking-drafts-1.0.0';
   const requested = options.cases?.split(",");
   if (requested?.some((id) => !corpus.cases.some((c) => c.id === id && c.profiles.includes(options.profile)))) throw Error("Unknown case or case unavailable for selected profile.");
   const selected = corpus.cases.filter((c) => c.profiles.includes(options.profile) && (!requested || requested.includes(c.id)));
@@ -79,7 +87,7 @@ async function main() {
     backendContract: backendContractRevision,
     node: process.version,
     platform: process.platform,
-    fixtures: options.profile === "live" ? null : { version: legacyFixtures ? "legacy-v1" : "immutable-v2", sha256: await hashFile(join(component, legacyFixtures ? "evals/fixtures-v1.mjs" : "evals/fixtures.mjs")) },
+    fixtures: options.profile === "live" ? null : { version: datedMarketFixtures ? 'dated-market-queries-v1' : bookingFixtures ? 'booking-drafts-v1' : reportFixtures ? 'report-run-discovery-v1' : marketFixtures ? "fx-market-selection-v1" : legacyFixtures ? "legacy-v1" : "immutable-v2", sha256: await hashFile(join(component, datedMarketFixtures ? 'evals/dated-market-fixtures.mjs' : bookingFixtures ? 'evals/booking-draft-fixtures.mjs' : reportFixtures ? 'evals/report-run-fixtures.mjs' : marketFixtures ? "evals/fx-market-fixtures.mjs" : legacyFixtures ? "evals/fixtures-v1.mjs" : "evals/fixtures.mjs")) },
     dataMode: options.profile === "live" ? "Existing backend records; no business mutations." : "LABELLED FIXTURE DATA; not live OreStudio.",
     inferenceMode: options.profile === "replay" ? "SCRIPTED REPLAY; not a model-quality score." : "Actual configured local model.",
     perTurnDeadlineMs: timeoutMs,
@@ -130,14 +138,14 @@ async function main() {
         const identityMissing = spec.requiresOtherParty && !options["other-party"];
         result = { id: spec.id, group: spec.group, intent: spec.intent, outcome: identityMissing ? "blocked_identity" : loginError ? "error" : "blocked_identity", handling: identityMissing ? "not_run" : loginError ? "error" : "not_run", capability: "blocked_identity", capabilityReason: identityMissing ? "No existing alternate-party identity was supplied." : "Existing identity/backend could not be established.", error: loginError ?? otherLoginError, turns: [], trace: [], durationMs: 0 };
       } else try {
-        const fixtures = legacyFixtures ? legacyFixtureBackend : fixtureBackend;
-        result = await evaluateCase(spec, { profile: options.profile, backend: options.profile === "live" ? backend : fixtures(spec.scenario), session, inference, redact, timeoutMs });
+        const fixtures = datedMarketFixtures ? datedMarketFixtureBackend : bookingFixtures ? bookingDraftFixtureBackend : reportFixtures ? reportFixtureBackend : legacyFixtures ? legacyFixtureBackend : fixtureBackend;
+        result = await evaluateCase(spec, { profile: options.profile, backend: options.profile === "live" ? backend : marketFixtures ? marketFixtureBackend(spec.id) : fixtures(spec.scenario, spec.id), session, inference, redact, timeoutMs, npvReviewDirectory: reportFixtures && options.profile !== 'live' ? join(output,'npv-submissions') : undefined, bookingDrafts: bookingFixtures });
       } catch (error) {
         result = { id: spec.id, group: spec.group, intent: spec.intent, outcome: "error", handling: "error", capability: "unfulfilled", error: { code: error.code ?? "case_execution_error", type: error.constructor.name }, turns: [], trace: [], durationMs: 0 };
       }
       result.repetition = repetition;
       result.dataMode = metadata.dataMode;
-      result.inferenceMode = metadata.inferenceMode;
+      result.inferenceMode = result.trace?.some(t => t.type === "inference") ? metadata.inferenceMode : "No model invoked; deterministic agent path.";
       results.push(redact.clean(result));
       console.log(JSON.stringify({ case: spec.id, repetition, outcome: result.outcome, handling: result.handling }));
       await writeFile(join(output, "progress.json"), JSON.stringify(redact.clean({ completed: results.length, total: selected.length * repeat, last: result.id })) + "\n", { mode: 384 });
@@ -148,6 +156,14 @@ async function main() {
   }
   const report = redact.clean({ schemaVersion: 1, corpusVersion: corpus.version, corpusSha256: digest(corpusText), profile: options.profile, startedAt, completedAt: (/* @__PURE__ */ new Date()).toISOString(), metadata, summary: summarize(results), metrics: metrics(results), results });
   await writeFile(join(output, "results.json"), JSON.stringify(report, null, 2) + "\n", { flag: "wx", mode: 384 });
+  const conversations = report.results.flatMap(r => (r.turns ?? []).map((turn, index) => ({
+    case: r.id, repetition: r.repetition, turn: index, outcome: r.outcome,
+    execution: r.trace.some(e => e.turn === index && e.type === "inference") ? "inference" : "deterministic agent path",
+    user: turn.message, assistant: turn.result?.answer ?? null,
+    evidence: turn.result?.evidence ?? [], error: turn.error ?? null, failures: turn.failures,
+    trace: r.trace.filter(e => e.turn === index)
+  })));
+  await writeFile(join(output, "conversations.jsonl"), conversations.map(c => JSON.stringify(c)).join("\n") + "\n", { flag: "wx", mode: 384 });
   await writeFile(join(output, "summary.md"), markdown(report), { flag: "wx", mode: 384 });
   console.log(JSON.stringify({ reportDirectory: output, ...report.summary }));
   return options.strict && (strictFailed(report.summary, minimum) || options["require-handling"] && report.summary.handling.pass !== report.summary.total) ? 2 : 0;

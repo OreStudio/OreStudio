@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { createApp } from '../dist/server.js';
+import { flatCurve, flatSurface } from './fx-analytics-fixtures.mjs';
 const party = '11111111-1111-4111-8111-111111111111';
 const tenant = '22222222-2222-4222-8222-222222222222';
 const seriesId = '33333333-3333-f333-0333-333333333333';
@@ -27,7 +28,7 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         if (op === 'observations') return { result: { outcome: 'ok' }, total: 1, market_observations: [{ series_id: seriesId, tenant_id: tenant, party_id: party, oresmd_uri: uri.replace('type=series', 'type=quote'), value: '1.0552', observation_datetime: '2016-12-30 00:00:00.000000Z', source: 'labelled.fixture' }] };
         return { result: { outcome: 'ok' }, currencies: [{ iso_code: 'GBP', name: 'test fixture' }], total: 1 };
     } };
-    const server = createApp(config, backend); server.listen(0, '127.0.0.1'); await once(server, 'listening');
+    const server = createApp({ ...config, pythonSandbox: { executable: 'unused', module: 'unused' } }, backend); server.listen(0, '127.0.0.1'); await once(server, 'listening');
     const base = `http://127.0.0.1:${server.address().port}`;
     const client = new Client({ name: 'independent-test-client', version: '1.0.0' });
     try {
@@ -35,7 +36,23 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         const login = await (await fetch(base + '/auth/login', { method: 'POST', body: JSON.stringify({ principal: 'alice', password: 'fixture' }) })).json();
         const headers = { Authorization: 'Bearer ' + login.accessToken };
         await client.connect(new StreamableHTTPClientTransport(new URL(base + '/mcp'), { requestInit: { headers } }));
-        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results', 'summarize_scope_results'].sort());
+        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['calculate', 'build_fx_curve_from_market', 'build_fx_forward_curve', 'build_fx_volatility_surface', 'list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results', 'summarize_scope_results', 'search_help'].sort());
+        const resultOfCalculation = await client.callTool({ name: 'calculate', arguments: { operation: 'sum', values: ['0.1', '0.2'] } });
+        assert.equal(JSON.parse(resultOfCalculation.content[0].text).value, '0.3');
+        assert.equal((await fetch(base + '/tools/run_python', { method: 'POST', headers, body: '{}' })).status, 400);
+        const beforeHelp = calls.length;
+        const help = await client.callTool({ name: 'search_help', arguments: { query: 'books add shell' } });
+        const guidance = JSON.parse(help.content[0].text);
+        assert.equal(guidance.status, 'ok');
+        assert.match(guidance.matches[0].excerpt, /books add/);
+        assert.equal(calls.length, beforeHelp);
+        const beforeAnalytics = calls.length;
+        for (const [name, args] of [['build_fx_forward_curve', flatCurve()], ['build_fx_volatility_surface', flatSurface()]]) {
+            const analysis = await client.callTool({ name, arguments: args });
+            assert.ok(!analysis.isError, JSON.stringify(analysis));
+            assert.equal(JSON.parse(analysis.content[0].text).result.validated, true);
+        }
+        assert.equal(calls.length, beforeAnalytics, 'Supplied analytics must remain inside the agent.');
         const result = await client.callTool({ name: 'list_currencies', arguments: { limit: 1 } });
         assert.equal(JSON.parse(result.content[0].text).rows[0].iso_code, 'GBP');
         assert.ok(!JSON.stringify(result).includes('private-backend-token'));

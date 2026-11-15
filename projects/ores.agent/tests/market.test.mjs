@@ -51,7 +51,7 @@ test('historical data is stale now and usable only as an explicitly dated lookup
     assert.match(formatMarketResult(stale), /not a current market quote/); assert.match(formatMarketResult(stale), /2016-12-30/);
     const historical = await lookup.lookup('fx', fx({ asOf: '2016-12-30' }), session());
     assert.equal(historical.status, 'ok'); assert.equal(historical.historicalRequest, true);
-    assert.equal(calls.at(-1).args.filter.observation_datetime_to, '2016-12-30T23:59:59.999Z');
+    assert.equal(calls.at(-1).args.filter.observation_datetime_to, '2016-12-30T23:59:59.999999Z');
 });
 test('no inversion, cross-party or cross-tenant fallback; invalid pairs and future dates are rejected', async () => {
     const s = series(); const f = fixture([{ ...s, party_id: other }, { ...series(2), tenant_id: other }, series(3, fxUri.replace('/EUR?', '/USD?').replace('ccy=USD', 'ccy=EUR'))]);
@@ -105,4 +105,29 @@ test('short/inconsistent pages and observation scan ceilings cannot establish a 
     const swap = series(1, irUri);
     const points = Array.from({ length: 1001 }, (_, n) => point(swap, '0.03', `2026-11-05T00:${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}Z`, irUri.replace('type=series', 'type=quote') + '&term=1D')).reverse();
     assert.equal((await fixture([swap], points).lookup.lookup('ir', ir(), session())).status, 'incomplete');
+});
+
+test('a historical UTC date includes the last microsecond and preserves timestamp precision', async () => {
+    const s = series();
+    const f = fixture([s], [
+        point(s, '1.20002', '2016-12-30 23:59:59.999999Z'),
+        point(s, '1.20001', '2016-12-30 23:59:59.999001Z'),
+    ]);
+    const result = await f.lookup.lookup('fx', fx({ asOf: '2016-12-30' }), session());
+    assert.equal(result.status, 'ok');
+    assert.equal(result.observation.value, '1.20002');
+    assert.equal(result.observation.observedAt, '2016-12-30T23:59:59.999999Z');
+});
+test('unspecified IR instrument or forward start cannot silently pick a point', async () => {
+    const spot = series(1, irUri);
+    const forward = series(2, irUri.replace('fwd_start=0D', 'fwd_start=1Y'));
+    const f = fixture([spot, forward]);
+    const result = await f.lookup.lookup('ir', ir(), session());
+    assert.equal(result.status, 'ambiguous');
+    assert.equal(result.candidateCount, 2);
+    assert.ok(!f.calls.some(call => call.op === 'observations'));
+    const only = fixture([spot]);
+    const unspecified = irInput.parse({ currency: 'USD', term: '5Y' });
+    assert.equal((await only.lookup.lookup('ir', unspecified, session())).status, 'ambiguous');
+    assert.ok(!only.calls.some(call => call.op === 'observations'));
 });

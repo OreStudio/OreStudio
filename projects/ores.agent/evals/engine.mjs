@@ -3,9 +3,12 @@ import { createHash } from "node:crypto";
 import { Agent } from "../dist/agent.js";
 import { ToolExecutor } from "../dist/tools.js";
 import { gradeTurn } from "./grade.mjs";
+import { gradeFxAnalytics } from "./fx-analytics-oracle.mjs";
 import { replayInference } from "./fixtures.mjs";
 import { tracedBackend } from "../dist/telemetry.js";
-const readOperations = /* @__PURE__ */ new Set(["currencies", "series", "observations", "trades", "books", "portfolios", "reportDefinitions", "reportInstances", "runResults", "runHealth", "reportMetrics", "counterparties", "trade", "tradeBooking", "tradePortfolios", "tradeBookings", "exportPortfolio", "fxForward", "bond", "counterparty"]);
+import { NpvRuns } from '../dist/npv-runs.js';
+import { BookingDrafts } from '../dist/booking-drafts.js';
+const readOperations = /* @__PURE__ */ new Set(["currencies", "series", "observations", "trades", "books", "portfolios", "reportDefinitions", "reportInstances", "runResults", "runHealth", "runHealthBatch", "runDocument", "reportMetrics", "counterparties", "trade", "tradeBooking", "tradePortfolios", "tradeBookings", "exportPortfolio", "fxForward", "bond", "counterparty"]);
 const authOperations = /* @__PURE__ */ new Set(["login", "logout", "selectParty"]);
 function readOnlyBackend(backend, onRead = () => {
 }) {
@@ -20,7 +23,7 @@ function readOnlyBackend(backend, onRead = () => {
   } };
 }
 const digest = (value) => createHash("sha256").update(typeof value === "string" ? value : JSON.stringify(value)).digest("hex");
-async function evaluateCase(spec, { profile, backend, session, inference, redact, timeoutMs = 6e4 }) {
+async function evaluateCase(spec, { profile, backend, session, inference, redact, timeoutMs = 6e4, npvReviewDirectory, bookingDrafts }) {
   const trace = [], turns = [], started = performance.now(), promptHashes = /* @__PURE__ */ new Set(), catalogueHashes = /* @__PURE__ */ new Set();
   let currentTurn = 0, replay;
   const guarded = readOnlyBackend(tracedBackend(backend), (event) => trace.push({ ...event, turn: currentTurn }));
@@ -41,13 +44,13 @@ async function evaluateCase(spec, { profile, backend, session, inference, redact
       record.durationMs = performance.now() - start;
     }
   } };
-  const wrappedInference = { complete: async (messages, tools, signal) => {
-    const event = { type: "inference", turn: currentTurn, proposedCalls: [] }, start = performance.now();
+  const wrappedInference = { complete: async (messages, tools, signal, options) => {
+    const event = { type: "inference", turn: currentTurn, proposedCalls: [], ...(options ? { interpretation: {temperature:0,disableThinking:Boolean(options.disableThinking),tool:options.tool??null} } : {}) }, start = performance.now();
     trace.push(event);
     promptHashes.add(digest(messages.find((m) => m.role === "system")?.content ?? ""));
     catalogueHashes.add(digest(tools));
     try {
-      const result = await (profile === "replay" ? replay : inference).complete(messages, tools, signal);
+      const result = await (profile === "replay" ? replay : inference).complete(messages, tools, signal, options);
       event.proposedCalls = (result.tool_calls ?? []).map((c) => ({ name: c.function.name, arguments: c.function.arguments }));
       return result;
     } catch (error) {
@@ -57,7 +60,9 @@ async function evaluateCase(spec, { profile, backend, session, inference, redact
       event.durationMs = performance.now() - start;
     }
   } };
-  const agent = new Agent(wrappedInference, wrappedExecutor, (event) => trace.push({ ...event, turn: currentTurn }));
+  const agent = new Agent(wrappedInference, wrappedExecutor, (event) => trace.push({ ...event, turn: currentTurn }),
+    npvReviewDirectory ? new NpvRuns(guarded, npvReviewDirectory) : undefined,
+    bookingDrafts ? new BookingDrafts(wrappedInference, executor) : undefined);
   for (const [index, turn] of spec.turns.entries()) {
     currentTurn = index;
     replay = replayInference(turn);
@@ -70,7 +75,7 @@ async function evaluateCase(spec, { profile, backend, session, inference, redact
     } catch (caught) {
       error = { code: control.signal.aborted ? "cancelled" : signal.aborted ? "evaluation_timeout" : typeof caught.code === "string" ? caught.code : "execution_error", type: caught.constructor?.name ?? "Error" };
     }
-    const failures2 = gradeTurn(turn.expect, result, trace.slice(traceStart), error);
+    const failures2 = [...gradeTurn(turn.expect, result, trace.slice(traceStart), error), ...gradeFxAnalytics(spec.id, result)];
     turns.push({ message: turn.message, expected: turn.expect, result, error, failures: failures2, durationMs: performance.now() - start });
   }
   const errors = turns.filter((t) => t.error && !t.expected.error), failures = turns.flatMap((t) => t.failures);

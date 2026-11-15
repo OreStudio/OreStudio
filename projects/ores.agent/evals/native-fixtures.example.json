@@ -1,0 +1,66 @@
+{
+    "book": "Test FX Book",
+    "ambiguousBook": "Test FX",
+    "portfolio": "Test Treasury",
+    "counterparty": "TEST-CP",
+    "originReference": "agent-native-test-fx",
+    "trade": "11111111-1111-4111-8111-000000000003",
+    "forwardTrade": "11111111-1111-4111-8111-000000000003",
+    "bondTrade": "11111111-1111-4111-8111-000000000004",
+    "bondIssue": "11111111-1111-4111-8111-000000000005",
+    "run": "11111111-1111-4111-8111-000000000006",
+    "partialRun": "11111111-1111-4111-8111-000000000007",
+    "riskRun": "11111111-1111-4111-8111-000000000008",
+    "date": "2026-11-06",
+    "riskDate": "2026-11-06",
+    "definition": "Integration NPV",
+    "riskDefinition": "Integration Risk",
+    "bookingDate": "2026-11-06",
+    "forwardDate": "2027-05-10",
+    "swapEndDate": "2031-11-06",
+    "swapCalendar": "US",
+    "rateFactor": "DiscountCurve/GBP/0/1Y",
+    "scenario": "Base",
+    "vegaOption": 1,
+    "expected": {
+        "tradeNative": {
+            "result.figure": "100.00",
+            "result.currency": "USD"
+        },
+        "tradeBase": {
+            "result.figure": "80.00",
+            "result.currency": "GBP"
+        },
+        "tradePartial": {
+            "result.figure": "100.00",
+            "result.currency": "USD"
+        },
+        "bookNative": {
+            "total.figure": "200",
+            "total.currency": "USD"
+        },
+        "bookBase": {
+            "total.figure": "160",
+            "total.currency": "GBP"
+        },
+        "portfolioNative": {
+            "total.figure": "300",
+            "total.currency": "USD"
+        },
+        "portfolioBase": {
+            "total.figure": "240",
+            "total.currency": "GBP"
+        },
+        "rateGreeks": {
+            "buckets.0.total.figure": "10",
+            "buckets.1.total.figure": "5",
+            "buckets.2.total.figure": "10"
+        },
+        "vega": {
+            "buckets.0.total.figure": "8"
+        },
+        "scenario": {
+            "buckets.0.total.figure": "10"
+        }
+    }
+}

@@ -13,11 +13,11 @@ test('model substitutions of user-selected trade/run are rejected before backend
     for(const field of ['tradeId','runId']){
         const calls=[];let turn=0;
         const correct={tradeId:id(5),runId:id(7),measure:'npv_base'};
-        const agent=new Agent({complete:async()=>call('read_trade_results',++turn===1?{...correct,[field]:id(6)}:correct)}, {execute:async(name,args)=>{
+        const agent=new Agent({complete:async()=>++turn===3?{role:'assistant',content:'Result unavailable.'}:call('read_trade_results',turn===1?{...correct,[field]:id(6)}:correct)}, {execute:async(name,args)=>{
             calls.push(args);return {tool:name,status:'unavailable',reason:'fixture'};
         }});
         await agent.chat({message:`Base NPV of trade ${id(5)} from run ${id(7)}`},fixtureSession(),signal());
-        assert.equal(turn,2);assert.equal(calls.length,1);assert.equal(calls[0][field],correct[field]);
+        assert.equal(turn,3);assert.equal(calls.length,1);assert.equal(calls[0][field],correct[field]);
     }
 });
 

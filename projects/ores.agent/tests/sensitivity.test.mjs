@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { summarizeSensitivities } from '../dist/sensitivity.js';
+import { referenceSensitivities } from '../evals/sensitivity-reference.mjs';
+import { fixtureIds } from '../evals/fixtures.mjs';
 const id = n => `11111111-1111-4111-8111-${String(n).padStart(12,'0')}`;
 const expected = new Set([id(1),id(2)]), identity={tenantId:id(3),partyId:id(4),runId:id(5),definitionId:id(6),pricedAt:'2026-11-06'};
 const args={measure:'greeks',offset:0,limit:10,bucketOffset:0,bucketLimit:10};
@@ -45,4 +47,39 @@ test('bucket and contributor pagination keep independent whole-scope totals and 
  const first=summarize(rows,{bucketLimit:1,limit:1}), next=summarize(rows,{bucketLimit:1,bucketOffset:1,limit:1});
  assert.equal(first.nextBucketOffset,1);assert.equal(next.nextBucketOffset,null);assert.equal(first.buckets[0].total.figure,'0.3');assert.equal(next.buckets[0].total.figure,'3');
  const contributor=first.buckets[0].contributors[0];assert.equal(contributor.resultId,id(7));assert.equal(contributor.line,3);assert.equal(first.buckets[0].nextOffset,1);
+});
+
+test('checked-in ORE output independently verifies Delta, Gamma, signed DV01 and cash vega', () => {
+ const referenceIdentity = { tenantId: fixtureIds.tenant, partyId: fixtureIds.party, runId: fixtureIds.run, definitionId: fixtureIds.definition, pricedAt: '2026-11-06' };
+ const population = new Set([id(5), id(6)]);
+ const rate = referenceSensitivities('risk-rate-reference');
+ const fx = referenceSensitivities('risk-fx-volatility-reference');
+ // ORE Example 15 reports -716.34 + 231.30 and 1.39 + 0.45. The GPU example's ATM column reports 1.13 + 2.03.
+ const cases = [
+   ['delta', rate.metrics, {}, '-485.04'],
+   ['gamma', rate.metrics, {}, '1.84'],
+   ['dv01', rate.metrics, {}, '-485.04'],
+   ['vega', fx.metrics, { fxPair:'EURUSD', maturity:'3M', smile:'ATM' }, '3.16'],
+ ];
+ for (const [measure, rows, selectors, figure] of cases) {
+   const response = summarizeSensitivities(rows, population, { ...args, measure, ...selectors }, referenceIdentity);
+   assert.equal(response.status, 'ok', measure);
+   assert.equal(response.buckets[0].total.figure, figure);
+   assert.equal(response.buckets[0].currency, 'EUR');
+ }
+ const vol = { ...args, measure:'vega', fxPair:'EURUSD', maturity:'3M' };
+ const ambiguous = summarizeSensitivities(fx.metrics, population, vol, referenceIdentity);
+ assert.equal(ambiguous.status, 'selection_required');
+ assert.equal(ambiguous.candidates.length, 2);
+ assert.equal(ambiguous.buckets, undefined);
+ const missing = summarizeSensitivities(fx.metrics, population, { ...vol, fxPair:'USDEUR' }, referenceIdentity);
+ assert.equal(missing.status, 'unavailable');
+ assert.equal(missing.buckets, undefined);
+ const wrongTenor = summarizeSensitivities(fx.metrics, population, { ...vol, maturity:'6M' }, referenceIdentity);
+ assert.equal(wrongTenor.status, 'selection_required');
+ assert.equal(wrongTenor.buckets, undefined);
+ const partialMeasures = summarizeSensitivities(fx.metrics, population, { ...vol, smile:'ATM', riskMeasures:['vega','gamma'] }, referenceIdentity);
+ assert.equal(partialMeasures.status, 'incomplete');
+ assert.deepEqual(partialMeasures.missingMeasures, ['gamma']);
+ assert.equal(partialMeasures.buckets[0].total.figure, '3.16');
 });

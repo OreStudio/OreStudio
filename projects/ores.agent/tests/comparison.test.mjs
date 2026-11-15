@@ -35,7 +35,10 @@ test('offline verification and comparison CLI write non-overwriting reports with
  const run=(script,args)=>spawnSync(process.execPath,[script,...args],{encoding:'utf8',timeout:30000});
  try{
   const out=join(root,'verify'),check=run('evals/check.mjs',['--out',out]);assert.equal(check.status,0,check.stderr);
-  const checks=JSON.parse(await readFile(join(out,'checks.json'),'utf8'));assert.equal(checks.reports.length,3);assert.ok(checks.reports.every(r=>r.summary.handling.fail===0));
+  const checks=JSON.parse(await readFile(join(out,'checks.json'),'utf8'));assert.equal(checks.reports.length,8);assert.ok(checks.reports.every(r=>r.summary.handling.fail===0));
+  const conversations=(await readFile(join(out,'fx-analytics/conversations.jsonl'),'utf8')).trim().split('\n').map(line=>JSON.parse(line));
+  assert.ok(conversations.some(c=>c.case==='fx-curve-conversation-correction'&&c.turn===1&&c.evidence[0].result.validated));
+  assert.ok(conversations.every(c=>typeof c.user==='string'&&typeof c.assistant==='string'&&c.trace.some(t=>t.type==='tool')));
   const file=join(out,'replay/results.json'),dest=join(root,'comparison');const same=run('evals/compare.mjs',[file,file,'--out',dest,'--strict']);assert.equal(same.status,0,same.stderr);
   const comparison=JSON.parse(await readFile(join(dest,'comparison.json'),'utf8'));assert.equal(comparison.controlled,true);assert.deepEqual(comparison.regressions,[]);
   const changed=JSON.parse(await readFile(file,'utf8'));changed.results[0].handling='fail';changed.results[0].outcome='fail';changed.results[0].capability='unfulfilled';changed.summary=summarize(changed.results);const changedFile=join(root,'changed.json');await writeFile(changedFile,JSON.stringify(changed));

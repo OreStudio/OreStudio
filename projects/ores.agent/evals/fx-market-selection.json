@@ -1,0 +1,1208 @@
+{
+  "version": "fx-market-selection-1.0.0",
+  "cases": [
+    {
+      "id": "market-orphaned-conventions",
+      "group": "fx-market-selection",
+      "intent": "market-orphaned-conventions",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Orphaned conventions must not reach inference."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [
+              {
+                "path": "field",
+                "equals": "asOf"
+              },
+              {
+                "path": "request.spotDate",
+                "equals": "2026-01-01"
+              }
+            ]
+          }
+        },
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01.",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "provider",
+                    "value": "ore",
+                    "quote": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01."
+                  },
+                  {
+                    "field": "usdCurve",
+                    "value": "USD-SOFR",
+                    "quote": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01."
+                  },
+                  {
+                    "field": "asOf",
+                    "value": "2026-01-01",
+                    "quote": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01."
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-natural-complete",
+      "group": "fx-market-selection",
+      "intent": "market-natural-complete",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "result.targets.0.outright",
+                "equals": 1.1
+              },
+              {
+                "path": "selection.provider",
+                "equals": "ore"
+              }
+            ],
+            "arguments": {
+              "provider": "ore",
+              "usdCurve": "USD-SOFR",
+              "asOf": "2026-01-01"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-natural-clarification",
+      "group": "fx-market-selection",
+      "intent": "market-natural-clarification",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "spotDate",
+            "contains": [
+              "settlement date"
+            ]
+          }
+        },
+        {
+          "message": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "spotDate",
+                    "value": "2026-01-01",
+                    "quote": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date."
+                  },
+                  {
+                    "field": "forwardQuote",
+                    "value": "outright",
+                    "quote": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date."
+                  },
+                  {
+                    "field": "calendar",
+                    "value": "unadjusted",
+                    "quote": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date."
+                  },
+                  {
+                    "field": "endOfMonth",
+                    "value": false,
+                    "quote": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date."
+                  },
+                  {
+                    "field": "usdPillarAnchor",
+                    "value": "valuation",
+                    "quote": "Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date."
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-natural-step-by-step",
+      "group": "fx-market-selection",
+      "intent": "market-natural-step-by-step",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Build an EUR/USD forward curve.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "asOf"
+          }
+        },
+        {
+          "message": "2026-01-01",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "asOf",
+                    "value": "2026-01-01",
+                    "quote": "2026-01-01"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "provider"
+          }
+        },
+        {
+          "message": "ore",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "provider",
+                    "value": "ore",
+                    "quote": "ore"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "usdCurve"
+          }
+        },
+        {
+          "message": "USD curve USD-SOFR",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "usdCurve",
+                    "value": "USD-SOFR",
+                    "quote": "USD curve USD-SOFR"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "spotDate"
+          }
+        },
+        {
+          "message": "2026-01-01",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "spotDate",
+                    "value": "2026-01-01",
+                    "quote": "2026-01-01"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "forwardQuote"
+          }
+        },
+        {
+          "message": "outrights",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "forwardQuote",
+                    "value": "outright",
+                    "quote": "outrights"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "calendar"
+          }
+        },
+        {
+          "message": "unadjusted",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "calendar",
+                    "value": "unadjusted",
+                    "quote": "unadjusted"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "endOfMonth"
+          }
+        },
+        {
+          "message": "no",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "endOfMonth",
+                    "value": false,
+                    "quote": "no"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "usdPillarAnchor"
+          }
+        },
+        {
+          "message": "valuation date",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "usdPillarAnchor",
+                    "value": "valuation",
+                    "quote": "valuation date"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-ambiguous-curve",
+      "group": "fx-market-selection",
+      "intent": "market-ambiguous-curve",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "usdCurve"
+          }
+        },
+        {
+          "message": "11111111-1111-4111-8111-000000000033",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "usdCurve",
+                    "value": "11111111-1111-4111-8111-000000000033",
+                    "quote": "11111111-1111-4111-8111-000000000033"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "selection.series.2.id",
+                "equals": "11111111-1111-4111-8111-000000000033"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-ambiguous-spot",
+      "group": "fx-market-selection",
+      "intent": "market-ambiguous-spot",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "spotSeriesId"
+          }
+        },
+        {
+          "message": "11111111-1111-4111-8111-000000000034",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "spotSeriesId",
+                    "value": "11111111-1111-4111-8111-000000000034",
+                    "quote": "11111111-1111-4111-8111-000000000034"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "selection.series.0.id",
+                "equals": "11111111-1111-4111-8111-000000000034"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-ambiguous-forward",
+      "group": "fx-market-selection",
+      "intent": "market-ambiguous-forward",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "selectionRequired": "forwardSeriesId"
+          }
+        },
+        {
+          "message": "11111111-1111-4111-8111-000000000035",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "forwardSeriesId",
+                    "value": "11111111-1111-4111-8111-000000000035",
+                    "quote": "11111111-1111-4111-8111-000000000035"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "selection.series.1.id",
+                "equals": "11111111-1111-4111-8111-000000000035"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-missing-series",
+      "group": "fx-market-selection",
+      "intent": "market-missing-series",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "blocked_data",
+        "reason": "Selected-party stored inputs are missing or unavailable on the requested date."
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "not_found"
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-foreign-series",
+      "group": "fx-market-selection",
+      "intent": "market-foreign-series",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "blocked_data",
+        "reason": "Selected-party stored inputs are missing or unavailable on the requested date."
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "not_found"
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-stale",
+      "group": "fx-market-selection",
+      "intent": "market-stale",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "blocked_data",
+        "reason": "Selected-party stored inputs are missing or unavailable on the requested date."
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "no_observation"
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-empty-observation",
+      "group": "fx-market-selection",
+      "intent": "market-empty-observation",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "blocked_data",
+        "reason": "Selected-party stored inputs are missing or unavailable on the requested date."
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "no_observation"
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-conflicting-observation",
+      "group": "fx-market-selection",
+      "intent": "market-conflicting-observation",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "invalid_input"
+            ],
+            "checks": [],
+            "contains": [
+              "Conflicting observations"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-denied",
+      "group": "fx-market-selection",
+      "intent": "market-denied",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "error": "backend_denied"
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-incomplete-page",
+      "group": "fx-market-selection",
+      "intent": "market-incomplete-page",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are outrights; unadjusted dates; no end of month; USD tenors use valuation date.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "error": "incomplete_analytics_inputs"
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-natural-points",
+      "group": "fx-market-selection",
+      "intent": "market-natural-points",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Spot date 2026-01-01; forward quotes are points; unadjusted dates; no end of month; USD tenors use valuation date. point size 0.0001",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.repricingUnits",
+                "equals": "forward points"
+              },
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-conflicting-selectors",
+      "group": "fx-market-selection",
+      "intent": "market-conflicting-selectors",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01. Use provider vendor instead of provider ore.",
+          "replay": [
+            {
+              "content": "Deterministic market selection; no model supplies inputs."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "contains": [
+              "select one provider"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-dialogue-test-exact",
+      "group": "fx-market-selection",
+      "intent": "market-dialogue-test-exact",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider agent-e2e, and USD curve USD-AGENT-E2E, as of 2016-12-30.",
+          "replay": [
+            {
+              "content": "Initial stored-data selection is deterministic."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [
+              {
+                "path": "field",
+                "equals": "spotDate"
+              }
+            ]
+          }
+        },
+        {
+          "message": "use test data set conventions",
+          "replay": [
+            {
+              "tool": "accept_fx_test_conventions",
+              "arguments": {}
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "request.provider",
+                "equals": "agent-e2e"
+              },
+              {
+                "path": "result.targets.0.outright",
+                "equals": 1.0604165782509278
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-dialogue-test-typo",
+      "group": "fx-market-selection",
+      "intent": "market-dialogue-test-typo",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider agent-e2e, and USD curve USD-AGENT-E2E, as of 2016-12-30.",
+          "replay": [
+            {
+              "content": "Initial stored-data selection is deterministic."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [
+              {
+                "path": "field",
+                "equals": "spotDate"
+              }
+            ]
+          }
+        },
+        {
+          "message": "go ahead with the conventons for that test data please",
+          "replay": [
+            {
+              "tool": "accept_fx_test_conventions",
+              "arguments": {}
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "request.provider",
+                "equals": "agent-e2e"
+              },
+              {
+                "path": "result.targets.0.outright",
+                "equals": 1.0604165782509278
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-dialogue-test-paraphrase",
+      "group": "fx-market-selection",
+      "intent": "market-dialogue-test-paraphrase",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider agent-e2e, and USD curve USD-AGENT-E2E, as of 2016-12-30.",
+          "replay": [
+            {
+              "content": "Initial stored-data selection is deterministic."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [
+              {
+                "path": "field",
+                "equals": "spotDate"
+              }
+            ]
+          }
+        },
+        {
+          "message": "Yes, the test settings you offered please.",
+          "replay": [
+            {
+              "tool": "accept_fx_test_conventions",
+              "arguments": {}
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "request.provider",
+                "equals": "agent-e2e"
+              },
+              {
+                "path": "result.targets.0.outright",
+                "equals": 1.0604165782509278
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-dialogue-natural-date-correction",
+      "group": "fx-market-selection",
+      "intent": "market-dialogue-natural-date-correction",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider ore, and USD curve USD-SOFR, as of 2026-01-01.",
+          "replay": [
+            {
+              "content": "Initial selection."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ]
+          }
+        },
+        {
+          "message": "Actually, settle the spot exchange on January 1, 2026.",
+          "replay": [
+            {
+              "tool": "update_fx_selection",
+              "arguments": {
+                "selections": [
+                  {
+                    "field": "spotDate",
+                    "value": "2026-01-01",
+                    "quote": "January 1, 2026"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [
+              {
+                "path": "request.spotDate",
+                "equals": "2026-01-01"
+              },
+              {
+                "path": "request.provider",
+                "equals": "ore"
+              },
+              {
+                "path": "field",
+                "equals": "forwardQuote"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "market-dialogue-test-decline",
+      "group": "fx-market-selection",
+      "intent": "market-dialogue-test-decline",
+      "scenario": "default",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Use EUR/USD spot and forward quotes from provider agent-e2e, and USD curve USD-AGENT-E2E, as of 2016-12-30.",
+          "replay": [
+            {
+              "content": "Initial selection."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_curve_from_market",
+            "statuses": [
+              "selection_required"
+            ]
+          }
+        },
+        {
+          "message": "Please do not use those test conventions. I want to choose my own.",
+          "replay": [
+            {
+              "tool": "clarify_fx_selection",
+              "arguments": {
+                "question": "What spot settlement date should I use for your own conventions?"
+              }
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "selectionRequired": "spotDate"
+          }
+        }
+      ]
+    }
+  ]
+}

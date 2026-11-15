@@ -18,7 +18,8 @@
     "eval:doctor": "npm run build && node evals/preflight.mjs",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "check:backend-contract": "node scripts/check-backend-contracts.mjs check"
+    "check:backend-contract": "node scripts/check-backend-contracts.mjs check",
+    "eval:native": "npm run build && node evals/native.mjs"
   },
   "devDependencies": {
     "@types/markdown-it": "14.2.0",

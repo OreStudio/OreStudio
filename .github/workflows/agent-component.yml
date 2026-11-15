@@ -28,7 +28,31 @@ jobs:
           cache-dependency-path: projects/ores.agent/package-lock.json
       - run: npm ci --ignore-scripts
       - run: npm run verify
+      - name: Set up pinned NATS broker (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        working-directory: .
+        run: ./build/scripts/setup_nats_server.sh
+      - name: Set up pinned NATS broker (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: .
+        run: ./build/scripts/setup_nats_server.ps1
+      - name: Verify persisted synthetic FX data through NATS
+        run: node evals/persisted-fx-ci.mjs
       - run: npm run package
+      - name: Smoke test the Linux agent image
+        if: runner.os == 'Linux' && matrix.node == 24
+        shell: bash
+        run: |
+          docker build --tag ores-agent:ci .
+          config="$(mktemp)"
+          node --input-type=module -e 'import fs from "node:fs"; const c = JSON.parse(fs.readFileSync("config.container.example.json")); c.nats = null; process.stdout.write(JSON.stringify(c));' > "$config"
+          chmod 644 "$config"
+          container="$(docker run -d --read-only --cap-drop=ALL --security-opt=no-new-privileges --publish 127.0.0.1::20100 --mount "type=bind,src=$config,dst=/run/ores-agent/agent.json,readonly" ores-agent:ci)"
+          trap 'docker rm -f "$container" >/dev/null; rm -f "$config"' EXIT
+          address="$(docker port "$container" 20100/tcp)"
+          curl --fail --silent --show-error --retry 10 --retry-connrefused "http://$address/healthz"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ores-agent-${{ matrix.os }}-node${{ matrix.node }}
@@ -37,5 +61,7 @@ jobs:
         if: always()
         with:
           name: ores-agent-replay-${{ matrix.os }}-node${{ matrix.node }}
-          path: build/output/agent-checks/
+          path: |
+            build/output/agent-checks/
+            build/output/agent-nats/
           if-no-files-found: ignore

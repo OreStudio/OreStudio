@@ -1,0 +1,91 @@
+name: ores-agent
+services:
+  agent:
+    image: ${ORES_AGENT_IMAGE:-ores-agent:local}
+    build: .
+    depends_on:
+      llama:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${ORES_AGENT_PORT:-20100}:20100"
+    networks: [backend, inference]
+    volumes:
+      - type: bind
+        source: ${ORES_AGENT_RUNTIME:?Set ORES_AGENT_RUNTIME to an external runtime directory}/agent.json
+        target: /run/ores-agent/agent.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${ORES_AGENT_RUNTIME}/nats
+        target: /run/ores-agent/nats
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${ORES_AGENT_RUNTIME}/llama-api-key
+        target: /run/ores-agent/llama-api-key
+        read_only: true
+        bind:
+          create_host_path: false
+      - agent-state:/var/lib/ores-agent
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    stop_grace_period: 20s
+
+  llama:
+    image: ghcr.io/ggml-org/llama.cpp@sha256:2103d1f4f2e2e223ad80587dcb39fc15a9f912f29ae1fa9fc1193fe8c1aea82f
+    command:
+      - --model
+      - /models/model.gguf
+      - --alias
+      - lfm3-1.7b
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --ctx-size
+      - "${ORES_LLAMA_CONTEXT:-32768}"
+      - --parallel
+      - "1"
+      - --n-gpu-layers
+      - "${ORES_LLAMA_GPU_LAYERS:-0}"
+      - --jinja
+      - --no-ui
+      - --api-key-file
+      - /run/ores-agent/llama-api-key
+    networks: [inference]
+    volumes:
+      - type: bind
+        source: ${ORES_LLAMA_MODEL_FILE:?Set ORES_LLAMA_MODEL_FILE to the pinned GGUF file}
+        target: /models/model.gguf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${ORES_AGENT_RUNTIME}/llama-api-key
+        target: /run/ores-agent/llama-api-key
+        read_only: true
+        bind:
+          create_host_path: false
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, curl, -fsS, http://127.0.0.1:8080/health]
+      interval: 5s
+      timeout: 3s
+      start_period: 60s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  backend:
+  inference:
+    internal: true
+
+volumes:
+  agent-state:

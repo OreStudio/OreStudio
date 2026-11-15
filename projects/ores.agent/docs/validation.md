@@ -29,8 +29,8 @@ server contract. Installed-release and model results below remain historical.
 
 ## Current backend contract
 
-2026-11-12: checked upstream `2629842861d5e6ae56c8939b2b78bd5492f175a0`.
-All 23 operation subjects, strict C++ MessagePack request readers and response
+2026-11-15: checked upstream `26f6bef7c08332aa13452616f5de4ea07bb769b2`.
+All 37 operation subjects, strict C++ MessagePack request readers and response
 writers pass. All 45 contract cases pass through the real NATS adapter and
 current C++ codecs. The probe records its source fingerprint.
 
@@ -73,7 +73,8 @@ source/model identifiers; complete private reports remain outside Git.
 
 Detailed Markdown reports and earlier release checks are retained in the
 [frozen documentation snapshot](https://github.com/alexhock/OreStudio/tree/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs).
-The current tree keeps only the five guides and README.
+The current guides and [query task list](query-tasks.md) replace those historical
+planning documents. Tasks do not change the delivered capabilities listed here.
 
 Reference records:
 

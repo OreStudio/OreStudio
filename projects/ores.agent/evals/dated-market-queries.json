@@ -1,0 +1,271 @@
+{
+  "version": "dated-market-queries-1.0.0",
+  "cases": [
+    {
+      "id": "dated-ir-series-dialogue",
+      "intent": "clarify a six-month GBP rate by choosing the intended series",
+      "group": "market",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "What was the six-month GBP rate as of 2026-11-06?",
+          "replay": [
+            {
+              "content": "The agent uses the supplied market selectors."
+            }
+          ],
+          "expect": {
+            "tool": "read_ir_rate",
+            "arguments": {
+              "currency": "GBP",
+              "term": "6M",
+              "asOf": "2026-11-06"
+            },
+            "statuses": [
+              "ambiguous"
+            ],
+            "selectionRequired": "series",
+            "contains": [
+              "money-market rate",
+              "swap rate",
+              "floating tenor 3M",
+              "forward start 1Y"
+            ],
+            "noFigures": true
+          }
+        },
+        {
+          "message": "Could you go with the second one, please?",
+          "replay": [
+            {
+              "tool": "interpret_market_reply",
+              "arguments": {
+                "action": "select",
+                "selection": "second",
+                "updates": []
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_ir_rate",
+            "arguments": {
+              "seriesId": "11111111-1111-4111-8111-000000000072",
+              "term": "6M",
+              "asOf": "2026-11-06"
+            },
+            "statuses": [
+              "ok"
+            ],
+            "contains": [
+              "LABELLED MARKET FIXTURE",
+              "2026-11-06"
+            ],
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "0.03415"
+              },
+              {
+                "path": "units",
+                "equals": "decimal rate"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "dated-ir-floating-and-forward",
+      "intent": "keep floating tenor and forward start while asking for the point maturity",
+      "group": "market",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "What was the GBP SONIA swap rate with a 3M floating leg and forward start 1Y from provider bloomberg on 2026-11-06?",
+          "replay": [
+            {
+              "content": "The agent uses the supplied market selectors."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "selectionRequired": "term",
+            "contains": [
+              "point maturity"
+            ]
+          }
+        },
+        {
+          "message": "I meant a five-year maturity.",
+          "replay": [
+            {
+              "content": "The agent uses the supplied market selectors."
+            }
+          ],
+          "expect": {
+            "tool": "read_ir_rate",
+            "arguments": {
+              "currency": "GBP",
+              "instrument": "ir_swap",
+              "indexName": "SONIA",
+              "floatingTenor": "3M",
+              "forwardStart": "1Y",
+              "provider": "bloomberg",
+              "term": "5Y",
+              "asOf": "2026-11-06"
+            },
+            "statuses": [
+              "ok"
+            ],
+            "contains": [
+              "LABELLED MARKET FIXTURE",
+              "2026-11-06"
+            ],
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "0.03750"
+              },
+              {
+                "path": "units",
+                "equals": "decimal rate"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "dated-ir-curve-point",
+      "intent": "read a dated named discount curve point in discount-factor units",
+      "group": "market",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "Show the six-month sterling discount factor using the GBP-SONIA curve on 6 November 2026.",
+          "replay": [
+            {
+              "content": "The agent uses the supplied market selectors."
+            }
+          ],
+          "expect": {
+            "tool": "read_ir_rate",
+            "arguments": {
+              "currency": "GBP",
+              "instrument": "discount",
+              "curveId": "GBP-SONIA",
+              "term": "6M",
+              "asOf": "2026-11-06"
+            },
+            "statuses": [
+              "ok"
+            ],
+            "contains": [
+              "LABELLED MARKET FIXTURE",
+              "2026-11-06"
+            ],
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "0.9825"
+              },
+              {
+                "path": "units",
+                "equals": "discount factor"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "dated-fx-provider-dialogue",
+      "intent": "read directed FX spot from a provider selected in a paraphrased reply with a typo",
+      "group": "market",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "What was EUR/USD spot on 2026-11-06?",
+          "replay": [
+            {
+              "tool": "read_fx_spot",
+              "arguments": {
+                "baseCurrency": "EUR",
+                "quoteCurrency": "USD",
+                "asOf": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_fx_spot",
+            "arguments": {
+              "baseCurrency": "EUR",
+              "quoteCurrency": "USD",
+              "asOf": "2026-11-06"
+            },
+            "statuses": [
+              "ambiguous"
+            ],
+            "selectionRequired": "series",
+            "contains": [
+              "bloomberg",
+              "ore"
+            ],
+            "noFigures": true
+          }
+        },
+        {
+          "message": "Let's go with bloombeg this time.",
+          "replay": [
+            {
+              "tool": "interpret_market_reply",
+              "arguments": {
+                "action": "select",
+                "selection": "bloombeg",
+                "updates": []
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_fx_spot",
+            "arguments": {
+              "baseCurrency": "EUR",
+              "quoteCurrency": "USD",
+              "provider": "bloomberg",
+              "asOf": "2026-11-06"
+            },
+            "statuses": [
+              "ok"
+            ],
+            "contains": [
+              "LABELLED MARKET FIXTURE",
+              "2026-11-06"
+            ],
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "1.1520000000000000001"
+              },
+              {
+                "path": "units",
+                "equals": "USD per 1 EUR"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

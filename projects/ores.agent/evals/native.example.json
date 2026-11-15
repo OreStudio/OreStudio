@@ -1,0 +1,28 @@
+{
+    "disposable": true,
+    "agentConfig": "./agent.json",
+    "credentials": "./credentials.json",
+    "tenantId": "11111111-1111-4111-8111-000000000001",
+    "partyId": "11111111-1111-4111-8111-000000000002",
+    "start": {
+        "argv": [
+            "python",
+            "projects/ores.agent/evals/native-windows.py",
+            "--http-port",
+            "24001",
+            "--monitor-port",
+            "24006"
+        ],
+        "foreground": true
+    },
+    "fixtures": "./fixtures.json",
+    "reportTimeoutMs": 240000,
+    "clone": {
+        "source": "ores_dev_orestudio",
+        "host": "127.0.0.1",
+        "port": 55432,
+        "user": "postgres",
+        "bin": "C:/path/to/postgresql/bin",
+        "passfile": "./pgpass.conf"
+    }
+}

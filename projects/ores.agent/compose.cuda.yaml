@@ -1,0 +1,10 @@
+services:
+  llama:
+    image: ghcr.io/ggml-org/llama.cpp@sha256:d154fba060de774527c436ffecf74a64444874bfae2ad57b4be8faa7c52fb40c
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

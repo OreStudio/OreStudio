@@ -4,39 +4,93 @@ import { readPages } from './read-pages.js';
 import { AppError, type Backend, type Operation } from './backend.js';
 import type { Session } from './auth.js';
 import { marketId, observationTime } from './market.js';
+import { markdownText } from './markdown.js';
+import { baseNpvCurrency, npvMetric } from './npv-units.js';
 export const reportingTools = {
     find_report_runs: {
         description:
-            'Find selected-party stored runs. With tradeId, shows only runs linked by stored result rows, not every attempted run. Shows health and actual pricing dates, not values. No execution.',
+            'List or find stored report runs in the selected party. “Show me the last few completed runs” → {"status":"completed"}; omit query when no report name was given. Returns run IDs, health and pricing dates. For one known run use read_run_status; for a trade’s stored NPV use read_trade_results.',
         schema: z
             .object({
-                tradeId: marketId.optional(),
-                query: z.string().max(120).default(''),
+                tradeId: marketId
+                    .optional()
+                    .describe(
+                        'Filter by trades with stored result rows. Resolve a trade name or reference with find_trades first. Omit for general run discovery.',
+                    ),
+                query: z
+                    .string()
+                    .max(120)
+                    .default('')
+                    .describe(
+                        'Literal text from a report name. Omit for general listings; words like “latest”, “completed” and “report runs” are not names.',
+                    ),
+                status: z
+                    .enum(['all', 'completed', 'clean'])
+                    .default('all')
+                    .describe(
+                        'Use completed for finished runs, including completions with errors. Use clean only for successful or error-free runs. Default all includes other states.',
+                    ),
                 offset: z.number().int().min(0).max(1000).default(0),
                 limit: z.number().int().min(1).max(10).default(5),
+                valuationDate: z.iso
+                    .date()
+                    .optional()
+                    .describe(
+                        'Actual pricing date, YYYY-MM-DD. Omit when the user did not specify one.',
+                    ),
+                orderBy: z
+                    .enum(['completion', 'pricing'])
+                    .optional()
+                    .describe(
+                        'Use pricing for latest by pricing date. Completed and clean listings default to completion order.',
+                    ),
             })
             .strict(),
     },
     read_run_status: {
         description:
-            'Read health and provenance of an exact selected-party report run UUID. Completed with errors is partial, not clean.',
-        schema: z.object({ runId: marketId }).strict(),
+            'Check the status, health and provenance of one stored run. “Did run <UUID> finish?” → read_run_status. Use find_report_runs first if only a report name is known. Completed with errors is partial.',
+        schema: z
+            .object({
+                runId: marketId.describe(
+                    'Exact report run UUID, distinct from the report definition UUID.',
+                ),
+            })
+            .strict(),
     },
     read_trade_results: {
         description:
-            'Read stored trade NPV or base NPV with exact run/date/currency/source. Defaults to clean completed runs only. A partial value requires explicit runId and allowPartial=true; failed/running values are withheld. No pricing or report execution.',
+            'Read one trade’s stored NPV. Resolve a trade reference with find_trades first. Omit runId to search eligible clean runs. Use summarize_scope_results for book or portfolio totals. This tool reads existing results.',
         schema: z
             .object({
-                tradeId: marketId,
-                runId: marketId.optional(),
-                measure: z.enum(['npv', 'npv_base']).default('npv'),
+                tradeId: marketId.describe('Exact trade UUID from the request or find_trades.'),
+                runId: marketId
+                    .optional()
+                    .describe(
+                        'Exact report run UUID if selected. Omit to discover an eligible run.',
+                    ),
+                measure: z
+                    .enum(['npv', 'npv_base'])
+                    .default('npv')
+                    .describe('Use npv for native currency, npv_base for report base currency.'),
                 currency: z
                     .string()
                     .regex(/^[A-Za-z]{3}$/)
                     .transform((s) => s.toUpperCase())
-                    .optional(),
-                valuationDate: z.iso.date().optional(),
-                allowPartial: z.boolean().default(false),
+                    .optional()
+                    .describe(
+                        'Currency filter if explicitly requested. Omit to read the stored currency.',
+                    ),
+                valuationDate: z.iso
+                    .date()
+                    .optional()
+                    .describe('Explicit pricing date, YYYY-MM-DD.'),
+                allowPartial: z
+                    .boolean()
+                    .default(false)
+                    .describe(
+                        'Set true only when the user explicitly requests partial results for the given runId.',
+                    ),
                 maxAgeDays: z.number().int().min(0).max(365).default(3),
             })
             .strict(),
@@ -50,6 +104,10 @@ const runSchema = z.object({
     priced_at: z.string().nullable(),
     price_note: z.string(),
     completed_at: z.string().nullable(),
+    output_message: z
+        .string()
+        .transform((message) => message.slice(0, 500))
+        .optional(),
     cut_id: marketId.nullable(),
     cut_label: z.string().nullable(),
     cut_timepoint: z.string().nullable(),
@@ -111,7 +169,7 @@ export class Reporting {
         const own = (r: { tenant_id: string; party_id: string }) =>
             r.tenant_id === session.tenantId && r.party_id === session.partyId;
         const scan = async <T extends z.ZodType>(
-            op: 'reportInstances' | 'runResults',
+            op: 'reportInstances' | 'runResults' | 'reportMetrics',
             key: string,
             schema: T,
             filter: unknown,
@@ -135,8 +193,11 @@ export class Reporting {
                 (row) => String((row as Record<string, unknown>).id),
                 {
                     code: 'incomplete_reporting',
-                    message:
-                        'Reporting pages changed, were duplicated/incomplete or exceeded the 2,000-row bound; narrow the query.',
+                    message: `Reporting pages changed, were duplicated/incomplete or exceeded the ${op === 'reportInstances' ? '10,000' : '2,000'}-row bound; narrow the query.`,
+                    // The run endpoint is tenant-wide, so its catalogue can be
+                    // much larger than the party's valuation-result population.
+                    maxRows: op === 'reportInstances' ? 10000 : 2000,
+                    pageSize: op === 'reportInstances' ? 500 : 50,
                 },
             );
         const runs = async (ids?: string[]) =>
@@ -204,7 +265,7 @@ export class Reporting {
                 subject_id: args.tradeId,
                 report_instance_id: args.runId ?? null,
                 measure: args.measure ?? null,
-                currency: args.currency ?? null,
+                currency: args.measure === 'npv_base' ? null : (args.currency ?? null),
             });
             const rows = await scan('runResults', 'results', resultSchema, filter);
             if (
@@ -216,7 +277,9 @@ export class Reporting {
                         (args.runId &&
                             r.report_instance_id.toLowerCase() !== args.runId.toLowerCase()) ||
                         (args.measure && r.measure !== args.measure) ||
-                        (args.currency && r.currency !== args.currency),
+                        (args.currency &&
+                            args.measure !== 'npv_base' &&
+                            r.currency !== args.currency),
                 )
             )
                 throw new AppError(
@@ -258,11 +321,99 @@ export class Reporting {
         if (name === 'find_report_runs') {
             const selected = (args.tradeId ? (ids.length ? await runs(ids) : []) : await runs())
                 .filter((r) => r.name.toLowerCase().includes(args.query.toLowerCase()))
+                .filter(
+                    (r) =>
+                        !args.valuationDate ||
+                        (r.priced_at && dateOf(r.priced_at) === args.valuationDate),
+                )
+                .filter(
+                    (r) =>
+                        args.orderBy !== 'pricing' ||
+                        (r.priced_at && dateOf(r.priced_at) <= snapshot.slice(0, 10)),
+                )
+                .filter(
+                    (r) =>
+                        args.status === 'all' ||
+                        (r.completed_at && observationTime(r.completed_at) <= this.now()),
+                )
                 .sort(
                     (a, b) =>
-                        String(b.priced_at).localeCompare(String(a.priced_at)) ||
+                        (args.orderBy === 'pricing'
+                            ? dateOf(b.priced_at!).localeCompare(dateOf(a.priced_at!)) ||
+                              (b.completed_at && a.completed_at
+                                  ? observationTime(b.completed_at) -
+                                    observationTime(a.completed_at)
+                                  : 0)
+                            : args.status !== 'all' || args.orderBy === 'completion'
+                              ? observationTime(b.completed_at!) - observationTime(a.completed_at!)
+                              : String(b.priced_at).localeCompare(String(a.priced_at))) ||
                         b.id.localeCompare(a.id),
                 );
+            if (args.status !== 'all') {
+                const rows = [];
+                let matched = 0,
+                    inspected = 0;
+                for (let start = 0; start < selected.length; start += 100) {
+                    const batch = selected.slice(start, start + 100);
+                    const raw = await request('runHealthBatch', {
+                        instance_ids: batch.map((run) => run.id),
+                    });
+                    accepted(raw);
+                    const states = z
+                        .object({
+                            health: z
+                                .array(
+                                    z.object({
+                                        report_instance_id: marketId,
+                                        health: z.string(),
+                                        state_name: z.string(),
+                                    }),
+                                )
+                                .max(batch.length),
+                        })
+                        .parse(raw).health;
+                    if (
+                        states.length !== batch.length ||
+                        new Set(states.map((s) => s.report_instance_id)).size !== batch.length ||
+                        states.some((s) => !batch.some((run) => run.id === s.report_instance_id))
+                    )
+                        throw new AppError(
+                            'incomplete_reporting',
+                            'Batch run health did not match the selected-party run catalogue.',
+                        );
+                    const byId = new Map(states.map((s) => [s.report_instance_id, s]));
+                    for (const run of batch) {
+                        const state = byId.get(run.id)!;
+                        inspected++;
+                        if (
+                            args.status === 'clean'
+                                ? state.state_name !== 'completed' ||
+                                  state.health !== 'completed clean'
+                                : !['completed clean', 'completed with errors'].includes(
+                                      state.health,
+                                  )
+                        )
+                            continue;
+                        if (matched++ >= args.offset) rows.push({ ...run, ...state });
+                        if (rows.length === args.limit) break;
+                    }
+                    if (rows.length === args.limit) break;
+                }
+                const hasMore = inspected < selected.length;
+                return {
+                    ...base,
+                    status: rows.length ? 'ok' : 'not_found',
+                    rows,
+                    totalMatches: hasMore ? null : matched,
+                    offset: args.offset,
+                    limit: args.limit,
+                    hasMore,
+                    nextOffset: hasMore ? args.offset + rows.length : null,
+                    reason: rows.length
+                        ? null
+                        : 'No matching completed stored run; no report was started.',
+                };
+            }
             const page = selected.slice(args.offset, args.offset + args.limit),
                 rows = [];
             for (const run of page) rows.push({ ...run, ...(await health(run)) });
@@ -286,9 +437,10 @@ export class Reporting {
             return {
                 ...base,
                 status: 'selection_required',
+                field: 'runId',
                 reason: 'Inspecting partial values requires an explicit run ID.',
             };
-        const metadata = ids.length ? await runs(ids) : [],
+        const metadata = args.runId ? await runs([args.runId]) : ids.length ? await runs(ids) : [],
             evaluated = [];
         for (const run of metadata) evaluated.push({ run, ...(await health(run)) });
         const eligible = evaluated.filter(
@@ -305,7 +457,9 @@ export class Reporting {
             return {
                 ...base,
                 status: 'unavailable',
-                reason: 'No eligible completed run for this request. Failed/running values and unrequested partial values are withheld.',
+                reason: !stored.length
+                    ? 'No stored value matches this trade, measure and run selection. Check the run status or choose a different completed run.'
+                    : 'No eligible completed run matches the requested pricing date and health. A partial result requires an explicit run ID and an explicit request to inspect partial output.',
                 candidates: evaluated.map((r) => ({
                     id: r.run.id,
                     name: r.run.name,
@@ -341,6 +495,7 @@ export class Reporting {
             return {
                 ...base,
                 status: 'ambiguous',
+                field: 'runId',
                 reason: 'Multiple configurations or equally recent runs; specify a run ID.',
                 candidates: atDate.map((r) => ({
                     id: r.run.id,
@@ -361,15 +516,76 @@ export class Reporting {
                 'inconsistent_provenance',
                 'Result and run pricing provenance disagree.',
             );
-        if (rows.length !== 1)
+        if (!rows.length)
             return {
                 ...base,
-                status: rows.length ? 'ambiguous' : 'unavailable',
-                reason: 'Expected exactly one value; specify currency or inspect the duplicate result. No value selected.',
-                currencies: [...new Set(rows.map((r) => r.currency))],
+                status: 'unavailable',
+                reason: 'The selected run contains no matching stored value for this trade and measure. Check whether the report covered the trade and stored this measure.',
+                candidates: [
+                    {
+                        id: chosen.run.id,
+                        name: chosen.run.name,
+                        health: chosen.health,
+                        pricedAt: chosen.run.priced_at,
+                    },
+                ],
             };
-        if (!/^[A-Z]{3}$/.test(rows[0]!.currency))
-            throw new AppError('invalid_result_units', 'Stored NPV has no valid currency unit.');
+        if (rows.length > 1) {
+            const currencies = [...new Set(rows.map((r) => r.currency))];
+            const chooseCurrency =
+                args.measure === 'npv' &&
+                currencies.length === rows.length &&
+                currencies.every((currency) => /^[A-Z]{3}$/.test(currency));
+            return {
+                ...base,
+                status: 'ambiguous',
+                currencies,
+                ...(chooseCurrency
+                    ? {
+                          field: 'currency',
+                          request: { ...args, runId: chosen.run.id },
+                          candidates: currencies.map((currency) => ({
+                              id: currency,
+                              name: currency,
+                          })),
+                      }
+                    : {}),
+                reason: chooseCurrency
+                    ? 'The selected run contains native NPV in multiple currencies. Choose a currency to inspect its stored value.'
+                    : 'The selected run has duplicate or conflicting rows for this trade and measure. Check the stored output or choose a different run.',
+            };
+        }
+        let row = rows[0]!;
+        let currencyBasis: 'stored_result' | 'typed_metric.BaseCurrency' = 'stored_result';
+        if (!row.currency && row.measure === 'npv_base' && row.source === 'npv.csv') {
+            const matches = await scan('reportMetrics', 'metrics', npvMetric, {
+                report_instance_id: row.report_instance_id,
+                measure: 'NPV(Base)',
+                family: 'npv_report',
+                subject_id: row.subject_id,
+            });
+            if (matches.length !== 1)
+                throw new AppError(
+                    'invalid_result_units',
+                    'The stored base NPV has no currency and requires exactly one matching NPV(Base) metric.',
+                    422,
+                );
+            row = { ...row, currency: baseNpvCurrency(row, matches[0]!) };
+            currencyBasis = 'typed_metric.BaseCurrency';
+        }
+        if (!/^[A-Z]{3}$/.test(row.currency))
+            throw new AppError(
+                'invalid_result_units',
+                'The stored NPV row has no verified currency unit.',
+                422,
+            );
+        if (args.currency && row.currency !== args.currency)
+            return {
+                ...base,
+                status: 'unavailable',
+                reason: 'The verified unit differs from the requested currency. No currency conversion was performed.',
+                currencies: [row.currency],
+            };
         const finalHealth = await health(chosen.run);
         if (finalHealth.health !== chosen.health)
             return {
@@ -386,7 +602,8 @@ export class Reporting {
             status: chosen.health === 'completed with errors' ? 'partial' : stale ? 'stale' : 'ok',
             health: chosen.health,
             run: chosen.run,
-            result: rows[0],
+            result: row,
+            currencyBasis,
             historicalRequest: Boolean(args.valuationDate),
             stale,
             warning:
@@ -405,8 +622,8 @@ export function formatReporting(raw: unknown): string | undefined {
     if (r.result)
         return `${r.warning ? r.warning + '\n' : ''}${r.result.measure}: ${r.result.figure} ${r.result.currency}\nTrade: ${r.result.subject_id}\nRun: ${r.run.name} [${r.run.id}]\nHealth: ${r.health}\nActual pricing date: ${r.run.priced_at}\nResult as-of: ${r.result.as_of}\nCompleted: ${r.run.completed_at}\nMarket cut: ${r.run.cut_label ?? 'not supplied'} (${r.run.cut_timepoint ?? 'time not supplied'})\nPricing-date note: ${r.run.price_note || 'none'}\nSource: ${r.result.source}\nStored result only; no new pricing or report execution.`;
     if (r.tool === 'read_run_status' && r.run)
-        return `${r.run.name} [${r.run.id}]\nHealth: ${r.health}; state: ${r.state_name}\nActual pricing date: ${r.run.priced_at ?? 'not supplied'}\nCompleted: ${r.run.completed_at ?? 'not completed'}\nPricing-date note: ${r.run.price_note || 'none'}`;
+        return `${r.run.name} [${r.run.id}]\nHealth: ${r.health || 'unavailable'}; state: ${r.state_name || 'unavailable'}\nActual pricing date: ${r.run.priced_at ?? 'not supplied'}\nCompleted: ${r.run.completed_at ?? 'not completed'}\nPricing-date note: ${r.run.price_note || 'none'}${r.run.output_message && (r.health === 'completed with errors' || ['failed', 'skipped', 'cancelled'].includes(r.state_name)) ? '\nRun message: ' + markdownText(r.run.output_message) : ''}`;
     if (r.rows)
-        return `${r.totalMatches} stored runs; showing ${r.rows.length} from offset ${r.offset}.\n${r.rows.map((x: any) => `${x.name} [${x.id}] — ${x.health}; priced ${x.priced_at ?? 'unknown'}`).join('\n')}`;
-    return `${r.reason}\n${(r.candidates ?? []).map((c: any) => `${c.name} [${c.id}] — ${c.health}${c.pricedAt ? '; priced ' + c.pricedAt : ''}${c.priceNote ? '; ' + c.priceNote : ''}`).join('\n')}${r.currencies ? '\nCurrencies: ' + r.currencies.join(', ') : ''}`;
+        return `${r.totalMatches === null ? 'Completed stored runs' : `${r.totalMatches} stored runs`}; showing ${r.rows.length} from offset ${r.offset}.\n\n${r.rows.map((x: any) => `${x.name} [${x.id}] — ${x.health}; priced ${x.priced_at ?? 'unknown'}; completed ${x.completed_at ?? 'not completed'}`).join('\n\n')}${r.hasMore ? `\n\nMore candidate runs remain. Next offset: ${r.nextOffset}.` : ''}${r.reason ? `\n\n${r.reason}` : ''}`;
+    return `${r.reason}${r.candidates?.length ? '\n\n' : ''}${(r.candidates ?? []).map((c: any, index: number) => `${index + 1}. ${c.name}${c.id !== c.name ? ' [' + c.id + ']' : ''}${c.health ? ' — ' + c.health : ''}${c.pricedAt ? '; priced ' + c.pricedAt : ''}${c.priceNote ? '; ' + c.priceNote : ''}`).join('\n')}${r.currencies && r.field !== 'currency' ? '\nCurrencies: ' + r.currencies.join(', ') : ''}`;
 }

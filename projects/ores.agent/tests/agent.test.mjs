@@ -2,8 +2,35 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Agent } from '../dist/agent.js';
 import { readIntent, preserveReadSelectors } from '../dist/intent.js';
+import { ToolExecutor } from '../dist/tools.js';
+import { fixtureSession } from '../evals/fixtures.mjs';
 const makeSession = () => ({ active: true, expires: Date.now() + 100000, chatBusy: false });
 const toolCall = (args = '{}', name = 'list_currencies') => ({ role: 'assistant', content: null, tool_calls: [{ id: 'call1', type: 'function', function: { name, arguments: args } }] });
+test('currency questions filter the complete catalogue and use configured country links', async () => {
+    const currencies = [
+        ...Array.from({ length: 50 }, (_, index) => ({ iso_code: 'A' + index, name: 'Fixture currency' })),
+        { iso_code: 'CAD', name: 'Canadian Dollar' },
+        { iso_code: 'USD', name: 'US Dollar' },
+    ];
+    const tables = {
+        currencies,
+        countries: [{ alpha2_code: 'US', alpha3_code: 'USA', name: 'United States', official_name: 'United States of America' }],
+        currencyCountries: [{ country_alpha2_code: 'US', currency_iso_code: 'USD' }],
+    };
+    const backend = { request: async (operation, args) => {
+        const rows = tables[operation].filter(row => !args.filter || args.filter.iso_code_one_of.includes(row.iso_code));
+        const key = operation === 'currencyCountries' ? 'currency_countries' : operation;
+        return { result: { outcome: 'ok' }, total: rows.length, [key]: rows.slice(args.offset, args.offset + args.limit) };
+    } };
+    const agent = new Agent({ complete: async () => assert.fail('Explicit currency lookups require no model round trip') }, new ToolExecutor(backend, () => {}));
+    const signal = new AbortController().signal;
+    const prefix = await agent.chat({ message: 'currencies beginning with the letter C' }, fixtureSession(), signal);
+    assert.match(prefix.answer, /CAD/);
+    assert.equal(prefix.evidence[0].total, 1);
+    const country = await agent.chat({ message: 'the currency for the united states' }, fixtureSession(), signal);
+    assert.match(country.answer, /USD/);
+    assert.equal(country.evidence[0].country, 'United States');
+});
 test('agent directly executes tools and returns attributable evidence; no MCP loopback', async () => {
     let turns = 0, executed = 0;
     const inference = { complete: async messages => {
@@ -19,8 +46,9 @@ test('malformed calls, failures and repeated calls cannot run indefinitely', asy
     let executed = 0, turn = 0;
     const agent = new Agent({ complete: async () => { turn++; return toolCall(turn === 1 ? '{broken' : '{}'); } }, { execute: async () => { executed++; throw Error('private internal error'); } });
     const session = makeSession();
-    await assert.rejects(() => agent.chat({ message: 'test' }, session, new AbortController().signal), /turn limit/);
-    assert.equal(executed, 1); assert.equal(session.chatBusy, false);
+    const reply = await agent.chat({ message: 'test' }, session, new AbortController().signal);
+    assert.match(reply.answer, /incomplete/);
+    assert.equal(executed, 2); assert.equal(session.chatBusy, false);
 });
 test('cancelled, expired and concurrent requests are bounded; model failure releases slot', async () => {
     const session = makeSession(), abort = new AbortController(); abort.abort();
@@ -38,26 +66,26 @@ test('market facts are rendered from evidence; provider clarification stays in i
         request: { baseCurrency: 'EUR', quoteCurrency: 'USD' }, reason: 'Choose provider.', candidates: [{ provider: 'ore', seriesId: 'id-ore', instrument: 'fixture' }, { provider: 'vendor', seriesId: 'id-vendor', instrument: 'fixture' }] };
     const resolved = { ...ambiguous, status: 'stale', units: 'USD per 1 EUR', series: { provider: 'ore', seriesId: 'id-ore', instrument: 'fixture' },
         observation: { value: '1.0552', observedAt: '2016-12-30T00:00:00Z', source: 'labelled.fixture' } };
-    const agent = new Agent({ complete: async messages => { modelCalls++; if (messages.at(-1).content === 'ore') return { role: 'assistant', content: 'Please specify a market request.' }; return { role: 'assistant', content: null, tool_calls: [{ id: 'm', type: 'function', function: { name: 'read_fx_spot', arguments: '{"baseCurrency":"EUR","quoteCurrency":"USD"}' } }] }; } }, {
+    const agent = new Agent({ complete: async messages => { modelCalls++; if (messages.at(-1).role === 'tool') return { role: 'assistant', content: JSON.parse(messages.at(-1).content).formattedAnswer }; if (messages.at(-1).content === 'ore') return { role: 'assistant', content: 'Please specify a market request.' }; return { role: 'assistant', content: null, tool_calls: [{ id: 'm', type: 'function', function: { name: 'read_fx_spot', arguments: '{"baseCurrency":"EUR","quoteCurrency":"USD"}' } }] }; } }, {
         execute: async (name, args) => { calls.push(args); return args.provider ? resolved : ambiguous; },
     });
     const s = makeSession();
     assert.match((await agent.chat({ message: 'What is EURUSD spot?' }, s, new AbortController().signal)).answer, /specify the provider/);
     const reply = await agent.chat({ message: 'ore' }, s, new AbortController().signal);
-    assert.match(reply.answer, /not a current market quote/); assert.match(reply.answer, /1.0552/); assert.equal(modelCalls, 1);
+    assert.match(reply.answer, /not a current market quote/); assert.match(reply.answer, /1.0552/); assert.equal(modelCalls, 2);
     assert.equal(calls.at(-1).provider, 'ore');
-    await agent.chat({ message: 'ore' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 2);
+    await agent.chat({ message: 'ore' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 3);
     await agent.chat({ message: 'What is EURUSD spot from ore?' }, s, new AbortController().signal);
     assert.equal(calls.at(-1).provider, 'ore');
 });
 test('book clarification is bound to the requesting session and resumes the original trade search', async () => {
     let modelCalls = 0; const calls = [];
-    const agent = new Agent({ complete: async (_, catalog) => { modelCalls++; assert.ok(catalog.length <= 6); return { role: 'assistant', content: null, tool_calls: [{ id: 'b', type: 'function', function: { name: 'find_trades', arguments: '{"book":"Group"}' } }] }; } }, {
+    const agent = new Agent({ complete: async (messages, catalog) => { modelCalls++; if (messages.at(-1).role === 'tool') return { role: 'assistant', content: JSON.parse(messages.at(-1).content).formattedAnswer }; assert.ok(catalog.some(t => t.function.name === 'enable_tools')); return { role: 'assistant', content: null, tool_calls: [{ id: 'b', type: 'function', function: { name: 'find_trades', arguments: '{"book":"Group"}' } }] }; } }, {
         execute: async (name, args) => { calls.push(args); return args.book === 'id-fx' ? { tool: name, status: 'ok', rows: [], totalMatches: 0, catalogueScope: 'selected_party', offset: 0 } : { tool: name, status: 'ambiguous', request: args, field: 'book', reason: 'Choose a book.', candidates: [{ id: 'id-fx', name: 'Group FX' }, { id: 'id-loans', name: 'Group Loans' }] }; },
     });
     const s = makeSession(); await agent.chat({ message: 'Show trades in book Group' }, s, new AbortController().signal);
-    await agent.chat({ message: 'Group FX' }, s, new AbortController().signal); assert.equal(modelCalls, 1); assert.equal(calls.at(-1).book, 'id-fx');
-    await agent.chat({ message: 'Group FX' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 2);
+    await agent.chat({ message: 'Group FX' }, s, new AbortController().signal); assert.equal(modelCalls, 2); assert.equal(calls.at(-1).book, 'id-fx');
+    await agent.chat({ message: 'Group FX' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 3);
 });
 test('exact partial inspection preserves UUIDs and explicit opt-in without a model round trip', async () => {
     const tradeId = '11111111-1111-4111-8111-111111111111', runId = '22222222-2222-4222-8222-222222222222';
@@ -77,7 +105,7 @@ test('the model cannot opt into partial results when the user did not request th
 test('scope run selection is private to its session and resumes the literal historical scope', async () => {
     const runId = '22222222-2222-4222-8222-222222222222'; let modelCalls = 0; const calls = [];
     const agent = new Agent({ complete: async (messages, catalogue) => {
-        modelCalls++; assert.ok(catalogue.length <= 6);
+        modelCalls++; if (messages.at(-1).role === 'tool') return { role: 'assistant', content: JSON.parse(messages.at(-1).content).formattedAnswer }; assert.ok(catalogue.some(t => t.function.name === 'enable_tools'));
         if (messages.at(-1).content === runId) return { role: 'assistant', content: 'No pending scope for this session.' };
         return toolCall(JSON.stringify({ scopeType: 'book', scope: 'FX Book', runId: messages.at(-1).content.includes(runId) ? runId : undefined }), 'summarize_scope_results');
     } }, { execute: async (name, args) => { calls.push(args); return { tool: name, request: args, status: args.runId ? 'unavailable' : 'selection_required', field: 'runId', reason: args.runId ? 'labelled fixture unavailable' : 'Choose a run.' }; } });

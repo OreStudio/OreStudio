@@ -1,0 +1,602 @@
+{
+  "version": "fx-analytics-1.0.0",
+  "cases": [
+    {
+      "id": "fx-curve-quoted-and-interpolated",
+      "group": "fx-curve",
+      "intent": "fx-curve-quoted-and-interpolated",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Build and validate an FX forward curve using these supplied EUR/USD inputs: {\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "result.repricing.0.outright",
+                "equals": 1.1
+              },
+              {
+                "path": "result.targets.0.outright",
+                "equals": 1.1
+              },
+              {
+                "path": "result.targets.0.classification",
+                "equals": "interpolated"
+              },
+              {
+                "path": "result.targets.1.tenor",
+                "equals": "4M"
+              },
+              {
+                "path": "result.targets.2.tenor",
+                "equals": "9M"
+              }
+            ],
+            "contains": [
+              "interpolated",
+              "Residual units"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-exponential-carry",
+      "group": "fx-curve",
+      "intent": "fx-curve-exponential-carry",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Build and validate an EUR/USD forward curve with spot lag; report quoted outrights, interpolated 2M/4M/9M forwards and repricing residuals: {\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-05\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"points\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-02-01\",\"discountFactor\":0.947198521904959}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-05\",\"value\":28.06313374159819},{\"tenor\":\"3M\",\"date\":\"2026-04-05\",\"value\":81.67156350148862},{\"tenor\":\"6M\",\"date\":\"2026-07-05\",\"value\":164.86713544851426},{\"tenor\":\"1Y\",\"date\":\"2027-01-05\",\"value\":334.9998734886861}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic path."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "result.referenceDate",
+                "equals": "2026-01-05"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-negative-points",
+      "group": "fx-curve",
+      "intent": "fx-curve-negative-points",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Construct an FX-consistent EUR discount curve from spot, forward points and USD discounts: {\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"points\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":-10},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":-10},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":-10},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":-10}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.repricingUnits",
+                "equals": "forward points"
+              },
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ],
+            "contains": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-missing-conventions",
+      "group": "fx-curve",
+      "intent": "fx-curve-missing-conventions",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "not_applicable",
+        "reason": "Invalid or incomplete inputs; this case checks clarification/refusal, not numerical construction."
+      },
+      "turns": [
+        {
+          "message": "Build the EUR/USD forward curve: {\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "contains": [
+              "calendar"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-no-extrapolation",
+      "group": "fx-curve",
+      "intent": "fx-curve-no-extrapolation",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "blocked_data",
+        "reason": "Supplied forward quotes stop before the requested 9M target; no extrapolated value is supplied."
+      },
+      "turns": [
+        {
+          "message": "Build an EUR/USD forward curve and show 2M, 4M and 9M: {\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "incomplete"
+            ],
+            "checks": [
+              {
+                "path": "result.targets.2.classification",
+                "equals": "unavailable"
+              },
+              {
+                "path": "result.targetsComplete",
+                "equals": false
+              }
+            ],
+            "contains": [
+              "9M is outside"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-date-conflict",
+      "group": "fx-curve",
+      "intent": "fx-curve-date-conflict",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "not_applicable",
+        "reason": "Invalid or incomplete inputs; this case checks clarification/refusal, not numerical construction."
+      },
+      "turns": [
+        {
+          "message": "Validate these FX forward curve inputs: {\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-02\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "invalid_input"
+            ],
+            "checks": [],
+            "contains": [
+              "conflicts"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-nats-reference",
+      "group": "fx-curve",
+      "intent": "fx-curve-nats-reference",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Build EUR/USD forward curve using this exact stored spot observation: {\"valuationDate\":\"2016-12-30\",\"spotDate\":\"2016-12-30\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":{\"seriesId\":\"11111111-1111-4111-8111-000000000030\",\"observedAt\":\"2016-12-30T00:00:00Z\",\"source\":\"LABELLED EVALUATION FIXTURE\",\"uri\":\"oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD\"},\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2016-12-30\",\"discountFactor\":1},{\"date\":\"2017-12-30\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2017-01-30\",\"value\":1.0552},{\"tenor\":\"3M\",\"date\":\"2017-03-30\",\"value\":1.0552},{\"tenor\":\"6M\",\"date\":\"2017-06-30\",\"value\":1.0552},{\"tenor\":\"1Y\",\"date\":\"2017-12-30\",\"value\":1.0552}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "reproduction.observations.0.value",
+                "equals": "1.0552"
+              }
+            ],
+            "contains": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-surface-flat-reference",
+      "group": "fx-surface",
+      "intent": "fx-surface-flat-reference",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Build and validate an FX volatility surface from these validated curve inputs and ATM/10-delta/25-delta quotes: {\"curve\":{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}},\"inputReference\":\"LABELLED BLACK 12 PERCENT FIXTURE\",\"conventions\":{\"delta\":\"forward\",\"atm\":\"forward\",\"butterfly\":\"smile\",\"riskReversal\":\"call_minus_put\",\"volatilityUnits\":\"decimal\",\"premiumCurrency\":\"USD\",\"dayCount\":\"ACT/365F\",\"wingExtrapolation\":\"reject\"},\"quotes\":[{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0},{\"expiryDate\":\"2026-07-01\",\"deliveryDate\":\"2026-07-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0}],\"grid\":[{\"expiryDate\":\"2026-05-01\",\"deliveryDate\":\"2026-05-01\",\"strike\":1.1}],\"tolerance\":{\"absolute\":1e-9,\"relative\":1e-9}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_volatility_surface",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              },
+              {
+                "path": "result.quoteRecoveryPassed",
+                "equals": true
+              },
+              {
+                "path": "result.expiries.0.nodes.0.volatility",
+                "equals": 0.12
+              },
+              {
+                "path": "result.grid.0.classification",
+                "equals": "interpolated"
+              }
+            ],
+            "contains": [
+              "10P",
+              "25C",
+              "calendar_total_variance"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-surface-broker-conventions",
+      "group": "fx-surface",
+      "intent": "fx-surface-broker-conventions",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Construct the EUR/USD FX volatility surface under these broker butterfly conventions: {\"curve\":{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}},\"inputReference\":\"LABELLED BLACK 12 PERCENT FIXTURE\",\"conventions\":{\"delta\":\"forward\",\"atm\":\"forward\",\"butterfly\":\"broker\",\"riskReversal\":\"call_minus_put\",\"volatilityUnits\":\"decimal\",\"premiumCurrency\":\"USD\",\"dayCount\":\"ACT/365F\",\"wingExtrapolation\":\"flat_volatility\"},\"quotes\":[{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"atm\":0.12,\"rr10\":-0.02,\"bf10\":0.006,\"rr25\":-0.01,\"bf25\":0.002},{\"expiryDate\":\"2026-07-01\",\"deliveryDate\":\"2026-07-01\",\"atm\":0.12,\"rr10\":-0.02,\"bf10\":0.006,\"rr25\":-0.01,\"bf25\":0.002}],\"grid\":[{\"expiryDate\":\"2026-05-01\",\"deliveryDate\":\"2026-05-01\",\"strike\":1.1}],\"tolerance\":{\"absolute\":1e-9,\"relative\":1e-9}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_volatility_surface",
+            "statuses": [
+              "ok",
+              "validation_failed"
+            ],
+            "checks": [
+              {
+                "path": "result.quoteRecoveryPassed",
+                "equals": true
+              }
+            ],
+            "contains": [
+              "quote recovery uses flat-volatility"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-surface-premium-adjusted",
+      "group": "fx-surface",
+      "intent": "fx-surface-premium-adjusted",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Validate this EUR/USD volatility surface using premium-adjusted spot delta: {\"curve\":{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}},\"inputReference\":\"LABELLED BLACK 12 PERCENT FIXTURE\",\"conventions\":{\"delta\":\"premium_adjusted_spot\",\"atm\":\"delta_neutral\",\"butterfly\":\"smile\",\"riskReversal\":\"call_minus_put\",\"volatilityUnits\":\"decimal\",\"premiumCurrency\":\"USD\",\"dayCount\":\"ACT/365F\",\"wingExtrapolation\":\"reject\"},\"quotes\":[{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0},{\"expiryDate\":\"2026-07-01\",\"deliveryDate\":\"2026-07-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0}],\"grid\":[{\"expiryDate\":\"2026-05-01\",\"deliveryDate\":\"2026-05-01\",\"strike\":1.1}],\"tolerance\":{\"absolute\":1e-9,\"relative\":1e-9}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_volatility_surface",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.quoteRecoveryPassed",
+                "equals": true
+              },
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ],
+            "contains": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-surface-missing-delta",
+      "group": "fx-surface",
+      "intent": "fx-surface-missing-delta",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "not_applicable",
+        "reason": "Invalid or incomplete inputs; this case checks clarification/refusal, not numerical construction."
+      },
+      "turns": [
+        {
+          "message": "Build the EUR/USD volatility surface: {\"curve\":{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}},\"inputReference\":\"LABELLED BLACK 12 PERCENT FIXTURE\",\"conventions\":{\"atm\":\"forward\",\"butterfly\":\"smile\",\"riskReversal\":\"call_minus_put\",\"volatilityUnits\":\"decimal\",\"premiumCurrency\":\"USD\",\"dayCount\":\"ACT/365F\",\"wingExtrapolation\":\"reject\"},\"quotes\":[{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0},{\"expiryDate\":\"2026-07-01\",\"deliveryDate\":\"2026-07-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0}],\"grid\":[{\"expiryDate\":\"2026-05-01\",\"deliveryDate\":\"2026-05-01\",\"strike\":1.1}],\"tolerance\":{\"absolute\":1e-9,\"relative\":1e-9}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_volatility_surface",
+            "statuses": [
+              "selection_required"
+            ],
+            "checks": [],
+            "contains": [
+              "conventions.delta"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-surface-calendar-arbitrage",
+      "group": "fx-surface",
+      "intent": "fx-surface-calendar-arbitrage",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Build and validate this FX volatility surface and report arbitrage diagnostics: {\"curve\":{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}},\"inputReference\":\"LABELLED BLACK 12 PERCENT FIXTURE\",\"conventions\":{\"delta\":\"forward\",\"atm\":\"forward\",\"butterfly\":\"smile\",\"riskReversal\":\"call_minus_put\",\"volatilityUnits\":\"decimal\",\"premiumCurrency\":\"USD\",\"dayCount\":\"ACT/365F\",\"wingExtrapolation\":\"reject\"},\"quotes\":[{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0},{\"expiryDate\":\"2026-07-01\",\"deliveryDate\":\"2026-07-01\",\"atm\":0.03,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0}],\"grid\":[{\"expiryDate\":\"2026-05-01\",\"deliveryDate\":\"2026-05-01\",\"strike\":1.1}],\"tolerance\":{\"absolute\":1e-9,\"relative\":1e-9}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_volatility_surface",
+            "statuses": [
+              "validation_failed"
+            ],
+            "checks": [
+              {
+                "path": "result.quoteRecoveryPassed",
+                "equals": true
+              },
+              {
+                "path": "result.diagnosticsPassed",
+                "equals": false
+              },
+              {
+                "path": "result.validated",
+                "equals": false
+              }
+            ],
+            "contains": [
+              "calendar_total_variance: fail"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-surface-extrapolation-refused",
+      "group": "fx-surface",
+      "intent": "fx-surface-extrapolation-refused",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "blocked_data",
+        "reason": "Requested grid points are outside supplied expiries/wings and extrapolation is disabled."
+      },
+      "turns": [
+        {
+          "message": "Build the EUR/USD volatility surface and report these requested grid points: {\"curve\":{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}},\"inputReference\":\"LABELLED BLACK 12 PERCENT FIXTURE\",\"conventions\":{\"delta\":\"forward\",\"atm\":\"forward\",\"butterfly\":\"smile\",\"riskReversal\":\"call_minus_put\",\"volatilityUnits\":\"decimal\",\"premiumCurrency\":\"USD\",\"dayCount\":\"ACT/365F\",\"wingExtrapolation\":\"reject\"},\"quotes\":[{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0},{\"expiryDate\":\"2026-07-01\",\"deliveryDate\":\"2026-07-01\",\"atm\":0.12,\"rr10\":0,\"bf10\":0,\"rr25\":0,\"bf25\":0}],\"grid\":[{\"expiryDate\":\"2026-10-01\",\"deliveryDate\":\"2026-10-01\",\"strike\":1.1},{\"expiryDate\":\"2026-04-01\",\"deliveryDate\":\"2026-04-01\",\"strike\":2}],\"tolerance\":{\"absolute\":1e-9,\"relative\":1e-9}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_volatility_surface",
+            "statuses": [
+              "incomplete"
+            ],
+            "checks": [
+              {
+                "path": "result.gridComplete",
+                "equals": false
+              },
+              {
+                "path": "result.grid.0.classification",
+                "equals": "unavailable"
+              },
+              {
+                "path": "result.grid.1.classification",
+                "equals": "unavailable"
+              }
+            ],
+            "contains": [
+              "extrapolation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-curve-conversation-correction",
+      "group": "fx-curve",
+      "intent": "fx-curve-conversation-correction",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "build_fx_forward_curve",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "selection_required"
+            ],
+            "selectionRequired": "analyticsInputs"
+          }
+        },
+        {
+          "message": "{\"valuationDate\":\"2026-01-01\",\"spotDate\":\"2026-01-01\",\"inputReference\":\"LABELLED FLAT FX FIXTURE\",\"spot\":1.1,\"quoteConvention\":\"outright\",\"pipSize\":0.0001,\"calendar\":{\"businessDayConvention\":\"unadjusted\",\"endOfMonth\":false,\"holidays\":[]},\"usdCurve\":{\"reference\":\"LABELLED USD DF=1 FIXTURE\",\"points\":[{\"date\":\"2026-01-01\",\"discountFactor\":1},{\"date\":\"2027-01-01\",\"discountFactor\":1}]},\"forwards\":[{\"tenor\":\"1M\",\"date\":\"2026-02-01\",\"value\":1.1},{\"tenor\":\"3M\",\"date\":\"2026-04-01\",\"value\":1.1},{\"tenor\":\"6M\",\"date\":\"2026-07-01\",\"value\":1.1},{\"tenor\":\"1Y\",\"date\":\"2027-01-01\",\"value\":1.1}],\"tolerance\":{\"absolute\":1e-10,\"relative\":1e-10}}",
+          "replay": [
+            {
+              "content": "Deterministic analytics path; no inference needed."
+            }
+          ],
+          "expect": {
+            "tool": "build_fx_forward_curve",
+            "statuses": [
+              "ok"
+            ],
+            "checks": [
+              {
+                "path": "result.validated",
+                "equals": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

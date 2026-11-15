@@ -10,7 +10,7 @@ Business calls use NATS. A separate llama.cpp process runs the model.
 | Chat, MCP, business tools and limits | [Usage](docs/agent.md) |
 | Build, install, CPU/CUDA, access and rollback | [Deployment](docs/deployment.md) |
 | Datasets, evaluation, comparison and timing | [Evaluation](docs/evaluation.md) |
-| Discuss component ownership and future changes | [Architecture proposals](docs/architecture-future-prs.md) |
+| Plan the next queries and their acceptance checks | [Query implementation tasks](docs/query-tasks.md) |
 | Check tested releases, known gaps and historical evidence | [Validation](docs/validation.md) |
 
 Use Node 22.11 or later. From this directory:
@@ -39,9 +39,11 @@ added typed requests and Markdown replies. Current work remains in the agent,
 its UI, tests and evaluations. Do not change backend code, broker settings,
 schemas, business records or the main UI to improve a score.
 
-Next: use evaluation traces to select one agent improvement and compare it with
-a fixed baseline. Preserve failures and checks. Server aggregation is optional;
-future business actions need separate agreement. Open a PR only when requested.
+Next: implement the [ordered query tasks](docs/query-tasks.md), starting with
+agent-owned booking drafts and confirmed booking through existing APIs. Keep all
+new query logic in the agent, including parsing, calculations, validation and
+orchestration. Compare improvements with fixed evaluation baselines and preserve
+failures and checks. Open a PR only when requested.
 
 `Agent CPU evaluation` is separate CI for real-model fixture tests on Windows/Linux.
 See [CPU CI](docs/evaluation.md#github-cpu-ci) for triggers, results and failure rules.

@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { AppError, type Backend } from './backend.js';
 import type { Session } from './auth.js';
+import { markdownText } from './markdown.js';
 
 // Backend deterministic IDs are 128-bit UUID text, not necessarily RFC versioned UUIDs.
 export const marketId = z
@@ -17,9 +18,18 @@ const period = z
     .regex(/^[1-9][0-9]{0,3}[DWMY]$/i)
     .transform((s) => s.toUpperCase());
 const common = {
-    provider: z.string().min(1).max(100).optional(),
-    seriesId: marketId.optional(),
-    asOf: date.optional().describe('Optional UTC valuation date, YYYY-MM-DD. Omit for now.'),
+    provider: z
+        .string()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe('Literal provider code if requested or selected. Omit to discover matches.'),
+    seriesId: marketId
+        .optional()
+        .describe('Exact series UUID if selected. Omit to search by the other fields.'),
+    asOf: date
+        .optional()
+        .describe('UTC lookup cutoff date, YYYY-MM-DD. Omit for the latest available observation.'),
     maxAgeHours: z
         .number()
         .min(0)
@@ -28,21 +38,45 @@ const common = {
         .describe('Staleness threshold, default 72 hours; never suppress stale warnings.'),
 };
 export const fxInput = z
-    .object({ baseCurrency: currency, quoteCurrency: currency, ...common })
+    .object({
+        baseCurrency: currency.describe('First currency in the directed pair, EUR in EUR/USD.'),
+        quoteCurrency: currency.describe('Second currency in the directed pair, USD in EUR/USD.'),
+        ...common,
+    })
     .strict();
 export const irInput = z
     .object({
         currency,
-        instrument: z.enum(['ir_swap', 'mm', 'zero', 'discount']),
+        instrument: z
+            .enum(['ir_swap', 'mm', 'zero', 'discount'])
+            .optional()
+            .describe(
+                'Swap rate = ir_swap, money market = mm, zero rate = zero, discount factor = discount. Omit if unspecified to discover matching instruments.',
+            ),
         term: period.describe('Requested point maturity, e.g. 5Y; not the floating-leg tenor.'),
-        indexName: z.string().min(1).max(100).optional(),
-        curveId: z.string().min(1).max(100).optional(),
-        floatingTenor: period.optional().describe('Optional swap floating-leg tenor, e.g. 3M.'),
+        indexName: z
+            .string()
+            .min(1)
+            .max(100)
+            .optional()
+            .describe('Literal index name if specified. Omit to look for matching series.'),
+        curveId: z
+            .string()
+            .min(1)
+            .max(100)
+            .optional()
+            .describe('Named curve if specified. Omit to look for matching series.'),
+        floatingTenor: period
+            .optional()
+            .describe('Swap floating-leg tenor, e.g. 3M. Omit unless supplied.'),
         forwardStart: z
             .string()
             .regex(/^(0|[1-9][0-9]{0,3})[DWMY]$/i)
             .transform((s) => s.toUpperCase())
-            .default('0D'),
+            .optional()
+            .describe(
+                'Explicit forward start, e.g. 1Y for a 1Y-forward swap. Omit unless supplied.',
+            ),
         ...common,
     })
     .strict();
@@ -102,6 +136,7 @@ function normalizedPeriod(value: string | null): string | null {
     if (!m) return value;
     const n = Number(m[1]),
         unit = m[2]!.toUpperCase();
+    if (!n) return '0D';
     return unit === 'Y' ? `${n * 12}M` : unit === 'W' ? `${n * 7}D` : `${n}${unit}`;
 }
 function seriesMatches(row: Series, input: Fx | Ir): boolean {
@@ -119,18 +154,31 @@ function seriesMatches(row: Series, input: Fx | Ir): boolean {
     if (
         d.asset !== 'ir' ||
         d.currency !== input.currency ||
-        d.params.get('instrument') !== input.instrument
+        !['ir_swap', 'mm', 'zero', 'discount'].includes(d.params.get('instrument') ?? '') ||
+        (input.instrument && d.params.get('instrument') !== input.instrument)
     )
         return false;
-    if (input.indexName && d.params.get('index_name') !== input.indexName) return false;
-    if (input.curveId && d.params.get('curve_id') !== input.curveId) return false;
+    const index = d.params.get('index_name')?.toLowerCase();
+    if (
+        input.indexName &&
+        index !== input.indexName.toLowerCase() &&
+        index !== (input.currency + '-' + input.indexName).toLowerCase()
+    )
+        return false;
+    if (input.curveId && d.params.get('curve_id')?.toLowerCase() !== input.curveId.toLowerCase())
+        return false;
+    if (
+        d.params.has('term') &&
+        normalizedPeriod(d.params.get('term')) !== normalizedPeriod(input.term)
+    )
+        return false;
     if (
         input.floatingTenor &&
         normalizedPeriod(d.params.get('tenor')) !== normalizedPeriod(input.floatingTenor)
     )
         return false;
     return (
-        !['ir_swap', 'mm'].includes(input.instrument) ||
+        !input.forwardStart ||
         normalizedPeriod(d.params.get('fwd_start')) === normalizedPeriod(input.forwardStart)
     );
 }
@@ -166,6 +214,33 @@ export function observationTime(text: string): number {
         throw new AppError('invalid_market_data', 'Observation has an invalid UTC timestamp.');
     return ms;
 }
+function observationMicros(text: string, milliseconds: number) {
+    const fraction = /\.(\d{1,6})Z$/.exec(text)?.[1] ?? '';
+    return BigInt(milliseconds) * 1000n + BigInt(fraction.padEnd(6, '0').slice(3));
+}
+const instrumentNames: Record<string, string> = {
+    ir_swap: 'swap rate',
+    mm: 'money-market rate',
+    zero: 'zero rate',
+    discount: 'discount factor',
+};
+export function describeMarketSeries(uri: string): string {
+    const datum = parseDatum(uri);
+    if (!datum || datum.asset !== 'ir') return uri;
+    return [
+        instrumentNames[datum.params.get('instrument') ?? ''] ?? 'IR series',
+        ...(
+            [
+                ['curve_id', 'curve'],
+                ['index_name', 'index'],
+                ['tenor', 'floating tenor'],
+                ['fwd_start', 'forward start'],
+            ] as const
+        ).flatMap(([key, label]) =>
+            datum.params.has(key) ? [label + ' ' + datum.params.get(key)] : [],
+        ),
+    ].join(', ');
+}
 function checked(raw: unknown) {
     const r = envelope.parse(raw);
     if (r.result.outcome !== 'ok')
@@ -194,6 +269,11 @@ export class MarketLookup {
         const cutoff = input.asOf
             ? Math.min(started, Date.parse(input.asOf + 'T23:59:59.999Z'))
             : started;
+        const cutoffText =
+            input.asOf && input.asOf < snapshot.slice(0, 10)
+                ? input.asOf + 'T23:59:59.999999Z'
+                : new Date(cutoff).toISOString();
+        const cutoffMicros = observationMicros(cutoffText, cutoff);
         if ('baseCurrency' in input && input.baseCurrency === input.quoteCurrency)
             throw new AppError('invalid_pair', 'Use two different currencies.', 400);
         const deadline = AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(20000)]);
@@ -208,7 +288,7 @@ export class MarketLookup {
             partyId: session.partyId,
             source: 'OreStudio',
             retrievedAt: snapshot,
-            asOf: new Date(cutoff).toISOString(),
+            asOf: cutoffText,
             historicalRequest: Boolean(input.asOf),
             maxAgeHours: input.maxAgeHours,
         };
@@ -281,30 +361,37 @@ export class MarketLookup {
             provider: s.provider_code,
             instrument: s.oresmd_uri,
         });
-        if (candidates.length !== 1)
+        if (
+            candidates.length !== 1 ||
+            (kind === 'ir' && !('baseCurrency' in input) && !input.instrument && !input.seriesId)
+        )
             return {
                 ...base,
                 status: 'ambiguous',
-                reason: 'Choose a provider or exact series ID; no provider was selected automatically.',
+                reason:
+                    kind === 'ir'
+                        ? 'Choose the intended rate instrument or series. The list shows series metadata; the requested maturity is checked after selection.'
+                        : 'Choose a provider or exact series ID; no provider was selected automatically.',
                 candidates: candidates.slice(0, 20).map(choice),
                 candidateCount: candidates.length,
             };
         const selected = candidates[0]!;
+        const selectedInstrument = parseDatum(selected.oresmd_uri)?.params.get('instrument');
         const identity = {
             ...base,
             series: choice(selected),
             units:
                 kind === 'fx'
                     ? `${(input as Fx).quoteCurrency} per 1 ${(input as Fx).baseCurrency}`
-                    : (input as Ir).instrument === 'discount'
+                    : selectedInstrument === 'discount'
                       ? 'discount factor'
                       : 'decimal rate',
         };
         const seen = new Set<string>();
-        let observationTotal: number | undefined,
-            previousTime = Infinity;
+        let observationTotal: number | undefined, previousInstant: bigint | undefined;
         let latest: z.infer<typeof observation> | undefined,
             latestTime = -Infinity;
+        let latestInstant: bigint | undefined;
         for (let offset = 0; offset < MAX_ROWS; offset += PAGE) {
             check();
             const raw = await this.backend.request(
@@ -323,7 +410,7 @@ export class MarketLookup {
                         series_id_one_of: null,
                         observation_datetime_one_of: null,
                         observation_datetime_from: null,
-                        observation_datetime_to: new Date(cutoff).toISOString(),
+                        observation_datetime_to: cutoffText,
                     },
                 },
                 session,
@@ -345,21 +432,22 @@ export class MarketLookup {
                 };
             observationTotal = r.total;
             for (const row of rows) {
-                const time = observationTime(row.observation_datetime),
-                    key = row.observation_datetime + row.oresmd_uri;
-                if (time > previousTime || seen.has(key))
+                const time = observationTime(row.observation_datetime);
+                const instant = observationMicros(row.observation_datetime, time);
+                const key = instant + row.oresmd_uri;
+                if ((previousInstant !== undefined && instant > previousInstant) || seen.has(key))
                     return {
                         ...identity,
                         status: 'incomplete',
                         reason: 'Observation order or page consistency could not be verified.',
                     };
-                previousTime = time;
+                previousInstant = instant;
                 seen.add(key);
                 if (
                     row.series_id.toLowerCase() !== selected.id.toLowerCase() ||
                     row.tenant_id.toLowerCase() !== session.tenantId.toLowerCase() ||
                     row.party_id.toLowerCase() !== session.partyId.toLowerCase() ||
-                    time > cutoff
+                    instant > cutoffMicros
                 )
                     throw new AppError(
                         'invalid_market_data',
@@ -369,8 +457,7 @@ export class MarketLookup {
                 if (
                     !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(row.value) ||
                     !Number.isFinite(Number(row.value)) ||
-                    ((kind === 'fx' ||
-                        ('instrument' in input && input.instrument === 'discount')) &&
+                    ((kind === 'fx' || selectedInstrument === 'discount') &&
                         Number(row.value) <= 0) ||
                     !row.source
                 )
@@ -378,7 +465,7 @@ export class MarketLookup {
                         'invalid_market_data',
                         'Observation has an invalid value or missing source.',
                     );
-                if (latest && time === latestTime)
+                if (latest && instant === latestInstant)
                     return {
                         ...identity,
                         status: 'ambiguous',
@@ -387,10 +474,16 @@ export class MarketLookup {
                 if (!latest) {
                     latest = row;
                     latestTime = time;
+                    latestInstant = instant;
                 }
             }
             // Read through the complete timestamp group so a duplicate/conflicting latest point cannot be hidden on the next page.
-            if (latest && (previousTime < latestTime || offset + rows.length >= r.total)) break;
+            if (
+                latestInstant !== undefined &&
+                ((previousInstant !== undefined && previousInstant < latestInstant) ||
+                    offset + rows.length >= r.total)
+            )
+                break;
             if (offset + rows.length >= r.total) break;
             if (!rows.length || offset + PAGE >= MAX_ROWS)
                 return {
@@ -413,7 +506,10 @@ export class MarketLookup {
             freshness: { ageHours, stale },
             observation: {
                 value: latest.value,
-                observedAt: new Date(latestTime).toISOString(),
+                observedAt:
+                    latestInstant! % 1000n === 0n
+                        ? new Date(latestTime).toISOString()
+                        : latest.observation_datetime.replace(' ', 'T'),
                 source: latest.source,
                 instrument: latest.oresmd_uri,
             },
@@ -463,10 +559,32 @@ export function formatMarketResult(raw: unknown): string | undefined {
     const label =
         r.tool === 'read_fx_spot'
             ? `${r.request.baseCurrency}/${r.request.quoteCurrency} spot`
-            : `${r.request.currency} ${r.request.term} ${r.request.instrument}`;
+            : [
+                  r.request.currency,
+                  r.request.term,
+                  instrumentNames[
+                      String(
+                          r.request.instrument ??
+                              (r.series
+                                  ? parseDatum(r.series.instrument)?.params.get('instrument')
+                                  : ''),
+                      )
+                  ] ?? 'rate',
+              ].join(' ');
     if (r.status === 'ambiguous')
-        return `${label}: ${r.reason}\n${(r.candidates ?? []).map((c) => `${c.provider}: ${c.instrument} [${c.seriesId}]`).join('\n')}\nPlease specify the provider or series ID.`;
+        return r.candidates?.length
+            ? [
+                  label + '. ' + r.reason,
+                  r.candidates
+                      .map(
+                          (c, index) =>
+                              `${index + 1}. ${markdownText(c.provider)} · ${markdownText(describeMarketSeries(c.instrument))} [\`${c.seriesId}\`]`,
+                      )
+                      .join('\n'),
+                  'Please specify the provider, option number or series ID. For rates, you can also give the instrument, curve, index, floating tenor or forward start.',
+              ].join('\n\n')
+            : label + '. ' + r.reason;
     if (!['ok', 'stale'].includes(r.status) || !r.observation)
         return `${label}: ${r.reason ?? 'No usable observation.'}${r.series ? `\nProvider: ${r.series.provider}.` : ''}\nRequested cutoff: ${r.asOf}.`;
-    return `${r.status === 'stale' ? 'Historical/stale observation — not a current market quote.\n' : r.historicalRequest ? 'Historical lookup.\n' : 'Latest recorded observation.\n'}${label}: ${r.observation.value} (${r.units}).\nObserved: ${r.observation.observedAt}.\nProvider: ${r.series?.provider}. Source: ${r.observation.source}.\nRequested cutoff: ${r.asOf}.`;
+    return `${r.status === 'stale' ? 'Historical/stale observation — not a current market quote.\n' : r.historicalRequest ? 'Historical lookup.\n' : 'Latest recorded observation.\n'}${label}: ${r.observation.value} (${r.units}).\nObserved: ${r.observation.observedAt}.\nProvider: ${markdownText(r.series?.provider)}. Source: ${markdownText(r.observation.source)}.\n${r.tool === 'read_ir_rate' && r.series ? 'Series: ' + markdownText(describeMarketSeries(r.series.instrument)) + '\n' : ''}Requested cutoff: ${r.asOf}.`;
 }

@@ -7,7 +7,7 @@ import { cpus, totalmem } from 'node:os';
 import { HttpInference } from '../dist/inference.js';
 
 const component = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const suites = { original: 'evals/cases.json', holdout: 'evals/holdout-stage5.json', review: 'evals/review-v2.json' };
+const suites = { original: 'evals/cases.json', holdout: 'evals/holdout-stage5.json', review: 'evals/review-v2.json', analytics: 'evals/fx-analytics.json', market: 'evals/fx-market-selection.json', runs: 'evals/report-run-discovery.json', booking: 'evals/booking-drafts.json', datedMarket: 'evals/dated-market-queries.json' };
 
 export function cpuConfig(spec, lock, root) {
     const flag = name => spec.args[spec.args.indexOf(name) + 1];

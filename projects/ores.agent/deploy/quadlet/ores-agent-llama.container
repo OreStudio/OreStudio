@@ -1,0 +1,22 @@
+[Container]
+Image=ghcr.io/ggml-org/llama.cpp@sha256:2103d1f4f2e2e223ad80587dcb39fc15a9f912f29ae1fa9fc1193fe8c1aea82f
+Network=ores-agent-inference.network
+# Podman 4.9 supports this flag. Its Quadlet generator treats Notify as a boolean.
+PodmanArgs=--network-alias=llama --sdnotify=healthy
+UserNS=keep-id:uid=1000,gid=1000
+User=1000
+Group=1000
+Volume=%h/.config/ores-agent/models/LFM3-1.7B-QAD-Q4_0.gguf:/models/model.gguf:ro,Z
+Volume=%h/.config/ores-agent/llama-api-key:/run/ores-agent/llama-api-key:ro,z
+ReadOnly=true
+DropCapability=all
+NoNewPrivileges=true
+Exec=--model /models/model.gguf --alias lfm3-1.7b --host 0.0.0.0 --port 8080 --ctx-size 32768 --parallel 1 --n-gpu-layers 0 --jinja --no-ui --api-key-file /run/ores-agent/llama-api-key
+HealthCmd=curl -fsS http://127.0.0.1:8080/health
+HealthInterval=5s
+HealthTimeout=3s
+HealthStartPeriod=60s
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=180

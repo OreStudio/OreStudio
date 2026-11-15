@@ -4,6 +4,51 @@ Agent, inference and existing OreStudio services have separate lifecycles.
 Keep runtime roots outside the checkout. Run checkout commands from
 `projects/ores.agent`. Node 22.11+ is required.
 
+## Linux containers
+
+Use Docker Compose with a Linux engine for local deployments, including Docker
+Desktop on Windows. Start with a running OreStudio NATS broker reachable from
+the agent container.
+
+1. Copy [the container config](../config.container.example.json) to
+   `agent.json` in a private runtime directory. Set the NATS address and
+   subject prefix for the target environment. The sample uses the Windows host
+   gateway and verifies the broker certificate against `localhost`. Set
+   `tlsServerName` to the broker certificate's DNS name when it differs from the
+   address in `server`.
+2. Place the NATS CA, client certificate and client key under `nats/` in that
+   directory, using the filenames from the sample. Put a shared inference
+   API key on one line in `llama-api-key`. Give container UID 1000 read access
+   to the mounted files and restrict access to the keys on the host.
+3. Set `ORES_AGENT_RUNTIME` to the runtime directory and
+   `ORES_LLAMA_MODEL_FILE` to the GGUF pinned in [inference-lock.json](../inference-lock.json).
+   The existing inference installer can fetch and verify that file.
+
+```text
+docker compose up --build --wait
+docker compose logs agent llama
+docker compose down
+```
+
+Open `http://127.0.0.1:20100`. `/healthz` checks the agent process and
+`/readyz` checks its NATS connection. To use a different host port, set
+`ORES_AGENT_PORT` and update `allowedOrigins` in `agent.json`. Inference stays
+on a private network. Compose preserves the agent's report-submission state
+in a named volume. Chat sessions and booking drafts expire on restart.
+
+On a Docker host with NVIDIA GPU support, set `ORES_LLAMA_GPU_LAYERS=99` and
+run `docker compose -f compose.yaml -f compose.cuda.yaml up --build --wait`.
+
+For a Linux host using Podman, build the same agent image with
+`podman build -t localhost/ores-agent:local .` and install the files in
+[deploy/quadlet](../deploy/quadlet) in the user's
+`~/.config/containers/systemd/`. Use `~/.config/ores-agent/` for the runtime
+files and place the GGUF under `models/`. Set the NATS address to one reachable
+from Podman, such as the host gateway `host.containers.internal` where
+available. Run `systemctl --user daemon-reload` and
+`systemctl --user start ores-agent.service`. The agent unit starts llama.cpp
+and waits for the model health check.
+
 ## Agent package
 
 ```text
@@ -93,7 +138,7 @@ See [validation](validation.md) for Windows evidence and the open Linux GPU chec
 
 ## NATS and access
 
-Checked contract: `2629842861d5e6ae56c8939b2b78bd5492f175a0`. This is test evidence, not a server version lock.
+Checked contract: `26f6bef7c08332aa13452616f5de4ea07bb769b2`. This is test evidence, not a server version lock.
 `src/backend.ts` defines the independent operation allowlist. It uses MessagePack,
 mTLS, user Bearer token, `Nats-Session-Id` and correlation IDs. Reads have an
 eight-second deadline without retry. Cancellation discards pending results.
@@ -146,7 +191,7 @@ loader path. Set `backendContractRevision` to the checked SHA. Record refuses
 a stale probe or failed wire tests. The record includes normalized source
 hashes; Windows CRLF checkout does not change them.
 
-The probe checks 23 operations and 45 contract cases. Its separate fixture
+The probe checks 37 operations and 45 contract cases. Its separate fixture
 view uses valid booking-nature values and a typed empty instrument batch.
 Frozen eval files and scores stay unchanged. These are wire tests, not live
 business acceptance. Before deployment, also test the candidate running server
@@ -180,3 +225,34 @@ Downloads, including restored caches, must pass SHA-256 checks.
 
 CI starts this profile only on its temporary runner. It does not install anything
 on the local laptop or change the existing CUDA deployment.
+## Optional Python analysis
+
+Install a supported Wasmtime CLI and a trusted, standalone WASI CPython module
+with its standard library bundled inside the module. Use absolute paths to both
+files in the agent configuration. For example, on Windows:
+
+```json
+{
+  "pythonSandbox": {
+    "executable": "C:/ores/tools/wasmtime.exe",
+    "module": "C:/ores/tools/python.wasm"
+  }
+}
+```
+
+Add this property to the existing configuration and restart the agent. For a
+container deployment, provision both artifacts inside the agent container and
+use their in-container paths. Keep the binaries and configuration writable only
+by trusted administrators. Use current patched builds. The Windows integration
+test used Wasmtime 50.0.1 and the standalone Wasm Labs CPython 3.12.0 module as a
+compatibility fixture.
+
+The agent starts one worker at a time. Each call gets up to 16 KiB of JSON input,
+64 MiB of WebAssembly linear memory, one billion Wasmtime fuel units, five
+seconds of wall time, and 8 KiB of combined output. The service kills workers on
+cancellation or deadline. The tool is available through authenticated chat.
+The MCP and direct tool endpoints expose `calculate`.
+
+To verify your artifacts, build the agent, set `ORES_TEST_WASMTIME` and
+`ORES_TEST_PYTHON_WASM` to the same absolute paths, and run
+`node --test tests/computation.test.mjs`.

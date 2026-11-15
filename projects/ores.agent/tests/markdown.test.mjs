@@ -2,9 +2,32 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderMarkdown, markdownTable } from '../dist/markdown.js';
 import { formatDiscovery } from '../dist/discovery.js';
+import { formatAnalytics } from '../dist/fx-analytics.js';
+import { buildCurve } from '../dist/fx-curve.js';
+import { buildSurface } from '../dist/fx-surface.js';
+import { flatCurve, flatSurface } from './fx-analytics-fixtures.mjs';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { createApp } from '../dist/server.js';
+
+test('FX analytics tables stay separate from explanations and preserve full precision evidence', () => {
+    for (const [tool, result, columns, rowCounts] of [
+        ['build_fx_forward_curve', buildCurve(flatCurve()).result, [5, 4], [4, 3]],
+        ['build_fx_volatility_surface', buildSurface(flatSurface()), [4, 5, 4], [10, 10, 1]],
+    ]) {
+        const before = structuredClone(result);
+        const html = renderMarkdown(formatAnalytics({ tool, result }));
+        const tables = html.match(/<table>[\s\S]*?<\/table>/g) ?? [];
+        assert.equal(tables.length, columns.length);
+        tables.forEach((table, i) => {
+            assert.equal((table.match(/<th>/g) ?? []).length, columns[i]);
+            assert.equal((table.match(/<td>/g) ?? []).length, rowCounts[i] * columns[i]);
+            assert.doesNotMatch(table, /Residual units|Source:|Diagnostics|Displayed rates|Input SHA/);
+        });
+        assert.match(html, /1\.100000/);
+        assert.deepEqual(result, before);
+    }
+});
 
 test('replies render headings, tables, lists, emphasis and fenced code', () => {
     const html = renderMarkdown('# Results\n\n## FX\n\n| Pair | Rate |\n| :--- | ---: |\n| EUR/USD | 1.0552 |\n\n- **Stored** quote\n\n```sql\nSELECT 1 < 2;\n```');
@@ -40,8 +63,11 @@ test('record discovery produces a table without losing scope or pagination', () 
 
 test('authenticated chat returns Markdown source and safe HTML with unchanged evidence', async () => {
     const answer = '## Fixture\n\n| Value |\n| --- |\n| 1.0552 |\n\n<script>bad()</script>';
-    const inference = createServer((req, res) => {
-        req.resume();
+    const prompts = [];
+    const inference = createServer(async (req, res) => {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        prompts.push(JSON.parse(Buffer.concat(chunks).toString()).messages.slice(1));
         res.setHeader('content-type', 'application/json');
         res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content: answer } }] }));
     });
@@ -67,6 +93,16 @@ test('authenticated chat returns Markdown source and safe HTML with unchanged ev
         assert.deepEqual(result.evidence, []);
         assert.doesNotMatch(result.answerHtml, /<script>/);
         assert.match(result.answerHtml, /<table>/);
+        assert.equal((await post('/chat/reset', {})).status, 401);
+        assert.equal((await post('/chat', { message: 'Tell me more' }, accessToken)).status, 200);
+        assert.deepEqual(prompts.at(-1), [
+            { role: 'user', content: 'Hello' },
+            { role: 'assistant', content: answer },
+            { role: 'user', content: 'Tell me more' },
+        ]);
+        assert.equal((await post('/chat/reset', {}, accessToken)).status, 200);
+        assert.equal((await post('/chat', { message: 'Hi again' }, accessToken)).status, 200);
+        assert.deepEqual(prompts.at(-1), [{ role: 'user', content: 'Hi again' }]);
         assert.equal((await post('/auth/logout', {}, accessToken)).status, 200);
     } finally {
         for (const server of [app, inference]) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

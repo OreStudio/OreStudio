@@ -1,0 +1,402 @@
+{
+  "version": "booking-drafts-1.0.0",
+  "cases": [
+    {
+      "id": "sofr-swap-draft-needs-conventions",
+      "group": "booking",
+      "intent": "review plain SOFR swap",
+      "profiles": ["replay", "model"],
+      "turns": [{
+        "message": "Pay fixed, receive floating on a 100M USD five-year SOFR swap with FIX-A.",
+        "replay": [{
+          "tool": "interpret_swap_draft",
+          "arguments": {"action": "update", "fields": [
+            {"field":"fixedDirection","text":"Pay"},{"field":"floatDirection","text":"receive"},
+            {"field":"notional","text":"100M"},{"field":"currency","text":"USD"},
+            {"field":"floatingIndex","text":"SOFR"},{"field":"counterparty","text":"FIX-A"}
+          ]}
+        }],
+        "expect": {
+          "tool":"review_interest_rate_swap_draft","statuses":["needs_information"],
+          "contains":["agreed fixed rate","effective date","floating schedule frequency"],
+          "checks":[{"path":"fields.notional","equals":"100000000"},{"path":"fields.floatDirection","equals":"receive"}]
+        }
+      }]
+    },
+    {
+      "id": "cash-bond-draft-needs-price-and-issue",
+      "group": "booking",
+      "intent": "review cash bond",
+      "profiles": ["replay", "model"],
+      "turns": [{
+        "message": "Buy 10M USD of Apple 3.85% 2032 bonds with FIX-A.",
+        "replay": [{
+          "tool": "interpret_bond_draft",
+          "arguments": {"action": "update", "fields": [
+            {"field":"side","text":"Buy"},{"field":"notional","text":"10M"},{"field":"currency","text":"USD"},
+            {"field":"bondName","text":"Apple 3.85% 2032"},{"field":"counterparty","text":"FIX-A"}
+          ]}
+        }],
+        "expect": {
+          "tool":"review_bond_draft","statuses":["needs_information"],
+          "contains":["bond issue uuid","agreed price","no trade-level fields for direction or agreed transaction price"]
+        }
+      }]
+    },
+    {
+      "id": "fx-forward-draft-complete-review",
+      "group": "booking",
+      "intent": "complete-review",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "Buy 20M EUR/USD six-month forward with FIX-A in Fixture FX Book.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "update",
+                "fields": [
+                  {
+                    "field": "side",
+                    "text": "Buy"
+                  },
+                  {
+                    "field": "baseAmount",
+                    "text": "20M"
+                  },
+                  {
+                    "field": "pair",
+                    "text": "EUR/USD"
+                  },
+                  {
+                    "field": "tenor",
+                    "text": "six-month"
+                  },
+                  {
+                    "field": "counterparty",
+                    "text": "FIX-A"
+                  },
+                  {
+                    "field": "book",
+                    "text": "Fixture FX Book"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "needs_information"
+            ],
+            "contains": [
+              "agreed outright rate",
+              "agreed value date"
+            ],
+            "checks": [
+              {
+                "path": "fields.baseAmount",
+                "equals": "20000000"
+              },
+              {
+                "path": "fields.tenor",
+                "equals": "6M"
+              }
+            ]
+          }
+        },
+        {
+          "message": "Trade date 2026-11-11, agreed value date 2027-05-13, physical settlement, agreed rate 1.0835.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "update",
+                "fields": [
+                  {
+                    "field": "tradeDate",
+                    "text": "2026-11-11"
+                  },
+                  {
+                    "field": "valueDate",
+                    "text": "2027-05-13"
+                  },
+                  {
+                    "field": "settlement",
+                    "text": "physical"
+                  },
+                  {
+                    "field": "rate",
+                    "text": "1.0835"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "ready_for_review"
+            ],
+            "contains": [
+              "21",
+              "Agreed rate"
+            ],
+            "checks": [
+              {
+                "path": "legs.boughtCurrency",
+                "equals": "EUR"
+              },
+              {
+                "path": "legs.boughtAmount",
+                "equals": "20000000"
+              },
+              {
+                "path": "legs.soldCurrency",
+                "equals": "USD"
+              },
+              {
+                "path": "legs.soldAmount",
+                "equals": "21670000"
+              }
+            ]
+          }
+        },
+        {
+          "message": "Mine for 25M.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "update",
+                "fields": [
+                  {
+                    "field": "baseAmount",
+                    "text": "25M"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "ready_for_review"
+            ],
+            "contains": [
+              "27087500"
+            ],
+            "checks": [
+              {
+                "path": "fields.side",
+                "equals": "buy"
+              },
+              {
+                "path": "fields.rate",
+                "equals": "1.0835"
+              }
+            ]
+          }
+        },
+        {
+          "message": "Discard draft",
+          "replay": [
+            {
+              "content": "Handled directly."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "contains": [
+              "draft discarded"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-forward-draft-ambiguous-counterparty",
+      "group": "booking",
+      "intent": "ambiguous-counterparty",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "Draft a sell of 10M EUR/USD forward at the agreed outright rate of 1.08. Trade date 2026-11-11 and agreed value date 2027-05-13. Physical settlement, book Fixture FX Book, counterparty Fixture Bank.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "update",
+                "fields": [
+                  {
+                    "field": "side",
+                    "text": "sell"
+                  },
+                  {
+                    "field": "baseAmount",
+                    "text": "10M"
+                  },
+                  {
+                    "field": "pair",
+                    "text": "EUR/USD"
+                  },
+                  {
+                    "field": "rate",
+                    "text": "1.08"
+                  },
+                  {
+                    "field": "tradeDate",
+                    "text": "2026-11-11"
+                  },
+                  {
+                    "field": "valueDate",
+                    "text": "2027-05-13"
+                  },
+                  {
+                    "field": "settlement",
+                    "text": "Physical"
+                  },
+                  {
+                    "field": "book",
+                    "text": "Fixture FX Book"
+                  },
+                  {
+                    "field": "counterparty",
+                    "text": "Fixture Bank"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "needs_information"
+            ],
+            "contains": [
+              "counterparty short code or ID"
+            ],
+            "checks": [
+              {
+                "path": "fields.counterparty",
+                "equals": "Fixture Bank"
+              }
+            ]
+          }
+        },
+        {
+          "message": "Use counterparty FIX-B.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "update",
+                "fields": [
+                  {
+                    "field": "counterparty",
+                    "text": "FIX-B"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "ready_for_review"
+            ],
+            "contains": [
+              "Fixture Bank"
+            ],
+            "checks": [
+              {
+                "path": "resolved.counterparty.id",
+                "equals": "11111111-1111-4111-8111-000000000061"
+              },
+              {
+                "path": "legs.soldCurrency",
+                "equals": "EUR"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx-forward-draft-shorthand-without-agreement",
+      "group": "booking",
+      "intent": "shorthand-without-agreement",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "turns": [
+        {
+          "message": "Draft a 20M EUR/USD forward in Fixture FX Book.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "update",
+                "fields": [
+                  {
+                    "field": "baseAmount",
+                    "text": "20M"
+                  },
+                  {
+                    "field": "pair",
+                    "text": "EUR/USD"
+                  },
+                  {
+                    "field": "book",
+                    "text": "Fixture FX Book"
+                  }
+                ]
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "needs_information"
+            ],
+            "contains": [
+              "side on base currency",
+              "agreed outright rate"
+            ],
+            "checks": []
+          }
+        },
+        {
+          "message": "Yours.",
+          "replay": [
+            {
+              "tool": "interpret_fx_forward_draft",
+              "arguments": {
+                "action": "clarify",
+                "fields": []
+              }
+            }
+          ],
+          "expect": {
+            "tool": "review_fx_forward_draft",
+            "statuses": [
+              "needs_information"
+            ],
+            "contains": [
+              "State your side and agreed outright rate"
+            ],
+            "checks": []
+          }
+        }
+      ]
+    }
+  ]
+}

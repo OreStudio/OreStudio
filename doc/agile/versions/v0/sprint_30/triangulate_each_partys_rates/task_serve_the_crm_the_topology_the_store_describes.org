@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 3D29D41E-E006-4404-8D94-7966EB224B29
+:END:
+#+title: Task: Serve the CRM the topology the store describes
+#+description: The policy reads a topology from the identity a source states; nothing fills it yet. Read a party's fixing identities and the provider rank into fixing sources, and build the CRM's engines from those instead of crm_driver_pair.
+#+type: task
+#+level: s1
+#+filetags: :triangulate_each_partys_rates:sprint_30:v0:
+#+owner: marco
+#+branch: feature/build-the-crm-topology-from-identity
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The CRM's drivers are hand-listed in refdata, and the identity the store holds is not consulted. Read the fixing series a party holds, group them by publisher into fixing sources, and hand the chosen source to the policy and then to topology_builder, so a party's topology follows the series it actually holds and the rank the providers carry. A series without ccy or unit_ccy is refused by name rather than skipped.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The CRM's engines are built from the party's fixing identities and the provider rank; crm_driver_pair is no longer the source of the drivers.
+- A fixing series with no ccy or no unit_ccy is refused by name and the party it belongs to.
+- The CRM suites pass, including the montage reads that exercise the engines.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

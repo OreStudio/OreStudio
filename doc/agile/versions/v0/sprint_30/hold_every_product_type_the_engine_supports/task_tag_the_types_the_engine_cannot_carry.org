@@ -52,9 +52,23 @@ and a check fails when a later ORE release starts supporting it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The catalogue gains a =* Unsupported trade types= table: code, the reason a
+  refusal gives, ORE's evidence (file and registration lines at 3d75a6908) and
+  the library script that carries the product. One row each for
+  =CommodityPairwiseVarianceSwap= and =ForwardVolatilityAgreement=.
+- Codegen reads the table. A row must name a catalogue type, route to no
+  table, and carry a reason with no quote or backslash, because the reason
+  becomes a C++ literal. =CommodityPairwiseVarianceSwap= stops routing to
+  =commodity_instrument=, so the commodity table's check no longer accepts it.
+- The routing header gains =unsupported_reason_for=. Booking refuses an
+  unsupported type with =trade_type_not_supported= and the reason. The ORE
+  import books through the same request, and =nats_call= hands the refusal's
+  message back as the item error, so the import needs no check of its own.
+- The commodity pairwise variance swap constructor and its generator branch go:
+  no table can hold the trade.
+- The trade type coverage check fails when the unsupported table differs from
+  the catalogue types ORE registers no builder for, in either direction, and
+  when the generator records an unsupported type.
 
 * Measurements
 
@@ -71,6 +85,22 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** The import already reports a booking's reason
+
+The import books each trade through =book_trade_request=, and =nats_call=
+copies a failed outcome's message into the error the import reports, so a
+refusal at booking reaches the user with its reason. A first draft added a
+second check in the import handler and a change to how the import read the
+booking's message; both were dropped once =nats_call= showed the message
+already arrives.
+
+** Evidence in ORE
+
+At 3d75a6908, =OREData/ored/utilities/databuilders.cpp= registers the FX,
+equity and commodity forward volatility agreements (lines 302-304) and the
+equity and FX pairwise variance swaps (lines 403-404), and nothing else of
+either family.
 
 * Test Scenarios
 

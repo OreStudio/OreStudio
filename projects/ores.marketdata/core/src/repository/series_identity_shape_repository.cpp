@@ -37,6 +37,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -88,21 +90,88 @@ series_identity_shape_list_order(const ores::utility::domain::order& order,
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool series_identity_shape_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using series_identity_shape_rows_by_key =
+    std::map<std::tuple<std::string, std::string, std::string, std::string>,
+             std::vector<domain::series_identity_shape>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+series_identity_shape_rows_by_key
+series_identity_shape_current_rows(series_identity_shape_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const std::vector<domain::series_identity_shape>& of) {
+    std::vector<std::string> asset_classs;
+    asset_classs.reserve(of.size());
+    std::vector<std::string> series_subclasss;
+    series_subclasss.reserve(of.size());
+    std::vector<std::string> index_familys;
+    index_familys.reserve(of.size());
+    std::vector<std::string> fields;
+    fields.reserve(of.size());
+    for (const auto& row : of) {
+        asset_classs.push_back(row.asset_class);
+        series_subclasss.push_back(row.series_subclass);
+        index_familys.push_back(row.index_family);
+        fields.push_back(row.field);
+    }
+    series_identity_shape_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, asset_classs, series_subclasss, index_familys, fields))
+        current[std::make_tuple(
+                    item.asset_class, item.series_subclass, item.index_family, item.field)]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::series_identity_shape>&
+series_identity_shape_rows_of(const series_identity_shape_rows_by_key& current,
+                              const domain::series_identity_shape& item) {
+    static const std::vector<domain::series_identity_shape> none;
+    const auto found = current.find(
+        std::make_tuple(item.asset_class, item.series_subclass, item.index_family, item.field));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-series_identity_shape_repository::replace_claim(const context& ctx,
-                                                const domain::series_identity_shape& v) {
-    const auto current =
-        read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field);
+series_identity_shape_replace_claim(const std::vector<domain::series_identity_shape>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::series_identity_shape
-series_identity_shape_repository::apply_claim(const context& ctx,
-                                              const domain::series_identity_shape& v,
-                                              const ores::utility::domain::precondition& claim) {
+series_identity_shape_apply_claim(const domain::series_identity_shape& v,
+                                  const ores::utility::domain::precondition& claim,
+                                  const std::vector<domain::series_identity_shape>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -114,31 +183,35 @@ series_identity_shape_repository::apply_claim(const context& ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current =
-                read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
+}
+
 void series_identity_shape_repository::write(const context& ctx,
                                              const domain::series_identity_shape& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          series_identity_shape_replace_claim(
+              read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field)));
 }
 
 void series_identity_shape_repository::write(const context& ctx,
                                              const std::vector<domain::series_identity_shape>& v) {
+    const auto current = series_identity_shape_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            series_identity_shape_replace_claim(series_identity_shape_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -149,7 +222,12 @@ void series_identity_shape_repository::write(const context& ctx,
                                << "asset_class: " << v.asset_class
                                << " series_subclass: " << v.series_subclass
                                << " index_family: " << v.index_family << " field: " << v.field;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = series_identity_shape_apply_claim(
+        v,
+        claim,
+        series_identity_shape_claim_reads_current(claim) ?
+            read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field) :
+            std::vector<domain::series_identity_shape>{});
     query_builder::execute_write_query(ctx,
                                        series_identity_shape_mapper::map(t),
                                        lg(),
@@ -161,10 +239,17 @@ void series_identity_shape_repository::write(
     const std::vector<domain::series_identity_shape>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series identity shapes. Count: " << v.size();
+    std::vector<domain::series_identity_shape> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (series_identity_shape_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = series_identity_shape_current_rows(*this, ctx, to_read);
     std::vector<domain::series_identity_shape> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(series_identity_shape_apply_claim(
+            v[i], claims[i], series_identity_shape_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        series_identity_shape_mapper::map(batch),
                                        lg(),
@@ -378,6 +463,31 @@ series_identity_shape_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& fields) {
     if (asset_classs.empty() || series_subclasss.empty() || index_familys.empty() || fields.empty())
         return {};
+    if (series_subclasss.size() != asset_classs.size() ||
+        index_familys.size() != asset_classs.size() || fields.size() != asset_classs.size())
+        throw std::invalid_argument("series_identity_shape_repository::read_latest: key column "
+                                    "vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (asset_classs.size() > chunk_size) {
+        std::vector<domain::series_identity_shape> all;
+        for (std::size_t begin = 0; begin < asset_classs.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, asset_classs.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(asset_classs.begin() + begin, asset_classs.begin() + end),
+                std::vector<std::string>(series_subclasss.begin() + begin,
+                                         series_subclasss.begin() + end),
+                std::vector<std::string>(index_familys.begin() + begin,
+                                         index_familys.begin() + end),
+                std::vector<std::string>(fields.begin() + begin, fields.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -396,10 +506,6 @@ series_identity_shape_repository::read_latest(const context& ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (series_subclasss.size() != asset_classs.size() ||
-        index_familys.size() != asset_classs.size() || fields.size() != asset_classs.size())
-        throw std::invalid_argument("series_identity_shape_repository::read_latest: key column "
-                                    "vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string, std::string>> requested;
     for (std::size_t i = 0; i < asset_classs.size(); ++i)
         requested.emplace(asset_classs[i], series_subclasss[i], index_familys[i], fields[i]);

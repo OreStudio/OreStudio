@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.api/domain/series_identity_shape_json_io.hpp"
+#include "ores.marketdata.api/domain/series_identity_shape_codec.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
 

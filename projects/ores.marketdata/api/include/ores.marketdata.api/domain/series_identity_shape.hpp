@@ -74,7 +74,11 @@ struct series_identity_shape final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief The family's asset class, as ores.refdata.asset_class_code spells it: ir, fx, credit.
+     * @brief The family's asset class, as the oresmd authority spells it and as the identity row
+     * carries it: ir, fx, credit. This is the codec's spelling and not
+     * ores.refdata.asset_class_code's -- refdata calls the same class interest_rates -- so the
+     * column is checked against the oresmd schema rather than against that catalogue, and a family
+     * keyed by one spelling and looked up by the other would never match.
      *
      * The same subclass of two classes is two families, so this column is half of the key rather
      * than a description of it.

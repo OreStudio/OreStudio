@@ -215,24 +215,6 @@ public:
                 const std::vector<std::string>& series_subclasss,
                 const std::vector<std::string>& index_familys,
                 const std::vector<std::string>& fields);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(const context& ctx,
-                                                      const domain::series_identity_shape& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::series_identity_shape apply_claim(const context& ctx,
-                                              const domain::series_identity_shape& v,
-                                              const ores::utility::domain::precondition& claim);
 };
 
 }

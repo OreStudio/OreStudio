@@ -70,6 +70,7 @@ set(files
     "repository_tick_reads_tests.cpp"
     "series_classification_rule_eventing_integration_tests.cpp"
     "series_identity_shape_check_tests.cpp"
+    "series_identity_shape_eventing_integration_tests.cpp"
     "service_catalogue_read_tests.cpp"
     "service_corpus_import_tests.cpp"
     "service_fixing_reader_tests.cpp"

@@ -67,9 +67,8 @@ check_identity_shape(const std::vector<domain::series_identity_shape>& stated,
  *
  * @throws std::invalid_argument naming the series, its index family and both subclasses.
  */
-ORES_MARKETDATA_CORE_EXPORT void
-check_identity_kind(const domain::market_series& series,
-                    const domain::market_series_identity& row);
+ORES_MARKETDATA_CORE_EXPORT void check_identity_kind(const domain::market_series& series,
+                                                     const domain::market_series_identity& row);
 
 /**
  * @brief Whether any stated row speaks for this series' family, so a caller can count

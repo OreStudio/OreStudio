@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -86,7 +86,8 @@ TEST_CASE("an_ibor_fixing_states_its_currency_its_index_and_its_name", shape_tag
         stated("index_fixing", "ibor", "index", "required"),
         stated("index_fixing", "ibor", "index_name", "required"),
         stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
-    const auto series = series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+    const auto series =
+        series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
     const auto row = ibor_fixing("USD", "SOFR");
 
     CHECK_NOTHROW(check_identity_shape(shape, series, row));
@@ -133,13 +134,13 @@ TEST_CASE("a_family_no_shape_states_is_projected_unguarded_and_reported", shape_
     CHECK_FALSE(states_identity_shape(shape, series, row));
 }
 
-TEST_CASE("a_forbidden_field_is_refused_while_a_field_nobody_states_is_left_alone",
-          shape_tags) {
+TEST_CASE("a_forbidden_field_is_refused_while_a_field_nobody_states_is_left_alone", shape_tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<series_identity_shape> shape{
         stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
-    const auto series = series_of("index_fixing", "oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA");
+    const auto series =
+        series_of("index_fixing", "oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA");
     auto row = ibor_fixing("GBP", "SONIA");
     // tenor is not mentioned by the family, so the guard has no opinion on it.
     row.tenor = "3M";

@@ -19,6 +19,7 @@
  */
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
 #include "ores.refdata.api/domain/calendar_rule.hpp"
 #include "ores.refdata.api/generators/calendar_generator.hpp"
@@ -44,6 +45,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;
@@ -458,4 +460,50 @@ TEST_CASE("regenerate_throws_when_base_calendar_removed_after_being_referenced",
     cal_repo.remove(h.context(), base.code);
 
     CHECK_THROWS_AS(service.regenerate(derived.code), std::runtime_error);
+}
+
+TEST_CASE("a_calendar_date_batch_write_matches_a_live_day_by_its_date",
+          "[repository][calendar_date]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    calendar_repository cal_repo;
+    calendar_date_repository date_repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
+
+    auto cal = generate_synthetic_calendar(gctx);
+    cal.source = "user";
+    cal.is_editable = true;
+    cal_repo.write(h.context(), {cal});
+
+    const auto year = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                                                      std::chrono::system_clock::now())}
+                          .year() +
+                      std::chrono::years{1};
+    const auto day_of = [&](std::chrono::year_month_day date) {
+        ores::refdata::domain::calendar_date d;
+        d.tenant_id = h.tenant_id().to_string();
+        d.calendar_code = cal.code;
+        d.date = date;
+        d.is_business_day = true;
+        d.modified_by = h.db_user();
+        d.performed_by = h.db_user();
+        d.change_reason_code = "system.test";
+        d.change_commentary = "Synthetic test data";
+        return d;
+    };
+    const auto live = day_of(nth_monday_of_june(year, 1));
+    const auto added = day_of(nth_monday_of_june(year, 2));
+    date_repo.write(live);
+
+    date_repo.write(std::vector<ores::refdata::domain::calendar_date>{live, added});
+
+    const auto live_rows = date_repo.read_latest(cal.code, live.date);
+    REQUIRE(live_rows.size() == 1);
+    CHECK(live_rows[0].version == 2);
+    const auto added_rows = date_repo.read_latest(cal.code, added.date);
+    REQUIRE(added_rows.size() == 1);
+    CHECK(added_rows[0].version == 1);
 }

@@ -26,11 +26,11 @@ A junction write that claims no row exists is refused when a live row exists, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Make every generated batch write check its claims]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,16 @@ A junction write that claims no row exists is refused when a live row exists, an
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Mirror the entity trigger in the junction trigger template: a version of zero
+  on a live link raises =already_exists= unless
+  =ores_utility_version_replace_allowed_fn()= is on. Regenerate the 27 junction
+  tables.
+- List the writers of the junction tables. The SQL publish functions already
+  state the replace signal; the seed scripts run on an empty database. The C++
+  tenant provisioner states =any=.
+- Prove it by observation rather than by reading every writer: recreate the
+  database, which runs every seed script, and provision Acme, which runs every
+  provisioning writer. A writer that relied on the old replace fails there.
 
 * Measurements
 
@@ -85,3 +92,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The junction insert trigger refuses a create over a live link with
+=already_exists= (SQLSTATE 23505) unless the transaction states the replace
+signal, as the entity trigger does. All 27 junction tables carry the check.
+
+Evidence, on the build of 2026-11-15 18:51:
+- The new test =a_duplicate_currency_country_create_is_refused_and_writes_nothing=
+  failed on the old schema ("a create over a live link was not refused") and
+  passes on the new one.
+- =compass db recreate= ran every seed script with no error and no refusal.
+- Acme provisioning completed all 17 steps; the service logs hold no
+  =already_exists= refusal.
+- refdata core 549/549 and iam core 306/306 passed.

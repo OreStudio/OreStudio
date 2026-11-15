@@ -6695,6 +6695,33 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['declared_key_text'] = (
             _key_as_text(f'key.{domain_entity["declared_key"]}', _declared_column)
             if _declared_column else f'key.{domain_entity["declared_key"]}')
+        # The same text read from a row, so a batch read by the declared key
+        # joins each row back to the key that named it with one conversion.
+        _declared_row = (f'row.{(_declared_column or {}).get("group_prefix") or ""}'
+                         f'{domain_entity["declared_key"]}')
+        domain_entity['declared_row_text'] = (
+            _key_as_text(_declared_row, _declared_column)
+            if _declared_column else _declared_row)
+        # The generated finder by the declared key also reads a batch. A model
+        # that states that finder itself has no batch form, so its services
+        # read a batch one key at a time.
+        for _finder in domain_entity['key_finders']:
+            _finder['is_declared_key_finder'] = bool(
+                not domain_entity['key_is_primary']
+                and _finder.get('column') == domain_entity['declared_key']
+                and _finder.get('suffix') == domain_entity['declared_key']
+                and not _finder.get('columns')
+                and not _finder.get('parent_column'))
+        # A model that states its own finder can state its batch form too, with
+        # the signature the generated one has.
+        _stated = "\n".join(
+            code
+            for codes in (domain_entity.get("implementations") or {}).values()
+            for code in codes)
+        domain_entity['declared_key_has_batch_read'] = any(
+            f['is_declared_key_finder'] for f in domain_entity['key_finders']) or (
+                f'read_latest_by_{domain_entity["declared_key"]}(const context& ctx, '
+                f'const std::vector<std::string>&' in _stated)
         domain_entity['declared_key_group_prefix'] = (
             (_declared_column or {}).get('group_prefix') or '')
         domain_entity['declared_key_is_uuid'] = bool(

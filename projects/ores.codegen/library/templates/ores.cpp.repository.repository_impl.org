@@ -543,6 +543,59 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
 {{/domain_entity.has_party_column}}
 }
+{{#is_declared_key_finder}}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest_by_{{suffix}}(
+    const context& ctx, const std::vector<std::string>& {{column}}s) {
+    if ({{column}}s.empty()) return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if ({{column}}s.size() > chunk_size) {
+        std::vector<domain::{{entity_singular}}> all;
+        for (std::size_t begin = 0; begin < {{column}}s.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, {{column}}s.size());
+            auto part = read_latest_by_{{suffix}}(
+                ctx, std::vector<std::string>({{column}}s.begin() + begin, {{column}}s.begin() + end));
+            all.insert(all.end(), std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} by {{log_label}}. Count: "
+                               << {{column}}s.size();
+{{^current_state}}
+    static constexpr auto max = db_timestamp::max();
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{column}}"_c.in({{column}}s){{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where("{{column}}"_c.in({{column}}s){{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+    auto found = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}} by {{columns_label}}.");
+{{#domain_entity.has_party_column}}
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) {
+{{#domain_entity.party_column_optional}}
+            return row.party_id.has_value() && *row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+{{^domain_entity.party_column_optional}}
+            return row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+        });
+{{/domain_entity.has_party_column}}
+    return found;
+}
+{{/is_declared_key_finder}}
 {{/key_finders}}
 {{^current_state}}
 {{#key_resolvers}}

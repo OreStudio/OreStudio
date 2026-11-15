@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-pricing-engines-writes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,7 +30,7 @@ service behaves.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:C1830F26-2A60-49CE-AC82-6B784F34F79E][Serve the pricing engines' reads]] |
@@ -83,6 +83,44 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** A read and a write answer the same document
+
+The document's JSON moved to =pricing_engine_shapes=, so the page, the two
+reads and the two writes that answer a document state its members once. A
+create would otherwise be a second statement of the screen's contract, and the
+two would drift the first time a member changed.
+
+** The configuration header's write is shared with the engine settings**
+
+Both families register a reporting configuration before their record and remove
+it again when the record is refused, so =register_configuration=,
+=remove_configuration=, =party_for_new= and =intent_or_none= moved to
+=reporting_configuration_rows=. The type code and the owning component are the
+caller's, because they differ: engine settings are =engine_settings= and owned by
+=ores.reporting=, pricing engines are =pricing_engines= and owned by
+=ores.analytics=.
+
+** The party and the time are the service's to stamp**
+
+The gateway writes the nil party and the epoch on every row, as the BFF did. The
+service stamps the party of the session that saves the document and the time of
+its own clock, so a gateway that guessed either would be a second answer. The
+tenant is not the service's: the tenant type refuses the nil id, so the gateway
+states the caller's own.
+
+** A removal leaves the reporting configuration in place**
+
+The BFF removed the document and left the header, and this does the same. A
+report binds a configuration by that header, and a removal that took the header
+would break the binding of a report nobody touched. Removing the header belongs
+to the screen that manages configurations, not to the removal of a document.
+
+** The limits are the BFF's**
+
+A document holds at most five hundred products and five thousand parameters, and
+every name, description and value is bounded as the BFF's schema bounded it. A
+document the screen accepts is therefore a document the gateway accepts.
 
 * Test Scenarios
 

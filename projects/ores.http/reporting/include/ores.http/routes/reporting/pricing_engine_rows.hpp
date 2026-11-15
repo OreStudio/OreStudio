@@ -28,6 +28,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::http::routes::reporting {
@@ -124,6 +125,18 @@ struct document_counts final {
  */
 [[nodiscard]] document_counts read_counts(const ores::http::domain::http_request& req,
                                           ores::nats::service::nats_client& session);
+
+/**
+ * @brief The reports that bind one configuration, as a screen states them.
+ *
+ * A binding that cannot be read is stated as unknown rather than refused,
+ * because a report that will not load must not hide the document it binds.
+ *
+ * @return The reports as a JSON array, or =null= when they could not be read.
+ */
+[[nodiscard]] std::string bound_reports_json_of(const ores::http::domain::http_request& req,
+                                                ores::nats::service::nats_client& session,
+                                                const std::string& configuration_id);
 
 /**
  * @brief One configuration with its products and parameters, or a 404 when the

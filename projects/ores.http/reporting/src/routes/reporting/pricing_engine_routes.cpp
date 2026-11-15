@@ -28,7 +28,7 @@
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
 #include "ores.http/routes/reporting/json_shape.hpp"
 #include "ores.http/routes/reporting/pricing_engine_rows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.http/routes/reporting/pricing_engine_shapes.hpp"
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -50,124 +50,10 @@ namespace forwarding = ores::http::forwarding;
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
 using ores::http::domain::http_status;
+using pricing_engine_shapes::summary_json_of;
 using shape::member;
 using shape::object;
 using ores::nats::service::nats_client;
-
-auto& pricing_engine_lg() {
-    static auto instance = ores::logging::make_logger("ores.http.reporting.pricing_engine");
-    return instance;
-}
-
-/// The party a configuration belongs to, and the names of its parties.
-std::vector<std::string> party_members(std::string_view party_id,
-                                       const std::map<std::string, engine_party_name>& parties) {
-    const auto party = parties.find(std::string(party_id));
-    return {member("partyId", json::write(std::string(party_id))),
-            member("partyName",
-                   json::write(party == parties.end() ? std::string() : party->second.name)),
-            member("partyCode",
-                   json::write(party == parties.end() ? std::string() : party->second.short_code))};
-}
-
-/// One configuration as the page of engines states it.
-std::string summary_json_of(const ores::analytics::domain::pricing_model_config& row,
-                            const pricing_engine_rows::document_counts& counts,
-                            const std::map<std::string, engine_party_name>& parties) {
-    const auto id = boost::uuids::to_string(row.id);
-    const auto products = counts.products.find(id);
-    const auto parameters = counts.parameters.find(id);
-    auto members = party_members(boost::uuids::to_string(row.party_id), parties);
-    members.push_back(member("id", json::write(id)));
-    members.push_back(member("version", std::to_string(row.version)));
-    members.push_back(member("name", json::write(row.name)));
-    members.push_back(member("description", json::write(row.description)));
-    members.push_back(member("variant", json::write(row.config_variant)));
-    members.push_back(
-        member("configurationId", json::write(boost::uuids::to_string(row.configuration_id))));
-    members.push_back(member(
-        "products", std::to_string(products == counts.products.end() ? 0 : products->second)));
-    members.push_back(
-        member("parameters",
-               std::to_string(parameters == counts.parameters.end() ? 0 : parameters->second)));
-    members.push_back(member("modifiedBy", json::write(row.modified_by)));
-    members.push_back(member("recordedAt", json::write(row.recorded_at)));
-    return object(members);
-}
-
-/// One product of a document.
-std::string product_json_of(const pricing_product_row& row) {
-    return object({member("id", json::write(row.id)),
-                   member("version", std::to_string(row.version)),
-                   member("typeCode", json::write(row.type_code)),
-                   member("model", json::write(row.model)),
-                   member("engine", json::write(row.engine)),
-                   member("position", std::to_string(row.position))});
-}
-
-/// One parameter of a document.
-std::string parameter_json_of(const pricing_parameter_row& row) {
-    return object(
-        {member("id", json::write(row.id)),
-         member("version", std::to_string(row.version)),
-         member("productId", row.product_id ? json::write(*row.product_id) : std::string("null")),
-         member("scope", json::write(row.scope)),
-         member("name", json::write(row.name)),
-         member("value", json::write(row.value)),
-         member("position", std::to_string(row.position))});
-}
-
-/// The reports that bind one configuration, or null when they cannot be read.
-std::string reports_json_of(const http_request& req,
-                            nats_client& session,
-                            const boost::uuids::uuid& configuration_id) {
-    std::vector<engine_bound_report> reports;
-    try {
-        reports = engine_settings_rows::read_bound_reports(
-            req, session, pricing_engine_rows::configuration_type, configuration_id);
-    } catch (const std::exception&) {
-        // A binding that cannot be read must not hide the document.
-        BOOST_LOG_SEV(pricing_engine_lg(), ores::logging::debug)
-            << "The reports that bind configuration " << boost::uuids::to_string(configuration_id)
-            << " could not be read, so the page states them as unknown.";
-        return "null";
-    }
-    std::vector<std::string> rows;
-    rows.reserve(reports.size());
-    for (const auto& report : reports)
-        rows.push_back(object(
-            {member("id", json::write(report.id)), member("name", json::write(report.name))}));
-    return rr::array_of(rows);
-}
-
-/// One configuration with its products, its parameters and the reports that bind it.
-std::string pricing_document_json_of(const pricing_document_row& row,
-                                     const std::map<std::string, engine_party_name>& parties,
-                                     const std::string& reports) {
-    auto members = party_members(row.party_id, parties);
-    members.push_back(member("id", json::write(row.id)));
-    members.push_back(member("version", std::to_string(row.version)));
-    members.push_back(member("name", json::write(row.name)));
-    members.push_back(member("description", json::write(row.description)));
-    members.push_back(member("variant", json::write(row.variant)));
-    members.push_back(member("configurationId", json::write(row.configuration_id)));
-    members.push_back(member("modifiedBy", json::write(row.modified_by)));
-    members.push_back(member("recordedAt", json::write(row.recorded_at)));
-    members.push_back(member("changeReason", json::write(row.change_reason)));
-    members.push_back(member("changeCommentary", json::write(row.change_commentary)));
-    std::vector<std::string> products;
-    products.reserve(row.products.size());
-    for (const auto& product : row.products)
-        products.push_back(product_json_of(product));
-    members.push_back(member("products", rr::array_of(products)));
-    std::vector<std::string> parameters;
-    parameters.reserve(row.parameters.size());
-    for (const auto& parameter : row.parameters)
-        parameters.push_back(parameter_json_of(parameter));
-    members.push_back(member("parameters", rr::array_of(parameters)));
-    members.push_back(member("reports", reports));
-    return object(members);
-}
 
 /// One record whose versions the history tab draws, and the name it states.
 struct history_entity final {
@@ -324,12 +210,10 @@ void pricing_engine_routes::register_read_routes(
                         const auto id = boost::uuids::string_generator()(raw);
                         const auto document = pricing_engine_rows::read_document(req, session, id);
                         const auto parties = engine_settings_rows::read_party_names(req, session);
-                        const auto reports = reports_json_of(
-                            req,
-                            session,
-                            boost::uuids::string_generator()(document.configuration_id));
+                        const auto reports = pricing_engine_rows::bound_reports_json_of(
+                            req, session, document.configuration_id);
                         return http_response::json(
-                            pricing_document_json_of(document, parties, reports));
+                            pricing_engine_shapes::document_json_of(document, parties, reports));
                     });
             }));
 

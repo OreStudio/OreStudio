@@ -53,6 +53,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::trading::service {
 
@@ -131,69 +132,80 @@ messaging::list_trade_summaries_response trade_summary_service::list_trade_summa
                                  {.entity = "trade summaries", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->row_kind_one_of &&
-        request.filter->row_kind_one_of->size() > 1000) {
+        request.filter->row_kind_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "row_kind_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "row_kind_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->party_id_one_of &&
-        request.filter->party_id_one_of->size() > 1000) {
+        request.filter->party_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->counterparty_id_one_of &&
-        request.filter->counterparty_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "counterparty_id_one_of", .limit = "1000"});
+        request.filter->counterparty_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "counterparty_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->book_id_one_of &&
-        request.filter->book_id_one_of->size() > 1000) {
+        request.filter->book_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "book_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "book_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->instrument_type_one_of &&
-        request.filter->instrument_type_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "instrument_type_one_of", .limit = "1000"});
+        request.filter->instrument_type_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "instrument_type_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->status_one_of &&
-        request.filter->status_one_of->size() > 1000) {
+        request.filter->status_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "status_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "status_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->authorisation_status_one_of &&
-        request.filter->authorisation_status_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "authorisation_status_one_of", .limit = "1000"});
+        request.filter->authorisation_status_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "authorisation_status_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->trade_date_one_of &&
-        request.filter->trade_date_one_of->size() > 1000) {
+        request.filter->trade_date_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "trade_date_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "trade_date_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->structure_id_one_of &&
-        request.filter->structure_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "structure_id_one_of", .limit = "1000"});
+        request.filter->structure_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "structure_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->is_leg_one_of &&
-        request.filter->is_leg_one_of->size() > 1000) {
+        request.filter->is_leg_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "is_leg_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "is_leg_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->trade_date_from &&
@@ -238,11 +250,11 @@ trade_summary_service::get_trade_summary(const messaging::get_trade_summary_requ
 messaging::get_many_trade_summaries_response trade_summary_service::get_many_trade_summaries(
     const messaging::get_many_trade_summaries_request& request) {
     messaging::get_many_trade_summaries_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

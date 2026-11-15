@@ -55,6 +55,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::reporting::service {
 
@@ -130,27 +131,31 @@ messaging::list_cuts_response cut_service::list_cuts(const messaging::list_cuts_
                                  {.entity = "cuts", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->kind_code_one_of &&
-        request.filter->kind_code_one_of->size() > 1000) {
+        request.filter->kind_code_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "kind_code_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "kind_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->party_id_one_of &&
-        request.filter->party_id_one_of->size() > 1000) {
+        request.filter->party_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->business_centre_code_one_of &&
-        request.filter->business_centre_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "business_centre_code_one_of", .limit = "1000"});
+        request.filter->business_centre_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "business_centre_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -179,27 +184,31 @@ cut_service::list_by_kind_code_cuts(const messaging::list_by_kind_code_cuts_requ
                                  {.entity = "cuts", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->kind_code_one_of &&
-        request.filter->kind_code_one_of->size() > 1000) {
+        request.filter->kind_code_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "kind_code_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "kind_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->party_id_one_of &&
-        request.filter->party_id_one_of->size() > 1000) {
+        request.filter->party_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->business_centre_code_one_of &&
-        request.filter->business_centre_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "business_centre_code_one_of", .limit = "1000"});
+        request.filter->business_centre_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "business_centre_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -227,11 +236,11 @@ messaging::get_cut_response cut_service::get_cut(const messaging::get_cut_reques
 messaging::get_many_cuts_response
 cut_service::get_many_cuts(const messaging::get_many_cuts_request& request) {
     messaging::get_many_cuts_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

@@ -51,6 +51,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::reporting::service {
 
@@ -166,27 +167,30 @@ ore_file_service::list_ore_files(const messaging::list_ore_files_request& reques
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
-        request.filter->code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        request.filter->code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->category_code_one_of &&
-        request.filter->category_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "category_code_one_of", .limit = "1000"});
+        request.filter->category_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "category_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->configuration_type_code_one_of &&
-        request.filter->configuration_type_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "configuration_type_code_one_of", .limit = "1000"});
+        request.filter->configuration_type_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "configuration_type_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->schema_ore_file_code_one_of &&
-        request.filter->schema_ore_file_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        request.filter->schema_ore_file_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "schema_ore_file_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -217,27 +221,30 @@ ore_file_service::list_by_category_code_ore_files(
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
-        request.filter->code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        request.filter->code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->category_code_one_of &&
-        request.filter->category_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "category_code_one_of", .limit = "1000"});
+        request.filter->category_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "category_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->configuration_type_code_one_of &&
-        request.filter->configuration_type_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "configuration_type_code_one_of", .limit = "1000"});
+        request.filter->configuration_type_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "configuration_type_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->schema_ore_file_code_one_of &&
-        request.filter->schema_ore_file_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        request.filter->schema_ore_file_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "schema_ore_file_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -262,27 +269,30 @@ ore_file_service::list_by_configuration_type_code_ore_files(
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
-        request.filter->code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        request.filter->code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->category_code_one_of &&
-        request.filter->category_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "category_code_one_of", .limit = "1000"});
+        request.filter->category_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "category_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->configuration_type_code_one_of &&
-        request.filter->configuration_type_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "configuration_type_code_one_of", .limit = "1000"});
+        request.filter->configuration_type_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "configuration_type_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->schema_ore_file_code_one_of &&
-        request.filter->schema_ore_file_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        request.filter->schema_ore_file_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "schema_ore_file_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -315,27 +325,30 @@ ore_file_service::list_by_schema_ore_file_code_ore_files(
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
-        request.filter->code_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        request.filter->code_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->category_code_one_of &&
-        request.filter->category_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "category_code_one_of", .limit = "1000"});
+        request.filter->category_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "category_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->configuration_type_code_one_of &&
-        request.filter->configuration_type_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "configuration_type_code_one_of", .limit = "1000"});
+        request.filter->configuration_type_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "configuration_type_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->schema_ore_file_code_one_of &&
-        request.filter->schema_ore_file_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        request.filter->schema_ore_file_code_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "schema_ore_file_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -372,11 +385,11 @@ ore_file_service::get_ore_file(const messaging::get_ore_file_request& request) {
 messaging::get_many_ore_files_response
 ore_file_service::get_many_ore_files(const messaging::get_many_ore_files_request& request) {
     messaging::get_many_ore_files_response response;
-    // A key set carries at most 1,000 keys, the bound the protocol states for
-    // every batch, so one request cannot ask for an unbounded reply.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // One entry per requested key, in the order asked for, so the reply is

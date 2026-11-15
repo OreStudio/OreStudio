@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/stop-the-pool-and-statement-headers-reaching-the-connection
+#+pr: 4738
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -26,12 +26,12 @@ The context header no longer includes pq/pool.hpp or pq/transaction.hpp, but the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | PR #4738 open; the review's findings are addressed. |
+| Waiting on   | Nothing. This repo runs CI on main, not on pull requests, so the build, the suites and the gate above are the evidence. |
+| Next         | Merge, then close this task.           |
+| Last touched | 2026-11-15                             |
 
 * Acceptance
 
@@ -41,9 +41,59 @@ The context header no longer includes pq/pool.hpp or pq/transaction.hpp, but the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This plan was written before the work started. Two things it says were
+corrected by measuring: a fourth path into the connection header turned up
+(the listener service, see =* Notes=), and the numbers it guessed are the
+analysis's 365 rather than the 279 this tree measured.
+
+The previous task cut =pq/pool.hpp= and =pq/transaction.hpp= from
+=domain/context.hpp=, and the cut holds: the context header now names
+=pq::pool= through a =unique_ptr= and =pq::session_context= through a
+declaration. But five hundred objects still read =pq/connection.hpp=,
+and one of them is =domain/database_options.hpp=, which every service's
+=app/application.hpp= and =config/options.hpp= include. So the cut is
+undone one level further out: a service's application header parses
+=libpq-fe.h= to hold a database configuration it never connects with.
+
+Three paths reach the connection header. Each is cut at its own cause.
+
+1. =domain/database_options.hpp= includes =pq/connection.hpp= for one
+   declaration, =pq::connection_options=, which has lived in
+   =pq/options.hpp= since the context task. The include is a leftover,
+   and it is emitted by the =cpp_options_header.hpp.mustache= archetype
+   from the model's =* Includes= block, so the fix is the model and then
+   =regenerate --address ores.cpp.field-group=. Editing the generated
+   header alone would be undone by the next regeneration.
+2. =pq/pool.hpp= includes =pq/connection.hpp= because it holds
+   =std::vector<std::unique_ptr<pq::connection>>=, and a =unique_ptr=
+   member with an implicit destructor needs the complete type where it
+   is destroyed. It takes a forward declaration instead, and =~pool()=
+   moves out of line, where =connection= is complete. This is the idiom
+   the context task used for =pq_slot=.
+3. =pq/statement.hpp= and =pq/transaction.hpp= reach the header through
+   =pq/codec.hpp=, which includes it for =result=. =result= is the one
+   type in =connection.hpp= that the statement layer uses in full: a
+   =PGresult= handle with six declared accessors. =class result= moves
+   to =pq/result.hpp=, so the statement layer takes the type it uses and
+   not the connection, its closer or =check()=.
+
+=pq/connection_fwd.hpp= carries =class connection;= for =pq/pool.hpp=
+and =pq/transaction.hpp=, which name it in a =unique_ptr= member and a
+reference member and never touch it. The tree already has this shape in
+=domain/context_fwd.hpp=, and the forward-declaration check reads it.
+
+What this does not claim: the objects that read =connection.hpp= today
+read =result.hpp= tomorrow, and there are as many of them. The saving is
+that the header which changes — the libpq wrapper, its prepared-statement
+bookkeeping and its reset — rebuilds eight objects instead of five
+hundred, and that the header which does not change, =result.hpp=, is the
+one five hundred objects depend on. The one cut that removes objects
+outright is path 1, because every service header that holds database
+options stops reaching the pq layer at all.
+
+=pq/unit_of_work.hpp= keeps its two definition includes. It is still the
+forward-declaration check's one offender, and it needs the header split
+its own task carries; this task does not move it.
 
 * Measurements
 
@@ -57,9 +107,93 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Objects that read =pq/connection.hpp=, after / before | 2 of 2 targets / 279 of 71 targets | =reach_pq_headers.py --build-dir build/output/linux-clang-release-ninja=, output in =evidence/reach_pq_headers_2026-11-15.txt= | 7edfe8037b |
+| Objects that read =libpq-fe.h=, after / before | 185 of 35 targets / 279 of 71 targets | same | 7edfe8037b |
+| Objects that stopped reading libpq-fe.h | 94 | same | 7edfe8037b |
+| Objects that read =pq/result.hpp=, the header that takes over from the connection | 185 of 35 targets | same | 7edfe8037b |
+| Objects that read =pq/connection_fwd.hpp= | 259 of 53 targets | same | 7edfe8037b |
+| Objects that read =domain/database_options.hpp= | 97 of 54 targets | same | 7edfe8037b |
+| Objects that read =service/postgres_listener_service.hpp= | 101 of 32 targets | same | 7edfe8037b |
+| Release build of the tree | 1143 steps, 0 failures, 2 h 41 m | =compass build --preset linux-clang-release-ninja= | 7edfe8037b |
+| Incremental build after the listener cut | 331 steps, 0 failures, 24 m 11 s | =compass build --preset linux-clang-release-ninja= | 7edfe8037b |
+| Rebuild after the review fixes | 492 steps, 0 failures, 34 m 54 s | =compass build --preset linux-clang-release-ninja= | 7edfe8037b |
+| Suites the change reaches | 8 of 8 passed in 731 s: database, refdata.core, trading.core, marketdata.core, iam.core, eventing.core, synthetic.core, refdata.service | =compass test run --preset linux-clang-release-ninja -- -j 4 -R <the eight suites above>=, after =compass db recreate -y -k= | 7edfe8037b |
+| Suites re-run after the review fixes | 3 of 3 passed in 18 s: database, eventing.core, refdata.service | =compass test run --preset linux-clang-release-ninja -- -j 3 -R <the three suites above>= | 7edfe8037b |
+| The local gate | 79 of 87 passed, the eight below reproducing at the base | =compass check --exclude-heavy= | 7edfe8037b |
+
+The whole-tree build, the suite run and the gate were taken at this commit's
+content before the review, which asked for comment corrections and for
+=connection.hpp= to declare =result= instead of including it. That moved no
+logic, and the 492-step rebuild and the three-suite re-run are what cover it.
+The before column is reconstructed, not measured on a separate build. The change
+removed four edges into =pq/connection.hpp= and added none, so an object read it
+before if and only if it reads it now or reads one of those four headers; the
+four headers' own includers are unchanged. =reach_pq_headers.py= computes that
+union from the same dependency record, and says so in its own docstring. A
+number reconstructed this way is worth less than one measured twice, and it is
+worth more than no before number at all.
 
 * Notes
+
+The analysis named two paths into =pq/connection.hpp=, the pool and the
+statement layer. There were four. The two it did not name are the ones that
+mattered:
+
+- =domain/database_options.hpp=, which every service's =app/application.hpp=
+  and =config/options.hpp= include, still included the connection header for
+  =pq::connection_options=. That type moved to =pq/options.hpp= in the context
+  task; the include was a leftover, and the archetype emitted it from the
+  model.
+- =service/postgres_listener_service.hpp=, which =ores.eventing.core= includes
+  through =postgres_event_source.hpp=. Because every service includes the
+  eventing core, this one header held 101 objects. It was cut the same day the
+  other three were, because without it the task's own claim — that the
+  connection header stops reaching the tree — would have been false: 101
+  objects would still have rebuilt whenever a connection changed.
+
+Nothing here lowers the count for the pq family itself: =pool.hpp=,
+=codec.hpp=, =statement.hpp= and =transaction.hpp= each still reach 185
+objects, because the unit of work and the repositories include them. That is
+the next task's work, the split of the unit of work header.
+
+=connection.hpp= now reaches 2 objects: the database library's unity object,
+which compiles =connection.cpp=, =pool.cpp=, =transaction.cpp= and the
+listener, and the database test binary that connects to a real server. Both
+are places that open a connection.
+
+* Where this departs from the analysis
+
+The analysis's decision table says *Keep* for =connection= and =result=, and
+for =pq/codec.hpp= and =pq/statement.hpp=: "each has one includer that only
+names it, and both need libpq to name PGconn, so they stay in this header".
+The measurement disagrees on the second half. The statement layer does not
+only name a result: =read_rows= calls =r.rows()= and =read<T>= calls
+=r.value()=, so it uses the type in full. A forward declaration cannot cut
+that edge, and splitting the header is the only cut that leaves the
+statement layer with what it uses and the connection header with the
+=PGconn= half. The analysis was right that libpq stays under 185 objects
+either way; what it missed is that =connection.hpp= and =result.hpp= have
+very different change rates, and that 94 objects were reaching libpq through
+=database_options.hpp= and the listener with no need for either.
+
+The story's acceptance asks for the rebuild time after the header is
+touched, before and after, at named commits. This task records reach
+instead: the same 930 objects, the same compiler and the same flags, so the
+number of objects that rebuild is what the reach number says. Timing a touch
+would take two full builds of about two and a half hours each and would
+measure the machine more than the change, which is the same trade the
+forward-declaration tasks in this arc made.
+
+The local gate fails eight checks and none of them is this change:
+=xml-benchmark-recorded=, =route-inventory=, =ore-parameters-seed=,
+=ore-parameter-value-sets=, =parameter-value-sets-only=,
+=convention-kind-terms=, =ore-element-map= and =conventions-dataset=. Each was
+run in a worktree at this branch's base commit =735c13adfe=, with this branch
+absent, and each fails there too. They are main's generated artefacts drifting
+behind main's models, and they are left to whoever owns those generators.
+=cmake-sources= failed earlier in the same run for a reason that was this
+task's: the two new headers belong in =component_files.cmake='s HEADERS set.
+It is regenerated into the change and passes now.
 
 * Test Scenarios
 
@@ -76,7 +210,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4738][#4738]] | [database] Take the pq types a header uses, not the connection |
 
 * Review
 
@@ -85,3 +219,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Four headers stopped including the connection header: the database options
+model, the pool, the statement layer's codec, and the Postgres listener
+service. =class result= is its own header, so the statement layer takes the one
+type it uses in full. The pool and the listener take a forward declaration,
+and =~pool()= moves out of line where a connection is complete; the listener's
+destructor was already there. The transaction names a connection in a
+reference member.
+
+On the built tree =pq/connection.hpp= goes from 279 objects to 2 and
+=libpq-fe.h= from 279 to 185, with 94 objects that stop reading libpq-fe.h.

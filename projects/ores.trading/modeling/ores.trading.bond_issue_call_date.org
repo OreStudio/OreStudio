@@ -15,12 +15,12 @@
 #+updated: 2026-09-09
 
 One row per call date of a callable bond issue, family-owned by the
-issue. The row carries the schedule dates only: the dated styles,
-prices, price types and include-accrual flags of
-=callableBondCallData= and =cbCallData= (instruments.xsd lines
-2365-2429, 2700-2732) have no destination in the nine tables, and a
-call that reprices is a recorded coverage finding for the mapping
-task (task D7943D7E wave 1.3).
+issue. The row carries the date and the call's terms on it: the style,
+price, price type and include-accrual flag of =callableBondCallData=
+(instruments.xsd lines 2430-2494). ORE states each term as a list
+beside the schedule and resolves it to one value per call date
+(=buildCallabilityData= in callablebond.cpp); the row holds the
+resolved value, so a call that reprices keeps its price.
 
 * Flags
 :PROPERTIES:
@@ -70,6 +70,73 @@ The call date (ISO 8601 date string).
 std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 #+end_src
 
+** style
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The exercise style of the call on this date: Bermudan or American.
+
+ORE states the style as a list beside the schedule, each entry either
+positional or in force from its =startDate=, and resolves it to one
+value per call date. The row holds that resolved value, so the call on
+each date is stated once and the writer gives it back per date.
+
+#+begin_src cpp :name generator
+std::string("Bermudan")
+#+end_src
+
+** price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:economic: true
+:END:
+
+The price the bond is called at on this date, as a fraction of par.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal("1")
+#+end_src
+
+** price_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+Whether the call price is clean or dirty on this date.
+
+Soft FK to ores_trading_price_types_tbl: the values are the closed ORE
+bondPriceType set (Clean, Dirty).
+
+#+begin_src cpp :name generator
+std::string("Clean")
+#+end_src
+
+** include_accrual
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+Whether the call on this date pays the accrued coupon.
+
+ORE reads the flag as its loose bool, so the column holds the spelling
+the document states, as bond_issue.credit_risk does.
+
+#+begin_src cpp :name generator
+std::string("true")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -77,6 +144,15 @@ std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 :tablename: ores_trading_bond_issue_call_dates_tbl
 :rls_tenant_isolation: true
 :END:
+
+** Checks
+
+| expression                                  |
+|---------------------------------------------|
+| "style" in ('Bermudan', 'American')         |
+| "price" > 0                                 |
+| "price_type" in ('Clean', 'Dirty')          |
+| "include_accrual" <> ''                     |
 
 * C++
 
@@ -112,6 +188,10 @@ std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 |------------------+-------------|
 | sequence_number  | Sequence    |
 | call_date        | Call Date   |
+| style            | Style       |
+| price            | Price       |
+| price_type       | Price Type  |
+| include_accrual  | Accrual     |
 | modified_by      | Modified By |
 | version          | Version     |
 

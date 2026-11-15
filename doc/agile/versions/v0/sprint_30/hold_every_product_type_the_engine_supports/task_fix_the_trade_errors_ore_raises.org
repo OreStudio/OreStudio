@@ -63,6 +63,16 @@ task and name that file in the Command column.
 
 * Notes
 
+** The state of the scripted index on main
+
+The recorded =ScriptedTrade= states its index as =.SPX=, which ORE refuses
+("Could not build index info for '.SPX'"). Since =cf010d9c18= the export writes
+=EQ-.SPX=, which is the name ORE reads, but it also drops the =Strike= Number
+variable, and the recorded files were not re-recorded, so =the generated trades
+are the ones recorded= fails on main for two trades. The fix keeps =EQ-= names,
+restores =Strike= (and the full variable set =AsianBasketOption= reads), and
+re-records the files in the same commit.
+
 ** Captures folded in
 
 Folded in on 2026-11-15; each capture is discarded with a pointer here.

@@ -8,7 +8,7 @@
 #+filetags: :build:tooling:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hear-how-a-build-went
-#+pr:
+#+pr: 4753
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4753][#4753]] | [compass] Say when a build starts and how it ends, in sound |
 
 * Review
 

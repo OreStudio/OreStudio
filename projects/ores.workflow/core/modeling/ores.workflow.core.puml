@@ -132,8 +132,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::workflow_instance& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::workflow_instance& v, const ores::utility::domain::precondition& claim) : domain::workflow_instance
             }
             class workflow_step_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -188,8 +186,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::workflow_step& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::workflow_step& v, const ores::utility::domain::precondition& claim) : domain::workflow_step
             }
         }
         namespace service #F2F2F2 {

@@ -1253,8 +1253,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::activity_category& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::activity_category& v, const ores::utility::domain::precondition& claim) : domain::activity_category
             }
             class activity_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1299,8 +1297,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::activity_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::activity_type& v, const ores::utility::domain::precondition& claim) : domain::activity_type
             }
             class amortization_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1341,8 +1337,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::amortization_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::amortization_type& v, const ores::utility::domain::precondition& claim) : domain::amortization_type
             }
             class ascot_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1383,8 +1377,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::ascot& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::ascot& v, const ores::utility::domain::precondition& claim) : domain::ascot
             }
             class average_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1425,8 +1417,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::average_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::average_type& v, const ores::utility::domain::precondition& claim) : domain::average_type
             }
             class balance_guaranteed_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1473,8 +1463,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::balance_guaranteed_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::balance_guaranteed_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::balance_guaranteed_swap_instrument
             }
             class barrier_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1515,8 +1503,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::barrier_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::barrier_type& v, const ores::utility::domain::precondition& claim) : domain::barrier_type
             }
             class bond_forward_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1567,8 +1553,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::bond_forward& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_forward& v, const ores::utility::domain::precondition& claim) : domain::bond_forward
             }
             class bond_future_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1613,8 +1597,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::bond_future& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_future& v, const ores::utility::domain::precondition& claim) : domain::bond_future
             }
             class bond_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1659,8 +1641,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::bond_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_instrument& v, const ores::utility::domain::precondition& claim) : domain::bond_instrument
             }
             class bond_issue_call_date_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1702,8 +1682,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& sequence_number) : void
                 +remove(context ctx, const string& issue_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_call_date& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_call_date& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_call_date
             }
             class bond_issue_conversion_target_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1746,8 +1724,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& sequence_number) : void
                 +remove(context ctx, const string& issue_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_conversion_target& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_conversion_target& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_conversion_target
             }
             class bond_issue_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1826,8 +1802,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& sequence_number) : void
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& leg_numbers, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_leg_amortization& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_leg_amortization& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_leg_amortization
             }
             class bond_issue_leg_amount_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1872,8 +1846,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& amount_role, const string& sequence_number) : void
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& amount_role, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& leg_numbers, const vector<string>& amount_roles, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_leg_amount& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_leg_amount& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_leg_amount
             }
             class bond_issue_leg_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -1973,8 +1945,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& leg_number) : void
                 +remove(context ctx, const string& issue_id, const string& leg_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& leg_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_leg_rate& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_leg_rate& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_leg_rate
             }
             class bond_issue_leg_repository {
                 +remove_status : enum class
@@ -1994,8 +1964,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& leg_number) : void
                 +remove(context ctx, const string& issue_id, const string& leg_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& leg_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_leg& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_leg& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_leg
             }
             class bond_issue_leg_schedule_date_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2038,8 +2006,6 @@ namespace ores #F2F2F2 {
                 +get_total_bond_issue_leg_schedule_date_count(context ctx) : uint32_t
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& schedule_role, const string& schedule_sequence_number, const string& sequence_number) : void
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& leg_numbers, const vector<string>& schedule_roles, const vector<string>& schedule_sequence_numbers, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_leg_schedule_date& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_leg_schedule_date& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_leg_schedule_date
             }
             class bond_issue_leg_schedule_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2098,8 +2064,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& schedule_role, const string& sequence_number) : void
                 +remove(context ctx, const string& issue_id, const string& leg_number, const string& schedule_role, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids, const vector<string>& leg_numbers, const vector<string>& schedule_roles, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_issue_leg_schedule& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue_leg_schedule& v, const ores::utility::domain::precondition& claim) : domain::bond_issue_leg_schedule
             }
             class bond_issue_mapper {
                 -lg() : [[nodiscard]] static auto&
@@ -2126,8 +2090,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& issue_id) : void
                 +remove(context ctx, const string& issue_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& issue_ids) : void
-                -replace_claim(context ctx, const domain::bond_issue& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_issue& v, const ores::utility::domain::precondition& claim) : domain::bond_issue
             }
             class bond_leg_amortization_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2176,8 +2138,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number, const string& sequence_number) : void
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& leg_roles, const vector<string>& leg_numbers, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_leg_amortization& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_leg_amortization& v, const ores::utility::domain::precondition& claim) : domain::bond_leg_amortization
             }
             class bond_leg_amount_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2221,8 +2181,6 @@ namespace ores #F2F2F2 {
                 +get_total_bond_leg_amount_count(context ctx) : uint32_t
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number, const string& amount_role, const string& sequence_number) : void
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& leg_roles, const vector<string>& leg_numbers, const vector<string>& amount_roles, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::bond_leg_amount& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_leg_amount& v, const ores::utility::domain::precondition& claim) : domain::bond_leg_amount
             }
             class bond_leg_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2324,8 +2282,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number) : void
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& leg_roles, const vector<string>& leg_numbers) : void
-                -replace_claim(context ctx, const domain::bond_leg_rate& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_leg_rate& v, const ores::utility::domain::precondition& claim) : domain::bond_leg_rate
             }
             class bond_leg_repository {
                 +remove_status : enum class
@@ -2345,8 +2301,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number) : void
                 +remove(context ctx, const string& trade_id, const string& leg_role, const string& leg_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& leg_roles, const vector<string>& leg_numbers) : void
-                -replace_claim(context ctx, const domain::bond_leg& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_leg& v, const ores::utility::domain::precondition& claim) : domain::bond_leg
             }
             class bond_option_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2391,8 +2345,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::bond_option& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_option& v, const ores::utility::domain::precondition& claim) : domain::bond_option
             }
             class bond_repo_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2435,8 +2387,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::bond_repo& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_repo& v, const ores::utility::domain::precondition& claim) : domain::bond_repo
             }
             class bond_trs_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2483,8 +2433,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::bond_trs& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::bond_trs& v, const ores::utility::domain::precondition& claim) : domain::bond_trs
             }
             class callable_swap_call_date_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2527,8 +2475,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
                 +read_by_instruments_batch(context ctx, const vector<string>& trade_ids) : vector<domain::callable_swap_call_date>
-                -replace_claim(context ctx, const domain::callable_swap_call_date& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::callable_swap_call_date& v, const ores::utility::domain::precondition& claim) : domain::callable_swap_call_date
             }
             class callable_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2574,8 +2520,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::callable_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::callable_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::callable_swap_instrument
             }
             class cap_floor_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2621,8 +2565,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::cap_floor_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::cap_floor_instrument& v, const ores::utility::domain::precondition& claim) : domain::cap_floor_instrument
             }
             class commodity_basket_constituent_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2666,8 +2608,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
                 +read_by_instruments_batch(context ctx, const vector<string>& trade_ids) : vector<domain::commodity_basket_constituent>
-                -replace_claim(context ctx, const domain::commodity_basket_constituent& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::commodity_basket_constituent& v, const ores::utility::domain::precondition& claim) : domain::commodity_basket_constituent
             }
             class commodity_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2736,8 +2676,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::commodity_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::commodity_instrument& v, const ores::utility::domain::precondition& claim) : domain::commodity_instrument
             }
             class composite_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2781,8 +2719,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::composite_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::composite_instrument& v, const ores::utility::domain::precondition& claim) : domain::composite_instrument
             }
             class composite_leg_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2829,8 +2765,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::composite_leg& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::composite_leg& v, const ores::utility::domain::precondition& claim) : domain::composite_leg
             }
             class credit_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2894,8 +2828,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::credit_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::credit_instrument& v, const ores::utility::domain::precondition& claim) : domain::credit_instrument
             }
             class equity_accumulator_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -2951,8 +2883,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_accumulator_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_accumulator_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_accumulator_instrument
             }
             class equity_asian_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3007,8 +2937,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_asian_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_asian_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_asian_option_instrument
             }
             class equity_barrier_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3065,8 +2993,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_barrier_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_barrier_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_barrier_option_instrument
             }
             class equity_digital_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3120,8 +3046,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_digital_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_digital_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_digital_option_instrument
             }
             class equity_forward_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3172,8 +3096,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_forward_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_forward_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_forward_instrument
             }
             class equity_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3227,8 +3149,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_option_instrument
             }
             class equity_position_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3276,8 +3196,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_position_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_position_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_position_instrument
             }
             class equity_position_option_underlying_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3326,8 +3244,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
                 +read_by_instruments_batch(context ctx, const vector<string>& trade_ids) : vector<domain::equity_position_option_underlying>
-                -replace_claim(context ctx, const domain::equity_position_option_underlying& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_position_option_underlying& v, const ores::utility::domain::precondition& claim) : domain::equity_position_option_underlying
             }
             class equity_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3380,8 +3296,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_swap_instrument
             }
             class equity_variance_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3432,8 +3346,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::equity_variance_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::equity_variance_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::equity_variance_swap_instrument
             }
             class exercise_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3474,8 +3386,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::exercise_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::exercise_type& v, const ores::utility::domain::precondition& claim) : domain::exercise_type
             }
             class fpml_event_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3516,8 +3426,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::fpml_event_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fpml_event_type& v, const ores::utility::domain::precondition& claim) : domain::fpml_event_type
             }
             class fra_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3568,8 +3476,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fra_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fra_instrument& v, const ores::utility::domain::precondition& claim) : domain::fra_instrument
             }
             class fx_accumulator_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3620,8 +3526,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_accumulator_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_accumulator_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_accumulator_instrument
             }
             class fx_asian_forward_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3676,8 +3580,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_asian_forward_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_asian_forward_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_asian_forward_instrument
             }
             class fx_barrier_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3732,8 +3634,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_barrier_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_barrier_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_barrier_option_instrument
             }
             class fx_digital_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3788,8 +3688,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_digital_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_digital_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_digital_option_instrument
             }
             class fx_forward_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3839,8 +3737,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_forward_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_forward_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_forward_instrument
             }
             class fx_vanilla_option_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3892,8 +3788,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_vanilla_option_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_vanilla_option_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_vanilla_option_instrument
             }
             class fx_variance_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3945,8 +3839,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::fx_variance_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::fx_variance_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::fx_variance_swap_instrument
             }
             class inflation_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -3995,8 +3887,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::inflation_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::inflation_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::inflation_swap_instrument
             }
             class instrument_option_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4086,8 +3976,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number) : void
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::instrument_option_exercise_fee& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_option_exercise_fee& v, const ores::utility::domain::precondition& claim) : domain::instrument_option_exercise_fee
             }
             class instrument_option_mapper {
                 -lg() : [[nodiscard]] static auto&
@@ -4136,8 +4024,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number) : void
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::instrument_option_payment_date& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_option_payment_date& v, const ores::utility::domain::precondition& claim) : domain::instrument_option_payment_date
             }
             class instrument_option_premium_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4185,8 +4071,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number) : void
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::instrument_option_premium& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_option_premium& v, const ores::utility::domain::precondition& claim) : domain::instrument_option_premium
             }
             class instrument_option_repository {
                 +remove_status : enum class
@@ -4206,8 +4090,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::instrument_option& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_option& v, const ores::utility::domain::precondition& claim) : domain::instrument_option
             }
             class instrument_schedule_date_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4246,8 +4128,6 @@ namespace ores #F2F2F2 {
                 +read_latest(context ctx) : vector<domain::instrument_schedule_date>
                 +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::instrument_schedule_date>
                 +get_total_instrument_schedule_date_count(context ctx) : uint32_t
-                -replace_claim(context ctx, const domain::instrument_schedule_date& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_schedule_date& v, const ores::utility::domain::precondition& claim) : domain::instrument_schedule_date
             }
             class instrument_schedule_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4305,8 +4185,6 @@ namespace ores #F2F2F2 {
                 +get_total_instrument_schedule_count(context ctx) : uint32_t
                 +remove(context ctx, const string& trade_id, const string& owner_role, const string& owner_number, const string& schedule_role, const string& sequence_number) : void
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& owner_roles, const vector<string>& owner_numbers, const vector<string>& schedule_roles, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::instrument_schedule& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_schedule& v, const ores::utility::domain::precondition& claim) : domain::instrument_schedule
             }
             class instrument_strike_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4352,8 +4230,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::instrument_strike& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::instrument_strike& v, const ores::utility::domain::precondition& claim) : domain::instrument_strike
             }
             class knock_out_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4402,8 +4278,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::knock_out_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::knock_out_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::knock_out_swap_instrument
             }
             class lifecycle_event_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4446,8 +4320,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::lifecycle_event& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::lifecycle_event& v, const ores::utility::domain::precondition& claim) : domain::lifecycle_event
             }
             class long_short_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4488,8 +4360,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::long_short_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::long_short_type& v, const ores::utility::domain::precondition& claim) : domain::long_short_type
             }
             class moment_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4530,8 +4400,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::moment_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::moment_type& v, const ores::utility::domain::precondition& claim) : domain::moment_type
             }
             class option_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4572,8 +4440,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::option_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::option_type& v, const ores::utility::domain::precondition& claim) : domain::option_type
             }
             class party_role_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4614,8 +4480,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::party_role_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::party_role_type& v, const ores::utility::domain::precondition& claim) : domain::party_role_type
             }
             class payoff_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4656,8 +4520,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::payoff_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::payoff_type& v, const ores::utility::domain::precondition& claim) : domain::payoff_type
             }
             class price_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4698,8 +4560,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::price_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::price_type& v, const ores::utility::domain::precondition& claim) : domain::price_type
             }
             class return_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4740,8 +4600,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::return_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::return_type& v, const ores::utility::domain::precondition& claim) : domain::return_type
             }
             class scripted_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4790,8 +4648,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::scripted_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::scripted_instrument& v, const ores::utility::domain::precondition& claim) : domain::scripted_instrument
             }
             class settlement_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4832,8 +4688,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::settlement_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::settlement_type& v, const ores::utility::domain::precondition& claim) : domain::settlement_type
             }
             class swap_leg_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4889,8 +4743,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
                 +read_by_instruments_batch(context ctx, const vector<string>& trade_ids) : vector<domain::swap_leg>
-                -replace_claim(context ctx, const domain::swap_leg& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::swap_leg& v, const ores::utility::domain::precondition& claim) : domain::swap_leg
             }
             class swaption_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -4940,8 +4792,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::swaption_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::swaption_instrument& v, const ores::utility::domain::precondition& claim) : domain::swaption_instrument
             }
             class trade_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -5013,8 +4863,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number) : void
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::trade_envelope_additional_field& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_envelope_additional_field& v, const ores::utility::domain::precondition& claim) : domain::trade_envelope_additional_field
             }
             class trade_envelope_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -5080,8 +4928,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id, const string& sequence_number) : void
                 +remove(context ctx, const string& trade_id, const string& sequence_number, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids, const vector<string>& sequence_numbers) : void
-                -replace_claim(context ctx, const domain::trade_envelope_portfolio_id& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_envelope_portfolio_id& v, const ores::utility::domain::precondition& claim) : domain::trade_envelope_portfolio_id
             }
             class trade_envelope_repository {
                 +remove_status : enum class
@@ -5101,8 +4947,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::trade_envelope& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_envelope& v, const ores::utility::domain::precondition& claim) : domain::trade_envelope
             }
             class trade_id_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -5143,8 +4987,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::trade_id_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_id_type& v, const ores::utility::domain::precondition& claim) : domain::trade_id_type
             }
             class trade_identifier_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -5190,8 +5032,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::trade_identifier& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_identifier& v, const ores::utility::domain::precondition& claim) : domain::trade_identifier
             }
             class trade_mapper {
                 -lg() : [[nodiscard]] static auto&
@@ -5241,8 +5081,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::trade_party_role& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_party_role& v, const ores::utility::domain::precondition& claim) : domain::trade_party_role
             }
             class trade_repository {
                 +remove_status : enum class
@@ -5266,8 +5104,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const vector<string>& ids) : void
                 +read_latest_for_node_id(context ctx, uint32_t offset, uint32_t limit, const string& node_id) : vector<domain::trade>
                 +count_latest_for_node_id(context ctx, const string& node_id) : uint32_t
-                -replace_claim(context ctx, const domain::trade& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade& v, const ores::utility::domain::precondition& claim) : domain::trade
             }
             class trade_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -5311,8 +5147,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& code) : void
                 +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& codes) : void
-                -replace_claim(context ctx, const domain::trade_type& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::trade_type& v, const ores::utility::domain::precondition& claim) : domain::trade_type
             }
             class vanilla_swap_instrument_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -5360,8 +5194,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& trade_id) : void
                 +remove(context ctx, const string& trade_id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& trade_ids) : void
-                -replace_claim(context ctx, const domain::vanilla_swap_instrument& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::vanilla_swap_instrument& v, const ores::utility::domain::precondition& claim) : domain::vanilla_swap_instrument
             }
         }
         namespace service #F2F2F2 {

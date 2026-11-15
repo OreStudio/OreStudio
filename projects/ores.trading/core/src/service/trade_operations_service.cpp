@@ -22,6 +22,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
@@ -169,6 +170,12 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     messaging::book_trade_response response;
 
+    if (const auto reason = domain::unsupported_reason_for(anchor.trade_type)) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "trade_type_not_supported";
+        response.result.message = std::string(*reason);
+        return response;
+    }
     if (const auto misrouted = service::misrouted_arrays(request.instruments, anchor.trade_type);
         !misrouted.empty()) {
         response.result.outcome = outcome::failed;

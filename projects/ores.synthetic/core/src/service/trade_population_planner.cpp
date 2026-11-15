@@ -764,13 +764,10 @@ construct_commodity_batch(const std::string& trade_type_code,
                 money(drawn.spread_amount).value_or(tdom::decimal{})};
             return {tdom::construct_commodity_spread_option(terms), {}};
         }
-        if (type == "CommodityVarianceSwap" || type == "CommodityPairwiseVarianceSwap" ||
-            type == "CommodityBasketVarianceSwap") {
+        if (type == "CommodityVarianceSwap" || type == "CommodityBasketVarianceSwap") {
             tdom::commodity_variance_swap_terms terms{common, drawn.variance_strike.value_or(0.0)};
             if (type == "CommodityVarianceSwap")
                 return {tdom::construct_commodity_variance_swap(terms), {}};
-            if (type == "CommodityPairwiseVarianceSwap")
-                return {tdom::construct_commodity_pairwise_variance_swap(terms), {}};
             return {tdom::construct_commodity_basket_variance_swap(terms), {}};
         }
         if (type == "CommoditySwap") {

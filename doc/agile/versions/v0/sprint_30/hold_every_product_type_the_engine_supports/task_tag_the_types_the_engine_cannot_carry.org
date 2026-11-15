@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch: feature/remove-the-types-the-engine-cannot-carry
-#+pr:
+#+branch: feature/tag-the-types-the-engine-cannot-carry
+#+pr: 4756
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ and a check fails when a later ORE release starts supporting it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -52,9 +52,23 @@ and a check fails when a later ORE release starts supporting it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The catalogue gains a =* Unsupported trade types= table: code, the reason a
+  refusal gives, ORE's evidence (file and registration lines at 3d75a6908) and
+  the library script that carries the product. One row each for
+  =CommodityPairwiseVarianceSwap= and =ForwardVolatilityAgreement=.
+- Codegen reads the table. A row must name a catalogue type, route to no
+  table, and carry a reason with no quote or backslash, because the reason
+  becomes a C++ literal. =CommodityPairwiseVarianceSwap= stops routing to
+  =commodity_instrument=, so the commodity table's check no longer accepts it.
+- The routing header gains =unsupported_reason_for=. Booking refuses an
+  unsupported type with =trade_type_not_supported= and the reason. The ORE
+  import books through the same request, and =nats_call= hands the refusal's
+  message back as the item error, so the import needs no check of its own.
+- The commodity pairwise variance swap constructor and its generator branch go:
+  no table can hold the trade.
+- The trade type coverage check fails when the unsupported table differs from
+  the catalogue types ORE registers no builder for, in either direction, and
+  when the generator records an unsupported type.
 
 * Measurements
 
@@ -68,9 +82,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue types ORE registers no builder for | 2 | =trade_types.tsv=, rows with =registered= no and =in_catalogue= yes | 730781bdc7 |
+| Booking service tests | 56 of 56 pass, the new one with 8 assertions | =ores.trading.core.tests "[service]"= | 730781bdc7 |
+| Generated trade tests | 5 pass, 1 skipped, 1 fails: ScriptedTrade =.SPX= became =EQ-.SPX=, the failure main already has | =ores.synthetic.core.tests "[generated]"= | 730781bdc7 |
+| Codegen catalogue tests | 28 of 28 pass, 7 new | =pytest projects/ores.codegen/tests/test_trade_type_catalogue.py= | 730781bdc7 |
 
 * Notes
+
+** The import already reports a booking's reason
+
+The import books each trade through =book_trade_request=, and =nats_call=
+copies a failed outcome's message into the error the import reports, so a
+refusal at booking reaches the user with its reason. A first draft added a
+second check in the import handler and a change to how the import read the
+booking's message; both were dropped once =nats_call= showed the message
+already arrives.
+
+** Evidence in ORE
+
+At 3d75a6908, =OREData/ored/utilities/databuilders.cpp= registers the FX,
+equity and commodity forward volatility agreements (lines 302-304) and the
+equity and FX pairwise variance swaps (lines 403-404), and nothing else of
+either family.
 
 * Test Scenarios
 
@@ -87,12 +120,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4756][#4756]] | [trading,codegen] Refuse the trade types the engine cannot carry |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the import handler refused the type a second time | =ore_import_execute_handler.cpp= | Accept | Dropped: the import books through =book_trade_request=, and =nats_call= returns the refusal's message as the item error |
+| 2 | Local review: misspell over the changed files | - | Accept | Clean |
+| 3 | PR review 1: an existing database still holds the old commodity check | SQL | Decline | No migrations: databases are recreated from =create/=; no row of the type can exist, since the generator never booked it and booking refuses it |
+| 4 | PR review 2: the reason may hold a newline or non-ASCII text | =org_loader.py= | Decline | An org table cell is one line, and a UTF-8 C++ literal holds non-ASCII text |
+| 5 | PR review 3: the coverage script parses the table apart from the loader | =generate_trade_type_coverage.py= | Decline | The script runs on the system Python with no entity models; it reads the catalogue's tables the same way already |
+| 6 | PR review 4: a row with a blank code is skipped | =org_loader.py= | Decline | The trade types table skips a blank code the same way; the two tables stay consistent |
+| 7 | PR review 5: the reason is given before the book permission checks | =trade_operations_service.cpp= | Decline | The reason is catalogue reference data every tenant reads; the routing check already runs first |
+| 8 | PR review 6: no end-to-end import test | import | Decline | Needs NATS and the services; stated as a limitation, and the path is booking plus =nats_call= |
 
 * Result
+
+The catalogue's =* Unsupported trade types= table tags =CommodityPairwiseVarianceSwap=
+and =ForwardVolatilityAgreement= with the reason, ORE's evidence and the library
+script that carries each product. Both stay visible in the catalogue and the
+coverage page, route to no table, and are refused at booking, and so at import,
+with =trade_type_not_supported= and the reason. The generator books neither and
+no recorded trade holds either. The coverage gate fails when the table and ORE's
+builder registrations disagree in either direction. Booking the products as a
+generic =ScriptedTrade= over their library scripts is the work of the script
+tasks.

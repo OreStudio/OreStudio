@@ -660,14 +660,6 @@ construct_commodity_variance_swap(const commodity_variance_swap_terms& terms) {
 }
 
 [[nodiscard]] inline commodity_instrument
-construct_commodity_pairwise_variance_swap(const commodity_variance_swap_terms& terms) {
-    auto row = commodity_builders::common_row(
-        "commodity pairwise variance swap", "CommodityPairwiseVarianceSwap", terms.common);
-    row.variance_strike = terms.variance_strike;
-    return row;
-}
-
-[[nodiscard]] inline commodity_instrument
 construct_commodity_basket_variance_swap(const commodity_variance_swap_terms& terms) {
     auto row = commodity_builders::common_row(
         "commodity basket variance swap", "CommodityBasketVarianceSwap", terms.common);

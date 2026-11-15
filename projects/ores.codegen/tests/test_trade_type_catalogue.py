@@ -170,6 +170,53 @@ def test_the_catalogue_refuses_a_repeated_code(tmp_path):
         load_org_trade_type_catalogue_model(path)
 
 
+_UNSUPPORTED_ROWS = "\n".join([
+    "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+    "| Retired | x | swap | native | interest_rates! | false | false | |",
+])
+
+
+def _with_unsupported(path, rows):
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text + "\n* Unsupported trade types\n\n"
+                    "| code | reason | evidence | carried_by |\n"
+                    "|------+--------+----------+------------|\n" + rows + "\n",
+                    encoding="utf-8")
+
+
+def test_the_catalogue_states_why_a_type_is_unsupported(tmp_path):
+    path = _write_catalogue(tmp_path, _UNSUPPORTED_ROWS)
+    _with_unsupported(path, "| Retired | ORE has no builder for Retired. | src | Script |")
+
+    catalogue = load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
+
+    assert catalogue["unsupported"] == [
+        {"code": "Retired", "reason": "ORE has no builder for Retired."}]
+
+
+def test_a_catalogue_with_no_unsupported_table_supports_every_type(tmp_path):
+    path = _write_catalogue(tmp_path, _UNSUPPORTED_ROWS)
+
+    catalogue = load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
+
+    assert catalogue["unsupported"] == []
+
+
+@pytest.mark.parametrize("row,message", [
+    ("| Swap | No builder. | src | Script |", "must route to no table"),
+    ("| Unknown | No builder. | src | Script |", "not in the"),
+    ("| Retired |  | src | Script |", "needs a reason"),
+    ('| Retired | No "builder". | src | Script |', "needs a reason"),
+    ("| Retired | No builder. | src | Script |\n| Retired | Again. | src | Script |", "twice"),
+])
+def test_the_catalogue_refuses_an_unsupported_row_it_cannot_honour(tmp_path, row, message):
+    path = _write_catalogue(tmp_path, _UNSUPPORTED_ROWS)
+    _with_unsupported(path, row)
+
+    with pytest.raises(ValueError, match=message):
+        load_org_trade_type_catalogue_model(path)
+
+
 def _create_sql(tmp_path, model):
     output = "out.sql"
     generate_from_model(

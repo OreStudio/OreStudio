@@ -292,6 +292,12 @@ messaging::put_many_calendar_exceptions_response
 calendar_exception_service::put_many_calendar_exceptions(
     const messaging::put_many_calendar_exceptions_request& request) {
     messaging::put_many_calendar_exceptions_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "calendar_exception", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::calendar_exception_key> keys;
@@ -378,6 +384,12 @@ messaging::delete_many_calendar_exceptions_response
 calendar_exception_service::delete_many_calendar_exceptions(
     const messaging::delete_many_calendar_exceptions_request& request) {
     messaging::delete_many_calendar_exceptions_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "calendar_exception", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

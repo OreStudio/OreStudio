@@ -238,6 +238,12 @@ pricing_model_service::put_pricing_model(const messaging::put_pricing_model_requ
 messaging::put_many_pricing_models_response pricing_model_service::put_many_pricing_models(
     const messaging::put_many_pricing_models_request& request) {
     messaging::put_many_pricing_models_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "pricing_model", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::pricing_model_key> keys;
@@ -322,6 +328,12 @@ messaging::delete_pricing_model_response pricing_model_service::delete_pricing_m
 messaging::delete_many_pricing_models_response pricing_model_service::delete_many_pricing_models(
     const messaging::delete_many_pricing_models_request& request) {
     messaging::delete_many_pricing_models_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "pricing_model", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

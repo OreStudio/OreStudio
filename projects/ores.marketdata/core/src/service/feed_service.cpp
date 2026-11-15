@@ -265,6 +265,11 @@ messaging::put_feed_response feed_service::put_feed(const messaging::put_feed_re
 messaging::put_many_feeds_response
 feed_service::put_many_feeds(const messaging::put_many_feeds_request& request) {
     messaging::put_many_feeds_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "feed", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::feed_key> keys;
@@ -355,6 +360,11 @@ feed_service::delete_feed(const messaging::delete_feed_request& request) {
 messaging::delete_many_feeds_response
 feed_service::delete_many_feeds(const messaging::delete_many_feeds_request& request) {
     messaging::delete_many_feeds_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "feed", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

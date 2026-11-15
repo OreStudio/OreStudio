@@ -234,6 +234,12 @@ person_role_service::put_person_role(const messaging::put_person_role_request& r
 messaging::put_many_person_roles_response person_role_service::put_many_person_roles(
     const messaging::put_many_person_roles_request& request) {
     messaging::put_many_person_roles_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "person_role", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::person_role_key> keys;
@@ -319,6 +325,12 @@ person_role_service::delete_person_role(const messaging::delete_person_role_requ
 messaging::delete_many_person_roles_response person_role_service::delete_many_person_roles(
     const messaging::delete_many_person_roles_request& request) {
     messaging::delete_many_person_roles_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "person_role", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

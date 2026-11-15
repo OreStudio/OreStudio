@@ -256,6 +256,11 @@ bond_issue_service::put_bond_issue(const messaging::put_bond_issue_request& requ
 messaging::put_many_bond_issues_response
 bond_issue_service::put_many_bond_issues(const messaging::put_many_bond_issues_request& request) {
     messaging::put_many_bond_issues_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "bond_issue", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::bond_issue_key> keys;
@@ -340,6 +345,11 @@ bond_issue_service::delete_bond_issue(const messaging::delete_bond_issue_request
 messaging::delete_many_bond_issues_response bond_issue_service::delete_many_bond_issues(
     const messaging::delete_many_bond_issues_request& request) {
     messaging::delete_many_bond_issues_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "bond_issue", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

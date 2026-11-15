@@ -43,6 +43,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 
 badge_mapping_service::badge_mapping_service(const context& ctx)
@@ -182,6 +183,12 @@ badge_mapping_service::put_badge_mapping(const messaging::put_badge_mapping_requ
 messaging::put_many_badge_mappings_response badge_mapping_service::put_many_badge_mappings(
     const messaging::put_many_badge_mappings_request& request) {
     messaging::put_many_badge_mappings_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "badge_mapping", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     std::vector<domain::badge_mapping> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
@@ -258,6 +265,12 @@ messaging::delete_badge_mapping_response badge_mapping_service::delete_badge_map
 messaging::delete_many_badge_mappings_response badge_mapping_service::delete_many_badge_mappings(
     const messaging::delete_many_badge_mappings_request& request) {
     messaging::delete_many_badge_mappings_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "badge_mapping", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

@@ -240,6 +240,12 @@ tenant_status_service::put_tenant_status(const messaging::put_tenant_status_requ
 messaging::put_many_tenant_statuses_response tenant_status_service::put_many_tenant_statuses(
     const messaging::put_many_tenant_statuses_request& request) {
     messaging::put_many_tenant_statuses_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "tenant_status", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::tenant_status_key> keys;
@@ -324,6 +330,12 @@ messaging::delete_tenant_status_response tenant_status_service::delete_tenant_st
 messaging::delete_many_tenant_statuses_response tenant_status_service::delete_many_tenant_statuses(
     const messaging::delete_many_tenant_statuses_request& request) {
     messaging::delete_many_tenant_statuses_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "tenant_status", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

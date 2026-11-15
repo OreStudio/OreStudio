@@ -241,6 +241,11 @@ platform_service::put_platform(const messaging::put_platform_request& request) {
 messaging::put_many_platforms_response
 platform_service::put_many_platforms(const messaging::put_many_platforms_request& request) {
     messaging::put_many_platforms_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "platform", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::platform_key> keys;
@@ -331,6 +336,11 @@ platform_service::delete_platform(const messaging::delete_platform_request& requ
 messaging::delete_many_platforms_response
 platform_service::delete_many_platforms(const messaging::delete_many_platforms_request& request) {
     messaging::delete_many_platforms_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "platform", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

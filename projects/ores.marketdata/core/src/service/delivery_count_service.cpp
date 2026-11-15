@@ -263,6 +263,12 @@ delivery_count_service::put_delivery_count(const messaging::put_delivery_count_r
 messaging::put_many_delivery_counts_response delivery_count_service::put_many_delivery_counts(
     const messaging::put_many_delivery_counts_request& request) {
     messaging::put_many_delivery_counts_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "delivery_count", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::delivery_count_key> keys;
@@ -354,6 +360,12 @@ messaging::delete_delivery_count_response delivery_count_service::delete_deliver
 messaging::delete_many_delivery_counts_response delivery_count_service::delete_many_delivery_counts(
     const messaging::delete_many_delivery_counts_request& request) {
     messaging::delete_many_delivery_counts_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "delivery_count", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

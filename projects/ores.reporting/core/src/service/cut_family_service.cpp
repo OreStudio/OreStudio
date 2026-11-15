@@ -237,6 +237,11 @@ cut_family_service::put_cut_family(const messaging::put_cut_family_request& requ
 messaging::put_many_cut_families_response
 cut_family_service::put_many_cut_families(const messaging::put_many_cut_families_request& request) {
     messaging::put_many_cut_families_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "cut_family", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::cut_family_key> keys;
@@ -321,6 +326,11 @@ cut_family_service::delete_cut_family(const messaging::delete_cut_family_request
 messaging::delete_many_cut_families_response cut_family_service::delete_many_cut_families(
     const messaging::delete_many_cut_families_request& request) {
     messaging::delete_many_cut_families_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "cut_family", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

@@ -243,6 +243,12 @@ messaging::put_many_stress_shift_families_response
 stress_shift_family_service::put_many_stress_shift_families(
     const messaging::put_many_stress_shift_families_request& request) {
     messaging::put_many_stress_shift_families_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "stress_shift_family", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::stress_shift_family_key> keys;
@@ -329,6 +335,12 @@ messaging::delete_many_stress_shift_families_response
 stress_shift_family_service::delete_many_stress_shift_families(
     const messaging::delete_many_stress_shift_families_request& request) {
     messaging::delete_many_stress_shift_families_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "stress_shift_family", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

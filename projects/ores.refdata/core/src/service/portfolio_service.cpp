@@ -291,6 +291,11 @@ portfolio_service::put_portfolio(const messaging::put_portfolio_request& request
 messaging::put_many_portfolios_response
 portfolio_service::put_many_portfolios(const messaging::put_many_portfolios_request& request) {
     messaging::put_many_portfolios_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "portfolio", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::portfolio_key> keys;
@@ -382,6 +387,11 @@ portfolio_service::delete_portfolio(const messaging::delete_portfolio_request& r
 messaging::delete_many_portfolios_response portfolio_service::delete_many_portfolios(
     const messaging::delete_many_portfolios_request& request) {
     messaging::delete_many_portfolios_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "portfolio", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

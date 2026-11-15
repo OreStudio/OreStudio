@@ -255,6 +255,11 @@ batch_service::put_batch(const messaging::put_batch_request& request) {
 messaging::put_many_batches_response
 batch_service::put_many_batches(const messaging::put_many_batches_request& request) {
     messaging::put_many_batches_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "batch", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::batch_key> keys;
@@ -345,6 +350,11 @@ batch_service::delete_batch(const messaging::delete_batch_request& request) {
 messaging::delete_many_batches_response
 batch_service::delete_many_batches(const messaging::delete_many_batches_request& request) {
     messaging::delete_many_batches_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "batch", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

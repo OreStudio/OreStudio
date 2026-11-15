@@ -238,6 +238,12 @@ messaging::put_origin_dimension_response origin_dimension_service::put_origin_di
 messaging::put_many_origin_dimensions_response origin_dimension_service::put_many_origin_dimensions(
     const messaging::put_many_origin_dimensions_request& request) {
     messaging::put_many_origin_dimensions_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "origin_dimension", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::origin_dimension_key> keys;
@@ -324,6 +330,12 @@ messaging::delete_many_origin_dimensions_response
 origin_dimension_service::delete_many_origin_dimensions(
     const messaging::delete_many_origin_dimensions_request& request) {
     messaging::delete_many_origin_dimensions_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "origin_dimension", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

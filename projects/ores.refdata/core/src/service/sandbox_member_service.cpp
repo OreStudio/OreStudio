@@ -339,6 +339,12 @@ sandbox_member_service::put_sandbox_member(const messaging::put_sandbox_member_r
 messaging::put_many_sandbox_members_response sandbox_member_service::put_many_sandbox_members(
     const messaging::put_many_sandbox_members_request& request) {
     messaging::put_many_sandbox_members_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "sandbox_member", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::sandbox_member_key> keys;
@@ -424,6 +430,12 @@ messaging::delete_sandbox_member_response sandbox_member_service::delete_sandbox
 messaging::delete_many_sandbox_members_response sandbox_member_service::delete_many_sandbox_members(
     const messaging::delete_many_sandbox_members_request& request) {
     messaging::delete_many_sandbox_members_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "sandbox_member", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

@@ -238,6 +238,12 @@ methodology_service::put_methodology(const messaging::put_methodology_request& r
 messaging::put_many_methodologies_response methodology_service::put_many_methodologies(
     const messaging::put_many_methodologies_request& request) {
     messaging::put_many_methodologies_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "methodology", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::methodology_key> keys;
@@ -329,6 +335,12 @@ methodology_service::delete_methodology(const messaging::delete_methodology_requ
 messaging::delete_many_methodologies_response methodology_service::delete_many_methodologies(
     const messaging::delete_many_methodologies_request& request) {
     messaging::delete_many_methodologies_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "methodology", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

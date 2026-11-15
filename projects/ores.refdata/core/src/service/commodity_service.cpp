@@ -239,6 +239,11 @@ commodity_service::put_commodity(const messaging::put_commodity_request& request
 messaging::put_many_commodities_response
 commodity_service::put_many_commodities(const messaging::put_many_commodities_request& request) {
     messaging::put_many_commodities_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "commodity", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::commodity_key> keys;
@@ -324,6 +329,11 @@ commodity_service::delete_commodity(const messaging::delete_commodity_request& r
 messaging::delete_many_commodities_response commodity_service::delete_many_commodities(
     const messaging::delete_many_commodities_request& request) {
     messaging::delete_many_commodities_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "commodity", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

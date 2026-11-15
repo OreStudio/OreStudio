@@ -253,6 +253,12 @@ messaging::put_composite_input_response composite_input_service::put_composite_i
 messaging::put_many_composite_inputs_response composite_input_service::put_many_composite_inputs(
     const messaging::put_many_composite_inputs_request& request) {
     messaging::put_many_composite_inputs_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "composite_input", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::composite_input_key> keys;
@@ -345,6 +351,12 @@ messaging::delete_many_composite_inputs_response
 composite_input_service::delete_many_composite_inputs(
     const messaging::delete_many_composite_inputs_request& request) {
     messaging::delete_many_composite_inputs_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "composite_input", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

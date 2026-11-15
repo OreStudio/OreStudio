@@ -309,6 +309,12 @@ messaging::put_many_tenor_basis_swap_pay_receives_response
 tenor_basis_swap_pay_receive_service::put_many_tenor_basis_swap_pay_receives(
     const messaging::put_many_tenor_basis_swap_pay_receives_request& request) {
     messaging::put_many_tenor_basis_swap_pay_receives_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::batch_too_large,
+            {.entity = "tenor_basis_swap_pay_receive", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::tenor_basis_swap_pay_receive_key> keys;
@@ -400,6 +406,12 @@ messaging::delete_many_tenor_basis_swap_pay_receives_response
 tenor_basis_swap_pay_receive_service::delete_many_tenor_basis_swap_pay_receives(
     const messaging::delete_many_tenor_basis_swap_pay_receives_request& request) {
     messaging::delete_many_tenor_basis_swap_pay_receives_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::batch_too_large,
+            {.entity = "tenor_basis_swap_pay_receive", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

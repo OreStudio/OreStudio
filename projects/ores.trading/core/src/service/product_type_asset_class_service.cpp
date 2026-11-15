@@ -43,6 +43,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 
 product_type_asset_class_service::product_type_asset_class_service(const context& ctx)
@@ -196,6 +197,12 @@ messaging::put_many_product_type_asset_classes_response
 product_type_asset_class_service::put_many_product_type_asset_classes(
     const messaging::put_many_product_type_asset_classes_request& request) {
     messaging::put_many_product_type_asset_classes_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "product_type_asset_class", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     std::vector<domain::product_type_asset_class> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
@@ -277,6 +284,12 @@ messaging::delete_many_product_type_asset_classes_response
 product_type_asset_class_service::delete_many_product_type_asset_classes(
     const messaging::delete_many_product_type_asset_classes_request& request) {
     messaging::delete_many_product_type_asset_classes_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "product_type_asset_class", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

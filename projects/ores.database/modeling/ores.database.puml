@@ -112,6 +112,7 @@ namespace ores #F2F2F2 {
                 order_not_supported
                 filter_not_supported
                 filter_too_large
+                batch_too_large
                 as_of_invalid
                 filter_range_invalid
                 scope_not_supported

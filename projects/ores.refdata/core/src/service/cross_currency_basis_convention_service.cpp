@@ -48,6 +48,7 @@
 
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
@@ -306,6 +307,12 @@ messaging::put_many_cross_currency_basis_conventions_response
 cross_currency_basis_convention_service::put_many_cross_currency_basis_conventions(
     const messaging::put_many_cross_currency_basis_conventions_request& request) {
     messaging::put_many_cross_currency_basis_conventions_response response;
+    if (request.items.size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::batch_too_large,
+            {.entity = "cross_currency_basis_convention", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One transaction for the whole batch. Each element states its own claim,
     // and the store checks each row's claim as it is written; an element that
     // is refused leaves the transaction uncommitted and nothing lands.

@@ -245,6 +245,12 @@ messaging::put_many_notification_channels_response
 notification_channel_service::put_many_notification_channels(
     const messaging::put_many_notification_channels_request& request) {
     messaging::put_many_notification_channels_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "notification_channel", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::notification_channel_key> keys;
@@ -331,6 +337,12 @@ messaging::delete_many_notification_channels_response
 notification_channel_service::delete_many_notification_channels(
     const messaging::delete_many_notification_channels_request& request) {
     messaging::delete_many_notification_channels_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "notification_channel", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

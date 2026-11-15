@@ -43,6 +43,7 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 
 currency_country_service::currency_country_service(const context& ctx)
@@ -187,6 +188,12 @@ messaging::put_many_currency_countries_response
 currency_country_service::put_many_currency_countries(
     const messaging::put_many_currency_countries_request& request) {
     messaging::put_many_currency_countries_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "currency_country", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     std::vector<domain::currency_country> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
@@ -264,6 +271,12 @@ messaging::delete_many_currency_countries_response
 currency_country_service::delete_many_currency_countries(
     const messaging::delete_many_currency_countries_request& request) {
     messaging::delete_many_currency_countries_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "currency_country", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

@@ -259,6 +259,12 @@ messaging::put_many_bma_basis_swap_conventions_response
 bma_basis_swap_convention_service::put_many_bma_basis_swap_conventions(
     const messaging::put_many_bma_basis_swap_conventions_request& request) {
     messaging::put_many_bma_basis_swap_conventions_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::batch_too_large,
+            {.entity = "bma_basis_swap_convention", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::bma_basis_swap_convention_key> keys;
@@ -348,6 +354,12 @@ messaging::delete_many_bma_basis_swap_conventions_response
 bma_basis_swap_convention_service::delete_many_bma_basis_swap_conventions(
     const messaging::delete_many_bma_basis_swap_conventions_request& request) {
     messaging::delete_many_bma_basis_swap_conventions_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::batch_too_large,
+            {.entity = "bma_basis_swap_convention", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

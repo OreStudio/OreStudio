@@ -44,6 +44,7 @@ using ores::marketdata::domain::market_observation;
 using ores::marketdata::messaging::market_observation_change;
 using ores::marketdata::messaging::market_observation_key;
 using ores::marketdata::messaging::market_observation_write;
+using ores::utility::domain::max_batch_size;
 using ores::utility::domain::outcome;
 
 market_observation_change change_for(const market_observation& o) {
@@ -73,11 +74,11 @@ std::vector<market_observation> observations_of_a_new_series(ores::testing::data
 
 }
 
-TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][batch]") {
+TEST_CASE("put_many_of_exactly_the_bound_answers_every_row_in_order", "[service][batch]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::database_helper h;
     ores::marketdata::service::market_observation_service svc(h.context());
-    const auto observations = observations_of_a_new_series(h, 1001);
+    const auto observations = observations_of_a_new_series(h, max_batch_size);
 
     ores::marketdata::messaging::put_many_market_observations_request put;
     for (const auto& o : observations)
@@ -93,7 +94,9 @@ TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][b
     ores::marketdata::messaging::get_many_market_observations_request get;
     const auto missing = boost::uuids::random_generator()();
     get.keys.push_back(market_observation_key{.id = missing});
-    for (auto o = observations.rbegin(); o != observations.rend() && get.keys.size() < 1000; ++o)
+    for (auto o = observations.rbegin();
+         o != observations.rend() && get.keys.size() < max_batch_size;
+         ++o)
         get.keys.push_back(market_observation_key{.id = o->id});
     const auto read = svc.get_many_market_observations(get);
 
@@ -105,36 +108,64 @@ TEST_CASE("put_many_across_read_chunks_answers_every_row_in_order", "[service][b
     }
 }
 
-TEST_CASE("put_many_with_an_existing_row_past_the_first_read_chunk_refuses_the_set",
-          "[service][batch]") {
+TEST_CASE("put_many_of_more_than_the_bound_is_refused_and_writes_nothing", "[service][batch]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::database_helper h;
     ores::marketdata::service::market_observation_service svc(h.context());
-    const auto observations = observations_of_a_new_series(h, 1001);
-
-    ores::marketdata::messaging::put_many_market_observations_request first;
-    first.changes.push_back(change_for(observations.back()));
-    REQUIRE(svc.put_many_market_observations(first).result.outcome == outcome::ok);
+    const auto observations = observations_of_a_new_series(h, max_batch_size + 1);
 
     ores::marketdata::messaging::put_many_market_observations_request put;
     for (const auto& o : observations)
         put.changes.push_back(change_for(o));
-    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size()
-                            << " market observations, one of which exists.";
+    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " market observations.";
     const auto refused = svc.put_many_market_observations(put);
 
-    CHECK(refused.result.outcome != outcome::ok);
-    CHECK(refused.result.code == "already_exists");
+    CHECK(refused.result.outcome == outcome::invalid);
+    CHECK(refused.result.code == "batch_too_large");
+    CHECK(refused.result.message ==
+          "A batch of market_observation carries more than 1000 elements.");
     CHECK(refused.market_observations.empty());
 
     ores::marketdata::messaging::get_many_market_observations_request get;
-    for (std::size_t i = 0; i + 1 < observations.size(); ++i)
+    for (std::size_t i = 0; i < max_batch_size; ++i)
         get.keys.push_back(market_observation_key{.id = observations[i].id});
     const auto read = svc.get_many_market_observations(get);
 
     REQUIRE(read.entries.size() == get.keys.size());
     for (const auto& entry : read.entries)
         CHECK(!entry.market_observation);
+}
+
+TEST_CASE("delete_many_of_more_than_the_bound_is_refused_and_removes_nothing", "[service][batch]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::database_helper h;
+    ores::marketdata::service::market_observation_service svc(h.context());
+    const auto observations = observations_of_a_new_series(h, max_batch_size);
+
+    ores::marketdata::messaging::put_many_market_observations_request put;
+    for (const auto& o : observations)
+        put.changes.push_back(change_for(o));
+    REQUIRE(svc.put_many_market_observations(put).result.outcome == outcome::ok);
+
+    ores::marketdata::messaging::delete_many_market_observations_request remove;
+    for (const auto& o : observations)
+        remove.removals.push_back({.key = market_observation_key{.id = o.id}});
+    remove.removals.push_back(
+        {.key = market_observation_key{.id = boost::uuids::random_generator()()}});
+    BOOST_LOG_SEV(lg, info) << "Removing " << remove.removals.size() << " market observations.";
+    const auto refused = svc.delete_many_market_observations(remove);
+
+    CHECK(refused.result.outcome == outcome::invalid);
+    CHECK(refused.result.code == "batch_too_large");
+
+    ores::marketdata::messaging::get_many_market_observations_request get;
+    for (const auto& o : observations)
+        get.keys.push_back(market_observation_key{.id = o.id});
+    const auto read = svc.get_many_market_observations(get);
+
+    REQUIRE(read.entries.size() == get.keys.size());
+    for (const auto& entry : read.entries)
+        CHECK(entry.market_observation);
 }
 
 TEST_CASE("get_many_of_more_than_1000_keys_is_refused", "[service][batch]") {

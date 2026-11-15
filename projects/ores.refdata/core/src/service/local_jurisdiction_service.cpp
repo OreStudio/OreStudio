@@ -241,6 +241,12 @@ messaging::put_many_local_jurisdictions_response
 local_jurisdiction_service::put_many_local_jurisdictions(
     const messaging::put_many_local_jurisdictions_request& request) {
     messaging::put_many_local_jurisdictions_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "local_jurisdiction", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::local_jurisdiction_key> keys;
@@ -328,6 +334,12 @@ messaging::delete_many_local_jurisdictions_response
 local_jurisdiction_service::delete_many_local_jurisdictions(
     const messaging::delete_many_local_jurisdictions_request& request) {
     messaging::delete_many_local_jurisdictions_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "local_jurisdiction", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

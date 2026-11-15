@@ -236,6 +236,11 @@ catalog_service::put_catalog(const messaging::put_catalog_request& request) {
 messaging::put_many_catalogs_response
 catalog_service::put_many_catalogs(const messaging::put_many_catalogs_request& request) {
     messaging::put_many_catalogs_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "catalog", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::catalog_key> keys;
@@ -320,6 +325,11 @@ catalog_service::delete_catalog(const messaging::delete_catalog_request& request
 messaging::delete_many_catalogs_response
 catalog_service::delete_many_catalogs(const messaging::delete_many_catalogs_request& request) {
     messaging::delete_many_catalogs_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "catalog", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

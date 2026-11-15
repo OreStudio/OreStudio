@@ -239,6 +239,12 @@ legal_entity_service::put_legal_entity(const messaging::put_legal_entity_request
 messaging::put_many_legal_entities_response legal_entity_service::put_many_legal_entities(
     const messaging::put_many_legal_entities_request& request) {
     messaging::put_many_legal_entities_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "legal_entity", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::legal_entity_key> keys;
@@ -324,6 +330,12 @@ legal_entity_service::delete_legal_entity(const messaging::delete_legal_entity_r
 messaging::delete_many_legal_entities_response legal_entity_service::delete_many_legal_entities(
     const messaging::delete_many_legal_entities_request& request) {
     messaging::delete_many_legal_entities_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "legal_entity", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

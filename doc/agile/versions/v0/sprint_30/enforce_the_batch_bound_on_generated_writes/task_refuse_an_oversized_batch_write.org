@@ -8,12 +8,12 @@
 #+filetags: :enforce_the_batch_bound_on_generated_writes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/refuse-an-oversized-batch-write
-#+pr:
+#+pr: 4754
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A generated put-many or delete-many of more than 1,000 elements is refused as in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,16 @@ A generated put-many or delete-many of more than 1,000 elements is refused as in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add =batch_too_large= to the outcome catalogue as an invalid request outcome
+  with the arguments entity and limit, and render it into =outcome_code.hpp=.
+- In the service template, check the size of the batch at the top of every
+  put-many block (entity, junction, aggregate) and every delete-many block
+  (entity, junction), before any read or write, against =max_batch_size=.
+- Regenerate every service.
+- Replace the two marketdata service tests that put 1,001 rows to span read
+  chunks: the service now refuses such a batch, and the repository tests keep
+  the chunked-read cases. Add a test for exactly the bound, one for a refused
+  put-many and one for a refused delete-many.
 
 * Measurements
 
@@ -76,12 +83,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4754][#4754]] | [codegen] Refuse a put-many or delete-many of more than 1,000 elements |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Share one helper for the five refusal blocks | ores.cpp.service.service_impl.org | Declined | The generator keeps the copies identical and each checks a different field; a helper adds a layer to save four lines. |
+| 2 | Add a codegen test that the check appears in each block type | projects/ores.codegen/tests | Declined | It would test the template text against itself; the service tests prove the behaviour and the whole tree compiles every block. |
+| 3 | Report the received count in the message | ores.database.outcomes.org | Declined | The catalogue has no count argument; the caller knows its own size, and the bound is what it sizes parts by. |
 
 * Result
+
+Every generated put-many, aggregate put-many and delete-many refuses a batch of
+more than 1,000 elements with =batch_too_large= before it reads or writes a row.
+The refusal is an invalid outcome, and its message names the entity and the
+bound. A batch of exactly 1,000 is accepted. The marketdata service tests prove
+the three cases: exactly the bound is answered in order, a refused put-many
+writes nothing, and a refused delete-many removes nothing.

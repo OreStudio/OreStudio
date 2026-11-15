@@ -295,6 +295,11 @@ messaging::put_csa_response csa_service::put_csa(const messaging::put_csa_reques
 messaging::put_many_csas_response
 csa_service::put_many_csas(const messaging::put_many_csas_request& request) {
     messaging::put_many_csas_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "csa", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // The rows the set names are read once, before any change is checked, so
     // a set of n rows costs one read rather than n.
     std::vector<messaging::csa_key> keys;
@@ -379,6 +384,11 @@ csa_service::delete_csa(const messaging::delete_csa_request& request) {
 messaging::delete_many_csas_response
 csa_service::delete_many_csas(const messaging::delete_many_csas_request& request) {
     messaging::delete_many_csas_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result = refuse(outcome_code::batch_too_large,
+                                 {.entity = "csa", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {

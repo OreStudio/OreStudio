@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_series_identity_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -45,94 +46,29 @@ namespace {
 using datum::field;
 
 /**
- * @brief The text one column of an identity row holds, read by name.
- *
- * The name is the column the shape table states, and the type's own field list is
- * what turns it into a member, so a column the table names and the type does not
- * hold reads as empty rather than needing a second mapping.
- */
-std::string text_of(const domain::market_series_identity& row, std::string_view column) {
-    std::string out;
-    ores::utility::codec::apply_fields(
-        [&](const auto&... one) {
-            ([&] {
-                if (one.name != column)
-                    return;
-                using member_type = std::remove_cvref_t<decltype(row.*(one.member))>;
-                if constexpr (std::is_same_v<member_type, std::string>)
-                    out = row.*(one.member);
-            }(),
-             ...);
-        },
-        wire_fields(std::type_identity<domain::market_series_identity>{}));
-    return out;
-}
-
-/// The fields one family requires and the ones it forbids.
-struct family_shape final {
-    std::set<std::string, std::less<>> required;
-    std::set<std::string, std::less<>> forbidden;
-};
-
-/// A family, as the shape table keys it: the asset class, the subclass, the index family.
-using family_key = std::tuple<std::string, std::string, std::string>;
-
-/**
  * @brief What the shape table says about the families it states.
  *
  * Read once per call, because a projection writes a batch and the table is small.
- * A family the table does not state is not enforced: the shape is a catalogue that
- * grows, and refusing every family nobody has stated yet would stop an ingest for
- * a reason that is the catalogue's, not the data's.
+ * The statement and its enforcement live in =series_identity_shape_check=, which a
+ * test can call without a database.
  */
 class shape_book final {
 public:
-    explicit shape_book(const ores::database::context& ctx) {
-        for (const auto& row : repository::series_identity_shape_repository{}.read_latest(ctx)) {
-            const auto key = family_key{row.asset_class, row.series_subclass, row.index_family};
-            if (row.requirement == "required")
-                shapes_[key].required.insert(row.field);
-            else if (row.requirement == "forbidden")
-                shapes_[key].forbidden.insert(row.field);
-        }
-    }
+    explicit shape_book(const ores::database::context& ctx)
+        : stated_(repository::series_identity_shape_repository{}.read_latest(ctx)) {}
 
-    /**
-     * @brief Refuses a row its family's shape does not admit, naming the family and the field.
-     *
-     * A missing required field is not an identity of that family, and a forbidden
-     * one states something untrue about it. Both are the boundary's to refuse: the
-     * row is a projection of external data, and a sparse one surfaces much later as
-     * a curve that cannot find the series it names.
-     */
     void check(const domain::market_series& series,
                const domain::market_series_identity& row) const {
-        const auto key = family_key{row.asset_class, series.series_subclass, row.index};
-        const auto found = shapes_.find(key);
-        if (found == shapes_.end())
-            return;
-        for (const auto& field : found->second.required) {
-            if (text_of(row, field).empty())
-                throw std::invalid_argument("series '" + series.oresmd_uri + "' is not a " +
-                                            row.asset_class + "/" + series.series_subclass +
-                                            " identity: field '" + field + "' is required");
-        }
-        for (const auto& field : found->second.forbidden) {
-            if (!text_of(row, field).empty())
-                throw std::invalid_argument("series '" + series.oresmd_uri + "' is not a " +
-                                            row.asset_class + "/" + series.series_subclass +
-                                            " identity: field '" + field + "' is forbidden");
-        }
+        check_identity_shape(stated_, series, row);
     }
 
-    /// Whether any row states this series' family, so a caller can count the ones nobody has.
     [[nodiscard]] bool states(const domain::market_series& series,
                               const domain::market_series_identity& row) const {
-        return shapes_.contains(family_key{row.asset_class, series.series_subclass, row.index});
+        return states_identity_shape(stated_, series, row);
     }
 
 private:
-    std::map<family_key, family_shape> shapes_;
+    std::vector<domain::series_identity_shape> stated_;
 };
 
 constexpr std::string_view kind_series = "series";

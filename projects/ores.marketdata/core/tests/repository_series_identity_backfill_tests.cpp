@@ -66,50 +66,6 @@ std::string insert_without_identity(const ores::database::context& ctx,
     return id;
 }
 
-/// States one field of one family's shape, as the catalogue does.
-void state_shape(const ores::database::context& ctx,
-                 const std::string& subclass,
-                 const std::string& index_family,
-                 const std::string& field,
-                 const std::string& requirement) {
-    auto lg(make_logger(test_suite));
-    ores::database::query_builder::execute_parameterized_multi_column_query(
-        ctx,
-        "insert into public.ores_marketdata_market_series_identity_shapes_tbl ("
-        "    tenant_id, asset_class, series_subclass, index_family, field, requirement,"
-        "    description, version, modified_by, performed_by,"
-        "    change_reason_code, change_commentary)"
-        " values ($1::uuid, 'ir', $2, $3, $4, $5, 'a test states the shape it asserts',"
-        "    0, current_user, current_user, 'system.test', 'stated by a test')",
-        {ctx.tenant_id().to_string(), subclass, index_family, field, requirement},
-        lg,
-        "Stating a family's identity shape");
-}
-
-/// Inserts a series of the given subclass and URI, as the ingest does.
-std::string insert_series(const ores::database::context& ctx,
-                          const boost::uuids::uuid& party,
-                          const std::string& uri,
-                          const std::string& subclass) {
-    const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());
-    auto lg(make_logger(test_suite));
-    ores::database::query_builder::execute_parameterized_multi_column_query(
-        ctx,
-        "insert into ores_marketdata_market_series_tbl ("
-        "    tenant_id, id, version, party_id, oresmd_uri, series_subclass,"
-        "    provider_code, derivation_kind, derivation_config_id, derivation_config_version,"
-        "    modified_by, performed_by, change_reason_code, change_commentary)"
-        " values ($1::uuid, $2::uuid, 0, $3::uuid, $4, $5,"
-        "    'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,"
-        "    current_user, current_user, 'system.external_data_import',"
-        "    'inserted in SQL by a shape test')"
-        " returning id::text",
-        {ctx.tenant_id().to_string(), id, boost::uuids::to_string(party), uri, subclass},
-        lg,
-        "Inserting a series with its identity shape under test");
-    return id;
-}
-
 std::size_t identity_rows(database_helper& h, const std::string& series_id) {
     return market_series_identity_repository{}
         .read_latest(h.context(), std::vector<std::string>{series_id})
@@ -240,53 +196,4 @@ TEST_CASE("a_backfill_leaves_the_system_tenants_series_to_the_system",
     // tenant cannot see.
     CHECK_NOTHROW(market_series_identity_projector::project_missing(h.context()));
     CHECK(identity_rows(h, shared) == 0);
-}
-
-TEST_CASE("an_ibor_fixing_states_its_currency_its_index_and_its_name",
-          "[repository][series_identity][shape]") {
-    auto lg(make_logger(test_suite));
-
-    database_helper h;
-    const auto ctx = h.context();
-    const auto series_id =
-        insert_series(ctx,
-                      boost::uuids::random_generator{}(),
-                      "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR",
-                      "index_fixing");
-    // The party gets the family's shape from its tenant's catalogue, so the write
-    // path can refuse a row that is thin.
-    for (const auto& field : {"ccy", "index", "index_name"})
-        state_shape(ctx, "index_fixing", "ibor", field, "required");
-    state_shape(ctx, "index_fixing", "ibor", "unit_ccy", "forbidden");
-
-    const auto rows = market_series_identity_repository{}
-                          .read_latest(ctx, std::vector<std::string>{series_id});
-    REQUIRE(rows.size() == 1);
-    CHECK(rows.front().asset_class == "ir");
-    CHECK(rows.front().index == "ibor");
-    CHECK(rows.front().index_name == "SOFR");
-    CHECK(rows.front().ccy == "USD");
-    CHECK(rows.front().unit_ccy.empty());
-}
-
-TEST_CASE("an_ibor_fixing_that_misses_a_required_field_is_refused_by_name",
-          "[repository][series_identity][shape]") {
-    auto lg(make_logger(test_suite));
-
-    database_helper h;
-    const auto ctx = h.context();
-    const auto series_id =
-        insert_series(ctx, boost::uuids::random_generator{}(), "oresmd://ir/USD?type=fixing&index=ibor", "index_fixing");
-    state_shape(ctx, "index_fixing", "ibor", "index_name", "required");
-
-    const auto series = market_series_repository{}.read_latest(ctx);
-    std::vector<ores::marketdata::domain::market_series> one;
-    for (const auto& s : series) {
-        if (boost::uuids::to_string(s.id) == series_id)
-            one.push_back(s);
-    }
-    REQUIRE(one.size() == 1);
-
-    CHECK_THROWS_WITH(market_series_identity_projector::project(ctx, one),
-                      Catch::Matchers::ContainsSubstring("field 'index_name' is required"));
 }

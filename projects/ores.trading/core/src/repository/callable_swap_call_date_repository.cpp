@@ -252,6 +252,9 @@ void callable_swap_call_date_repository::write(
     const std::vector<domain::callable_swap_call_date>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing callable swap call dates. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "callable_swap_call_date_repository::write: one claim is needed for each row");
     std::vector<domain::callable_swap_call_date> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (callable_swap_call_date_claim_reads_current(claims[i]))

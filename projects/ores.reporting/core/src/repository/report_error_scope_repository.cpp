@@ -230,6 +230,9 @@ void report_error_scope_repository::write(
     const std::vector<domain::report_error_scope>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report error scopes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "report_error_scope_repository::write: one claim is needed for each row");
     std::vector<domain::report_error_scope> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (report_error_scope_claim_reads_current(claims[i]))

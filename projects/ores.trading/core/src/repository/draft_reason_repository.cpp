@@ -225,6 +225,9 @@ void draft_reason_repository::write(
     const std::vector<domain::draft_reason>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing draft reasons. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "draft_reason_repository::write: one claim is needed for each row");
     std::vector<domain::draft_reason> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (draft_reason_claim_reads_current(claims[i]))

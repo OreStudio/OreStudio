@@ -200,6 +200,9 @@ void badge_mapping_repository::write(
     const std::vector<domain::badge_mapping>& mappings,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge mappings to database. Count: " << mappings.size();
+    if (claims.size() != mappings.size())
+        throw std::invalid_argument(
+            "badge_mapping_repository::write: one claim is needed for each row");
     std::vector<domain::badge_mapping> to_read;
     for (std::size_t i = 0; i < mappings.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

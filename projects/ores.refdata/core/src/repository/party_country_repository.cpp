@@ -204,6 +204,9 @@ void party_country_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party countries to database. Count: "
                                << party_countries.size();
+    if (claims.size() != party_countries.size())
+        throw std::invalid_argument(
+            "party_country_repository::write: one claim is needed for each row");
     std::vector<domain::party_country> to_read;
     for (std::size_t i = 0; i < party_countries.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

@@ -231,6 +231,8 @@ void book_repository::write(const context& ctx,
                             const std::vector<domain::book>& v,
                             const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing books. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("book_repository::write: one claim is needed for each row");
     std::vector<domain::book> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (book_claim_reads_current(claims[i]))

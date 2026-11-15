@@ -268,6 +268,9 @@ void scripted_parameter_value_repository::write(
     const std::vector<domain::scripted_parameter_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing scripted parameter values. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "scripted_parameter_value_repository::write: one claim is needed for each row");
     std::vector<domain::scripted_parameter_value> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (scripted_parameter_value_claim_reads_current(claims[i]))

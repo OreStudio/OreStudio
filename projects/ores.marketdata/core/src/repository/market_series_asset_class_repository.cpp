@@ -214,6 +214,9 @@ void market_series_asset_class_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset classes to database. Count: "
                                << asset_classes.size();
+    if (claims.size() != asset_classes.size())
+        throw std::invalid_argument(
+            "market_series_asset_class_repository::write: one claim is needed for each row");
     std::vector<domain::market_series_asset_class> to_read;
     for (std::size_t i = 0; i < asset_classes.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

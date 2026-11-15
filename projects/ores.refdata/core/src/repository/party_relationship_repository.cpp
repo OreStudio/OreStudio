@@ -219,6 +219,9 @@ void party_relationship_repository::write(
     const std::vector<domain::party_relationship>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party relationships. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "party_relationship_repository::write: one claim is needed for each row");
     std::vector<domain::party_relationship> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (party_relationship_claim_reads_current(claims[i]))

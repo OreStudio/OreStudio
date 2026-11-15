@@ -236,6 +236,9 @@ void tenor_resolution_algorithm_repository::write(
     const std::vector<domain::tenor_resolution_algorithm>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor resolution algorithms. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "tenor_resolution_algorithm_repository::write: one claim is needed for each row");
     std::vector<domain::tenor_resolution_algorithm> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (tenor_resolution_algorithm_claim_reads_current(claims[i]))

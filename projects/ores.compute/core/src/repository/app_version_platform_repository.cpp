@@ -216,6 +216,9 @@ void app_version_platform_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app version platforms to database. Count: "
                                << app_version_platforms.size();
+    if (claims.size() != app_version_platforms.size())
+        throw std::invalid_argument(
+            "app_version_platform_repository::write: one claim is needed for each row");
     std::vector<domain::app_version_platform> to_read;
     for (std::size_t i = 0; i < app_version_platforms.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

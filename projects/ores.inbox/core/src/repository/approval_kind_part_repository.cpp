@@ -207,6 +207,9 @@ void approval_kind_part_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval kind parts to database. Count: "
                                << approval_kind_parts.size();
+    if (claims.size() != approval_kind_parts.size())
+        throw std::invalid_argument(
+            "approval_kind_part_repository::write: one claim is needed for each row");
     std::vector<domain::approval_kind_part> to_read;
     for (std::size_t i = 0; i < approval_kind_parts.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

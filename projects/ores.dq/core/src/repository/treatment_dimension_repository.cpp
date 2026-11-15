@@ -231,6 +231,9 @@ void treatment_dimension_repository::write(
     const std::vector<domain::treatment_dimension>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing treatment dimensions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "treatment_dimension_repository::write: one claim is needed for each row");
     std::vector<domain::treatment_dimension> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (treatment_dimension_claim_reads_current(claims[i]))

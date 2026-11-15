@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -55,7 +56,7 @@ namespace {
 // test uses a different slice of the fictional currencies/countries
 // lists to avoid interfering with records written by other tests in
 // the same shared tenant database.
-constexpr std::size_t repository_currency_country_repository_total_slots = 15;
+constexpr std::size_t repository_currency_country_repository_total_slots = 17;
 
 currency_country make_currency_country(scoped_database_helper& h,
                                        const std::string& currency_iso_code,
@@ -428,4 +429,33 @@ TEST_CASE("a_batch_write_with_a_stale_version_is_refused_and_writes_nothing",
     REQUIRE(live_rows.size() == 1);
     CHECK(live_rows[0].version == 1);
     CHECK(repo.read_latest(added.currency_iso_code, added.country_alpha2_code).empty());
+}
+
+TEST_CASE("a_batch_write_with_fewer_claims_than_links_is_refused_and_writes_nothing",
+          "[repository][currency_country]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+
+    currency_repository ccy_repo;
+    country_repository cty_repo;
+    currency_country_repository repo(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
+    ccy_repo.write(h.context(), {currencies[13]});
+    cty_repo.write(h.context(), {countries[15], countries[16]});
+
+    const std::vector<currency_country> links{
+        make_currency_country(h, currencies[13].iso_code, countries[15].alpha2_code),
+        make_currency_country(h, currencies[13].iso_code, countries[16].alpha2_code)};
+    const std::vector<ores::utility::domain::precondition> one_claim{
+        {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt}};
+    CHECK_THROWS_AS(repo.write(links, one_claim), std::invalid_argument);
+
+    for (const auto& link : links)
+        CHECK(repo.read_latest(link.currency_iso_code, link.country_alpha2_code).empty());
 }

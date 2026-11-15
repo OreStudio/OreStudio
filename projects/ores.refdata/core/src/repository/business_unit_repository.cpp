@@ -238,6 +238,9 @@ void business_unit_repository::write(
     const std::vector<domain::business_unit>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business units. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "business_unit_repository::write: one claim is needed for each row");
     std::vector<domain::business_unit> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (business_unit_claim_reads_current(claims[i]))

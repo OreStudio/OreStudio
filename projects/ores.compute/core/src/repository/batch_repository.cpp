@@ -260,6 +260,8 @@ void batch_repository::write(const context& ctx,
                              const std::vector<domain::batch>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute batches. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("batch_repository::write: one claim is needed for each row");
     std::vector<domain::batch> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (batch_claim_reads_current(claims[i]))

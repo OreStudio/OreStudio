@@ -253,6 +253,9 @@ void counterparty_contact_information_repository::write(
     const std::vector<domain::counterparty_contact_information>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty contact informations. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "counterparty_contact_information_repository::write: one claim is needed for each row");
     std::vector<domain::counterparty_contact_information> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (counterparty_contact_information_claim_reads_current(claims[i]))

@@ -235,6 +235,9 @@ void yield_curve_process_type_repository::write(
     const std::vector<domain::yield_curve_process_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve process types. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "yield_curve_process_type_repository::write: one claim is needed for each row");
     std::vector<domain::yield_curve_process_type> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (yield_curve_process_type_claim_reads_current(claims[i]))

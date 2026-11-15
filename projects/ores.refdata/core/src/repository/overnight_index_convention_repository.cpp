@@ -236,6 +236,9 @@ void overnight_index_convention_repository::write(
     const std::vector<domain::overnight_index_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing overnight index conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "overnight_index_convention_repository::write: one claim is needed for each row");
     std::vector<domain::overnight_index_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (overnight_index_convention_claim_reads_current(claims[i]))

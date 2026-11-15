@@ -251,6 +251,9 @@ void rate_card_component_repository::write(
     const std::vector<domain::rate_card_component>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing rate card components. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "rate_card_component_repository::write: one claim is needed for each row");
     std::vector<domain::rate_card_component> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (rate_card_component_claim_reads_current(claims[i]))

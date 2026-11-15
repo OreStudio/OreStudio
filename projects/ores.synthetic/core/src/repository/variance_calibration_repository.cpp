@@ -286,6 +286,9 @@ void variance_calibration_repository::write(
     const std::vector<domain::variance_calibration>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing variance calibrations. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "variance_calibration_repository::write: one claim is needed for each row");
     std::vector<domain::variance_calibration> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (variance_calibration_claim_reads_current(claims[i]))

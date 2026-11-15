@@ -225,6 +225,9 @@ void pricing_model_repository::write(
     const std::vector<domain::pricing_model>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing models. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "pricing_model_repository::write: one claim is needed for each row");
     std::vector<domain::pricing_model> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (pricing_model_claim_reads_current(claims[i]))

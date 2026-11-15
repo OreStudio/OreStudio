@@ -211,6 +211,9 @@ void subject_area_repository::write(
     const std::vector<domain::subject_area>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing subject areas. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "subject_area_repository::write: one claim is needed for each row");
     std::vector<domain::subject_area> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (subject_area_claim_reads_current(claims[i]))

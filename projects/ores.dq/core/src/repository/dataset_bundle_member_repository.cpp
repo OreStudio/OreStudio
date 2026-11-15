@@ -207,6 +207,9 @@ void dataset_bundle_member_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle members to database. Count: "
                                << members.size();
+    if (claims.size() != members.size())
+        throw std::invalid_argument(
+            "dataset_bundle_member_repository::write: one claim is needed for each row");
     std::vector<domain::dataset_bundle_member> to_read;
     for (std::size_t i = 0; i < members.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

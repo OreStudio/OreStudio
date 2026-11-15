@@ -237,6 +237,9 @@ void commodity_price_segment_repository::write(
     const std::vector<domain::commodity_price_segment>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity price segments. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "commodity_price_segment_repository::write: one claim is needed for each row");
     std::vector<domain::commodity_price_segment> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (commodity_price_segment_claim_reads_current(claims[i]))

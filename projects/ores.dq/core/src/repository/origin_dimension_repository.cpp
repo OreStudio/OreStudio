@@ -228,6 +228,9 @@ void origin_dimension_repository::write(
     const std::vector<domain::origin_dimension>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing origin dimensions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "origin_dimension_repository::write: one claim is needed for each row");
     std::vector<domain::origin_dimension> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (origin_dimension_claim_reads_current(claims[i]))

@@ -216,6 +216,9 @@ void reporting_regime_repository::write(
     const std::vector<domain::reporting_regime>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing reporting regimes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "reporting_regime_repository::write: one claim is needed for each row");
     std::vector<domain::reporting_regime> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (reporting_regime_claim_reads_current(claims[i]))

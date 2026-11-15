@@ -206,6 +206,9 @@ void role_permission_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role permissions to database. Count: "
                                << role_permissions.size();
+    if (claims.size() != role_permissions.size())
+        throw std::invalid_argument(
+            "role_permission_repository::write: one claim is needed for each row");
     std::vector<domain::role_permission> to_read;
     for (std::size_t i = 0; i < role_permissions.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

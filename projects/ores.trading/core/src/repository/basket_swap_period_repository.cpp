@@ -237,6 +237,9 @@ void basket_swap_period_repository::write(
     const std::vector<domain::basket_swap_period>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing basket swap periods. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "basket_swap_period_repository::write: one claim is needed for each row");
     std::vector<domain::basket_swap_period> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (basket_swap_period_claim_reads_current(claims[i]))

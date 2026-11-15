@@ -237,6 +237,9 @@ void intraday_power_load_convention_repository::write(
     const std::vector<domain::intraday_power_load_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing intraday power load conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "intraday_power_load_convention_repository::write: one claim is needed for each row");
     std::vector<domain::intraday_power_load_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (intraday_power_load_convention_claim_reads_current(claims[i]))

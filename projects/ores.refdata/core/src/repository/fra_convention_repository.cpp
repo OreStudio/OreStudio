@@ -229,6 +229,9 @@ void fra_convention_repository::write(
     const std::vector<domain::fra_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FRA conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fra_convention_repository::write: one claim is needed for each row");
     std::vector<domain::fra_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fra_convention_claim_reads_current(claims[i]))

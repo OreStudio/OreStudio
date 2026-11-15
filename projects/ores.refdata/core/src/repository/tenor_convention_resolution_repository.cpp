@@ -212,6 +212,9 @@ void tenor_convention_resolution_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor convention resolutions to database. Count: "
                                << resolutions.size();
+    if (claims.size() != resolutions.size())
+        throw std::invalid_argument(
+            "tenor_convention_resolution_repository::write: one claim is needed for each row");
     std::vector<domain::tenor_convention_resolution> to_read;
     for (std::size_t i = 0; i < resolutions.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

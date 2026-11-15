@@ -239,6 +239,9 @@ void ore_parameter_value_set_catalogue_repository::write(
     const std::vector<domain::ore_parameter_value_set_catalogue>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ore parameter value set catalogues. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("ore_parameter_value_set_catalogue_repository::write: one "
+                                    "claim is needed for each row");
     std::vector<domain::ore_parameter_value_set_catalogue> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (ore_parameter_value_set_catalogue_claim_reads_current(claims[i]))

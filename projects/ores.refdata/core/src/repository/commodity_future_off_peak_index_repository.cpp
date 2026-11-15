@@ -252,6 +252,9 @@ void commodity_future_off_peak_index_repository::write(
     const std::vector<domain::commodity_future_off_peak_index>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity future off peak indexes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "commodity_future_off_peak_index_repository::write: one claim is needed for each row");
     std::vector<domain::commodity_future_off_peak_index> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (commodity_future_off_peak_index_claim_reads_current(claims[i]))

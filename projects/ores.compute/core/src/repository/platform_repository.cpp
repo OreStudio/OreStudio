@@ -224,6 +224,8 @@ void platform_repository::write(const context& ctx,
                                 const std::vector<domain::platform>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute platforms. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("platform_repository::write: one claim is needed for each row");
     std::vector<domain::platform> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (platform_claim_reads_current(claims[i]))

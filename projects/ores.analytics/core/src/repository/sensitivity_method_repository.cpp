@@ -230,6 +230,9 @@ void sensitivity_method_repository::write(
     const std::vector<domain::sensitivity_method>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sensitivity methods. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "sensitivity_method_repository::write: one claim is needed for each row");
     std::vector<domain::sensitivity_method> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (sensitivity_method_claim_reads_current(claims[i]))

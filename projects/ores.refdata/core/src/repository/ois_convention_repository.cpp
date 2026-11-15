@@ -229,6 +229,9 @@ void ois_convention_repository::write(
     const std::vector<domain::ois_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing OIS conventions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "ois_convention_repository::write: one claim is needed for each row");
     std::vector<domain::ois_convention> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (ois_convention_claim_reads_current(claims[i]))

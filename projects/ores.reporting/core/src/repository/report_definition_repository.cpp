@@ -257,6 +257,9 @@ void report_definition_repository::write(
     const std::vector<domain::report_definition>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report definitions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "report_definition_repository::write: one claim is needed for each row");
     std::vector<domain::report_definition> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (report_definition_claim_reads_current(claims[i]))

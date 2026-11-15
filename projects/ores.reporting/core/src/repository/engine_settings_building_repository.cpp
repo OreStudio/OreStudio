@@ -249,6 +249,9 @@ void engine_settings_building_repository::write(
     const std::vector<domain::engine_settings_building>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing engine settings building. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "engine_settings_building_repository::write: one claim is needed for each row");
     std::vector<domain::engine_settings_building> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (engine_settings_building_claim_reads_current(claims[i]))

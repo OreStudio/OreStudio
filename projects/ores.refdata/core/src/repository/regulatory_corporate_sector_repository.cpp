@@ -228,6 +228,9 @@ void regulatory_corporate_sector_repository::write(
     const std::vector<domain::regulatory_corporate_sector>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing regulatory corporate sectors. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "regulatory_corporate_sector_repository::write: one claim is needed for each row");
     std::vector<domain::regulatory_corporate_sector> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (regulatory_corporate_sector_claim_reads_current(claims[i]))

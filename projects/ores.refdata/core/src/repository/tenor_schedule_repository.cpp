@@ -251,6 +251,9 @@ void tenor_schedule_repository::write(
     const std::vector<domain::tenor_schedule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor schedules. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "tenor_schedule_repository::write: one claim is needed for each row");
     std::vector<domain::tenor_schedule> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (tenor_schedule_claim_reads_current(claims[i]))

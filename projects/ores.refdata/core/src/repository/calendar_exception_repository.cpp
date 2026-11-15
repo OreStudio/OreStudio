@@ -244,6 +244,9 @@ void calendar_exception_repository::write(
     const std::vector<domain::calendar_exception>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar exceptions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "calendar_exception_repository::write: one claim is needed for each row");
     std::vector<domain::calendar_exception> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (calendar_exception_claim_reads_current(claims[i]))

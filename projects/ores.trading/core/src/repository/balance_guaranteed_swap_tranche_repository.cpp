@@ -256,6 +256,9 @@ void balance_guaranteed_swap_tranche_repository::write(
     const std::vector<domain::balance_guaranteed_swap_tranche>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap tranches. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "balance_guaranteed_swap_tranche_repository::write: one claim is needed for each row");
     std::vector<domain::balance_guaranteed_swap_tranche> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (balance_guaranteed_swap_tranche_claim_reads_current(claims[i]))

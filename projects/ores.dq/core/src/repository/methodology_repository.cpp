@@ -223,6 +223,9 @@ void methodology_repository::write(const context& ctx,
                                    const std::vector<domain::methodology>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing methodologies. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "methodology_repository::write: one claim is needed for each row");
     std::vector<domain::methodology> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (methodology_claim_reads_current(claims[i]))

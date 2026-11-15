@@ -246,6 +246,9 @@ void fx_forward_publish_spot_repository::write(
     const std::vector<domain::fx_forward_publish_spot>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX forward publish spots. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "fx_forward_publish_spot_repository::write: one claim is needed for each row");
     std::vector<domain::fx_forward_publish_spot> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (fx_forward_publish_spot_claim_reads_current(claims[i]))

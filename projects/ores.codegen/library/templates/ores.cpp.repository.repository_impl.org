@@ -395,6 +395,9 @@ void {{entity_singular}}_repository::write(
     const context& ctx, const std::vector<domain::{{entity_singular}}>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::write: one claim is needed for each row");
     std::vector<domain::{{entity_singular}}> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if ({{entity_singular}}_claim_reads_current(claims[i]))
@@ -1338,6 +1341,9 @@ void {{name_singular}}_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{name_words}} to database. Count: "
                                << {{name_short}}.size();
+    if (claims.size() != {{name_short}}.size())
+        throw std::invalid_argument(
+            "{{name_singular}}_repository::write: one claim is needed for each row");
     std::vector<domain::{{name_singular}}> to_read;
     for (std::size_t i = 0; i < {{name_short}}.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

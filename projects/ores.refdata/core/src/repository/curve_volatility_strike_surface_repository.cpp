@@ -240,6 +240,9 @@ void curve_volatility_strike_surface_repository::write(
     const std::vector<domain::curve_volatility_strike_surface>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve volatility strike surfaces. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "curve_volatility_strike_surface_repository::write: one claim is needed for each row");
     std::vector<domain::curve_volatility_strike_surface> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (curve_volatility_strike_surface_claim_reads_current(claims[i]))

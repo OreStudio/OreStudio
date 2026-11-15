@@ -236,6 +236,9 @@ void todays_market_collection_kind_repository::write(
     const std::vector<domain::todays_market_collection_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection kinds. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "todays_market_collection_kind_repository::write: one claim is needed for each row");
     std::vector<domain::todays_market_collection_kind> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (todays_market_collection_kind_claim_reads_current(claims[i]))

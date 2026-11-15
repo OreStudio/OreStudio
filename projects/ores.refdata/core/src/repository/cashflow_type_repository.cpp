@@ -213,6 +213,9 @@ void cashflow_type_repository::write(
     const std::vector<domain::cashflow_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cashflow types. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "cashflow_type_repository::write: one claim is needed for each row");
     std::vector<domain::cashflow_type> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cashflow_type_claim_reads_current(claims[i]))

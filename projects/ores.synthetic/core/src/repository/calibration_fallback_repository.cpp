@@ -235,6 +235,9 @@ void calibration_fallback_repository::write(
     const std::vector<domain::calibration_fallback>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calibration fallbacks. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "calibration_fallback_repository::write: one claim is needed for each row");
     std::vector<domain::calibration_fallback> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (calibration_fallback_claim_reads_current(claims[i]))

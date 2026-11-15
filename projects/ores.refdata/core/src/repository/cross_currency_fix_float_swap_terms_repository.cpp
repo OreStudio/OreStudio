@@ -254,6 +254,9 @@ void cross_currency_fix_float_swap_terms_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cross currency fix float swap terms. Count: "
                                << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("cross_currency_fix_float_swap_terms_repository::write: one "
+                                    "claim is needed for each row");
     std::vector<domain::cross_currency_fix_float_swap_terms> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cross_currency_fix_float_swap_terms_claim_reads_current(claims[i]))

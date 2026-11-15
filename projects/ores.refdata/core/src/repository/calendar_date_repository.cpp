@@ -203,6 +203,9 @@ void calendar_date_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar dates to database. Count: "
                                << calendar_dates.size();
+    if (claims.size() != calendar_dates.size())
+        throw std::invalid_argument(
+            "calendar_date_repository::write: one claim is needed for each row");
     std::vector<domain::calendar_date> to_read;
     for (std::size_t i = 0; i < calendar_dates.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

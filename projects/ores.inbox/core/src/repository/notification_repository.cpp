@@ -237,6 +237,9 @@ void notification_repository::write(
     const std::vector<domain::notification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notifications. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "notification_repository::write: one claim is needed for each row");
     std::vector<domain::notification> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (notification_claim_reads_current(claims[i]))

@@ -222,6 +222,9 @@ void return_type_repository::write(const context& ctx,
                                    const std::vector<domain::return_type>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing return types. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "return_type_repository::write: one claim is needed for each row");
     std::vector<domain::return_type> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (return_type_claim_reads_current(claims[i]))

@@ -228,6 +228,9 @@ void lifecycle_event_repository::write(
     const std::vector<domain::lifecycle_event>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing lifecycle events. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "lifecycle_event_repository::write: one claim is needed for each row");
     std::vector<domain::lifecycle_event> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (lifecycle_event_claim_reads_current(claims[i]))

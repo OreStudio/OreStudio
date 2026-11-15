@@ -238,6 +238,9 @@ void swaption_volatility_smile_repository::write(
     const std::vector<domain::swaption_volatility_smile>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swaption volatility smiles. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "swaption_volatility_smile_repository::write: one claim is needed for each row");
     std::vector<domain::swaption_volatility_smile> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (swaption_volatility_smile_claim_reads_current(claims[i]))

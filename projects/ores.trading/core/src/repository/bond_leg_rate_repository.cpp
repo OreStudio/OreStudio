@@ -251,6 +251,9 @@ void bond_leg_rate_repository::write(
     const std::vector<domain::bond_leg_rate>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond leg rates. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "bond_leg_rate_repository::write: one claim is needed for each row");
     std::vector<domain::bond_leg_rate> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (bond_leg_rate_claim_reads_current(claims[i]))

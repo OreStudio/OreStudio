@@ -260,6 +260,9 @@ void trade_link_repository::write(const context& ctx,
                                   const std::vector<domain::trade_link>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade links. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "trade_link_repository::write: one claim is needed for each row");
     std::vector<domain::trade_link> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (trade_link_claim_reads_current(claims[i]))

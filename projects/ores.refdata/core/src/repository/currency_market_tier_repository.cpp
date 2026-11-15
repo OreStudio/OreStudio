@@ -234,6 +234,9 @@ void currency_market_tier_repository::write(
     const std::vector<domain::currency_market_tier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency market tiers. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "currency_market_tier_repository::write: one claim is needed for each row");
     std::vector<domain::currency_market_tier> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (currency_market_tier_claim_reads_current(claims[i]))

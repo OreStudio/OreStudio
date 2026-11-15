@@ -241,6 +241,8 @@ void session_repository::write(const context& ctx,
                                const std::vector<domain::session>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sessions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("session_repository::write: one claim is needed for each row");
     std::vector<domain::session> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (session_claim_reads_current(claims[i]))

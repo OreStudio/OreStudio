@@ -228,6 +228,9 @@ void badge_definition_repository::write(
     const std::vector<domain::badge_definition>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge definitions. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "badge_definition_repository::write: one claim is needed for each row");
     std::vector<domain::badge_definition> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (badge_definition_claim_reads_current(claims[i]))

@@ -254,6 +254,9 @@ void cross_currency_fix_float_fixed_leg_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cross currency fix float fixed legs. Count: "
                                << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("cross_currency_fix_float_fixed_leg_repository::write: one "
+                                    "claim is needed for each row");
     std::vector<domain::cross_currency_fix_float_fixed_leg> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (cross_currency_fix_float_fixed_leg_claim_reads_current(claims[i]))

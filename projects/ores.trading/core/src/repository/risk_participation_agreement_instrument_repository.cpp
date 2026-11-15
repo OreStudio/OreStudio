@@ -247,6 +247,9 @@ void risk_participation_agreement_instrument_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing risk participation agreement instruments. Count: "
                                << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument("risk_participation_agreement_instrument_repository::write: "
+                                    "one claim is needed for each row");
     std::vector<domain::risk_participation_agreement_instrument> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (risk_participation_agreement_instrument_claim_reads_current(claims[i]))

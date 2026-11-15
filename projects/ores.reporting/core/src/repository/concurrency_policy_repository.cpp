@@ -230,6 +230,9 @@ void concurrency_policy_repository::write(
     const std::vector<domain::concurrency_policy>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policies. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "concurrency_policy_repository::write: one claim is needed for each row");
     std::vector<domain::concurrency_policy> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (concurrency_policy_claim_reads_current(claims[i]))

@@ -236,6 +236,9 @@ void configuration_repository::write(
     const std::vector<domain::configuration>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing configurations. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "configuration_repository::write: one claim is needed for each row");
     std::vector<domain::configuration> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (configuration_claim_reads_current(claims[i]))

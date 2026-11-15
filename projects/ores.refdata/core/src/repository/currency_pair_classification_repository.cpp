@@ -236,6 +236,9 @@ void currency_pair_classification_repository::write(
     const std::vector<domain::currency_pair_classification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classifications. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "currency_pair_classification_repository::write: one claim is needed for each row");
     std::vector<domain::currency_pair_classification> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (currency_pair_classification_claim_reads_current(claims[i]))

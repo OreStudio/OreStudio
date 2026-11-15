@@ -239,6 +239,9 @@ void sensitivity_template_repository::write(
     const std::vector<domain::sensitivity_template>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sensitivity templates. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "sensitivity_template_repository::write: one claim is needed for each row");
     std::vector<domain::sensitivity_template> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (sensitivity_template_claim_reads_current(claims[i]))

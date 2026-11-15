@@ -210,6 +210,9 @@ void notification_argument_repository::write(
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notification arguments to database. Count: "
                                << arguments.size();
+    if (claims.size() != arguments.size())
+        throw std::invalid_argument(
+            "notification_argument_repository::write: one claim is needed for each row");
     std::vector<domain::notification_argument> to_read;
     for (std::size_t i = 0; i < arguments.size(); ++i) {
         if (claims[i].kind == ores::utility::domain::precondition_kind::any)

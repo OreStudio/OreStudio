@@ -245,6 +245,9 @@ void role_grant_request_repository::write(
     const std::vector<domain::role_grant_request>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role grant requests. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "role_grant_request_repository::write: one claim is needed for each row");
     std::vector<domain::role_grant_request> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (role_grant_request_claim_reads_current(claims[i]))

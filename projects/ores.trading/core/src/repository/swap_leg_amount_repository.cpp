@@ -256,6 +256,9 @@ void swap_leg_amount_repository::write(
     const std::vector<domain::swap_leg_amount>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg amounts. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "swap_leg_amount_repository::write: one claim is needed for each row");
     std::vector<domain::swap_leg_amount> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (swap_leg_amount_claim_reads_current(claims[i]))

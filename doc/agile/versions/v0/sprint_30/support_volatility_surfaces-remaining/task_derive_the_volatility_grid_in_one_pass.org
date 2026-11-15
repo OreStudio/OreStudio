@@ -26,11 +26,11 @@ One pass over the fixings fills the whole volatility grid in memory in under a s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Implemented and verified.              |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing here. The horizon, the per-party derivation and the calibration's tolerance of a silent expiry are their own tasks. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance

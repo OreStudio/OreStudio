@@ -22,6 +22,8 @@
 #include "ores.analytics.quant/domain/driver_quote.hpp"
 #include "ores.analytics.quant/domain/staleness_policy.hpp"
 #include "ores.analytics.quant/service/topology_builder.hpp"
+#include "ores.analytics.quant/service/topology_from_sources.hpp"
+#include "ores.marketdata.service/app/fixing_sources.hpp"
 #include "ores.refdata.api/domain/crm_driver_pair.hpp"
 #include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
@@ -32,6 +34,7 @@
 #include <algorithm>
 #include <chrono>
 #include <map>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::marketdata::service::app {
@@ -62,6 +65,16 @@ void crm_ingest_bridge::refresh() {
     const auto configs = config_repo.read_latest_all_tenants(ctx_);
     const auto driver_pairs = driver_repo.read_latest_all_tenants(ctx_);
 
+    // Read once, not per config: the sources belong to parties, and a party may hold
+    // several configs. A failure here is not fatal - every party keeps its configured
+    // pairs - but it must be visible, because it means the store could not be read.
+    const auto fixings = read_fixing_sources(ctx_);
+    if (!fixings)
+        BOOST_LOG_SEV(lg(), error)
+            << "CRM: could not read the fixing sources, so every party keeps its configured "
+               "pairs: "
+            << fixings.error();
+
     // Group driver pairs by their owning config_id.
     std::map<boost::uuids::uuid, std::vector<const ores::refdata::domain::crm_driver_pair*>>
         pairs_by_config;
@@ -84,23 +97,55 @@ void crm_ingest_bridge::refresh() {
         const auto party_id_str = boost::uuids::to_string(cfg.party_id);
         const pair_key key{tenant_id_str, party_id_str};
 
-        const auto it = pairs_by_config.find(cfg.id);
-        if (it == pairs_by_config.end() || it->second.empty()) {
+        std::vector<quant::domain::ccy_pair_input> edges;
+        if (const auto it = pairs_by_config.find(cfg.id); it != pairs_by_config.end())
+            for (const auto* p : it->second)
+                edges.push_back({p->base_currency_code, p->quote_currency_code, true});
+
+        // The party's own fixing series say which publisher it reads and which base
+        // every pair cancels against, so they win over the hand-listed pairs. A party
+        // the store holds no fixings for keeps them, and says which.
+        auto pivot_code = cfg.pivot_currency_code;
+        std::optional<std::string> refusal;
+        if (fixings) {
+            const auto held = fixings->find({tenant_id_str, party_id_str});
+            if (held != fixings->end()) {
+                if (!held->second.refusal.empty()) {
+                    refusal = held->second.refusal;
+                } else if (const auto chosen =
+                               quant::service::topology_from_sources(held->second.sources)) {
+                    edges = chosen->pairs;
+                    pivot_code = chosen->pivot_code;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "CRM: party=" << party_id_str << " config='" << cfg.name << "' reads "
+                        << chosen->provider_code << " against " << chosen->pivot_code;
+                } else {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "CRM: party=" << party_id_str << " config='" << cfg.name
+                        << "' keeps its configured pairs: " << chosen.error();
+                }
+            }
+        }
+        if (refusal) {
+            BOOST_LOG_SEV(lg(), error) << "CRM: refusing party=" << party_id_str << " config='"
+                                       << cfg.name << "': " << *refusal;
+            continue;
+        }
+        if (edges.empty()) {
             BOOST_LOG_SEV(lg(), info)
                 << "CRM: config '" << cfg.name << "' (tenant=" << tenant_id_str
-                << " party=" << party_id_str << ") has no enabled driver pairs -- skipping";
+                << " party=" << party_id_str << ") has no driver pairs and no fixings -- skipping";
             continue;
         }
 
-        std::vector<quant::domain::ccy_pair_input> edges;
         std::vector<std::string> majors;
         std::vector<std::pair<std::string, std::string>> configured_pairs;
-        edges.reserve(it->second.size());
-        for (const auto* p : it->second) {
-            edges.push_back({p->base_currency_code, p->quote_currency_code, true});
-            majors.push_back(p->base_currency_code);
-            majors.push_back(p->quote_currency_code);
-            configured_pairs.emplace_back(p->base_currency_code, p->quote_currency_code);
+        majors.reserve(edges.size() * 2);
+        configured_pairs.reserve(edges.size());
+        for (const auto& edge : edges) {
+            majors.push_back(edge.base_code);
+            majors.push_back(edge.quote_code);
+            configured_pairs.emplace_back(edge.base_code, edge.quote_code);
         }
 
         try {
@@ -126,8 +171,7 @@ void crm_ingest_bridge::refresh() {
                     " -- this should be prevented by the DB's partial unique index");
             }
 
-            auto topology =
-                quant::service::topology_builder::build(edges, cfg.pivot_currency_code, majors);
+            auto topology = quant::service::topology_builder::build(edges, pivot_code, majors);
             auto engine = std::make_shared<quant::service::rate_engine>(
                 std::move(topology),
                 quant::domain::staleness_policy{default_staleness_stale_after,
@@ -140,7 +184,7 @@ void crm_ingest_bridge::refresh() {
 
             BOOST_LOG_SEV(lg(), info) << "CRM: built rate_engine for tenant=" << tenant_id_str
                                       << " party=" << party_id_str << " config='" << cfg.name
-                                      << "' (" << it->second.size() << " driver pair(s))";
+                                      << "' (" << configured_pairs.size() << " pair(s))";
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "CRM: failed to build topology for tenant=" << tenant_id_str

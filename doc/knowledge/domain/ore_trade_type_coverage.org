@@ -31,8 +31,10 @@ type's gap, so the coverage work has one index.
   disagrees with ORE's form, the catalogue is wrong.
 - *Data element* is the element ORE's =fromXML= reads. It is the type with any
   underscore removed followed by =Data=, except where ORE's class reads another
-  element; the miner checks each against ORE's source. An element ORE reads that
-  the vendored XSD does not declare is marked.
+  element. The miner looks for the element's name as a quoted string in the
+  class's source and its base classes. This is a text search, not a parse, so a
+  match shows the name is present, not that =fromXML= reads it. An element ORE
+  reads that the vendored XSD does not declare is marked.
 - *Table* is the instrument table that holds a trade of the type, empty when no
   table holds it yet. *Generated* says whether a recorded generated trade exists.
 - *Library scripts* are the scripts in ORE's Products script library that carry

@@ -14,7 +14,7 @@ the class declares, or ORE's error for a key it refuses. The oresmd key codec in
 | `index_corpus.jsonl` | The same for every distinct index name the corpus's fixing files carry |
 | `instrument_types.txt` | ORE's `InstrumentType` enum, each member with the key tokens its parser reads as it |
 | `quote_types.txt` | ORE's `QuoteType` enum, each member with the key tokens its parser reads as it; `HAZARD_RATE` has none, and `NULL` names `NONE` |
-| `trade_types.tsv` | One row per trade type ORE registers or ORE Studio's catalogue declares: whether each side has it, the class ORE's trade factory builds and whether it derives from `ScriptedTrade`, the data element `fromXML` reads and whether the XSD declares it, and the library scripts that carry the same product with how closely their code matches the class's own |
+| `trade_types.tsv` | One row per trade type ORE registers or ORE Studio's catalogue declares: whether each side has it, the class ORE's trade factory builds and whether it derives from `ScriptedTrade`, the data element `fromXML` reads (`element_read` is a text search of the class's source, not a parse) and whether the XSD declares it, and the library scripts that carry the same product with how closely their code matches the class's own |
 | `ore_version.txt` | The ORE tag and commit the catalogue came from, and the gzip that compressed it |
 
 The index catalogue loads `examples/Products/Input/conventions.xml` first,

@@ -46,29 +46,51 @@ def mined_rows() -> list[dict[str, str]]:
     return [dict(zip(header, line.split("\t"))) for line in lines[1:]]
 
 
+class SourceError(Exception):
+    pass
+
+
 def catalogue() -> dict[str, dict[str, str]]:
-    rows, inside = {}, False
+    rows, inside, header = {}, False, None
     for line in CATALOGUE.read_text().splitlines():
         if line.startswith("* "):
             inside = line.strip() == "* Trade types"
             continue
-        if inside and line.startswith("| ") and not line.startswith("| code"):
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            rows[cells[0]] = {"construction": cells[3], "instrument": cells[7]}
+        if not inside or not line.startswith("| "):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if header is None:
+            header = cells
+            missing = {"code", "construction", "instrument"} - set(header)
+            if missing:
+                raise SourceError(f"{CATALOGUE.relative_to(REPO)}: the trade types table has no column"
+                                  f" {', '.join(sorted(missing))}")
+            continue
+        row = dict(zip(header, cells))
+        rows[row["code"]] = {"construction": row["construction"], "instrument": row["instrument"]}
     return rows
 
 
+def field(path: Path, text: str, pattern: str) -> str:
+    found = re.search(pattern, text, re.MULTILINE)
+    if not found:
+        raise SourceError(f"{path.relative_to(REPO)}: no line matches {pattern!r}")
+    return found.group(1)
+
+
 def story_tasks() -> list[tuple[str, str, str]]:
-    tasks = []
+    tasks, ids = [], set()
     for path in sorted(STORY.glob("task_*.org")):
         text = path.read_text()
-        state = re.search(r"\| State\s+\| (\w+)", text).group(1)
-        if state == "ABANDONED":
+        uid = field(path, text, r":ID: (\S+)")
+        ids.add(uid)
+        if field(path, text, r"\| State\s+\| (\w+)") == "ABANDONED":
             continue
-        uid = re.search(r":ID: (\S+)", text).group(1)
-        title = re.search(r"#\+title: Task: (.*)", text).group(1)
-        description = re.search(r"#\+description: (.*)", text).group(1)
-        tasks.append((uid, title, description))
+        tasks.append((uid, field(path, text, r"^#\+title: Task: (.*)"),
+                      field(path, text, r"^#\+description: (.*)")))
+    for uid in (TAG_TASK, FORM_TASK, BOTH_FORMS_TASK):
+        if uid not in ids:
+            raise SourceError(f"task {uid} is not in {STORY.relative_to(REPO)}; update the task constants")
     return tasks
 
 
@@ -156,7 +178,11 @@ def main() -> int:
     mode.add_argument("--write", action="store_true", help="rewrite the generated block")
     mode.add_argument("--check", action="store_true", help="fail when the generated block is stale")
     args = parser.parse_args()
-    block = "\n".join(render())
+    try:
+        block = "\n".join(render())
+    except SourceError as error:
+        print(error, file=sys.stderr)
+        return 1
     if not (args.write or args.check):
         print(block)
         return 0

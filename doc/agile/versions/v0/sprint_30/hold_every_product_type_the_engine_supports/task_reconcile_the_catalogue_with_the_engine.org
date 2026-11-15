@@ -104,6 +104,16 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the commodity task description named no trade types, so the coverage page linked no commodity rows to it | =task_close_out_the_commodity_constructors.org= | Accept | The description names =CommodityPairwiseVarianceSwap= and =CommodityWindowBarrierOption= (commit 2eb0a57ca5) |
 | 2 | Local review: misspell over the changed files | - | Accept | Clean |
+| 3 | PR review 1: a harness error wrote =!message= into the class column and could split a line | =trade_catalogue.cpp=, =mine_trade_types.py= | Accept | The harness writes errors to stderr and exits 1, so =regenerate.sh= stops; the miner refuses any row that is not three cells ending in =native= or =scripted= |
+| 4 | PR review 2: script decoding mangled non-ASCII text | =mine_trade_types.py= | Accept | The suggested =codecs.decode= garbles the same way (tested); the miner now reads C++ escapes with a regex. The TSV is unchanged |
+| 5 | PR review 3: =element_read= is a text search and can match a comment | coverage page, README | Accept | Both now say it is a text search, not a parse |
+| 6 | PR review 4: unguarded regex and positional columns in the generator | =generate_trade_type_coverage.py= | Accept | A missing field names the file; the catalogue columns are read by header name. Both failures tested |
+| 7 | PR review 4: a short type name could match inside a longer one | =generate_trade_type_coverage.py= | Decline | =\\b= stops at letters, so =CommodityOption= does not match inside =CommodityOptionStrip= |
+| 8 | PR review 5: hard-coded task IDs drop a gap kind silently | =generate_trade_type_coverage.py= | Accept | The generator fails when a constant names no task in the story (tested) |
+| 9 | PR review 6: add the datum_catalogue inputs to the check's paths | =local_checks.py= | Decline | The check reads only =trade_types.tsv=; a change to the twin or element lists matters only after a regenerate, which changes the TSV |
+| 10 | PR review 7: the header line is wider than the rest of the file | =regenerate.sh= | Accept | Wrapped |
+| 11 | PR review 7: =regenerate.sh= derives the repo root from =ore_root= | =regenerate.sh= | Decline | =ore_root= is fixed as the script's =../..= and is not an argument |
+| 12 | PR review: confirm the seven failing gate checks fail on main | - | Accept | All seven fail on a clean =origin/main= worktree |
 
 * Result
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Rebuilds the market datum and trade type catalogues under external/ore/catalogue from a local
-# ORE engine checkout and its build.
+# Rebuilds the market datum and trade type catalogues under external/ore/catalogue
+# from a local ORE engine checkout and its build.
 #
 #   regenerate.sh <ORE source dir> <ORE build dir>
 #

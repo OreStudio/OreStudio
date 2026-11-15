@@ -52,10 +52,20 @@ def catalogue_codes(repo):
     return codes
 
 
+CPP_ESCAPES = {"n": "\n", "t": "\t", "r": "\r"}
+
+
+def unescape(literal):
+    return re.sub(r"\\(.)", lambda m: CPP_ESCAPES.get(m[1], m[1]), literal)
+
+
 def harness_rows(path):
     rows = {}
     for line in Path(path).read_text().splitlines():
-        trade_type, ore_class, form = (line.split("\t") + ["", ""])[:3]
+        cells = line.split("\t")
+        if len(cells) != 3 or cells[2] not in ("native", "scripted"):
+            sys.exit(f"{path}: not a trade_catalogue row: {line!r}")
+        trade_type, ore_class, form = cells
         rows[trade_type] = (ore_class.removeprefix("ore::data::"), form)
     return rows
 
@@ -133,7 +143,7 @@ class Source:
                 parts = re.findall(r'"((?:[^"\\]|\\.)*)"', run.group(0))
                 code = "".join(parts)
                 if len(code) > 100:
-                    found.append(norm(code.encode().decode("unicode_escape")))
+                    found.append(norm(unescape(code)))
         return found
 
 

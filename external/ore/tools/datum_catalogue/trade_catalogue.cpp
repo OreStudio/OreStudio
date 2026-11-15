@@ -45,19 +45,19 @@
 int main() {
     ore::data::dataBuilders();
     const auto& factory = ore::data::TradeFactory::instance();
+    bool failed = false;
     for (const auto& [type, builder] : factory.getBuilders()) {
-        std::cout << type;
         try {
             const auto trade = factory.build(type);
             const auto& object = *trade;
             const bool scripted =
                 QuantLib::ext::dynamic_pointer_cast<ore::data::ScriptedTrade>(trade) != nullptr;
-            std::cout << '\t' << boost::core::demangle(typeid(object).name()) << '\t'
-                      << (scripted ? "scripted" : "native");
+            std::cout << type << '\t' << boost::core::demangle(typeid(object).name()) << '\t'
+                      << (scripted ? "scripted" : "native") << '\n';
         } catch (const std::exception& e) {
-            std::cout << "\t!" << e.what() << '\t';
+            std::cerr << type << ": " << e.what() << '\n';
+            failed = true;
         }
-        std::cout << '\n';
     }
-    return 0;
+    return failed ? 1 : 0;
 }

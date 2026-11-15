@@ -86,6 +86,10 @@ reporting_regime_read_one(repository::reporting_regime_repository& repo,
  * in chunks, one statement each, because every key is a bind and the store's
  * bind count is finite.
  *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
  * The batch read answers by the storage key. When the declared key is not the
  * storage key, each key is read on its own.
  */
@@ -195,6 +199,13 @@ messaging::get_reporting_regime_response reporting_regime_service::get_reporting
 messaging::get_many_reporting_regimes_response reporting_regime_service::get_many_reporting_regimes(
     const messaging::get_many_reporting_regimes_request& request) {
     messaging::get_many_reporting_regimes_response response;
+    // A key set carries at most 1,000 keys, the bound the protocol states for
+    // every batch, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.

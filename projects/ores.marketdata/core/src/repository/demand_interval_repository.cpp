@@ -328,6 +328,46 @@ demand_interval_repository::read_latest_by_oresmd_uri(const context& ctx,
 }
 
 std::vector<domain::demand_interval>
+demand_interval_repository::read_latest_by_oresmd_uri(const context& ctx,
+                                                      const std::vector<std::string>& oresmd_uris) {
+    if (oresmd_uris.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (oresmd_uris.size() > chunk_size) {
+        std::vector<domain::demand_interval> all;
+        for (std::size_t begin = 0; begin < oresmd_uris.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, oresmd_uris.size());
+            auto part = read_latest_by_oresmd_uri(
+                ctx,
+                std::vector<std::string>(oresmd_uris.begin() + begin, oresmd_uris.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest demand intervals by oresmd_uri. Count: "
+                               << oresmd_uris.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<demand_interval_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "oresmd_uri"_c.in(oresmd_uris) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<demand_interval_entity, domain::demand_interval>(
+        ctx,
+        query,
+        [](const auto& entities) { return demand_interval_mapper::map(entities); },
+        lg(),
+        "Reading latest demand intervals by oresmd_uri.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::demand_interval>
 demand_interval_repository::read_any_by_oresmd_uri(const context& ctx,
                                                    const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any demand interval by oresmd_uri: " << oresmd_uri;

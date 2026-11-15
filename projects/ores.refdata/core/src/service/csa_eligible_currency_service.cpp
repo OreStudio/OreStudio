@@ -93,16 +93,28 @@ csa_eligible_currency_read_one(repository::csa_eligible_currency_repository& rep
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::csa_eligible_currency>>
 csa_eligible_currency_read_many(repository::csa_eligible_currency_repository& repo,
                                 const ores::database::context& ctx,
                                 const std::vector<messaging::csa_eligible_currency_key>& keys) {
     std::vector<std::vector<domain::csa_eligible_currency>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = csa_eligible_currency_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> currency_code_keys;
+    currency_code_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        currency_code_keys.push_back(key.currency_code);
+    std::map<std::string, std::vector<domain::csa_eligible_currency>> by_key;
+    for (auto& row : repo.read_latest_by_currency_code(ctx, currency_code_keys))
+        by_key[row.currency_code].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.currency_code);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

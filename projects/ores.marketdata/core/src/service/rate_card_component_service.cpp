@@ -93,16 +93,28 @@ rate_card_component_read_one(repository::rate_card_component_repository& repo,
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::rate_card_component>>
 rate_card_component_read_many(repository::rate_card_component_repository& repo,
                               const ores::database::context& ctx,
                               const std::vector<messaging::rate_card_component_key>& keys) {
     std::vector<std::vector<domain::rate_card_component>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = rate_card_component_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> driver_keys;
+    driver_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        driver_keys.push_back(key.driver);
+    std::map<std::string, std::vector<domain::rate_card_component>> by_key;
+    for (auto& row : repo.read_latest_by_driver(ctx, driver_keys))
+        by_key[row.driver].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.driver);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

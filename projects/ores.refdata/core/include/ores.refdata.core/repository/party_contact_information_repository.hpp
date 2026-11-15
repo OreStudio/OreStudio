@@ -121,6 +121,15 @@ public:
     read_latest_by_contact_type(const context& ctx, const std::string& contact_type);
 
     /**
+     * @brief Reads latest party contact informations filtered by a set of contact_type values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::party_contact_information>
+    read_latest_by_contact_type(const context& ctx, const std::vector<std::string>& contact_types);
+
+    /**
      * @brief Reads the newest party contact informations filtered by contact_type, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

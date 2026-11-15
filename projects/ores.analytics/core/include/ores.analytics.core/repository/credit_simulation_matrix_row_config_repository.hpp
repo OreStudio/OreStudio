@@ -116,6 +116,15 @@ public:
     read_latest_by_from_rating(const context& ctx, const std::string& from_rating);
 
     /**
+     * @brief Reads latest matrix rows filtered by a set of from_rating values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::credit_simulation_matrix_row_config>
+    read_latest_by_from_rating(const context& ctx, const std::vector<std::string>& from_ratings);
+
+    /**
      * @brief Reads the newest matrix rows filtered by from_rating, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

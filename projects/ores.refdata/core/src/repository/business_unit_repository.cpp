@@ -327,6 +327,46 @@ business_unit_repository::read_latest_by_unit_code(const context& ctx,
 }
 
 std::vector<domain::business_unit>
+business_unit_repository::read_latest_by_unit_code(const context& ctx,
+                                                   const std::vector<std::string>& unit_codes) {
+    if (unit_codes.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (unit_codes.size() > chunk_size) {
+        std::vector<domain::business_unit> all;
+        for (std::size_t begin = 0; begin < unit_codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, unit_codes.size());
+            auto part = read_latest_by_unit_code(
+                ctx,
+                std::vector<std::string>(unit_codes.begin() + begin, unit_codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business units by unit_code. Count: "
+                               << unit_codes.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<business_unit_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "unit_code"_c.in(unit_codes) &&
+                                            "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<business_unit_entity, domain::business_unit>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_unit_mapper::map(entities); },
+        lg(),
+        "Reading latest business units by unit_code.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::business_unit>
 business_unit_repository::read_any_by_unit_code(const context& ctx, const std::string& unit_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any business unit by unit_code: " << unit_code;
     const auto tid = ctx.tenant_id().to_string();

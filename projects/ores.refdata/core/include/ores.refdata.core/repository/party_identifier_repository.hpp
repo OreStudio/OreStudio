@@ -121,6 +121,15 @@ public:
                                                                   const std::string& id_value);
 
     /**
+     * @brief Reads latest party identifiers filtered by a set of id_value values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::party_identifier>
+    read_latest_by_id_value(const context& ctx, const std::vector<std::string>& id_values);
+
+    /**
      * @brief Reads the newest party identifiers filtered by id_value, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

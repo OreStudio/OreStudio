@@ -351,6 +351,47 @@ counterparty_contact_information_repository::read_latest_by_contact_type(
 }
 
 std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_repository::read_latest_by_contact_type(
+    const context& ctx, const std::vector<std::string>& contact_types) {
+    if (contact_types.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (contact_types.size() > chunk_size) {
+        std::vector<domain::counterparty_contact_information> all;
+        for (std::size_t begin = 0; begin < contact_types.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, contact_types.size());
+            auto part =
+                read_latest_by_contact_type(ctx,
+                                            std::vector<std::string>(contact_types.begin() + begin,
+                                                                     contact_types.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest counterparty contact informations by contact_type. Count: "
+        << contact_types.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<counterparty_contact_information_entity>> |
+        query_builder::where("tenant_id"_c == tid && "contact_type"_c.in(contact_types) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<counterparty_contact_information_entity,
+                                                   domain::counterparty_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty contact informations by contact_type.");
+    return found;
+}
+
+std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_any_by_contact_type(
     const context& ctx, const std::string& contact_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any counterparty contact information by contact_type: "

@@ -339,6 +339,51 @@ credit_simulation_netting_set_config_repository::read_latest_by_netting_set_id(
 }
 
 std::vector<domain::credit_simulation_netting_set_config>
+credit_simulation_netting_set_config_repository::read_latest_by_netting_set_id(
+    const context& ctx, const std::vector<std::string>& netting_set_ids) {
+    if (netting_set_ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (netting_set_ids.size() > chunk_size) {
+        std::vector<domain::credit_simulation_netting_set_config> all;
+        for (std::size_t begin = 0; begin < netting_set_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, netting_set_ids.size());
+            auto part = read_latest_by_netting_set_id(
+                ctx,
+                std::vector<std::string>(netting_set_ids.begin() + begin,
+                                         netting_set_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets by netting_set_id. Count: "
+                               << netting_set_ids.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_netting_set_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "netting_set_id"_c.in(netting_set_ids) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<credit_simulation_netting_set_config_entity,
+                                                   domain::credit_simulation_netting_set_config>(
+        ctx,
+        query,
+        [](const auto& entities) {
+            return credit_simulation_netting_set_config_mapper::map(entities);
+        },
+        lg(),
+        "Reading latest netting sets by netting_set_id.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_repository::read_any_by_netting_set_id(
     const context& ctx, const std::string& netting_set_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any netting set by netting_set_id: " << netting_set_id;

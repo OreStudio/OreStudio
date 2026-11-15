@@ -115,6 +115,15 @@ public:
     read_latest_by_external_id(const context& ctx, const std::string& external_id);
 
     /**
+     * @brief Reads latest market data vendor instruments filtered by a set of external_id values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::market_data_vendor_instrument>
+    read_latest_by_external_id(const context& ctx, const std::vector<std::string>& external_ids);
+
+    /**
      * @brief Reads the newest market data vendor instruments filtered by external_id, current or
      * not.
      *

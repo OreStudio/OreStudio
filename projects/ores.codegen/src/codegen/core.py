@@ -3023,6 +3023,20 @@ def _service_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
     }
 
 
+def states_batch_finder(code: str, declared_key: str | None) -> bool:
+    """Whether model code declares the batch form of the finder by a declared key.
+
+    The batch form takes the context and a vector of text values. The match
+    ignores whitespace and the parameter names, so a reformatted declaration
+    is still found and its service does not fall back to one read per key.
+    """
+    if not declared_key:
+        return False
+    pattern = (rf'read_latest_by_{re.escape(declared_key)}\s*\(\s*const\s+context\s*&\s*\w*\s*,'
+               r'\s*const\s+std::vector\s*<\s*std::string\s*>\s*&')
+    return re.search(pattern, code) is not None
+
+
 def _and_list(names: list[str]) -> str:
     """Join column names as an English list: 'a', 'a and b', 'a, b and c'."""
     if len(names) <= 1:
@@ -6695,6 +6709,31 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['declared_key_text'] = (
             _key_as_text(f'key.{domain_entity["declared_key"]}', _declared_column)
             if _declared_column else f'key.{domain_entity["declared_key"]}')
+        # The same text read from a row, so a batch read by the declared key
+        # joins each row back to the key that named it with one conversion.
+        _declared_row = (f'row.{(_declared_column or {}).get("group_prefix") or ""}'
+                         f'{domain_entity["declared_key"]}')
+        domain_entity['declared_row_text'] = (
+            _key_as_text(_declared_row, _declared_column)
+            if _declared_column else _declared_row)
+        # The generated finder by the declared key also reads a batch. A model
+        # that states that finder itself has no batch form, so its services
+        # read a batch one key at a time.
+        for _finder in domain_entity['key_finders']:
+            _finder['is_declared_key_finder'] = bool(
+                not domain_entity['key_is_primary']
+                and _finder.get('column') == domain_entity['declared_key']
+                and _finder.get('suffix') == domain_entity['declared_key']
+                and not _finder.get('columns')
+                and not _finder.get('parent_column'))
+        # A model that states its own finder can state its batch form too.
+        _stated = "\n".join(
+            code
+            for codes in (domain_entity.get("implementations") or {}).values()
+            for code in codes)
+        domain_entity['declared_key_has_batch_read'] = any(
+            f['is_declared_key_finder'] for f in domain_entity['key_finders']) or (
+                states_batch_finder(_stated, domain_entity['declared_key']))
         domain_entity['declared_key_group_prefix'] = (
             (_declared_column or {}).get('group_prefix') or '')
         domain_entity['declared_key_is_uuid'] = bool(

@@ -95,8 +95,9 @@ credit_simulation_matrix_row_config_read_one(
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::credit_simulation_matrix_row_config>>
 credit_simulation_matrix_row_config_read_many(
@@ -104,8 +105,19 @@ credit_simulation_matrix_row_config_read_many(
     const ores::database::context& ctx,
     const std::vector<messaging::credit_simulation_matrix_row_config_key>& keys) {
     std::vector<std::vector<domain::credit_simulation_matrix_row_config>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = credit_simulation_matrix_row_config_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> from_rating_keys;
+    from_rating_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        from_rating_keys.push_back(key.from_rating);
+    std::map<std::string, std::vector<domain::credit_simulation_matrix_row_config>> by_key;
+    for (auto& row : repo.read_latest_by_from_rating(ctx, from_rating_keys))
+        by_key[row.from_rating].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.from_rating);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

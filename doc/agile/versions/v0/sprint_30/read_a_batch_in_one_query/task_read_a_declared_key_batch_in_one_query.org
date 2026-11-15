@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :codegen:performance:repository:services:read_a_batch_in_one_query:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-a-declared-key-batch-in-one-query
+#+pr: 4742
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ A bulk request to a service whose declared key is not the storage key reads its 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,21 @@ A bulk request to a service whose declared key is not the storage key reads its 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- 70 services read a batch one key at a time, because their declared key is
+  not the storage key. Every finder they call takes one text value, and 68 of
+  the 70 are generated: a tenant filter, one column equality and the window,
+  and for 36 the session's party filter.
+- Each generated finder by the declared key gains a batch overload over a
+  vector of values, with the same tenant, window and party rules, an =IN= over
+  the column, and the 1,000-key chunks of the batch =read_latest=. The finder
+  is marked =is_declared_key_finder= in the codegen model.
+- The service helper reads a declared-key batch with that overload and joins
+  each row back by the declared key's text form (=declared_row_text=), the
+  same conversion =declared_key_text= states for the key.
+- A model that states its own finder keeps reading per key unless it states
+  the batch form too. iam's role finder was a hand-written copy of the
+  generated one, so its paste block goes. iam's account finder reads only the
+  session's tenant, by design, so its model states the batch form beside it.
 
 * Measurements
 
@@ -76,12 +88,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4742][#4742]] | [codegen] Read a batch by declared key in one query |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Claude review 1: a key repeated across chunks returns its row twice | ores.cpp.repository.repository_impl.org | Decline | The copies are identical and every consumer reads =front()= or =empty()=; get-many cannot cross a chunk under its bound. |
+| 2 | Claude review 2: the hand-written batch finder is found by exact text | core.py | Accept | =states_batch_finder= ignores whitespace and parameter names; =test_declared_key_batch_read.py= pins it and the account rendering, and a detection that always fails breaks both. |
+| 3 | Claude review 3: the batch finder takes text only | ores.cpp.repository.repository_impl.org | Decline | The helper converts every key with =declared_key_text=, and the single finders take text too. |
+| 4 | Claude review 4: includes for the new calls | (templates) | Decline | =<algorithm>=, =<iterator>= and =<map>= are unconditional in the repository template, and =<map>= in the service's protocol block. |
+| 5 | Claude review 5 and 6: the plural parameter name, and the copied query | (templates) | Decline | The batch =read_latest= uses the same name; the template states each query once per form and the drift gate holds them to it. |
 
 * Result
+
+A service whose declared key is not the storage key reads a batch with one
+query. No generated service reads a batch one key at a time any more.
+
+- Acceptance 1 holds: each generated finder by the declared key has a batch
+  form with the same tenant, window and party rules and 1,000-key chunks.
+- Acceptance 2 holds: the service helper reads a declared-key batch with it.
+  iam's role now uses the generated finder; iam's account states the batch
+  form of its own finder, keeping its tenant-only rule.
+- Acceptance 3 holds: 13 of the 14 touched core suites pass, with dq at 126
+  test cases including the two new batch tests; synthetic fails only the case
+  main fails too. A join that drops every row fails both new tests. The codegen
+  unit tests pass, 1,787 of 1,787.
+

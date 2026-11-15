@@ -116,6 +116,16 @@ public:
                                             const std::string& pricing_engine_type_code);
 
     /**
+     * @brief Reads latest pricing model products filtered by a set of pricing_engine_type_code
+     * values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::pricing_model_product> read_latest_by_pricing_engine_type_code(
+        const context& ctx, const std::vector<std::string>& pricing_engine_type_codes);
+
+    /**
      * @brief Reads the newest pricing model products filtered by pricing_engine_type_code, current
      * or not.
      *

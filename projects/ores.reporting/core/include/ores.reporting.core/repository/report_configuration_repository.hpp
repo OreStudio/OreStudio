@@ -116,6 +116,16 @@ public:
                                            const std::string& configuration_type_code);
 
     /**
+     * @brief Reads latest report configurations filtered by a set of configuration_type_code
+     * values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::report_configuration> read_latest_by_configuration_type_code(
+        const context& ctx, const std::vector<std::string>& configuration_type_codes);
+
+    /**
      * @brief Reads the newest report configurations filtered by configuration_type_code, current or
      * not.
      *

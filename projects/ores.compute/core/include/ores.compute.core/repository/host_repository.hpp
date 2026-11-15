@@ -112,6 +112,15 @@ public:
                                                          const std::string& external_id);
 
     /**
+     * @brief Reads latest compute hosts filtered by a set of external_id values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::host>
+    read_latest_by_external_id(const context& ctx, const std::vector<std::string>& external_ids);
+
+    /**
      * @brief Reads the newest compute hosts filtered by external_id, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

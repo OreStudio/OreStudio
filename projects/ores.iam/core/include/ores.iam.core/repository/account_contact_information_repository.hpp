@@ -115,6 +115,15 @@ public:
                                                                           const std::string& email);
 
     /**
+     * @brief Reads latest account contact informations filtered by a set of email values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::account_contact_information>
+    read_latest_by_email(const context& ctx, const std::vector<std::string>& emails);
+
+    /**
      * @brief Reads the newest account contact informations filtered by email, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

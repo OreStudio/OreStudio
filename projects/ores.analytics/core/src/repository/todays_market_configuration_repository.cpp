@@ -334,6 +334,50 @@ todays_market_configuration_repository::read_latest_by_configuration_id(
 }
 
 std::vector<domain::todays_market_configuration>
+todays_market_configuration_repository::read_latest_by_configuration_id(
+    const context& ctx, const std::vector<std::string>& configuration_ids) {
+    if (configuration_ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (configuration_ids.size() > chunk_size) {
+        std::vector<domain::todays_market_configuration> all;
+        for (std::size_t begin = 0; begin < configuration_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, configuration_ids.size());
+            auto part = read_latest_by_configuration_id(
+                ctx,
+                std::vector<std::string>(configuration_ids.begin() + begin,
+                                         configuration_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest today's market configuration blocks by configuration_id. Count: "
+        << configuration_ids.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid && "configuration_id"_c.in(configuration_ids) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<todays_market_configuration_entity,
+                                                   domain::todays_market_configuration>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market configuration blocks by configuration_id.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::todays_market_configuration>
 todays_market_configuration_repository::read_any_by_configuration_id(
     const context& ctx, const std::string& configuration_id) {
     BOOST_LOG_SEV(lg(), debug)

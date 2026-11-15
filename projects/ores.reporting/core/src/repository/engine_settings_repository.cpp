@@ -309,6 +309,44 @@ engine_settings_repository::read_latest_by_name(const context& ctx, const std::s
 }
 
 std::vector<domain::engine_settings>
+engine_settings_repository::read_latest_by_name(const context& ctx,
+                                                const std::vector<std::string>& names) {
+    if (names.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (names.size() > chunk_size) {
+        std::vector<domain::engine_settings> all;
+        for (std::size_t begin = 0; begin < names.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, names.size());
+            auto part = read_latest_by_name(
+                ctx, std::vector<std::string>(names.begin() + begin, names.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings by name. Count: " << names.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<engine_settings_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<engine_settings_entity, domain::engine_settings>(
+        ctx,
+        query,
+        [](const auto& entities) { return engine_settings_mapper::map(entities); },
+        lg(),
+        "Reading latest engine settings by name.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::engine_settings>
 engine_settings_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any engine settings by name: " << name;
     const auto tid = ctx.tenant_id().to_string();

@@ -302,6 +302,45 @@ run_grant_repository::read_latest_by_resource(const context& ctx, const std::str
 }
 
 std::vector<domain::run_grant>
+run_grant_repository::read_latest_by_resource(const context& ctx,
+                                              const std::vector<std::string>& resources) {
+    if (resources.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (resources.size() > chunk_size) {
+        std::vector<domain::run_grant> all;
+        for (std::size_t begin = 0; begin < resources.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, resources.size());
+            auto part = read_latest_by_resource(
+                ctx, std::vector<std::string>(resources.begin() + begin, resources.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest run grants by resource. Count: "
+                               << resources.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<run_grant_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "resource"_c.in(resources) &&
+                                            "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<run_grant_entity, domain::run_grant>(
+        ctx,
+        query,
+        [](const auto& entities) { return run_grant_mapper::map(entities); },
+        lg(),
+        "Reading latest run grants by resource.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::run_grant>
 run_grant_repository::read_any_by_resource(const context& ctx, const std::string& resource) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any run grant by resource: " << resource;
     const auto tid = ctx.tenant_id().to_string();

@@ -93,16 +93,28 @@ composite_input_read_one(repository::composite_input_repository& repo,
  * sides convert the typed value with the same function, and the store compares
  * key text exactly, so every row the read returns finds its key.
  *
- * The batch read answers by the storage key. When the declared key is not the
- * storage key, each key is read on its own.
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
  */
 std::vector<std::vector<domain::composite_input>>
 composite_input_read_many(repository::composite_input_repository& repo,
                           const ores::database::context& ctx,
                           const std::vector<messaging::composite_input_key>& keys) {
     std::vector<std::vector<domain::composite_input>> found(keys.size());
-    for (std::size_t i = 0; i < keys.size(); ++i)
-        found[i] = composite_input_read_one(repo, ctx, keys[i]);
+    std::vector<std::string> oresmd_uri_keys;
+    oresmd_uri_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        oresmd_uri_keys.push_back(key.oresmd_uri);
+    std::map<std::string, std::vector<domain::composite_input>> by_key;
+    for (auto& row : repo.read_latest_by_oresmd_uri(ctx, oresmd_uri_keys))
+        by_key[row.oresmd_uri].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.oresmd_uri);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
     return found;
 }
 

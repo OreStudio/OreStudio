@@ -115,6 +115,15 @@ public:
     read_latest_by_collection(const context& ctx, const std::string& collection);
 
     /**
+     * @brief Reads latest today's market collections filtered by a set of collection values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::todays_market_collection>
+    read_latest_by_collection(const context& ctx, const std::vector<std::string>& collections);
+
+    /**
      * @brief Reads the newest today's market collections filtered by collection, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

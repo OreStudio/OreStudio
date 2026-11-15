@@ -114,6 +114,16 @@ public:
     read_latest_by_agreement_number(const context& ctx, const std::string& agreement_number);
 
     /**
+     * @brief Reads latest netting agreements filtered by a set of agreement_number values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::netting_agreement>
+    read_latest_by_agreement_number(const context& ctx,
+                                    const std::vector<std::string>& agreement_numbers);
+
+    /**
      * @brief Reads the newest netting agreements filtered by agreement_number, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

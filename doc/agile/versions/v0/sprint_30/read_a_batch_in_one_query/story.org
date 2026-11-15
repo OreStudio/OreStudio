@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:performance:services:sprint_30:v0:
 #+created: 2026-11-04
-#+updated: 2026-11-08
+#+updated: 2026-11-15
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ A bulk request to a generated service reads the rows it needs in one query per b
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Done: every generated bulk path reads its rows in one query per batch. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-08 |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-15 |
 
 * Acceptance
 
@@ -41,7 +41,7 @@ A bulk request to a generated service reads the rows it needs in one query per b
 |------+-------+-------+-----+-------------|
 | [[id:02E729DE-FEA1-4D7A-9C60-0A6048B43C49][Read each batch in one query in the service template]] | DONE | 2026-11-14 | 2026-11-15 | The service template reads each row of a get-many, put-many and delete-many batch by key; read the batch's rows with one query per path, chosen by key shape. |
 | [[id:A324D93F-A9AE-4C22-9E10-8F53D34CADE6][Check a batch's claims with one read in the repository template]] | DONE | 2026-11-15 | 2026-11-15 | The repository's batch write checks each row's claim with its own read, so a 1,000-row put still makes about 1,000 single-row reads; read the batch's current rows once and check every claim against them. |
-| [[id:D22D7E7B-B336-4F8F-8675-C7B3A3EAAA20][Read a batch by declared key in one query]] | BACKLOG | | | Services whose declared key is not the storage key still read each key of a batch on its own; give the repository a batch read by the declared key and use it in the service helper. |
+| [[id:D22D7E7B-B336-4F8F-8675-C7B3A3EAAA20][Read a batch by declared key in one query]] | DONE | 2026-11-15 | 2026-11-15 | Services whose declared key is not the storage key still read each key of a batch on its own; give the repository a batch read by the declared key and use it in the service helper. |
 
 * Decisions
 
@@ -54,6 +54,8 @@ A bulk request to a generated service reads the rows it needs in one query per b
 - The repository's batch write checks each claim with its own read; that is a second task, measured on the same benchmark.
 - The claim helpers leave the repository class and take the current rows from their caller, as =prepare_change= does in the service. A batch reads the rows its claims need with one batch read, and the batch read chunks its own key set, so no caller has to.
 - Get-many refuses more than 1,000 keys, the bound the protocol states; the same bound on put-many and delete-many is a capture, because callers may send more today.
+- A service whose declared key is not the storage key reads a batch with a batch form of the generated finder by that key, with the same tenant, window and party rules. A model that states its own finder states the batch form too, or its service reads per key.
+- Closed on 2026-11-15. A 1,000-row put of market observations went from a median of 12.50 s to 0.51 s on one machine, and the derived FX volatility source wrote its first history of 2,590 days in 27.13 s on a recreated environment (595.678 s for 2,600 days when the story was written, in another environment).
 
 * Out of scope
 

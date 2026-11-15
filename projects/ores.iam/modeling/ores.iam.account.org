@@ -552,6 +552,55 @@ account_repository::read_latest_by_username(const context& ctx, const std::strin
 }
 #+end_src
 
+*** read_latest_by_username for a set of usernames
+:PROPERTIES:
+:ID: 6A1D3F58-2C7B-4E94-8B05-9D3E7A2C1F64
+:END:
+
+The batch form of the read above, with the same tenant rule, so a batch of
+accounts addressed by username costs one read. A larger set is read one chunk
+at a time, because every username is a bind and the store's bind count is
+finite.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::account> read_latest_by_username(const context& ctx, const std::vector<std::string>& usernames);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::account>
+account_repository::read_latest_by_username(const context& ctx, const std::vector<std::string>& usernames) {
+    if (usernames.empty())
+        return {};
+    constexpr std::size_t chunk_size = 1000;
+    if (usernames.size() > chunk_size) {
+        std::vector<domain::account> all;
+        for (std::size_t begin = 0; begin < usernames.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, usernames.size());
+            auto part = read_latest_by_username(
+                ctx, std::vector<std::string>(usernames.begin() + begin, usernames.begin() + end));
+            all.insert(all.end(), std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts by username. Count: " << usernames.size();
+
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<account_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "username"_c.in(usernames) &&
+                             "valid_to"_c == max) |
+                       query_builder::order_by("valid_from"_c.desc());
+
+    return query_builder::execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading latest accounts by username");
+}
+#+end_src
+
 *** read_latest_by_email
 :PROPERTIES:
 :ID: 8D2F6B41-9C3E-4A57-B0D8-2F5A7C1E9B36

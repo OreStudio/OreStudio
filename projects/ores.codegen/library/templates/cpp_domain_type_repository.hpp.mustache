@@ -119,6 +119,17 @@ public:
      */
     std::vector<domain::{{entity_singular}}>
     read_latest_by_{{suffix}}(const context& ctx, {{{params}}});
+{{#is_declared_key_finder}}
+
+    /**
+     * @brief Reads latest {{entity_plural_words}} filtered by a set of {{{key_label}}} values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::{{entity_singular}}>
+    read_latest_by_{{suffix}}(const context& ctx, const std::vector<std::string>& {{column}}s);
+{{/is_declared_key_finder}}
 {{/key_finders}}
 {{^current_state}}
 {{#key_resolvers}}

@@ -303,6 +303,46 @@ curve_definition_repository::read_latest_by_curve_id(const context& ctx,
 }
 
 std::vector<domain::curve_definition>
+curve_definition_repository::read_latest_by_curve_id(const context& ctx,
+                                                     const std::vector<std::string>& curve_ids) {
+    if (curve_ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (curve_ids.size() > chunk_size) {
+        std::vector<domain::curve_definition> all;
+        for (std::size_t begin = 0; begin < curve_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, curve_ids.size());
+            auto part = read_latest_by_curve_id(
+                ctx, std::vector<std::string>(curve_ids.begin() + begin, curve_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definitions by curve_id. Count: "
+                               << curve_ids.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<curve_definition_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "curve_id"_c.in(curve_ids) &&
+                                            "valid_to"_c == max);
+    auto found =
+        query_builder::execute_read_query<curve_definition_entity, domain::curve_definition>(
+            ctx,
+            query,
+            [](const auto& entities) { return curve_definition_mapper::map(entities); },
+            lg(),
+            "Reading latest curve definitions by curve_id.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::curve_definition>
 curve_definition_repository::read_any_by_curve_id(const context& ctx, const std::string& curve_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any curve definition by curve_id: " << curve_id;
     const auto tid = ctx.tenant_id().to_string();

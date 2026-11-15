@@ -38,6 +38,7 @@ export interface ProviderWrite {
     kind: string;
     description: string;
     display_order: number;
+    precedence: number;
     terms_url: string;
     terms_credit: string;
     allows_storage: boolean;

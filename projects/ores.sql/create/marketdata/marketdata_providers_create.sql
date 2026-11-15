@@ -43,6 +43,7 @@ create table if not exists "ores_marketdata_providers_tbl" (
     "kind" text not null,
     "description" text not null,
     "display_order" integer not null default 0,
+    "precedence" integer not null default 1000,
     "terms_url" text not null default '',
     "terms_credit" text not null default '',
     "allows_storage" boolean not null default false,

@@ -58,6 +58,7 @@ struct provider_entity {
     std::string kind;
     std::string description;
     int display_order = 0;
+    int precedence = 1000;
     std::string terms_url = "";
     std::string terms_credit = "";
     bool allows_storage = false;
@@ -84,6 +85,7 @@ struct provider_entity {
                query_builder::bind("kind", &e::kind) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("display_order", &e::display_order) |
+               query_builder::bind("precedence", &e::precedence) |
                query_builder::bind("terms_url", &e::terms_url) |
                query_builder::bind("terms_credit", &e::terms_credit) |
                query_builder::bind("allows_storage", &e::allows_storage) |

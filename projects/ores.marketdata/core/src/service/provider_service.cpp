@@ -144,6 +144,7 @@ domain::provider provider_to_domain(const messaging::provider_write& write) {
     v.kind = write.kind;
     v.description = write.description;
     v.display_order = write.display_order;
+    v.precedence = write.precedence;
     v.terms_url = write.terms_url;
     v.terms_credit = write.terms_credit;
     v.allows_storage = write.allows_storage;

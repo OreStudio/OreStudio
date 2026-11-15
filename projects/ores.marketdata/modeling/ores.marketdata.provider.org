@@ -104,6 +104,21 @@ Order for UI display purposes.
 faker::number::integer(1, 100)
 #+end_src
 
+** precedence
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1000
+:default_value: 1000
+:END:
+
+The provider's rank when more than one of them quotes the same item: the lower the number, the earlier the provider is read, and a provider nobody ranked sits at the default and is read last. It is the rank resolution follows, and it is not the same thing as =display_order=, which orders a screen and says nothing about which source answers a read.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
 ** terms_url
 :PROPERTIES:
 :type:          text

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/rank-the-providers-as-data
+#+pr: 4757
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A rate a firm does not observe, it triangulates: the driver pairs are the ones i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4757][#4757]] | [marketdata] Rank the providers that resolution reads |
 
 * Review
 
@@ -87,3 +87,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The providers carry a rank resolution can read. =precedence= sits beside
+=display_order= and is a different fact: the lower the number, the earlier
+the provider is read when more than one quotes the same item, and a
+provider nobody ranked stays at a thousand, read last. The C++ default
+matches the SQL default, so a client that omits the field cannot outrank a
+ranked provider by accident.
+
+Each of the four catalogues seeds the rank from the order the file already
+states, rather than repeating a number per row:
+
+#+begin_src sql
+update ores_marketdata_providers_tbl
+set precedence = display_order
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and valid_to = ores_utility_infinity_timestamp_fn()
+  and precedence = 1000;
+#+end_src
+
+Measured after a database recreation: bloomberg 1, lseg 2, ice 3,
+tradeweb 4, ore 5, composite 6, demo 7, ecb 20, imf 21, boc 22, tcmb 23,
+derived 30, nyfed 30, boe 31 through mas 40.
+
+Verification:
+
+- =compass db recreate -y -k= recreates in three minutes and seeds the rank
+  above, which also proves the four populate scripts parse.
+- =compass codegen entity show provider= reports every generated file
+  current, and the drift checks pass: no model drift over 442 of 787
+  models, no component drift, 54 physical inventories and every
+  component_files.cmake up to date.
+- =ores.web= typecheck passes across all workspaces.
+- The shell script library was regenerated; three scripts gained the
+  parameter.
+- =compass test run -R 'ores\.marketdata\.(api|core|service)\.tests|ores\.shell\.marketdata\.tests'=
+  passes all four suites in 643 seconds: shell 2.07s, api 3.07s, core
+  555.81s, service 81.61s.
+
+One fault outside this task came with it: main did not compile, because
+=app_curve_analytics_tests= dropped the =std::expected= that
+=curve_republish_service::republish= now returns. The fix requires the
+republish to have happened rather than discarding it, and is committed
+here so main builds again.

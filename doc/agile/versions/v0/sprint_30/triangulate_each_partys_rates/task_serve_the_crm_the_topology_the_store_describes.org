@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
-#+branch: feature/build-the-crm-topology-from-identity
+#+branch: feature/serve-the-crm-the-topology-the-store-describes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The CRM's drivers are hand-listed in refdata, and the identity the store holds i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

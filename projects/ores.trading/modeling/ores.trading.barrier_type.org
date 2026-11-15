@@ -59,6 +59,25 @@ Detailed description of the barrier type.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** direction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The side of the spot a single barrier of this style sits on: Up for a
+level above it, Down for a level below it. A style with no side, such
+as KnockIn or a profit cap, states none.
+
+A check that ties a barrier's level to its side reads the side from
+here, so a style added to the table carries its side with it and the
+check cannot disagree with the table.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Up")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -66,6 +85,12 @@ std::string(faker::lorem::sentence())
 :tablename: ores_trading_barrier_types_tbl
 :rls_tenant_isolation: true
 :END:
+
+** Checks
+
+| expression                                       |
+|--------------------------------------------------|
+| "direction" is null or "direction" in ('Up', 'Down') |
 
 ** Extra drops
 
@@ -105,6 +130,7 @@ drop function if exists ores_trading_validate_barrier_type_fn;
 |-------------+-------------|
 | code        | Code        |
 | description | Description |
+| direction   | Direction   |
 | modified_by | Modified By |
 | version     | Version     |
 

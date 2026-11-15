@@ -439,14 +439,44 @@ refused on write.
 | "upper_barrier" is null or "upper_barrier" > 0 |
 | "lower_barrier" is not null or "upper_barrier" is not null |
 | ("trade_type_code" <> 'FxDoubleBarrierOption') or ("lower_barrier" is not null and "upper_barrier" is not null) |
-| ("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('UpAndOut', 'UpAndIn', 'FixingCap')) or ("lower_barrier" is null and "upper_barrier" is not null) |
-| ("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('DownAndOut', 'DownAndIn', 'FixingFloor')) or ("lower_barrier" is not null and "upper_barrier" is null) |
 
 ** Indexes
 
 | name | columns | unique | current_only | where_extra |
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
+
+* Insert trigger
+
+A single barrier sits on one side of the spot, and its style says which:
+an Up style states only the upper level and a Down style only the lower.
+The side is read from the barrier type's own row, so a style added there
+is checked with no change here.
+
+#+begin_src sql :name fx_barrier_direction :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    if NEW.trade_type_code = 'FxBarrierOption' then
+        if exists (
+            select 1 from ores_trading_barrier_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.barrier_type
+              and direction = 'Up'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) and not (NEW.lower_barrier is null and NEW.upper_barrier is not null) then
+            raise exception 'Invalid barrier levels for %: an Up barrier states the upper level only.',
+                NEW.barrier_type using errcode = '23514';
+        end if;
+        if exists (
+            select 1 from ores_trading_barrier_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.barrier_type
+              and direction = 'Down'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) and not (NEW.lower_barrier is not null and NEW.upper_barrier is null) then
+            raise exception 'Invalid barrier levels for %: a Down barrier states the lower level only.',
+                NEW.barrier_type using errcode = '23514';
+        end if;
+    end if;
+#+end_src
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

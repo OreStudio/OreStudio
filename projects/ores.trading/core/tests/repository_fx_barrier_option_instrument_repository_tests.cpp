@@ -78,13 +78,15 @@ TEST_CASE("an_up_style_refuses_a_lower_level", "[repository][fx][fx_barrier_opti
     auto instr = repository_fx_barrier_option_instrument_repository_make_instrument(h);
     instr.lower_barrier = ores::utility::decimal::decimal::from_string("1.1").value();
 
-    // The refusal names a check constraint, so a different failure cannot pass.
+    // The refusal names the side the style's row states, so a different
+    // failure cannot pass.
     fx_barrier_option_instrument_repository repo;
     try {
         repo.write(ctx, instr);
         FAIL("the store accepted an Up style with a lower level");
     } catch (const std::exception& e) {
-        CHECK(std::string(e.what()).find("violates check constraint") != std::string::npos);
+        CHECK(std::string(e.what()).find("an Up barrier states the upper level only") !=
+              std::string::npos);
     }
 }
 

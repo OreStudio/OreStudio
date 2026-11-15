@@ -183,6 +183,10 @@ bond_issue_call_date make_call_date(const stamps& s,
     r.issue_id = issue_id;
     r.sequence_number = sequence_number;
     r.call_date = ores::platform::time::datetime::from_iso8601_date(call_date);
+    r.style = "Bermudan";
+    r.price = ores::utility::decimal::decimal::from_string("1").value();
+    r.price_type = "Clean";
+    r.include_accrual = "true";
     return r;
 }
 

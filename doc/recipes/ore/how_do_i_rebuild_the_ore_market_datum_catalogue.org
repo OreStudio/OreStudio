@@ -39,6 +39,7 @@ How do I rebuild the ORE market datum catalogue?
    | =external/ore/catalogue/forms.jsonl= | One line per key in =forms.txt=: every form ORE's parser documents, and the keys it refuses |
    | =external/ore/catalogue/corpus.jsonl.gz= | One line per distinct key in the example corpus |
    | =external/ore/catalogue/instrument_types.txt= | ORE's instrument types, each with the key tokens its parser reads as it |
+   | =external/ore/catalogue/trade_types.tsv= | Every trade type ORE registers or the catalogue declares: the class and form ORE reads it as, its data element, and the library scripts that carry the same product |
    | =external/ore/catalogue/ore_version.txt= | The ORE tag and commit, and the gzip version |
 
 3. /Check the result./ A rebuild from the same ORE commit gives the same
@@ -50,7 +51,14 @@ How do I rebuild the ORE market datum catalogue?
    git status --short external/ore/catalogue external/ore/tools/datum_catalogue
    #+end_src
 
-4. /Add a form./ When ORE gains a key form, add one key for it to
+4. /Regenerate the trade type coverage page./ =trade_types.tsv= feeds
+   [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]]:
+
+   #+begin_src sh :results verbatim
+   python3 build/scripts/generate_trade_type_coverage.py --write
+   #+end_src
+
+5. /Add a form./ When ORE gains a key form, add one key for it to
    =external/ore/tools/datum_catalogue/forms.txt= under the heading for its
    instrument type, citing the parser line that reads it, and regenerate.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Rebuilds the market datum catalogue under external/ore/catalogue from a local
-# ORE engine checkout and its build.
+# Rebuilds the market datum and trade type catalogues under external/ore/catalogue
+# from a local ORE engine checkout and its build.
 #
 #   regenerate.sh <ORE source dir> <ORE build dir>
 #
@@ -39,6 +39,9 @@ python3 "${here}/extract_corpus_index_names.py" "${ore_root}/examples" \
     | "${work}/build/index_catalogue" "${conventions}" > "${out}/index_corpus.jsonl"
 python3 "${here}/extract_corpus_keys.py" "${ore_root}/examples" > "${work}/corpus_keys.txt"
 "${work}/build/datum_catalogue" < "${work}/corpus_keys.txt" | gzip -n -9 > "${out}/corpus.jsonl.gz"
+"${work}/build/trade_catalogue" > "${work}/trade_registrations.tsv"
+python3 "${here}/mine_trade_types.py" "${ore_source}" "${work}/trade_registrations.tsv" \
+    "$(cd "${ore_root}/../.." && pwd)" > "${out}/trade_types.tsv"
 
 version="$(git -C "${ore_source}" describe --tags --always 2>/dev/null || echo unknown)"
 commit="$(git -C "${ore_source}" rev-parse --short HEAD 2>/dev/null || echo unknown)"

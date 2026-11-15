@@ -1,0 +1,6 @@
+# The trade types whose data element breaks ORE's convention of the type, with
+# any underscore removed, followed by Data: the type, a tab, and the element its
+# fromXML reads. mine_trade_types.py checks each against ORE's source.
+BondPosition	BondBasketData
+CommoditySwap	SwapData
+SyntheticCDO	CdoData

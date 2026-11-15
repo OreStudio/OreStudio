@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: CC7CC29C-9413-4DF3-BC32-D1C8A978D295
+:END:
+#+title: Which trade types ORE carries and ORE Studio holds
+#+description: Every trade type, the form ORE reads it in, its data element, the library scripts that carry the same product, the table that holds it in ORE Studio, whether the generator books it, and the task that closes each gap.
+#+type: knowledge
+#+level: cross
+#+filetags: :ore:trading:coverage:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+* Summary
+
+This page states, for every trade type the catalogue declares, what ORE does
+with it and what ORE Studio holds of it. ORE's side is mined from ORE itself: a
+harness asks ORE's trade factory for every registered type and the class it
+builds, and a script reads ORE's source, schema and script library for the rest.
+ORE Studio's side comes from the trade type catalogue and the recorded generated
+trades. The last column names the task of
+[[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] that closes a
+type's gap, so the coverage work has one index.
+
+* Detail
+
+** Reading the table
+
+- *ORE form* is what ORE's trade factory builds for the type: =scripted= when the
+  class derives from =ScriptedTrade=, =native= otherwise, and =not registered=
+  when ORE has no builder for the type.
+- *Catalogue form* is the =construction= the catalogue states today. Where it
+  disagrees with ORE's form, the catalogue is wrong.
+- *Data element* is the element ORE's =fromXML= reads. It is the type with any
+  underscore removed followed by =Data=, except where ORE's class reads another
+  element. The miner looks for the element's name as a quoted string in the
+  class's source and its base classes. This is a text search, not a parse, so a
+  match shows the name is present, not that =fromXML= reads it. An element ORE
+  reads that the vendored XSD does not declare is marked.
+- *Table* is the instrument table that holds a trade of the type, empty when no
+  table holds it yet. *Generated* says whether a recorded generated trade exists.
+- *Library scripts* are the scripts in ORE's Products script library that carry
+  the same product as a generic =ScriptedTrade=. *Match* compares a script's code
+  with the code ORE's class embeds: =identical= when they are the same text,
+  =near= when they differ in small edits (a similarity of 0.7 or more), and
+  =named= when the library holds a script of the product's name whose code
+  differs.
+- *Closed by* is each task of the story that owns one of the type's gaps: the tag task for a type ORE does not register, the form task for a form the catalogue misstates, the both-forms task for a type with a library script, and any task whose description names the type.
+
+** How the evidence is mined
+
+=external/ore/tools/datum_catalogue/regenerate.sh= builds =trade_catalogue=
+against a local ORE build, which prints every registered type with its class
+and form, and runs =mine_trade_types.py=, which joins that with ORE's source,
+the XSD, the Products script library, the curated
+=trade_type_twins.txt= and =trade_type_elements.txt=, and the catalogue. The
+result is =external/ore/catalogue/trade_types.tsv=, with the ORE commit in
+=ore_version.txt=. This page is generated from that table by
+=build/scripts/generate_trade_type_coverage.py=; its =--check= mode fails when
+the page is stale.
+
+** Findings
+
+- ORE reads 39 trade types through a =ScriptedTrade= class: the accumulators,
+  target redemption forwards, basket, rainbow, best-entry, strike-resettable,
+  window and generic barrier options, the basket variance swaps, worst-of basket
+  swaps, forward volatility agreements, =KnockOutSwap=, and the four classes
+  named for their script. The catalogue states five of them as scripted.
+- =CommodityPairwiseVarianceSwap= and the bare =ForwardVolatilityAgreement= have
+  no ORE trade builder. ORE still carries both products as a generic
+  =ScriptedTrade=, over the library scripts =PairwiseVarianceSwap= and
+  =ForwardVolatilityAgreement=.
+- ORE reads =CommodityWindowBarrierOptionData=, which the vendored XSD does not
+  declare, so a writer that follows the XSD cannot write the type.
+- Three types read an element other than the convention's: =BondPosition=
+  reads =BondBasketData=, =CommoditySwap= reads =SwapData= and =SyntheticCDO=
+  reads =CdoData=.
+- The basket, rainbow and best-entry classes embed the library's own script
+  text, so their two forms are the same payoff by construction. The accumulator,
+  TaRF, window barrier and basket variance swap scripts are near copies. The
+  generic barrier, worst-of basket swap, forward volatility, pairwise variance
+  and outperformance scripts share only the product.
+
+# BEGIN GENERATED
+
+Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_type_coverage.py --write=.
+
+** Counts
+
+- The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
+- 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
+- ORE registers 1 type the catalogue leaves out: =Failed=.
+- 91 types name an instrument table, and the generator records 83.
+- 34 registered types state a form in the catalogue that ORE does not read them as.
+- 35 types have a library script that carries the same product.
+
+** Trade types
+
+| Type | ORE form | Catalogue form | Data element | Table | Generated | Library scripts | Match | Closed by |
+|-
+| =Ascot= | native | native | =AscotData= | =bond_instrument= | yes | - | - | - |
+| =Autocallable_01= | scripted | scripted | =Autocallable01Data= | =scripted_instrument= | no | - | - | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] |
+| =BalanceGuaranteedSwap= | native | native | =BalanceGuaranteedSwapData= | =rate_instrument= | yes | - | - | - |
+| =Bond= | native | native | =BondData= | =bond_instrument= | yes | - | - | - |
+| =BondFuture= | native | native | =BondFutureData= | =bond_instrument= | yes | - | - | - |
+| =BondFutureOption= | native | native | =BondFutureOptionData= | - | no | - | - | [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
+| =BondOption= | native | native | =BondOptionData= | =bond_instrument= | yes | - | - | - |
+| =BondPosition= | native | native | =BondBasketData= | =bond_instrument= | yes | - | - | - |
+| =BondRepo= | native | native | =BondRepoData= | =bond_instrument= | yes | - | - | - |
+| =BondTRS= | native | native | =BondTRSData= | =bond_instrument= | yes | - | - | - |
+| =CBO= | native | native | =CBOData= | - | no | - | - | [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] |
+| =CallableBond= | native | native | =CallableBondData= | =bond_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]] |
+| =CallableSwap= | native | native | =CallableSwapData= | =rate_instrument= | yes | - | - | - |
+| =CapFloor= | native | native | =CapFloorData= | =rate_instrument= | yes | - | - | - |
+| =CashPosition= | native | native | =CashPositionData= | - | no | - | - | [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] |
+| =CommodityAccumulator= | scripted | native | =CommodityAccumulatorData= | =commodity_instrument= | yes | =Accumulator01=, =Accumulator02= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityAsianOption= | native | native | =CommodityAsianOptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityAveragePriceOption= | native | native | =CommodityAveragePriceOptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityBasketOption= | scripted | native | =CommodityBasketOptionData= | =commodity_instrument= | yes | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityBasketVarianceSwap= | scripted | native | =CommodityBasketVarianceSwapData= | =commodity_instrument= | yes | =BasketVarianceSwap= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityBestEntryOption= | scripted | native | =CommodityBestEntryOptionData= | =commodity_instrument= | yes | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityDigitalAveragePriceOption= | native | native | =CommodityDigitalAveragePriceOptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityDigitalOption= | native | native | =CommodityDigitalOptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityForward= | native | native | =CommodityForwardData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityForwardVolatilityAgreement= | scripted | native | =CommodityForwardVolatilityAgreementData= | =commodity_instrument= | yes | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityGenericBarrierOption= | scripted | native | =CommodityGenericBarrierOptionData= | =commodity_instrument= | yes | =GenericBarrierOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityOption= | native | native | =CommodityOptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityOptionStrip= | native | native | =CommodityOptionStripData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityPairwiseVarianceSwap= | not registered | native | =CommodityPairwiseVarianceSwapData= (not in the XSD) | =commodity_instrument= | no | =PairwiseVarianceSwap= | named | [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]], [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] |
+| =CommodityPosition= | native | native | =CommodityPositionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityRainbowOption= | scripted | native | =CommodityRainbowOptionData= | =commodity_instrument= | yes | =MaxRainbowOption=, =MinRainbowOption=, =BestOfAssetOrCashRainbowOption=, =WorstOfAssetOrCashRainbowOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommoditySpreadOption= | native | native | =CommoditySpreadOptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityStrikeResettableOption= | scripted | native | =CommodityStrikeResettableOptionData= | =commodity_instrument= | yes | - | - | [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommoditySwap= | native | native | =SwapData= | =commodity_instrument= | yes | - | - | - |
+| =CommoditySwaption= | native | native | =CommoditySwaptionData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityTaRF= | scripted | native | =CommodityTaRFData= | =commodity_instrument= | yes | =TaRF= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityVarianceSwap= | native | native | =CommodityVarianceSwapData= | =commodity_instrument= | yes | - | - | - |
+| =CommodityWindowBarrierOption= | scripted | native | =CommodityWindowBarrierOptionData= (not in the XSD) | =commodity_instrument= | no | =WindowBarrierOption= | near | [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]], [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CommodityWorstOfBasketSwap= | scripted | native | =CommodityWorstOfBasketSwapData= | =commodity_instrument= | yes | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =CompositeTrade= | native | container | =CompositeTradeData= | =composite_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =ContractForDifference= | native | native | =ContractForDifferenceData= | =composite_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =ConvertibleBond= | native | native | =ConvertibleBondData= | =bond_instrument= | yes | - | - | - |
+| =CreditDefaultSwap= | native | native | =CreditDefaultSwapData= | =credit_instrument= | yes | - | - | - |
+| =CreditDefaultSwapOption= | native | native | =CreditDefaultSwapOptionData= | - | no | - | - | [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] |
+| =CreditLinkedSwap= | native | native | =CreditLinkedSwapData= | =credit_instrument= | yes | - | - | - |
+| =CrossCurrencySwap= | native | native | =CrossCurrencySwapData= | =rate_instrument= | yes | - | - | - |
+| =DoubleDigitalOption= | scripted | scripted | =DoubleDigitalOptionData= | =scripted_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]], [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
+| =EquityAccumulator= | scripted | native | =EquityAccumulatorData= | =equity_accumulator_instrument= | yes | =Accumulator01=, =Accumulator02= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityAsianOption= | native | native | =EquityAsianOptionData= | =equity_asian_option_instrument= | yes | - | - | - |
+| =EquityAutoDeltaHedgedOption= | native | native | =EquityAutoDeltaHedgedOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
+| =EquityBarrierOption= | native | native | =EquityBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
+| =EquityBasketOption= | scripted | native | =EquityBasketOptionData= | - | no | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityBasketVarianceSwap= | scripted | native | =EquityBasketVarianceSwapData= | - | no | =BasketVarianceSwap= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityBestEntryOption= | scripted | native | =EquityBestEntryOptionData= | - | no | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityCliquetOption= | native | native | =EquityCliquetOptionData= | =equity_option_instrument= | yes | - | - | - |
+| =EquityDigitalOption= | native | native | =EquityDigitalOptionData= | =equity_digital_option_instrument= | yes | - | - | - |
+| =EquityDoubleBarrierOption= | native | native | =EquityDoubleBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
+| =EquityDoubleTouchOption= | native | native | =EquityDoubleTouchOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
+| =EquityEuropeanBarrierOption= | native | native | =EquityEuropeanBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
+| =EquityForward= | native | native | =EquityForwardData= | =equity_forward_instrument= | yes | - | - | - |
+| =EquityForwardVolatilityAgreement= | scripted | native | =EquityForwardVolatilityAgreementData= | - | no | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityFutureOption= | native | native | =EquityFutureOptionData= | - | no | - | - | [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
+| =EquityGenericBarrierOption= | scripted | native | =EquityGenericBarrierOptionData= | - | no | =GenericBarrierOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityOption= | native | native | =EquityOptionData= | =equity_option_instrument= | yes | - | - | - |
+| =EquityOptionPosition= | native | native | =EquityOptionPositionData= | =equity_position_instrument= | yes | - | - | - |
+| =EquityOutperformanceOption= | native | native | =EquityOutperformanceOptionData= | =equity_option_instrument= | no | =OutperformanceOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =EquityPairwiseVarianceSwap= | native | native | =EquityPairwiseVarianceSwapData= | - | no | =PairwiseVarianceSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
+| =EquityPosition= | native | native | =EquityPositionData= | =equity_position_instrument= | yes | - | - | - |
+| =EquityRainbowOption= | scripted | native | =EquityRainbowOptionData= | - | no | =MaxRainbowOption=, =MinRainbowOption=, =BestOfAssetOrCashRainbowOption=, =WorstOfAssetOrCashRainbowOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityStrikeResettableOption= | scripted | native | =EquityStrikeResettableOptionData= | - | no | - | - | [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquitySwap= | native | native | =EquitySwapData= | =equity_swap_instrument= | yes | - | - | - |
+| =EquityTaRF= | scripted | native | =EquityTaRFData= | =equity_accumulator_instrument= | yes | =TaRF= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityTouchOption= | native | native | =EquityTouchOptionData= | =equity_digital_option_instrument= | yes | - | - | - |
+| =EquityVarianceSwap= | native | native | =EquityVarianceSwapData= | =equity_variance_swap_instrument= | yes | - | - | - |
+| =EquityWindowBarrierOption= | scripted | native | =EquityWindowBarrierOptionData= | - | no | =WindowBarrierOption= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EquityWorstOfBasketSwap= | scripted | native | =EquityWorstOfBasketSwapData= | =equity_swap_instrument= | yes | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =EuropeanOptionBarrier= | scripted | scripted | =EuropeanOptionBarrierData= | - | no | - | - | [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
+| =FlexiSwap= | native | native | =FlexiSwapData= | =rate_instrument= | yes | - | - | - |
+| =ForwardBond= | native | native | =ForwardBondData= | =bond_instrument= | yes | - | - | - |
+| =ForwardRateAgreement= | native | native | =ForwardRateAgreementData= | =rate_instrument= | yes | - | - | - |
+| =ForwardVolatilityAgreement= | not registered | native | =ForwardVolatilityAgreementData= | - | no | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]], [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] |
+| =FxAccumulator= | scripted | native | =FxAccumulatorData= | =fx_accumulator_instrument= | yes | =Accumulator01=, =Accumulator02= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxAsianOption= | native | native | =FxAsianOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
+| =FxAverageForward= | native | native | =FxAverageForwardData= | =fx_asian_forward_instrument= | yes | - | - | - |
+| =FxBarrierOption= | native | native | =FxBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
+| =FxBasketOption= | scripted | native | =FxBasketOptionData= | - | no | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxBasketVarianceSwap= | scripted | native | =FxBasketVarianceSwapData= | - | no | =BasketVarianceSwap= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxBestEntryOption= | scripted | native | =FxBestEntryOptionData= | - | no | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxDigitalBarrierOption= | native | native | =FxDigitalBarrierOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
+| =FxDigitalOption= | native | native | =FxDigitalOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
+| =FxDoubleBarrierOption= | native | native | =FxDoubleBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
+| =FxDoubleTouchOption= | native | native | =FxDoubleTouchOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
+| =FxEuropeanBarrierOption= | native | native | =FxEuropeanBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
+| =FxForward= | native | native | =FxForwardData= | =fx_forward_instrument= | yes | - | - | - |
+| =FxForwardVolatilityAgreement= | scripted | native | =FxForwardVolatilityAgreementData= | - | no | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxGenericBarrierOption= | scripted | native | =FxGenericBarrierOptionData= | =fx_barrier_option_instrument= | yes | =GenericBarrierOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxKIKOBarrierOption= | native | native | =FxKIKOBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
+| =FxOption= | native | native | =FxOptionData= | =fx_vanilla_option_instrument= | yes | - | - | - |
+| =FxPairwiseVarianceSwap= | native | native | =FxPairwiseVarianceSwapData= | - | no | =PairwiseVarianceSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
+| =FxRainbowOption= | scripted | native | =FxRainbowOptionData= | - | no | =MaxRainbowOption=, =MinRainbowOption=, =BestOfAssetOrCashRainbowOption=, =WorstOfAssetOrCashRainbowOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxStrikeResettableOption= | scripted | native | =FxStrikeResettableOptionData= | - | no | - | - | [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxSwap= | native | native | =FxSwapData= | =fx_forward_instrument= | yes | - | - | - |
+| =FxTaRF= | scripted | native | =FxTaRFData= | =fx_asian_forward_instrument= | yes | =TaRF= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxTouchOption= | native | native | =FxTouchOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
+| =FxVarianceSwap= | native | native | =FxVarianceSwapData= | =fx_variance_swap_instrument= | yes | - | - | - |
+| =FxWindowBarrierOption= | scripted | native | =FxWindowBarrierOptionData= | - | no | =WindowBarrierOption= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =FxWorstOfBasketSwap= | scripted | native | =FxWorstOfBasketSwapData= | - | no | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =IndexCreditDefaultSwap= | native | native | =IndexCreditDefaultSwapData= | =credit_instrument= | yes | - | - | - |
+| =IndexCreditDefaultSwapOption= | native | native | =IndexCreditDefaultSwapOptionData= | =credit_instrument= | yes | - | - | - |
+| =InflationSwap= | native | native | =InflationSwapData= | =rate_instrument= | yes | - | - | - |
+| =IntradayPowerForward= | native | native | =IntradayPowerForwardData= | =commodity_instrument= | yes | - | - | - |
+| =KnockOutSwap= | scripted | native | =KnockOutSwapData= | =rate_instrument= | yes | - | - | [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] |
+| =PerformanceOption_01= | scripted | scripted | =PerformanceOption01Data= | =scripted_instrument= | yes | - | - | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] |
+| =RateDigitalOption= | native | native | =RateDigitalOptionData= | - | no | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
+| =RiskParticipationAgreement= | native | native | =RiskParticipationAgreementData= | =credit_instrument= | yes | - | - | - |
+| =ScriptedTrade= | scripted | scripted | =ScriptedTradeData= | =scripted_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]], [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]], [[id:CF1384A9-A358-4E56-82F7-AFC089AD4FEB][Generate the script-only equity, FX and commodity payoffs]], [[id:3ACCEBF0-131F-49EC-BB5D-24F2BBCD6ED0][Hold ORE's script library as reference data]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]], [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] |
+| =Swap= | native | native | =SwapData= | =rate_instrument= | yes | - | - | - |
+| =Swaption= | native | native | =SwaptionData= | =rate_instrument= | yes | - | - | - |
+| =SwaptionStraddle= | native | native | =SwaptionStraddleData= | - | no | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
+| =SyntheticCDO= | native | native | =CdoData= | =credit_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =TotalReturnSwap= | native | native | =TotalReturnSwapData= | =composite_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+
+# END GENERATED
+
+* See also
+
+- [[id:10F9A53C-B978-428F-A0B1-48C97AC5828C][What ORE requires of each trade]], the terms ORE requires of each generated type.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]], the catalogue this page compares with ORE.
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], the story that closes the gaps.

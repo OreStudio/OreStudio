@@ -408,6 +408,19 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "tooling"),
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
     ),
+    Check(
+        id="trade-type-coverage",
+        title="The trade type coverage page matches its sources",
+        argv=("python3", "build/scripts/generate_trade_type_coverage.py", "--check"),
+        classes=("docs", "modeling", "tooling", "cpp"),
+        paths=("doc/knowledge/domain/ore_trade_type_coverage.org",
+               "doc/agile/versions/v0/sprint_30/hold_every_product_type_the_engine_supports/*",
+               "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org",
+               "projects/ores.synthetic/core/tests/data/generated_trades/*",
+               "external/ore/catalogue/*",
+               "build/scripts/generate_trade_type_coverage.py"),
+        fix="Run python3 build/scripts/generate_trade_type_coverage.py --write and commit the page.",
+    ),
     # The generated tables are the only copy of the schema's shape we keep, so
     # a hand edit or a schema change that the tables did not follow is the same
     # failure from here.

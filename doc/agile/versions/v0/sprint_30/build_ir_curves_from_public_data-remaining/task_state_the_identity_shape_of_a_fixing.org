@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: BF673434-ABA7-473E-8550-FC0E7EDD9399
+:END:
+#+title: Task: State the identity shape of a fixing
+#+description: State, as data beside the series classification rules, which fields each market series family requires and which it forbids, and hold the identity writer to it.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
+#+owner: marco
+#+branch: feature/state-the-identity-shape-of-a-fixing
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every family the market data ingest writes states the fields its identity requires and forbids, so a fixing that leaves its index name empty is refused at the writer instead of failing later as a curve that cannot find the series it names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | The shapes are seeded and the identity writer enforces them; the SQL test passes on a rebuilt database. |
+| Waiting on   | A rebuild, so the projector, the party-curve label and the tenant copy are compiled and the market data suites can run. |
+| Next         | Run the market data core and service suites, then try the screens. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The projection refuses a series whose identity contradicts its stated family, naming the class, the subdivision and the field.
+- The IBOR, swap and FX fixing families state the fields they key on, and one seed states each one.
+- A provisioned tenant holds the same shapes as the system tenant and one rule for the index keys.
+- The identities already written contradict no shape they are held to.
+
+* Plan
+
+The shape of an identity is data, one row per field per family, in a table beside
+the series classification rules, because the family that a series belongs to is
+already data there and a second place to state it would drift from the first. The
+key carries the index family as well as the class and the subclass, because
+=ir/index_fixing= is an IBOR fixing when the index is =ibor= and a swap fixing
+when it is =swap=, and the two are named by different fields: an IBOR fixing
+carries an index name, a swap fixing a tenor.
+
+The writer that projects an identity row from an oresmd URI enforces the shape,
+because that is the boundary where external data meets the model and the only
+point that sees the whole row before it is stored. It fails closed and names the
+family and the field, so the message says which series was refused and why. The
+backfill, which is a repair, counts the rows it refuses instead of aborting on the
+first legacy one, so the rest are projected and the refused ones are named.
+
+A family no row states is projected unguarded and counted. Refusing every family
+nobody has declared yet would stop an ingest over a gap in the catalogue, so the
+seed states the families the curve and fixing work already creates, and the rest
+wait for the family's own task.
+
+A tenant is provisioned with the system tenant's shapes and rules, once, guarded
+by =not exists= on the same key, so a tenant that is provisioned again neither
+fails on a duplicate nor drifts from the system tenant.
+
+A party's curve output is the party's own computation from its own subscriptions,
+so it keeps the derivation kind of the system's series and names the party's copy
+of the config that computes it; it is never =OBSERVED=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stated shapes, system tenant | 29 rows over 7 families | `select asset_class, series_subclass, index_family, count(*) from ores_marketdata_series_identity_shapes_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1,2,3` | pending the record |
+| Identities that contradict a stated shape | 0 | the =shape_scan= query in =projects/ores.sql/test/marketdata_series_identity_shape_test.sql=, against the 1,374 identity rows of 16 tenants the database held before the rebuild of 2026-11-15 20:19 | 5f052db062 |
+| Rules keyed by an index, per tenant | 1 in each of 17 tenants | `select tenant_id, count(*) from ores_marketdata_series_classification_rules_tbl where key_kind = 'index' and valid_to = ores_utility_infinity_timestamp_fn() group by 1` | 5f052db062 |
+| Identity guard unit tests | 9 assertions in 5 test cases, pass | `./publish/bin/ores.marketdata.core.tests "[series_identity][shape]"` | 5f052db062 |
+| Shape test suite | 8 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | pending the record |
+| Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | pending the record |
+
+* Notes
+
+The 73 fixing series the classification calls something other than =index_fixing=
+are fixtures: every one of them was written by the test DML user with the reason
+=system.test=, and all 162 real fixing series classify as =index_fixing=. There is
+no classifier defect to fix.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

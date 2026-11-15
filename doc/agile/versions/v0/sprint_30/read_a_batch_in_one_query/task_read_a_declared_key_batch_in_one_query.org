@@ -8,7 +8,7 @@
 #+filetags: :codegen:performance:repository:services:read_a_batch_in_one_query:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-a-declared-key-batch-in-one-query
-#+pr:
+#+pr: 4742
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4742][#4742]] | [codegen] Read a batch by declared key in one query |
 
 * Review
 

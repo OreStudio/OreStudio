@@ -118,8 +118,8 @@ struct swap_leg final {
      * @brief The index the leg's payoff observes, of whatever kind its leg type names: an IBOR or
      * overnight index for a floating leg (soft FK to ores_refdata_floating_index_types_tbl), a swap
      * index for a CMS leg, an inflation index for a CPI or YY leg, a commodity for a commodity
-     * floating leg and the formula itself for a formula based leg. The trigger validates none of
-     * them, because no one reference table holds every kind.
+     * floating leg and the formula itself for a formula based leg. The trigger checks the index
+     * against the family the leg type's row states, below.
      *
      * Empty for a fixed leg; validated only when stated.
      */

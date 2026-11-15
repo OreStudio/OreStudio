@@ -51,10 +51,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 {{#repository_uses_utility}}
 #include <utility>
 {{/repository_uses_utility}}
@@ -64,7 +67,6 @@
 {{/domain_entity.sql.has_list_by_as_of}}
 {{#primary_key.is_compound}}
 #include <set>
-#include <tuple>
 {{/primary_key.is_compound}}
 <<paste:6141050C-0ED4-4680-B387-7DDDA3A69806>>
 
@@ -183,10 +185,67 @@ std::optional<query_builder::condition>
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool {{entity_singular}}_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+{{#has_audit_columns}}
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+{{/has_audit_columns}}
+}
+
+using {{entity_singular}}_rows_by_key =
+    std::map<std::tuple<{{{primary_key.batch_tuple_type}}}>, std::vector<domain::{{entity_singular}}>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+{{entity_singular}}_rows_by_key {{entity_singular}}_current_rows(
+    {{entity_singular}}_repository& repo, const ores::database::context& ctx,
+    const std::vector<domain::{{entity_singular}}>& of) {
+{{#primary_key.key_columns}}
+    std::vector<std::string> {{column}}s;
+    {{column}}s.reserve(of.size());
+{{/primary_key.key_columns}}
+    for (const auto& row : of) {
+{{#primary_key.key_columns}}
+        {{column}}s.push_back({{{row_text}}});
+{{/primary_key.key_columns}}
+    }
+    {{entity_singular}}_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, {{{primary_key.batch_args}}}))
+        current[std::make_tuple({{{primary_key.batch_tuple_from_item}}})].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::{{entity_singular}}>& {{entity_singular}}_rows_of(
+    const {{entity_singular}}_rows_by_key& current, const domain::{{entity_singular}}& item) {
+    static const std::vector<domain::{{entity_singular}}> none;
+    const auto found = current.find(std::make_tuple({{{primary_key.batch_tuple_from_item}}}));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-{{entity_singular}}_repository::replace_claim(const context& ctx,
-                                             const domain::{{entity_singular}}& v) {
-    const auto current = read_latest(ctx, {{{primary_key.v_args}}});
+{{entity_singular}}_replace_claim(const std::vector<domain::{{entity_singular}}>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
 {{#has_audit_columns}}
@@ -196,15 +255,21 @@ ores::utility::domain::precondition
 {{^has_audit_columns}}
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 {{/has_audit_columns}}
 }
 
-domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
-    const context& ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::{{entity_singular}} {{entity_singular}}_apply_claim(
     const domain::{{entity_singular}}& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::{{entity_singular}}>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
 {{#has_audit_columns}}
@@ -217,15 +282,13 @@ domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
     case precondition_kind::must_match_version:
         t.{{domain_entity.scaffold_prefix}}version = claim.version ? static_cast<int>(*claim.version) : 0;
         break;
-    case precondition_kind::any: {
+    case precondition_kind::any:
         // A caller that claims nothing still has to say what it replaces, so
-        // the row is read and its version stated. A row that moved on between
-        // this read and the write is a conflict the trigger raises, never a
+        // the row's current version is stated. A row that moved on between
+        // the read and the write is a conflict the trigger raises, never a
         // silent overwrite.
-        const auto current = read_latest(ctx, {{{primary_key.v_args}}});
         t.{{domain_entity.scaffold_prefix}}version = current.empty() ? 0 : current.front().{{domain_entity.scaffold_prefix}}version;
         break;
-    }
     }
 {{/has_audit_columns}}
 {{^has_audit_columns}}
@@ -233,16 +296,17 @@ domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "{{entity_singular}}_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist
-        && !read_latest(ctx, {{{primary_key.v_args}}}).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "{{entity_singular}}_repository::write: a current row already exists");
 {{/has_audit_columns}}
     return t;
 }
 
+}
+
 void {{entity_singular}}_repository::write(const context& ctx, const domain::{{entity_singular}}& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, {{entity_singular}}_replace_claim(read_latest(ctx, {{{primary_key.v_args}}})));
 }
 {{#append_insert}}
 
@@ -264,10 +328,11 @@ void {{entity_singular}}_repository::insert(
 
 void {{entity_singular}}_repository::write(
     const context& ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    const auto current = {{entity_singular}}_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back({{entity_singular}}_replace_claim({{entity_singular}}_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
@@ -275,7 +340,10 @@ void {{entity_singular}}_repository::write(const context& ctx, const domain::{{e
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 {{#current_state}}
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = {{entity_singular}}_apply_claim(
+        v, claim,
+        {{entity_singular}}_claim_reads_current(claim) ? read_latest(ctx, {{{primary_key.v_args}}})
+                                                        : std::vector<domain::{{entity_singular}}>{});
 {{#immutable}}
     query_builder::execute_write_op(ctx, query_builder::insert({{entity_singular}}_mapper::map(t)),
         lg(), "Writing {{entity_singular_words}} to database.");
@@ -286,7 +354,10 @@ void {{entity_singular}}_repository::write(const context& ctx, const domain::{{e
 {{/immutable}}
 {{/current_state}}
 {{^current_state}}
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = {{entity_singular}}_apply_claim(
+        v, claim,
+        {{entity_singular}}_claim_reads_current(claim) ? read_latest(ctx, {{{primary_key.v_args}}})
+                                                        : std::vector<domain::{{entity_singular}}>{});
     query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/current_state}}
@@ -297,10 +368,16 @@ void {{entity_singular}}_repository::write(
     const context& ctx, const std::vector<domain::{{entity_singular}}>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
+    std::vector<domain::{{entity_singular}}> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if ({{entity_singular}}_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = {{entity_singular}}_current_rows(*this, ctx, to_read);
     std::vector<domain::{{entity_singular}}> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back({{entity_singular}}_apply_claim(v[i], claims[i], {{entity_singular}}_rows_of(current, v[i])));
 {{#current_state}}
 {{#immutable}}
     query_builder::execute_write_op(ctx, query_builder::insert({{entity_singular}}_mapper::map(batch)),
@@ -830,6 +907,25 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(
     const context& ctx, {{{primary_key.batch_params}}}) {
     if ({{{primary_key.batch_empty_check}}}) return {};
+{{#primary_key.is_compound}}
+    if ({{{primary_key.batch_size_mismatch_check}}})
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::read_latest: key column vectors must be the same length");
+{{/primary_key.is_compound}}
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if ({{primary_key.batch_requested_size_check}} > chunk_size) {
+        std::vector<domain::{{entity_singular}}> all;
+        for (std::size_t begin = 0; begin < {{primary_key.batch_requested_size_check}}; begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, {{primary_key.batch_requested_size_check}});
+            auto part = read_latest(ctx{{#primary_key.key_columns}},
+                std::vector<std::string>({{column}}s.begin() + begin, {{column}}s.begin() + end){{/primary_key.key_columns}});
+            all.insert(all.end(), std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
 {{^current_state}}
     static constexpr auto max = db_timestamp::max();
 {{/current_state}}
@@ -851,9 +947,6 @@ std::vector<domain::{{entity_singular}}>
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if ({{{primary_key.batch_size_mismatch_check}}})
-        throw std::invalid_argument(
-            "{{entity_singular}}_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<{{{primary_key.batch_tuple_type}}}>> requested;
     for (std::size_t i = 0; i < {{primary_key.batch_requested_size_check}}; ++i)
         {{{primary_key.batch_requested_insert}}}

@@ -48,6 +48,7 @@ domain::leg_type generate_synthetic_leg_type(utility::generation::generation_con
     r.code = std::string(faker::word::noun()) + "_leg_" + std::to_string(++counter) + "-" +
              std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
+    r.index_family = std::optional<std::string>("ibor");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

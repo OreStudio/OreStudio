@@ -51,6 +51,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"tenant_id", &leg_type::tenant_id},
         utility::codec::field{"code", &leg_type::code},
         utility::codec::field{"description", &leg_type::description},
+        utility::codec::field{"index_family", &leg_type::index_family},
         utility::codec::field{"modified_by", &leg_type::modified_by},
         utility::codec::field{"performed_by", &leg_type::performed_by},
         utility::codec::field{"change_reason_code", &leg_type::change_reason_code},

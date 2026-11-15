@@ -35,6 +35,7 @@ export interface LegTypeKey {
 export interface LegTypeWrite {
     code: string;
     description: string;
+    index_family: string | null;
 }
 
 export interface LegTypeChange {

@@ -27,6 +27,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/leg_type.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::refdata::presentation {
@@ -37,6 +38,7 @@ std::vector<ores::diff::domain::field_value> render_leg_type_fields(const domain
 
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Index Family", .value = v.index_family.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

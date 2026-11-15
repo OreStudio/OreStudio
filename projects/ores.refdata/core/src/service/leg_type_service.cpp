@@ -141,6 +141,7 @@ domain::leg_type leg_type_to_domain(const messaging::leg_type_write& write) {
     domain::leg_type v;
     v.code = write.code;
     v.description = write.description;
+    v.index_family = write.index_family;
     return v;
 }
 

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-leg_types add <code> <description> <reason> <commentary>
+leg_types add <code> <description> <index_family> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.leg_types.put=.
 
 #+name: leg_types-add
 #+begin_src ores-shell :tangle leg_types-add.ores :exports none
-leg_types add __none__ __none__ system.new_record generated_script
+leg_types add __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-leg_types set <code> <description> <reason> <commentary> [--version <n>]
+leg_types set <code> <description> <index_family> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.leg_types.put=.
 
 #+name: leg_types-set
 #+begin_src ores-shell :tangle leg_types-set.ores :exports none
-leg_types set __none__ __none__ system.new_record generated_script
+leg_types set __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-leg_types put-many --count <n> <code> <description> <reason> <commentary>
+leg_types put-many --count <n> <code> <description> <index_family> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.leg_types.put_many=.
 
 #+name: leg_types-put-many
 #+begin_src ores-shell :tangle leg_types-put-many.ores :exports none
-leg_types put-many --count 1 __none__ __none__ system.new_record generated_script
+leg_types put-many --count 1 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

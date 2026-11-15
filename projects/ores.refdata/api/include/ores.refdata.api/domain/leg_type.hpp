@@ -69,6 +69,17 @@ struct leg_type final {
     std::string description;
 
     /**
+     * @brief The family of index a leg of this type observes, as an index address names it: ibor
+     * for a floating leg, swap for a CMS leg, inflation for a CPI or YY leg, commodity for a
+     * commodity floating leg, and so on. A leg type that observes no index, or a formula, states
+     * none.
+     *
+     * A swap leg's index is checked against the family its leg type states, so the leg type and the
+     * check cannot disagree.
+     */
+    std::optional<std::string> index_family;
+
+    /**
      * @brief Username of the person who last modified this leg type.
      */
     std::string modified_by;

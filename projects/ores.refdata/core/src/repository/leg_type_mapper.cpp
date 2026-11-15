@@ -45,6 +45,7 @@ domain::leg_type leg_type_mapper::map(const leg_type_entity& v) {
     r.tenant_id = v.tenant_id;
     r.code = v.code;
     r.description = v.description.value_or("");
+    r.index_family = v.index_family;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -63,6 +64,7 @@ leg_type_entity leg_type_mapper::map(const domain::leg_type& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.index_family = v.index_family;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

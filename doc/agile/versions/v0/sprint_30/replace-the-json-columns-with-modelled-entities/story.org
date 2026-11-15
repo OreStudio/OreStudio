@@ -21,12 +21,12 @@ Eight columns in the trading models hold JSON blobs where the domain should hold
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-08 |
+| Next          | Nothing. |
+| Last touched  | 2026-11-15 |
 
 * Acceptance
 
@@ -46,7 +46,34 @@ Eight columns in the trading models hold JSON blobs where the domain should hold
 
 
 - Reviewed on 2026-11-08 at sprint 30 start. Acceptance written, because it was empty. The audit lists the story as ready to close, but only the basket column is done. It needs a task for each remaining column.
+- Closed on 2026-11-15. The eight columns were named in no document, so they
+  were recovered from the schema at the commit that captured the story
+  (=1e23f49c7d=). All eight became rows, and none is left in the model, the
+  store or the wire: a search of =projects/ores.sql/create/trading= finds no
+  =*_json= column, and =ores.trading.api= declares no member that holds one.
+
+  | Column | Table | Became | Task |
+  |--------+-------+--------+------|
+  | =basket_json= | equity swap | =equity_basket_constituent= rows | [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] |
+  | =initial_prices_json= | equity swap | =equity_basket_constituent.initial_price= | [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] |
+  | =knock_out_levels_json= | equity swap | =basket_swap_period.knock_out_level= | [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] |
+  | =fixed_trigger_levels_json= | equity swap | =basket_swap_period.fixed_trigger_level= | [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] |
+  | =range_bounds_json= | equity accumulator | =range_bound= rows | [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] |
+  | =events_json= | scripted | =scripted_parameter= rows | [[id:73C239AE-8FCE-4A21-95DB-2243C1432A35][Model the scripted variables as rows]] |
+  | =parameters_json= | scripted | =scripted_parameter= and =scripted_parameter_value= rows | [[id:73C239AE-8FCE-4A21-95DB-2243C1432A35][Model the scripted variables as rows]] |
+  | =underlyings_json= | scripted | =instrument_underlying= rows | [[id:73C239AE-8FCE-4A21-95DB-2243C1432A35][Model the scripted variables as rows]] |
+
+  The rule that no trade fact is held as JSON or as a list in text now belongs to
+  [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], whose every modelling task states it.
 
 * Out of scope
 
 -
+
+* Result
+
+All eight JSON columns in the trading models are rows: the five on the equity
+swap and the equity accumulator through the basket constituents task, and the
+three on the scripted instrument through the scripted variables task of the
+valuation story. No trading table, domain type or wire message holds a trade
+fact as JSON. The table in Decisions names each column and what it became.

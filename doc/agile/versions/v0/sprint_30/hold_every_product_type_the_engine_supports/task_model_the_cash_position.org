@@ -38,6 +38,9 @@ CashPosition has a data model, a projection reader and writer, and a builder, an
 - the type names an instrument table carrying its currency, amount and dates
 - the projection reads and writes the element, value for value
 - the type has a builder, and the catalogue routes it
+- the generator books one trade of each type through its builder, and the recorded trades hold it
+- the ORE engine test reads and builds each, with no error of the trade kind
+- every fact the element states is a column or a row: no list, basket or schedule is held as text
 
 * Plan
 
@@ -60,6 +63,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Captures folded in
+
+Folded in on 2026-11-15; each capture is discarded with a pointer here.
+
+- [[id:897C048B-BBCA-4A83-A6A6-F47E0C738168][Model cash flows, and decide what represents an amount of cash]]
 
 * Test Scenarios
 

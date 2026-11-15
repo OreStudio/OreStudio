@@ -26,11 +26,11 @@ A reader of the catalogue can see the whole of what ORE supports, and a test fai
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Merged into [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]] on 2026-11-15. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -60,6 +60,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Abandoned on 2026-11-15 before it started. It overlapped
+[[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]], the close-out task that moved in from the valuation story, so the two were
+merged there: its three acceptance bullets (no catalogue row without a table,
+the coverage note, the check against ORE's source) are that task's acceptance
+now.
 
 * Test Scenarios
 

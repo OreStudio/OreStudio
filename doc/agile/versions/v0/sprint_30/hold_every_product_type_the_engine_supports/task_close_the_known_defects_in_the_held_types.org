@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 87282F95-BA5B-40CF-8D41-D4996BEE27BC
+:END:
+#+title: Task: Close the known defects in the held trade types
+#+description: Eleven captures name a fact a held trade type loses, mis-states or fails to check: a callable bond's call terms, a year-on-year inflation leg, a range bound's leverage digits, a swap leg's index check, a barrier's direction, a family part's cardinality, the typed vocabulary of trade key fields, the fields an import request drops, the instrument writes the service refuses, the rest of a booked trade, and an embedded trade that outlives its parent. Each is a place where a type is held but not held completely.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every defect the captures name in a type we already hold is reproduced and fixed, or shown fixed with evidence, so a held type keeps every fact ORE states, checks it, and imports, books and exports it whole.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- a callable bond stores each call's style, price, price type and accrual, and the ORE writer states them rather than stand-ins
+- an inflation swap on a year-on-year leg is stored and roundtrips
+- a range bound's leverage exports with the digits the document states
+- a swap leg's index is checked against the table its leg type names, and a barrier's direction is read from its lookup
+- a family write that breaks a part's cardinality is refused, and trade key fields such as product type and call or put are typed vocabularies
+- an ORE import writes a parent and its embedded trades as one unit, and each import request carries every field its write struct declares
+- the trading service saves every instrument it is sent, book_trade writes whatever the export reads, and the export-and-rebook round trip holds for every family
+- each named defect has a test that fails without its fix, or evidence that it was already fixed
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** A stale model note
+
+=ores.trading.range_bound.org= says the equity accumulator still carries its
+range bounds as JSON text. It does not: the basket task moved it onto the
+shared rows. The sentence is copied into the generated create script, the
+domain header and the ER diagram, so it is corrected in the model and
+regenerated with this task's first codegen run.
+
+** Captures folded in
+
+Folded in on 2026-11-15; each capture is discarded with a pointer here.
+
+- [[id:2BDB5385-3A9E-48A7-BD4C-765183AA1BE4][The barrier direction belongs on the lookup table]]
+- [[id:23A830C9-770C-4D5C-8F67-4BB169397228][A leverage loses its digits at the ORE binding]]
+- [[id:4011E491-AC56-48C7-8B32-1DC4E7AB3C69][A swap leg's index is checked against no table]]
+- [[id:8B67D21A-30B0-4B3C-BC91-D7DC03E0759A][An inflation swap on a YY leg cannot be stored]]
+- [[id:E4317BA1-D252-4F7B-B2EA-7D7A84B67883][An embedded trade outlives a parent that failed to import]]
+- [[id:96BE10E0-0EF1-4AA9-82B3-16E63B699E98][An instrument cannot be saved through the trading service]]
+- [[id:88ECFA85-6865-42B8-83A7-CDF1B28F953E][Let one builder per request carry every field]]
+- [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]
+- [[id:A75186C1-ECE1-4CD2-8511-64F4EA2ED729][Store a callable bond's call terms]]
+- [[id:AEF17C45-3FE6-4139-83BE-A264A9C5879F][Write the rest of a booked trade]]
+- [[id:A1105ED1-A491-4C76-AE0C-D320B989E397][Add proper enumerations for trade key fields]]
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

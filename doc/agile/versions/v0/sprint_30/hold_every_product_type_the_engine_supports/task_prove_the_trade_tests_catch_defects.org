@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: E1E6C776-190A-4D8F-AB98-1163E1F485A0
+:END:
+#+title: Task: Prove the trade representation tests catch defects
+#+description: The roundtrip and engine tests prove what the samples and the generator state. Two checks prove the tests themselves: a property-based roundtrip that reaches values neither states, and mutation testing that lists every reader or writer line no test watches.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A property-based roundtrip writes and reads many generated instruments of each type and requires equality, and a mutation run over the projection readers and writers reports the lines no test watches, so the story's claim that every type is held is checked by tests shown to catch defects.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- a RapidCheck property test with Catch2 generates instruments of every supported type, writes them as ORE XML, reads them back and requires equality
+- a Mull run over the projection files, outside the normal build, lists the mutations no test notices, and each one is killed by a new test or recorded with its reason
+- the run is documented as a recipe so it can be repeated
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The two checks are suggestions 5 and 6 of
+[[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]], which closed into
+this story.
+
+** Captures folded in
+
+Folded in on 2026-11-15; the capture is discarded with a pointer here.
+
+- [[id:306FE2A6-F219-4CA5-9CCA-6C6CB899B84C][Prove the trade representation tests catch defects]]
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

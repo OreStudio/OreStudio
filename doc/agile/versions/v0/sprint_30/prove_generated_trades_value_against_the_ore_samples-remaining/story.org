@@ -23,16 +23,16 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started. Split from [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]], which closed in sprint 29 with its done tasks. |
-| Waiting on    | Nothing.                               |
-| Next          | Review how ORE constructs and prices each trade type. |
-| Last touched  | 2026-11-08 |
+| Now           | The trade representation work is done or moved to [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]; this story keeps market data and valuation. |
+| Waiting on    | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]: every generated type built by its builder and accepted by ORE. |
+| Next          | Give every generated trade type its market data and pricing engines. |
+| Last touched  | 2026-11-15 |
 
 * Acceptance
 
 - ORE's construction and pricing needs are recorded per generated trade type, from ORE's own code.
-- A required term a builder is not given does not compile or names itself, and every generated type is built by its builder.
-- ORE builds every generated trade: no trade fails to parse or build for want of a field, a curve or an index name.
+- A required term a builder is not given does not compile or names itself, and every generated type is built by its builder. Owned by [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] since 2026-11-15.
+- ORE builds every generated trade: no trade fails to parse or build for want of a field, a curve or an index name. The trade's part is owned by [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]; the curves and index names of the market are this story's.
 - Every generated type has the market data and pricing engine configuration to value it, or is left out of the generator with the reason stated.
 - A report over every generated type completes, and each type matches ORE's own NPV within a stated tolerance, within 0.01% of the reference NPV, or 0.0001% of notional if larger.
 - A test fails when the trade XML, the generated data or a value drifts from ORE.
@@ -58,9 +58,6 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 | [[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the native commodity products]] | DONE | 2026-11-11 | 2026-11-11 | The digital, digital average price, position, spread option and intraday power forward types get a writer, a reader and a builder, and ORE builds each one. |
 | [[id:00D52EE5-E337-493E-8442-280910E072B5][Project and build the single commodity scripted products]] | DONE | 2026-11-11 | 2026-11-12 | The scripted commodity products on one commodity get a projection writer, a reader and a builder, and ORE builds each one. |
 | [[id:4A8E426E-9DC6-4864-80C1-4F73799DCEAF][Project and build the commodity basket scripted products]] | DONE | 2026-11-12 | 2026-11-12 | The scripted commodity products on a basket get a projection writer, a reader and a builder, and ORE builds each one. |
-| [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]] | BACKLOG | |  | The old commodity constructors and terms are deleted, and the pairwise variance swap leaves the generator with its reason. |
-| [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] | BACKLOG | |  | Every scripted type the generator books is built by its trade builder, and ORE builds it. |
-| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out generating trades through builders]] | BACKLOG | |  | Every booked type is built by its builder: the Acme reports record no Trade errors, the known lists end empty or with a reason, and the old constructors are gone. |
 | [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]] | BACKLOG | |  | Every type can be priced, or leaves the generator with a stated reason. |
 | [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
 | [[id:73C239AE-8FCE-4A21-95DB-2243C1432A35][Model the scripted variables as rows, and build ORE's lists at the boundary]] | DONE | 2026-11-14 | 2026-11-14 | A scripted trade's parameters, their declared types and their array values become rows in scripted_parameter and scripted_parameter_value; the three JSON columns on scripted_instrument are removed. An index variable holds an oresmd URI, validated against the market series identity, and the ORE projection produces the ORE index name at the boundary on export and reads it back into the URI on import. No migration: the database is dropped and recreated. |
@@ -82,6 +79,13 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 - A product ORE reads through a class of its own, =DoubleDigitalOption= and =PerformanceOption_01=, keeps the members its element states rather than the script variables ORE derives from them. The derivation is not invertible, because a call and a collar differ only by a bound of =QL_MAX_REAL=, and the members are what a round trip can prove.
 - The two basket products needed no special case in the projection: their elements are free style, so the named product's path reads them once the hand written branches are gone. The corpus content round trip proves it over every trade of ORE's example portfolios.
 - An underlying row's role names the element the document states the block in, which for one product is its own element: =DoubleDigitalOption= states =Underlying1= to =Underlying4=, so those rows hold =underlying1= to =underlying4= and the shared table's rule admits them beside the plain =underlying=. A row that named only the list would leave the writer guessing which element to write a block into.
+
+- On 2026-11-15 the open trade representation tasks (close out the commodity
+  constructors, generate scripted trades through their builders, and close out
+  generating trades through builders) moved to [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which owns how every trade is
+  represented, built, generated and accepted by ORE. This story keeps market data,
+  pricing engines and valuation, and starts its market data task once that story
+  is done.
 
 * Out of scope
 

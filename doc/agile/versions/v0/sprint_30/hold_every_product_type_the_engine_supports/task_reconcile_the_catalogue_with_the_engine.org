@@ -37,6 +37,8 @@ A reader can tell, for every product type, what ORE does with it: the trade type
 
 - each of the 121 catalogue types states its ORE evidence: registered trade type, data element, and the class it is read as
 - the types ORE cannot carry are named, with the evidence that shows it
+- each type ORE reads through a ScriptedTrade subclass names the library script with the same payoff, where one exists, so the both-forms task has its list
+- the evidence is mined by a script from ORE's Engine source and its script library, names the ORE commit it read, and is checked in as a table the checks read
 - the note links the task that closes each gap, so the coverage work has one index
 
 * Plan

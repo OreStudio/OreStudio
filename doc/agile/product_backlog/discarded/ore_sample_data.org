@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: D495A1B3-7677-4884-935F-1B6E6D65C983
+:END:
+#+title: ORE sample data
+#+description: Source or generate a representative set of ORE input files covering the key instrument and market-data types needed for integration testing.
+#+type: capture
+#+level: cross
+#+filetags: :capture:ore:sample_data:
+#+created: 2026-05-24
+#+updated: 2026-05-29
+
+*Discarded* on 2026-11-15. No longer applies: external/ore/examples vendors ORE's own example inputs, which the corpus roundtrip and the ORE engine test read.
+
+Deferred from [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] on 2026-05-29 — not started; carried forward to product backlog.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-05-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+
+* Decisions
+
+* Out of scope
+
+-

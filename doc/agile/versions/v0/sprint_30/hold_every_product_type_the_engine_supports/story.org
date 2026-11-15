@@ -2,7 +2,7 @@
 :ID: 0CAC2F0E-69EC-4497-8587-4E0A6593BC7D
 :END:
 #+title: Story: Hold every product type the engine supports
-#+description: Every product type ORE 1.8 supports has a data model of its own, with its tables, a builder and a generator. Where ORE carries a product as a scripted trade, the domain models its facts and the projection writes the element ORE reads. A type the engine cannot carry leaves the catalogue with its reason recorded. Market data and pricing are out of scope: another environment owns them.
+#+description: Every product type ORE supports is held as columns and rows, built by a builder, generated for Acme in each form ORE reads it in, and accepted by ORE in the engine test; every library script is generated; a type ORE cannot carry is tagged and visible with its reason. Market data and pricing are out of scope.
 #+type: story
 #+level: s2
 #+filetags: :trading:ore:codegen:synthetic:coverage:sprint_30:v0:
@@ -15,55 +15,101 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Every product type the ORE engine supports can be held, imported, exported,
-booked by a builder and generated. The catalogue states each type once and names
-the table that holds it; a trade of the type can be read from ORE's document,
-written back as the element ORE reads, and built from typed terms; and the
-generator books at least one of each. A type the engine cannot carry leaves the
-system, with the reason kept where a reader can find it.
+ORE Studio supports every trade ORE supports. For every product type ORE
+carries:
+
+- the data model holds every fact the trade states as a column or a row, never
+  as JSON or a list in text; a first pass may carry defects such as too many
+  columns, which later refactoring fixes;
+- a builder books it from typed terms, and a term a builder is not given does
+  not compile;
+- the generator books Acme trades of it through the builder, in each form ORE
+  reads it in: its own element, and, where ORE's library holds a script with the
+  same payoff, a generic =ScriptedTrade= naming that script;
+- the XML we write is accepted by ORE: the trade test framework (the recorded
+  generated trades, the ORE engine test, the sample-paths check and the content
+  roundtrip) reads and builds every generated trade, with no error the trade
+  causes.
+
+Every script in ORE's library is generated as a generic =ScriptedTrade=. A trade
+type ORE cannot carry is tagged unsupported in the catalogue with its reason,
+and a person sees it. When the story is done, nothing on how a trade is
+represented is left to do: later work refactors for performance and
+data-oriented design, and prices the trades.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | The paperwork is clean: one story, one task list, every trade capture folded in or discarded. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Reconcile the catalogue with the engine. |
 | Last touched  | 2026-11-15                               |
 
 * Acceptance
 
-- every product type in the catalogue names an instrument table, and a type the engine cannot carry is absent from the catalogue with its reason recorded
-- every routed type has a data model of its own: the tables its facts need, the checks those tables state, and the relationship rows the shape requires
-- every routed type has a projection reader and writer, so a document imports into rows and exports as the element ORE reads
-- every routed type has a builder, and a term a builder is not given does not compile
-- the generator books at least one trade of every routed type, and a test fails when a type is added to the catalogue without a route, a builder and a generator
-- where ORE reads a product through a scripted trade, the domain still models the product's facts, and the projection writes the scripted element ORE reads rather than a bare script name
-- the coverage is visible on the catalogue's own page: every type with its form, its table, its builder and its generator, and the types that left with their reasons
+- the catalogue states every ORE trade type with its support status, its form or
+  forms and its instrument table; an unsupported type is tagged with its reason
+  and ORE's evidence, and nothing can route, book, import or generate it
+- every supported type has a data model of its own, with no JSON and no list
+  held as text: the tables its facts need, the checks those tables state, and
+  the relationship rows the shape requires
+- every supported type has a projection reader and writer, so a document imports
+  into rows and exports as the element ORE reads, value for value
+- every supported type has a builder, and every generic =ScriptedTrade= is built
+  by one scripted builder that checks its variables against its script's inputs
+- the generator books every supported type through its builder; a product ORE
+  carries in two forms is booked in both; every script in ORE's library is
+  booked as a generic =ScriptedTrade=
+- the ORE engine test reads and builds every generated trade; its known list
+  holds only lines of the market data or engine configuration kind, each with
+  its reason, and a test fails when a line of the trade kind appears
+- the old =construct_*= functions and =*_terms= structs are gone
+- a check fails when the catalogue and ORE's trade builders drift apart, and a
+  test fails when a type is added without a route, a builder and a generator
+- every defect the trade representation captures named is fixed with a test, or
+  shown fixed with evidence, and the tests are shown to catch defects by a
+  property-based roundtrip and a mutation run
+- the coverage, each type's measured level and the unsupported types are visible
+  on the catalogue's own page, and a scripted trade is edited on a screen of its
+  own
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E711D36E-ACFE-47D6-BB17-5896F7E8A893][Reconcile the catalogue with the engine]] | BACKLOG | | | The catalogue states every ORE trade type, but whether ORE reads a type natively, through a script, or not at all is nowhere written down. Establish it from ORE's own source and record it per type. |
-| [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] | BACKLOG | | | ORE carries a product in one of three forms: a native trade class with its own element, a ScriptedTrade subclass with a fixed element of its own, or the generic ScriptedTrade with a library script. Our domain models a product's facts once, and the projection writes the form ORE reads. The catalogue does not yet say which form a type takes, so a reader cannot tell where a product's element lives. |
-| [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Remove the types the engine cannot carry]] | BACKLOG | | | A catalogue type ORE cannot read routes nowhere, so nothing can hold a trade of it, and the row is dead weight a reader has to interpret. Remove the ones the reconcile task proves unsupported and keep the reason where a reader can find it. |
-| [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] | BACKLOG | | | EquityBasketOption, FxBasketOption, EquityRainbowOption and FxRainbowOption are ORE products read as scripted trades over fixed elements (basketOptionData, rainbowOptionData). The commodity siblings are already modelled natively; these four are not held at all. |
-| [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] | BACKLOG | | | EquityBestEntryOption, FxBestEntryOption, EquityStrikeResettableOption and FxStrikeResettableOption are ORE scripted products over fixed elements. Their commodity siblings are modelled; these four are not held. |
-| [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]] | BACKLOG | | | EquityWindowBarrierOption, FxWindowBarrierOption and EquityGenericBarrierOption are ORE scripted products over window and generic barrier elements. The commodity window barrier is modelled; these three are not held. |
-| [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] | BACKLOG | | | EquityBasketVarianceSwap, FxBasketVarianceSwap, EquityPairwiseVarianceSwap, FxPairwiseVarianceSwap, and the plain, equity and fx ForwardVolatilityAgreement are ORE scripted products that name a basket or a pair. The commodity variance and basket variance swaps are modelled; these seven are not held. |
-| [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] | BACKLOG | | | EuropeanOptionBarrier and FxWorstOfBasketSwap are ORE ScriptedTrade subclasses over fixed elements, the same shape DoubleDigitalOption has. The projection already reads such an element member by member; these two are not held. |
-| [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] | BACKLOG | | | EquityFutureOption and BondFutureOption are native ORE products over a future plus an option block. Neither is held, and no table states a future as an underlying with its own expiry and contract month. |
-| [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] | BACKLOG | | | EquityDoubleTouchOption, EquityAutoDeltaHedgedOption and FxAsianOption are native ORE products. The equity family models nine tables and the fx family its own set; these three are not held, and the fx asian option is distinct from the asian forward already modelled. |
-| [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] | BACKLOG | | | RateDigitalOption and SwaptionStraddle are ORE products routed to the rates family's header table, which today holds swaps, caps, swaptions, FRAs and the balance-guaranteed and callable swaps. Neither is held. |
-| [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] | BACKLOG | | | CreditDefaultSwapOption and CBO are ORE credit products read natively. The credit family holds CDS, index CDS, index options, linked swaps and risk participation; these two are not held, and CBO is the credit basket obligation the family's basket tables were not extended for. |
-| [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] | BACKLOG | | | CashPosition is an ORE product that holds an amount of currency and no instrument facts. It is not held: the family's position tables cover securities and equity positions, not cash. |
-| [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate every supported product type]] | BACKLOG | | | The generator books 83 of the 91 routed types. A type with a table, a builder and no generator is a product the platform can hold but never exercises. |
-| [[id:FD598D4A-3CBE-4690-9290-F4E16C0272BA][Close out the coverage]] | BACKLOG | | | The last task: the catalogue names a table for every type, the generator books every type, and the exclusions are the only types absent. |
-| [[id:4017DBBE-006E-4D37-BA93-E44182D53517][Show the coverage in the UI]] | BACKLOG | | | The catalogue is served and a trade summary names its products, but nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types left the catalogue because the engine cannot carry them. That answer belongs on the catalogue's own page. |
-| [[id:776C71FA-4592-4C73-8104-27006D45001C][Scaffold the coverage story]] | DONE | | 2026-11-15 | The coverage story and its tasks are authored, wired into sprint 30 and reviewed before any of them starts, so the work has one index and one branch. |
+| [[id:776C71FA-4592-4C73-8104-27006D45001C][Scaffold the coverage story]] | DONE |  | 2026-11-15 | The coverage story and its tasks are authored, wired into sprint 30 and reviewed before any of them starts, so the work has one index and one branch. |
+| [[id:ED0B7248-4010-45AA-BE01-EF4966FD767C][Clean up the trade representation paperwork]] | DONE | 2026-11-15 | 2026-11-15 | Three stories and the coverage story overlap on how a trade is represented. Put every open piece of trade representation work in one story, with tasks that state the whole of it, before any of it starts. |
+| [[id:E711D36E-ACFE-47D6-BB17-5896F7E8A893][Reconcile the catalogue with the engine]] | BACKLOG |  |  | The catalogue states every ORE trade type, but whether ORE reads a type natively, through a script, or not at all is nowhere written down. Establish it from ORE's own source and record it per type. |
+| [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]] | BACKLOG |  |  | ORE carries a product in one of three forms: a native trade class with its own element, a ScriptedTrade subclass with a fixed element of its own, or the generic ScriptedTrade with a library script. Our domain models a product's facts once, and the projection writes the form ORE reads. The catalogue does not yet say which form a type takes, so a reader cannot tell where a product's element lives. |
+| [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] | BACKLOG |  |  | Two catalogue trade types have no ORE trade builder at ORE 1.8.17.0 (3d75a6908), the engine the tests run: CommodityPairwiseVarianceSwap, for which ORE has only the equity and FX classes, and the bare ForwardVolatilityAgreement, which ORE replaced in release 1.123.0 (merge 3477d435d) with its FX, equity and commodity types. Both products are still carried by ORE as a generic ScriptedTrade over the library scripts PairwiseVarianceSwap and ForwardVolatilityAgreement. The type names must stay visible, tagged, with the route that carries the product. |
+| [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]] | BACKLOG |  |  | The ORE engine test's known list mixes errors in the trade (DoubleDigitalOption fails to parse, the ScriptedTrade names its index .SPX where ORE wants EQ-.SPX, a CallableBond dereferences an empty handle) with errors in the market data the Products example lacks. Fix every error the trade causes, and tag every line that stays with its kind. |
+| [[id:87282F95-BA5B-40CF-8D41-D4996BEE27BC][Close the known defects in the held trade types]] | BACKLOG |  |  | Eleven captures name a fact a held trade type loses, mis-states or fails to check: a callable bond's call terms, a year-on-year inflation leg, a range bound's leverage digits, a swap leg's index check, a barrier's direction, a family part's cardinality, the typed vocabulary of trade key fields, the fields an import request drops, the instrument writes the service refuses, the rest of a booked trade, and an embedded trade that outlives its parent. Each is a place where a type is held but not held completely. |
+| [[id:803FA710-42BF-4810-83F0-C41CDBE0A66C][Close the known defects in the trade generator]] | BACKLOG |  |  | Six captures name a way the generator draws a trade badly or fails to provision Acme: the bond planner ties a product to a book by parity, a generation config overflows an int, a bond issue once failed with bad_alloc, the forward rate agreement is always Long, a bond issuer holds a party id, and two parties' bond configs name one security. Each is a population that does not exercise what the types allow, or does not provision at all. |
+| [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]] | BACKLOG |  |  | The old commodity constructors and terms are deleted, the pairwise variance swap leaves the generator because ORE cannot carry it, and the commodity window barrier option is generated. |
+| [[id:3ACCEBF0-131F-49EC-BB5D-24F2BBCD6ED0][Hold ORE's script library as reference data]] | BACKLOG |  |  | A generic ScriptedTrade names a script from ORE's library and states the variables it reads, but the library is only a file a run ships. Nothing states which inputs a script reads, of which type, or what values it accepts, so no builder can check a trade's variables and no generator can draw them. |
+| [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] | BACKLOG |  |  | Every scripted type the generator books (ScriptedTrade, DoubleDigitalOption, PerformanceOption_01, and Autocallable_01, which it skips today) is built by a builder: one scripted builder for the generic ScriptedTrade, checked against the script library, and a builder per class-read type. ORE builds each. |
+| [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] | BACKLOG |  |  | Five routed types have a table and a projection but no generator: CompositeTrade, ContractForDifference, TotalReturnSwap, EquityOutperformanceOption and SyntheticCDO. Each is a product the platform can hold but never exercises, and the containers among them embed trades of other types. |
+| [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] | BACKLOG |  |  | EquityBasketOption, FxBasketOption, EquityRainbowOption and FxRainbowOption are ORE products read as scripted trades over fixed elements (basketOptionData, rainbowOptionData). The commodity siblings are already modelled natively; these four are not held at all. |
+| [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] | BACKLOG |  |  | EquityBestEntryOption, FxBestEntryOption, EquityStrikeResettableOption and FxStrikeResettableOption are ORE scripted products over fixed elements. Their commodity siblings are modelled; these four are not held. |
+| [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]] | BACKLOG |  |  | EquityWindowBarrierOption, FxWindowBarrierOption and EquityGenericBarrierOption are ORE scripted products over window and generic barrier elements. The commodity window barrier is modelled; these three are not held. |
+| [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] | BACKLOG |  |  | EquityBasketVarianceSwap, FxBasketVarianceSwap, EquityForwardVolatilityAgreement and FxForwardVolatilityAgreement are ORE scripted products; EquityPairwiseVarianceSwap and FxPairwiseVarianceSwap are native ORE products over a pair. The commodity variance and basket variance swaps are modelled; these six are not held. The plain ForwardVolatilityAgreement is not an ORE trade type and is tagged unsupported by its own task. |
+| [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] | BACKLOG |  |  | EuropeanOptionBarrier and FxWorstOfBasketSwap are ORE ScriptedTrade subclasses over fixed elements, the same shape DoubleDigitalOption has. The projection already reads such an element member by member; these two are not held. |
+| [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] | BACKLOG |  |  | EquityFutureOption and BondFutureOption are native ORE products over a future plus an option block. Neither is held, and no table states a future as an underlying with its own expiry and contract month. |
+| [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] | BACKLOG |  |  | EquityDoubleTouchOption, EquityAutoDeltaHedgedOption and FxAsianOption are native ORE products. The equity family models nine tables and the fx family its own set; these three are not held, and the fx asian option is distinct from the asian forward already modelled. |
+| [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] | BACKLOG |  |  | RateDigitalOption and SwaptionStraddle are ORE products routed to the rates family's header table, which today holds swaps, caps, swaptions, FRAs and the balance-guaranteed and callable swaps. Neither is held. |
+| [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] | BACKLOG |  |  | CreditDefaultSwapOption and CBO are ORE credit products read natively. The credit family holds CDS, index CDS, index options, linked swaps and risk participation; these two are not held, and CBO is the credit basket obligation the family's basket tables were not extended for. |
+| [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] | BACKLOG |  |  | CashPosition is an ORE product that holds an amount of currency and no instrument facts. It is not held: the family's position tables cover securities and equity positions, not cash. |
+| [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] | BACKLOG |  |  | ORE carries about fifteen products both as an element of their own and as a generic ScriptedTrade over a library script: the accumulators, TaRFs, basket, rainbow, best-entry, window and generic barrier options, worst-of basket swaps, basket and pairwise variance swaps, forward volatility agreements and the outperformance option. The generator books only the first form, so the second is never tested. |
+| [[id:CF1384A9-A358-4E56-82F7-AFC089AD4FEB][Generate the script-only equity, FX and commodity payoffs]] | BACKLOG |  |  | About thirty scripts in ORE's library have no element of their own: gamma, corridor, conditional, KIKO and dispersion variance swaps, correlation swaps, volatility barrier options, ladder lock-ins, forward-starting options, rainbow call spreads and the worst-performance rainbows, among others. A trade of each can only be a generic ScriptedTrade, and none is generated. |
+| [[id:873E2FA1-F1AE-4B77-8DF0-7BBB4F330B18][Generate the script-only rates and inflation payoffs]] | BACKLOG |  |  | The library's rates and inflation scripts (AsianIrCapFloor, CMSCapFloorBarrier, ForwardStartingSwaption, LPISwap, FlooredAverageCPIZCIIS, IrregularYYIIS, MovingMaxYYIIS, LapseHedgeSwap and their kin) read IR and inflation indices, which the scripted generator never draws. None is generated. |
+| [[id:4017DBBE-006E-4D37-BA93-E44182D53517][Show the coverage in the UI]] | BACKLOG |  |  | The catalogue is served and a trade summary names its products, but nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types the engine cannot carry. That answer belongs on the catalogue's own page. |
+| [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]] | BACKLOG |  |  | A scripted trade is a script plus the variables it reads. Without an editor a person can only see it as rows, and a free text box would let them state a variable the script never reads or miss one it needs. |
+| [[id:E1E6C776-190A-4D8F-AB98-1163E1F485A0][Prove the trade representation tests catch defects]] | BACKLOG |  |  | The roundtrip and engine tests prove what the samples and the generator state. Two checks prove the tests themselves: a property-based roundtrip that reaches values neither states, and mutation testing that lists every reader or writer line no test watches. |
+| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]] | BACKLOG |  |  | The last task. Every type ORE carries is held, built, generated in each of its forms and accepted by ORE; the old constructors are gone; the known lists hold only market data and engine configuration; and a check fails when the catalogue and ORE drift apart. |
+| [[id:FD598D4A-3CBE-4690-9290-F4E16C0272BA][Close out the coverage]] | ABANDONED |  |  | The last task: the catalogue names a table for every type, the generator books every type, and the exclusions are the only types absent. |
 
 * Decisions
 
@@ -72,17 +118,50 @@ system, with the reason kept where a reader can find it.
   =ScriptedTrade= subclass, its element is a fixed schema the projection writes
   member by member, as it already does for =DoubleDigitalOption=; where ORE
   carries it natively, the element is written natively. The catalogue records
-  which of the two forms each type takes, and both are supported.
-- A type the engine cannot carry is removed from the catalogue rather than left
-  routing nowhere, so nothing can book or import it. Its reason and the evidence
-  from ORE's source stay in the coverage note, and a curation exclusion list
-  names it, so a later ORE release that starts supporting it fails a check
-  instead of passing unnoticed.
-- Market data and pricing are another environment's work. This story ends when a
-  type can be held and built, not when it prices.
+  which form each type takes.
+- Where ORE's script library holds a script with the same payoff as a product's
+  own element, the product has two forms, and the generator books both, so each
+  is tested. The generic form is a =ScriptedTrade= naming the library script.
+- A trade type the engine cannot carry stays in the catalogue, tagged
+  unsupported with its reason and the evidence from ORE's source, rather than
+  leaving it. A person sees it on the coverage page; nothing can book, import or
+  generate it under that type; and a check fails when a later ORE release
+  registers it. At ORE 1.8.17.0 (=3d75a6908=), the engine the tests run, there are two, and the registrations are the same at the later =c3ffbae78=:
+  =CommodityPairwiseVarianceSwap=, for which ORE has only the equity and FX
+  classes, and the bare =ForwardVolatilityAgreement=, which ORE replaced in
+  release 1.123.0 (merge =3477d435d=) with its FX, equity and commodity types.
+  Neither product is lost: ORE carries both as a generic =ScriptedTrade= over the
+  library scripts =PairwiseVarianceSwap= and =ForwardVolatilityAgreement=, and
+  the script tasks generate them that way.
+- "Accepted by ORE" is what the trade test framework measures: the ORE engine
+  test reads and builds every recorded trade with the configuration of ORE's
+  Products example. A build error for want of market data or an engine
+  configuration is not the trade's fault and stays on the known list, tagged
+  with its kind; every other error is a defect this story fixes. Pricing is the
+  valuation story's work.
+- ORE's script library is reference data: a script with its code, NPV and
+  results, and its inputs as rows with a type, a shape and a value rule. A script
+  is ORE's code, fixed, so it is not generated from a template; what varies per
+  trade is its variables, and those are a recipe held as data. One scripted
+  builder serves every library script. ORE has no builder of its own to reuse:
+  its parser yields the script's free variables, and the library's comments
+  describe them, so the inputs are mined, not typed.
+- A scripted trade is edited on a typed form drawn from its script's inputs, not
+  as free text. An inline custom script is an advanced mode with a code editor.
+- The open representation tasks of [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]]
+  moved here on 2026-11-15; that story keeps the market data and valuation work.
+  [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] closed into
+  this one: its content roundtrip and audit are done, the ORE contract is the
+  engine test, and its measured levels are the coverage page.
+- Every open capture on trade representation was swept on 2026-11-15: 22 were
+  folded into this story's tasks, each listed in its task's Notes, and 12 were
+  discarded as fixed, duplicated or superseded, each with its reason. A capture
+  on a screen, a workflow, the digest or market data stayed where it was.
 
 * Out of scope
 
-- Market data, pricing engine configuration and valuation. Another environment
-  owns them; this story stops at the trade's data model, its builder and its
-  generator.
+- Market data, pricing engine configuration and valuation. They stay on
+  [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]].
+- Refactoring the data model for performance or a stricter data-oriented design,
+  such as splitting a type that carries too many columns. That follows this
+  story.

@@ -38,6 +38,9 @@ The two products have a data model, a projection reader and writer through the c
 - each element's members, including its option block, schedule and underlying blocks, are read into rows rather than skipped
 - each of the two types names an instrument table and the catalogue routes it
 - each type has a builder
+- the generator books one trade of each type through its builder, and the recorded trades hold it
+- the ORE engine test reads and builds each, with no error of the trade kind
+- every fact the element states is a column or a row: no list, basket or schedule is held as text
 
 * Plan
 

@@ -26,11 +26,11 @@ Every error ORE raises reading or building a recorded trade is either fixed, bec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -152,6 +152,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the commit message counted 98 optional missing paths; the list holds 96 | commit 6c56b9a763 | Accept | Amended before push |
+| 2 | Local review: three Notional lines named Notionals as optional, but the trade states the element; the example's dated startDate entries are what it lacks | =generated_trades_known_missing_paths.txt= | Accept | Reason rewritten for the three lines |
+| 3 | Local review: misspell over the changed files | - | Accept | Clean |
 
 * Result
+
+Every error ORE raises on the recorded trades has a kind from a fixed table of
+ORE's message patterns, and the known list states it: 44 market data and 3
+engine configuration lines, none of the trade kind. The trade's own errors are
+fixed in the generator: the generic ScriptedTrade states every variable its
+library script reads, a bond option names its yield volatility, a callable bond
+names its credit curve, and a balance guaranteed swap pays both legs on the
+floating tenor, which stops ORE's builder crashing and lets the test run it
+again. The ORE engine test fails on any new error of the trade kind. Every known
+missing path names the reason the generator leaves it out, and the export test
+fails on a line with none. The recorded trades are re-recorded, which also
+clears the scripted trade failure main carried.

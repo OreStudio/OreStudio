@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :build:tooling:sprint_30:v0:
 #+owner: marco
-#+branch: feature/serve-the-party-curve-step-in-marketdata
+#+branch: feature/hear-how-a-build-went
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -41,6 +41,7 @@ system, with the reason kept where a reader can find it.
 - every routed type has a builder, and a term a builder is not given does not compile
 - the generator books at least one trade of every routed type, and a test fails when a type is added to the catalogue without a route, a builder and a generator
 - where ORE reads a product through a scripted trade, the domain still models the product's facts, and the projection writes the scripted element ORE reads rather than a bare script name
+- the coverage is visible on the catalogue's own page: every type with its form, its table, its builder and its generator, and the types that left with their reasons
 
 * Tasks
 
@@ -61,6 +62,7 @@ system, with the reason kept where a reader can find it.
 | [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] | BACKLOG | | | CashPosition is an ORE product that holds an amount of currency and no instrument facts. It is not held: the family's position tables cover securities and equity positions, not cash. |
 | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate every supported product type]] | BACKLOG | | | The generator books 83 of the 91 routed types. A type with a table, a builder and no generator is a product the platform can hold but never exercises. |
 | [[id:FD598D4A-3CBE-4690-9290-F4E16C0272BA][Close out the coverage]] | BACKLOG | | | The last task: the catalogue names a table for every type, the generator books every type, and the exclusions are the only types absent. |
+| [[id:4017DBBE-006E-4D37-BA93-E44182D53517][Show the coverage in the UI]] | BACKLOG | | | The catalogue is served and a trade summary names its products, but nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types left the catalogue because the engine cannot carry them. That answer belongs on the catalogue's own page. |
 
 * Decisions
 

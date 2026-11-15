@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
-#+branch: feature/surface-every-pair-out-to-ten-years
-#+pr:
+#+branch: feature/build-the-crm-topology-from-identity
+#+pr: 4761
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,18 +26,21 @@ A pair is composed from two legs of one publisher that share a base, so the base
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
 
-- The topology is derived from series identity and provider precedence; crm_driver_pairs is no longer the source of the drivers.
-- A pair whose leg is the publisher's pivot composes with no series, the leg being the identity.
-- A series without ccy and unit_ccy is refused by name, and no currency or publisher name appears in the topology code.
+- The policy chooses the publisher the store ranks first that can anchor a tree, and states its pairs as the star against its own base, so the pivot is the base and a pair whose leg is the pivot needs no series.
+- A pair is composed only from one publisher, so no two publishers are mixed inside one rate.
+- No currency and no publisher name appears in the topology code: the caller supplies both from data.
+- Empty input, a source with no base, and a source that quotes nothing are refused naming the provider.
+
+The wiring is a separate task, [[id:3D29D41E-E006-4404-8D94-7966EB224B29][Serve the CRM the topology the store describes]]: it reads the party's identities and the provider rank into these sources and builds the CRM's engines from them, which is where crm_driver_pair stops being the source of the drivers.
 
 * Plan
 
@@ -76,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4761][#4761]] | [quant] Read a topology from the identity a source states |
 
 * Review
 
@@ -85,3 +88,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The policy reads a topology from the identity a source states.
+=fixing_source= is one publisher as the store records it: the base all
+its series are quoted against, the currencies it quotes, and the rank
+resolution reads it at. =topology_from_sources= takes the lowest-ranked
+source that quotes at least one currency and states its pairs as the star
+against that base, which becomes the pivot, so the base cancels in every
+derived pair and two publishers never meet inside one rate.
+
+Measured: the quant suite passes, 1/1 in 15.83 seconds, with nine new
+cases. They state that the rank decides and a tie breaks on provider
+code, that a source quoting only its own base is passed over, that a
+currency named twice appears once, that the same shape holds under names
+the code has never met (=XYZ=, =AAA=, =test=), and that the star the
+policy states builds a tree reaching every currency it names. The code
+was also compiled with the flags the build itself uses before the build
+ran, and clang-format is clean.
+
+What it deliberately does not do: it reads no database and nothing calls
+it yet. The reader that turns a party's identity rows and the provider
+rank into these sources, and the wiring of
+=crm_ingest_bridge::refresh()=, are the sibling task, so
+=crm_driver_pair= still supplies the CRM's drivers until that lands.

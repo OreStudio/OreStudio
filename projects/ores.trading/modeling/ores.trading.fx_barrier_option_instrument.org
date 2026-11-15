@@ -451,7 +451,9 @@ refused on write.
 A single barrier sits on one side of the spot, and its style says which:
 an Up style states only the upper level and a Down style only the lower.
 The side is read from the barrier type's own row, so a style added there
-is checked with no change here.
+is checked with no change here. A style whose row states no direction,
+such as KnockIn, has no rule here. The rows are versioned by insert, so
+the trigger sees every write.
 
 #+begin_src sql :name fx_barrier_direction :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
     if NEW.trade_type_code = 'FxBarrierOption' then
@@ -476,6 +478,7 @@ is checked with no change here.
                 NEW.barrier_type using errcode = '23514';
         end if;
     end if;
+
 #+end_src
 * C++
 

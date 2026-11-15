@@ -849,7 +849,7 @@ holds, which is how a mistyped IBOR name is caught.
               and t.code = NEW.leg_type_code
               and t.index_family is not null
               and t.valid_to = ores_utility_infinity_timestamp_fn()
-              and NEW.floating_index_code !~ ('[?&]index=' || t.index_family || '(&|$)')
+              and NEW.floating_index_code !~* ('[?&]index=' || t.index_family || '(&|$)')
         ) then
             raise exception 'Invalid floating_index_code: %. A % leg observes an index of another family.',
                 NEW.floating_index_code, NEW.leg_type_code using errcode = '23503';

@@ -29,6 +29,7 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -707,7 +708,11 @@ void read_call_dates(const record_reader& data,
         row.sequence_number = static_cast<int>(i) + 1;
         row.call_date = stated[i];
         row.style = styles[i];
-        row.price = decimal_from_text(prices[i]).value_or(decimal{});
+        const auto price = decimal_from_text(prices[i]);
+        if (!price || *price <= decimal{})
+            throw std::runtime_error("the call price '" + prices[i] + "' on " +
+                                     to_ore_date(stated[i]) + " is not a positive number");
+        row.price = *price;
         row.price_type = price_types[i];
         row.include_accrual = accruals[i];
         stamp_row(row);

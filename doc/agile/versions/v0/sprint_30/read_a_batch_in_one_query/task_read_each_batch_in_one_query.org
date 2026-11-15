@@ -8,7 +8,7 @@
 #+filetags: :codegen:performance:services:read_a_batch_in_one_query:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-each-batch-in-one-query
-#+pr:
+#+pr: 4739
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -132,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4739][#4739]] | [codegen] Read each bulk batch with one query in the service template |
 
 * Review
 

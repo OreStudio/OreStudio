@@ -232,8 +232,10 @@ struct party_curve_plan {
             moved = true;
         }
     }
-    for (auto& c : plan.configs_to_write)
-        ordered.push_back(std::move(c));
+    // The drop pass above removes every config whose funding curve the batch does not
+    // hold and names it among the waiting ones, so nothing can be left over here. If
+    // something ever were, writing it out of order would only make the store refuse
+    // the batch, so the remainder is dropped rather than appended.
     plan.configs_to_write = std::move(ordered);
     return plan;
 }

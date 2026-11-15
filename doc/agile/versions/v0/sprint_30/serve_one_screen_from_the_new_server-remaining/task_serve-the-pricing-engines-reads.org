@@ -1,20 +1,22 @@
 :PROPERTIES:
 :ID: C1830F26-2A60-49CE-AC82-6B784F34F79E
 :END:
-#+title: Task: Serve the pricing engines' reads
-#+description: Five routes: the page of engines, one document with its bound reports, its history, its ORE document as a file, and the vocabulary the editor draws its controls from.
-#+type: task
-#+level: s1
-#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
-#+owner: marco
-#+branch: feature/serve-the-pricing-engines-reads
-#+pr:
-#+blocked_on:
-#+blocked_since:
-#+created: 2026-11-14
-#+updated: 2026-11-14
-#+environment: brave_hopper
-#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+ title : Task : Serve the pricing engines' reads
+#+ description : Five routes : the page of engines, one document with its bound reports, \
+    its history, its ORE document as a file,                                             \
+    and the vocabulary the editor draws its controls from.
+#+ type : task
+#+ level : s1
+#+ filetags : : serve_one_screen_from_the_new_server - remaining : sprint_30 : v0:
+#+ owner : marco
+#+ branch : feature / serve - the - pricing - engines - reads
+#+ pr:
+#+ blocked_on:
+#+ blocked_since:
+#+ created : 2026 - 11 - 14
+#+ updated : 2026 - 11 - 14
+#+ environment : brave_hopper
+#+ todo : DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -92,6 +94,62 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** The history read is one statement, shared with =/api/history=
+
+The versions of a record are read and written by =history_routes= in
+=ores.http.core=, and this screen's timeline composes them. A document's timeline
+is three entity types — the configuration, its products and its parameters — and
+the route reads all three, because a save writes them together and a person reads
+one timeline. A product is named by its type code, and a parameter by the product
+it belongs to and its own name, because a parameter's name repeats across
+products.
+
+The product and parameter types are deliberately not added to =/api/history='s
+served set. That route answers the records a history screen offers on its own;
+this one is a document's timeline, and it read the three types directly in the
+BFF too.
+
+** The ORE document joins two ids, and the file's name stays the service's**
+
+The screen names a configuration by the id it shows. The ORE service reads a
+document by the reporting configuration the record fills. The gateway makes that
+join, so the screen never learns the second id.
+
+The header is the BFF's =attachmentOf= exactly: a name of printable ASCII is
+quoted alone, and a name with any other byte states both a plain name and its
+UTF-8 encoding, so the browser saves the file under the name the service stated.
+A reply that carries more than one file is a 502, because one response cannot name
+two files.
+
+** The vocabulary is served although the inventory says it is not an API**
+
+Fifteen lookup collections are read at once and keyed by the names the editor's
+controls use: the product types, the model and engine pairs, the settings each
+pair carries, the globals, the models, the methods, the sensitivity templates,
+the tenors, and the value sets the settings link to. Each entry carries the ORE
+guide's words for it and the value set that states which values it accepts,
+because a form that offers a value the tables refuse is worse than a form that
+offers none.
+
+The inventory counts it as not an API and in no area, so serving it moves no
+area's count. It is served because the editor calls it and breaks without it, as
+=choices= was.
+
+** The value set tables are read once, for both units**
+
+The engine settings' documentation page and the vocabulary both state a setting's
+allowed values, so the four-table read and the three catalogue readers moved to
+=ore_value_set_rows= rather than being copied a second time. The join of a JSON
+object's members moved to =record_routes= beside =array_of=, and the reporting
+part's =shape::object= delegates to it.
+
+** The vocabulary's collections are read one after another**
+
+The BFF read the fifteen collections concurrently. The gateway reads them one at
+a time, because each is a synchronous forward on one session. The answer is the
+same and the latency is the sum rather than the slowest; a screen that calls this
+route once per edit form is the case that would notice.
 
 * Test Scenarios
 

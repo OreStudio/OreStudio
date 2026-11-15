@@ -22,6 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/pricing_engine_routes.hpp"
+#include "ores.http/routes/reporting/pricing_vocabulary.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
@@ -82,8 +83,7 @@ TEST_CASE("a_page_of_pricing_engines_refuses_a_query_it_does_not_read", "[pricin
           http_status::bad_request);
 }
 
-TEST_CASE("a_page_of_pricing_engines_with_no_service_is_refused_as_upstream",
-          "[pricing_engines]") {
+TEST_CASE("a_page_of_pricing_engines_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a page of pricing engines with no service behind it";
 
@@ -105,9 +105,93 @@ TEST_CASE("one_pricing_engine_with_no_service_is_refused_as_upstream", "[pricing
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing one pricing engine with no service behind it";
 
+    CHECK(pricing_status_of(http_method::get,
+                            "/api/reporting/pricing-engines/00000000-0000-0000-0000-0000000000e1",
+                            http_request{},
+                            "/api/reporting/pricing-engines/{id}") == http_status::bad_gateway);
+}
+
+TEST_CASE("a_documents_history_refuses_an_id_that_is_not_an_id", "[pricing_engines]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a document's history id";
+
+    CHECK(pricing_status_of(http_method::get,
+                            "/api/reporting/pricing-engines/not-an-id/history",
+                            http_request{},
+                            "/api/reporting/pricing-engines/{id}/history") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("a_documents_history_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a document's history with no service behind it";
+
     CHECK(pricing_status_of(
               http_method::get,
-              "/api/reporting/pricing-engines/00000000-0000-0000-0000-0000000000e1",
+              "/api/reporting/pricing-engines/00000000-0000-0000-0000-0000000000e1/history",
               http_request{},
-              "/api/reporting/pricing-engines/{id}") == http_status::bad_gateway);
+              "/api/reporting/pricing-engines/{id}/history") == http_status::bad_gateway);
+}
+
+TEST_CASE("the_vocabulary_refuses_a_query_it_does_not_read", "[pricing_engines]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the vocabulary's query";
+
+    ores::nats::service::nats_client session;
+    auto table = std::make_shared<ores::http::net::router>();
+    ores::http::routes::reporting::pricing_vocabulary::register_routes(
+        table, std::make_shared<ores::http::openapi::endpoint_registry>(), session);
+    http_request req;
+    req.query_params["party"] = "acme";
+    const auto route = table->match(
+        http_method::get, "/api/reporting/pricing-engines/vocabulary", req.path_params);
+    REQUIRE(route.has_value());
+    REQUIRE(route->pattern == "/api/reporting/pricing-engines/vocabulary");
+    boost::asio::io_context io;
+    std::optional<ores::http::domain::http_response> answer;
+    boost::asio::co_spawn(
+        io,
+        [&]() -> boost::asio::awaitable<void> { answer = co_await route->handler(req); },
+        boost::asio::detached);
+    io.run();
+    REQUIRE(answer.has_value());
+    CHECK(answer->status == http_status::bad_request);
+}
+
+TEST_CASE("the_vocabulary_is_read_before_one_document", "[pricing_engines]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the vocabulary is not read as a document's id";
+
+    ores::nats::service::nats_client session;
+    auto table = std::make_shared<ores::http::net::router>();
+    auto registry = std::make_shared<ores::http::openapi::endpoint_registry>();
+    pricing_engine_routes::register_read_routes(table, registry, session);
+    ores::http::routes::reporting::pricing_vocabulary::register_routes(table, registry, session);
+    http_request req;
+    const auto route = table->match(
+        http_method::get, "/api/reporting/pricing-engines/vocabulary", req.path_params);
+    REQUIRE(route.has_value());
+    CHECK(route->pattern == "/api/reporting/pricing-engines/vocabulary");
+}
+
+TEST_CASE("an_ore_document_refuses_an_id_that_is_not_an_id", "[pricing_engines]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing an ORE document's id";
+
+    CHECK(pricing_status_of(http_method::get,
+                            "/api/reporting/pricing-engines/not-an-id/ore-document",
+                            http_request{},
+                            "/api/reporting/pricing-engines/{id}/ore-document") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("an_ore_document_with_no_service_is_refused_as_upstream", "[pricing_engines]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing an ORE document with no service behind it";
+
+    CHECK(pricing_status_of(
+              http_method::get,
+              "/api/reporting/pricing-engines/00000000-0000-0000-0000-0000000000e1/ore-document",
+              http_request{},
+              "/api/reporting/pricing-engines/{id}/ore-document") == http_status::bad_gateway);
 }

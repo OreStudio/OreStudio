@@ -246,6 +246,17 @@ PAIRS = {
     ("DELETE", "/api/reporting/engine-settings/:id"): (
         "DELETE",
         "/api/reporting/engine-settings/{id}"),
+    ("GET", "/api/reporting/pricing-engines"): ("GET", "/api/reporting/pricing-engines"),
+    ("GET", "/api/reporting/pricing-engines/:id"): ("GET", "/api/reporting/pricing-engines/{id}"),
+    ("GET", "/api/reporting/pricing-engines/vocabulary"): (
+        "GET",
+        "/api/reporting/pricing-engines/vocabulary"),
+    ("GET", "/api/reporting/pricing-engines/:id/history"): (
+        "GET",
+        "/api/reporting/pricing-engines/{id}/history"),
+    ("GET", "/api/reporting/pricing-engines/:id/ore-document"): (
+        "GET",
+        "/api/reporting/pricing-engines/{id}/ore-document"),
     ("GET", "/api/reporting/report-health"): ("GET", "/api/reporting/report-health"),
     ("POST", "/api/reporting/reports/schedule"): ("POST", "/api/reporting/reports/schedule"),
     ("POST", "/api/reporting/reports/unschedule"): ("POST", "/api/reporting/reports/unschedule"),

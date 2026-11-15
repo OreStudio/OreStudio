@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_ROUTES_REPORTING_JSON_SHAPE_HPP
 #define ORES_HTTP_ROUTES_REPORTING_JSON_SHAPE_HPP
 
+#include "ores.http.api/net/record_routes.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -38,13 +39,7 @@ namespace ores::http::routes::reporting::shape {
 
 /// The members of one JSON object, joined.
 [[nodiscard]] inline std::string object(const std::vector<std::string>& members) {
-    std::string out = "{";
-    for (std::size_t i = 0; i < members.size(); ++i) {
-        if (i != 0)
-            out += ',';
-        out += members[i];
-    }
-    return out + '}';
+    return ores::http::net::record_routes::object_of(members);
 }
 
 }

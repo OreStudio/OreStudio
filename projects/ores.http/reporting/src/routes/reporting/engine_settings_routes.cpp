@@ -27,6 +27,7 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
 #include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
@@ -74,6 +75,8 @@ using ores::http::routes::value_set_error;
 using ores::http::routes::value_set_reader;
 using ores::http::routes::value_set_tables;
 using ores::nats::service::nats_client;
+using shape::member;
+using shape::object;
 
 auto& engine_settings_lg() {
     static auto instance = ores::logging::make_logger("ores.http.reporting.engine_settings");
@@ -87,87 +90,6 @@ constexpr std::string_view settings_configuration_type = "engine_settings";
 constexpr std::string_view ore_schema_code = "ore.xsd";
 constexpr std::string_view setup_scope_code = "Setup";
 
-/// The four value set tables as the rows the reader takes.
-value_set_tables value_set_tables_of(const http_request& req, nats_client& session) {
-    value_set_tables tables;
-    for (const auto& set : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_sets_request{},
-             &reporting_messaging::list_ore_parameter_value_sets_response::sets))
-        tables.sets.push_back(
-            {set.code, set.source_kind, set.catalogue_code, set.minimum, set.maximum, set.pattern});
-    for (const auto& value : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_set_values_request{},
-             &reporting_messaging::list_ore_parameter_value_set_values_response::values))
-        tables.values.push_back({value.value_set_code,
-                                 value.value,
-                                 value.label,
-                                 value.display_order,
-                                 value.canonical_value});
-    for (const auto& catalogue : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_set_catalogues_request{},
-             &reporting_messaging::list_ore_parameter_value_set_catalogues_response::catalogues))
-        tables.catalogues.push_back({catalogue.code, catalogue.relation});
-    for (const auto& link : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_setting_value_sets_request{},
-             &reporting_messaging::list_ore_parameter_setting_value_sets_response::
-                 setting_value_sets))
-        tables.links.push_back({link.scope, link.name, link.value_set_code});
-    return tables;
-}
-
-/**
- * @brief The choices of one catalogue relation, read from the collection that
- * holds it.
- *
- * A relation names a view in another component, so the gateway states which
- * relations it reads. The three the value set data names are read here; any
- * other is refused with a sentence that names it, rather than drawn as a list
- * that is empty.
- */
-std::vector<value_choice>
-catalogue_choices_of(const http_request& req, nats_client& session, std::string_view relation) {
-    if (relation == "ores_refdata_tenor_catalogue_v") {
-        std::vector<value_choice> choices;
-        for (const auto& tenor :
-             forwarding::forward_all(req,
-                                     session,
-                                     refdata_messaging::list_tenors_request{},
-                                     &refdata_messaging::list_tenors_response::tenors))
-            choices.push_back({tenor.code, tenor.display_name});
-        return choices;
-    }
-    if (relation == "ores_refdata_currency_catalogue_v") {
-        std::vector<value_choice> choices;
-        for (const auto& currency :
-             forwarding::forward_all(req,
-                                     session,
-                                     refdata_messaging::list_currencies_request{},
-                                     &refdata_messaging::list_currencies_response::currencies))
-            choices.push_back({currency.iso_code, currency.name});
-        return choices;
-    }
-    if (relation == "ores_analytics_sensitivity_template_catalogue_v") {
-        std::vector<value_choice> choices;
-        for (const auto& template_row : forwarding::forward_all(
-                 req,
-                 session,
-                 analytics_messaging::list_sensitivity_templates_request{},
-                 &analytics_messaging::list_sensitivity_templates_response::templates))
-            choices.push_back({template_row.code, template_row.code});
-        return choices;
-    }
-    throw value_set_error("The value set tables name the catalogue relation \"" +
-                          std::string(relation) + "\", which this build does not read.");
-}
-
 /// One setting with what it means and which values it accepts.
 std::string setting_json_of(const engine_setting_row& setting,
                             const value_fields& fields,
@@ -176,35 +98,34 @@ std::string setting_json_of(const engine_setting_row& setting,
         [documented](std::string ores::reporting::domain::ore_parameter::* field) {
             return documented == nullptr ? std::string() : documented->*field;
         };
-    std::vector<std::string> choices;
-    choices.reserve(fields.choices.size());
-    for (const auto& choice : fields.choices)
-        choices.push_back("{\"value\":" + json::write(choice.value) +
-                          ",\"label\":" + json::write(choice.label) + "}");
-
-    return "{\"column\":" + json::write(setting.column) + ",\"ore\":" + json::write(setting.ore) +
-           ",\"changesNumbers\":" + (setting.changes_numbers ? "true" : "false") +
-           ",\"valueSet\":" + json::write(fields.value_set) +
-           ",\"sourceKind\":" + json::write(fields.source_kind) +
-           ",\"catalogue\":" + json::write(fields.catalogue) +
-           ",\"choices\":" + rr::array_of(choices) + ",\"minimum\":" + json::write(fields.minimum) +
-           ",\"maximum\":" + json::write(fields.maximum) +
-           ",\"pattern\":" + json::write(fields.pattern) +
-           ",\"documented\":" + (documented != nullptr ? "true" : "false") + ",\"label\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::label)) +
-           ",\"help\":" + json::write(of_parameter(&ores::reporting::domain::ore_parameter::help)) +
-           ",\"description\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::description)) +
-           ",\"defaultText\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::default_text)) +
-           ",\"format\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::format)) +
-           ",\"introducedIn\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::introduced_in)) +
-           ",\"removedIn\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::removed_in)) +
-           ",\"xpath\":" +
-           json::write(of_parameter(&ores::reporting::domain::ore_parameter::xpath)) + "}";
+    auto members = std::vector<std::string>{
+        member("column", json::write(setting.column)),
+        member("ore", json::write(setting.ore)),
+        member("changesNumbers", setting.changes_numbers ? "true" : "false")};
+    const auto values = value_set_rows::fields_members(fields);
+    members.insert(members.end(), values.begin(), values.end());
+    members.push_back(member("documented", documented != nullptr ? "true" : "false"));
+    members.push_back(
+        member("label", json::write(of_parameter(&ores::reporting::domain::ore_parameter::label))));
+    members.push_back(
+        member("help", json::write(of_parameter(&ores::reporting::domain::ore_parameter::help))));
+    members.push_back(
+        member("description",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::description))));
+    members.push_back(
+        member("defaultText",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::default_text))));
+    members.push_back(member(
+        "format", json::write(of_parameter(&ores::reporting::domain::ore_parameter::format))));
+    members.push_back(
+        member("introducedIn",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::introduced_in))));
+    members.push_back(
+        member("removedIn",
+               json::write(of_parameter(&ores::reporting::domain::ore_parameter::removed_in))));
+    members.push_back(
+        member("xpath", json::write(of_parameter(&ores::reporting::domain::ore_parameter::xpath))));
+    return object(members);
 }
 
 /// The settings of each group, with what each means and which values it accepts.
@@ -221,10 +142,10 @@ std::string documentation_of(const http_request& req, nats_client& session) {
             documented.emplace(parameter.name, &parameter);
     }
 
-    const value_set_reader reader(value_set_tables_of(req, session),
-                                  [&req, &session](std::string_view relation) {
-                                      return catalogue_choices_of(req, session, relation);
-                                  });
+    const value_set_reader reader(
+        value_set_rows::tables_of(req, session), [&req, &session](std::string_view relation) {
+            return value_set_rows::catalogue_choices_of(req, session, relation);
+        });
 
     std::vector<std::string> group_json;
     group_json.reserve(groups.size());
@@ -244,9 +165,6 @@ std::string documentation_of(const http_request& req, nats_client& session) {
     }
     return "{\"groups\":" + rr::array_of(group_json) + "}";
 }
-
-using shape::member;
-using shape::object;
 
 /// The values one part states, by the columns the group's settings name.
 std::string values_of(const engine_group_row& group,

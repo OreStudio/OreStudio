@@ -107,6 +107,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the batch write copies the rows it reads into =to_read= | ores.cpp.repository.repository_impl.org | Decline | One copy per row against one database read for the set. |
 | 2 | Local review: misspell on the branch's own files | (branch) | Accept | Exit 0, nothing to fix. |
+| 3 | Claude review 1: a key repeated across chunks is read twice | ores.cpp.repository.repository_impl.org | Decline | Both copies land in one entry; =front()= and =empty()= answer the same. |
+| 4 | Claude review 2: no test of a row moving between the read and the write | ores.cpp.repository.repository_impl.org | Decline | The trigger refuses it as before; the change does not touch that path. |
+| 5 | Claude review 3 and 5: the helpers' namespace, and the main regression | (template) | Decline | No change needed: every generated repository declares the batch read, and the regression is captured. |
+| 6 | Claude review 4: run the full build and ctest | (branch) | Decline | The run was scoped to the 14 touched core libraries and their suites, which is the change's whole reach. |
 
 * Result
 

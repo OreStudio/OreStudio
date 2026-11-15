@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 6C744720-FF73-4895-92E3-24E1E9BF518E
+:END:
+#+title: A unity build clash is a design smell, not a naming chore
+#+description: Treat a unity-collisions failure as a signal about the code's design: ask whether the code should be shared, is modelled wrongly or is named wrongly, before changing a name or adding a namespace.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :cpp:unity-build:design:code-review:memory:feedback:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+When the unity-collisions check fails, or two file-local names clash in a unity build, do not fix it by adding a namespace or a prefix. The clash says something about the design. Ask three questions first: should the two definitions be one shared definition, is the code modelled in the wrong place, and is it named for what it does. Change the design that the answer points to; rename only when the two things really are different and the name was wrong.
+
+*Why:* Two clashes were hidden by a namespace before the user stopped it. A per-unit namespace hid 26 copies of the same record body structs, which belonged in one shared template. A per-component messaging alias hid that three refdata units had been moved into the synthetic HTTP part, away from the protocol they speak. A third clash, leg_of in the trading builders, was duplicated row factories that belong in one shared helper.
+
+*How to apply:* On any unity-collisions failure or unity redefinition error: compare the two definitions, decide whether they are the same concept (share it), the same concept in the wrong place (move it), or different concepts (name each for what it does). Record the decision in the task's Review table.

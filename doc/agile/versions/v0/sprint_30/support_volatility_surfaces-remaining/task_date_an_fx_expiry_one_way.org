@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: CD1C1314-D66B-4C4C-80F3-92FC73F6B601
+:END:
+#+title: Task: Date an FX expiry one way
+#+description: One mechanism dates every FX expiry: the pair's roll, month-end rule and calendars applied by Calendar::advance. The ladder publishes the date, the calibration reads it and refuses a tenor the ladder does not carry, and the surface feed dates its quotes with the same rule, so a producer and a consumer cannot disagree about the date a zero is discounted to.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:quant:synthetic:surfaces:dates:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: fix/keep-the-ladder-run-up-out-of-the-pair-market
+#+pr: 4729
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One mechanism dates every FX expiry: the pair's roll, month-end rule and calendars applied by Calendar::advance. The ladder publishes the date, the calibration reads it and refuses a tenor the ladder does not carry, and the surface feed dates its quotes with the same rule, so a producer and a consumer cannot disagree.
+
+* Status
+
+| Field        | Value                                                                                         |
+|--------------|-----------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                          |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing.                                                                                      |
+| Waiting on   | Nothing.                                                                                      |
+| Next         | Nothing: the PR carries the work.                                                             |
+| Last touched | 2026-11-14                                                                                    |
+
+* Acceptance
+
+- The rule lives in quant and is tested in isolation: a weekend rolls, a holiday moves, month-end snaps only when the pair says it does, and an unread rule refuses.
+- The forward ladder dates every tenor through the rule and keeps publishing the same ladder it did.
+- The calibration reads the ladder's value date for each tenor and refuses one the ladder does not carry, naming the expiry and the horizon.
+- The surface feed dates its expiries through the same rule and refuses to start without the pair's convention.
+- One reader builds the rule from refdata, so a surface and a ladder cannot read the pair's convention differently.
+- A provisioning run completes publish_party_surfaces with every surface converged.
+
+* Plan
+
+1. State the rule once, in quant: =fx_expiry_date_rule= holds the pair's roll, month-end flag and
+   calendars and answers the date a period values on and the nth business day after a date, by
+   calling =calendar_arithmetic::advance=. A rule built without a calendar refuses to date
+   anything, so a caller that skipped refdata is told.
+2. Read the rule once: =read_pair_expiry_date_rule= in refdata.core reads the pair's convention
+   and calendars and returns the rule with the calendar codes. Both the ladder and the surface
+   feed call it, so neither reads the pair's convention on its own.
+3. Move the call sites in one wave: =build_ladder_dates= takes the rule, the ladder service builds
+   it with the reader (the duplicated joint-calendar builder and convention parse leave the
+   service), and the surface feed's build input carries it; =fx_vol_expiry_markets= dates each
+   expiry with it and refuses a rule with no calendar.
+4. Test in the two layers the story asks for: isolation on the rule, then the ladder's dates, the
+   feed's tick and the round trip through the calibration.
+5. Prove it where it broke: a provisioning run of a new tenant must complete
+   =publish_party_surfaces=.
+
+Decisions taken:
+
+- The unit of the mechanism is a *rule value*, not a free function. It carries the convention
+  inputs, so there is no call site that can pass a different roll, month-end flag or calendar.
+- The rule is read once when a feed or a ladder starts and held by value. A tick must not depend
+  on a store that may have moved since.
+- A surface whose pair has no convention refuses to start, naming the pair, rather than quoting
+  on whatever date the arithmetic lands on. A test tenant is provisioned without conventions, so
+  the synthetic service fixture now states one.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The rule's own cases | 6 cases, 8 assertions, all passing | =ores.analytics.quant.tests "[fx_expiry_dates]"= | =be3ac61738= |
+| The ladder's suite, including the service's DB cases | 1/1 ctest suites pass | =ctest -R "^ores.marketdata.service.tests$"= | =8a007e8aa4= |
+| The synthetic API suite, including the tick and the round trip | 1018 cases, 4879 assertions, 1/1 suites pass | =ctest -R "^ores.synthetic.api.tests$"= | =8a007e8aa4= |
+| The surfaces a fresh tenant publishes | 17 of 17 provisioning steps completed; 40 surfaces published, 40 converged, 0 violations, 0 pillars beyond tolerance, largest absolute error 0.000493 | =provision tenant --profile acme_demo= (code =acme_verify=) | =8a007e8aa4= |
+| The whole tree | 460 of 460 build steps, no error | =compass build= | =a5fbe40624= |
+| The fleet on that tree | 25 of 25 units running, none failed | =compass services restart= then =compass services status= | =a5fbe40624= |
+| The four suites the change reaches | 4 of 4 pass | =ctest -R "^ores.(analytics.quant\|marketdata.service\|synthetic.api\|synthetic.service).tests$"= | =158aea4492= |
+| A second fresh tenant, after the review fixes | 17 of 17 steps, 40 surfaces, all converged, no violations, largest absolute error 0.00048 | =provision tenant --profile acme_demo= (code =acme_verify_r2=) | =158aea4492= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4729][#4729]] | [quant,marketdata,refdata,synthetic] Date an FX expiry one way |
+
+* Review
+
+Two local reviews of the branch's diff, one for the documented standards and one for the spec
+(the task's own acceptance and the captures it answers to).
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The ladder adjusts its horizon with a hardcoded `following`, so a pair whose convention rolls back gets a spot date the rule would not give it | =fx_forward_ladder_plan.cpp= | Accepted | The rule now answers `horizon` and `spot_date`; the ladder asks for them, and `calendars()` and the two lambdas go with the change. |
+| 2 | The calibration turns a tenor into a year fraction by walking calendar days from the as-of while the generator annualises over the nominal grid: 1M is 30/365 in one and 1/12 in the other | =fx_vol_surface_calibration_plan.cpp= | Accepted | One definition, `fx_vol_tenor_years` in quant, read by the emitter and the calibration; the synthetic header's own copy is deleted and the plan's as-of parameter leaves with the walk. |
+| 3 | `fx_vol_expiry_markets`' refusal of a rule that names no calendar is untested | =fx_vol_surface_feed.cpp= | Accepted | One case asserts the refusal and that no market is written. |
+| 4 | The round trip's build input never sets the rule it relies on a local for | =feeds_fx_vol_surface_round_trip_tests.cpp= | Accepted | `round_trip_input()` carries the rule. |
+| 5 | The parameterised rule constructor has no doc comment | =fx_expiry_dates.hpp= | Accepted | Parameters documented. |
+| 6 | The plan's tests compare with `find() != npos` | =app_fx_vol_surface_calibration_plan_tests.cpp= | Accepted | All ten in the file now use `contains`. |
+| 7 | The plan pins only 1Y's year fraction, so a return of the day-count walk would pass | =app_fx_vol_surface_calibration_plan_tests.cpp= | Accepted | All three expiries are pinned; the 1M case is the one that bites. |
+| 8 | The weekend mask is spelled by hand in three fixtures | =feeds_fx_vol_surface_*_tests.cpp= | Accepted | `business_day_calendar_set::weekends_only()` states it once. |
+| 9 | `joint_calendar` repeats the shape of refdata's `build_calendar_set` | =pair_expiry_date_rule.cpp= | Declined | `build_calendar_set` is local to the tenor resolution service and takes one calendar's rows; moving it here would widen the change for a shape of ten lines. Recorded as a follow-up. |
+| 10 | `calendar_index` is always zero | =fx_expiry_dates.hpp= | Declined | It is the index into the calendar set the rule holds, which is what `business_day_calendar_set` requires; all callers pass zero because a pair joins its calendars into one set. Removing it would push the literal into the arithmetic calls. |
+| 11 | The new quant test file logs no test case | =service_fx_expiry_dates_tests.cpp= | Declined | None of the 61 test files in the component logs; adding logging to one file would be the only one that does. |
+| 12 | The synthetic fixture hand-builds refdata rows a generator provides | =feed_config_handler_tests.cpp= | Declined | The case needs a named pair, a named convention and real business days; a generator's random rows would be overwritten field by field, which is more code than the three rows it writes. |
+
+* Result
+
+The expiry date is dated one way. =fx_expiry_date_rule= is the only mechanism, =read_pair_expiry_date_rule= is its
+only reader, and three call sites use it: the forward ladder that publishes the date, the
+calibration that reads the published date and refuses a tenor the ladder does not carry, and the
+synthetic surface feed that strikes its quotes at it. The rule also answers where a ladder starts
+when the as-of is not a business day and where the pair settles, so a pair's own roll reaches
+every published date, and the surface's time axis has one definition too (`fx_vol_tenor_years`),
+read by the emitter that annualises the total variance and by the calibration that reads it back.
+
+The 1W refusal that started this ("the row dated 2026-11-17 is before the spot date 2026-11-18")
+is gone: a fresh tenant provisions end to end and publishes 40 surfaces, all converged and
+arbitrage-free.
+
+Still open, and captured rather than fixed:
+
+- [[id:002F8F0F-2429-4838-864D-5B29DB571CBF][A surface the checks refuse is withheld, so
+  downstream has no numbers]] -- the policy that would publish a degraded surface with its
+  findings instead of withholding it. The refusal this task made explicit (a tenor the ladder does
+  not carry) is its first case.
+- The withdrawn =stop= of the environment's smoke run: =compass smoke ticks= refuses a tenant code
+  that already exists, so it cannot be rerun against an existing environment. The provisioning
+  proof above used a new tenant code instead.

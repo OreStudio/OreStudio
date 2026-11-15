@@ -56,7 +56,7 @@ struct ore_document {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_document>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &ore_document::name},
         ::ores::utility::codec::field{"content", &ore_document::content},
     };

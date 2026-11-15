@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 05215F36-EDAE-507D-8F63-DCFD6E0C07E0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_feed_contributors commands from the shell?
+#+description: Every command the fx_vol_surface_feed_contributors submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_feed_contributors:
+
+This file documents the fx_vol_surface_feed_contributors resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_feed_contributors=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7422EC90-8BB9-52B2-B427-83DE4C8D0CF9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.list=.
+
+#+name: fx_vol_surface_feed_contributors-list
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-list.ores :exports none
+fx_vol_surface_feed_contributors list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 75934726-9B09-5823-81D9-A805AB8BB1F2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.get=.
+
+#+name: fx_vol_surface_feed_contributors-get
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-get.ores :exports none
+fx_vol_surface_feed_contributors get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5643559E-D991-5E80-90E1-CA15F18B7283
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.get_many=.
+
+#+name: fx_vol_surface_feed_contributors-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-get-many.ores :exports none
+fx_vol_surface_feed_contributors get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: F74D280F-1DDC-5F7B-BA17-EE2BC55104AA
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors add <feed_id> <contributor_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.put=.
+
+#+name: fx_vol_surface_feed_contributors-add
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-add.ores :exports none
+fx_vol_surface_feed_contributors add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E71269BA-4E3A-5415-A629-87689D765DCC
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors set <id> <feed_id> <contributor_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.put=.
+
+#+name: fx_vol_surface_feed_contributors-set
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-set.ores :exports none
+fx_vol_surface_feed_contributors set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 8AD070B6-AE43-5A0A-A4F8-3333A1AC952A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors put-many --count <n> <id> <feed_id> <contributor_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.put_many=.
+
+#+name: fx_vol_surface_feed_contributors-put-many
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-put-many.ores :exports none
+fx_vol_surface_feed_contributors put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6553C5A4-DB42-5B9E-8CF6-3D3DC121D0D8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.delete=.
+
+#+name: fx_vol_surface_feed_contributors-delete
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-delete.ores :exports none
+fx_vol_surface_feed_contributors delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 5B664D32-49A5-5EF8-855B-778339AC9B72
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors.delete_many=.
+
+#+name: fx_vol_surface_feed_contributors-delete-many
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-delete-many.ores :exports none
+fx_vol_surface_feed_contributors delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D11D88BB-AD4A-5F2D-AB2B-951E71D2A840
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors_versions.list=.
+
+#+name: fx_vol_surface_feed_contributors-versions
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-versions.ores :exports none
+fx_vol_surface_feed_contributors versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0A63048A-F86D-5DB6-8FAC-483B62E3AEBA
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_contributors version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_contributors_versions.get=.
+
+#+name: fx_vol_surface_feed_contributors-version
+#+begin_src ores-shell :tangle fx_vol_surface_feed_contributors-version.ores :exports none
+fx_vol_surface_feed_contributors version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

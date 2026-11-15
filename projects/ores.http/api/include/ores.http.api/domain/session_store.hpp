@@ -56,7 +56,34 @@ struct ORES_HTTP_API_EXPORT session_record final {
 
     /// When it was last used, which is what the expiry slides from.
     std::chrono::system_clock::time_point last_used;
+    /**
+     * @brief What the session's own read answers, as the routes that opened it
+     * stated it: a JSON object the browser reads. The store keeps it and never
+     * reads it, so the gateway's session holds no product's vocabulary.
+     */
+    std::string view;
 };
+
+/**
+ * @brief What renewing a session's token came to.
+ *
+ * A token that was renewed carries its claims, read by whoever renewed it. A
+ * renewal IAM refuses ends the session; one that cannot be made now leaves the
+ * current token, which is still valid, to be renewed by a later request.
+ */
+struct ORES_HTTP_API_EXPORT token_renewal final {
+    enum class outcome { renewed, refused, unavailable };
+
+    outcome result = outcome::unavailable;
+    std::string token;
+    std::optional<ores::security::jwt::jwt_claims> claims;
+};
+
+/**
+ * @brief Renews a session's token. The gateway's session path knows no service,
+ * so the application gives it this.
+ */
+using token_renewer = std::function<token_renewal(const std::string& token)>;
 
 /**
  * @brief The sessions the gateway holds, in its own memory.
@@ -106,6 +133,33 @@ public:
     [[nodiscard]] std::optional<session_record> find(const std::string& identifier) const;
 
     /**
+     * @brief Changes a session in place, and slides its expiry.
+     *
+     * A party chosen or switched replaces the token and its claims, and a read of
+     * the session can change what it states, so the change is made under the
+     * store's lock rather than as a read and a later write that could cross.
+     *
+     * @returns whether there was a live session to change.
+     */
+    bool update(const std::string& identifier, const std::function<void(session_record&)>& change);
+
+    /**
+     * @brief Claims a session's renewal, so one request renews it however many
+     * arrive together. The others go on with the current token, which is still
+     * valid, because a renewal starts before the token expires.
+     *
+     * @returns whether this caller holds the claim.
+     */
+    bool begin_renewal(const std::string& identifier);
+
+    /**
+     * @brief Gives up a claim begin_renewal() granted. A renewal that could not
+     * be made holds the next attempt back for half a minute, so an outage costs
+     * one attempt in that time rather than one for every request.
+     */
+    void end_renewal(const std::string& identifier, bool failed = false);
+
+    /**
      * @brief Ends a session.
      *
      * @returns whether there was one to end.
@@ -144,6 +198,8 @@ private:
     struct entry final {
         session_record record;
         std::chrono::system_clock::time_point expires;
+        bool renewing = false;
+        std::chrono::system_clock::time_point renew_after{};
     };
 
     [[nodiscard]] bool expired(const entry& kept) const;

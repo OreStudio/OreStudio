@@ -20,6 +20,7 @@
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
+#include "../published_curve.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
@@ -31,17 +32,22 @@
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstdint>
+#include <expected>
 #include <format>
 #include <optional>
 #include <stdexcept>
 #include <unordered_map>
+#include <utility>
 
 namespace ores::marketdata::service::app {
 
@@ -54,7 +60,7 @@ namespace {
 // nth_on_or_after silently yields a wrong "n-th meeting" on unsorted input,
 // and the repository's diary-entry-type read orders by id, not by event_date.
 ores::refdata::domain::ir_curve_bootstrap_config
-read_config(ores::database::context ctx, const boost::uuids::uuid& bootstrap_config_id) {
+read_config(const ores::database::context& ctx, const boost::uuids::uuid& bootstrap_config_id) {
     ores::refdata::repository::ir_curve_bootstrap_config_repository config_repo;
     auto configs = config_repo.read_latest(ctx, boost::uuids::to_string(bootstrap_config_id));
     if (configs.empty())
@@ -63,13 +69,16 @@ read_config(ores::database::context ctx, const boost::uuids::uuid& bootstrap_con
     return configs.front();
 }
 
+// The config's own pillars, read through the filter the store applies, so a
+// bootstrap costs what this config holds.
 std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>
-read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_config_id) {
+read_pillars(const ores::database::context& ctx, const boost::uuids::uuid& bootstrap_config_id) {
     ores::refdata::repository::ir_curve_bootstrap_pillar_repository pillar_repo;
-    std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
-    for (auto& p : pillar_repo.read_latest(ctx))
-        if (p.bootstrap_config_id == bootstrap_config_id)
-            pillars.push_back(std::move(p));
+    ores::refdata::messaging::ir_curve_bootstrap_pillars_filter wanted;
+    wanted.bootstrap_config_id = bootstrap_config_id;
+    auto pillars = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return pillar_repo.read_latest(ctx, offset, limit, {}, wanted);
+    });
     if (pillars.empty())
         throw std::invalid_argument("curve_republish_service: bootstrap config has no pillars: " +
                                     boost::uuids::to_string(bootstrap_config_id));
@@ -80,7 +89,7 @@ read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_co
 // from. A missing row is a config-integrity error, not auto-fabricated: this service has
 // none of series_type/metric/qualifier to invent one from.
 domain::market_series
-read_output_series(ores::database::context ctx,
+read_output_series(const ores::database::context& ctx,
                    const ores::refdata::domain::ir_curve_bootstrap_config& config) {
     repository::market_series_repository series_repo;
     auto series = series_repo.read_latest(ctx, boost::uuids::to_string(config.output_series_id));
@@ -93,7 +102,7 @@ read_output_series(ores::database::context ctx,
 
 // Stamps the config's output market_series IR_CURVE_BOOTSTRAP on its first republish,
 // because nothing stamps it when the config is created.
-void stamp_output_series(ores::database::context ctx,
+void stamp_output_series(const ores::database::context& ctx,
                          const ores::refdata::domain::ir_curve_bootstrap_config& config,
                          domain::market_series s) {
     if (s.derivation_kind != "OBSERVED")
@@ -131,9 +140,10 @@ struct curve_computation final {
     std::vector<std::string> source_series_ids;
 };
 
-curve_computation compute_curve(ores::database::context ctx,
-                                const boost::uuids::uuid& bootstrap_config_id,
-                                std::chrono::system_clock::time_point as_of) {
+std::expected<curve_computation, curve_deferral>
+compute_curve(const ores::database::context& ctx,
+              const boost::uuids::uuid& bootstrap_config_id,
+              std::chrono::system_clock::time_point as_of) {
     namespace quant = ores::analytics::quant::service;
 
     const auto config = read_config(ctx, bootstrap_config_id);
@@ -142,13 +152,23 @@ curve_computation compute_curve(ores::database::context ctx,
     const auto refctx = build_refdata_context(
         ctx, std::chrono::year_month_day{horizon}, config.tenor_convention_code);
     const auto raw = read_pillar_rates(ctx, pillars, refctx, as_of);
+
+    // Readiness is a question about data, not about order: a pillar whose series
+    // has published nothing at this instant keeps the curve out of this pass, and
+    // says so, rather than failing the bootstrap on a grid it did not read.
+    for (const auto& pillar : pillars)
+        if (!raw.rates_by_point_id.contains(pillar.end_tenor_code))
+            return std::unexpected(curve_deferral{"curve '" + config.name +
+                                                  "' has no quote for pillar '" +
+                                                  pillar.end_tenor_code + "'"});
+
     const auto bootstrap_pillars =
         resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
 
     const auto day_count_convention =
-        quant::parse_day_count_convention_code(config.day_count_convention);
+        ores::refdata::mapping::parse_day_count_convention_code(config.day_count_convention);
     const auto interpolation_method =
-        quant::parse_interpolation_method_code(config.interpolation_method);
+        ores::refdata::mapping::parse_interpolation_method_code(config.interpolation_method);
 
     std::vector<quant::bootstrapped_point> discount_curve;
     std::optional<ores::refdata::domain::ir_curve_bootstrap_config> discount_config;
@@ -163,6 +183,18 @@ curve_computation compute_curve(ores::database::context ctx,
                 boost::uuids::to_string(config.id));
         discount_config = read_config(ctx, *config.discount_curve_config_id);
         discount_curve = read_discount_curve(ctx, discount_config->output_series_id, as_of, refctx);
+        if (discount_curve.empty())
+            return std::unexpected(curve_deferral{"curve '" + config.name + "' discounts off '" +
+                                                  discount_config->name +
+                                                  "', which has published nothing yet"});
+
+        // A stored set leaves out its own reference date, where the discount factor
+        // is one by definition, so the curve is anchored before it is judged. A
+        // projection may hold a pillar shorter than the funding curve's first one --
+        // a one month deposit against a curve whose first deposit is three months --
+        // and that pillar lies between the reference date and the first point.
+        discount_curve =
+            anchor_curve(std::move(discount_curve), std::chrono::year_month_day{horizon});
     }
 
     curve_computation out;
@@ -178,12 +210,22 @@ curve_computation compute_curve(ores::database::context ctx,
             distinct.push_back(id);
     out.source_series_ids = std::move(distinct);
 
-    out.points =
-        quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
-                                                 bootstrap_pillars,
-                                                 day_count_convention,
-                                                 interpolation_method,
-                                                 is_projection ? &discount_curve : nullptr);
+    try {
+        out.points =
+            quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
+                                                     bootstrap_pillars,
+                                                     day_count_convention,
+                                                     interpolation_method,
+                                                     is_projection ? &discount_curve : nullptr);
+    } catch (const quant::discount_curve_required_error& e) {
+        // The funding curve has published, and it still does not span a pillar's
+        // dates once its own reference date is put back. The next firing reads the
+        // same set and refuses it the same way, so this is a break in the pair, not
+        // an input that has not arrived: it is reported as one.
+        throw std::runtime_error("curve '" + config.name + "' discounts off '" +
+                                 (discount_config ? discount_config->name : std::string{}) +
+                                 "', which does not cover it: " + e.what());
+    }
     return out;
 }
 
@@ -199,25 +241,38 @@ std::string source_series_ids_json(const std::vector<std::string>& ids) {
 
 }
 
-std::vector<ores::analytics::quant::service::bootstrapped_point>
-curve_republish_service::compute(context ctx,
+std::expected<std::vector<ores::analytics::quant::service::bootstrapped_point>, curve_deferral>
+curve_republish_service::compute(const context& ctx,
                                  const boost::uuids::uuid& bootstrap_config_id,
                                  std::chrono::system_clock::time_point as_of) {
     BOOST_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
                               << as_of;
 
-    return compute_curve(ctx, bootstrap_config_id, as_of).points;
+    auto computed = compute_curve(ctx, bootstrap_config_id, as_of);
+    if (!computed) {
+        BOOST_LOG_SEV(lg(), info) << "Deferred bootstrap config " << bootstrap_config_id << ": "
+                                  << computed.error().reason;
+        return std::unexpected(std::move(computed.error()));
+    }
+    return std::move(computed->points);
 }
 
-void curve_republish_service::republish(context ctx,
-                                        const boost::uuids::uuid& bootstrap_config_id,
-                                        std::chrono::system_clock::time_point as_of) {
+std::expected<void, curve_deferral>
+curve_republish_service::republish(const context& ctx,
+                                   const boost::uuids::uuid& bootstrap_config_id,
+                                   std::chrono::system_clock::time_point as_of) {
     BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
                               << " as of " << as_of;
 
-    const auto computed = compute_curve(ctx, bootstrap_config_id, as_of);
-    const auto& config = computed.config;
-    const auto& bootstrapped = computed.points;
+    auto computed = compute_curve(ctx, bootstrap_config_id, as_of);
+    if (!computed) {
+        BOOST_LOG_SEV(lg(), info) << "Deferred bootstrap config " << bootstrap_config_id << ": "
+                                  << computed.error().reason;
+        return std::unexpected(std::move(computed.error()));
+    }
+
+    const auto& config = computed->config;
+    const auto& bootstrapped = computed->points;
 
     const auto output_series = read_output_series(ctx, config);
     // Every key before the series is stamped or a row is written: a point the output
@@ -234,7 +289,7 @@ void curve_republish_service::republish(context ctx,
 
     stamp_output_series(ctx, config, output_series);
 
-    const std::string source_series_ids = source_series_ids_json(computed.source_series_ids);
+    const std::string source_series_ids = source_series_ids_json(computed->source_series_ids);
 
     boost::uuids::random_generator uuid_gen;
     std::vector<domain::market_observation> observations;
@@ -301,6 +356,7 @@ void curve_republish_service::republish(context ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Republished " << observations.size()
                               << " points for bootstrap config " << bootstrap_config_id;
+    return {};
 }
 
 }

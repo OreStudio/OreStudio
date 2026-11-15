@@ -17,6 +17,7 @@
  *
  */
 #include "ores.database/pq/pool.hpp"
+#include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <algorithm>
@@ -73,6 +74,8 @@ pool::pool(connection_options options,
         }
     }
 }
+
+pool::~pool() = default;
 
 void pool::open_all() {
     idle_.reserve(size_);

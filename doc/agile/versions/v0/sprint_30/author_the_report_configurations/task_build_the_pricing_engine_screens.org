@@ -50,7 +50,7 @@ Build the screens that the pricing engine journeys and prototypes draw. This fir
 
 | Layer | What |
 |-------+------|
-| SQL and analytics | The tables pricing_model_engine_pair, pricing_pair_setting, pricing_model, pricing_method and sensitivity_template, generated from codegen models. The seeds are written by =projects/ores.seeder/datasets/ore_pricing_engines/generate_vocabulary_sql.py= from the ORE user guide: 108 product types, 194 pairs, 834 settings, 25 models, 74 engines and 19 sensitivity templates. The document save removes omitted rows. |
+| SQL and analytics | The tables pricing_model_engine_pair, pricing_pair_setting, pricing_model, pricing_method and sensitivity_template, generated from codegen models. The seeds are written by =projects/ores.seeder/datasets/ore_pricing_engines/generate_vocabulary_sql.py= from the ORE user guide, and from the ORE code for the products the guide's chapter omits: 108 product types, 197 pairs, 852 settings, 27 models, 75 engines and 19 sensitivity templates. The document save removes omitted rows. |
 | BFF | The routes under =/api/reporting/pricing-engines=: list, vocabulary, read, create, save and delete. A create writes the reporting configuration header first and removes it again when the document does not save. |
 | Web | The list, the record page with its dialogs, the authoring journey, the card and workflow, the paths, the permissions and the strings in three languages. |
 

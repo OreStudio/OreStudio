@@ -1,0 +1,228 @@
+{
+  "FlexiSwap": {
+    "used_by": "FlexiSwap",
+    "reason": "The pricing engine chapter of the guide documents no FlexiSwap product, and the ORE code registers one builder for it and no other: the trade asks for that builder before it builds the Bermudan swaption it replicates. The trade also asks for the BermudanSwaption and the Swap or CrossCurrencySwap product, so a configuration that prices a FlexiSwap names those as well; the guide documents them.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/flexiswap.hpp and OREData/ored/portfolio/flexiswap.cpp",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "Replication",
+        "engine": "Replication",
+        "note": "Builds the flexible swap by replicating it from the swaptions it contains. The builder builds no engine of its own, so the only choice it takes is whether one model serves the whole basket.",
+        "settings": [
+          {
+            "scope": "model",
+            "name": "GlobalModel",
+            "usual": "true"
+          }
+        ]
+      }
+    ]
+  },
+  "BalanceGuaranteedSwap": {
+    "used_by": "BalanceGuaranteedSwap",
+    "reason": "The pricing engine chapter of the guide documents no BalanceGuaranteedSwap product, and the ORE code registers two builders for it. The discounting pair prices the tranche notionals and the caps or floors of the floating leg without a calibration, and the LGM pair simulates the pre-payment behaviour those caps or floors describe. The trade also asks for the CapFlooredIborLeg product when its floating leg carries caps or floors, and the guide documents that one.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.hpp and OREData/ored/portfolio/balanceguaranteedswap.cpp",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "DiscountedCashflows",
+        "engine": "DiscountingSwapEngine",
+        "note": "Discounts the tranche notionals from the currency's discount curve. The balance guaranteed feature is part of the instrument, so the engine needs no calibration.",
+        "settings": []
+      },
+      {
+        "model": "LGM-FlexiSwap",
+        "engine": "Grid",
+        "note": "Prices the balance guaranteed swap by simulating its pre-payment option on an LGM grid. The values are the ones the ORE example configuration Products/Input/pricingengine.xml sets for this product.",
+        "settings": [
+          {
+            "scope": "model",
+            "name": "MinCPRMultiplier",
+            "usual": "0.0"
+          },
+          {
+            "scope": "model",
+            "name": "MaxCPRMultiplier",
+            "usual": "2.0"
+          },
+          {
+            "scope": "model",
+            "name": "Calibration",
+            "usual": "Bootstrap"
+          },
+          {
+            "scope": "model",
+            "name": "CalibrationStrategy",
+            "usual": "CoterminalDealStrike"
+          },
+          {
+            "scope": "model",
+            "name": "ReferenceCalibrationGrid",
+            "usual": "400,3M"
+          },
+          {
+            "scope": "model",
+            "name": "Reversion",
+            "usual": "0.0"
+          },
+          {
+            "scope": "model",
+            "name": "ReversionType",
+            "usual": "HullWhite"
+          },
+          {
+            "scope": "model",
+            "name": "Volatility",
+            "usual": "0.01"
+          },
+          {
+            "scope": "model",
+            "name": "VolatilityType",
+            "usual": "HullWhite"
+          },
+          {
+            "scope": "model",
+            "name": "Tolerance",
+            "usual": "0.02"
+          },
+          {
+            "scope": "engine",
+            "name": "method",
+            "usual": "Automatic"
+          },
+          {
+            "scope": "engine",
+            "name": "singleSwaptionThreshold",
+            "usual": "20.0"
+          },
+          {
+            "scope": "engine",
+            "name": "sy",
+            "usual": "5.0"
+          },
+          {
+            "scope": "engine",
+            "name": "ny",
+            "usual": "30"
+          },
+          {
+            "scope": "engine",
+            "name": "sx",
+            "usual": "5.0"
+          },
+          {
+            "scope": "engine",
+            "name": "nx",
+            "usual": "30"
+          },
+          {
+            "scope": "engine",
+            "name": "SensitivityTemplate",
+            "usual": "IR_Semianalytical"
+          }
+        ]
+      }
+    ]
+  },
+  "ScriptedTrade": {
+    "used_by": "ScriptedTrade",
+    "reason": "The guide's ScriptedTrade product states ScriptedTrade/ScriptedTrade, which is the delegating builder another product type uses to hand its pricing to a scripted trade. A trade whose own type is ScriptedTrade is built by the builder the ORE code registers as Generic/Generic for that trade type, and no other builder claims it.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.hpp, ScriptedTradeEngineBuilder",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "Generic",
+        "engine": "Generic",
+        "note": "Builds the pricing engine from the trade's own script, so the pair takes no model or engine parameters.",
+        "settings": []
+      }
+    ]
+  },
+  "FxBarrierOption": {
+    "used_by": "FxBarrierOption",
+    "reason": "The guide states BlackScholesMerton for an FX barrier option. The ORE code builds it on a Garman-Kohlhagen process, and registers no builder whose model is BlackScholesMerton for this trade type.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/fxbarrieroption.hpp, FxBarrierOptionAnalyticEngineBuilder",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "GarmanKohlhagen",
+        "engine": "AnalyticBarrierEngine",
+        "note": "Prices the barrier analytically on the Garman-Kohlhagen process of the currency pair.",
+        "settings": []
+      }
+    ]
+  },
+  "FxTouchOption": {
+    "used_by": "FxTouchOption",
+    "reason": "The guide states BlackScholesMerton for an FX touch option. The ORE code builds it on a Garman-Kohlhagen process, and registers no builder whose model is BlackScholesMerton for this trade type.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/fxtouchoption.hpp, FxTouchOptionEngineBuilder",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "GarmanKohlhagen",
+        "engine": "AnalyticDigitalAmericanEngine",
+        "note": "Prices the one-touch as a digital American option on the Garman-Kohlhagen process of the currency pair.",
+        "settings": []
+      }
+    ]
+  },
+  "EquityVarianceSwap": {
+    "used_by": "EquityVarianceSwap",
+    "reason": "The guide names EquityVarianceSwap as the engine of all three variance swaps, which is a product type and not an engine. The ORE code registers one builder for the three trade types, under BlackScholesMerton and ReplicatingVarianceSwapEngine.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp, VarSwapEngineBuilder",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "BlackScholesMerton",
+        "engine": "ReplicatingVarianceSwapEngine",
+        "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+        "settings": []
+      }
+    ]
+  },
+  "FxVarianceSwap": {
+    "used_by": "FxVarianceSwap",
+    "reason": "The guide names EquityVarianceSwap as the engine of all three variance swaps, which is a product type and not an engine. The ORE code registers one builder for the three trade types, under BlackScholesMerton and ReplicatingVarianceSwapEngine.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp, VarSwapEngineBuilder",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "BlackScholesMerton",
+        "engine": "ReplicatingVarianceSwapEngine",
+        "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+        "settings": []
+      }
+    ]
+  },
+  "CommodityVarianceSwap": {
+    "used_by": "CommodityVarianceSwap",
+    "reason": "The guide names EquityVarianceSwap as the engine of all three variance swaps, which is a product type and not an engine. The ORE code registers one builder for the three trade types, under BlackScholesMerton and ReplicatingVarianceSwapEngine.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp, VarSwapEngineBuilder",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "BlackScholesMerton",
+        "engine": "ReplicatingVarianceSwapEngine",
+        "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+        "settings": []
+      }
+    ]
+  }
+}

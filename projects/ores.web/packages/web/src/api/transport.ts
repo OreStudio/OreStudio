@@ -102,9 +102,13 @@ export function parseJson(text: string): unknown {
 /**
  * The request's headers. Every string body this client sends is JSON, and the server reads a
  * body without a JSON content type as plain text, so a string body gets that type by default.
+ *
+ * Every request also says it came from this client. A cross-site form can carry the session
+ * cookie but cannot set a custom header, so the server refuses a cookie write without one.
  */
 function headersOf(init: RequestInit): Headers {
     const headers = new Headers(init.headers);
+    headers.set('x-ores-request', '1');
     if (typeof init.body === 'string' && !headers.has('content-type')) {
         headers.set('content-type', 'application/json');
     }
@@ -193,7 +197,11 @@ export async function requestFile(path: string, init: RequestInit): Promise<Serv
     const operation = operationOf(path, init);
     let response: Response;
     try {
-        response = await fetch(path, { credentials: 'same-origin', ...init });
+        response = await fetch(path, {
+            credentials: 'same-origin',
+            ...init,
+            headers: headersOf(init),
+        });
     } catch {
         const failure = new ApiFailure(
             0,

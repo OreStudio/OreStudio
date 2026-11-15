@@ -300,6 +300,7 @@ TEST_CASE("report_operations_operations_process_schedule_report_definitions_requ
         session,
         std::vector<std::string>{
             "sample",
+            "sample",
         });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
@@ -323,7 +324,7 @@ TEST_CASE(
     report_operations_operations_commands::process_schedule_report_definitions(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
+    CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -343,6 +344,7 @@ TEST_CASE("report_operations_operations_process_schedule_report_definitions_reac
         out,
         session,
         std::vector<std::string>{
+            "sample",
             "sample",
         });
 

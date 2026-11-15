@@ -22,7 +22,7 @@
 
 #include "ores.compute.api/domain/grid_sample.hpp"
 #include "ores.compute.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <chrono>
 #include <optional>
@@ -80,12 +80,12 @@ public:
     /**
      * @brief Records the totals of one poll.
      */
-    void write(context ctx, const work_totals& totals);
+    void write(const context& ctx, const work_totals& totals);
 
     /**
      * @brief The newest totals, or nothing when none was written.
      */
-    std::optional<work_totals> read_newest(context ctx);
+    std::optional<work_totals> read_newest(const context& ctx);
 };
 
 }

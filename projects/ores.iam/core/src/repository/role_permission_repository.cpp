@@ -54,8 +54,8 @@ std::string role_permission_repository::sql() {
     return query_builder::insert_statement_sql<role_permission_entity>(lg());
 }
 
-role_permission_repository::role_permission_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+role_permission_repository::role_permission_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 role_permission_repository::replace_claim(const domain::role_permission& v) {

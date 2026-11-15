@@ -18,14 +18,16 @@
  *
  */
 #include "ores.trading.core/service/trade_export_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
+#include "ores.trading.core/repository/basket_swap_period_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
 #include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
@@ -329,6 +331,25 @@ void populate_instruments_for_trades(const Ctx& ctx,
         auto underlyings = underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids);
         take(underlyings, batch.equity_position_option_underlyings);
     }
+    if (!eq_swp_ids.empty()) {
+        repository::equity_basket_constituent_repository constituent_repo;
+        auto constituents = constituent_repo.read_by_instruments_batch(ctx, eq_swp_ids);
+        take(constituents, batch.equity_basket_constituents);
+    }
+    /*
+     * A worst-of basket swap states a level per period, and ORE requires the
+     * list, so a reader that leaves the periods behind writes a trade the
+     * engine refuses. Both families that state one are read here.
+     */
+    {
+        auto basket_ids = eq_swp_ids;
+        basket_ids.insert(basket_ids.end(), commodity_ids.begin(), commodity_ids.end());
+        if (!basket_ids.empty()) {
+            repository::basket_swap_period_repository period_repo;
+            auto periods = period_repo.read_by_instruments_batch(ctx, basket_ids);
+            take(periods, batch.basket_swap_periods);
+        }
+    }
 
     // Phase 3: the instruments themselves.
     std::unordered_map<std::string, std::string> security_codes;
@@ -550,16 +571,15 @@ void populate_instruments_for_trades(const Ctx& ctx,
 
 }
 
-trade_export_service::trade_export_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+trade_export_service::trade_export_service(const context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<trade_export_item>
 trade_export_service::export_node(const std::string& node_id,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   domain::instrument_batch& instruments) const {
-    using database::repository::execute_parameterized_string_query;
-    const auto trade_ids = execute_parameterized_string_query(
+    const auto trade_ids = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
         "WHERE b.tenant_id = $1::uuid "
@@ -579,10 +599,9 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    domain::instrument_batch& instruments) const {
-    using database::repository::execute_parameterized_string_query;
     if (book_ids.empty())
         return {};
-    const auto trade_ids = execute_parameterized_string_query(
+    const auto trade_ids = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
         "WHERE b.tenant_id = $1::uuid "
@@ -601,8 +620,6 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
 std::vector<trade_export_item>
 trade_export_service::export_trades(const std::vector<std::string>& page_ids,
                                     domain::instrument_batch& instruments) const {
-    using database::repository::execute_parameterized_multi_column_query;
-    using database::repository::execute_parameterized_string_query;
     if (page_ids.empty())
         return {};
 
@@ -614,7 +631,7 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
      * and the writer leaves it out of this one.
      */
     auto trade_ids = page_ids;
-    for (auto& id : execute_parameterized_string_query(
+    for (auto& id : ores::database::query_builder::execute_parameterized_string_query(
              ctx_,
              "SELECT DISTINCT component.trade_id::text "
              "FROM ores_trading_structure_members_tbl composite "
@@ -634,7 +651,7 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
             trade_ids.push_back(std::move(id));
 
     std::unordered_map<std::string, std::string> ore_ids;
-    for (const auto& row : execute_parameterized_multi_column_query(
+    for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx_,
              "SELECT trade_id::text, id_value FROM ores_trading_trade_identifiers_tbl "
              "WHERE tenant_id = ores_iam_current_tenant_id_fn() AND id_type = 'ORE' "
@@ -661,5 +678,4 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
     return items;
 }
-
 }

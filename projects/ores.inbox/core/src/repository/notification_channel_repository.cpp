@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/repository/notification_channel_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.inbox.api/domain/notification_channel.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,19 +104,75 @@ std::optional<query_builder::condition> notification_channel_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool notification_channel_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using notification_channel_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::notification_channel>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+notification_channel_rows_by_key
+notification_channel_current_rows(notification_channel_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<domain::notification_channel>& of) {
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
+    for (const auto& row : of) {
+        codes.push_back(row.code);
+    }
+    notification_channel_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, codes))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::notification_channel>&
+notification_channel_rows_of(const notification_channel_rows_by_key& current,
+                             const domain::notification_channel& item) {
+    static const std::vector<domain::notification_channel> none;
+    const auto found = current.find(std::make_tuple(item.code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-notification_channel_repository::replace_claim(context ctx, const domain::notification_channel& v) {
-    const auto current = read_latest(ctx, v.code);
+notification_channel_replace_claim(const std::vector<domain::notification_channel>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::notification_channel
-notification_channel_repository::apply_claim(context ctx,
-                                             const domain::notification_channel& v,
-                                             const ores::utility::domain::precondition& claim) {
+notification_channel_apply_claim(const domain::notification_channel& v,
+                                 const ores::utility::domain::precondition& claim,
+                                 const std::vector<domain::notification_channel>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -124,37 +184,45 @@ notification_channel_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void notification_channel_repository::write(context ctx, const domain::notification_channel& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void notification_channel_repository::write(context ctx,
+void notification_channel_repository::write(const context& ctx,
+                                            const domain::notification_channel& v) {
+    write(ctx, v, notification_channel_replace_claim(read_latest(ctx, v.code)));
+}
+
+void notification_channel_repository::write(const context& ctx,
                                             const std::vector<domain::notification_channel>& v) {
+    const auto current = notification_channel_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            notification_channel_replace_claim(notification_channel_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void notification_channel_repository::write(context ctx,
+void notification_channel_repository::write(const context& ctx,
                                             const domain::notification_channel& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notification channel. " << "code: " << v.code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        notification_channel_apply_claim(v,
+                                         claim,
+                                         notification_channel_claim_reads_current(claim) ?
+                                             read_latest(ctx, v.code) :
+                                             std::vector<domain::notification_channel>{});
     query_builder::execute_write_query(ctx,
                                        notification_channel_mapper::map(t),
                                        lg(),
@@ -162,14 +230,21 @@ void notification_channel_repository::write(context ctx,
 }
 
 void notification_channel_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::notification_channel>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notification channels. Count: " << v.size();
+    std::vector<domain::notification_channel> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (notification_channel_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = notification_channel_current_rows(*this, ctx, to_read);
     std::vector<domain::notification_channel> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(notification_channel_apply_claim(
+            v[i], claims[i], notification_channel_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        notification_channel_mapper::map(batch),
                                        lg(),
@@ -177,7 +252,7 @@ void notification_channel_repository::write(
 }
 
 std::vector<domain::notification_channel>
-notification_channel_repository::read_latest(context ctx) {
+notification_channel_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_channel_entity>> |
@@ -194,7 +269,7 @@ notification_channel_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::notification_channel>
-notification_channel_repository::read_latest(context ctx, const std::string& code) {
+notification_channel_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification channel. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -213,7 +288,7 @@ notification_channel_repository::read_latest(context ctx, const std::string& cod
 
 
 std::vector<domain::notification_channel>
-notification_channel_repository::read_all(context ctx, const std::string& code) {
+notification_channel_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all notification channel versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_channel_entity>> |
@@ -230,7 +305,7 @@ notification_channel_repository::read_all(context ctx, const std::string& code) 
 }
 
 std::optional<domain::notification_channel> notification_channel_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading notification channel at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -253,7 +328,7 @@ std::optional<domain::notification_channel> notification_channel_repository::rea
 }
 
 notification_channel_repository::remove_status notification_channel_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing notification channel. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -282,12 +357,12 @@ notification_channel_repository::remove_status notification_channel_repository::
     return remove_status::removed;
 }
 
-void notification_channel_repository::remove(context ctx, const std::string& code) {
+void notification_channel_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::notification_channel> notification_channel_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -313,7 +388,7 @@ std::vector<domain::notification_channel> notification_channel_repository::read_
 }
 
 std::uint32_t notification_channel_repository::get_total_channel_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::notification_channels_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification channel count";
@@ -332,9 +407,25 @@ std::uint32_t notification_channel_repository::get_total_channel_count(
 }
 
 std::vector<domain::notification_channel>
-notification_channel_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+notification_channel_repository::read_latest(const context& ctx,
+                                             const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::notification_channel> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -350,7 +441,8 @@ notification_channel_repository::read_latest(context ctx, const std::vector<std:
     return result;
 }
 
-void notification_channel_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void notification_channel_repository::remove(const context& ctx,
+                                             const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

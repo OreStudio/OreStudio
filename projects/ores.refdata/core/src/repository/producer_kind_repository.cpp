@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/producer_kind_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -99,17 +103,72 @@ producer_kind_filter_condition(const std::optional<messaging::producer_kinds_fil
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool producer_kind_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using producer_kind_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::producer_kind>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+producer_kind_rows_by_key producer_kind_current_rows(producer_kind_repository& repo,
+                                                     const ores::database::context& ctx,
+                                                     const std::vector<domain::producer_kind>& of) {
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
+    for (const auto& row : of) {
+        codes.push_back(row.code);
+    }
+    producer_kind_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, codes))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::producer_kind>&
+producer_kind_rows_of(const producer_kind_rows_by_key& current, const domain::producer_kind& item) {
+    static const std::vector<domain::producer_kind> none;
+    const auto found = current.find(std::make_tuple(item.code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-producer_kind_repository::replace_claim(context ctx, const domain::producer_kind& v) {
-    const auto current = read_latest(ctx, v.code);
+producer_kind_replace_claim(const std::vector<domain::producer_kind>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::producer_kind producer_kind_repository::apply_claim(
-    context ctx, const domain::producer_kind& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::producer_kind producer_kind_apply_claim(const domain::producer_kind& v,
+                                                const ores::utility::domain::precondition& claim,
+                                                const std::vector<domain::producer_kind>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -121,54 +180,67 @@ domain::producer_kind producer_kind_repository::apply_claim(
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void producer_kind_repository::write(context ctx, const domain::producer_kind& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void producer_kind_repository::write(context ctx, const std::vector<domain::producer_kind>& v) {
+void producer_kind_repository::write(const context& ctx, const domain::producer_kind& v) {
+    write(ctx, v, producer_kind_replace_claim(read_latest(ctx, v.code)));
+}
+
+void producer_kind_repository::write(const context& ctx,
+                                     const std::vector<domain::producer_kind>& v) {
+    const auto current = producer_kind_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(producer_kind_replace_claim(producer_kind_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void producer_kind_repository::write(context ctx,
+void producer_kind_repository::write(const context& ctx,
                                      const domain::producer_kind& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing producer kind. " << "code: " << v.code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = producer_kind_apply_claim(v,
+                                             claim,
+                                             producer_kind_claim_reads_current(claim) ?
+                                                 read_latest(ctx, v.code) :
+                                                 std::vector<domain::producer_kind>{});
     query_builder::execute_write_query(
         ctx, producer_kind_mapper::map(t), lg(), "Writing producer kind to database.");
 }
 
 void producer_kind_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::producer_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing producer kinds. Count: " << v.size();
+    std::vector<domain::producer_kind> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (producer_kind_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = producer_kind_current_rows(*this, ctx, to_read);
     std::vector<domain::producer_kind> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            producer_kind_apply_claim(v[i], claims[i], producer_kind_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, producer_kind_mapper::map(batch), lg(), "Writing producer kinds to database.");
 }
 
-std::vector<domain::producer_kind> producer_kind_repository::read_latest(context ctx) {
+std::vector<domain::producer_kind> producer_kind_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<producer_kind_entity>> |
@@ -183,7 +255,7 @@ std::vector<domain::producer_kind> producer_kind_repository::read_latest(context
         "Reading latest producer kinds");
 }
 
-std::vector<domain::producer_kind> producer_kind_repository::read_latest(context ctx,
+std::vector<domain::producer_kind> producer_kind_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest producer kind. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +273,7 @@ std::vector<domain::producer_kind> producer_kind_repository::read_latest(context
 }
 
 
-std::vector<domain::producer_kind> producer_kind_repository::read_all(context ctx,
+std::vector<domain::producer_kind> producer_kind_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all producer kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -218,7 +290,7 @@ std::vector<domain::producer_kind> producer_kind_repository::read_all(context ct
 }
 
 std::optional<domain::producer_kind> producer_kind_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading producer kind at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -241,7 +313,7 @@ std::optional<domain::producer_kind> producer_kind_repository::read_at_version(
 }
 
 producer_kind_repository::remove_status producer_kind_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing producer kind. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +341,12 @@ producer_kind_repository::remove_status producer_kind_repository::remove(
     return remove_status::removed;
 }
 
-void producer_kind_repository::remove(context ctx, const std::string& code) {
+void producer_kind_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::producer_kind>
-producer_kind_repository::read_latest(context ctx,
+producer_kind_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -299,7 +371,7 @@ producer_kind_repository::read_latest(context ctx,
 }
 
 std::uint32_t producer_kind_repository::get_total_kind_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::producer_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active producer kind count";
@@ -318,9 +390,24 @@ std::uint32_t producer_kind_repository::get_total_kind_count(
 }
 
 std::vector<domain::producer_kind>
-producer_kind_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+producer_kind_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::producer_kind> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -335,7 +422,7 @@ producer_kind_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void producer_kind_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void producer_kind_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

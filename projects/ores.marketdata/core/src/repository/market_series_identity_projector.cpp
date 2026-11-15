@@ -285,7 +285,7 @@ struct projection {
 };
 
 /// The projection of one series, read from its URI.
-projection project_one(ores::database::context& ctx, const domain::market_series& series) {
+projection project_one(const ores::database::context& ctx, const domain::market_series& series) {
     projection p{};
     auto& row = p.row;
     p.understood = false;
@@ -326,7 +326,7 @@ projection project_one(ores::database::context& ctx, const domain::market_series
 }
 
 std::size_t
-market_series_identity_projector::project(ores::database::context ctx,
+market_series_identity_projector::project(const ores::database::context& ctx,
                                           const std::vector<domain::market_series>& series) {
     if (series.empty())
         return 0;
@@ -344,7 +344,7 @@ market_series_identity_projector::project(ores::database::context ctx,
 }
 
 market_series_identity_projector::backfill_result
-market_series_identity_projector::project_missing(ores::database::context ctx,
+market_series_identity_projector::project_missing(const ores::database::context& ctx,
                                                   const std::optional<boost::uuids::uuid>& party) {
     auto series = market_series_repository{}.read_latest(ctx);
     // A tenant reads the system tenant's shared series but not their identity
@@ -375,7 +375,7 @@ market_series_identity_projector::project_missing(ores::database::context ctx,
 }
 
 market_series_identity_projector::reprojection_result
-market_series_identity_projector::reproject(ores::database::context ctx,
+market_series_identity_projector::reproject(const ores::database::context& ctx,
                                             const std::vector<domain::market_series>& series) {
     reprojection_result result;
     if (series.empty())

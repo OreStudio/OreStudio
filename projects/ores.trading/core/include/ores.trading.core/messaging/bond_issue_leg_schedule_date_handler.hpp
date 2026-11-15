@@ -59,11 +59,11 @@ class bond_issue_leg_schedule_date_handler {
 public:
     bond_issue_leg_schedule_date_handler(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves trading.v1.bond_issue_leg_schedule_dates.list.

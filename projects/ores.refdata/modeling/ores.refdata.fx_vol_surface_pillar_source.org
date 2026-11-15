@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: AD6023D7-EB3D-4406-979D-24CEF998837F
 :END:
 #+title: ores.refdata.fx_vol_surface_pillar_source

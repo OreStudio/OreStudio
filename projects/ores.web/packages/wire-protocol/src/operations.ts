@@ -1488,6 +1488,13 @@ export const workflowStepSummarySchema = z.object({
             }),
         )
         .default([]),
+    /**
+     * The progress a running step last reported, and its counts when it
+     * counts. Empty when the step is not running or reported none.
+     */
+    progress: z.string().default(''),
+    progress_done: z.number().int().nullable().default(null),
+    progress_total: z.number().int().nullable().default(null),
 }) satisfies z.ZodType<WireWorkflowStepSummary>;
 
 export type WorkflowStepSummary = z.infer<typeof workflowStepSummarySchema>;

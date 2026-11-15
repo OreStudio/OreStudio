@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -53,13 +55,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::trading::service {
 
 using namespace ores::logging;
 
-commodity_instrument_service::commodity_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_instrument_service::commodity_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -78,6 +81,46 @@ commodity_instrument_read_one(repository::commodity_instrument_repository& repo,
                               const ores::database::context& ctx,
                               const messaging::commodity_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::commodity_instrument>>
+commodity_instrument_read_many(repository::commodity_instrument_repository& repo,
+                               const ores::database::context& ctx,
+                               const std::vector<messaging::commodity_instrument_key>& keys) {
+    std::vector<std::vector<domain::commodity_instrument>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        trade_id_keys.push_back(boost::uuids::to_string(key.trade_id));
+    }
+    std::map<key_tuple, std::vector<domain::commodity_instrument>> by_key;
+    for (auto& row : repo.read_latest(ctx, trade_id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.identity.trade_id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.trade_id)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -140,6 +183,23 @@ commodity_instrument_to_domain(const messaging::commodity_instrument_write& writ
     v.future_month_offset = write.future_month_offset;
     v.include_period_end = write.include_period_end;
     v.position = write.position;
+    v.delivery_date = write.delivery_date;
+    v.delivery_start = write.delivery_start;
+    v.delivery_end = write.delivery_end;
+    v.fva_date = write.fva_date;
+    v.premium_date = write.premium_date;
+    v.settlement_date = write.settlement_date;
+    v.implied_vol_strike = write.implied_vol_strike;
+    v.reset_strike = write.reset_strike;
+    v.trigger_type = write.trigger_type;
+    v.trigger_price = write.trigger_price;
+    v.premium_amount = write.premium_amount;
+    v.target_amount = write.target_amount;
+    v.multiplier = write.multiplier;
+    v.cap = write.cap;
+    v.trigger_level = write.trigger_level;
+    v.reset_minimum = write.reset_minimum;
+    v.strike_date = write.strike_date;
     v.description = write.description;
     return v;
 }
@@ -158,9 +218,10 @@ commodity_instrument_service::list_commodity_instruments(
         return response;
     }
     if (request.filter && request.filter->trade_id_one_of &&
-        request.filter->trade_id_one_of->size() > 1000) {
+        request.filter->trade_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "trade_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -196,16 +257,23 @@ messaging::get_many_commodity_instruments_response
 commodity_instrument_service::get_many_commodity_instruments(
     const messaging::get_many_commodity_instruments_request& request) {
     messaging::get_many_commodity_instruments_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = commodity_instrument_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::commodity_instrument_lookup entry;
-        entry.key = k;
-        auto found = commodity_instrument_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.commodity_instrument = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.commodity_instrument = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -215,7 +283,11 @@ messaging::put_commodity_instrument_response commodity_instrument_service::put_c
     const messaging::put_commodity_instrument_request& request) {
     messaging::put_commodity_instrument_response response;
     domain::commodity_instrument value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = commodity_instrument_read_one(
+        repo_,
+        ctx_,
+        commodity_instrument_key_from(commodity_instrument_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -229,11 +301,18 @@ messaging::put_many_commodity_instruments_response
 commodity_instrument_service::put_many_commodity_instruments(
     const messaging::put_many_commodity_instruments_request& request) {
     messaging::put_many_commodity_instruments_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::commodity_instrument_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(commodity_instrument_key_from(commodity_instrument_to_domain(change.write)));
+    const auto current = commodity_instrument_read_many(repo_, ctx_, keys);
     std::vector<domain::commodity_instrument> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::commodity_instrument value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -251,11 +330,12 @@ commodity_instrument_service::put_many_commodity_instruments(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.commodity_instruments.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            commodity_instrument_read_one(repo_, ctx_, commodity_instrument_key_from(value));
-        response.commodity_instruments.push_back(written.empty() ? value :
-                                                                   std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = commodity_instrument_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.commodity_instruments.push_back(
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -373,16 +453,15 @@ commodity_instrument_service::get_commodity_instrument_version(
     return response;
 }
 
-ores::utility::domain::result
-commodity_instrument_service::prepare_change(const messaging::commodity_instrument_change& change,
-                                             const ores::utility::domain::change_intent& intent,
-                                             domain::commodity_instrument& out) {
+ores::utility::domain::result commodity_instrument_service::prepare_change(
+    const messaging::commodity_instrument_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::commodity_instrument>& current,
+    domain::commodity_instrument& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = commodity_instrument_to_domain(change.write);
-    const auto current =
-        commodity_instrument_read_one(repo_, ctx_, commodity_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

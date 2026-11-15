@@ -110,8 +110,9 @@ The payoff the option settles to (ORE =optionData.PayoffType=).
 
 Soft FK to ores_trading_payoff_types_tbl: the values are the ORE
 =optionData.PayoffType= set the corpus uses (Accumulator, Asian,
-AverageStrike, Decumulator, TargetExact, TargetFull, Vanilla). PR 4
-tightens the soft reference into a real foreign key.
+AverageStrike, Decumulator, TargetExact, TargetFull, Vanilla), and the four
+a rainbow option states (BestOfAssetOrCash, WorstOfAssetOrCash, MaxRainbow,
+MinRainbow). PR 4 tightens the soft reference into a real foreign key.
 
 ** payoff_type_2
 :PROPERTIES:
@@ -125,8 +126,9 @@ The second payoff, for the products that state two (ORE =optionData.PayoffType2=
 
 Soft FK to ores_trading_payoff_types_tbl: the values are the ORE
 =optionData.PayoffType= set the corpus uses (Accumulator, Asian,
-AverageStrike, Decumulator, TargetExact, TargetFull, Vanilla). PR 4
-tightens the soft reference into a real foreign key.
+AverageStrike, Decumulator, TargetExact, TargetFull, Vanilla), and the four
+a rainbow option states (BestOfAssetOrCash, WorstOfAssetOrCash, MaxRainbow,
+MinRainbow). PR 4 tightens the soft reference into a real foreign key.
 
 ** style
 :PROPERTIES:
@@ -498,8 +500,8 @@ is immutable.
 |-----------------------------------|
 | "long_short" in ('Long', 'Short') |
 | "option_type" is null or "option_type" in ('Call', 'Put') |
-| "payoff_type" is null or "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
-| "payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
+| "payoff_type" is null or "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'BestOfAssetOrCash', 'Decumulator', 'MaxRainbow', 'MinRainbow', 'TargetExact', 'TargetFull', 'Vanilla', 'WorstOfAssetOrCash') |
+| "payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'BestOfAssetOrCash', 'Decumulator', 'MaxRainbow', 'MinRainbow', 'TargetExact', 'TargetFull', 'Vanilla', 'WorstOfAssetOrCash') |
 
 * C++
 

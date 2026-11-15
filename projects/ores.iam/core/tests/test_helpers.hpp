@@ -19,10 +19,11 @@
 #ifndef ORES_IAM_CORE_TESTS_TEST_HELPERS_HPP_
 #define ORES_IAM_CORE_TESTS_TEST_HELPERS_HPP_
 
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
 using ores::database::context;
@@ -35,7 +36,7 @@ inline ores::database::context acting(ores::testing::scoped_database_helper& h) 
 }
 
 inline boost::uuids::uuid find_system_party_id(party_repository& repo,
-                                               ores::database::context ctx,
+                                               const ores::database::context& ctx,
                                                const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest(ctx);
     for (const auto& p : parties)
@@ -63,7 +64,7 @@ inline auto& test_helpers_lg() {
 inline void run(ores::testing::scoped_database_helper& h,
                 const std::string& sql,
                 const std::vector<std::string>& params) {
-    ores::database::repository::execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         acting(h), sql, params, test_helpers_lg(), sql);
 }
 

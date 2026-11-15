@@ -44,11 +44,10 @@ static constexpr std::string_view account_credential_queue_group = "ores.iam.ser
 
 std::vector<ores::nats::service::subscription> register_account_credential_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<account_credential_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<account_credential_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_account_credentials_request::nats_subject,
         account_credential_queue_group,

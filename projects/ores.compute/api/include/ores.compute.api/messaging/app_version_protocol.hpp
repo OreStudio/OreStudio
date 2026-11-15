@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &app_version_key::id},
     };
 }
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &app_version_write::id},
         utility::codec::field{"app_id", &app_version_write::app_id},
         utility::codec::field{"wrapper_version", &app_version_write::wrapper_version},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &app_version_change::write},
         utility::codec::field{"precondition", &app_version_change::precondition},
     };
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &app_version_removal::key},
         utility::codec::field{"precondition", &app_version_removal::precondition},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &app_version_lookup::key},
         utility::codec::field{"app_version", &app_version_lookup::app_version},
     };
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"app_id", &app_versions_filter::app_id},
         utility::codec::field{"id_one_of", &app_versions_filter::id_one_of},
         utility::codec::field{"app_id_one_of", &app_versions_filter::app_id_one_of},
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &app_version_event::event_id},
         utility::codec::field{"key", &app_version_event::key},
         utility::codec::field{"action", &app_version_event::action},
@@ -509,7 +509,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"app_version", &app_version_version_key::app_version},
         utility::codec::field{"version", &app_version_version_key::version},
     };
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &app_version_versions_filter::version},
         utility::codec::field{"from_version", &app_version_versions_filter::from_version},
         utility::codec::field{"to_version", &app_version_versions_filter::to_version},
@@ -540,7 +540,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_app_versions_request::offset},
         utility::codec::field{"limit", &list_app_versions_request::limit},
         utility::codec::field{"order", &list_app_versions_request::order},
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_app_versions_response::result},
         utility::codec::field{"app_versions", &list_app_versions_response::app_versions},
         utility::codec::field{"total", &list_app_versions_response::total},
@@ -574,7 +574,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_app_version_request::key},
     };
 }
@@ -588,7 +588,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_app_version_response::result},
         utility::codec::field{"app_version", &get_app_version_response::app_version},
     };
@@ -603,7 +603,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_app_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_app_versions_request::keys},
     };
 }
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_app_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_app_versions_response::result},
         utility::codec::field{"entries", &get_many_app_versions_response::entries},
     };
@@ -632,7 +632,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_app_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_app_version_request::change},
         utility::codec::field{"intent", &put_app_version_request::intent},
     };
@@ -647,7 +647,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_app_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_app_version_response::result},
         utility::codec::field{"app_version", &put_app_version_response::app_version},
     };
@@ -662,7 +662,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_app_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_app_versions_request::changes},
         utility::codec::field{"intent", &put_many_app_versions_request::intent},
     };
@@ -677,7 +677,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_app_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_app_versions_response::result},
         utility::codec::field{"app_versions", &put_many_app_versions_response::app_versions},
     };
@@ -692,7 +692,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_app_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_app_version_request::removal},
         utility::codec::field{"intent", &delete_app_version_request::intent},
     };
@@ -707,7 +707,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_app_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_app_version_response::result},
     };
 }
@@ -721,7 +721,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_app_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_app_versions_request::removals},
         utility::codec::field{"intent", &delete_many_app_versions_request::intent},
     };
@@ -736,7 +736,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_app_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_app_versions_response::result},
     };
 }
@@ -750,7 +750,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_app_id_app_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"app_id", &list_by_app_id_app_versions_request::app_id},
         utility::codec::field{"scope", &list_by_app_id_app_versions_request::scope},
         utility::codec::field{"offset", &list_by_app_id_app_versions_request::offset},
@@ -769,7 +769,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_app_id_app_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_app_id_app_versions_response::result},
         utility::codec::field{"app_versions", &list_by_app_id_app_versions_response::app_versions},
         utility::codec::field{"total", &list_by_app_id_app_versions_response::total},
@@ -785,7 +785,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_version_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_app_version_versions_request::key},
         utility::codec::field{"offset", &list_app_version_versions_request::offset},
         utility::codec::field{"limit", &list_app_version_versions_request::limit},
@@ -803,7 +803,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_version_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_app_version_versions_response::result},
         utility::codec::field{"versions", &list_app_version_versions_response::versions},
         utility::codec::field{"total", &list_app_version_versions_response::total},
@@ -819,7 +819,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_app_version_version_request::key},
     };
 }
@@ -833,7 +833,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.app_versions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_app_version_version_response::result},
         utility::codec::field{"version", &get_app_version_version_response::version},
     };

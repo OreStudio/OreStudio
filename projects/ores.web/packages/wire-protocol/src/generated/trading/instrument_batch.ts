@@ -56,6 +56,10 @@ import type { BondIssueLegScheduleDate } from './domain/bond_issue_leg_schedule_
 import type { Ascot } from './domain/ascot.js';
 import type { BondForward } from './domain/bond_forward.js';
 import type { BondFuture } from './domain/bond_future.js';
+import type { BondLeg } from './domain/bond_leg.js';
+import type { BondLegAmortization } from './domain/bond_leg_amortization.js';
+import type { BondLegAmount } from './domain/bond_leg_amount.js';
+import type { BondLegRate } from './domain/bond_leg_rate.js';
 import type { BondOption } from './domain/bond_option.js';
 import type { BondRepo } from './domain/bond_repo.js';
 import type { BondTrs } from './domain/bond_trs.js';
@@ -70,7 +74,7 @@ import type { CreditBasketConstituent } from './domain/credit_basket_constituent
 import type { CreditDefaultSwapInstrument } from './domain/credit_default_swap_instrument.js';
 import type { CreditLinkedSwapInstrument } from './domain/credit_linked_swap_instrument.js';
 import type { EquityBasketConstituent } from './domain/equity_basket_constituent.js';
-import type { EquitySwapPeriod } from './domain/equity_swap_period.js';
+import type { BasketSwapPeriod } from './domain/basket_swap_period.js';
 import type { EquityPositionOptionUnderlying } from './domain/equity_position_option_underlying.js';
 import type { FlexiSwapInstrument } from './domain/flexi_swap_instrument.js';
 import type { FlexiSwapLowerNotional } from './domain/flexi_swap_lower_notional.js';
@@ -147,6 +151,10 @@ export interface InstrumentBatch {
     ascots: Ascot[];
     bond_forwards: BondForward[];
     bond_futures: BondFuture[];
+    bond_legs: BondLeg[];
+    bond_leg_amortizations: BondLegAmortization[];
+    bond_leg_amounts: BondLegAmount[];
+    bond_leg_rates: BondLegRate[];
     bond_options: BondOption[];
     bond_repos: BondRepo[];
     bond_trs: BondTrs[];
@@ -161,7 +169,7 @@ export interface InstrumentBatch {
     credit_default_swap_instruments: CreditDefaultSwapInstrument[];
     credit_linked_swap_instruments: CreditLinkedSwapInstrument[];
     equity_basket_constituents: EquityBasketConstituent[];
-    equity_swap_periods: EquitySwapPeriod[];
+    basket_swap_periods: BasketSwapPeriod[];
     equity_position_option_underlyings: EquityPositionOptionUnderlying[];
     flexi_swap_instruments: FlexiSwapInstrument[];
     flexi_swap_lower_notionals: FlexiSwapLowerNotional[];

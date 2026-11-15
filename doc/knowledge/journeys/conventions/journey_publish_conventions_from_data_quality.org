@@ -59,7 +59,7 @@ client.
 
 1. *Read the dataset.* The person opens the dataset and reads what it is. There
    are two for conventions:
-   - =ore.conventions=, named *ORE Instrument Conventions*, artefact type
+   - =refdata.conventions=, named *ORE Instrument Conventions*, artefact type
      =conventions=, catalogue *ORE Analytics*, subject area *Trading*, domain
      *Reference Data*;
    - =refdata.currency_pair_conventions=, named *Standard Currency Pair
@@ -82,7 +82,7 @@ client.
    the count to be discovered.
 3. *Read the bundle that carries it, and who it publishes for.* The two datasets
    travel in different bundles, and the difference decides who they land for.
-   =ore.conventions= is a member of =party_essentials=, which is published **once
+   =refdata.conventions= is a member of =party_essentials=, which is published **once
    per party** with a ={"party_id": "..."}= parameter. =refdata.currency_pair_conventions=
    and its calendars are members of =base=, which is published **once per
    tenant**. The person reads this before publishing, because "publish the

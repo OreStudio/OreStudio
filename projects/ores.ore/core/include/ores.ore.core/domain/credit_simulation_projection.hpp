@@ -74,11 +74,12 @@ struct mapped_credit_simulation {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<mapped_credit_simulation>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"config", &mapped_credit_simulation::config},
-                      field{"entities", &mapped_credit_simulation::entities},
-                      field{"matrices", &mapped_credit_simulation::matrices},
-                      field{"rows", &mapped_credit_simulation::rows},
-                      field{"netting_sets", &mapped_credit_simulation::netting_sets}};
+    return ::ores::utility::codec::field_list{
+        field{"config", &mapped_credit_simulation::config},
+        field{"entities", &mapped_credit_simulation::entities},
+        field{"matrices", &mapped_credit_simulation::matrices},
+        field{"rows", &mapped_credit_simulation::rows},
+        field{"netting_sets", &mapped_credit_simulation::netting_sets}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<mapped_credit_simulation>(),

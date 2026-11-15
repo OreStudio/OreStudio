@@ -94,7 +94,7 @@ struct mint_storage_capability_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<mint_storage_capability_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenant_id", &mint_storage_capability_request::tenant_id},
         ::ores::utility::codec::field{"grants", &mint_storage_capability_request::grants},
     };
@@ -109,7 +109,7 @@ struct mint_storage_capability_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<mint_storage_capability_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &mint_storage_capability_response::success},
         ::ores::utility::codec::field{"message", &mint_storage_capability_response::message},
         ::ores::utility::codec::field{"token", &mint_storage_capability_response::token},

@@ -215,6 +215,41 @@ describe('the series observations route', () => {
         expect(since).toBeLessThanOrEqual(after - day);
     });
 
+    it('reads the window that ends at the instant it names, and nothing after it', async () => {
+        const { server, sessionId, calls } = buildTestServer({ [SUBJECT]: REPLY });
+        const asOf = '2026-11-13 23:59:59Z';
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/series/${SERIES}/observations?window=day&as_of=${encodeURIComponent(asOf)}`,
+        );
+        expect(response.statusCode).toBe(200);
+        const { filter } = calls[0]?.body as {
+            filter: {
+                observation_datetime_from: string | null;
+                observation_datetime_to: string | null;
+            };
+        };
+        expect(filter.observation_datetime_to).toBe(asOf);
+        const since = fromWireTimestamp(
+            filter.observation_datetime_from as WireTimestamp,
+        ).getTime();
+        expect(since).toBe(Date.parse('2026-11-12T23:59:59Z'));
+    });
+
+    it('refuses an instant it cannot read, without asking the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/series/${SERIES}/observations?as_of=2026-11-13T23:59:59Z`,
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('reads every observation for the all window and for a window it does not know', async () => {
         const { server, sessionId, calls } = buildTestServer({ [SUBJECT]: REPLY });
         await send(server, sessionId, 'GET', `/api/series/${SERIES}/observations?window=all`);

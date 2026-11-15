@@ -19,8 +19,10 @@
  */
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.inbox.core/repository/approval_decision_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_point_repository.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_repository.hpp"
@@ -28,11 +30,10 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.inbox.core/repository/approval_decision_repository.hpp"
-#include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -62,18 +63,6 @@ time_point at_store_precision(time_point t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
 }
 
-boost::uuids::uuid party_of(const context& ctx) {
-    const auto party = ctx.party_id();
-    if (!party || party->is_nil())
-        throw std::invalid_argument(
-            "A forward set belongs to a party, and the session names none. Sign in to a party.");
-    return *party;
-}
-
-std::string writer_of(const context& ctx) {
-    return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
-}
-
 /// Writes the candidate set a request authorises: its subject, its tenors and its spots.
 void write_candidate(const context& ctx,
                      const boost::uuids::uuid& request_id,
@@ -82,9 +71,8 @@ void write_candidate(const context& ctx,
                      const computed_fx_forward_set& computed) {
     const auto& ladder = computed.ladder;
     boost::uuids::random_generator gen;
-    const auto commentary =
-        "The FX forward set that publish request " + boost::uuids::to_string(request_id) +
-        " authorises";
+    const auto commentary = "The FX forward set that publish request " +
+                            boost::uuids::to_string(request_id) + " authorises";
 
     domain::fx_forward_publish record;
     record.id = gen();
@@ -104,7 +92,7 @@ void write_candidate(const context& ctx,
     record.method_code = "covered_interest_parity";
     record.published_by = "";
     record.published_at = std::nullopt;
-    record.modified_by = writer_of(ctx);
+    record.modified_by = ores::service::messaging::delegated_actor(ctx);
     record.performed_by = ctx.service_account();
     record.change_reason_code = "system.new_record";
     record.change_commentary = commentary;
@@ -161,12 +149,12 @@ void write_candidate(const context& ctx,
 }
 
 /// Publishes the candidate an approved request authorises, or says why it may not.
-void apply(const context& ctx,
-           const std::string& request_id,
-           const boost::uuids::uuid& party,
-           const std::string& pair_code,
-           time_point as_of,
-           msg::publish_fx_forward_response& resp) {
+void apply_forward_publish(const context& ctx,
+                           const std::string& request_id,
+                           const boost::uuids::uuid& party,
+                           const std::string& pair_code,
+                           time_point as_of,
+                           msg::publish_fx_forward_response& resp) {
     resp.approval_request_id = request_id;
     std::optional<ores::inbox::domain::approval_request> request;
     try {
@@ -174,7 +162,8 @@ void apply(const context& ctx,
     } catch (const std::exception& e) {
         // An id that is not a uuid is not a request; anything else is logged so a store failure
         // is not read as a missing request.
-        BOOST_LOG_SEV(lg(), ores::logging::warn) << "Reading approval request " << request_id << ": " << e.what();
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "Reading approval request " << request_id << ": " << e.what();
         request = std::nullopt;
     }
     if (!request) {
@@ -195,8 +184,7 @@ void apply(const context& ctx,
         resp.message = "The request names no forward set, so it authorises no publish.";
         return;
     }
-    if (record->party_id != party || record->pair_code != pair_code ||
-        record->as_of != as_of) {
+    if (record->party_id != party || record->pair_code != pair_code || record->as_of != as_of) {
         resp.message = "The request authorises " + record->pair_code + " as of " +
                        datetime::to_iso8601_utc(record->as_of) + " for party " +
                        boost::uuids::to_string(record->party_id) + ", and this publish is " +
@@ -216,10 +204,11 @@ void apply(const context& ctx,
         return;
     }
 
-    const auto publisher = writer_of(ctx);
+    const auto publisher = ores::service::messaging::delegated_actor(ctx);
     // Whole seconds, the precision every nullable timestamp of this schema keeps, so the
     // instant returned is the one a reader holds.
-    record->published_at = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    record->published_at =
+        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     record->published_by = publisher;
     record->modified_by = publisher;
     record->performed_by = ctx.service_account();
@@ -236,11 +225,11 @@ void apply(const context& ctx,
 }
 
 /// The funding curve one side of a set was built from, and its state now.
-msg::fx_forward_curve_source curve_source(const context& ctx, const boost::uuids::uuid& publish_id) {
+msg::fx_forward_curve_source curve_source(const context& ctx,
+                                          const boost::uuids::uuid& publish_id) {
     msg::fx_forward_curve_source out;
     out.publish_id = boost::uuids::to_string(publish_id);
-    const auto publishes =
-        repository::curve_publish_repository{}.read_latest(ctx, out.publish_id);
+    const auto publishes = repository::curve_publish_repository{}.read_latest(ctx, out.publish_id);
     if (publishes.empty()) {
         out.state_code = "missing";
         return out;
@@ -249,9 +238,12 @@ msg::fx_forward_curve_source curve_source(const context& ctx, const boost::uuids
     out.as_of = set.as_of;
     out.published_by = set.published_by;
     out.output_series_id = boost::uuids::to_string(set.output_series_id);
-    out.state_code = set.withdrawn_at ? "withdrawn" : set.superseded_at ? "superseded" : "published";
-    const auto configs = ores::refdata::repository::ir_curve_bootstrap_config_repository{}.read_latest(
-        ctx, boost::uuids::to_string(set.bootstrap_config_id));
+    out.state_code = set.withdrawn_at  ? "withdrawn" :
+                     set.superseded_at ? "superseded" :
+                                         "published";
+    const auto configs =
+        ores::refdata::repository::ir_curve_bootstrap_config_repository{}.read_latest(
+            ctx, boost::uuids::to_string(set.bootstrap_config_id));
     if (!configs.empty()) {
         out.currency = configs.front().currency_code;
         out.curve_name = configs.front().name;
@@ -263,8 +255,8 @@ msg::fx_forward_curve_source curve_source(const context& ctx, const boost::uuids
 /// lag, which is the longer of its two currencies' lags, the rule the ladder compute settles on.
 void quote_figures(const context& ctx, msg::get_published_fx_forward_response& out) {
     const auto conventions =
-        ores::refdata::repository::currency_pair_convention_repository{}.read_latest(
-            ctx, out.pair_code);
+        ores::refdata::repository::currency_pair_convention_repository{}.read_latest(ctx,
+                                                                                     out.pair_code);
     if (!conventions.empty()) {
         out.pip_factor = conventions.front().pip_factor;
         out.decimal_places = conventions.front().decimal_places;
@@ -285,8 +277,10 @@ void approval_of(const context& ctx, msg::get_published_fx_forward_response& out
         ores::inbox::repository::approval_request_repository{}.read_all(ctx, out.request_id);
     if (versions.empty())
         return;
-    const auto first = std::ranges::min_element(versions, {}, &ores::inbox::domain::approval_request::version);
-    const auto last = std::ranges::max_element(versions, {}, &ores::inbox::domain::approval_request::version);
+    const auto first =
+        std::ranges::min_element(versions, {}, &ores::inbox::domain::approval_request::version);
+    const auto last =
+        std::ranges::max_element(versions, {}, &ores::inbox::domain::approval_request::version);
     out.requested_by = first->modified_by;
     out.approval_state_code = last->state_code;
     out.auto_approval_code = last->auto_approval_code;
@@ -304,10 +298,11 @@ void approval_of(const context& ctx, msg::get_published_fx_forward_response& out
 }
 
 msg::publish_fx_forward_response
-fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_request& req) {
+fx_forward_publish_service::publish(const context& ctx,
+                                    const msg::publish_fx_forward_request& req) {
     msg::publish_fx_forward_response resp;
     try {
-        const auto party = party_of(ctx);
+        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
         const auto as_of = at_store_precision(req.as_of);
         if (as_of == time_point{})
             throw std::invalid_argument(
@@ -315,7 +310,7 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
                 "one set.");
 
         if (!req.approval_request_id.empty()) {
-            apply(ctx, req.approval_request_id, party, req.pair_code, as_of, resp);
+            apply_forward_publish(ctx, req.approval_request_id, party, req.pair_code, as_of, resp);
             return resp;
         }
 
@@ -324,17 +319,17 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
                 "Say why the set should be published, so the decider reads a reason.");
         // The set is computed before anything is raised, so a missing input refuses the
         // publish and writes nothing.
-        const auto computed =
-            fx_forward_ladder_service::compute(ctx,
-                                               fx_forward_inputs{.pair_code = req.pair_code,
-                                                                 .as_of = as_of,
-                                                                 .party_id = boost::uuids::to_string(party)});
+        const auto computed = fx_forward_ladder_service::compute(
+            ctx,
+            fx_forward_inputs{.pair_code = req.pair_code,
+                              .as_of = as_of,
+                              .party_id = boost::uuids::to_string(party)});
 
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
         const auto kind = lifecycle.kind(std::string(fx_forward_publish_kind_code));
         if (!kind)
-            throw std::runtime_error("No such kind of request: " +
-                                     std::string(fx_forward_publish_kind_code) + ".");
+            throw std::runtime_error(
+                "No such kind of request: " + std::string(fx_forward_publish_kind_code) + ".");
         const auto me = lifecycle.actor_account_id();
         if (!me)
             throw std::runtime_error("The signed-in account was not found.");
@@ -349,7 +344,7 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
             resp.message = "Raised. The publish waits on the decision.";
             return resp;
         }
-        apply(ctx, id, party, req.pair_code, as_of, resp);
+        apply_forward_publish(ctx, id, party, req.pair_code, as_of, resp);
     } catch (const std::exception& e) {
         resp.success = false;
         resp.message = e.what();
@@ -358,15 +353,16 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
 }
 
 msg::get_published_fx_forward_response
-fx_forward_publish_service::read(context ctx, const msg::get_published_fx_forward_request& req) {
+fx_forward_publish_service::read(const context& ctx,
+                                 const msg::get_published_fx_forward_request& req) {
     msg::get_published_fx_forward_response out;
     out.pair_code = req.pair_code;
     try {
-        const auto party = party_of(ctx);
+        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
         const auto sets = repository::fx_forward_publish_repository{}.read_published_for_pair(
             ctx, party, req.pair_code);
-        const auto found = std::ranges::find_if(
-            sets, [&](const auto& s) { return s.as_of <= req.as_of; });
+        const auto found =
+            std::ranges::find_if(sets, [&](const auto& s) { return s.as_of <= req.as_of; });
         if (found == sets.end()) {
             out.message = "Your party has no published forward set of " + req.pair_code +
                           " at or before the as-of.";

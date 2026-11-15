@@ -98,7 +98,7 @@ struct bond_schedule_dates {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_schedule_dates>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar", &bond_schedule_dates::calendar},
         utility::codec::field{"convention", &bond_schedule_dates::convention},
         utility::codec::field{"tenor", &bond_schedule_dates::tenor},

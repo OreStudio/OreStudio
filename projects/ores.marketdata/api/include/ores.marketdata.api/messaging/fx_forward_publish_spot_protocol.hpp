@@ -250,7 +250,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_forward_pub
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_spot_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_forward_publish_spot_key::id},
     };
 }
@@ -264,7 +264,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_forward_pub
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_spot_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_forward_publish_spot_lookup::key},
         utility::codec::field{"fx_forward_publish_spot",
                               &fx_forward_publish_spot_lookup::fx_forward_publish_spot},
@@ -280,7 +280,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_forward_pub
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_spots_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"publish_id", &fx_forward_publish_spots_filter::publish_id},
         utility::codec::field{"id_one_of", &fx_forward_publish_spots_filter::id_one_of},
         utility::codec::field{"publish_id_one_of",
@@ -297,7 +297,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_forward_pub
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_spot_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_forward_publish_spot_event::event_id},
         utility::codec::field{"key", &fx_forward_publish_spot_event::key},
         utility::codec::field{"action", &fx_forward_publish_spot_event::action},
@@ -316,7 +316,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_forward_pub
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_spot_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_forward_publish_spot",
                               &fx_forward_publish_spot_version_key::fx_forward_publish_spot},
         utility::codec::field{"version", &fx_forward_publish_spot_version_key::version},
@@ -333,7 +333,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_forward_pub
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_forward_publish_spot_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_forward_publish_spot_versions_filter::version},
         utility::codec::field{"from_version",
                               &fx_forward_publish_spot_versions_filter::from_version},
@@ -351,7 +351,7 @@ wire_fields(std::type_identity<fx_forward_publish_spot_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_spots_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_forward_publish_spots_request::offset},
         utility::codec::field{"limit", &list_fx_forward_publish_spots_request::limit},
         utility::codec::field{"order", &list_fx_forward_publish_spots_request::order},
@@ -370,7 +370,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_spots_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_spots_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_forward_publish_spots_response::result},
         utility::codec::field{"spots", &list_fx_forward_publish_spots_response::spots},
         utility::codec::field{"total", &list_fx_forward_publish_spots_response::total},
@@ -386,7 +386,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_spots_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_publish_spot_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_forward_publish_spot_request::key},
     };
 }
@@ -400,7 +400,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_spots_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_publish_spot_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_forward_publish_spot_response::result},
         utility::codec::field{"fx_forward_publish_spot",
                               &get_fx_forward_publish_spot_response::fx_forward_publish_spot},
@@ -417,7 +417,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_spots_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_forward_publish_spots_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_forward_publish_spots_request::keys},
     };
 }
@@ -432,7 +432,7 @@ wire_fields(std::type_identity<get_many_fx_forward_publish_spots_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_forward_publish_spots_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_forward_publish_spots_response::result},
         utility::codec::field{"entries", &get_many_fx_forward_publish_spots_response::entries},
     };
@@ -448,7 +448,7 @@ wire_fields(std::type_identity<get_many_fx_forward_publish_spots_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_spot_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_forward_publish_spot_versions_request::key},
         utility::codec::field{"offset", &list_fx_forward_publish_spot_versions_request::offset},
         utility::codec::field{"limit", &list_fx_forward_publish_spot_versions_request::limit},
@@ -467,7 +467,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_spot_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_spot_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_forward_publish_spot_versions_response::result},
         utility::codec::field{"versions",
                               &list_fx_forward_publish_spot_versions_response::versions},
@@ -485,7 +485,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_spot_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_publish_spot_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_forward_publish_spot_version_request::key},
     };
 }
@@ -500,7 +500,7 @@ wire_fields(std::type_identity<get_fx_forward_publish_spot_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_publish_spot_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_forward_publish_spot_version_response::result},
         utility::codec::field{"version", &get_fx_forward_publish_spot_version_response::version},
     };

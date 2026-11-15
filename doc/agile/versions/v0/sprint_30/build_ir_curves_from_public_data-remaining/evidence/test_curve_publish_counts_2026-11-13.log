@@ -1,0 +1,10 @@
+Before the marketdata service suite (2026-11-13):
+acme_publishes | test_publishes | open_test_kinds
+            320 |              0 |               1
+
+After the marketdata service suite:
+acme_publishes | test_publishes | open_rule
+            320 |              0 | system_tenant
+
+Command: ./compass.sh sql -- -c "<the counts query>"
+Commit: be5967b218

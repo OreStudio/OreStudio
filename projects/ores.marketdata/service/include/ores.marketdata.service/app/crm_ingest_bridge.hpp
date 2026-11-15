@@ -103,7 +103,7 @@ private:
     }
 
 public:
-    explicit crm_ingest_bridge(ores::database::context ctx);
+    explicit crm_ingest_bridge(const ores::database::context& ctx);
 
     /// Rebuilds every (tenant, party, CRM name) engine from the current
     /// crm_topology_config/crm_driver_pair rows. Call on startup and on

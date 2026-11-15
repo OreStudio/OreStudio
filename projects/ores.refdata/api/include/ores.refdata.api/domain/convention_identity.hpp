@@ -89,7 +89,7 @@ struct convention_identity {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convention_identity>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &convention_identity::version},
         utility::codec::field{"tenant_id", &convention_identity::tenant_id},
         utility::codec::field{"id", &convention_identity::id},

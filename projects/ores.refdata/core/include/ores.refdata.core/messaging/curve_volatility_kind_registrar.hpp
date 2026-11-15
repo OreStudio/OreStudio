@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_CURVE_VOLATILITY_KIND_REGISTRAR_HPP
 #define ORES_REFDATA_CORE_MESSAGING_CURVE_VOLATILITY_KIND_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -36,7 +36,7 @@ namespace ores::refdata::messaging {
 
 std::vector<ores::nats::service::subscription> register_curve_volatility_kind_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

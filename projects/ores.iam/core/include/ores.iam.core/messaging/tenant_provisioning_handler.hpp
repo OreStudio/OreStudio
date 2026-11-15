@@ -23,7 +23,7 @@
 #include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
@@ -33,45 +33,46 @@
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
+#include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/party_curve_blueprints.hpp"
 #include "ores.iam.core/messaging/party_surface_blueprints.hpp"
-#include "ores.iam.core/messaging/provision_step_arguments.hpp"
+#include "ores.iam.core/messaging/party_surface_hold_back.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
+#include "ores.iam.core/service/request_retry.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_check.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_service.hpp"
 #include "ores.iam.core/service/seed_profile_service.hpp"
 #include "ores.iam.core/service/seed_profile_step_service.hpp"
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
+#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
-#include "ores.marketdata.api/messaging/feed_protocol.hpp"
+#include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
+#include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
-#include "ores.marketdata.api/messaging/route_protocol.hpp"
-#include "ores.marketdata.api/messaging/subscription_protocol.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_source_protocol.hpp"
+#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
@@ -83,23 +84,11 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.synthetic.api/domain/trade_population_plan.hpp"
-#include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/folder_protocol.hpp"
-#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
-#include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
-#include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
-#include "ores.synthetic.core/service/trade_population_planner.hpp"
-#include "ores.synthetic.core/service/trade_population_service.hpp"
-#include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -108,6 +97,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -156,9 +146,6 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using ores::database::service::tenant_context;
-using ores::database::repository::execute_parameterized_string_query;
-using ores::database::repository::execute_parameterized_command;
-using ores::database::repository::execute_parameterized_multi_column_query;
 using ores::iam::service::internal_impersonation_service;
 using ores::iam::service::internal_request_client;
 using namespace ores::logging;
@@ -166,13 +153,13 @@ using namespace ores::logging;
 class tenant_provisioning_handler {
 public:
     tenant_provisioning_handler(ores::nats::service::client& nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 ores::security::jwt::jwt_authenticator signer,
                                 ores::iam::service::internal_impersonation_service impersonation)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , impersonation_(std::move(impersonation)) {}
+        , ctx_(ctx)
+        , signer_(signer)
+        , impersonation_(impersonation) {}
 
     /**
      * @brief Provisions a tenant from a seed profile.
@@ -408,7 +395,7 @@ public:
             // caller in words -- its name, its tenant and its party -- and no
             // account identifier, so the identifier comes from the token's
             // subject, which is the session's account.
-            const auto claims = signer_.validate(ores::service::messaging::bearer_token(msg));
+            const auto claims = signer_.validate(ores::service::messaging::caller_token(msg));
             if (!claims) {
                 refuse("The authorization token could not be read.");
                 return;
@@ -506,14 +493,14 @@ public:
             }
             const auto found =
                 wanted_id ?
-                    execute_parameterized_string_query(
+                    ores::database::query_builder::execute_parameterized_string_query(
                         tenant_ctx,
                         "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
                         "AND valid_to = ores_utility_infinity_timestamp_fn() AND id = $2::uuid",
                         {tenant_id, boost::uuids::to_string(*wanted_id)},
                         tenant_provisioning_handler_lg(),
                         "provision_party") :
-                    execute_parameterized_string_query(
+                    ores::database::query_builder::execute_parameterized_string_query(
                         tenant_ctx,
                         "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
                         "AND valid_to = ores_utility_infinity_timestamp_fn() "
@@ -538,13 +525,14 @@ public:
             // own code and hostname beside the identifier.
             auto code = tenant_id;
             auto hostname = std::string{};
-            const auto tenant_row = execute_parameterized_multi_column_query(
-                sys_ctx,
-                "SELECT code, hostname FROM ores_iam_tenants_tbl WHERE id = $1::uuid "
-                "AND valid_to = ores_utility_infinity_timestamp_fn()",
-                {tenant_id},
-                tenant_provisioning_handler_lg(),
-                "provision_party");
+            const auto tenant_row =
+                ores::database::query_builder::execute_parameterized_multi_column_query(
+                    sys_ctx,
+                    "SELECT code, hostname FROM ores_iam_tenants_tbl WHERE id = $1::uuid "
+                    "AND valid_to = ores_utility_infinity_timestamp_fn()",
+                    {tenant_id},
+                    tenant_provisioning_handler_lg(),
+                    "provision_party");
             if (!tenant_row.empty() && tenant_row.front().size() >= 2 && tenant_row.front()[0] &&
                 tenant_row.front()[1]) {
                 code = *tenant_row.front()[0];
@@ -564,7 +552,7 @@ public:
             // above resolved travels in the argument, so the step acts on the
             // party this answer names rather than resolving the reference a
             // second time and possibly reaching another row.
-            auto arguments = detail::read_step_arguments(party_step->arguments_json);
+            auto arguments = workflow::detail::read_step_arguments(party_step->arguments_json);
             arguments.root().set("party", found.front());
             /*
              * The entity the person chose travels with the step, and the step
@@ -624,12 +612,9 @@ public:
      * somebody else's request on the shared subject is not this handler's to
      * answer.
      */
-    void provision_step(ores::nats::message msg) {
+    void provision_step(ores::nats::delivery delivery) {
+        const auto& msg = delivery.msg();
         const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
-        // The step command is delivered durably, so it must be answered rather
-        // than left to the transport's default. The guard retries when a path
-        // below returns without deciding.
-        ores::nats::ack_guard ack(msg);
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
@@ -644,7 +629,7 @@ public:
                 << "provision_step: the step command could not be read, so the step is left "
                    "unanswered and the run will expire it. subject="
                 << msg.subject;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
 
@@ -664,7 +649,7 @@ public:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -677,7 +662,7 @@ public:
                 // it would only report the same failure again.
                 wf->fail("The provisioning step command could not be read: " +
                          std::string(parsed.error()));
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -690,12 +675,12 @@ public:
                 << "provision_step " << parsed->kind << " returned after "
                 << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
                 << "s: step_id=" << wf->step_id;
-            ack.accept();
+            std::move(delivery).commit();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: step_id=" << wf->step_id << ": " << e.what();
             wf->fail(e.what());
-            ack.accept();
+            std::move(delivery).commit();
         } catch (...) {
             // An exception of no standard type would otherwise leave the step with no answer and
             // no line saying why, so the run would wait out its deadline in silence.
@@ -703,7 +688,7 @@ public:
                 << "provision_step failed with an exception of no standard type: step_id="
                 << wf->step_id;
             wf->fail("The step failed with an exception of no standard type.");
-            ack.accept();
+            std::move(delivery).commit();
         }
     }
 
@@ -763,6 +748,52 @@ public:
     }
 
 private:
+    /**
+     * @brief How long a request waits that derives or writes a set of rows.
+     *
+     * A curve bootstrap, a forward set, a surface calibration and a surface
+     * publish are minutes of work on a loaded host, not one round trip. The
+     * surface step measured 99 s for 40 calibrations and publishes on a quiet
+     * machine, about 2.5 s each, and one of them outlived the shared 30 s
+     * default when the host was loaded: that is how step 13 of a provisioning
+     * run failed with "NATS request timed out".
+     *
+     * 120 s is 48 times that quiet measurement and four times the shared
+     * default. It is also a tenth of the 1200 s a step must stand still before
+     * the engine fails it, so one slow request can never be what exhausts a
+     * step's patience.
+     */
+    static constexpr auto work_request_deadline = std::chrono::seconds{120};
+
+    /**
+     * @brief The instant a step's requests must stop being tried.
+     *
+     * The engine gives a step a budget of standing still, not of wall clock
+     * time, so this is that budget read from the moment of the call. A chain of
+     * attempts, and each attempt's own wait, is cut to what is left of it.
+     */
+    static std::chrono::steady_clock::time_point deadline_of(const std::string& kind) {
+        return std::chrono::steady_clock::now() +
+               ores::iam::workflow::words_for_step_kind(kind).timeout;
+    }
+
+    /// Records a retry attempt where a person watching the run can read it.
+    ///
+    /// The step's log answers the engine when the step settles, and the step's
+    /// report carries to the engine on the next renewal. An attempt is written
+    /// to both, so a slow request that is being asked again shows while it
+    /// happens and not only once the step ends.
+    static std::function<void(const std::string&)>
+    attempts_recorded_in(std::vector<ores::workflow::messaging::step_log_entry>& step_log,
+                         const ores::service::messaging::workflow_step_context& wf) {
+        return [&step_log, &wf](const std::string& line) {
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = line,
+                                .context = {}});
+            wf.progress(line);
+        };
+    }
+
     /// Who a provisioning step acts as. The engine sends a step without the
     /// caller's token, so the handler mints one for the run's administrator.
     struct step_actor {
@@ -798,8 +829,8 @@ public:
         /// The instance id of the run this step started, when the kind hands
         /// the tenant to another run. Empty for every other kind.
         std::string child_instance_id;
-        /// The trade generation configs a generate_trades step recorded, and
-        /// what the population it wrote came to.
+        /// The trade generation configs a step recorded, and what the
+        /// population it wrote came to.
         std::vector<std::string> configs;
         std::uint32_t trades_planned = 0;
         std::uint32_t trades_written = 0;
@@ -810,6 +841,20 @@ public:
         /// and the ones it could not, each with the reason it was last refused.
         std::vector<std::string> curves;
         std::vector<std::string> curves_not_published;
+        /// The forward sets a publish_party_forwards step published, the ones a party had
+        /// already, the pairs a party cannot build with the service's reason, and the ones it
+        /// raised and could not publish, each as "party: pair: detail".
+        std::vector<std::string> forwards;
+        std::vector<std::string> forwards_already_published;
+        std::vector<std::string> forwards_skipped;
+        std::vector<std::string> forwards_not_published;
+        /// The surfaces a publish_party_surfaces step published, the ones a party had already,
+        /// the ones held back because they failed an arbitrage or error check, and the ones it
+        /// could not calibrate or publish, each as "party: blueprint: detail".
+        std::vector<std::string> surfaces;
+        std::vector<std::string> surfaces_already_published;
+        std::vector<std::string> surfaces_held_back;
+        std::vector<std::string> surfaces_not_published;
     };
 
 private:
@@ -899,70 +944,67 @@ private:
     void execute_step(const ores::service::messaging::workflow_step_context& wf,
                       const ores::iam::workflow::provision_tenant_step_command& command,
                       const std::string& correlation_id) {
-        switch (classify_step_kind(command.kind)) {
-            case provision_step_action::complete_provisioning:
+        switch (workflow::classify_step_kind(command.kind)) {
+            case workflow::provision_step_action::complete_provisioning:
                 complete_provisioning_step(wf, command);
                 return;
-            case provision_step_action::start_tenant_setup:
+            case workflow::provision_step_action::start_tenant_setup:
                 start_tenant_setup_step(wf, command, correlation_id);
                 return;
-            case provision_step_action::system_provision:
+            case workflow::provision_step_action::system_provision:
                 system_provision_step(wf, command);
                 return;
-            case provision_step_action::publish_system_curves:
+            case workflow::provision_step_action::publish_system_curves:
                 publish_system_curves_step(wf, command);
                 return;
-            case provision_step_action::publish_bundle:
+            case workflow::provision_step_action::publish_bundle:
                 publish_bundle_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::start_auto_approval:
+            case workflow::provision_step_action::start_auto_approval:
                 set_auto_approval_step(wf,
                                        command,
                                        resolve_step_actor(command),
                                        true,
                                        "Provisioning runs without waiting on approvals.");
                 return;
-            case provision_step_action::end_auto_approval:
+            case workflow::provision_step_action::end_auto_approval:
                 set_auto_approval_step(wf,
                                        command,
                                        resolve_step_actor(command),
                                        false,
                                        "Provisioning is finished, so people decide from here on.");
                 return;
-            case provision_step_action::build_calendars:
-                build_calendars_step(wf, command, resolve_step_actor(command));
-                return;
-            case provision_step_action::import_lei_hierarchy:
+            case workflow::provision_step_action::import_lei_hierarchy:
                 import_lei_hierarchy_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::provision_party:
+            case workflow::provision_step_action::provision_party:
                 provision_party_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::load_staff:
+            case workflow::provision_step_action::load_staff:
                 load_staff_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::set_staff_passwords:
+            case workflow::provision_step_action::set_staff_passwords:
                 set_staff_passwords_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::attach_photos:
+            case workflow::provision_step_action::attach_photos:
                 attach_photos_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::subscribe_market_data:
-                subscribe_market_data_step(wf, command, resolve_step_actor(command));
-                return;
-            case provision_step_action::publish_party_curves:
+            case workflow::provision_step_action::publish_party_curves:
                 publish_party_curves_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::give_party_surface_blueprints:
+            case workflow::provision_step_action::give_party_surface_blueprints:
                 give_party_surface_blueprints_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::generate_trades:
-                generate_trades_step(wf, command, resolve_step_actor(command));
+            case workflow::provision_step_action::publish_party_forwards:
+                publish_party_forwards_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::schedule_reports:
+            case workflow::provision_step_action::publish_party_surfaces:
+                publish_party_surfaces_step(wf, command, resolve_step_actor(command));
+                return;
+            case workflow::provision_step_action::schedule_reports:
                 schedule_reports_step(wf, command, resolve_step_actor(command));
                 return;
-            case provision_step_action::refuse:
+            case workflow::provision_step_action::refuse:
                 wf.fail("The step kind '" + command.kind +
                         "' is not one this deployment executes.");
                 return;
@@ -1060,15 +1102,23 @@ private:
      * feeds may not have ticked yet. A curve whose request waits for a person is not asked again,
      * since a second ask would raise a second request for one act.
      *
+     * The step reports each curve it starts, and each attempt it makes at one, so a person
+     * watching the run reads what the step is waiting for while it waits.
+     *
+     * @param wf The step's own record, for the reports it makes while it runs.
      * @param curves Each curve's bootstrap config id and name.
      * @param label Names the step in the logs.
+     * @param deadline The instant the step's requests must stop being tried.
      */
     curve_publish_outcome
-    publish_curves(internal_request_client& client,
+    publish_curves(const ores::service::messaging::workflow_step_context& wf,
+                   internal_request_client& client,
+                   const boost::uuids::uuid& party_id,
                    const std::vector<std::pair<std::string, std::string>>& curves,
                    std::string_view reason,
                    std::string_view label,
-                   std::vector<ores::workflow::messaging::step_log_entry>& step_log) {
+                   std::vector<ores::workflow::messaging::step_log_entry>& step_log,
+                   std::chrono::steady_clock::time_point deadline) {
         constexpr auto curve_quote_patience = std::chrono::minutes{2};
         constexpr auto curve_retry_interval = std::chrono::seconds{10};
 
@@ -1088,11 +1138,21 @@ private:
                 // while the step waits are inside the snapshot the next attempt
                 // reads. A preview and its publish state the same instant.
                 const auto as_of = std::chrono::system_clock::now();
+                const auto curve_work = std::string(label) + ": " + names.at(it->first);
+                wf.progress(curve_work,
+                            static_cast<std::int64_t>(curves.size() - pending.size()),
+                            static_cast<std::int64_t>(curves.size()));
 
                 ores::marketdata::messaging::compute_curve_request preview;
                 preview.bootstrap_config_id = it->first;
                 preview.as_of = as_of;
-                const auto computed = client.request(preview);
+                const auto computed =
+                    request_with_retry(client,
+                                       preview,
+                                       {.deadline = deadline,
+                                        .attempt_timeout = work_request_deadline,
+                                        .what = curve_work + " curve bootstrap",
+                                        .note = attempts_recorded_in(step_log, wf)});
                 if (!computed.success) {
                     it->second = computed.message;
                     ++it;
@@ -1103,20 +1163,43 @@ private:
                 publish.bootstrap_config_id = it->first;
                 publish.as_of = as_of;
                 publish.reason = std::string(reason);
-                const auto published = client.request(publish);
+                const auto published = ores::iam::service::call_with_retry(
+                    [&](const ores::iam::service::retry_attempt& attempt)
+                        -> ores::marketdata::messaging::publish_curve_response {
+                        return ores::iam::service::do_unless_already_done(
+                            attempt,
+                            [&]() -> std::optional<
+                                      ores::marketdata::messaging::publish_curve_response> {
+                                const auto found = published_curve_of(
+                                    client, party_id, it->first, as_of, attempt.budget_left);
+                                if (!found)
+                                    return std::nullopt;
+                                return ores::marketdata::messaging::publish_curve_response{
+                                    .success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found->request_id,
+                                    .state_code = found->state_code,
+                                    .published_at = found->published_at,
+                                    .published_by = found->published_by};
+                            },
+                            [&] { return client.request(publish, attempt.budget_left); });
+                    },
+                    {.deadline = deadline,
+                     .what = curve_work + " curve publish",
+                     .note = attempts_recorded_in(step_log, wf)});
                 if (published.success && published.published_at) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
                         << ores::platform::time::datetime::to_iso8601_utc(*published.published_at)
                         << " by " << published.published_by << ", " << computed.points.size()
                         << " point(s)";
-                    outcome.published.push_back(names.at(it->first) + " as of " +
-                                                ores::platform::time::datetime::to_iso8601_utc(as_of));
+                    outcome.published.push_back(
+                        names.at(it->first) + " as of " +
+                        ores::platform::time::datetime::to_iso8601_utc(as_of));
                 } else if (published.success) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                        << label << ": " << names.at(it->first)
-                        << " waits for approval: request " << published.approval_request_id
-                        << " is " << published.state_code;
+                        << label << ": " << names.at(it->first) << " waits for approval: request "
+                        << published.approval_request_id << " is " << published.state_code;
                     outcome.not_published.push_back(
                         names.at(it->first) + ": the request " + published.approval_request_id +
                         " is " + published.state_code + " and no person has answered it");
@@ -1206,8 +1289,14 @@ private:
         provision_step_result result;
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
-        auto outcome =
-            publish_curves(client, curves, publish_reason, "publish_system_curves", step_log);
+        auto outcome = publish_curves(wf,
+                                      client,
+                                      admin->party_id,
+                                      curves,
+                                      publish_reason,
+                                      "publish_system_curves",
+                                      step_log,
+                                      deadline_of(command.kind));
         result.curves = std::move(outcome.published);
         result.curves_not_published = std::move(outcome.not_published);
 
@@ -1261,10 +1350,10 @@ private:
 
         ores::marketdata::messaging::list_market_series_request series;
         series.limit = 5000;
-        series.filter = ores::marketdata::messaging::market_series_filter{
-            .provider_code = std::nullopt,
-            .id_one_of = series_ids,
-            .provider_code_one_of = std::nullopt};
+        series.filter =
+            ores::marketdata::messaging::market_series_filter{.provider_code = std::nullopt,
+                                                              .id_one_of = series_ids,
+                                                              .provider_code_one_of = std::nullopt};
         system.series = system_client.request(series).market_series;
         return system;
     }
@@ -1284,6 +1373,22 @@ private:
             if (c.party_id == party_id)
                 holdings.config_ids.insert(c.id);
         return holdings;
+    }
+
+    /// Sends a put-many in parts of a batch's size, and answers with the reply to the first
+    /// part refused, or else to the last part. Every plan write claims any, so a run that stopped
+    /// after some parts writes them all again.
+    template <typename Request>
+    static auto request_in_parts(internal_request_client& client, Request& request) {
+        const auto changes = std::move(request.changes);
+        typename Request::response_type reply;
+        for (const auto part : ores::utility::domain::batches_of(changes)) {
+            request.changes.assign(part.begin(), part.end());
+            reply = client.request(request);
+            if (reply.result.outcome != ores::utility::domain::outcome::ok)
+                break;
+        }
+        return reply;
     }
 
     /// Writes the rows a plan names, series first, because a config names its output series
@@ -1308,7 +1413,7 @@ private:
                      .precondition = {.kind = ores::utility::domain::precondition_kind::any}});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            const auto saved = party_client.request(put);
+            const auto saved = request_in_parts(party_client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The curve output series of '" + party_name +
                                          "' were not saved: " + saved.result.message);
@@ -1331,7 +1436,7 @@ private:
                      .precondition = {.kind = ores::utility::domain::precondition_kind::any}});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            const auto saved = party_client.request(put);
+            const auto saved = request_in_parts(party_client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The curve configs of '" + party_name +
                                          "' were not saved: " + saved.result.message);
@@ -1351,7 +1456,7 @@ private:
                      .precondition = {.kind = ores::utility::domain::precondition_kind::any}});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            const auto saved = party_client.request(put);
+            const auto saved = request_in_parts(party_client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The curve pillars of '" + party_name +
                                          "' were not saved: " + saved.result.message);
@@ -1370,6 +1475,42 @@ private:
         return out;
     }
 
+    /// The set one curve publish is about, once an earlier attempt wrote it.
+    ///
+    /// A publish states the configuration and the as-of it is for, and the
+    /// server keeps the as-of at microsecond precision, so a set an earlier
+    /// attempt published carries this publish's as-of. A set of the same
+    /// configuration at another as-of is another run's work, which this one
+    /// takes for its own at nobody's benefit.
+    ///
+    /// A request this publish raised and nobody has answered yet is a candidate
+    /// set, and it is read back all the same: the raise already happened, so a
+    /// repeat that could not see it would raise a second request for one set.
+    static std::optional<ores::marketdata::messaging::published_curve_set>
+    published_curve_of(internal_request_client& client,
+                       const boost::uuids::uuid& party_id,
+                       const std::string& config_id,
+                       std::chrono::system_clock::time_point as_of,
+                       std::chrono::milliseconds patience) {
+        ores::marketdata::messaging::list_published_curves_request request;
+        request.party_id = boost::uuids::to_string(party_id);
+        request.include_candidates = true;
+        request.limit = 1000;
+        const auto wanted = std::chrono::floor<std::chrono::microseconds>(as_of);
+        for (const auto& set : client.request(request, patience).sets) {
+            if (set.bootstrap_config_id != config_id)
+                continue;
+            if (std::chrono::floor<std::chrono::microseconds>(set.as_of) != wanted)
+                continue;
+            // A withdrawn or superseded set is not the one this publish is
+            // about: the work it names has since been undone or replaced.
+            if (set.state_code == "withdrawn" || set.state_code == "superseded")
+                continue;
+            return set;
+        }
+        return std::nullopt;
+    }
+
     /**
      * @brief Gives each party the step names its own funding curves.
      *
@@ -1382,16 +1523,17 @@ private:
      * A curve that does not publish fails the step, named with its party. A second run writes no
      * row twice and publishes only the curves that are still missing.
      */
-    void publish_party_curves_step(const ores::service::messaging::workflow_step_context& wf,
-                                   const ores::iam::workflow::provision_tenant_step_command& command,
-                                   const step_actor& actor) {
+    void
+    publish_party_curves_step(const ores::service::messaging::workflow_step_context& wf,
+                              const ores::iam::workflow::provision_tenant_step_command& command,
+                              const step_actor& actor) {
         constexpr auto quote_patience = std::chrono::minutes{3};
         constexpr auto retry_interval = std::chrono::seconds{10};
         constexpr std::string_view publish_reason =
             "Provisioning bootstraps the party's own funding curve from the quotes its "
             "subscriptions deliver.";
 
-        const auto parties = parse_party_curves_arguments(command.arguments_json);
+        const auto parties = workflow::parse_party_curves_arguments(command.arguments_json);
         const auto admin = system_administrator();
         if (!admin) {
             wf.fail("The system tenant holds no administrator to read the curve blueprints as.");
@@ -1418,7 +1560,8 @@ private:
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
 
             const auto started = std::chrono::steady_clock::now();
-            auto plan = plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
+            auto plan =
+                plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
             while (!plan.waiting.empty() &&
                    std::chrono::steady_clock::now() < started + quote_patience) {
                 const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
@@ -1426,11 +1569,17 @@ private:
                                   std::to_string(retry_interval.count()) + "s";
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "publish_party_curves: " << line;
+                // The count ready moves only as quotes arrive, so waiting is
+                // seen to progress or to stand still.
+                wf.progress(party_name + ": curves with their quotes",
+                            static_cast<std::int64_t>(plan.ready.size()),
+                            static_cast<std::int64_t>(plan.ready.size() + plan.waiting.size()));
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = line,
                                     .context = {}});
                 std::this_thread::sleep_for(retry_interval);
-                plan = plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
+                plan =
+                    plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
             }
             write_party_curve_plan(party_client, plan, party_name);
             for (const auto& waiting : plan.waiting)
@@ -1443,8 +1592,14 @@ private:
                 if (!published.contains(id))
                     curves.emplace_back(id, curve.name);
             }
-            auto outcome = publish_curves(party_client, curves, publish_reason,
-                                          "publish_party_curves " + party_name, step_log);
+            auto outcome = publish_curves(wf,
+                                          party_client,
+                                          party->id,
+                                          curves,
+                                          publish_reason,
+                                          "publish_party_curves " + party_name,
+                                          step_log,
+                                          deadline_of(command.kind));
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_curves: " << party_name << ": published "
                 << outcome.published.size() << ", already published "
@@ -1467,14 +1622,323 @@ private:
                                  "writes no row twice and publishes only the missing curves:";
             for (const auto& line : result.curves_not_published)
                 reason += " " + line + ";";
-            wf.fail(reason);
+            wf.fail(reason, step_log);
+            return;
+        }
+        wf.complete(ores::utility::codec::json::write(result), step_log);
+    }
+
+    /// The pair codes of every currency pair convention the tenant holds.
+    static std::vector<std::string> pair_convention_codes(internal_request_client& client) {
+        std::vector<std::string> out;
+        ores::refdata::messaging::list_currency_pair_conventions_request request;
+        request.limit = 1000;
+        for (;;) {
+            const auto page = client.request(request);
+            for (const auto& c : page.conventions)
+                out.push_back(c.pair_code);
+            if (page.conventions.empty() || out.size() >= page.total)
+                break;
+            request.offset = static_cast<std::uint32_t>(out.size());
+        }
+        std::ranges::sort(out);
+        return out;
+    }
+
+    /**
+     * @brief Publishes each party's FX forward sets.
+     *
+     * A forward set is derived data, so it belongs to the party whose spot and funding curves it
+     * reads. Each party is asked for every currency pair convention the tenant holds, and the
+     * forward service decides which it can build: a pair it refuses before raising a request is
+     * skipped, with its reason. Under the tenant's auto-approval the raise closes and the set
+     * publishes at once.
+     *
+     * A set raised and not published fails the step, named with its party. A second run publishes
+     * only the pairs that are still missing.
+     */
+    void
+    publish_party_forwards_step(const ores::service::messaging::workflow_step_context& wf,
+                                const ores::iam::workflow::provision_tenant_step_command& command,
+                                const step_actor& actor) {
+        constexpr std::string_view publish_reason =
+            "Provisioning publishes the party's FX forward set from its spot and its published "
+            "funding curves.";
+
+        const auto parties = workflow::parse_party_forwards_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        const auto pairs = pair_convention_codes(discover);
+        if (pairs.empty()) {
+            wf.fail("The tenant holds no currency pair convention to publish a forward set for.");
+            return;
+        }
+
+        provision_step_result result;
+        result.kind = command.kind;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
+        for (const auto& party_name : parties) {
+            const auto party = find_party(discover, party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+
+            std::size_t published = 0;
+            std::size_t held = 0;
+            const auto step_deadline = deadline_of(command.kind);
+            std::int64_t done = 0;
+            for (const auto& pair : pairs) {
+                const auto as_of = std::chrono::system_clock::now();
+                const auto line = party_name + ": " + pair;
+                wf.progress(line, done++, static_cast<std::int64_t>(pairs.size()));
+
+                // The read answers the newest set at or before the as-of, so a set an
+                // earlier run published is found by a later one.
+                ores::marketdata::messaging::get_published_fx_forward_request published_before;
+                published_before.pair_code = pair;
+                published_before.as_of = as_of;
+                if (party_client.request(published_before).success) {
+                    ++held;
+                    result.forwards_already_published.push_back(line);
+                    continue;
+                }
+
+                ores::marketdata::messaging::publish_fx_forward_request publish;
+                publish.pair_code = pair;
+                publish.as_of = as_of;
+                publish.reason = std::string(publish_reason);
+                const auto answer = ores::iam::service::call_with_retry(
+                    [&](const ores::iam::service::retry_attempt& attempt)
+                        -> ores::marketdata::messaging::publish_fx_forward_response {
+                        return ores::iam::service::do_unless_already_done(
+                            attempt,
+                            [&]() -> std::optional<
+                                      ores::marketdata::messaging::publish_fx_forward_response> {
+                                ores::marketdata::messaging::get_published_fx_forward_request read;
+                                read.pair_code = pair;
+                                read.as_of = as_of;
+                                const auto found = party_client.request(read, attempt.budget_left);
+                                if (!found.success)
+                                    return std::nullopt;
+                                return ores::marketdata::messaging::publish_fx_forward_response{
+                                    .success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found.request_id,
+                                    .state_code = "published",
+                                    .published_at = found.published_at,
+                                    .published_by = found.published_by};
+                            },
+                            [&] { return party_client.request(publish, attempt.budget_left); });
+                    },
+                    {.deadline = step_deadline,
+                     .what = line + " forward set",
+                     .note = attempts_recorded_in(step_log, wf)});
+                if (answer.success && answer.published_at) {
+                    ++published;
+                    result.forwards.push_back(
+                        line + ": as of " + ores::platform::time::datetime::to_iso8601_utc(as_of));
+                } else if (answer.approval_request_id.empty()) {
+                    result.forwards_skipped.push_back(line + ": " + answer.message);
+                } else if (answer.success) {
+                    result.forwards_not_published.push_back(
+                        line + ": the request " + answer.approval_request_id + " is " +
+                        answer.state_code + " and no person has answered it");
+                } else {
+                    result.forwards_not_published.push_back(line + ": " + answer.message);
+                }
+            }
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "publish_party_forwards: " << party_name << ": published " << published << " of "
+                << pairs.size() << " pair(s)";
+            // A refusal reads as a skip, so a service that refuses every pair for a reason of
+            // its own, such as a permission, would otherwise pass the step with nothing published.
+            if (published == 0 && held == 0)
+                result.forwards_not_published.push_back(
+                    party_name + ": no pair could be built, and the party holds no forward set");
+            result.parties.push_back(boost::uuids::to_string(party->id));
+        }
+
+        for (const auto& skipped : result.forwards_skipped)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = "skipped " + skipped,
+                                .context = {}});
+        for (const auto& not_published : result.forwards_not_published)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                                .message = not_published,
+                                .context = {}});
+        if (!result.forwards_not_published.empty()) {
+            std::string reason = std::to_string(result.forwards_not_published.size()) +
+                                 " forward set(s) were not published. A rerun is safe: it "
+                                 "publishes only the missing pairs:";
+            for (const auto& line : result.forwards_not_published)
+                reason += " " + line + ";";
+            wf.fail(reason, step_log);
+            return;
+        }
+        wf.complete(ores::utility::codec::json::write(result), step_log);
+    }
+
+    /**
+     * @brief Calibrates and publishes each party's volatility surfaces.
+     *
+     * A surface is derived data, so it belongs to the party whose blueprint, quotes and forward
+     * sets it reads. Each blueprint the party holds is calibrated at the present instant and
+     * published under the tenant's auto-approval.
+     *
+     * A surface with arbitrage, a fit that did not converge or a pillar beyond the tolerance is
+     * held back and named: a decider would weigh it, and provisioning has none. A surface that
+     * cannot be calibrated, or is raised and not published, fails the step, named with its party.
+     * A second run publishes only the surfaces that are still missing.
+     */
+    void
+    publish_party_surfaces_step(const ores::service::messaging::workflow_step_context& wf,
+                                const ores::iam::workflow::provision_tenant_step_command& command,
+                                const step_actor& actor) {
+        constexpr std::string_view publish_reason =
+            "Provisioning calibrates the party's surface from its volatility quotes and its "
+            "published forward sets.";
+
+        const auto parties = workflow::parse_party_surfaces_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        provision_step_result result;
+        result.kind = command.kind;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
+        for (const auto& party_name : parties) {
+            const auto party = find_party(discover, party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+
+            ores::refdata::messaging::list_fx_vol_surface_blueprints_request list;
+            list.limit = 1000;
+            std::vector<ores::refdata::domain::fx_vol_surface_blueprint> blueprints;
+            for (auto& b : party_client.request(list).blueprints)
+                if (b.party_id == party->id)
+                    blueprints.push_back(std::move(b));
+            if (blueprints.empty()) {
+                result.surfaces_not_published.push_back(party_name +
+                                                        ": the party holds no surface blueprint");
+                continue;
+            }
+
+            std::size_t published = 0;
+            const auto step_deadline = deadline_of(command.kind);
+            std::int64_t done = 0;
+            for (const auto& blueprint : blueprints) {
+                const auto id = boost::uuids::to_string(blueprint.id);
+                const auto as_of = std::chrono::system_clock::now();
+                const auto line = party_name + ": " + blueprint.name;
+                wf.progress(line, done++, static_cast<std::int64_t>(blueprints.size()));
+
+                // The read answers the newest published surface at or before the as-of, so a
+                // surface an earlier run published is found by a later one, even when a newer
+                // publish has since superseded it: the blueprint has a surface either way.
+                ores::marketdata::messaging::get_published_fx_vol_surface_request published_before;
+                published_before.blueprint_id = id;
+                published_before.as_of = as_of;
+                if (party_client.request(published_before).success) {
+                    result.surfaces_already_published.push_back(line);
+                    continue;
+                }
+
+                ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
+                calibrate.blueprint_id = id;
+                calibrate.as_of = as_of;
+                const auto calibrated =
+                    request_with_retry(party_client,
+                                       calibrate,
+                                       {.deadline = step_deadline,
+                                        .attempt_timeout = work_request_deadline,
+                                        .what = line + " surface calibration",
+                                        .note = attempts_recorded_in(step_log, wf)});
+                if (!calibrated.success) {
+                    result.surfaces_not_published.push_back(line + ": " + calibrated.message);
+                    continue;
+                }
+                if (const auto reason = party_surface_hold_back(calibrated)) {
+                    result.surfaces_held_back.push_back(line + ": " + *reason);
+                    continue;
+                }
+
+                ores::marketdata::messaging::publish_fx_vol_surface_request publish;
+                publish.blueprint_id = id;
+                publish.as_of = calibrated.as_of;
+                publish.reason = std::string(publish_reason);
+                const auto answer = ores::iam::service::call_with_retry(
+                    [&](const ores::iam::service::retry_attempt& attempt)
+                        -> ores::marketdata::messaging::publish_fx_vol_surface_response {
+                        return ores::iam::service::do_unless_already_done(
+                            attempt,
+                            [&]()
+                                -> std::optional<
+                                    ores::marketdata::messaging::publish_fx_vol_surface_response> {
+                                ores::marketdata::messaging::get_published_fx_vol_surface_request
+                                    read;
+                                read.blueprint_id = id;
+                                read.as_of = calibrated.as_of;
+                                const auto found = party_client.request(read, attempt.budget_left);
+                                if (!found.success)
+                                    return std::nullopt;
+                                return ores::marketdata::messaging::publish_fx_vol_surface_response{
+                                    .success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found.publish_request_id,
+                                    .state_code = "published",
+                                    .published_at = found.published_at,
+                                    .published_by = found.published_by};
+                            },
+                            [&] { return party_client.request(publish, attempt.budget_left); });
+                    },
+                    {.deadline = step_deadline,
+                     .what = line + " surface publish",
+                     .note = attempts_recorded_in(step_log, wf)});
+                if (answer.success && answer.published_at) {
+                    ++published;
+                    result.surfaces.push_back(
+                        line + ": as of " +
+                        ores::platform::time::datetime::to_iso8601_utc(calibrated.as_of) +
+                        ", from forward set " + calibrated.forward_publish_id);
+                } else if (answer.success) {
+                    result.surfaces_not_published.push_back(
+                        line + ": the request " + answer.approval_request_id + " is " +
+                        answer.state_code + " and no person has answered it");
+                } else {
+                    result.surfaces_not_published.push_back(line + ": " + answer.message);
+                }
+            }
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "publish_party_surfaces: " << party_name << ": published " << published << " of "
+                << blueprints.size() << " surface(s)";
+            result.parties.push_back(boost::uuids::to_string(party->id));
+        }
+
+        for (const auto& held : result.surfaces_held_back)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                                .message = "held back " + held,
+                                .context = {}});
+        for (const auto& not_published : result.surfaces_not_published)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                                .message = not_published,
+                                .context = {}});
+        if (!result.surfaces_not_published.empty()) {
+            std::string reason = std::to_string(result.surfaces_not_published.size()) +
+                                 " surface(s) were not published. A rerun is safe: it publishes "
+                                 "only the missing surfaces:";
+            for (const auto& line : result.surfaces_not_published)
+                reason += " " + line + ";";
+            wf.fail(reason, step_log);
             return;
         }
         wf.complete(ores::utility::codec::json::write(result), step_log);
     }
 
     /// The system tenant's surface blueprints, with every series they name.
-    system_surface_blueprints read_system_surface_blueprints(internal_request_client& system_client) {
+    system_surface_blueprints
+    read_system_surface_blueprints(internal_request_client& system_client) {
         system_surface_blueprints system;
         ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
         blueprints.limit = 1000;
@@ -1517,8 +1981,10 @@ private:
 
         ores::marketdata::messaging::list_market_series_request series;
         series.limit = 5000;
-        series.filter = ores::marketdata::messaging::market_series_filter{
-            .provider_code = std::nullopt, .id_one_of = series_ids, .provider_code_one_of = std::nullopt};
+        series.filter =
+            ores::marketdata::messaging::market_series_filter{.provider_code = std::nullopt,
+                                                              .id_one_of = series_ids,
+                                                              .provider_code_one_of = std::nullopt};
         system.series = system_client.request(series).market_series;
         return system;
     }
@@ -1556,37 +2022,38 @@ private:
         if (!plan.series_to_write.empty()) {
             ores::marketdata::messaging::put_many_market_series_request put;
             for (const auto& s : plan.series_to_write)
-                put.changes.push_back({.write = {.id = s.id,
-                                                 .party_id = s.party_id,
-                                                 .oresmd_uri = s.oresmd_uri,
-                                                 .provider_code = s.provider_code,
-                                                 .series_subclass = s.series_subclass,
-                                                 .derivation_kind = s.derivation_kind,
-                                                 .derivation_config_id = s.derivation_config_id,
-                                                 .derivation_config_version =
-                                                     s.derivation_config_version},
-                                       .precondition = any});
+                put.changes.push_back(
+                    {.write = {.id = s.id,
+                               .party_id = s.party_id,
+                               .oresmd_uri = s.oresmd_uri,
+                               .provider_code = s.provider_code,
+                               .series_subclass = s.series_subclass,
+                               .derivation_kind = s.derivation_kind,
+                               .derivation_config_id = s.derivation_config_id,
+                               .derivation_config_version = s.derivation_config_version},
+                     .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "output series");
+            check(request_in_parts(party_client, put), "output series");
         }
         if (!plan.blueprints_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_blueprints_request put;
             for (const auto& b : plan.blueprints_to_write)
-                put.changes.push_back({.write = {.id = b.id,
-                                                 .output_series_id = b.output_series_id,
-                                                 .name = b.name,
-                                                 .base_currency_code = b.base_currency_code,
-                                                 .quote_currency_code = b.quote_currency_code,
-                                                 .fx_option_convention_id = b.fx_option_convention_id,
-                                                 .smile_model = b.smile_model,
-                                                 .expiry_interpolation = b.expiry_interpolation,
-                                                 .output_expiries = b.output_expiries,
-                                                 .output_strikes = b.output_strikes},
-                                       .precondition = any});
+                put.changes.push_back(
+                    {.write = {.id = b.id,
+                               .output_series_id = b.output_series_id,
+                               .name = b.name,
+                               .base_currency_code = b.base_currency_code,
+                               .quote_currency_code = b.quote_currency_code,
+                               .fx_option_convention_id = b.fx_option_convention_id,
+                               .smile_model = b.smile_model,
+                               .expiry_interpolation = b.expiry_interpolation,
+                               .output_expiries = b.output_expiries,
+                               .output_strikes = b.output_strikes},
+                     .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "blueprints");
+            check(request_in_parts(party_client, put), "blueprints");
         }
         if (!plan.pillars_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_pillars_request put;
@@ -1599,7 +2066,7 @@ private:
                                        .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "pillars");
+            check(request_in_parts(party_client, put), "pillars");
         }
         if (!plan.sources_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_pillar_sources_request put;
@@ -1613,7 +2080,7 @@ private:
                                        .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
-            check(party_client.request(put), "pillar sources");
+            check(request_in_parts(party_client, put), "pillar sources");
         }
     }
 
@@ -1626,14 +2093,14 @@ private:
      * The step waits up to three minutes for those series, writes the rows, and fails naming each
      * blueprint still waiting. A second run writes no row twice.
      */
-    void
-    give_party_surface_blueprints_step(const ores::service::messaging::workflow_step_context& wf,
-                                       const ores::iam::workflow::provision_tenant_step_command& command,
-                                       const step_actor& actor) {
+    void give_party_surface_blueprints_step(
+        const ores::service::messaging::workflow_step_context& wf,
+        const ores::iam::workflow::provision_tenant_step_command& command,
+        const step_actor& actor) {
         constexpr auto quote_patience = std::chrono::minutes{3};
         constexpr auto retry_interval = std::chrono::seconds{10};
 
-        const auto parties = parse_party_curves_arguments(command.arguments_json);
+        const auto parties = workflow::parse_party_curves_arguments(command.arguments_json);
         const auto admin = system_administrator();
         if (!admin) {
             wf.fail("The system tenant holds no administrator to read the surface blueprints as.");
@@ -1670,6 +2137,9 @@ private:
                                   std::to_string(retry_interval.count()) + "s";
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "give_party_surface_blueprints: " << line;
+                wf.progress(party_name + ": surface blueprints with their quotes",
+                            static_cast<std::int64_t>(plan.ready.size()),
+                            static_cast<std::int64_t>(plan.ready.size() + plan.waiting.size()));
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = line,
                                     .context = {}});
@@ -1680,8 +2150,8 @@ private:
             write_party_surface_plan(party_client, plan, party_name);
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "give_party_surface_blueprints: " << party_name << ": "
-                << plan.blueprints_to_write.size() << " written, " << plan.ready.size()
-                << " held, " << plan.waiting.size() << " waiting";
+                << plan.blueprints_to_write.size() << " written, " << plan.ready.size() << " held, "
+                << plan.waiting.size() << " waiting";
             for (const auto& w : plan.waiting)
                 waiting.push_back(party_name + ": " + w);
             result.parties.push_back(boost::uuids::to_string(party->id));
@@ -1691,7 +2161,7 @@ private:
                                  " surface blueprint(s) were not given. A rerun is safe:";
             for (const auto& line : waiting)
                 reason += " " + line + ";";
-            wf.fail(reason);
+            wf.fail(reason, step_log);
             return;
         }
         wf.complete(ores::utility::codec::json::write(result), step_log);
@@ -1717,31 +2187,6 @@ private:
         wf.complete(ores::utility::codec::json::write(result));
     }
 
-    /// The last year generate_calendar_exceptions writes. Later days would be
-    /// built as weekdays with no holidays.
-    static constexpr int last_generated_holiday_year = 2060;
-
-    /// Each calendar builds about 13,000 days, one row at a time, so the
-    /// operation outlives the client's default patience.
-    void build_calendars_step(const ores::service::messaging::workflow_step_context& wf,
-                              const ores::iam::workflow::provision_tenant_step_command& command,
-                              const step_actor& actor) {
-        auto client =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        ores::refdata::messaging::regenerate_calendar_dates_request request;
-        request.in_use_only = true;
-        request.end_year = last_generated_holiday_year;
-        const auto response = client.request(request, std::chrono::seconds{600});
-        if (!response.success)
-            throw std::runtime_error("The calendars were not built: " + response.message);
-
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-            << "build_calendars: wrote " << response.rows_written << " day(s)";
-        provision_step_result result;
-        result.kind = command.kind;
-        wf.complete(ores::utility::codec::json::write(result));
-    }
-
     /// Publishes each bundle the step names, one nested run each, and reports
     /// only once every run has finished. The datasets the profile opts in
     /// travel with the publication, so a bundle that publishes a member only
@@ -1750,7 +2195,7 @@ private:
                              const ores::iam::workflow::provision_tenant_step_command& command,
                              const step_actor& actor) {
         const auto arguments =
-            parse_publish_bundle_arguments(command.arguments_json, command.parameters);
+            workflow::parse_publish_bundle_arguments(command.arguments_json, command.parameters);
         auto client =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 
@@ -1782,7 +2227,7 @@ private:
                               const ores::iam::workflow::provision_tenant_step_command& command,
                               const step_actor& actor) {
         const auto arguments =
-            parse_lei_hierarchy_arguments(command.arguments_json, command.parameters);
+            workflow::parse_lei_hierarchy_arguments(command.arguments_json, command.parameters);
         if (arguments.root_lei.empty()) {
             wf.warn(
                 ores::utility::codec::json::write(provision_step_result{
@@ -1821,7 +2266,7 @@ private:
     void provision_party_step(const ores::service::messaging::workflow_step_context& wf,
                               const ores::iam::workflow::provision_tenant_step_command& command,
                               const step_actor& actor) {
-        const auto arguments = parse_provision_party_arguments(command.arguments_json);
+        const auto arguments = workflow::parse_provision_party_arguments(command.arguments_json);
 
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
@@ -1874,7 +2319,7 @@ private:
     void load_staff_step(const ores::service::messaging::workflow_step_context& wf,
                          const ores::iam::workflow::provision_tenant_step_command& command,
                          const step_actor& actor) {
-        const auto assignments = parse_staff_assignments(command.arguments_json);
+        const auto assignments = workflow::parse_staff_assignments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 
@@ -1926,7 +2371,8 @@ private:
     void set_staff_passwords_step(const ores::service::messaging::workflow_step_context& wf,
                                   const ores::iam::workflow::provision_tenant_step_command& command,
                                   const step_actor& actor) {
-        const auto arguments = parse_set_staff_passwords_arguments(command.arguments_json);
+        const auto arguments =
+            workflow::parse_set_staff_passwords_arguments(command.arguments_json);
         auto client =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 
@@ -1952,26 +2398,39 @@ private:
             return;
         }
 
-        iam::messaging::reset_password_request req;
-        req.account_ids = account_ids;
-        req.new_password = arguments.password;
-        const auto resp = client.request(req);
-
-        if (resp.results.size() != account_ids.size()) {
-            throw std::runtime_error("The staff passwords were not set: the response named " +
-                                     std::to_string(resp.results.size()) + " of " +
-                                     std::to_string(account_ids.size()) + " accounts.");
-        }
-
+        /*
+         * Hashing a password takes up to a second on a loaded host, so one
+         * request for every account outlasts the request deadline as the staff
+         * grows. A page of accounts keeps each request short whatever the
+         * tenant's size.
+         */
+        constexpr std::size_t accounts_per_request = 8;
         std::vector<std::string> set;
-        for (std::size_t i = 0; i < account_ids.size(); ++i) {
-            if (resp.results[i].success ||
-                resp.results[i].message == service::password_unchanged_message) {
-                set.push_back(usernames[i]);
-                continue;
+        for (std::size_t first = 0; first < account_ids.size(); first += accounts_per_request) {
+            const auto last = std::min(first + accounts_per_request, account_ids.size());
+            iam::messaging::reset_password_request req;
+            req.account_ids.assign(account_ids.begin() + static_cast<std::ptrdiff_t>(first),
+                                   account_ids.begin() + static_cast<std::ptrdiff_t>(last));
+            req.new_password = arguments.password;
+            const auto resp = client.request(req);
+
+            if (resp.results.size() != last - first) {
+                throw std::runtime_error("The staff passwords were not set: the response named " +
+                                         std::to_string(resp.results.size()) + " of " +
+                                         std::to_string(last - first) + " accounts.");
             }
-            throw std::runtime_error("The password of '" + usernames[i] +
-                                     "' was not set: " + resp.results[i].message);
+            for (std::size_t i = first; i < last; ++i) {
+                const auto& result = resp.results[i - first];
+                if (result.success || result.message == service::password_unchanged_message) {
+                    set.push_back(usernames[i]);
+                    continue;
+                }
+                throw std::runtime_error("The password of '" + usernames[i] +
+                                         "' was not set: " + result.message);
+            }
+            wf.progress("staff passwords",
+                        static_cast<std::int64_t>(set.size()),
+                        static_cast<std::int64_t>(account_ids.size()));
         }
 
         wf.complete(ores::utility::codec::json::write(
@@ -1983,7 +2442,7 @@ private:
     void attach_photos_step(const ores::service::messaging::workflow_step_context& wf,
                             const ores::iam::workflow::provision_tenant_step_command& command,
                             const step_actor& actor) {
-        const auto arguments = parse_photo_arguments(command.arguments_json);
+        const auto arguments = workflow::parse_photo_arguments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
         // The images the kind copies are the tenant's, so the direct reads that
@@ -2019,549 +2478,6 @@ private:
 
         wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
-    }
-
-    /// Gives each party the tenant holds a subscription to each of its providers and a route to
-    /// one source of each: the step's own, or the ones the step names for that party.
-    ///
-    /// A demonstration's legal entities are meant to take their market data from different vendors,
-    /// because each collection quotes the markets its own feeds serve, so the profile names a
-    /// provider and a source for each party it wants on another. A party the profile names twice
-    /// takes both providers, as a bank that reads rates from one vendor and crosses from another
-    /// does. A party the profile does not name takes the step's own, and a party it names that the
-    /// tenant does not hold is refused: a subscription written for nobody would leave the tenant
-    /// quietly on the wrong feed.
-    ///
-    /// The generators belong to the system, so the tenant publishes none and starts none: the
-    /// parties take the shared simulated stream through their subscriptions and routes.
-    void
-    subscribe_market_data_step(const ores::service::messaging::workflow_step_context& wf,
-                               const ores::iam::workflow::provision_tenant_step_command& command,
-                               const step_actor& actor) {
-        const auto arguments = parse_market_data_arguments(command.arguments_json);
-        auto discover =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-
-        // One lookup for each provider and source named, so a party on another feed costs no more
-        // reads than the parties on the step's own.
-        std::map<std::string, boost::uuids::uuid> sources;
-        const auto source_of = [&](const std::string& provider, const std::string& source) {
-            const auto key = provider + "/" + source;
-            const auto found = sources.find(key);
-            if (found != sources.end())
-                return found->second;
-            const auto id = find_source_id(discover, provider, source);
-            sources.emplace(key, id);
-            return id;
-        };
-        // The step's own source is looked up first, so a profile that names a wrong one fails
-        // before any party is subscribed.
-        source_of(arguments.provider, arguments.source);
-
-        std::vector<std::string> subscribed;
-        std::set<std::string> matched;
-        std::uint32_t offset = 0;
-        constexpr std::uint32_t page_size = 1000;
-        while (true) {
-            ores::refdata::messaging::list_parties_request request;
-            request.offset = offset;
-            request.limit = page_size;
-            const auto page = discover.request(request).parties;
-            for (const auto& party : page) {
-                const auto id_text = boost::uuids::to_string(party.id);
-                for (const auto& assignment : arguments.parties)
-                    if (assignment.party == id_text || assignment.party == party.full_name)
-                        matched.insert(assignment.party);
-                auto party_client =
-                    make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                for (const auto& feed : feeds_of_party(arguments, id_text, party.full_name))
-                    subscribe_party(party_client, party.id, feed.provider,
-                                    source_of(feed.provider, feed.source));
-                subscribed.push_back(id_text);
-            }
-            if (page.size() < page_size)
-                break;
-            offset += page_size;
-        }
-
-        for (const auto& assignment : arguments.parties)
-            if (!matched.contains(assignment.party))
-                throw std::runtime_error("The tenant holds no party the market data step names: '" +
-                                         assignment.party + "'.");
-
-        wf.complete(ores::utility::codec::json::write(
-            provision_step_result{.kind = command.kind, .parties = subscribed}));
-    }
-
-    /// A client that speaks as one party over the connection this handler
-    /// already holds.
-    ///
-    /// The generation writes through the trading operation, and that operation
-    /// takes the instrument's party from the token rather than from the row, so
-    /// the population reaches the books of the party the config books for and of
-    /// no other. The token is minted once and re-minted when the server rejects
-    /// it as expired, which is the contract a service-path client states.
-    ores::nats::service::nats_client make_generation_client(const std::string& tenant_id,
-                                                            const boost::uuids::uuid& account_id,
-                                                            const boost::uuids::uuid& party_id,
-                                                            const std::string& username) {
-        auto token = std::make_shared<std::string>(
-            impersonation_.mint_token(ctx_, tenant_id, account_id, party_id, username));
-        return ores::nats::service::nats_client(
-            nats_, [this, token, tenant_id, account_id, party_id, username](bool force) {
-                if (force)
-                    *token =
-                        impersonation_.mint_token(ctx_, tenant_id, account_id, party_id, username);
-                return *token;
-            });
-    }
-
-    /**
-     * @brief A client that books in the session of the person a slot names.
-     *
-     * The population is entered by the party's own traders and not by the run: a booking writes the
-     * person who entered it, and the authorisation request it raises belongs to that person. The
-     * token is minted for whoever @p acting holds at the moment of the request, and re-minted when
-     * the slot hands the run to another trader, so one client books a whole population in as many
-     * sessions as it has traders.
-     */
-    ores::nats::service::nats_client
-    make_trader_client(const std::string& tenant_id,
-                       const boost::uuids::uuid& party_id,
-                       std::shared_ptr<ores::synthetic::domain::trade_population_trader> acting) {
-        struct minted final {
-            boost::uuids::uuid account_id = {};
-            std::string username = {};
-            std::string token = {};
-        };
-        auto held = std::make_shared<minted>();
-        return ores::nats::service::nats_client(
-            nats_, [this, tenant_id, party_id, acting, held](bool force) {
-                const auto stale = force || held->token.empty() ||
-                                   held->account_id != acting->account_id ||
-                                   held->username != acting->username;
-                if (stale) {
-                    held->account_id = acting->account_id;
-                    held->username = acting->username;
-                    held->token = impersonation_.mint_token(
-                        ctx_, tenant_id, acting->account_id, party_id, acting->username);
-                }
-                return held->token;
-            });
-    }
-
-    /// The book the step names, among the party's own.
-    ///
-    /// The book is resolved by the name the party's own reference data gives
-    /// it, so a recipe names no identifier that only one environment holds and
-    /// a book the party does not have fails here rather than at the booking
-    /// trigger, which would report it as the trade's fault.
-    static std::optional<ores::refdata::domain::book>
-    find_party_book(internal_request_client& client,
-                    const boost::uuids::uuid& party_id,
-                    const std::string& name) {
-        ores::refdata::messaging::list_books_request request;
-        request.limit = 10000;
-        const auto response = client.request(request);
-        require_read(response.result, "the books of the tenant");
-        for (const auto& book : response.books)
-            if (book.party_id == party_id && book.name == name)
-                return book;
-        return std::nullopt;
-    }
-
-    /// The counterparties a party may face, each once and in a stable order.
-    ///
-    /// The links are the set a population should face: a counterparty outside
-    /// it inserts, because nothing in the schema checks the pair, and a trade
-    /// against one is wrong rather than merely unusual. The read is the
-    /// party's own and carries no filter, because this component refuses a
-    /// filtered read of the table rather than answering it.
-    static std::vector<boost::uuids::uuid>
-    party_counterparties(internal_request_client& client, const boost::uuids::uuid& party_id) {
-        ores::refdata::messaging::list_by_party_id_party_counterparties_request request;
-        request.party_id = party_id;
-        request.limit = 10000;
-
-        const auto response = client.request(request);
-        require_read(response.result,
-                     "the counterparty links of party " + boost::uuids::to_string(party_id));
-
-        std::vector<boost::uuids::uuid> result;
-        for (const auto& link : response.party_counterparties)
-            result.push_back(link.counterparty_id);
-        std::ranges::sort(result);
-        const auto duplicates = std::ranges::unique(result);
-        result.erase(duplicates.begin(), result.end());
-        return result;
-    }
-
-    /// The counterparties a config already scopes, in a stable order.
-    static std::vector<boost::uuids::uuid>
-    scoped_counterparties(internal_request_client& client, const boost::uuids::uuid& config_id) {
-        ores::synthetic::messaging::list_trade_generation_counterparties_request request;
-        request.limit = 10000;
-        request.filter = ores::synthetic::messaging::trade_generation_counterparties_filter{
-            .config_id = config_id};
-
-        const auto response = client.request(request);
-        require_read(response.result, "the scope of config " + boost::uuids::to_string(config_id));
-
-        std::vector<boost::uuids::uuid> result;
-        for (const auto& row : response.trade_generation_counterparties)
-            result.push_back(row.counterparty_id);
-        std::ranges::sort(result);
-        return result;
-    }
-
-    /// Whether a config already lands its population in the book named.
-    static bool book_is_scoped(internal_request_client& client,
-                               const boost::uuids::uuid& config_id,
-                               const boost::uuids::uuid& book_id) {
-        ores::synthetic::messaging::list_trade_generation_books_request request;
-        request.limit = 1000;
-        request.filter =
-            ores::synthetic::messaging::trade_generation_books_filter{.config_id = config_id};
-        const auto response = client.request(request);
-        require_read(response.result,
-                     "the book scope of config " + boost::uuids::to_string(config_id));
-        for (const auto& row : response.trade_generation_books)
-            if (row.book_id == book_id)
-                return true;
-        return false;
-    }
-
-    /// The config the step's party already holds under the name the entry
-    /// states, so a second run reuses the recipe rather than recording a
-    /// second one.
-    static std::optional<ores::synthetic::domain::trade_generation_config>
-    find_trade_generation_config(internal_request_client& client, const std::string& name) {
-        ores::synthetic::messaging::list_trade_generation_configs_request request;
-        request.limit = 1000;
-        const auto response = client.request(request);
-        require_read(response.result, "the trade generation configs of the party");
-        for (const auto& config : response.trade_generation_configs)
-            if (config.name == name)
-                return config;
-        return std::nullopt;
-    }
-
-    /// A read a step cannot act without, refused loudly.
-    ///
-    /// The store reports a refusal in the response and not as a transport
-    /// error, so a step that read the refusal as an empty answer would record
-    /// a config that scopes nobody and write nothing against it.
-    static void require_read(const ores::utility::domain::result& result, const std::string& what) {
-        if (result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("Reading " + what + " failed: " + result.message);
-    }
-
-    static void require_recorded(const ores::utility::domain::result& result,
-                                 const std::string& what) {
-        if (result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("Recording " + what + " failed: " + result.message);
-    }
-
-    /// The day the population is anchored on. An entry that states a date pins
-    /// the population to it; an entry that states none anchors on the day the
-    /// step runs, because the population is meant to sit relative to the
-    /// present rather than to the day the recipe was written.
-    static std::chrono::year_month_day
-    trade_anchor_date(const trade_generation_assignment& assignment) {
-        if (assignment.as_of_date)
-            return *assignment.as_of_date;
-        return std::chrono::year_month_day(
-            std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()));
-    }
-
-    /// Records one entry's config against the party it books for, and returns
-    /// the id it carries. A config the party already holds under that name is
-    /// left as it stands, so re-provisioning writes no version and a
-    /// population that has already run keeps the anchor it ran on.
-    boost::uuids::uuid record_trade_generation_config(internal_request_client& client,
-                                                      const boost::uuids::uuid& party_id,
-                                                      const trade_generation_assignment& entry,
-                                                      const std::string& reference_curve_id) {
-        if (const auto existing = find_trade_generation_config(client, entry.name)) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "generate_trades: the config '" << entry.name << "' is already recorded.";
-            return existing->id;
-        }
-
-        const auto config_id = ores::synthetic::service::config_id_for(party_id, entry.name);
-        ores::synthetic::messaging::put_trade_generation_config_request request;
-        request.change.write.id = config_id;
-        request.change.write.name = entry.name;
-        request.change.write.description =
-            entry.description.empty() ? entry.name : entry.description;
-        request.change.write.asset_class_code = entry.asset_class_code;
-        request.change.write.min_tenor_code = entry.min_tenor_code;
-        request.change.write.max_tenor_code = entry.max_tenor_code;
-        request.change.write.min_notional = *entry.min_notional;
-        request.change.write.max_notional = *entry.max_notional;
-        request.change.write.as_of_date = trade_anchor_date(entry);
-        request.change.write.seed = *entry.seed;
-        request.change.write.trades_per_book = entry.trades_per_book.value_or(8);
-        request.change.write.structures_per_book = entry.structures_per_book.value_or(2);
-        request.change.write.enabled = true;
-        request.change.write.reference_curve_id = reference_curve_id;
-        request.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
-                                       std::nullopt};
-        request.intent.reason_code = "system.initial_load";
-        request.intent.commentary = "Recorded by the tenant's seed profile.";
-
-        const auto response = client.request(request);
-        require_recorded(response.result, "the trade generation config '" + entry.name + "'");
-        return config_id;
-    }
-
-    /// The curve a party's book is discounted on, as the oresmd URI of the
-    /// market series the party's own curve configuration published for the
-    /// book's currency.
-    ///
-    /// The curve belongs to the market, so the config names the series the
-    /// party holds rather than spelling ORE's name for it: ORE's own name for
-    /// one index differs between the reference data and the market's
-    /// forwarding, and only the latter is what the engine resolves. A party
-    /// with no curve for the book's currency gets an empty name, and the
-    /// population's bonds then state none and are refused by the engine's
-    /// builder rather than priced on another party's curve.
-    std::string find_reference_curve_id(internal_request_client& client,
-                                        const boost::uuids::uuid& party_id,
-                                        const std::string& currency) {
-        if (currency.empty())
-            return {};
-
-        ores::marketdata::messaging::list_market_series_request request;
-        request.limit = 10000;
-        const auto response = client.request(request);
-        require_read(response.result, "the market series of the tenant");
-
-        const auto prefix = "oresmd://ir/" + currency + "?type=series&instrument=";
-        for (const auto& s : response.market_series) {
-            if (s.party_id != party_id)
-                continue;
-            if (!s.oresmd_uri.starts_with(prefix))
-                continue;
-            if (s.oresmd_uri.find("&curve_id=") == std::string::npos)
-                continue;
-            return s.oresmd_uri;
-        }
-        return {};
-    }
-
-    /// Records the trade types the entry states, each once. A type already
-    /// recorded is left alone, so the step stays re-runnable.
-    void record_trade_types(internal_request_client& client,
-                            const boost::uuids::uuid& config_id,
-                            const trade_generation_assignment& entry) {
-        if (entry.trade_type_codes.empty())
-            return;
-
-        ores::synthetic::messaging::list_trade_generation_trade_types_request list;
-        list.filter =
-            ores::synthetic::messaging::trade_generation_trade_types_filter{.config_id = config_id};
-        list.limit = 1000;
-        const auto listed = client.request(list);
-        require_read(listed.result, "the trade types of '" + entry.name + "'");
-
-        ores::synthetic::messaging::put_many_trade_generation_trade_types_request request;
-        request.intent.reason_code = "system.initial_load";
-        request.intent.commentary = "Trade types of the population.";
-        for (const auto& code : entry.trade_type_codes) {
-            const auto recorded =
-                std::ranges::any_of(listed.trade_generation_trade_types,
-                                    [&](const auto& row) { return row.trade_type_code == code; });
-            if (recorded)
-                continue;
-            ores::synthetic::messaging::trade_generation_trade_type_change change;
-            change.write.id = ores::synthetic::service::trade_type_scope_id_for(config_id, code);
-            change.write.config_id = config_id;
-            change.write.trade_type_code = code;
-            change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
-                                   std::nullopt};
-            request.changes.push_back(std::move(change));
-        }
-        if (!request.changes.empty())
-            require_recorded(client.request(request).result,
-                             "the trade types of '" + entry.name + "'");
-    }
-
-    /// Records the scope the entry describes: the party's book of that name,
-    /// and every counterparty the party may face. A row that is already there
-    /// is left alone, so the step is re-runnable and a scope that grew between
-    /// two runs gains only what it gained.
-    void record_trade_generation_scope(internal_request_client& client,
-                                       const boost::uuids::uuid& config_id,
-                                       const boost::uuids::uuid& party_id,
-                                       const trade_generation_assignment& entry) {
-        const auto book = find_party_book(client, party_id, entry.book);
-        if (!book)
-            throw std::runtime_error("The party holds no book named '" + entry.book +
-                                     "', so the population has nowhere to land.");
-
-        ores::synthetic::messaging::put_many_trade_generation_books_request book_request;
-        ores::synthetic::messaging::trade_generation_book_change book_change;
-        book_change.write.id = ores::synthetic::service::book_scope_id_for(config_id, book->id);
-        book_change.write.config_id = config_id;
-        book_change.write.book_id = book->id;
-        book_change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
-                                    std::nullopt};
-        book_request.changes.push_back(book_change);
-        book_request.intent.reason_code = "system.initial_load";
-        book_request.intent.commentary = "Book scope of the population.";
-
-        if (!book_is_scoped(client, config_id, book->id))
-            require_recorded(client.request(book_request).result,
-                             "the book scope of '" + entry.name + "'");
-
-        record_trade_types(client, config_id, entry);
-
-        const auto scoped = scoped_counterparties(client, config_id);
-        std::vector<boost::uuids::uuid> missing;
-        for (const auto& counterparty_id : party_counterparties(client, party_id))
-            if (!std::ranges::binary_search(scoped, counterparty_id))
-                missing.push_back(counterparty_id);
-        if (missing.empty())
-            return;
-
-        ores::synthetic::messaging::put_many_trade_generation_counterparties_request request;
-        request.intent.reason_code = "system.initial_load";
-        request.intent.commentary = "Counterparty scope of the population.";
-        for (const auto& counterparty_id : missing) {
-            ores::synthetic::messaging::trade_generation_counterparty_change change;
-            change.write.id =
-                ores::synthetic::service::counterparty_scope_id_for(config_id, counterparty_id);
-            change.write.config_id = config_id;
-            change.write.counterparty_id = counterparty_id;
-            change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
-                                   std::nullopt};
-            request.changes.push_back(std::move(change));
-        }
-        require_recorded(client.request(request).result,
-                         "the counterparty scope of '" + entry.name + "'");
-    }
-
-    /// Records a trade generation config for each party the step names, and
-    /// writes the population each one describes into that party's own books.
-    ///
-    /// The step owns the config because the config cannot exist before the step
-    /// runs: its book scope and its counterparty scope are rows of the tenant
-    /// that the earlier steps publish, so a recipe stated anywhere else would
-    /// name identifiers no environment holds yet. An entry therefore states a
-    /// party by the legal name the LEI import created, a book by the name that
-    /// party's own reference data gives it, and leaves the counterparties to the
-    /// links the party actually has.
-    ///
-    /// The writes go through the trading operation as the party that books
-    /// them, because that operation takes the instrument's party from the token
-    /// rather than from the row.
-    void generate_trades_step(const ores::service::messaging::workflow_step_context& wf,
-                              const ores::iam::workflow::provision_tenant_step_command& command,
-                              const step_actor& actor) {
-        auto assignments = parse_trade_generation_assignments(command.arguments_json);
-
-        /*
-         * A run may state the population it wants rather than take the counts
-         * its recipe states: a total and a percentage per class, which become
-         * the count each config books. The floor is the codes the class's
-         * planner cycles, because a config shorter than its code list states a
-         * prefix and drops the rest.
-         */
-        apply_population_knobs(assignments,
-                               read_population_knobs(command.parameters),
-                               [](const std::string& asset_class) {
-                                   return ores::synthetic::service::routed_code_count(asset_class);
-                               });
-        auto discover =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-
-        provision_step_result result;
-        result.kind = command.kind;
-
-        const auto seconds_since = [](std::chrono::steady_clock::time_point from) {
-            return std::chrono::duration<double>(std::chrono::steady_clock::now() - from).count();
-        };
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-            << "generate_trades: " << assignments.size() << " entr(y/ies) to write";
-        std::size_t position = 0;
-        for (const auto& entry : assignments) {
-            ++position;
-            const auto entry_started = std::chrono::steady_clock::now();
-            const auto phase = [&](std::string_view what) {
-                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                    << "generate_trades: " << entry.name << " (" << position << " of "
-                    << assignments.size() << "): " << what << " after "
-                    << seconds_since(entry_started) << "s";
-            };
-            phase("finding the party " + entry.party);
-            const auto party = find_party(discover, entry.party);
-            if (!party)
-                throw std::runtime_error("The tenant holds no party named '" + entry.party + "'.");
-
-            auto party_client =
-                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
-
-            /*
-             * The population is kept in the book's own currency, so the curve
-             * its bonds are discounted on is resolved from that same book. The
-             * curve configuration the party published is what the resolution
-             * reads, so the config names a series the party actually holds.
-             */
-            phase("finding the book " + entry.book);
-            const auto book = find_party_book(party_client, party->id, entry.book);
-            if (!book)
-                throw std::runtime_error("The party holds no book named '" + entry.book +
-                                         "', so the population has nowhere to land.");
-            phase("finding the reference curve in " + book->functional_currency);
-            const auto reference_curve_id =
-                find_reference_curve_id(party_client, party->id, book->functional_currency);
-
-            phase("recording the trade generation config");
-            const auto config_id =
-                record_trade_generation_config(party_client, party->id, entry, reference_curve_id);
-            phase("recording the config's scope");
-            record_trade_generation_scope(party_client, config_id, party->id, entry);
-
-            auto generation_client = make_generation_client(
-                command.tenant_id, actor.account_id, party->id, actor.username);
-
-            /*
-             * Each trade is booked by the person the slot names, which is one of the party's own
-             * traders: the trade states them as its author and the authorisation request it raises
-             * is theirs, so a person of the party finds the requests of the trades they entered.
-             */
-            auto acting = std::make_shared<ores::synthetic::domain::trade_population_trader>();
-            auto booker = std::make_shared<ores::nats::service::nats_client>(
-                make_trader_client(command.tenant_id, party->id, acting));
-            ores::synthetic::service::trading_trade_population_writer writer(
-                generation_client,
-                [booker, acting](const ores::synthetic::domain::trade_population_slot& slot)
-                    -> ores::nats::service::nats_client& {
-                    *acting = slot.trader;
-                    return *booker;
-                },
-                ores::synthetic::domain::trade_population_trader{actor.account_id, actor.username});
-            ores::synthetic::service::trade_population_service service(writer);
-            phase("writing the population of config " + boost::uuids::to_string(config_id));
-            const auto run = service.run(config_id);
-
-            result.configs.push_back(boost::uuids::to_string(config_id));
-            result.parties.push_back(boost::uuids::to_string(party->id));
-            result.trades_planned += run.planned;
-            result.trades_written += run.written;
-            result.trades_already_present += run.already_present;
-
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
-                << run.planned << ", wrote " << run.written << ", already present "
-                << run.already_present << ", in " << seconds_since(entry_started) << "s";
-        }
-
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-            << "generate_trades: every entry is written (" << result.trades_written << " written, "
-            << result.trades_already_present << " already present); completing the step";
-        wf.complete(ores::utility::codec::json::write(result));
     }
 
     /// Every definition a party owns, one page at a time, as the party reads
@@ -2610,7 +2526,7 @@ private:
     void schedule_reports_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command,
                                const step_actor& actor) {
-        const auto arguments = parse_report_schedule_arguments(command.arguments_json);
+        const auto arguments = workflow::parse_report_schedule_arguments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 
@@ -2737,11 +2653,12 @@ private:
         const auto actor = resolve_step_actor(command);
 
         auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-        execute_parameterized_command(sys_ctx,
-                                      "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
-                                      {command.tenant_id, actor.username},
-                                      tenant_provisioning_handler_lg(),
-                                      "complete_provisioning_step");
+        ores::database::query_builder::execute_parameterized_command(
+            sys_ctx,
+            "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
+            {command.tenant_id, actor.username},
+            tenant_provisioning_handler_lg(),
+            "complete_provisioning_step");
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Tenant marked active: " << command.tenant_id;
 
@@ -2905,91 +2822,6 @@ private:
             if (party.party_category == "System")
                 return party;
         return std::nullopt;
-    }
-
-    // The id of the source the step names, which must belong to the provider.
-    static boost::uuids::uuid find_source_id(internal_request_client& client,
-                                             const std::string& provider,
-                                             const std::string& source) {
-        marketdata::messaging::list_feeds_request request;
-        request.limit = 1000;
-        const auto response = client.request(request);
-        if (response.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The market data feeds were not read: " +
-                                     response.result.message);
-        for (const auto& candidate : response.feeds)
-            if (candidate.name == source && candidate.publisher_code == provider)
-                return candidate.id;
-        throw std::runtime_error("The catalogue holds no feed '" + source + "' of the provider '" +
-                                 provider + "'.");
-    }
-
-    // Gives one party a subscription to a provider and a route to a source. The
-    // client speaks as the party, because the service stamps the party from the
-    // session. A subscription or a route the party already holds is left as it is,
-    // so the step can run again.
-    static void subscribe_party(internal_request_client& party_client,
-                                const boost::uuids::uuid& party_id,
-                                const std::string& provider,
-                                const boost::uuids::uuid& source_id) {
-        const auto party_text = boost::uuids::to_string(party_id);
-        boost::uuids::random_generator uuid_gen;
-
-        marketdata::messaging::list_subscriptions_request held_subscriptions;
-        held_subscriptions.limit = 1000;
-        const auto subscriptions = party_client.request(held_subscriptions);
-        if (subscriptions.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The subscriptions of party " + party_text +
-                                     " were not read: " + subscriptions.result.message);
-        // The session of a parent party also sees the rows of its child parties, so the
-        // check names the party and a child's subscription does not count as the parent's.
-        const bool has_subscription =
-            std::ranges::any_of(subscriptions.subscriptions, [&](const auto& s) {
-                return s.party_id == party_id && s.provider_code == provider;
-            });
-        if (!has_subscription) {
-            marketdata::messaging::put_subscription_request put;
-            put.change.write.id = uuid_gen();
-            put.change.write.party_id = party_id;
-            put.change.write.provider_code = provider;
-            put.change.write.display = true;
-            put.change.write.non_display = true;
-            put.change.write.derived = true;
-            put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
-            put.intent.reason_code = "system.new_record";
-            put.intent.commentary =
-                "Created by provisioning: the party takes the shared market data";
-            const auto saved = party_client.request(put);
-            if (saved.result.outcome != ores::utility::domain::outcome::ok)
-                throw std::runtime_error("The subscription of party " + party_text + " to '" +
-                                         provider + "' was not saved: " + saved.result.message);
-        }
-
-        marketdata::messaging::list_routes_request held_routes;
-        held_routes.limit = 1000;
-        const auto routes = party_client.request(held_routes);
-        if (routes.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The routes of party " + party_text +
-                                     " were not read: " + routes.result.message);
-        const bool has_route = std::ranges::any_of(routes.routes, [&](const auto& r) {
-            return r.party_id == party_id && r.publisher_code == provider;
-        });
-        if (!has_route) {
-            marketdata::messaging::put_route_request put;
-            put.change.write.id = uuid_gen();
-            put.change.write.party_id = party_id;
-            put.change.write.publisher_code = provider;
-            put.change.write.asset_class = "fx";
-            put.change.write.feed_id = source_id;
-            put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
-            put.intent.reason_code = "system.new_record";
-            put.intent.commentary =
-                "Created by provisioning: the party takes the shared market data";
-            const auto saved = party_client.request(put);
-            if (saved.result.outcome != ores::utility::domain::outcome::ok)
-                throw std::runtime_error("The route of party " + party_text + " to '" + provider +
-                                         "' was not saved: " + saved.result.message);
-        }
     }
 
     // Ensures the caller tenant holds the image with this code, copying the
@@ -3174,7 +3006,7 @@ private:
     /// is the rule the bootstrap service uses to find the deployment's
     /// administrators.
     static std::vector<std::string> super_admin_account_ids(ores::database::context& sys_ctx) {
-        return execute_parameterized_string_query(
+        return ores::database::query_builder::execute_parameterized_string_query(
             sys_ctx,
             "SELECT DISTINCT a.id::text FROM ores_iam_accounts_tbl a "
             "JOIN ores_iam_account_roles_tbl ar ON ar.account_id = a.id "
@@ -3409,7 +3241,7 @@ private:
         auto account_ids_for = [&](const std::string& office_code,
                                    const std::string& business_unit_code,
                                    const std::optional<std::string>& role) {
-            auto dataset = execute_parameterized_string_query(
+            auto dataset = ores::database::query_builder::execute_parameterized_string_query(
                 ctx,
                 "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
                 "AND valid_to = ores_utility_infinity_timestamp_fn()",
@@ -3419,14 +3251,14 @@ private:
             if (dataset.empty())
                 return std::vector<std::string>{};
             auto usernames =
-                role ? execute_parameterized_string_query(
+                role ? ores::database::query_builder::execute_parameterized_string_query(
                            ctx,
                            "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
                            "$1::uuid AND business_unit_code = $2 AND role = $3",
                            {dataset.front(), business_unit_code, *role},
                            tenant_provisioning_handler_lg(),
                            "grant_cross_entity_access") :
-                       execute_parameterized_string_query(
+                       ores::database::query_builder::execute_parameterized_string_query(
                            ctx,
                            "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
                            "$1::uuid AND business_unit_code = $2",
@@ -3435,7 +3267,7 @@ private:
                            "grant_cross_entity_access");
             std::vector<std::string> account_ids;
             for (const auto& u : usernames) {
-                auto acct = execute_parameterized_string_query(
+                auto acct = ores::database::query_builder::execute_parameterized_string_query(
                     ctx,
                     "SELECT id::text FROM ores_iam_accounts_tbl WHERE tenant_id = $1::uuid "
                     "AND username = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
@@ -3449,7 +3281,7 @@ private:
         };
 
         auto grant = [&](const std::string& account_id, const std::string& party_id) {
-            execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx,
                 "INSERT INTO ores_iam_account_parties_tbl (account_id, tenant_id, party_id, "
                 "version, modified_by, performed_by, change_reason_code, change_commentary) "
@@ -3500,11 +3332,12 @@ private:
     std::type_identity<tenant_provisioning_handler::provision_step_result::party_report_schedule>) {
     using ::ores::utility::codec::field;
     using schedule = tenant_provisioning_handler::provision_step_result::party_report_schedule;
-    return std::tuple{field{"party", &schedule::party},
-                      field{"scheduled", &schedule::scheduled},
-                      field{"already_scheduled", &schedule::already_scheduled},
-                      field{"on_demand", &schedule::on_demand},
-                      field{"not_a_cron", &schedule::not_a_cron}};
+    return ::ores::utility::codec::field_list{
+        field{"party", &schedule::party},
+        field{"scheduled", &schedule::scheduled},
+        field{"already_scheduled", &schedule::already_scheduled},
+        field{"on_demand", &schedule::on_demand},
+        field{"not_a_cron", &schedule::not_a_cron}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<
@@ -3516,22 +3349,31 @@ static_assert(::ores::utility::codec::names_every_member<
 wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_result>) {
     using ::ores::utility::codec::field;
     using result = tenant_provisioning_handler::provision_step_result;
-    return std::tuple{field{"kind", &result::kind},
-                      field{"bundles", &result::bundles},
-                      field{"root_lei", &result::root_lei},
-                      field{"parties", &result::parties},
-                      field{"accounts", &result::accounts},
-                      field{"images", &result::images},
-                      field{"datasets", &result::datasets},
-                      field{"tenant_id", &result::tenant_id},
-                      field{"child_instance_id", &result::child_instance_id},
-                      field{"configs", &result::configs},
-                      field{"trades_planned", &result::trades_planned},
-                      field{"trades_written", &result::trades_written},
-                      field{"trades_already_present", &result::trades_already_present},
-                      field{"report_schedules", &result::report_schedules},
-                      field{"curves", &result::curves},
-                      field{"curves_not_published", &result::curves_not_published}};
+    return ::ores::utility::codec::field_list{
+        field{"kind", &result::kind},
+        field{"bundles", &result::bundles},
+        field{"root_lei", &result::root_lei},
+        field{"parties", &result::parties},
+        field{"accounts", &result::accounts},
+        field{"images", &result::images},
+        field{"datasets", &result::datasets},
+        field{"tenant_id", &result::tenant_id},
+        field{"child_instance_id", &result::child_instance_id},
+        field{"configs", &result::configs},
+        field{"trades_planned", &result::trades_planned},
+        field{"trades_written", &result::trades_written},
+        field{"trades_already_present", &result::trades_already_present},
+        field{"report_schedules", &result::report_schedules},
+        field{"curves", &result::curves},
+        field{"curves_not_published", &result::curves_not_published},
+        field{"forwards", &result::forwards},
+        field{"forwards_already_published", &result::forwards_already_published},
+        field{"forwards_skipped", &result::forwards_skipped},
+        field{"forwards_not_published", &result::forwards_not_published},
+        field{"surfaces", &result::surfaces},
+        field{"surfaces_already_published", &result::surfaces_already_published},
+        field{"surfaces_held_back", &result::surfaces_held_back},
+        field{"surfaces_not_published", &result::surfaces_not_published}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<

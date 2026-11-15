@@ -18,6 +18,7 @@
  *
  */
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
@@ -28,12 +29,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdint>
+#include <mutex>
 #include <nats/nats.h>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <thread>
+#include <vector>
 
 // What a service shutdown does to its durable consumer, exercised directly
 // with the client rather than by stopping a service. The production path is
@@ -143,6 +146,18 @@ struct raw_jetstream {
     }
 };
 
+struct holder_joiner {
+    std::vector<std::thread>& holders;
+    std::mutex& mutex;
+
+    ~holder_joiner() {
+        const std::lock_guard lock(mutex);
+        for (auto& holder : holders)
+            if (holder.joinable())
+                holder.join();
+    }
+};
+
 void discard_message(natsConnection*, natsSubscription*, natsMsg* msg, void*) {
     natsMsg_Destroy(msg);
 }
@@ -167,9 +182,8 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
                         ores::nats::service::stream_retention::interest);
 
     std::atomic<int> delivered{0};
-    auto handler = [&delivered](ores::nats::message msg) {
-        ores::nats::ack_guard ack(msg);
-        ack.accept();
+    auto handler = [&delivered](ores::nats::delivery delivery) {
+        std::move(delivery).commit();
         delivered.fetch_add(1);
     };
 
@@ -231,6 +245,58 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
         // means the second subscription attached to the stored position rather
         // than making a new consumer.
         CHECK(served->created_ns == created_ns);
+        CHECK(delivered.load() == 1);
+    }
+}
+
+TEST_CASE("a_delivery_kept_past_its_callback_is_settled_once_by_its_holder",
+          "[nats][jetstream][integration]") {
+    const auto suffix = unique_suffix();
+    const std::string subject = "test.kept." + suffix;
+    const std::string durable = "test_kept_" + suffix;
+    const std::string queue = "ores.test.kept." + suffix;
+
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    const std::string stream = nats.make_stream_name("test_kept_" + suffix);
+    auto admin = nats.make_admin();
+    const stream_cleanup cleanup{admin, stream};
+    admin.ensure_stream(stream,
+                        nats.covering_subjects({subject}),
+                        1,
+                        ores::nats::service::stream_retention::interest);
+
+    std::atomic<int> delivered{0};
+    std::vector<std::thread> holders;
+    std::mutex holders_mutex;
+    auto handler = [&](ores::nats::delivery delivery) {
+        delivered.fetch_add(1);
+        const std::lock_guard lock(holders_mutex);
+        holders.emplace_back([kept = std::move(delivery)]() mutable {
+            std::this_thread::sleep_for(500ms);
+            std::move(kept).commit();
+        });
+    };
+
+    {
+        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10, 30s);
+        // A holder answers through its subscription, so every holder ends
+        // before the subscription does, on every path out of this scope.
+        const holder_joiner joiner{holders, holders_mutex};
+        nats.js_publish(subject, ores::nats::as_bytes(std::string("kept past its callback")));
+        const auto served = await_state(
+            admin,
+            stream,
+            durable,
+            [](const consumer_status& s) {
+                return s.num_pending == 0 && s.num_ack_pending == 0 && s.ack_floor_stream == 1;
+            },
+            10s);
+        if (!served)
+            FAIL("the delivery its holder accepted after the callback returned was "
+                 "not acknowledged");
+        CHECK(served->delivered == 1);
+        CHECK(served->num_redelivered == 0);
         CHECK(delivered.load() == 1);
     }
 }
@@ -312,9 +378,8 @@ TEST_CASE("a_stored_consumer_takes_the_delivery_bound_the_code_asks_for",
                         ores::nats::service::stream_retention::interest);
 
     std::atomic<int> delivered{0};
-    auto handler = [&delivered](ores::nats::message msg) {
-        ores::nats::ack_guard ack(msg);
-        ack.accept();
+    auto handler = [&delivered](ores::nats::delivery delivery) {
+        std::move(delivery).commit();
         delivered.fetch_add(1);
     };
 

@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-counterparty_business_centre_service::counterparty_business_centre_service(context ctx)
-    : ctx_(std::move(ctx))
+counterparty_business_centre_service::counterparty_business_centre_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

@@ -222,6 +222,12 @@ and grants them. A missed event, a repeated one, or an approval made while IAM
 was down all converge to the same roles, and a grant that fails is tried again
 on the next run rather than turning the request back to =waiting=.
 
+** Closing without a person
+
+A request is approved as it is raised, without a person, only under a stated rule: the tenant's or the installation's approvals mode, or the kind's own code. A request that names parts never closes this way. The system is the decider of record, and the request names the rule. The rules, their order, why each exists and how a screen shows them are [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]].
+
+A published market object, such as a curve, is applied by the trader who raised it, through the lifecycle every such object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]).
+
 ** What is generic and what a kind adds
 
 Set against the operational authorisation queue, the role request and the
@@ -238,7 +244,7 @@ deferred four-eyes item, almost all of the queue is the same for every kind.
 | Expiry | A request closes when =expires_at= passes | The default window, or none |
 | One open request per subject | Refused while one waits | What "the same subject" means |
 | Applying the decision | The decision publishes a change event | The operation that applies it, in the owning component |
-| Raising a request | A person asks, or a system asks on their behalf | Whether the system raises it (a trade on arrival) and whether it can decide on its own (auto-authorisation) |
+| Raising a request | A person asks, or a system asks on their behalf | Whether the system raises it (a trade on arrival) and whether a stated rule closes it as it is raised |
 | The queue | One paged read: kind, state, subject, age; oldest first; scoped by tenant and the decider's permissions | Its own columns from its detail table, its grouping, highlighted changes |
 | Reports | Time waiting, decisions by person, what stayed open overnight | A kind's own reports, such as held-over trades |
 | Notifications | Tell the deciders a request waits; tell the asker the decision | The words |
@@ -294,6 +300,8 @@ change events are what it listens to.
 
 * See also
 
+- [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] — completes: when a request closes without a person.
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — exemplifies: the kinds that make market data authoritative.
 - [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][An end-of-day FX rate set must be complete and independently verified]] — completes: a sign-off this could carry.
 - [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — how this record grows to hold several deciding functions, a pending change, a gate in the write path and one screen set for every kind.
 - [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the first kind: a member asks for a role.

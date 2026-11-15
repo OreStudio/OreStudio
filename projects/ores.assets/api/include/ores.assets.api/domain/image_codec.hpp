@@ -46,7 +46,7 @@ namespace ores::assets::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<image>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &image::version},
         utility::codec::field{"tenant_id", &image::tenant_id},
         utility::codec::field{"id", &image::id},

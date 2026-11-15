@@ -46,7 +46,7 @@ namespace ores::synthetic::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &calibration_fallback::version},
         utility::codec::field{"tenant_id", &calibration_fallback::tenant_id},
         utility::codec::field{"code", &calibration_fallback::code},

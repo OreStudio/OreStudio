@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 6EA15737-5413-46FB-9660-9C279B42B454
+:END:
+#+title: Story: Build the calendars without a read per day
+#+description: Provisioning fails at build_calendars: the step waits 600 s, and each calendar costs about 35 s because the batch write reads every day's version in its own transaction before it inserts.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Provisioning a tenant builds its holiday calendars well inside the =build_calendars= step's 600 s, so a new tenant is ready without a manual rebuild.
+
+On 2026-11-10 the step timed out on this machine. The step started at 22:38:20 and the client stopped waiting at 22:48:20. The refdata service wrote each calendar of 13,515 days in about 35 s, and it went on until 23:01:58. For each day, the batch write of =calendar_date_repository= read the day's current version in its own transaction (=begin=, =set_config=, =select=, =commit=) before the insert. =pg_stat_statements= for the database counted 454,068 such transactions for 445,995 inserted days. The server spent about 2 minutes on them, and the run took about 24 minutes, so round trips cost the rest. The materialiser had already read the calendar's existing days, and it passed on only the new ones, so each read only found that the day did not exist.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Done. =build_calendars= took 168 s for 35 calendars, where it timed out at 600 s. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-10                               |
+
+* Acceptance
+
+- The materialiser writes a calendar with no read for each day.
+- A fresh provisioning of Acme completes, and the IAM log gives the time of =build_calendars=.
+- The calendar materialisation tests pass unchanged.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4EF4EA0C-8D73-442C-8109-92273A12F612][Scaffold story: Build the calendars without a read per day]] | DONE | 2026-11-10 | 2026-11-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:55EDD7B9-7A31-4873-9323-FD165C452344][Write the calendar days with their claims known]] | DONE | 2026-11-10 | 2026-11-10 | The materialiser claims each new day as new, so the repository reads no day before it writes. |
+
+* Decisions
+
+- The materialiser states a new claim for each day it writes, and the repository keeps its API. The materialiser already reads the calendar's existing days and passes on only the new ones, so a read for each day only repeats it.
+- A new claim is version 0, and the insert trigger checks a version only when it is not 0. So a day that a concurrent materialisation wrote between the read and the insert gets a second version with the same value. The old code read the day's version just before its insert, so it also wrote a second version. Only materialisations write these rows, and they write the same values, so this is accepted.
+- The calendars stay one after the other. Each one is now in-memory work and one pipelined write, and parallel writes would add contention on a database that several environments share.
+
+* Out of scope
+
+- The same read for each row in the other 26 generated batch writers: [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Resolve the claims of a batch write in one read]].
+- What a materialised calendar stores: [[id:27439333-B0FF-40A0-80AE-D61026E0BEC1][Store only the closed days of a calendar]].

@@ -174,7 +174,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_outcome_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &delivery_outcome_type_key::code},
     };
 }
@@ -188,7 +188,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_outcome_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &delivery_outcome_type_lookup::key},
         utility::codec::field{"delivery_outcome_type",
                               &delivery_outcome_type_lookup::delivery_outcome_type},
@@ -204,7 +204,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_outcome_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &delivery_outcome_types_filter::code_one_of},
     };
 }
@@ -218,7 +218,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_outcome_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &delivery_outcome_type_event::event_id},
         utility::codec::field{"key", &delivery_outcome_type_event::key},
         utility::codec::field{"action", &delivery_outcome_type_event::action},
@@ -237,7 +237,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_delivery_outcome_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_delivery_outcome_types_request::offset},
         utility::codec::field{"limit", &list_delivery_outcome_types_request::limit},
         utility::codec::field{"order", &list_delivery_outcome_types_request::order},
@@ -254,7 +254,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_delivery_outcome_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_delivery_outcome_types_response::result},
         utility::codec::field{"delivery_outcome_types",
                               &list_delivery_outcome_types_response::delivery_outcome_types},
@@ -271,7 +271,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_outcome_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_delivery_outcome_type_request::key},
     };
 }
@@ -285,7 +285,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_outcome_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_delivery_outcome_type_response::result},
         utility::codec::field{"delivery_outcome_type",
                               &get_delivery_outcome_type_response::delivery_outcome_type},
@@ -302,7 +302,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.delivery_outcome_ty
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_delivery_outcome_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_delivery_outcome_types_request::keys},
     };
 }
@@ -317,7 +317,7 @@ wire_fields(std::type_identity<get_many_delivery_outcome_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_delivery_outcome_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_delivery_outcome_types_response::result},
         utility::codec::field{"entries", &get_many_delivery_outcome_types_response::entries},
     };

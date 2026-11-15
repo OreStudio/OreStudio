@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 81814E65-A2AF-4C32-BB89-07E5C3E5DF7C
+:END:
+#+title: Task: Implement Move the Linux CI image to Ubuntu 26.04
+#+description: Initial task for: Move the Linux CI image to Ubuntu 26.04
+#+type: task
+#+level: s1
+#+filetags: :move_the_linux_ci_image_to_ubuntu_26_04:sprint_30:v0:
+#+owner: marco
+#+branch: feature/move-the-linux-ci-image-to-ubuntu-26-04
+#+pr: 4669
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A5A1EDD-5C79-4EDF-AA10-B7917C9327AD][Move the Linux CI image to Ubuntu 26.04]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the CI image to Ubuntu 26.04 and take every tool from that image, so no
+third-party repository or downloaded archive is needed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7A5A1EDD-5C79-4EDF-AA10-B7917C9327AD][Move the Linux CI image to Ubuntu 26.04]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- =versions.env= states Ubuntu 26.04, clang 21 and GCC 16.
+- The Dockerfile installs only Ubuntu packages.
+- The image build passes its tool checks.
+
+* Plan
+
+1. List what the new image's archive carries for every tool the image needs.
+2. Drop each external repository whose package the archive now has.
+3. Build the image from the branch before merging, because the recipe is only
+   exercised by a container engine.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Image tag before | =ubuntu24.04-clang19-gcc16-972792921cb7= | =build/docker/ci/build.sh --print-ref= | 5a996fe93d |
+| Image tag after | =ubuntu26.04-clang21-gcc16-18f0939fd2e4= | =build/docker/ci/build.sh --print-ref= | 6f11f84288 |
+| External apt repositories in the recipe | 0 | reading the Dockerfile | 6f11f84288 |
+| Packages the archive does not carry | 0 | =packages.ubuntu.com= for each | 6f11f84288 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4669][#4669]] | [build] Take the CI image's tools from Ubuntu 26.04 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every package the image needs exists in the Ubuntu 26.04 archive, so the
+recipe holds no external repository: the toolchain PPA, apt.llvm.org, the
+GitHub CLI repository, the PGDG repository and the three downloaded archives
+are gone. The image is smaller and states less.
+
+The tree itself has not yet compiled on the new image; the workflow builds the
+image and checks the tools, not the code.

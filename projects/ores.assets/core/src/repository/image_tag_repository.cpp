@@ -53,8 +53,8 @@ std::string image_tag_repository::sql() {
     return query_builder::insert_statement_sql<image_tag_entity>(lg());
 }
 
-image_tag_repository::image_tag_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+image_tag_repository::image_tag_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 image_tag_repository::replace_claim(const domain::image_tag& v) {

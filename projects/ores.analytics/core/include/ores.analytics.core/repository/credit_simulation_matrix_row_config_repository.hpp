@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.analytics.api/messaging/credit_simulation_matrix_row_config_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -71,8 +71,9 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::credit_simulation_matrix_row_config& v);
-    void write(context ctx, const std::vector<domain::credit_simulation_matrix_row_config>& v);
+    void write(const context& ctx, const domain::credit_simulation_matrix_row_config& v);
+    void write(const context& ctx,
+               const std::vector<domain::credit_simulation_matrix_row_config>& v);
     /**@}*/
 
     /**
@@ -85,7 +86,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::credit_simulation_matrix_row_config& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +94,7 @@ public:
      * @brief Writes a set of matrix rows, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::credit_simulation_matrix_row_config>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +102,27 @@ public:
      * @brief Reads latest matrix rows, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::credit_simulation_matrix_row_config> read_latest(context ctx);
-    std::vector<domain::credit_simulation_matrix_row_config> read_latest(context ctx,
+    std::vector<domain::credit_simulation_matrix_row_config> read_latest(const context& ctx);
+    std::vector<domain::credit_simulation_matrix_row_config> read_latest(const context& ctx,
                                                                          const std::string& id);
     std::vector<domain::credit_simulation_matrix_row_config>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest matrix rows filtered by from_rating.
      */
     std::vector<domain::credit_simulation_matrix_row_config>
-    read_latest_by_from_rating(context ctx, const std::string& from_rating);
+    read_latest_by_from_rating(const context& ctx, const std::string& from_rating);
+
+    /**
+     * @brief Reads latest matrix rows filtered by a set of from_rating values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::credit_simulation_matrix_row_config>
+    read_latest_by_from_rating(const context& ctx, const std::vector<std::string>& from_ratings);
 
     /**
      * @brief Reads the newest matrix rows filtered by from_rating, current or not.
@@ -128,13 +138,13 @@ public:
      * party.
      */
     std::vector<domain::credit_simulation_matrix_row_config>
-    read_any_by_from_rating(context ctx, const std::string& from_rating);
+    read_any_by_from_rating(const context& ctx, const std::string& from_rating);
 
 
     /**
      * @brief Reads all matrix rows, possibly filtered by primary key.
      */
-    std::vector<domain::credit_simulation_matrix_row_config> read_all(context ctx,
+    std::vector<domain::credit_simulation_matrix_row_config> read_all(const context& ctx,
                                                                       const std::string& id);
 
     /**
@@ -147,7 +157,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::credit_simulation_matrix_row_config>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest matrix rows filtered by transition_matrix_id, with pagination.
@@ -158,7 +168,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::credit_simulation_matrix_row_config> read_latest_by_transition_matrix_id(
-        context ctx,
+        const context& ctx,
         const std::string& transition_matrix_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -170,7 +180,7 @@ public:
      * @brief Gets the total count of active matrix rows filtered by transition_matrix_id.
      */
     std::uint32_t get_total_row_count_by_transition_matrix_id(
-        context ctx,
+        const context& ctx,
         const std::string& transition_matrix_id,
         const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
             std::nullopt);
@@ -193,7 +203,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::credit_simulation_matrix_row_config> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -207,7 +217,7 @@ public:
      * @return Total number of active matrix rows
      */
     std::uint32_t get_total_row_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -215,7 +225,7 @@ public:
     /**
      * @brief Deletes a matrix row by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -237,31 +247,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes matrix rows by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::credit_simulation_matrix_row_config& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::credit_simulation_matrix_row_config
-    apply_claim(context ctx,
-                const domain::credit_simulation_matrix_row_config& v,
-                const ores::utility::domain::precondition& claim);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 };
 
 }

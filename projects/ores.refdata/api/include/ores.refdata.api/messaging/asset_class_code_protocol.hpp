@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &asset_class_code_key::code},
     };
 }
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &asset_class_code_write::code},
         utility::codec::field{"name", &asset_class_code_write::name},
         utility::codec::field{"description", &asset_class_code_write::description},
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &asset_class_code_change::write},
         utility::codec::field{"precondition", &asset_class_code_change::precondition},
     };
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &asset_class_code_removal::key},
         utility::codec::field{"precondition", &asset_class_code_removal::precondition},
     };
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &asset_class_code_lookup::key},
         utility::codec::field{"asset_class_code", &asset_class_code_lookup::asset_class_code},
     };
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_codes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &asset_class_codes_filter::code_one_of},
     };
 }
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &asset_class_code_event::event_id},
         utility::codec::field{"key", &asset_class_code_event::key},
         utility::codec::field{"action", &asset_class_code_event::action},
@@ -475,7 +475,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"asset_class_code", &asset_class_code_version_key::asset_class_code},
         utility::codec::field{"version", &asset_class_code_version_key::version},
     };
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_code_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &asset_class_code_versions_filter::version},
         utility::codec::field{"from_version", &asset_class_code_versions_filter::from_version},
         utility::codec::field{"to_version", &asset_class_code_versions_filter::to_version},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_asset_class_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_asset_class_codes_request::offset},
         utility::codec::field{"limit", &list_asset_class_codes_request::limit},
         utility::codec::field{"order", &list_asset_class_codes_request::order},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_asset_class_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_asset_class_codes_response::result},
         utility::codec::field{"asset_classes", &list_asset_class_codes_response::asset_classes},
         utility::codec::field{"total", &list_asset_class_codes_response::total},
@@ -540,7 +540,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_class_code_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_asset_class_code_request::key},
     };
 }
@@ -554,7 +554,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_class_code_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_asset_class_code_response::result},
         utility::codec::field{"asset_class_code", &get_asset_class_code_response::asset_class_code},
     };
@@ -569,7 +569,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_asset_class_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_asset_class_codes_request::keys},
     };
 }
@@ -583,7 +583,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_asset_class_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_asset_class_codes_response::result},
         utility::codec::field{"entries", &get_many_asset_class_codes_response::entries},
     };
@@ -598,7 +598,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_asset_class_code_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_asset_class_code_request::change},
         utility::codec::field{"intent", &put_asset_class_code_request::intent},
     };
@@ -613,7 +613,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_asset_class_code_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_asset_class_code_response::result},
         utility::codec::field{"asset_class_code", &put_asset_class_code_response::asset_class_code},
     };
@@ -628,7 +628,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_asset_class_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_asset_class_codes_request::changes},
         utility::codec::field{"intent", &put_many_asset_class_codes_request::intent},
     };
@@ -643,7 +643,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_asset_class_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_asset_class_codes_response::result},
         utility::codec::field{"asset_classes", &put_many_asset_class_codes_response::asset_classes},
     };
@@ -658,7 +658,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_asset_class_code_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_asset_class_code_request::removal},
         utility::codec::field{"intent", &delete_asset_class_code_request::intent},
     };
@@ -673,7 +673,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_asset_class_code_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_asset_class_code_response::result},
     };
 }
@@ -688,7 +688,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.asset_class_codes
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_asset_class_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_asset_class_codes_request::removals},
         utility::codec::field{"intent", &delete_many_asset_class_codes_request::intent},
     };
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<delete_many_asset_class_codes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_asset_class_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_asset_class_codes_response::result},
     };
 }
@@ -719,7 +719,7 @@ wire_fields(std::type_identity<delete_many_asset_class_codes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_asset_class_code_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_asset_class_code_versions_request::key},
         utility::codec::field{"offset", &list_asset_class_code_versions_request::offset},
         utility::codec::field{"limit", &list_asset_class_code_versions_request::limit},
@@ -738,7 +738,7 @@ wire_fields(std::type_identity<list_asset_class_code_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_asset_class_code_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_asset_class_code_versions_response::result},
         utility::codec::field{"versions", &list_asset_class_code_versions_response::versions},
         utility::codec::field{"total", &list_asset_class_code_versions_response::total},
@@ -754,7 +754,7 @@ wire_fields(std::type_identity<list_asset_class_code_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_class_code_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_asset_class_code_version_request::key},
     };
 }
@@ -769,7 +769,7 @@ wire_fields(std::type_identity<list_asset_class_code_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_asset_class_code_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_asset_class_code_version_response::result},
         utility::codec::field{"version", &get_asset_class_code_version_response::version},
     };

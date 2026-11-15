@@ -53,8 +53,8 @@ std::string product_type_asset_class_repository::sql() {
     return query_builder::insert_statement_sql<product_type_asset_class_entity>(lg());
 }
 
-product_type_asset_class_repository::product_type_asset_class_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+product_type_asset_class_repository::product_type_asset_class_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 product_type_asset_class_repository::replace_claim(const domain::product_type_asset_class& v) {

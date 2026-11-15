@@ -83,8 +83,7 @@ inline constexpr std::size_t member_count = detail::count_members<T>();
  */
 template <typename T>
 consteval bool names_every_member(std::size_t left_out = 0) {
-    return member_count<T> ==
-           std::tuple_size_v<decltype(wire_fields(std::type_identity<T>{}))> + left_out;
+    return member_count<T> == decltype(wire_fields(std::type_identity<T>{}))::size + left_out;
 }
 
 }

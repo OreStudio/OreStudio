@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -53,13 +55,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-netting_set_service::netting_set_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+netting_set_service::netting_set_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -77,6 +80,42 @@ std::vector<domain::netting_set> netting_set_read_one(repository::netting_set_re
                                                       const ores::database::context& ctx,
                                                       const messaging::netting_set_key& key) {
     return repo.read_latest_by_code(ctx, key.code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::netting_set>>
+netting_set_read_many(repository::netting_set_repository& repo,
+                      const ores::database::context& ctx,
+                      const std::vector<messaging::netting_set_key>& keys) {
+    std::vector<std::vector<domain::netting_set>> found(keys.size());
+    std::vector<std::string> code_keys;
+    code_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        code_keys.push_back(key.code);
+    std::map<std::string, std::vector<domain::netting_set>> by_key;
+    for (auto& row : repo.read_latest_by_code(ctx, code_keys))
+        by_key[row.code].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.code);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -125,21 +164,24 @@ netting_set_service::list_netting_sets(const messaging::list_netting_sets_reques
                                  {.entity = "netting sets", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->netting_agreement_id_one_of &&
-        request.filter->netting_agreement_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "netting_agreement_id_one_of", .limit = "1000"});
+        request.filter->netting_agreement_id_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "netting_agreement_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->credit_limit_id_one_of &&
-        request.filter->credit_limit_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "credit_limit_id_one_of", .limit = "1000"});
+        request.filter->credit_limit_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "credit_limit_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -169,21 +211,24 @@ netting_set_service::list_by_netting_agreement_id_netting_sets(
                                  {.entity = "netting sets", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->netting_agreement_id_one_of &&
-        request.filter->netting_agreement_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "netting_agreement_id_one_of", .limit = "1000"});
+        request.filter->netting_agreement_id_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "netting_agreement_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->credit_limit_id_one_of &&
-        request.filter->credit_limit_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "credit_limit_id_one_of", .limit = "1000"});
+        request.filter->credit_limit_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "credit_limit_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -215,21 +260,24 @@ netting_set_service::list_by_credit_limit_id_netting_sets(
                                  {.entity = "netting sets", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->netting_agreement_id_one_of &&
-        request.filter->netting_agreement_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "netting_agreement_id_one_of", .limit = "1000"});
+        request.filter->netting_agreement_id_one_of->size() > max_batch_size) {
+        response.result = refuse(
+            outcome_code::filter_too_large,
+            {.field = "netting_agreement_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->credit_limit_id_one_of &&
-        request.filter->credit_limit_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "credit_limit_id_one_of", .limit = "1000"});
+        request.filter->credit_limit_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "credit_limit_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -266,16 +314,23 @@ netting_set_service::get_netting_set(const messaging::get_netting_set_request& r
 messaging::get_many_netting_sets_response netting_set_service::get_many_netting_sets(
     const messaging::get_many_netting_sets_request& request) {
     messaging::get_many_netting_sets_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = netting_set_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::netting_set_lookup entry;
-        entry.key = k;
-        auto found = netting_set_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.netting_set = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.netting_set = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -285,7 +340,9 @@ messaging::put_netting_set_response
 netting_set_service::put_netting_set(const messaging::put_netting_set_request& request) {
     messaging::put_netting_set_response response;
     domain::netting_set value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = netting_set_read_one(
+        repo_, ctx_, netting_set_key_from(netting_set_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -298,11 +355,18 @@ netting_set_service::put_netting_set(const messaging::put_netting_set_request& r
 messaging::put_many_netting_sets_response netting_set_service::put_many_netting_sets(
     const messaging::put_many_netting_sets_request& request) {
     messaging::put_many_netting_sets_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::netting_set_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(netting_set_key_from(netting_set_to_domain(change.write)));
+    const auto current = netting_set_read_many(repo_, ctx_, keys);
     std::vector<domain::netting_set> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::netting_set value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -320,9 +384,12 @@ messaging::put_many_netting_sets_response netting_set_service::put_many_netting_
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.netting_sets.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = netting_set_read_one(repo_, ctx_, netting_set_key_from(value));
-        response.netting_sets.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = netting_set_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.netting_sets.push_back(written[i].empty() ? batch[i] :
+                                                             std::move(written[i].front()));
     }
     return response;
 }
@@ -398,10 +465,13 @@ messaging::delete_many_netting_sets_response netting_set_service::delete_many_ne
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::netting_set_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::netting_set> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = netting_set_read_one(repo_, ctx_, removal.key);
+    for (auto& named : netting_set_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -468,12 +538,12 @@ messaging::get_netting_set_version_response netting_set_service::get_netting_set
 ores::utility::domain::result
 netting_set_service::prepare_change(const messaging::netting_set_change& change,
                                     const ores::utility::domain::change_intent& intent,
+                                    const std::vector<domain::netting_set>& current,
                                     domain::netting_set& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = netting_set_to_domain(change.write);
-    const auto current = netting_set_read_one(repo_, ctx_, netting_set_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -25,6 +25,8 @@
 #include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -205,6 +207,14 @@ struct renew_step_claim_request {
     std::string tenant_id;
     /// The holder the claim must still name; a claim another holder took is not renewed.
     std::string owner;
+    /// Whether the holder reports its progress with this renewal. A renewal without a
+    /// report leaves the stored progress as it was.
+    bool reports_progress = false;
+    /// What the step is doing, in its own words.
+    std::string progress;
+    /// How far through it is, and out of how much, when it counts.
+    std::optional<std::int64_t> progress_done;
+    std::optional<std::int64_t> progress_total;
 };
 
 /**
@@ -222,33 +232,41 @@ struct renew_step_claim_response {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_step_request>) {
-    return std::tuple{utility::codec::field{"step_id", &claim_step_request::step_id},
-                      utility::codec::field{"tenant_id", &claim_step_request::tenant_id},
-                      utility::codec::field{"owner", &claim_step_request::owner}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"step_id", &claim_step_request::step_id},
+        utility::codec::field{"tenant_id", &claim_step_request::tenant_id},
+        utility::codec::field{"owner", &claim_step_request::owner}};
 }
 static_assert(utility::codec::names_every_member<claim_step_request>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_step_response>) {
-    return std::tuple{utility::codec::field{"success", &claim_step_response::success},
-                      utility::codec::field{"claimed", &claim_step_response::claimed},
-                      utility::codec::field{"state", &claim_step_response::state},
-                      utility::codec::field{"message", &claim_step_response::message},
-                      utility::codec::field{"attempts", &claim_step_response::attempts}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"success", &claim_step_response::success},
+        utility::codec::field{"claimed", &claim_step_response::claimed},
+        utility::codec::field{"state", &claim_step_response::state},
+        utility::codec::field{"message", &claim_step_response::message},
+        utility::codec::field{"attempts", &claim_step_response::attempts}};
 }
 static_assert(utility::codec::names_every_member<claim_step_response>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<renew_step_claim_request>) {
-    return std::tuple{utility::codec::field{"step_id", &renew_step_claim_request::step_id},
-                      utility::codec::field{"tenant_id", &renew_step_claim_request::tenant_id},
-                      utility::codec::field{"owner", &renew_step_claim_request::owner}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"step_id", &renew_step_claim_request::step_id},
+        utility::codec::field{"tenant_id", &renew_step_claim_request::tenant_id},
+        utility::codec::field{"owner", &renew_step_claim_request::owner},
+        utility::codec::field{"reports_progress", &renew_step_claim_request::reports_progress},
+        utility::codec::field{"progress", &renew_step_claim_request::progress},
+        utility::codec::field{"progress_done", &renew_step_claim_request::progress_done},
+        utility::codec::field{"progress_total", &renew_step_claim_request::progress_total}};
 }
 static_assert(utility::codec::names_every_member<renew_step_claim_request>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<renew_step_claim_response>) {
-    return std::tuple{utility::codec::field{"success", &renew_step_claim_response::success},
-                      utility::codec::field{"renewed", &renew_step_claim_response::renewed},
-                      utility::codec::field{"state", &renew_step_claim_response::state},
-                      utility::codec::field{"message", &renew_step_claim_response::message}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"success", &renew_step_claim_response::success},
+        utility::codec::field{"renewed", &renew_step_claim_response::renewed},
+        utility::codec::field{"state", &renew_step_claim_response::state},
+        utility::codec::field{"message", &renew_step_claim_response::message}};
 }
 static_assert(utility::codec::names_every_member<renew_step_claim_response>());
 

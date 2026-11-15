@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/work_ledger_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>

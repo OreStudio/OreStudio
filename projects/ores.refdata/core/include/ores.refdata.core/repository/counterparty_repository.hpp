@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -72,8 +72,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::counterparty& v);
-    void write(context ctx, const std::vector<domain::counterparty>& v);
+    void write(const context& ctx, const domain::counterparty& v);
+    void write(const context& ctx, const std::vector<domain::counterparty>& v);
     /**@}*/
 
     /**
@@ -86,7 +86,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::counterparty& v,
                const ores::utility::domain::precondition& claim);
 
@@ -94,7 +94,7 @@ public:
      * @brief Writes a set of counterparties, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::counterparty>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -102,22 +102,32 @@ public:
      * @brief Reads latest counterparties, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::counterparty> read_latest(context ctx);
-    std::vector<domain::counterparty> read_latest(context ctx, const std::string& id);
-    std::vector<domain::counterparty> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::counterparty> read_latest(const context& ctx);
+    std::vector<domain::counterparty> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::counterparty> read_latest(const context& ctx,
+                                                  const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest counterparties filtered by short_code.
      */
-    std::vector<domain::counterparty> read_latest_by_code(context ctx,
+    std::vector<domain::counterparty> read_latest_by_code(const context& ctx,
                                                           const std::string& short_code);
 
     /**
      * @brief Reads latest counterparties filtered by short_code.
      */
-    std::vector<domain::counterparty> read_latest_by_short_code(context ctx,
+    std::vector<domain::counterparty> read_latest_by_short_code(const context& ctx,
                                                                 const std::string& short_code);
+
+    /**
+     * @brief Reads latest counterparties filtered by a set of short_code values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::counterparty>
+    read_latest_by_short_code(const context& ctx, const std::vector<std::string>& short_codes);
 
     /**
      * @brief Reads the newest counterparties filtered by short_code, current or not.
@@ -127,14 +137,14 @@ public:
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::counterparty> read_any_by_short_code(context ctx,
+    std::vector<domain::counterparty> read_any_by_short_code(const context& ctx,
                                                              const std::string& short_code);
 
 
     /**
      * @brief Reads all counterparties, possibly filtered by primary key.
      */
-    std::vector<domain::counterparty> read_all(context ctx, const std::string& id);
+    std::vector<domain::counterparty> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single counterparty as it stood at a specific
@@ -146,7 +156,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::counterparty>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
 
     /**
@@ -166,7 +176,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::counterparty>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -179,14 +189,14 @@ public:
      * @return Total number of active counterparties
      */
     std::uint32_t get_total_counterparty_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::counterparties_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a counterparty by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -208,12 +218,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes counterparties by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     /**
      * @brief Reads the counterparty hierarchy as a flat set of {id,
@@ -228,24 +239,7 @@ public:
      * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
      */
     std::vector<ores::utility::domain::hierarchy_flat_row>
-    get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::counterparty& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::counterparty apply_claim(context ctx,
-                                     const domain::counterparty& v,
-                                     const ores::utility::domain::precondition& claim);
+    get_hierarchy(const context& ctx, const boost::uuids::uuid& root_id, bool from_root);
 };
 
 }

@@ -46,7 +46,7 @@ namespace ores::synthetic::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_spot_fixing_item>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_spot_fixing_item::version},
         utility::codec::field{"tenant_id", &fx_spot_fixing_item::tenant_id},
         utility::codec::field{"id", &fx_spot_fixing_item::id},

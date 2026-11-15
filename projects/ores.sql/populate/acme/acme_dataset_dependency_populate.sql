@@ -194,4 +194,46 @@ BEGIN
         'acme.acme_hk.report_definitions', 'acme.acme_hk.risk_report_configs', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.report_definitions', 'acme.acme_hk.engine_settings', 'configuration_source');
+    -- The market documents of each entity name the conventions their curves,
+    -- indices and instruments are built by, as Northwind's do.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.pricing_engines', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.todays_market', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.curve_configuration', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.engine_settings', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.report_definitions', 'refdata.conventions', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.pricing_engines', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.todays_market', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.curve_configuration', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.engine_settings', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_uk.report_definitions', 'refdata.conventions', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.pricing_engines', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.todays_market', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.curve_configuration', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.engine_settings', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_us.report_definitions', 'refdata.conventions', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.pricing_engines', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.todays_market', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.curve_configuration', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.engine_settings', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_hk.report_definitions', 'refdata.conventions', 'configuration_source');
 END $$;

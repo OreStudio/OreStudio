@@ -18,76 +18,53 @@
  *
  */
 #include "ores.analytics.quant/domain/date_convention.hpp"
-#include <array>
-#include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::domain {
 
 namespace {
 
-struct convention_entry final {
-    std::string_view code;
-    business_day_convention convention;
-};
-
-/// The persisted codes are QuantLib's own enumerator names, so this table
-/// reads as the QuantLib enum with ores_refdata's spelling attached. Order
-/// matches @c business_day_convention, which matches QuantLib.
-constexpr std::array<convention_entry, 7> conventions{{
-    {"Unadjusted", business_day_convention::unadjusted},
-    {"Following", business_day_convention::following},
-    {"ModifiedFollowing", business_day_convention::modified_following},
-    {"Preceding", business_day_convention::preceding},
-    {"ModifiedPreceding", business_day_convention::modified_preceding},
-    {"NEAREST", business_day_convention::nearest},
-    {"HalfMonthModifiedFollowing", business_day_convention::half_month_modified_following},
-}};
-
-struct unit_entry final {
-    std::string_view code;
-    period_unit unit;
-};
-
-constexpr std::array<unit_entry, 5> units{{
-    {"DAY", period_unit::day},
-    {"WEEK", period_unit::week},
-    {"MONTH", period_unit::month},
-    {"YEAR", period_unit::year},
-    {"NONE", period_unit::none},
-}};
-
-} // namespace
-
-business_day_convention parse_business_day_convention_code(std::string_view code) {
-    for (const auto& entry : conventions) {
-        if (entry.code == code)
-            return entry.convention;
-    }
-    throw std::invalid_argument("Unrecognised business day convention code: " + std::string(code));
+bool counts_months(period_unit unit) noexcept {
+    return unit == period_unit::month || unit == period_unit::year;
 }
 
-std::string_view to_business_day_convention_code(business_day_convention convention) {
-    for (const auto& entry : conventions) {
-        if (entry.convention == convention)
-            return entry.code;
-    }
-    throw std::invalid_argument("Business day convention has no persisted code");
+int months_of(date_period p) noexcept {
+    return p.unit == period_unit::year ? 12 * p.multiplier : p.multiplier;
 }
 
-period_unit parse_period_unit_code(std::string_view code) {
-    for (const auto& entry : units) {
-        if (entry.code == code)
-            return entry.unit;
+/// The fewest and the most days the period can span.
+std::pair<int, int> day_bounds(date_period p) noexcept {
+    switch (p.unit) {
+        case period_unit::day:
+            return {p.multiplier, p.multiplier};
+        case period_unit::week:
+            return {7 * p.multiplier, 7 * p.multiplier};
+        case period_unit::month:
+            return {28 * p.multiplier, 31 * p.multiplier};
+        case period_unit::year:
+            return {365 * p.multiplier, 366 * p.multiplier};
+        case period_unit::none:
+            break;
     }
-    throw std::invalid_argument("Unrecognised tenor unit code: " + std::string(code));
+    return {0, 0};
 }
 
-std::string_view to_period_unit_code(period_unit unit) {
-    for (const auto& entry : units) {
-        if (entry.unit == unit)
-            return entry.code;
-    }
-    throw std::invalid_argument("Period unit has no persisted code");
+}
+
+std::partial_ordering compare_periods(date_period a, date_period b) noexcept {
+    if (a.is_empty() || b.is_empty())
+        return a.is_empty() && b.is_empty() ? std::partial_ordering::equivalent :
+                                              std::partial_ordering::unordered;
+    if (counts_months(a.unit) == counts_months(b.unit))
+        return counts_months(a.unit) ? months_of(a) <=> months_of(b) :
+                                       day_bounds(a).first <=> day_bounds(b).first;
+    const auto [a_min, a_max] = day_bounds(a);
+    const auto [b_min, b_max] = day_bounds(b);
+    if (a_max < b_min)
+        return std::partial_ordering::less;
+    if (a_min > b_max)
+        return std::partial_ordering::greater;
+    return std::partial_ordering::unordered;
 }
 
 } // namespace ores::analytics::quant::domain

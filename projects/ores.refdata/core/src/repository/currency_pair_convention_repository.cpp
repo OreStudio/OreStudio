@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,20 +104,76 @@ std::optional<query_builder::condition> currency_pair_convention_filter_conditio
 
 }
 
-ores::utility::domain::precondition
-currency_pair_convention_repository::replace_claim(context ctx,
-                                                   const domain::currency_pair_convention& v) {
-    const auto current = read_latest(ctx, v.pair_code);
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool currency_pair_convention_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using currency_pair_convention_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::currency_pair_convention>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+currency_pair_convention_rows_by_key
+currency_pair_convention_current_rows(currency_pair_convention_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const std::vector<domain::currency_pair_convention>& of) {
+    std::vector<std::string> pair_codes;
+    pair_codes.reserve(of.size());
+    for (const auto& row : of) {
+        pair_codes.push_back(row.pair_code);
+    }
+    currency_pair_convention_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, pair_codes))
+        current[std::make_tuple(item.pair_code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::currency_pair_convention>&
+currency_pair_convention_rows_of(const currency_pair_convention_rows_by_key& current,
+                                 const domain::currency_pair_convention& item) {
+    static const std::vector<domain::currency_pair_convention> none;
+    const auto found = current.find(std::make_tuple(item.pair_code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition currency_pair_convention_replace_claim(
+    const std::vector<domain::currency_pair_convention>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::currency_pair_convention
-currency_pair_convention_repository::apply_claim(context ctx,
-                                                 const domain::currency_pair_convention& v,
-                                                 const ores::utility::domain::precondition& claim) {
+currency_pair_convention_apply_claim(const domain::currency_pair_convention& v,
+                                     const ores::utility::domain::precondition& claim,
+                                     const std::vector<domain::currency_pair_convention>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -125,39 +185,46 @@ currency_pair_convention_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.pair_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void currency_pair_convention_repository::write(context ctx,
+}
+
+void currency_pair_convention_repository::write(const context& ctx,
                                                 const domain::currency_pair_convention& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx, v, currency_pair_convention_replace_claim(read_latest(ctx, v.pair_code)));
 }
 
 void currency_pair_convention_repository::write(
-    context ctx, const std::vector<domain::currency_pair_convention>& v) {
+    const context& ctx, const std::vector<domain::currency_pair_convention>& v) {
+    const auto current = currency_pair_convention_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(currency_pair_convention_replace_claim(
+            currency_pair_convention_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void currency_pair_convention_repository::write(context ctx,
+void currency_pair_convention_repository::write(const context& ctx,
                                                 const domain::currency_pair_convention& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair convention. "
                                << "pair_code: " << v.pair_code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        currency_pair_convention_apply_claim(v,
+                                             claim,
+                                             currency_pair_convention_claim_reads_current(claim) ?
+                                                 read_latest(ctx, v.pair_code) :
+                                                 std::vector<domain::currency_pair_convention>{});
     query_builder::execute_write_query(ctx,
                                        currency_pair_convention_mapper::map(t),
                                        lg(),
@@ -165,14 +232,21 @@ void currency_pair_convention_repository::write(context ctx,
 }
 
 void currency_pair_convention_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::currency_pair_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair conventions. Count: " << v.size();
+    std::vector<domain::currency_pair_convention> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (currency_pair_convention_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = currency_pair_convention_current_rows(*this, ctx, to_read);
     std::vector<domain::currency_pair_convention> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(currency_pair_convention_apply_claim(
+            v[i], claims[i], currency_pair_convention_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        currency_pair_convention_mapper::map(batch),
                                        lg(),
@@ -180,7 +254,7 @@ void currency_pair_convention_repository::write(
 }
 
 std::vector<domain::currency_pair_convention>
-currency_pair_convention_repository::read_latest(context ctx) {
+currency_pair_convention_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_pair_convention_entity>> |
@@ -197,7 +271,7 @@ currency_pair_convention_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::currency_pair_convention>
-currency_pair_convention_repository::read_latest(context ctx, const std::string& pair_code) {
+currency_pair_convention_repository::read_latest(const context& ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair convention. "
                                << "pair_code: " << pair_code;
     static constexpr auto max = db_timestamp::max();
@@ -217,7 +291,7 @@ currency_pair_convention_repository::read_latest(context ctx, const std::string&
 
 
 std::vector<domain::currency_pair_convention>
-currency_pair_convention_repository::read_all(context ctx, const std::string& pair_code) {
+currency_pair_convention_repository::read_all(const context& ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair convention versions. "
                                << "pair_code: " << pair_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -235,7 +309,7 @@ currency_pair_convention_repository::read_all(context ctx, const std::string& pa
 }
 
 std::optional<domain::currency_pair_convention>
-currency_pair_convention_repository::read_at_version(context ctx,
+currency_pair_convention_repository::read_at_version(const context& ctx,
                                                      const std::string& pair_code,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading currency pair convention at version. "
@@ -261,7 +335,7 @@ currency_pair_convention_repository::read_at_version(context ctx,
 
 
 currency_pair_convention_repository::remove_status currency_pair_convention_repository::remove(
-    context ctx, const std::string& pair_code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& pair_code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention. "
                                << "pair_code: " << pair_code;
     const auto current = read_latest(ctx, pair_code);
@@ -291,12 +365,12 @@ currency_pair_convention_repository::remove_status currency_pair_convention_repo
     return remove_status::removed;
 }
 
-void currency_pair_convention_repository::remove(context ctx, const std::string& pair_code) {
+void currency_pair_convention_repository::remove(const context& ctx, const std::string& pair_code) {
     static_cast<void>(remove(ctx, pair_code, std::nullopt));
 }
 
 std::vector<domain::currency_pair_convention> currency_pair_convention_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -322,7 +396,7 @@ std::vector<domain::currency_pair_convention> currency_pair_convention_repositor
 }
 
 std::uint32_t currency_pair_convention_repository::get_total_convention_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::currency_pair_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair convention count";
@@ -341,10 +415,26 @@ std::uint32_t currency_pair_convention_repository::get_total_convention_count(
 }
 
 std::vector<domain::currency_pair_convention>
-currency_pair_convention_repository::read_latest(context ctx,
+currency_pair_convention_repository::read_latest(const context& ctx,
                                                  const std::vector<std::string>& pair_codes) {
     if (pair_codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (pair_codes.size() > chunk_size) {
+        std::vector<domain::currency_pair_convention> all;
+        for (std::size_t begin = 0; begin < pair_codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, pair_codes.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(pair_codes.begin() + begin, pair_codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_pair_convention_entity>> |
@@ -360,7 +450,7 @@ currency_pair_convention_repository::read_latest(context ctx,
     return result;
 }
 
-void currency_pair_convention_repository::remove(context ctx,
+void currency_pair_convention_repository::remove(const context& ctx,
                                                  const std::vector<std::string>& pair_codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

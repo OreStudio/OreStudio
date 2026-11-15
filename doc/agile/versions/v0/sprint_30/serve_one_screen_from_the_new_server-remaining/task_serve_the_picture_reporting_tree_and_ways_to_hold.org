@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 58A99F28-A560-4408-9D86-203A55CA2060
+:END:
+#+title: Task: Serve the account picture, the reporting tree and the ways to hold
+#+description: Four access routes remain at the BFF's addresses: an account's picture, the reporting line and the reporting tree, and the roles that would give the caller a permission.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-picture-reporting-tree-and-ways-to-hold
+#+pr: 4586
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the last four access routes ores.web calls at the BFF's own addresses and shapes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- Each of the four routes names its same-address C++ route in the inventory.
+- A test proves each route against the answer the BFF gives.
+- The local gate is green.
+
+* Plan
+
+Serve the last four access routes at the BFF's addresses. The picture, the
+reporting line and the reporting tree belong to the people screens and join
+=account_screen_routes=; the ways to hold a permission reads the roles
+catalogue and joins =role_write_routes=.
+
+- The picture reads the account, the caller's own by the self read, then the
+  image from the assets service, and answers its bytes with the BFF's headers:
+  kept privately for five minutes and never run as a document. The account read
+  is shared with the one-account route, so the self read is decided once. The
+  part takes =ores.assets.api= as a public dependency, because its header states
+  an image.
+- The reporting line writes and answers the account as written; the reporting
+  tree answers the camelCase shape, an empty reference read as null.
+- The ways to hold answers the requestable roles, not a service's and not
+  already held, that grant the permission by its code, its area's wildcard or
+  everything; any failure answers no ways, as the BFF did. The roles read is
+  shared with the roles catalogue route.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4586][#4586]] | [http] Serve the account picture, the reporting tree and the ways to hold |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4586 review: =grants= assumes a code with a double colon. | =role_write_routes.cpp= | Accepted, as a comment | The route reads the code as area::resource:action before it calls. |
+| 2 | PR #4586 review: the ways to hold answer no ways on any failure, an expired session included. | =role_write_routes.cpp= | No change | The BFF caught every failure the same way; the screen states that no way is known. |
+| 3 | PR #4586 review: a stored media type that names a document is served as one. | =account_screen_routes.cpp= | Accepted | A picture is served with its type only when it names an image, else as octet-stream; a test pins both. A hardening over the BFF. |
+| 4 | PR #4586 review: two round trips, path checks, the hand-written tree. | =account_screen_routes.cpp= | No change | As the BFF and the file's style; the router matches no empty segment. |
+
+* Result
+
+The C++ server answers the last four access routes at the addresses ores.web
+calls. With them, every one of the access area's 30 BFF routes has a C++ route
+at its own address and in its own shape, each paired in the inventory. The
+tests prove the reporting tree's shape, the picture's headers, the ways-to-hold
+rule over each kind of role, and the refusals before forwarding.

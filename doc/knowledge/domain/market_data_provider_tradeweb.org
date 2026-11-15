@@ -17,7 +17,9 @@ Tradeweb publishes pricing for fixed income and other OTC markets. It does not p
 
 ** The id scheme
 
-Tradeweb has no public id grammar. FIX, the protocol it uses for connectivity, names an id with a =SecurityIDSource= and a =SecurityID=. For a bond we use the scheme =isin=, and the external id is the ISIN. Another standard source, such as =cusip=, gets its own scheme code. We do not invent a Tradeweb notation.
+Tradeweb has no public id grammar. FIX, the protocol it uses for connectivity, names an id with a =SecurityIDSource= and a =SecurityID=. For a bond we use the scheme =isin=, and the external id is the ISIN. Another standard source, such as =cusip=, gets its own scheme code.
+
+The simulated Tradeweb curves are the exception, and they say so: they publish interest rate pillars in a spelling of our own, under the scheme =tradeweb_ticker=. It is a simulated notation, not a claim about how Tradeweb names a curve.
 
 ** The fields
 
@@ -44,7 +46,7 @@ A Tradeweb vendor instrument maps to the oresmd item for the bond or for the rat
 
 ** What the simulator does
 
-The simulated Tradeweb source publishes ticks with =isin=, the ISIN and a field. It does not speak FIX.
+The simulated Tradeweb source publishes interest rate pillars with the scheme =tradeweb_ticker= and the field =BID=. An id is the currency and the index family, with the curve's own index tenor run into the family word, then the instrument and the two tenors the pillar spans: =EUREURIBOR1M.DEPO.SPOT.1M= or =CHFLIBOR6M.IRS.SPOT.5Y=. The index tenor is part of the id because one currency may quote two curves of the same family that differ only in it (EURIBOR 1M and 6M). The spelling is ours, and the notation writes what it reads. It does not speak FIX.
 
 ** External references
 

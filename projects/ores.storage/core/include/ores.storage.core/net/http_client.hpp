@@ -97,6 +97,21 @@ public:
     static std::string get_returning_body(const std::string& url, const std::string& bearer_token);
 
     /**
+     * @brief Reads a body with one extra request header, such as a range.
+     *
+     * The answer's status and headers are stated when the caller asks for them,
+     * because a partial answer is an answer and not a failure.
+     */
+    struct answered_object final {
+        int status = 0;
+        std::string content_range;
+        std::string body;
+    };
+
+    static answered_object
+    get_range(const std::string& url, const std::string& bearer_token, const std::string& range);
+
+    /**
      * @brief Deletes a remote resource via HTTP DELETE, returning the response
      * body.
      *

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -39,10 +40,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -106,18 +110,71 @@ account_filter_condition(const std::optional<messaging::accounts_filter>& filter
 
 }
 
-ores::utility::domain::precondition account_repository::replace_claim(context ctx,
-                                                                      const domain::account& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool account_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using account_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::account>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+account_rows_by_key account_current_rows(account_repository& repo,
+                                         const ores::database::context& ctx,
+                                         const std::vector<domain::account>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    account_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::account>& account_rows_of(const account_rows_by_key& current,
+                                                    const domain::account& item) {
+    static const std::vector<domain::account> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition
+account_replace_claim(const std::vector<domain::account>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::account account_repository::apply_claim(context ctx,
-                                                const domain::account& v,
-                                                const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::account account_apply_claim(const domain::account& v,
+                                    const ores::utility::domain::precondition& claim,
+                                    const std::vector<domain::account>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -129,53 +186,64 @@ domain::account account_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void account_repository::write(context ctx, const domain::account& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void account_repository::write(context ctx, const std::vector<domain::account>& v) {
+void account_repository::write(const context& ctx, const domain::account& v) {
+    write(ctx, v, account_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void account_repository::write(const context& ctx, const std::vector<domain::account>& v) {
+    const auto current = account_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(account_replace_claim(account_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void account_repository::write(context ctx,
+void account_repository::write(const context& ctx,
                                const domain::account& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = account_apply_claim(v,
+                                       claim,
+                                       account_claim_reads_current(claim) ?
+                                           read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                           std::vector<domain::account>{});
     query_builder::execute_write_query(
         ctx, account_mapper::map(t), lg(), "Writing account to database.");
 }
 
-void account_repository::write(context ctx,
+void account_repository::write(const context& ctx,
                                const std::vector<domain::account>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing accounts. Count: " << v.size();
+    std::vector<domain::account> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (account_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = account_current_rows(*this, ctx, to_read);
     std::vector<domain::account> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(account_apply_claim(v[i], claims[i], account_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, account_mapper::map(batch), lg(), "Writing accounts to database.");
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx) {
+std::vector<domain::account> account_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -192,7 +260,8 @@ std::vector<domain::account> account_repository::read_latest(context ctx) {
         "Reading latest accounts");
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::account> account_repository::read_latest(const context& ctx,
+                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +279,7 @@ std::vector<domain::account> account_repository::read_latest(context ctx, const 
 }
 
 
-std::vector<domain::account> account_repository::read_any_by_username(context ctx,
+std::vector<domain::account> account_repository::read_any_by_username(const context& ctx,
                                                                       const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any account by username: " << username;
     const auto tid = ctx.tenant_id().to_string();
@@ -229,7 +298,8 @@ std::vector<domain::account> account_repository::read_any_by_username(context ct
 }
 
 
-std::vector<domain::account> account_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::account> account_repository::read_all(const context& ctx,
+                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -246,8 +316,9 @@ std::vector<domain::account> account_repository::read_all(context ctx, const std
         "Reading all account versions by id.");
 }
 
-std::optional<domain::account>
-account_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::account> account_repository::read_at_version(const context& ctx,
+                                                                   const std::string& id,
+                                                                   std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading account at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -270,7 +341,7 @@ account_repository::read_at_version(context ctx, const std::string& id, std::uin
 }
 
 
-account_repository::remove_status account_repository::remove(context ctx,
+account_repository::remove_status account_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account. " << "id: " << id;
@@ -300,12 +371,12 @@ account_repository::remove_status account_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void account_repository::remove(context ctx, const std::string& id) {
+void account_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::account>
-account_repository::read_latest(context ctx,
+account_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -330,7 +401,7 @@ account_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-account_repository::get_total_account_count(context ctx,
+account_repository::get_total_account_count(const context& ctx,
                                             const std::optional<messaging::accounts_filter>& filter,
                                             const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count";
@@ -348,10 +419,25 @@ account_repository::get_total_account_count(context ctx,
         "Counting accounts");
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx,
+std::vector<domain::account> account_repository::read_latest(const context& ctx,
                                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::account> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -367,7 +453,7 @@ std::vector<domain::account> account_repository::read_latest(context ctx,
     return result;
 }
 
-void account_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void account_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -385,7 +471,7 @@ void account_repository::remove(context ctx, const std::vector<std::string>& ids
 }
 
 
-std::vector<domain::account> account_repository::read_all(context ctx) {
+std::vector<domain::account> account_repository::read_all(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -400,7 +486,7 @@ std::vector<domain::account> account_repository::read_all(context ctx) {
 }
 
 std::vector<domain::account>
-account_repository::read_latest_by_username(context ctx, const std::string& username) {
+account_repository::read_latest_by_username(const context& ctx, const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static constexpr auto max = db_timestamp::max();
@@ -418,7 +504,43 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
         "Reading latest account by username");
 }
 
-std::vector<domain::account> account_repository::read_latest_by_email(context ctx,
+std::vector<domain::account>
+account_repository::read_latest_by_username(const context& ctx,
+                                            const std::vector<std::string>& usernames) {
+    if (usernames.empty())
+        return {};
+    constexpr std::size_t chunk_size = 1000;
+    if (usernames.size() > chunk_size) {
+        std::vector<domain::account> all;
+        for (std::size_t begin = 0; begin < usernames.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, usernames.size());
+            auto part = read_latest_by_username(
+                ctx, std::vector<std::string>(usernames.begin() + begin, usernames.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts by username. Count: "
+                               << usernames.size();
+
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<account_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "username"_c.in(usernames) &&
+                                            "valid_to"_c == max) |
+                       query_builder::order_by("valid_from"_c.desc());
+
+    return query_builder::execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading latest accounts by username");
+}
+
+std::vector<domain::account> account_repository::read_latest_by_email(const context& ctx,
                                                                       const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 

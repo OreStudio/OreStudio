@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 664765D8-1D00-4F55-A750-D16BBC60BEDE
+:END:
+#+title: Story: Hotfix: Give the booking test its own refdata
+#+description: The booking test must write the equity vocabulary its scope names instead of publishing it.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:hotfix:synthetic:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the booking test run against its own reference data, instead of depending on
+a publish step that only provisioning should perform.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The test writes the equity underlyings its scope names. |
+| Waiting on    | The next integration run.              |
+| Next          | Confirm, then close.                   |
+| Last touched  | 2026-11-14                               |
+
+* Acceptance
+
+- =ores.synthetic.core.tests= passes.
+- The test calls no publish function.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7D10032-5F76-47FE-A6F1-1E531ACDA957][Scaffold story: Hotfix: Give the booking test its own refdata]] | DONE | 2026-11-14 | 2026-11-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6E9B2567-FB1A-4F6B-BC0A-8E7BD3412389][Implement Hotfix: Give the booking test its own refdata]] | DONE | 2026-11-14 | 2026-11-14 | The fixture writes its vocabulary. |
+
+* Decisions
+
+* Out of scope
+
+-

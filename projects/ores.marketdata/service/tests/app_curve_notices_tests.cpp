@@ -18,7 +18,7 @@
  *
  */
 #include "curve_publish_fixture.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
@@ -102,7 +102,7 @@ public:
              {"delete from ores_iam_account_parties_tbl where account_id = $1::uuid",
               "delete from ores_iam_accounts_tbl where id = $1::uuid"}) {
             try {
-                ores::database::repository::execute_parameterized_string_query(
+                ores::database::query_builder::execute_parameterized_string_query(
                     ctx_,
                     statement,
                     {boost::uuids::to_string(account_.id)},
@@ -168,8 +168,9 @@ void apply(const ores::database::context& publishing,
     const auto subject = f.subject();
     const auto verdict = verdict_on_publish(publishing, request_id, subject);
     REQUIRE(verdict.approved);
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     // The record's own write raises the notice, once, so this is the whole of
     // what a publish tells.
     published = record_publication(as_the_publisher, *verdict.record, as_the_publisher.actor());

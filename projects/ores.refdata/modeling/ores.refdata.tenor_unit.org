@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 01E76440-B9A5-4D0A-A32C-B0C4A7484B26
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.tenor_unit
 #+description: Codegen entity model for the refdata tenor_unit table: the period unit (day/week/month/year) for PERIOD tenors, or NONE for SPECIAL tenors.
 #+type: ores.codegen.entity
+#+web_classification: tenor-unit
+#+web_classification_topic: tenors
 #+component: refdata
 #+filetags: :model:entity:refdata:tenor:
 #+entity_singular: tenor_unit

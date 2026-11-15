@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
@@ -25,15 +25,14 @@
 #include <optional>
 #include <string>
 
-using ores::database::repository::execute_raw_multi_column_query;
 
 TEST_CASE("a raw query's setting holding a quote reaches the session unchanged",
           "[session_settings]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "o'brien");
-    const auto rows =
-        execute_raw_multi_column_query(ctx, "select ores_iam_current_actor_fn()", lg, "actor");
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
+        ctx, "select ores_iam_current_actor_fn()", lg, "actor");
     REQUIRE(rows.size() == 1);
     CHECK(rows[0][0] == std::optional<std::string>("o'brien"));
 }

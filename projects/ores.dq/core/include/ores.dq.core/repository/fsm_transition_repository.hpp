@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/messaging/fsm_transition_protocol.hpp"
 #include "ores.dq.core/export.hpp"
@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::fsm_transition& v);
-    void write(context ctx, const std::vector<domain::fsm_transition>& v);
+    void write(const context& ctx, const domain::fsm_transition& v);
+    void write(const context& ctx, const std::vector<domain::fsm_transition>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::fsm_transition& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of fsm transitions, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::fsm_transition>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,16 +100,26 @@ public:
      * @brief Reads latest fsm transitions, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::fsm_transition> read_latest(context ctx);
-    std::vector<domain::fsm_transition> read_latest(context ctx, const std::string& id);
-    std::vector<domain::fsm_transition> read_latest(context ctx,
+    std::vector<domain::fsm_transition> read_latest(const context& ctx);
+    std::vector<domain::fsm_transition> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::fsm_transition> read_latest(const context& ctx,
                                                     const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest fsm transitions filtered by name.
      */
-    std::vector<domain::fsm_transition> read_latest_by_name(context ctx, const std::string& name);
+    std::vector<domain::fsm_transition> read_latest_by_name(const context& ctx,
+                                                            const std::string& name);
+
+    /**
+     * @brief Reads latest fsm transitions filtered by a set of name values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::fsm_transition> read_latest_by_name(const context& ctx,
+                                                            const std::vector<std::string>& names);
 
     /**
      * @brief Reads the newest fsm transitions filtered by name, current or not.
@@ -119,13 +129,14 @@ public:
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::fsm_transition> read_any_by_name(context ctx, const std::string& name);
+    std::vector<domain::fsm_transition> read_any_by_name(const context& ctx,
+                                                         const std::string& name);
 
 
     /**
      * @brief Reads all fsm transitions, possibly filtered by primary key.
      */
-    std::vector<domain::fsm_transition> read_all(context ctx, const std::string& id);
+    std::vector<domain::fsm_transition> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single fsm transition as it stood at a specific
@@ -137,7 +148,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::fsm_transition>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Whether a list of fsm transitions can be ordered by a field.
@@ -156,7 +167,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::fsm_transition>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -169,14 +180,14 @@ public:
      * @return Total number of active fsm transitions
      */
     std::uint32_t get_total_transition_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::fsm_transitions_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a fsm transition by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -198,29 +209,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes fsm transitions by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::fsm_transition& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::fsm_transition apply_claim(context ctx,
-                                       const domain::fsm_transition& v,
-                                       const ores::utility::domain::precondition& claim);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 };
 
 }

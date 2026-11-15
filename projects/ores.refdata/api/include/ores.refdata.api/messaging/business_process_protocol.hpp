@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &business_process_key::code},
         utility::codec::field{"coding_scheme_code", &business_process_key::coding_scheme_code},
     };
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &business_process_write::code},
         utility::codec::field{"coding_scheme_code", &business_process_write::coding_scheme_code},
         utility::codec::field{"source", &business_process_write::source},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &business_process_change::write},
         utility::codec::field{"precondition", &business_process_change::precondition},
     };
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &business_process_removal::key},
         utility::codec::field{"precondition", &business_process_removal::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &business_process_lookup::key},
         utility::codec::field{"business_process", &business_process_lookup::business_process},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &business_process_event::event_id},
         utility::codec::field{"key", &business_process_event::key},
         utility::codec::field{"action", &business_process_event::action},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"business_process", &business_process_version_key::business_process},
         utility::codec::field{"version", &business_process_version_key::version},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_process_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &business_process_versions_filter::version},
         utility::codec::field{"from_version", &business_process_versions_filter::from_version},
         utility::codec::field{"to_version", &business_process_versions_filter::to_version},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_business_processes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_business_processes_request::offset},
         utility::codec::field{"limit", &list_business_processes_request::limit},
         utility::codec::field{"order", &list_business_processes_request::order},
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_business_processes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_business_processes_response::result},
         utility::codec::field{"processes", &list_business_processes_response::processes},
         utility::codec::field{"total", &list_business_processes_response::total},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_process_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_business_process_request::key},
     };
 }
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_process_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_business_process_response::result},
         utility::codec::field{"business_process", &get_business_process_response::business_process},
     };
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_business_processes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_business_processes_request::keys},
     };
 }
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_business_processes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_business_processes_response::result},
         utility::codec::field{"entries", &get_many_business_processes_response::entries},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_business_process_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_business_process_request::change},
         utility::codec::field{"intent", &put_business_process_request::intent},
     };
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_business_process_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_business_process_response::result},
         utility::codec::field{"business_process", &put_business_process_response::business_process},
     };
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_business_processes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_business_processes_request::changes},
         utility::codec::field{"intent", &put_many_business_processes_request::intent},
     };
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_business_processes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_business_processes_response::result},
         utility::codec::field{"processes", &put_many_business_processes_response::processes},
     };
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_business_process_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_business_process_request::removal},
         utility::codec::field{"intent", &delete_business_process_request::intent},
     };
@@ -652,7 +652,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_business_process_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_business_process_response::result},
     };
 }
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_processe
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_business_processes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_business_processes_request::removals},
         utility::codec::field{"intent", &delete_many_business_processes_request::intent},
     };
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<delete_many_business_processes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_business_processes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_business_processes_response::result},
     };
 }
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<delete_many_business_processes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_business_process_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_business_process_versions_request::key},
         utility::codec::field{"offset", &list_business_process_versions_request::offset},
         utility::codec::field{"limit", &list_business_process_versions_request::limit},
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<list_business_process_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_business_process_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_business_process_versions_response::result},
         utility::codec::field{"versions", &list_business_process_versions_response::versions},
         utility::codec::field{"total", &list_business_process_versions_response::total},
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<list_business_process_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_process_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_business_process_version_request::key},
     };
 }
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<list_business_process_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_business_process_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_business_process_version_response::result},
         utility::codec::field{"version", &get_business_process_version_response::version},
     };

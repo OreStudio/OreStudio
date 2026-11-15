@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_config>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &yield_curve_config::version},
         utility::codec::field{"tenant_id", &yield_curve_config::tenant_id},
         utility::codec::field{"id", &yield_curve_config::id},

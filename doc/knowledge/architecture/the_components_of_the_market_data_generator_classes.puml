@@ -1,0 +1,130 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+'
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+hide empty members
+
+package "ores.analytics.quant" {
+    class run_market {
+        + loop() : tick_scheduler&
+        + values() : market_board&
+        + noise() : const latent_market&
+        + add_block(anchor, name, segments, spot_var, spot_skew, neighbour)
+        + build(cell_width, start, fastest_gap)
+        + driver_count_of(series) : size_t
+        - drivers_ : map<series, vector<factor>>
+    }
+    class tick_scheduler {
+        + add(series_spec, stream_body) : size_t
+        + remove(id)
+        + run()
+        + step() : optional<fired_tick>
+        + pin(state) / configure(market_config)
+        + snapshot() / history() / trace()
+        - market_ : operational_clock
+        - series_ : map<id, series>
+        - heap_ : priority_queue
+        - heat_ / history_ / trace_
+    }
+    class latent_market {
+        + driver(series, from, to, out) : size_t
+        + factor_value(k, t) : double
+        - loadings_ : vector<factor_weight>
+    }
+    class market_board {
+        + member_of(kind, code) : member_id
+        + find(kind, code) : optional<member_id>
+        + publish_curve(id, spot_date, points, at)
+        + publish_spot(id, level, at)
+        + view(id) : market_member_view
+        - members_ : vector<member>
+        - count_ : atomic<size_t>
+    }
+    class curve_point <<struct>> {
+        date
+        discount_factor
+    }
+    class tick_context <<struct>> {
+        observed_at
+        elapsed_seconds
+        simulated_seconds
+        tail_tilt
+        drivers : span<const double>
+    }
+    class market_config <<struct>> {
+        wake_rate / calm_rate
+        active_multiplier / jump
+        decay / speed
+    }
+    interface i_run_clock
+    interface i_stochastic_process
+    interface i_yield_curve_process
+}
+
+package "ores.marketdata.domain" {
+    interface i_feed {
+        + kind()
+        + start() / tick(context) / stop()
+        + series_uris()
+    }
+}
+
+package "ores.synthetic.api" {
+    class fx_spot_feed
+    class ir_curve_feed
+    class fx_vol_surface_feed
+    class fx_vol_surface_emitter
+    class fx_vol_surface_generator
+    class feed_factory
+    class feed_build_context
+}
+
+package "ores.synthetic.service" {
+    class feed_kind_registry
+    class feed_config_handler
+    class folder_feed_control_handler
+}
+
+run_market *-- tick_scheduler : loop
+run_market *-- latent_market : noise
+run_market *-- market_board : values
+run_market ..> latent_market : installs the driver hook on its own loop
+tick_scheduler --> i_run_clock
+tick_scheduler ..> market_config
+tick_scheduler ..> tick_context : fires a body with one
+market_board *-- curve_point
+market_board ..> market_member_kind
+
+fx_spot_feed ..|> i_feed
+ir_curve_feed ..|> i_feed
+fx_vol_surface_feed ..|> i_feed
+fx_spot_feed --> i_stochastic_process
+ir_curve_feed --> i_yield_curve_process
+fx_vol_surface_feed *-- fx_vol_surface_emitter
+fx_vol_surface_emitter *-- fx_vol_surface_generator
+fx_spot_feed ..> run_market : values(), loop()
+ir_curve_feed ..> run_market : values(), loop()
+fx_vol_surface_feed ..> run_market : values(), loop()
+feed_factory ..> i_feed : builds
+feed_factory ..> feed_build_context
+feed_kind_registry ..> feed_factory
+feed_config_handler ..> feed_kind_registry
+folder_feed_control_handler ..> feed_kind_registry
+@enduml

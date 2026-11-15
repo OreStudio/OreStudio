@@ -60,10 +60,10 @@ struct adapter_supervisor::snapshot {
 };
 
 adapter_supervisor::adapter_supervisor(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::chrono::milliseconds heartbeat_timeout)
     : nats_(nats)
-    , ctx_(std::move(ctx))
+    , ctx_(ctx)
     , registry_(heartbeat_timeout)
     , snapshot_(std::make_shared<snapshot>()) {}
 
@@ -238,9 +238,9 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
     const auto found = result.by_adapter.find(adapter_id);
     if (found != result.by_adapter.end())
         request.ids = found->second;
-    const auto served_now = result.served_by_adapter.contains(adapter_id)
-                                ? result.served_by_adapter.at(adapter_id)
-                                : std::set<served_id>{};
+    const auto served_now = result.served_by_adapter.contains(adapter_id) ?
+                                result.served_by_adapter.at(adapter_id) :
+                                std::set<served_id>{};
     {
         std::lock_guard lock(mu_);
         request.image = image_of(served_[adapter_id], served_now);

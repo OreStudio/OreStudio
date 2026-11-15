@@ -143,7 +143,7 @@ constexpr std::chrono::seconds partition_token_lifetime{300};
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              ores::security::jwt::jwt_authenticator signer) {
 
     std::vector<ores::nats::service::subscription> subs;
@@ -465,6 +465,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             tsh->enter(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        enter_tenant_as_service_request::nats_subject, qg, [tsh](ores::nats::message msg) {
+            tsh->enter_as_service(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         leave_tenant_request::nats_subject, qg, [tsh](ores::nats::message msg) {
             tsh->leave(std::move(msg));
         }));
@@ -492,9 +496,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // the server for a consumer; as a core subscription it was discarded, with
     // no trace on either side, and the run expired twenty minutes later.
     ores::service::messaging::step_routes provisioning_routes;
-    provisioning_routes.on(ores::iam::workflow::provision_tenant_step_subject,
-                           [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); });
-    subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, provisioning_routes));
+    provisioning_routes.on(
+        ores::iam::workflow::provision_tenant_step_subject,
+        [tph](ores::nats::delivery delivery) { tph->provision_step(std::move(delivery)); });
+    // A provisioning run dispatches several steps at once, and one of them,
+    // generate_trades, waits on the synthetic service for many minutes. On one
+    // thread it would hold back the steps dispatched beside it until the
+    // workflow fails them as unclaimed. These steps mostly ask other services
+    // and hold a database connection only for their own short writes, so four
+    // of them run at once.
+    constexpr std::size_t provisioning_step_workers = 4;
+    subs.push_back(ores::service::messaging::serve_step_commands(
+        nats, qg, provisioning_routes, provisioning_step_workers));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
     // not a provisioning run can be reconciled.
@@ -680,7 +693,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         };
         ores::service::messaging::step_routes routes{"from_dq"};
         for (const auto subject : publish_subjects)
-            routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
+            routes.on(subject,
+                      [h](ores::nats::delivery delivery) { h->handle(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, routes));
     }
 

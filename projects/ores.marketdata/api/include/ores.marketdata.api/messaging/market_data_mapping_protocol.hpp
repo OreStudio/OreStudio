@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"oresmd_uri", &market_data_mapping_key::oresmd_uri},
     };
 }
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &market_data_mapping_write::id},
         utility::codec::field{"vendor_instrument_id",
                               &market_data_mapping_write::vendor_instrument_id},
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &market_data_mapping_change::write},
         utility::codec::field{"precondition", &market_data_mapping_change::precondition},
     };
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &market_data_mapping_removal::key},
         utility::codec::field{"precondition", &market_data_mapping_removal::precondition},
     };
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &market_data_mapping_lookup::key},
         utility::codec::field{"market_data_mapping",
                               &market_data_mapping_lookup::market_data_mapping},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mappings_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"vendor_instrument_id",
                               &market_data_mappings_filter::vendor_instrument_id},
         utility::codec::field{"oresmd_uri", &market_data_mappings_filter::oresmd_uri},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &market_data_mapping_event::event_id},
         utility::codec::field{"key", &market_data_mapping_event::key},
         utility::codec::field{"action", &market_data_mapping_event::action},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"market_data_mapping",
                               &market_data_mapping_version_key::market_data_mapping},
         utility::codec::field{"version", &market_data_mapping_version_key::version},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_mapping_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &market_data_mapping_versions_filter::version},
         utility::codec::field{"from_version", &market_data_mapping_versions_filter::from_version},
         utility::codec::field{"to_version", &market_data_mapping_versions_filter::to_version},
@@ -529,7 +529,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_market_data_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_market_data_mappings_request::offset},
         utility::codec::field{"limit", &list_market_data_mappings_request::limit},
         utility::codec::field{"order", &list_market_data_mappings_request::order},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_market_data_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_market_data_mappings_response::result},
         utility::codec::field{"mappings", &list_market_data_mappings_response::mappings},
         utility::codec::field{"total", &list_market_data_mappings_response::total},
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_data_mapping_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_market_data_mapping_request::key},
     };
 }
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_data_mapping_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_market_data_mapping_response::result},
         utility::codec::field{"market_data_mapping",
                               &get_market_data_mapping_response::market_data_mapping},
@@ -594,7 +594,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.market_data_ma
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_market_data_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_market_data_mappings_request::keys},
     };
 }
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<get_many_market_data_mappings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_market_data_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_market_data_mappings_response::result},
         utility::codec::field{"entries", &get_many_market_data_mappings_response::entries},
     };
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<get_many_market_data_mappings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_market_data_mapping_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_market_data_mapping_request::change},
         utility::codec::field{"intent", &put_market_data_mapping_request::intent},
     };
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<get_many_market_data_mappings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_market_data_mapping_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_market_data_mapping_response::result},
         utility::codec::field{"market_data_mapping",
                               &put_market_data_mapping_response::market_data_mapping},
@@ -656,7 +656,7 @@ wire_fields(std::type_identity<get_many_market_data_mappings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_market_data_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_market_data_mappings_request::changes},
         utility::codec::field{"intent", &put_many_market_data_mappings_request::intent},
     };
@@ -672,7 +672,7 @@ wire_fields(std::type_identity<put_many_market_data_mappings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_market_data_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_market_data_mappings_response::result},
         utility::codec::field{"mappings", &put_many_market_data_mappings_response::mappings},
     };
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<put_many_market_data_mappings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_market_data_mapping_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_market_data_mapping_request::removal},
         utility::codec::field{"intent", &delete_market_data_mapping_request::intent},
     };
@@ -702,7 +702,7 @@ wire_fields(std::type_identity<put_many_market_data_mappings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_market_data_mapping_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_market_data_mapping_response::result},
     };
 }
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<put_many_market_data_mappings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_market_data_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_market_data_mappings_request::removals},
         utility::codec::field{"intent", &delete_many_market_data_mappings_request::intent},
     };
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<delete_many_market_data_mappings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_market_data_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_market_data_mappings_response::result},
     };
 }
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<delete_many_market_data_mappings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_market_data_mapping_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_market_data_mapping_versions_request::key},
         utility::codec::field{"offset", &list_market_data_mapping_versions_request::offset},
         utility::codec::field{"limit", &list_market_data_mapping_versions_request::limit},
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<list_market_data_mapping_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_market_data_mapping_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_market_data_mapping_versions_response::result},
         utility::codec::field{"versions", &list_market_data_mapping_versions_response::versions},
         utility::codec::field{"total", &list_market_data_mapping_versions_response::total},
@@ -784,7 +784,7 @@ wire_fields(std::type_identity<list_market_data_mapping_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_market_data_mapping_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_market_data_mapping_version_request::key},
     };
 }
@@ -799,7 +799,7 @@ wire_fields(std::type_identity<get_market_data_mapping_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_market_data_mapping_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_market_data_mapping_version_response::result},
         utility::codec::field{"version", &get_market_data_mapping_version_response::version},
     };

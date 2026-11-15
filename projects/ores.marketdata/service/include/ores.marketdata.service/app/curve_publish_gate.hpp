@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_CURVE_PUBLISH_GATE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_CURVE_PUBLISH_GATE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.marketdata.api/domain/curve_publish.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -41,6 +41,21 @@ namespace ores::marketdata::service::app {
  * projects/ores.sql/populate/inbox/inbox_approval_kinds_populate.sql.
  */
 inline constexpr std::string_view curve_publish_kind_code = "marketdata.curve_publish";
+
+/**
+ * @brief The words a publish answers with, in the response's own status field.
+ *
+ * A person's publish and the sweep share them, so the two cannot report the same
+ * curve differently. Published moved the set. Raised waits on a decision and
+ * moved nothing. Deferred did not run because an input the curve declares is not
+ * there yet, and the next firing tries again. Refused is the gate's no. Failed is
+ * an error.
+ */
+inline constexpr std::string_view publish_status_published = "published";
+inline constexpr std::string_view publish_status_raised = "raised";
+inline constexpr std::string_view publish_status_deferred = "deferred";
+inline constexpr std::string_view publish_status_refused = "refused";
+inline constexpr std::string_view publish_status_failed = "failed";
 
 /**
  * @brief What a publish call asks to publish, read from the configuration itself.

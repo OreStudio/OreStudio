@@ -77,13 +77,23 @@ export const reportRunRowViewSchema = z.object({
 export type ReportRunRowView = z.infer<typeof reportRunRowViewSchema>;
 
 /**
- * One problem a run recorded: how severe it is, what part of the run it is
- * about, the thing it names and what the engine said.
+ * One row a run recorded: how severe it is, what part of the run it is about,
+ * the thing it names, what the engine said and where the engine said it.
  *
- * `scope` is the part of the run the problem belongs to: a trade, a curve, an
- * analytic, the report or its configuration. `about` is the one thing the
- * problem names, as a person reads it: the curve a curve failure is about, the
- * trade a trade failure is about, empty when the problem names nothing.
+ * `severity` is `error`, `warning` or `info`. An info row is a notice the engine
+ * wrote: the run keeps every line it is given, so what the engine was handed is
+ * on the run rather than only in a log file, and the engine's five levels become
+ * these three.
+ *
+ * `scope` is the part of the run the row belongs to: a trade, a curve, an
+ * analytic, the report, its configuration or the engine itself. `about` is the
+ * one thing the row names, as a person reads it: the curve a curve failure is
+ * about, the trade a trade failure is about, empty when it names nothing.
+ * `location` is the place inside the engine that logged the line, such as
+ * `OREAnalytics/orea/app/parameters.cpp:144`, null when the row reached no engine
+ * line. `filename` is the log the line came from — `log.txt`, the engine's own
+ * log; `log_structured.json`; `engine.log`, the stream it printed; or the run's
+ * package — null when the row is the platform's own and came from no log.
  */
 export const reportRunErrorViewSchema = z.object({
     id: z.string(),
@@ -95,6 +105,8 @@ export const reportRunErrorViewSchema = z.object({
     subject_id: z.string().nullable(),
     cause: z.string().nullable(),
     time: z.string(),
+    location: z.string().nullable(),
+    filename: z.string().nullable(),
 });
 export type ReportRunErrorView = z.infer<typeof reportRunErrorViewSchema>;
 

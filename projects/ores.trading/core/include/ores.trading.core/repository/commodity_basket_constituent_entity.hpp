@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -57,6 +58,7 @@ struct commodity_basket_constituent_entity {
     boost::uuids::uuid trade_activity_id;
     std::string underlying_code;
     std::optional<double> weight;
+    std::optional<ores::utility::decimal::decimal> initial_price;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -77,6 +79,7 @@ struct commodity_basket_constituent_entity {
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
                query_builder::bind("underlying_code", &e::underlying_code) |
                query_builder::bind("weight", &e::weight) |
+               query_builder::bind("initial_price", &e::initial_price) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

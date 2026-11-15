@@ -183,7 +183,7 @@ struct get_blotter_page_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<blotter_rail_node>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"dimension", &blotter_rail_node::dimension},
         ::ores::utility::codec::field{"node_id", &blotter_rail_node::node_id},
         ::ores::utility::codec::field{"count", &blotter_rail_node::count},
@@ -199,7 +199,7 @@ struct get_blotter_page_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_blotter_rail_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"filter", &get_blotter_rail_request::filter},
     };
 }
@@ -213,7 +213,7 @@ struct get_blotter_page_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_blotter_rail_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_blotter_rail_response::result},
         ::ores::utility::codec::field{"nodes", &get_blotter_rail_response::nodes},
     };
@@ -228,7 +228,7 @@ struct get_blotter_page_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_blotter_page_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"filter", &get_blotter_page_request::filter},
         ::ores::utility::codec::field{"order", &get_blotter_page_request::order},
         ::ores::utility::codec::field{"limit", &get_blotter_page_request::limit},
@@ -245,7 +245,7 @@ struct get_blotter_page_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_blotter_page_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_blotter_page_response::result},
         ::ores::utility::codec::field{"rows", &get_blotter_page_response::rows},
         ::ores::utility::codec::field{"next", &get_blotter_page_response::next},

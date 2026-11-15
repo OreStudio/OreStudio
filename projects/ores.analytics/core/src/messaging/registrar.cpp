@@ -66,7 +66,7 @@ void append(std::vector<T>& dst, std::vector<T>&& src) {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
@@ -95,7 +95,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         };
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)
-            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+            routes.on(subject,
+                      [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(
             ores::service::messaging::serve_step_commands(nats, "ores.analytics.service", routes));
     }

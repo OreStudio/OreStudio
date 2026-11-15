@@ -44,11 +44,10 @@ static constexpr std::string_view swaption_volatility_smile_queue_group = "ores.
 
 std::vector<ores::nats::service::subscription> register_swaption_volatility_smile_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<swaption_volatility_smile_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<swaption_volatility_smile_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_swaption_volatility_smiles_request::nats_subject,
         swaption_volatility_smile_queue_group,

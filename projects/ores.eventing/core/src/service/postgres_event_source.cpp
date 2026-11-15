@@ -26,9 +26,9 @@ namespace ores::eventing::service {
 
 using namespace ores::logging;
 
-postgres_event_source::postgres_event_source(database::context ctx, event_bus& bus)
+postgres_event_source::postgres_event_source(const database::context& ctx, event_bus& bus)
     : bus_(bus)
-    , listener_(std::move(ctx), [this](const std::string& channel, const std::string& payload) {
+    , listener_(ctx, [this](const std::string& channel, const std::string& payload) {
         // Every channel carries the same payload: the trigger's canonical
         // notification. The channel's mapping turns it into the typed event
         // its traits name, and the notification is also published as an

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 7A9AA495-17EA-5FAB-949A-ACB083C8026A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_contributors commands from the shell?
+#+description: Every command the fx_vol_contributors submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_contributors:
+
+This file documents the fx_vol_contributors resource at the shell, one section per command. Every command is a subcommand of =fx_vol_contributors=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BE0BCF18-1A30-5C17-BDFA-D6B4CEF2845F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.list=.
+
+#+name: fx_vol_contributors-list
+#+begin_src ores-shell :tangle fx_vol_contributors-list.ores :exports none
+fx_vol_contributors list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6CEF9768-4F0E-5702-BD18-8A92C3B41E93
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.get=.
+
+#+name: fx_vol_contributors-get
+#+begin_src ores-shell :tangle fx_vol_contributors-get.ores :exports none
+fx_vol_contributors get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0958DD44-B845-5415-B35F-D9CB0A21E866
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.get_many=.
+
+#+name: fx_vol_contributors-get-many
+#+begin_src ores-shell :tangle fx_vol_contributors-get-many.ores :exports none
+fx_vol_contributors get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E0E4B51A-5228-5A3D-8DCC-F6889BA259ED
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors add <provider_code> <noise> <wing_widening> <expiry_widening> <quote_step> <missing_probability> <stale_probability> <outlier_probability> <outlier_size> <bias> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.put=.
+
+#+name: fx_vol_contributors-add
+#+begin_src ores-shell :tangle fx_vol_contributors-add.ores :exports none
+fx_vol_contributors add __none__ 0 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 79A0F3B9-4E26-523A-81FC-7F3C4864CF5C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors set <id> <provider_code> <noise> <wing_widening> <expiry_widening> <quote_step> <missing_probability> <stale_probability> <outlier_probability> <outlier_size> <bias> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.put=.
+
+#+name: fx_vol_contributors-set
+#+begin_src ores-shell :tangle fx_vol_contributors-set.ores :exports none
+fx_vol_contributors set 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0D4442CC-6BE2-598C-9989-D0D22B16704D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors put-many --count <n> <id> <provider_code> <noise> <wing_widening> <expiry_widening> <quote_step> <missing_probability> <stale_probability> <outlier_probability> <outlier_size> <bias> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.put_many=.
+
+#+name: fx_vol_contributors-put-many
+#+begin_src ores-shell :tangle fx_vol_contributors-put-many.ores :exports none
+fx_vol_contributors put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 9C9B8D14-D257-57DD-8C45-5236B2BC4C14
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.delete=.
+
+#+name: fx_vol_contributors-delete
+#+begin_src ores-shell :tangle fx_vol_contributors-delete.ores :exports none
+fx_vol_contributors delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D315005B-E020-5F1D-891F-4843732A80D0
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors.delete_many=.
+
+#+name: fx_vol_contributors-delete-many
+#+begin_src ores-shell :tangle fx_vol_contributors-delete-many.ores :exports none
+fx_vol_contributors delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4528EEB8-C7ED-5B0A-8153-560DFE1D21CF
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors_versions.list=.
+
+#+name: fx_vol_contributors-versions
+#+begin_src ores-shell :tangle fx_vol_contributors-versions.ores :exports none
+fx_vol_contributors versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F18AC931-11FC-57AE-B04A-12BD01A79C43
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_contributors version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_contributors_versions.get=.
+
+#+name: fx_vol_contributors-version
+#+begin_src ores-shell :tangle fx_vol_contributors-version.ores :exports none
+fx_vol_contributors version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

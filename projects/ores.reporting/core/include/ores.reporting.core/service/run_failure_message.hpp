@@ -27,17 +27,24 @@
 namespace ores::reporting::service {
 
 /**
- * @brief How many problems of each severity a run holds.
+ * @brief How many rows of each severity a run holds.
  *
  * The count is of what a reader finds in the run's Errors, which is not the
- * count of the rows the node marshalled: a line the run keeps nothing for is
- * not a problem, and the same failure stated twice is one row.
+ * count of the rows the node marshalled: the same failure stated twice is one
+ * row.
+ *
+ * An info row is counted apart from a problem. The run keeps the engine's
+ * notices so that the account of what the engine was handed is on the run, but a
+ * notice says no more than what the engine was given, and a summary that called
+ * forty of them warnings would tell a reader the run went worse than it did.
  */
 struct run_problems {
     std::size_t errors = 0;
     std::size_t warnings = 0;
+    std::size_t infos = 0;
 
-    /// Whether the run holds no problem at all.
+    /// Whether the run holds no problem at all, which the notices do not make
+    /// untrue.
     [[nodiscard]] bool empty() const {
         return errors == 0 && warnings == 0;
     }

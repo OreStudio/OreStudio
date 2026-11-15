@@ -461,7 +461,7 @@ the subject the request authorises and whether it has been applied are one row.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::curve_publish>
-read_latest_by_request(context ctx, const std::string& request_id);
+read_latest_by_request(const context& ctx, const std::string& request_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -471,7 +471,7 @@ read_latest_by_request(context ctx, const std::string& request_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::curve_publish>
-curve_publish_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+curve_publish_repository::read_latest_by_request(const context& ctx, const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -501,7 +501,7 @@ readers serve. Empty when the series has never been published.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::curve_publish>
-read_latest_published_for_series(context ctx, const boost::uuids::uuid& series_id);
+read_latest_published_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -514,7 +514,7 @@ read_latest_published_for_series(context ctx, const boost::uuids::uuid& series_i
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::curve_publish>
 curve_publish_repository::read_latest_published_for_series(
-    context ctx, const boost::uuids::uuid& series_id) {
+    const context& ctx, const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the published set of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -556,13 +556,13 @@ needs the set in force then, which is not always the newest.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::curve_publish>
-read_applied_for_series(context ctx, const boost::uuids::uuid& series_id);
+read_applied_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::curve_publish>
 curve_publish_repository::read_applied_for_series(
-    context ctx, const boost::uuids::uuid& series_id) {
+    const context& ctx, const boost::uuids::uuid& series_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
@@ -592,7 +592,7 @@ never ended, and the apply ends them all.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::curve_publish>
-read_live_for_series(context ctx, const boost::uuids::uuid& series_id);
+read_live_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -604,7 +604,7 @@ read_live_for_series(context ctx, const boost::uuids::uuid& series_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::curve_publish>
-curve_publish_repository::read_live_for_series(context ctx,
+curve_publish_repository::read_live_for_series(const context& ctx,
                                                const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();

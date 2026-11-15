@@ -360,7 +360,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &data_domain_key::name},
     };
 }
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &data_domain_write::name},
         utility::codec::field{"description", &data_domain_write::description},
     };
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &data_domain_change::write},
         utility::codec::field{"precondition", &data_domain_change::precondition},
     };
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &data_domain_removal::key},
         utility::codec::field{"precondition", &data_domain_removal::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &data_domain_lookup::key},
         utility::codec::field{"data_domain", &data_domain_lookup::data_domain},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domains_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name_one_of", &data_domains_filter::name_one_of},
     };
 }
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &data_domain_event::event_id},
         utility::codec::field{"key", &data_domain_event::key},
         utility::codec::field{"action", &data_domain_event::action},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"data_domain", &data_domain_version_key::data_domain},
         utility::codec::field{"version", &data_domain_version_key::version},
     };
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<data_domain_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &data_domain_versions_filter::version},
         utility::codec::field{"from_version", &data_domain_versions_filter::from_version},
         utility::codec::field{"to_version", &data_domain_versions_filter::to_version},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_data_domains_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_data_domains_request::offset},
         utility::codec::field{"limit", &list_data_domains_request::limit},
         utility::codec::field{"order", &list_data_domains_request::order},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_data_domains_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_data_domains_response::result},
         utility::codec::field{"domains", &list_data_domains_response::domains},
         utility::codec::field{"total", &list_data_domains_response::total},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_data_domain_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_data_domain_request::key},
     };
 }
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_data_domain_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_data_domain_response::result},
         utility::codec::field{"data_domain", &get_data_domain_response::data_domain},
     };
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_data_domains_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_data_domains_request::keys},
     };
 }
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_data_domains_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_data_domains_response::result},
         utility::codec::field{"entries", &get_many_data_domains_response::entries},
     };
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_data_domain_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_data_domain_request::change},
         utility::codec::field{"intent", &put_data_domain_request::intent},
     };
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_data_domain_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_data_domain_response::result},
         utility::codec::field{"data_domain", &put_data_domain_response::data_domain},
     };
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_data_domains_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_data_domains_request::changes},
         utility::codec::field{"intent", &put_many_data_domains_request::intent},
     };
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_data_domains_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_data_domains_response::result},
         utility::codec::field{"domains", &put_many_data_domains_response::domains},
     };
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_data_domain_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_data_domain_request::removal},
         utility::codec::field{"intent", &delete_data_domain_request::intent},
     };
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_data_domain_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_data_domain_response::result},
     };
 }
@@ -679,7 +679,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_data_domains_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_data_domains_request::removals},
         utility::codec::field{"intent", &delete_many_data_domains_request::intent},
     };
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_data_domains_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_data_domains_response::result},
     };
 }
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_data_domain_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_data_domain_versions_request::key},
         utility::codec::field{"offset", &list_data_domain_versions_request::offset},
         utility::codec::field{"limit", &list_data_domain_versions_request::limit},
@@ -726,7 +726,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_data_domain_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_data_domain_versions_response::result},
         utility::codec::field{"versions", &list_data_domain_versions_response::versions},
         utility::codec::field{"total", &list_data_domain_versions_response::total},
@@ -742,7 +742,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_data_domain_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_data_domain_version_request::key},
     };
 }
@@ -756,7 +756,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.data_domains.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_data_domain_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_data_domain_version_response::result},
         utility::codec::field{"version", &get_data_domain_version_response::version},
     };

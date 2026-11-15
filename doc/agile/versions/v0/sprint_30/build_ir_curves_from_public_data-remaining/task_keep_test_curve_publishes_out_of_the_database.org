@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/keep-test-curve-publishes-out-of-the-database
+#+pr: 4676
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-08
-#+environment: prime_origin
+#+updated: 2026-11-13
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A reader of the development database sees only the curves the system published. 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -43,6 +43,32 @@ A reader of the development database sees only the curves the system published. 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The claim was measured before any code changed: curve publishes already
+carry the suite tenant, not Acme. The evidence:
+
+- =scoped_database_helper= provisions one tenant per test binary and stamps
+  every row with it; =curve_publish_gate= writes =record.tenant_id = ctx.tenant_id()=.
+- Acme's 320 publishes are =tenant_admin= rows at the provisioning as-of with
+  =system.curve_published=; no test user and no =system.test= reason.
+- =system.test= curve publishes anywhere: 0.
+
+The one shared-state breach the tests do cause is elsewhere: the two
+zero-approval fixtures write =every_request= into the *system* tenant's
+approval kind and restore it by appending a version. An aborted run leaves
+=every_request= open, which would approve every tenant's curve publish. So:
+
+1. Make each zero-approval fixture restore the seeded rule before it reads it:
+   a kind still carrying =system.test= with another code is put back to
+   =system_tenant= first.
+2. Prove it: run the marketdata service suite and read the counts before and
+   after. Acme's publishes and the =system.test= publishes must not move, and
+   the live rule must read =system_tenant=.
+3. Capture what is left: the suite tenant is only terminated, not purged, and
+   the pre-run sweep that would clean it is never called.
+
+Out of scope: a per-test rollback (a large refactor) and purging the suite
+tenant at teardown (captured).
 
 * Measurements
 
@@ -56,7 +82,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Acme curve publishes before / after the suite | 320 / 320 | =select count(*) ... join tenants where code='acme_corporation'=; raw rows in =evidence/test_curve_publish_counts_2026-11-13.log= | be5967b218 |
+| =system.test= curve publishes before / after | 0 / 0 | =select count(*) from ores_marketdata_curve_publishes_tbl where change_reason_code='system.test'= | be5967b218 |
+| Live curve-publish rule after the suite | =system_tenant= | =select auto_approval_code from ores_inbox_approval_kinds_tbl where code='marketdata.curve_publish' and valid_to=...= | be5967b218 |
+| Marketdata service suite | 251 cases, all passed | =./compass.sh test run -- -R 'ores\.marketdata\.service'= | be5967b218 |
 
 * Notes
 
@@ -75,12 +104,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4676][#4676]] | [marketdata] Heal the approval kind a test leaves open |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The heal builds the zero rule from the pre-heal snapshot | fixture | accepted | The shared fixture builds from the seeded row (b9032a5f). |
+| 2 | The two zero-approval fixtures duplicate the heal | tests | accepted | One fixture in =curve_publish_fixture.hpp=; both suites use it. |
+| 3 | The restore leaves =change_reason_code = system.test= on the live row | fixture | accepted | The restore writes the seeded =system.initial_load=, so no test row stays open. |
+| 4 | The heal branch is untested | tests | accepted | A test seeds a leaked rule and asserts the fixture restores the seed. |
+| 5 | The heal only runs when a fixture is next constructed, so the claim that an abort cannot leave the rule open overstates it | task doc | noted | The Result now says a later run repairs it, not that the window is zero. |
+| 6 | Acceptance 1 is unmet: terminated suite tenants keep publishes | task doc | declined | The acceptance says a *provisioned* tenant; Acme gained none. The terminated suite tenants are the capture's subject. |
+| 7 | Acceptance 2 needs a full ctest run | task doc | noted | The marketdata suite was run; the full run is stated as not done in the Result. |
+| 8 | Filing the ores.http task here is scope creep | task doc | declined | The owner asked for it in the session that produced this branch; the PR body says so. |
+| 9 | The capture's description is one long sentence | capture | accepted | Shortened. |
 
 * Result
+
+Met, with the claim corrected. The integration tests do not publish into a
+provisioned tenant: the suite helper gives each test binary its own tenant, and
+curve publishes take their tenant from the context. Acme's publishes are the
+provisioning's own, by =tenant_admin=; a full marketdata suite run left the
+count at 320 and wrote no =system.test= publish.
+
+The real shared-state breach was the zero-approval approval-kind swap. Both
+fixtures now put the seeded =system_tenant= rule back before reading it, so a
+run that aborted mid-test cannot leave =every_request= open and auto-approve
+every tenant's publishes. After the suite the live rule reads =system_tenant=.
+
+Captured, not done here: the suite tenant is terminated rather than purged, so
+its rows and the tenant row remain; the pre-run sweep that would clean them has
+no caller.
+
+Limitations:
+
+- The fixtures still append one version per run (restoring the seeded row), so
+  the kind's history grows with a row that carries the seed's reason.
+- The curve publishes that remain under terminated suite tenants are not
+  removed; the capture states the purge.
+- No manual QA scenario; the suite and the SQL counts are the evidence. The
+  acceptance's second clause asks for a full ctest run; only the marketdata
+  service suite was run.

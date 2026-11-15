@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -53,13 +55,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-subscription_interval_service::subscription_interval_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+subscription_interval_service::subscription_interval_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -78,6 +81,42 @@ subscription_interval_read_one(repository::subscription_interval_repository& rep
                                const ores::database::context& ctx,
                                const messaging::subscription_interval_key& key) {
     return repo.read_latest_by_provider_code(ctx, key.provider_code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::subscription_interval>>
+subscription_interval_read_many(repository::subscription_interval_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<messaging::subscription_interval_key>& keys) {
+    std::vector<std::vector<domain::subscription_interval>> found(keys.size());
+    std::vector<std::string> provider_code_keys;
+    provider_code_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        provider_code_keys.push_back(key.provider_code);
+    std::map<std::string, std::vector<domain::subscription_interval>> by_key;
+    for (auto& row : repo.read_latest_by_provider_code(ctx, provider_code_keys))
+        by_key[row.provider_code].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.provider_code);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -129,27 +168,31 @@ subscription_interval_service::list_subscription_intervals(
                    {.entity = "subscription intervals", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->party_id_one_of &&
-        request.filter->party_id_one_of->size() > 1000) {
+        request.filter->party_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->provider_code_one_of &&
-        request.filter->provider_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "provider_code_one_of", .limit = "1000"});
+        request.filter->provider_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "provider_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->feed_id_one_of &&
-        request.filter->feed_id_one_of->size() > 1000) {
+        request.filter->feed_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "feed_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "feed_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -186,16 +229,23 @@ messaging::get_many_subscription_intervals_response
 subscription_interval_service::get_many_subscription_intervals(
     const messaging::get_many_subscription_intervals_request& request) {
     messaging::get_many_subscription_intervals_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = subscription_interval_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::subscription_interval_lookup entry;
-        entry.key = k;
-        auto found = subscription_interval_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.subscription_interval = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.subscription_interval = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -206,7 +256,11 @@ subscription_interval_service::put_subscription_interval(
     const messaging::put_subscription_interval_request& request) {
     messaging::put_subscription_interval_response response;
     domain::subscription_interval value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = subscription_interval_read_one(
+        repo_,
+        ctx_,
+        subscription_interval_key_from(subscription_interval_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -221,11 +275,19 @@ messaging::put_many_subscription_intervals_response
 subscription_interval_service::put_many_subscription_intervals(
     const messaging::put_many_subscription_intervals_request& request) {
     messaging::put_many_subscription_intervals_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::subscription_interval_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            subscription_interval_key_from(subscription_interval_to_domain(change.write)));
+    const auto current = subscription_interval_read_many(repo_, ctx_, keys);
     std::vector<domain::subscription_interval> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::subscription_interval value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -243,11 +305,12 @@ subscription_interval_service::put_many_subscription_intervals(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.subscription_intervals.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            subscription_interval_read_one(repo_, ctx_, subscription_interval_key_from(value));
-        response.subscription_intervals.push_back(written.empty() ? value :
-                                                                    std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = subscription_interval_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.subscription_intervals.push_back(
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -325,10 +388,13 @@ subscription_interval_service::delete_many_subscription_intervals(
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::subscription_interval_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::subscription_interval> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = subscription_interval_read_one(repo_, ctx_, removal.key);
+    for (auto& named : subscription_interval_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -397,16 +463,15 @@ subscription_interval_service::get_subscription_interval_version(
     return response;
 }
 
-ores::utility::domain::result
-subscription_interval_service::prepare_change(const messaging::subscription_interval_change& change,
-                                              const ores::utility::domain::change_intent& intent,
-                                              domain::subscription_interval& out) {
+ores::utility::domain::result subscription_interval_service::prepare_change(
+    const messaging::subscription_interval_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::subscription_interval>& current,
+    domain::subscription_interval& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = subscription_interval_to_domain(change.write);
-    const auto current =
-        subscription_interval_read_one(repo_, ctx_, subscription_interval_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

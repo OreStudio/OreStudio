@@ -39,7 +39,6 @@
 \ir ./marketdata_official_catalogue_populate.sql
 \ir ./marketdata_overnight_rates_catalogue_populate.sql
 \ir ./marketdata_derived_catalogue_populate.sql
-\ir ./marketdata_market_series_fx_vol_surface_populate.sql
 
 \echo '--- FX Driver Rates Seed Data: 2016 Vintages ---'
 \ir ./marketdata_fx_driver_rates_populate.sql
@@ -53,6 +52,7 @@
 \echo ''
 \echo '--- FOMC Segment Market Series Seed Data ---'
 \ir ./marketdata_market_series_ir_curve_populate.sql
+\ir ./marketdata_market_series_ibor_curves_populate.sql
 \ir ./marketdata_market_series_overnight_curves_populate.sql
 
 \echo ''

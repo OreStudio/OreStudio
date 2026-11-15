@@ -42,7 +42,8 @@ struct apply_step_command {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<apply_step_command>) {
-    return std::tuple{utility::codec::field{"request_id", &apply_step_command::request_id}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"request_id", &apply_step_command::request_id}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<apply_step_command>(),

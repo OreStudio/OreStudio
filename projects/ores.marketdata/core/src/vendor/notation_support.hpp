@@ -141,6 +141,77 @@ inline std::expected<ir_curve_pillar, notation_error> ir_pillar_of(const quote_d
 }
 
 /**
+ * @brief Reads the pillar spelling that a provider separates with dots and ends with an equals
+ * sign: the currency and the index family together, then the instrument, the start tenor and the
+ * end tenor. The family is read back in the catalogue's lower case.
+ *
+ * @return Whether @p text is one such pillar; @p pillar holds it when it is.
+ */
+inline bool parse_dot_pillar(std::string_view text, ir_curve_pillar& pillar) {
+    std::string family;
+    const auto grammar = currency_code[assign_to(pillar.currency)] >>
+                         upper_index_family[assign_to(family)] >> x3::lit('.') >>
+                         instrument_code[assign_to(pillar.instrument_code)] >> x3::lit('.') >>
+                         start_tenor[assign_to(pillar.start_tenor)] >> x3::lit('.') >>
+                         period_tenor[assign_to(pillar.end_tenor)] >> x3::lit('=');
+    if (!parse_all(text, grammar))
+        return false;
+    pillar.index_family = lower_case(std::move(family));
+    return true;
+}
+
+/// The same pillar as a provider that writes it with dots and a final equals sign writes it.
+inline std::string write_dot_pillar(const ir_curve_pillar& p) {
+    return p.currency + upper_case(p.index_family) + "." + p.instrument_code + "." + p.start_tenor +
+           "." + p.end_tenor + "=";
+}
+
+/**
+ * @brief Reads the same pillar spelling with the tenor of the index itself run into the family
+ * word: the currency, the index family and its tenor, then the instrument and the two tenors.
+ *
+ * The family is the leading upper case letters and the index tenor begins with a digit, so the
+ * two read apart without a second separator: USDLIBOR3M.DEPO.SPOT.6M= is the USD LIBOR curve of
+ * three month tenor, and its pillar from SPOT to 6M.
+ *
+ * @return Whether @p text is one such pillar; @p pillar holds it when it is.
+ */
+inline bool parse_dot_pillar_with_tenor(std::string_view text, ir_curve_pillar& pillar) {
+    std::string family;
+    const auto grammar = currency_code[assign_to(pillar.currency)] >>
+                         upper_index_family[assign_to(family)] >>
+                         period_tenor[assign_to(pillar.index_tenor)] >> x3::lit('.') >>
+                         instrument_code[assign_to(pillar.instrument_code)] >> x3::lit('.') >>
+                         start_tenor[assign_to(pillar.start_tenor)] >> x3::lit('.') >>
+                         period_tenor[assign_to(pillar.end_tenor)] >> x3::lit('=');
+    if (!parse_all(text, grammar))
+        return false;
+    pillar.index_family = lower_case(std::move(family));
+    return true;
+}
+
+/// The same pillar as a provider that runs the index tenor into the family word writes it.
+inline std::string write_dot_pillar_with_tenor(const ir_curve_pillar& p) {
+    return p.currency + upper_case(p.index_family) + p.index_tenor + "." + p.instrument_code + "." +
+           p.start_tenor + "." + p.end_tenor + "=";
+}
+
+/**
+ * @brief Refuses a pillar whose index tenor the provider's id does not name.
+ *
+ * A notation that cannot write the tenor would write an id that reads back without it, and two
+ * curves of one currency and family would then share an id. It refuses instead.
+ */
+inline std::expected<void, notation_error> check_no_index_tenor(const ir_curve_pillar& p,
+                                                                std::string_view provider) {
+    if (!p.index_tenor.empty())
+        return fail(notation_error::kind::not_representable,
+                    "The id of " + std::string(provider) +
+                        " does not name the tenor of the curve's index: '" + p.index_tenor + "'.");
+    return {};
+}
+
+/**
  * @brief A pillar that can be written: a currency, an index family, an instrument code and two
  * tenors, the first of which the pillar ends after.
  */
@@ -162,6 +233,9 @@ inline std::expected<void, notation_error> check_pillar(const ir_curve_pillar& p
     if (p.start_tenor == p.end_tenor)
         return fail(notation_error::kind::not_representable,
                     "A pillar ends after it starts: '" + text + "'.");
+    if (!p.index_tenor.empty() && !parse_all(p.index_tenor, period_tenor))
+        return fail(notation_error::kind::not_representable,
+                    "An index tenor is a period such as 3M: '" + p.index_tenor + "'.");
     return {};
 }
 

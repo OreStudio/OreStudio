@@ -20,6 +20,7 @@
 #include "../src/fx_forward_ladder_plan.hpp"
 #include "ores.analytics.quant/service/fx_forward_calculator.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
+#include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
@@ -32,7 +33,9 @@
 
 using namespace ores::marketdata::service;
 using namespace std::chrono;
+using ores::analytics::quant::domain::business_day_calendar_set;
 using ores::analytics::quant::domain::business_day_convention;
+using ores::analytics::quant::service::fx_expiry_date_rule;
 using ores::marketdata::domain::curve_publish;
 using ores::refdata::domain::calendar_date;
 using Catch::Matchers::ContainsSubstring;
@@ -66,14 +69,19 @@ std::vector<calendar_date> calendar_closed_on(std::vector<year_month_day> days) 
 
 const auto open_calendar = [] {
     std::vector<std::vector<calendar_date>> none{{}};
-    return joint_calendar(none);
+    return ores::refdata::service::joint_calendar(none);
 }();
 
-fx_ladder_dates
-ladder(int spot_days,
-       const ores::analytics::quant::domain::business_day_calendar_set& c = open_calendar) {
+/// The rule a pair settles under, from the calendars a case states.
+fx_expiry_date_rule rule_of(business_day_convention roll,
+                            bool end_of_month,
+                            const business_day_calendar_set& calendars) {
+    return fx_expiry_date_rule(roll, end_of_month, 0, calendars);
+}
+
+fx_ladder_dates ladder(int spot_days, const business_day_calendar_set& c = open_calendar) {
     return build_ladder_dates(
-        monday, spot_days, business_day_convention::modified_following, false, c);
+        monday, spot_days, rule_of(business_day_convention::modified_following, false, c));
 }
 
 const auto& row(const fx_ladder_dates& l, const std::string& id) {
@@ -180,27 +188,25 @@ TEST_CASE("a holiday in either calendar moves the spot date", "[fx_forward_ladde
     // Tuesday closed in one calendar, Wednesday in the other.
     const std::vector calendars{calendar_closed_on({2026y / November / 10d}),
                                 calendar_closed_on({2026y / November / 11d})};
-    const auto joint = joint_calendar(calendars);
+    const auto joint = ores::refdata::service::joint_calendar(calendars);
     CHECK(ladder(2, joint).spot_date == 2026y / November / 13d);
 }
 
 TEST_CASE("a value date on a weekend rolls under the convention", "[fx_forward_ladder]") {
     // Spot Friday 2026-11-13 plus one month is Sunday 13 December.
-    const auto l = build_ladder_dates(2026y / November / 11d,
-                                      2,
-                                      business_day_convention::modified_following,
-                                      false,
-                                      open_calendar);
+    const auto l = build_ladder_dates(
+        2026y / November / 11d,
+        2,
+        rule_of(business_day_convention::modified_following, false, open_calendar));
     CHECK(l.spot_date == 2026y / November / 13d);
     CHECK(row(l, "1M").value_date == 2026y / December / 14d);
 }
 
 TEST_CASE("an as-of on a weekend counts from the next business day", "[fx_forward_ladder]") {
-    const auto l = build_ladder_dates(2026y / November / 7d,
-                                      2,
-                                      business_day_convention::modified_following,
-                                      false,
-                                      open_calendar);
+    const auto l = build_ladder_dates(
+        2026y / November / 7d,
+        2,
+        rule_of(business_day_convention::modified_following, false, open_calendar));
     CHECK(row(l, "ON").near_date == monday);
     CHECK(l.spot_date == 2026y / November / 11d);
 }
@@ -225,9 +231,9 @@ TEST_CASE("a cross forward equals the ratio of its USD-leg forwards on the same 
           "[fx_forward_ladder]") {
     namespace quant = ores::analytics::quant::service;
     const auto flat = [](double rate) {
-        const auto far = year_month_day{sys_days(monday) + days{4000}};
+        const auto far_day = year_month_day{sys_days(monday) + days{4000}};
         return std::vector<quant::bootstrapped_point>{
-            {"", monday, 1.0}, {"LONG", far, std::exp(-rate * 4000 / 365.0)}};
+            {"", monday, 1.0}, {"LONG", far_day, std::exp(-rate * 4000 / 365.0)}};
     };
     const auto dates = ladder(2);
     const auto forwards = [&](double spot, double base_rate, double quote_rate) {
@@ -274,42 +280,94 @@ TEST_CASE("a cross's spot and value dates match QuantLib's", "[fx_forward_ladder
         // EUR/GBP on TARGET and UnitedKingdom.Settlement.
         {2026y / 11 / 24d,
          {2026y / 12 / 25d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d},
-         {2026y / 12 / 25d, 2026y / 12 / 28d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d,
-          2027y / 5 / 3d, 2027y / 5 / 31d, 2027y / 8 / 30d},
-         2026y / 11 / 26d, 2026y / 11 / 27d, 2026y / 12 / 3d, 2026y / 12 / 29d, 2027y / 2 / 26d,
+         {2026y / 12 / 25d,
+          2026y / 12 / 28d,
+          2027y / 1 / 1d,
+          2027y / 3 / 26d,
+          2027y / 3 / 29d,
+          2027y / 5 / 3d,
+          2027y / 5 / 31d,
+          2027y / 8 / 30d},
+         2026y / 11 / 26d,
+         2026y / 11 / 27d,
+         2026y / 12 / 3d,
+         2026y / 12 / 29d,
+         2027y / 2 / 26d,
          2027y / 11 / 26d},
         {2026y / 12 / 23d,
          {2026y / 12 / 25d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d},
-         {2026y / 12 / 25d, 2026y / 12 / 28d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d,
-          2027y / 5 / 3d, 2027y / 5 / 31d, 2027y / 8 / 30d, 2027y / 12 / 27d, 2027y / 12 / 28d,
+         {2026y / 12 / 25d,
+          2026y / 12 / 28d,
+          2027y / 1 / 1d,
+          2027y / 3 / 26d,
+          2027y / 3 / 29d,
+          2027y / 5 / 3d,
+          2027y / 5 / 31d,
+          2027y / 8 / 30d,
+          2027y / 12 / 27d,
+          2027y / 12 / 28d,
           2028y / 1 / 3d},
-         2026y / 12 / 29d, 2026y / 12 / 30d, 2027y / 1 / 5d, 2027y / 1 / 29d, 2027y / 3 / 30d,
+         2026y / 12 / 29d,
+         2026y / 12 / 30d,
+         2027y / 1 / 5d,
+         2027y / 1 / 29d,
+         2027y / 3 / 30d,
          2027y / 12 / 29d},
         // EUR/JPY on TARGET and Japan.
         {2026y / 12 / 29d,
          {2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d},
-         {2026y / 12 / 31d, 2027y / 1 / 1d, 2027y / 1 / 11d, 2027y / 2 / 11d, 2027y / 2 / 23d,
-          2027y / 3 / 22d, 2027y / 4 / 29d, 2027y / 5 / 3d, 2027y / 5 / 4d, 2027y / 5 / 5d,
-          2027y / 7 / 19d, 2027y / 8 / 11d, 2027y / 9 / 20d, 2027y / 9 / 23d, 2027y / 10 / 11d,
-          2027y / 11 / 3d, 2027y / 11 / 23d, 2027y / 12 / 31d, 2028y / 1 / 3d, 2028y / 1 / 10d},
-         2027y / 1 / 4d, 2027y / 1 / 5d, 2027y / 1 / 12d, 2027y / 2 / 4d, 2027y / 4 / 5d,
+         {2026y / 12 / 31d, 2027y / 1 / 1d,   2027y / 1 / 11d,  2027y / 2 / 11d, 2027y / 2 / 23d,
+          2027y / 3 / 22d,  2027y / 4 / 29d,  2027y / 5 / 3d,   2027y / 5 / 4d,  2027y / 5 / 5d,
+          2027y / 7 / 19d,  2027y / 8 / 11d,  2027y / 9 / 20d,  2027y / 9 / 23d, 2027y / 10 / 11d,
+          2027y / 11 / 3d,  2027y / 11 / 23d, 2027y / 12 / 31d, 2028y / 1 / 3d,  2028y / 1 / 10d},
+         2027y / 1 / 4d,
+         2027y / 1 / 5d,
+         2027y / 1 / 12d,
+         2027y / 2 / 4d,
+         2027y / 4 / 5d,
          2028y / 1 / 4d},
         // AUD/NZD on Australia and NewZealand.
         {2027y / 1 / 22d,
-         {2027y / 1 / 26d, 2027y / 3 / 26d, 2027y / 3 / 29d, 2027y / 6 / 14d, 2027y / 8 / 2d,
-          2027y / 10 / 4d, 2027y / 12 / 27d, 2027y / 12 / 28d, 2028y / 1 / 3d, 2028y / 1 / 26d},
-         {2027y / 1 / 25d, 2027y / 2 / 8d, 2027y / 3 / 26d, 2027y / 3 / 29d, 2027y / 4 / 26d,
-          2027y / 6 / 7d, 2027y / 6 / 25d, 2027y / 10 / 25d, 2027y / 12 / 27d, 2027y / 12 / 28d,
-          2028y / 1 / 3d, 2028y / 1 / 4d, 2028y / 1 / 24d, 2028y / 2 / 7d},
-         2027y / 1 / 28d, 2027y / 1 / 29d, 2027y / 2 / 4d, 2027y / 2 / 26d, 2027y / 4 / 28d,
+         {2027y / 1 / 26d,
+          2027y / 3 / 26d,
+          2027y / 3 / 29d,
+          2027y / 6 / 14d,
+          2027y / 8 / 2d,
+          2027y / 10 / 4d,
+          2027y / 12 / 27d,
+          2027y / 12 / 28d,
+          2028y / 1 / 3d,
+          2028y / 1 / 26d},
+         {2027y / 1 / 25d,
+          2027y / 2 / 8d,
+          2027y / 3 / 26d,
+          2027y / 3 / 29d,
+          2027y / 4 / 26d,
+          2027y / 6 / 7d,
+          2027y / 6 / 25d,
+          2027y / 10 / 25d,
+          2027y / 12 / 27d,
+          2027y / 12 / 28d,
+          2028y / 1 / 3d,
+          2028y / 1 / 4d,
+          2028y / 1 / 24d,
+          2028y / 2 / 7d},
+         2027y / 1 / 28d,
+         2027y / 1 / 29d,
+         2027y / 2 / 4d,
+         2027y / 2 / 26d,
+         2027y / 4 / 28d,
          2028y / 1 / 28d},
     };
     for (const auto& c : cases) {
         const std::vector calendars{calendar_closed_on(c.first_holidays),
                                     calendar_closed_on(c.second_holidays)};
-        const auto l = build_ladder_dates(
-            c.as_of, 2, business_day_convention::modified_following, false,
-            joint_calendar(calendars));
+        const auto l =
+            build_ladder_dates(c.as_of,
+                               2,
+                               rule_of(business_day_convention::modified_following,
+                                       false,
+                                       ores::refdata::service::joint_calendar(calendars)));
         INFO("as of " << static_cast<int>(c.as_of.year()) << "-"
                       << static_cast<unsigned>(c.as_of.month()) << "-"
                       << static_cast<unsigned>(c.as_of.day()));

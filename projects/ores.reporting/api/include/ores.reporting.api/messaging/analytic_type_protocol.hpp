@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &analytic_type_key::code},
     };
 }
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &analytic_type_write::code},
         utility::codec::field{"name", &analytic_type_write::name},
         utility::codec::field{"description", &analytic_type_write::description},
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &analytic_type_change::write},
         utility::codec::field{"precondition", &analytic_type_change::precondition},
     };
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &analytic_type_removal::key},
         utility::codec::field{"precondition", &analytic_type_removal::precondition},
     };
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &analytic_type_lookup::key},
         utility::codec::field{"analytic_type", &analytic_type_lookup::analytic_type},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &analytic_types_filter::code_one_of},
     };
 }
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &analytic_type_event::event_id},
         utility::codec::field{"key", &analytic_type_event::key},
         utility::codec::field{"action", &analytic_type_event::action},
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"analytic_type", &analytic_type_version_key::analytic_type},
         utility::codec::field{"version", &analytic_type_version_key::version},
     };
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<analytic_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &analytic_type_versions_filter::version},
         utility::codec::field{"from_version", &analytic_type_versions_filter::from_version},
         utility::codec::field{"to_version", &analytic_type_versions_filter::to_version},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_analytic_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_analytic_types_request::offset},
         utility::codec::field{"limit", &list_analytic_types_request::limit},
         utility::codec::field{"order", &list_analytic_types_request::order},
@@ -525,7 +525,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_analytic_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_analytic_types_response::result},
         utility::codec::field{"types", &list_analytic_types_response::types},
         utility::codec::field{"total", &list_analytic_types_response::total},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_analytic_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_analytic_type_request::key},
     };
 }
@@ -555,7 +555,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_analytic_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_analytic_type_response::result},
         utility::codec::field{"analytic_type", &get_analytic_type_response::analytic_type},
     };
@@ -570,7 +570,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_analytic_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_analytic_types_request::keys},
     };
 }
@@ -584,7 +584,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_analytic_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_analytic_types_response::result},
         utility::codec::field{"entries", &get_many_analytic_types_response::entries},
     };
@@ -599,7 +599,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_analytic_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_analytic_type_request::change},
         utility::codec::field{"intent", &put_analytic_type_request::intent},
     };
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_analytic_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_analytic_type_response::result},
         utility::codec::field{"analytic_type", &put_analytic_type_response::analytic_type},
     };
@@ -629,7 +629,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_analytic_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_analytic_types_request::changes},
         utility::codec::field{"intent", &put_many_analytic_types_request::intent},
     };
@@ -644,7 +644,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_analytic_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_analytic_types_response::result},
         utility::codec::field{"types", &put_many_analytic_types_response::types},
     };
@@ -659,7 +659,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_analytic_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_analytic_type_request::removal},
         utility::codec::field{"intent", &delete_analytic_type_request::intent},
     };
@@ -674,7 +674,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_analytic_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_analytic_type_response::result},
     };
 }
@@ -688,7 +688,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_analytic_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_analytic_types_request::removals},
         utility::codec::field{"intent", &delete_many_analytic_types_request::intent},
     };
@@ -703,7 +703,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_analytic_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_analytic_types_response::result},
     };
 }
@@ -717,7 +717,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_analytic_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_analytic_type_versions_request::key},
         utility::codec::field{"offset", &list_analytic_type_versions_request::offset},
         utility::codec::field{"limit", &list_analytic_type_versions_request::limit},
@@ -735,7 +735,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_analytic_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_analytic_type_versions_response::result},
         utility::codec::field{"versions", &list_analytic_type_versions_response::versions},
         utility::codec::field{"total", &list_analytic_type_versions_response::total},
@@ -751,7 +751,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_analytic_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_analytic_type_version_request::key},
     };
 }
@@ -765,7 +765,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.analytic_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_analytic_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_analytic_type_version_response::result},
         utility::codec::field{"version", &get_analytic_type_version_response::version},
     };

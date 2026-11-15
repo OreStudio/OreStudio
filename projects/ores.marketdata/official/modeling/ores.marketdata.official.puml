@@ -94,6 +94,36 @@ namespace ores #F2F2F2 {
                     +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
                 }
 
+                class rba_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
+                class bcb_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
+                class banxico_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
+                class bcch_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
+                class cnb_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
+                class mas_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
                 class published_text <<functions>> {
                     +text_of(double) : string
                     +date_of(string_view) : expected<year_month_day, string>
@@ -128,6 +158,18 @@ namespace ores #F2F2F2 {
                 norges_bank_fetcher ..> published_text
                 fetcher <|-- riksbank_fetcher
                 riksbank_fetcher ..> published_text
+                fetcher <|-- rba_fetcher
+                rba_fetcher ..> published_text
+                fetcher <|-- bcb_fetcher
+                bcb_fetcher ..> published_text
+                fetcher <|-- banxico_fetcher
+                banxico_fetcher ..> published_text
+                fetcher <|-- bcch_fetcher
+                bcch_fetcher ..> published_text
+                fetcher <|-- cnb_fetcher
+                cnb_fetcher ..> published_text
+                fetcher <|-- mas_fetcher
+                mas_fetcher ..> published_text
                 source_feed --> hosted_source
                 source_feed --> fetcher
                 fetcher ..> published_fixing

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/role_grant_request_repository.hpp"
@@ -98,7 +98,7 @@ std::string approved_request(ores::testing::scoped_database_helper& h,
 bool holds(ores::testing::scoped_database_helper& h,
            const ores::iam::domain::account& account,
            const boost::uuids::uuid& role_id) {
-    return !ores::database::repository::execute_parameterized_string_query(
+    return !ores::database::query_builder::execute_parameterized_string_query(
                 acting(h),
                 "select 1::text from ores_iam_account_roles_tbl where account_id = $1::uuid"
                 " and role_id = $2::uuid and valid_to = ores_utility_infinity_timestamp_fn()",
@@ -140,14 +140,14 @@ TEST_CASE("an_approved_role_request_is_granted_once", "[role_request]") {
     CHECK(applier.apply() >= 1);
     CHECK(holds(h, asker, role_id));
 
-    const auto before = ores::database::repository::execute_parameterized_string_query(
+    const auto before = ores::database::query_builder::execute_parameterized_string_query(
         acting(h),
         "select count(*)::text from ores_iam_account_roles_tbl where account_id = $1::uuid",
         {boost::uuids::to_string(asker.id)},
         lg(),
         "Counting role versions");
     applier.apply();
-    const auto after = ores::database::repository::execute_parameterized_string_query(
+    const auto after = ores::database::query_builder::execute_parameterized_string_query(
         acting(h),
         "select count(*)::text from ores_iam_account_roles_tbl where account_id = $1::uuid",
         {boost::uuids::to_string(asker.id)},
@@ -168,14 +168,14 @@ TEST_CASE("a_role_already_held_is_not_granted_again", "[role_request]") {
     REQUIRE(holds(h, asker, role_id));
 
     approved_request(h, asker, approver, role_id);
-    const auto before = ores::database::repository::execute_parameterized_string_query(
+    const auto before = ores::database::query_builder::execute_parameterized_string_query(
         acting(h),
         "select count(*)::text from ores_iam_account_roles_tbl where account_id = $1::uuid",
         {boost::uuids::to_string(asker.id)},
         lg(),
         "Counting role versions");
     applier.apply();
-    const auto after = ores::database::repository::execute_parameterized_string_query(
+    const auto after = ores::database::query_builder::execute_parameterized_string_query(
         acting(h),
         "select count(*)::text from ores_iam_account_roles_tbl where account_id = $1::uuid",
         {boost::uuids::to_string(asker.id)},

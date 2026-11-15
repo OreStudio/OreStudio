@@ -38,8 +38,11 @@ target_link_libraries(${lib_target_name}
         ores.http.api.lib
         ores.nats.lib
         ores.logging.lib
-    PRIVATE
         ores.synthetic.api.lib
+    PRIVATE
+        ores.http.nats.lib
+        ores.http.refdata.lib
+        ores.marketdata.api.lib
         ores.utility.lib)
 
 if(NOT WIN32)

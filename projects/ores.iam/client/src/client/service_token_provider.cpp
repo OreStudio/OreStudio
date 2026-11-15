@@ -19,6 +19,8 @@
  */
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_session_protocol.hpp"
+#include "ores.iam.client/client/tenant_session.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -26,6 +28,7 @@
 #include "ores.nats/service/client.hpp"
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -160,12 +163,87 @@ make_service_token_provider(ores::nats::service::client& nats,
     // round-trip and startup failures are surfaced immediately.
     state->authenticate();
 
-    return [state](bool force) -> std::string {
+    // Every handler thread of the service calls the provider, and the cached
+    // token is shared, so one caller at a time reads or renews it. A renewal
+    // holds the lock across its round-trip, so the callers waiting on it reuse
+    // its token rather than each signing in again.
+    auto guard = std::make_shared<std::mutex>();
+    return [state, guard](bool force) -> std::string {
+        const std::scoped_lock lock(*guard);
         if (force)
             state->authenticate();
         else
             state->refresh_if_needed();
         return state->jwt;
+    };
+}
+
+
+namespace {
+
+// The service enters the tenant through the address the protocol declares, so
+// a subject the model renames cannot leave this file sending to the old one.
+constexpr std::string_view enter_as_service_subject =
+    ores::iam::messaging::enter_tenant_as_service_request::nats_subject;
+
+/// The state a provider keeps between calls: the session and how to enter it.
+struct session_state {
+    ores::nats::service::client& nats;
+    ores::nats::service::nats_client::token_provider service_token;
+    std::string tenant_id;
+    tenant_session session;
+
+    void enter() {
+        BOOST_LOG_SEV(service_token_provider_lg(), info)
+            << "Entering tenant " << tenant_id << " as the service account";
+
+        const auto& codec = ores::nats::default_wire_codec();
+        const auto body = codec.encode(ores::iam::messaging::enter_tenant_as_service_request{
+            .tenant_id = tenant_id, .party_id = session.party_id()});
+        const std::unordered_map<std::string, std::string> headers{
+            {std::string(ores::nats::headers::authorization),
+             std::string(ores::nats::headers::bearer_prefix) + service_token(false)}};
+        const auto reply = nats.request_sync(enter_as_service_subject,
+                                             std::span<const std::byte>{body.data(), body.size()},
+                                             headers);
+
+        auto resp =
+            codec.decode<ores::iam::messaging::enter_tenant_as_service_response>(reply.data);
+        if (!resp || !resp->success || resp->token.empty()) {
+            const auto why = resp ? resp->message : "unreadable answer";
+            BOOST_LOG_SEV(service_token_provider_lg(), error)
+                << "Entering tenant " << tenant_id << " was refused: " << why;
+            throw std::runtime_error("Entering tenant " + tenant_id + " was refused: " + why);
+        }
+
+        session.entered(
+            std::move(resp->token), resp->access_lifetime_s, std::chrono::system_clock::now());
+        BOOST_LOG_SEV(service_token_provider_lg(), info) << "Entered tenant " << tenant_id;
+    }
+};
+
+} // namespace
+
+ores::nats::service::nats_client::token_provider
+make_tenant_session_provider(ores::nats::service::client& nats,
+                             ores::nats::service::nats_client::token_provider service_token,
+                             std::string tenant_id,
+                             std::chrono::seconds refresh_margin,
+                             std::string party_id) {
+    auto state = std::make_shared<session_state>(
+        session_state{.nats = nats,
+                      .service_token = std::move(service_token),
+                      .tenant_id = std::move(tenant_id),
+                      .session = tenant_session(std::move(party_id), refresh_margin)});
+
+    // Every handler thread of the service calls the provider, so one caller at
+    // a time reads or renews the session and the others reuse what it entered.
+    auto guard = std::make_shared<std::mutex>();
+    return [state, guard](bool force) -> std::string {
+        const std::scoped_lock lock(*guard);
+        if (force || state->session.needs_entry(std::chrono::system_clock::now()))
+            state->enter();
+        return state->session.token();
     };
 }
 

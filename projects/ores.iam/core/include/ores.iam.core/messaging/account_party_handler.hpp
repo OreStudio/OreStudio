@@ -120,11 +120,11 @@ using namespace ores::logging;
 class account_party_handler {
 public:
     account_party_handler(ores::nats::service::client& nats,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , ctx_(ctx)
+        , signer_(signer) {}
 
     void list_account_parties(ores::nats::message msg) {
         auto ctx_expected = begin_request(msg);

@@ -64,7 +64,11 @@ double hull_white_process::theta_at(std::size_t tick) const {
 }
 
 double hull_white_process::next() {
-    const double z = normal_(rng_);
+    return next_with_normal(normal_(rng_));
+}
+
+double hull_white_process::next_with_normal(double standard_normal) {
+    const double z = standard_normal;
     const double theta_i = theta_at(tick_);
     if (kappa_ > small_kappa_threshold) {
         const double decay = std::exp(-kappa_ * dt_);
@@ -113,6 +117,10 @@ double hull_white_process::discount_factor(std::size_t ticks_ahead) const {
         }
     }
     return std::exp(a - b * rate_);
+}
+
+bool hull_white_process::supports_external_normal() const {
+    return true;
 }
 
 }

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_MESSAGING_RISK_PARTICIPATION_AGREEMENT_INSTRUMENT_REGISTRAR_HPP
 #define ORES_TRADING_CORE_MESSAGING_RISK_PARTICIPATION_AGREEMENT_INSTRUMENT_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -37,7 +37,7 @@ namespace ores::trading::messaging {
 std::vector<ores::nats::service::subscription>
 register_risk_participation_agreement_instrument_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

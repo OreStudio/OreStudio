@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: E5DD1B22-B493-4299-BA4E-01032E812A87
+:END:
+#+title: Find an instrument prototype
+#+description: One input over every instrument the party can see, one row per instrument whatever its kind, and Enter opening the screen that fits the kind - ported from hedgr's explorer search.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:search:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:find-an-instrument/][the prototype]]          |
+| Journey       | [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Market data prototypes]]            |
+
+* Summary
+
+The market-data area has no single way in: a curve is found in one list, a
+surface in another, a pair in a third, and a rate ladder in none. This prototype
+argues that one input over every kind is the way in, that a row is an instrument
+and never a node, and that the row's kind decides where Enter goes.
+
+It is ported from hedgr's =prototypes/explorer_search.html=. The visual language
+is ORE Studio's, not hedgr's: the page carries the product's header, card and
+list, and the kind wears a badge instead of opening a separate combo. Nothing in
+it is a route in =ores.web=: it is a static page with mock data.
+
+* Detail
+
+** The question
+
+What does a person type when they do not yet know which screen they want? Hedgr
+answered "a currency", and the answer returns four kinds at once. That is the
+argument: the instrument is the unit of search, whatever shape it has; a rate
+curve is one row and never one row per rung; and the party is the server's
+scoping, not a facet the person sets.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name              | The structural argument |
+|---------+-------------------+-------------------------|
+| =a=     | Flat list         | One list, one badge per row, in the order the server states. A person scans one answer. |
+| =b=     | Grouped by kind   | The same rows under their kind, with a count. A person who knows the kind they want skips the rows they do not. |
+
+The variants disagree about scanning, not about data. Both use one response.
+
+** The states
+
+- =?state=results= — the default: five instruments for =aud=, one of each kind
+  plus the second pair found from its quote side.
+- =?state=none= — nothing matches, and the page says so in words. An empty
+  answer is not a failure, and no row stands in for a read that did not happen.
+- =?state=stale= — every instrument is stale. The verdict is the server's; the
+  page draws it and does not compute it.
+
+** What is fake
+
+Every value is mock. There is no read, no session and no party filter: the party
+is printed as a fact because the answer is scoped to it, not because the page
+applies it. The freshness badges are mock ages.
+
+** Where the code lives
+
+=doc/prototypes/market_data/find-an-instrument/index.html=, self-contained: one
+file with its styles and its script, the product's colour tokens copied into it.
+The site publishes it as written.
+
+** The verdict
+
+Take it as the market-data area's entry screen. The journey
+[[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] records the
+steps and the operation it needs: =marketdata.v1.ops.list_instruments=, which
+defines what an instrument is, what it is called and whether it is stale.
+
+** What changed from hedgr
+
+| Item | hedgr | Here | Why |
+|------+-------+------+-----|
+| Chrome | A terminal-style dialog with a title bar and a footer | A page with the product's header, list card and refresh | Prototypes read as the product; the screen is a route, not a dialog |
+| Party | A footer badge | A fact in the meta row | The answer is party-scoped, so the party belongs beside the answer |
+| Kinds | Colour badges and a legend | The same, in the product's tokens | Nothing argued differently |
+| Rows | Five instruments for =aud= | The same five, same facts | The argument is the row shape, and it held |
+
+* See also
+
+- [[file:index.org][Market data prototypes]] — the group page.
+- [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] — the journey this prototype answers.

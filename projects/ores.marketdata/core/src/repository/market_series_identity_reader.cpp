@@ -78,7 +78,7 @@ void check_field(const std::string& name, const datum::schema_row& row) {
 }
 
 std::vector<domain::market_series>
-market_series_identity_reader::read(ores::database::context ctx,
+market_series_identity_reader::read(const ores::database::context& ctx,
                                     const messaging::resolve_series_identity_request& identity) {
     using namespace ores::marketdata::datum;
     namespace query_builder = ores::database::query_builder;

@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &configuration_key::name},
     };
 }
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &configuration_write::id},
         utility::codec::field{"name", &configuration_write::name},
         utility::codec::field{"configuration_type_code",
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &configuration_change::write},
         utility::codec::field{"precondition", &configuration_change::precondition},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &configuration_removal::key},
         utility::codec::field{"precondition", &configuration_removal::precondition},
     };
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &configuration_lookup::key},
         utility::codec::field{"configuration", &configuration_lookup::configuration},
     };
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configurations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"configuration_type_code",
                               &configurations_filter::configuration_type_code},
         utility::codec::field{"id_one_of", &configurations_filter::id_one_of},
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &configuration_event::event_id},
         utility::codec::field{"key", &configuration_event::key},
         utility::codec::field{"action", &configuration_event::action},
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"configuration", &configuration_version_key::configuration},
         utility::codec::field{"version", &configuration_version_key::version},
     };
@@ -525,7 +525,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &configuration_versions_filter::version},
         utility::codec::field{"from_version", &configuration_versions_filter::from_version},
         utility::codec::field{"to_version", &configuration_versions_filter::to_version},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_configurations_request::offset},
         utility::codec::field{"limit", &list_configurations_request::limit},
         utility::codec::field{"order", &list_configurations_request::order},
@@ -559,7 +559,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_configurations_response::result},
         utility::codec::field{"configurations", &list_configurations_response::configurations},
         utility::codec::field{"total", &list_configurations_response::total},
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_configuration_request::key},
     };
 }
@@ -589,7 +589,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_configuration_response::result},
         utility::codec::field{"configuration", &get_configuration_response::configuration},
     };
@@ -604,7 +604,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_configurations_request::keys},
     };
 }
@@ -618,7 +618,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_configurations_response::result},
         utility::codec::field{"entries", &get_many_configurations_response::entries},
     };
@@ -633,7 +633,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_configuration_request::change},
         utility::codec::field{"intent", &put_configuration_request::intent},
     };
@@ -648,7 +648,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_configuration_response::result},
         utility::codec::field{"configuration", &put_configuration_response::configuration},
     };
@@ -663,7 +663,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_configurations_request::changes},
         utility::codec::field{"intent", &put_many_configurations_request::intent},
     };
@@ -678,7 +678,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_configurations_response::result},
         utility::codec::field{"configurations", &put_many_configurations_response::configurations},
     };
@@ -693,7 +693,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_configuration_request::removal},
         utility::codec::field{"intent", &delete_configuration_request::intent},
     };
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_configuration_response::result},
     };
 }
@@ -722,7 +722,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_configurations_request::removals},
         utility::codec::field{"intent", &delete_many_configurations_request::intent},
     };
@@ -737,7 +737,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_configurations_response::result},
     };
 }
@@ -752,7 +752,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.configurations.
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_configuration_type_code_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "configuration_type_code",
             &list_by_configuration_type_code_configurations_request::configuration_type_code},
@@ -779,7 +779,7 @@ wire_fields(std::type_identity<list_by_configuration_type_code_configurations_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_configuration_type_code_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_configuration_type_code_configurations_response::result},
         utility::codec::field{
@@ -799,7 +799,7 @@ wire_fields(std::type_identity<list_by_configuration_type_code_configurations_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configuration_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_configuration_versions_request::key},
         utility::codec::field{"offset", &list_configuration_versions_request::offset},
         utility::codec::field{"limit", &list_configuration_versions_request::limit},
@@ -817,7 +817,7 @@ wire_fields(std::type_identity<list_by_configuration_type_code_configurations_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configuration_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_configuration_versions_response::result},
         utility::codec::field{"versions", &list_configuration_versions_response::versions},
         utility::codec::field{"total", &list_configuration_versions_response::total},
@@ -833,7 +833,7 @@ wire_fields(std::type_identity<list_by_configuration_type_code_configurations_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_configuration_version_request::key},
     };
 }
@@ -847,7 +847,7 @@ wire_fields(std::type_identity<list_by_configuration_type_code_configurations_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_configuration_version_response::result},
         utility::codec::field{"version", &get_configuration_version_response::version},
     };

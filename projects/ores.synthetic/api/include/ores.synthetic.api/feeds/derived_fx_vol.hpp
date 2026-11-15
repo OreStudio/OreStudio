@@ -44,6 +44,10 @@ inline constexpr std::string_view derived_fx_field = "rate_lnvol";
 /**
  * @brief How a derived series names its derivation: the kind, and the method and its version,
  * which a change of the computation raises so a series says which method computed it.
+ *
+ * ores_marketdata_publish_surface_series_fn (marketdata_surface_series_create.sql) stamps the
+ * series a blueprint publish creates with a copy of the method and version, so a change here
+ * must change it there.
  */
 inline constexpr std::string_view derived_fx_derivation_kind = "FX_VOL_DERIVATION";
 inline constexpr int derived_fx_method_version = 1;
@@ -142,26 +146,26 @@ ORES_SYNTHETIC_API_EXPORT std::expected<pair_returns, std::string>
 pair_log_returns(const std::optional<dated_series>& plus, const std::optional<dated_series>& minus);
 
 /**
- * @brief The quoting convention of an expiry of a pair.
- *
- * An expiry at or past the convention's switch tenor uses its long-term ATM and delta
- * types. ORE's spellings are read: AtmDeltaNeutral and AtmFwd; Spot, Fwd, PaSpot and
- * PaFwd; a risk reversal in favour of Call or Put, Call when unstated; a Broker or Smile
- * butterfly, Smile when unstated. Refuses a type the derivation cannot quote.
+ * @brief The quoting convention of a pair's convention at an expiry label such as 1M, read by
+ * reference data's mapper.
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<analytics::quant::math::fx_quote_convention, std::string>
-quote_convention_at(const refdata::domain::fx_option_convention& convention, double years);
+convention_at(const refdata::domain::fx_option_convention& convention, std::string_view label);
 
 /**
  * @brief The ticks of a pair's derived quotes on a day, one for each label of each
- * expiry the derivation could quote, stamped at the end of that day. A quote that is
- * not finite is left out rather than sent.
+ * expiry the derivation could quote, stamped at the end of that day, or at @p sent_at when
+ * that is earlier. A quote that is not finite is left out rather than sent.
+ *
+ * A quote of today sent before the end of the day would otherwise be dated after its send,
+ * and a reader that takes the quotes at or before a time would not see it until then.
  */
 ORES_SYNTHETIC_API_EXPORT std::vector<marketdata::messaging::adapter_tick>
 derived_fx_ticks(const derived_fx_pair& pair,
                  const analytics::quant::math::fx_derivation& derivation,
                  std::chrono::year_month_day day,
-                 std::uint64_t first_sequence);
+                 std::uint64_t first_sequence,
+                 std::chrono::system_clock::time_point sent_at);
 
 /// One quote of a day, at its point of the pair's series.
 struct derived_fx_point final {
@@ -183,6 +187,12 @@ struct derived_fx_day final {
  * whose window the returns up to its day do not cover, and a quote that is not finite.
  * The days come oldest first. A day whose quotes could not be derived at all is named
  * among the underived. Refuses a convention the derivation cannot quote.
+ *
+ * @param newest_days How many of the newest days the caller wants, or zero for every day it
+ * does not hold. A feed that publishes the current day asks for one; materialising a history
+ * for a vintage asks for all of them. The grid is filled in one pass either way, because a day
+ * costs a constant-time moment lookup and asking for one month of a ten-year history day by day
+ * is what made a fresh tenant wait hours.
  */
 /// The days of a pair's history derived, and the days whose quotes could not be derived.
 struct derived_history final {
@@ -196,7 +206,8 @@ derive_missing_days(const derived_fx_pair& pair,
                     const refdata::domain::fx_option_convention& convention,
                     const std::set<std::chrono::year_month_day>& stored,
                     const analytics::quant::math::fx_derivation_settings& settings,
-                    int minimum_returns);
+                    int minimum_returns,
+                    std::size_t newest_days = 0);
 
 }
 

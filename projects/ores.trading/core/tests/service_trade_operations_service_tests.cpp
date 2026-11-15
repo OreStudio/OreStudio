@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
@@ -32,8 +32,12 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/domain/origin.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.api/domain/scripted_parameter.hpp"
+#include "ores.trading.api/domain/scripted_parameter_value.hpp"
 #include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_conversion_target_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_generator.hpp"
@@ -268,6 +272,34 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", "[service]")
     REQUIRE(response.activity_id.has_value());
     CHECK(bookings.front().trade_activity_id == *response.activity_id);
     CHECK(states.front().trade_activity_id == *response.activity_id);
+}
+
+TEST_CASE("a_booking_is_stamped_with_the_sessions_actor_not_the_requests", "[service]") {
+    fixture f;
+    auto req = f.request();
+    // A caller may state any author. The store keeps the session's, so a
+    // service that books cannot put a person's name on the trade.
+    req.booking.modified_by = "trader.one";
+    req.anchor.modified_by = "trader.one";
+    const auto session_actor = f.ctx.actor();
+    REQUIRE_FALSE(session_actor.empty());
+    const auto id = boost::uuids::to_string(req.anchor.id);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    const auto trade = ores::trading::repository::trade_repository().read_latest(f.ctx, id);
+    REQUIRE(trade.size() == 1);
+    CHECK(trade.front().modified_by == session_actor);
+    const auto bookings =
+        ores::trading::repository::trade_booking_repository().read_latest(f.ctx, id);
+    REQUIRE(bookings.size() == 1);
+    CHECK(bookings.front().modified_by == session_actor);
+    REQUIRE(response.activity_id.has_value());
+    const auto activity = ores::trading::repository::trade_activity_repository{}.read_latest(
+        f.ctx, boost::uuids::to_string(*response.activity_id));
+    REQUIRE(activity.size() == 1);
+    CHECK(activity.front().actor == session_actor);
 }
 
 TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", "[service]") {
@@ -596,7 +628,8 @@ TEST_CASE("an_execution_does_not_ask_the_same_question_twice", "[service]") {
 
     // A second write of the same kind of fact must not raise a second one.
     ores::trading::service::operational_authorisation_service authorisation(f.ctx);
-    CHECK_FALSE(authorisation.raise_if_awaiting(req.anchor.id).has_value());
+    CHECK_FALSE(
+        authorisation.raise_if_awaiting(req.anchor.id, authorisation.prepare()).has_value());
     CHECK(requests_for(f.ctx, req.anchor.id).size() == 1);
 }
 
@@ -618,7 +651,7 @@ TEST_CASE("an_amendment_raises_its_own_request_after_the_last_was_answered", "[s
     ores::inbox::repository::approval_request_repository().write(f.ctx, approved);
 
     ores::trading::service::operational_authorisation_service authorisation(f.ctx);
-    REQUIRE(authorisation.raise_if_awaiting(req.anchor.id).has_value());
+    REQUIRE(authorisation.raise_if_awaiting(req.anchor.id, authorisation.prepare()).has_value());
     CHECK(requests_for(f.ctx, req.anchor.id).size() == 2);
 }
 
@@ -729,7 +762,7 @@ TEST_CASE("a_refused_completion_leaves_every_leg_a_draft_and_writes_no_member", 
         const auto states = ores::trading::repository::trade_state_repository().read_latest(
             f.ctx, boost::uuids::to_string(id));
         REQUIRE(states.size() == 1);
-        const auto draft = ores::database::repository::execute_parameterized_string_query(
+        const auto draft = ores::database::query_builder::execute_parameterized_string_query(
             f.ctx,
             "select ores_trading_status_is_draft_fn($1::uuid)::text",
             {boost::uuids::to_string(states.front().status_id)},
@@ -842,11 +875,17 @@ TEST_CASE("a_booked_variance_swap_keeps_its_dates_in_order", "[service]") {
         std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
     const auto end = std::chrono::year_month_day{
         std::chrono::year{2027}, std::chrono::month{10}, std::chrono::day{31}};
-    ores::trading::domain::fx_variance_swap_terms terms{
-        start, end, "USD", "AAPL", "Long", 16.0, {}, "Variance"};
-    terms.notional = ores::trading::domain::decimal::from_double(1000.0).value();
-    req.instruments.fx_variance_swap_instruments.push_back(
-        ores::trading::domain::construct_fx_variance_swap(terms));
+    ores::trading::domain::fx_variance_swap_instrument row;
+    row.identity.trade_type_code = "FxVarianceSwap";
+    row.start_date = start;
+    row.end_date = end;
+    row.currency = "USD";
+    row.underlying_code = "AAPL";
+    row.long_short = "Long";
+    row.strike = 16.0;
+    row.notional = ores::utility::decimal::decimal::from_double(1000.0).value();
+    row.moment_type = "Variance";
+    req.instruments.fx_variance_swap_instruments.push_back(row);
     req.anchor.trade_type = "FxVarianceSwap";
 
     const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
@@ -1035,6 +1074,107 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
         CHECK(legs[i].day_count_fraction_code == original[i].day_count_fraction_code);
     }
     CHECK(ores::trading::domain::find(again.rate_instruments, second.anchor.id) != nullptr);
+}
+
+TEST_CASE("a_scripted_trade_books_its_variables_and_underlyings_back", "[service]") {
+    fixture f;
+    auto first = f.request();
+    first.anchor.trade_type = "ScriptedTrade";
+
+    ores::trading::domain::scripted_instrument row;
+    row.identity.trade_type_code = "ScriptedTrade";
+    row.script_name = "AsianBasketOption";
+    first.instruments.scripted_instruments.push_back(row);
+
+    const auto add_parameter = [](ores::trading::domain::instrument_batch& batch,
+                                  std::string name,
+                                  std::string declared_type,
+                                  std::string value) {
+        ores::trading::domain::scripted_parameter parameter;
+        parameter.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+        parameter.name = std::move(name);
+        parameter.declared_type = std::move(declared_type);
+        parameter.shape = "scalar";
+        parameter.value = std::move(value);
+        batch.scripted_parameters.push_back(std::move(parameter));
+    };
+    const auto add_list = [](ores::trading::domain::instrument_batch& batch,
+                             std::string name,
+                             std::string declared_type,
+                             const std::vector<std::string>& values) {
+        ores::trading::domain::scripted_parameter parameter;
+        parameter.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
+        parameter.name = std::move(name);
+        parameter.declared_type = std::move(declared_type);
+        parameter.shape = "vector";
+        const auto parameter_sequence_number = parameter.sequence_number;
+        batch.scripted_parameters.push_back(std::move(parameter));
+
+        int sequence_number = 0;
+        for (const auto& value : values) {
+            ores::trading::domain::scripted_parameter_value member;
+            member.parameter_sequence_number = parameter_sequence_number;
+            member.sequence_number = ++sequence_number;
+            member.value = value;
+            batch.scripted_parameter_values.push_back(std::move(member));
+        }
+    };
+    const auto add_underlying = [](ores::trading::domain::instrument_batch& batch,
+                                   std::string role,
+                                   std::string underlying_type,
+                                   std::string address) {
+        ores::trading::domain::instrument_underlying underlying;
+        underlying.underlying_role = std::move(role);
+        underlying.sequence_number = 1;
+        underlying.underlying_type = std::move(underlying_type);
+        underlying.name = std::move(address);
+        batch.instrument_underlyings.push_back(std::move(underlying));
+    };
+
+    add_parameter(first.instruments, "Notional", "Number", "1000000");
+    add_parameter(first.instruments,
+                  "Underlying",
+                  "Index",
+                  "oresmd://equity/RIC:.SPX?type=fixing&index=equity");
+    add_list(first.instruments, "Weights", "Number", {"0.6", "0.4"});
+    add_underlying(first.instruments,
+                   "underlying",
+                   "Equity",
+                   "oresmd://equity/RIC:.STOXX50E?type=fixing&index=equity");
+
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(first, {}).result.outcome ==
+            outcome::ok);
+
+    ores::trading::domain::instrument_batch exported;
+    ores::trading::service::trade_export_service(f.ctx).export_books(
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+
+    const auto parameters =
+        ores::trading::domain::find_all(exported.scripted_parameters, first.anchor.id);
+    REQUIRE(parameters.size() == 3);
+    CHECK(parameters[0].name == "Notional");
+    CHECK(parameters[0].declared_type == "Number");
+    CHECK(parameters[0].value == std::optional<std::string>("1000000"));
+    CHECK(parameters[1].name == "Underlying");
+    CHECK(parameters[1].value ==
+          std::optional<std::string>("oresmd://equity/RIC:.SPX?type=fixing&index=equity"));
+    CHECK(parameters[2].name == "Weights");
+    CHECK(parameters[2].shape == "vector");
+
+    const auto values =
+        ores::trading::domain::find_all(exported.scripted_parameter_values, first.anchor.id);
+    REQUIRE(values.size() == 2);
+    CHECK(values[0].parameter_sequence_number == 3);
+    CHECK(values[0].value == "0.6");
+    CHECK(values[1].sequence_number == 2);
+    CHECK(values[1].value == "0.4");
+
+    const auto underlyings =
+        ores::trading::domain::find_all(exported.instrument_underlyings, first.anchor.id);
+    REQUIRE(underlyings.size() == 1);
+    CHECK(underlyings[0].underlying_role == "underlying");
+    CHECK(underlyings[0].underlying_type == "Equity");
+    CHECK(underlyings[0].name == "oresmd://equity/RIC:.STOXX50E?type=fixing&index=equity");
 }
 
 TEST_CASE("a_child_array_with_no_header_is_refused_by_name", "[service]") {

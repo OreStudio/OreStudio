@@ -43,7 +43,7 @@ struct lei_parties_params {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_parties_params>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"root_lei", &lei_parties_params::root_lei}};
+    return ::ores::utility::codec::field_list{field{"root_lei", &lei_parties_params::root_lei}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<lei_parties_params>(),
@@ -68,11 +68,12 @@ struct publish_bundle_params {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_bundle_params>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"opted_in_datasets", &publish_bundle_params::opted_in_datasets},
-                      field{"lei_parties", &publish_bundle_params::lei_parties},
-                      field{"party_id", &publish_bundle_params::party_id},
-                      field{"tiers", &publish_bundle_params::tiers},
-                      field{"jurisdiction", &publish_bundle_params::jurisdiction}};
+    return ::ores::utility::codec::field_list{
+        field{"opted_in_datasets", &publish_bundle_params::opted_in_datasets},
+        field{"lei_parties", &publish_bundle_params::lei_parties},
+        field{"party_id", &publish_bundle_params::party_id},
+        field{"tiers", &publish_bundle_params::tiers},
+        field{"jurisdiction", &publish_bundle_params::jurisdiction}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<publish_bundle_params>(),
@@ -101,7 +102,7 @@ struct dataset_publish_params {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_publish_params>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"party_id", &dataset_publish_params::party_id}};
+    return ::ores::utility::codec::field_list{field{"party_id", &dataset_publish_params::party_id}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<dataset_publish_params>(),

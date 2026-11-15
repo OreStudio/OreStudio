@@ -26,11 +26,17 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.api/domain/calendar_date.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.refdata.core/repository/calendar_date_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/instrument_code_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/payment_frequency_repository.hpp"
@@ -49,6 +55,10 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_contributor_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_expiry_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
@@ -60,6 +70,7 @@
 #include "provider_seed.hpp"
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -120,9 +131,76 @@ struct seeded_configs {
     boost::uuids::uuid ir_enabled_id;
     boost::uuids::uuid ir_disabled_id;
     boost::uuids::uuid ir_no_entries_id;
+    boost::uuids::uuid surface_enabled_id;
     std::string fx_enabled_source;
     std::string ir_enabled_source;
+    std::string surface_enabled_source;
 };
+
+
+// The tenant provisioner copies the tenor, instrument, payment-frequency and
+// rates-convention catalogs into every new tenant, but not the pair
+// conventions: a surface dates its expiries on its pair's convention and
+// calendars, and refuses to start without them, so the test states them the way
+// an environment's reference data does.
+void seed_pair_expiry_calendar(ores::testing::scoped_database_helper& h,
+                               const std::string& pair_code,
+                               const std::string& calendar_code,
+                               std::chrono::year_month_day from,
+                               std::chrono::year_month_day to) {
+    namespace refdata_repo = ores::refdata::repository;
+    using namespace ores::refdata::domain;
+    auto& ctx = h.context();
+    const auto tenant = h.tenant_id().to_string();
+    const auto actor = h.db_user();
+
+    currency_pair_convention convention;
+    convention.tenant_id = h.tenant_id();
+    convention.pair_code = pair_code;
+    convention.pip_factor = 0.0001;
+    convention.tick_size = 0.00001;
+    convention.decimal_places = 5;
+    convention.business_day_convention = "ModifiedFollowing";
+    convention.spot_relative = false;
+    convention.end_of_month = false;
+    convention.modified_by = actor;
+    convention.performed_by = actor;
+    convention.change_reason_code = "system.test";
+    convention.change_commentary = "Synthetic test data";
+    refdata_repo::currency_pair_convention_repository().write(ctx, convention);
+
+    currency_pair_convention_calendar link;
+    link.tenant_id = tenant;
+    link.pair_code = pair_code;
+    link.calendar_code = calendar_code;
+    link.modified_by = actor;
+    link.performed_by = actor;
+    link.change_reason_code = "system.test";
+    link.change_commentary = "Synthetic test data";
+    refdata_repo::currency_pair_convention_calendar_repository{ctx}.write(link);
+
+    // Only the business days are written: the reader takes the rows that are
+    // not business days as the holidays, and an empty calendar is refused.
+    std::vector<calendar_date> days;
+    for (auto day = std::chrono::sys_days(from); day <= std::chrono::sys_days(to);
+         day += std::chrono::days{1}) {
+        const std::chrono::year_month_day date{day};
+        const std::chrono::weekday weekday{day};
+        if (weekday == std::chrono::Saturday || weekday == std::chrono::Sunday)
+            continue;
+        calendar_date row;
+        row.tenant_id = tenant;
+        row.calendar_code = calendar_code;
+        row.date = date;
+        row.is_business_day = true;
+        row.modified_by = actor;
+        row.performed_by = actor;
+        row.change_reason_code = "system.test";
+        row.change_commentary = "Synthetic test data";
+        days.push_back(row);
+    }
+    refdata_repo::calendar_date_repository{ctx}.write(days);
+}
 
 // Seeds four enabled containers holding: an enabled FX config (EUR/USD, with
 // its GMM component) and an enabled IR curve config (USD/sofr, with its
@@ -270,6 +348,92 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     comp.recorded_at = now;
     repo::gmm_component_repository().write(party_ctx, comp);
 
+    // A surface on the same EUR/USD pair as the enabled spot, so a run can anchor its block on
+    // that spot's series. One contributor and two expiries are what a startable surface needs.
+    boost::uuids::uuid surface_enabled_id = uuid();
+    std::string surface_source = "synthetic.feed_config.test.fx_vol.eur_usd";
+    {
+        // A party holds one contributor for each provider, so a second seed of the same
+        // fixtures reuses the first one rather than colliding with it.
+        dom::fx_vol_contributor contributor;
+        contributor.provider_code = "demo";
+        for (const auto& existing : repo::fx_vol_contributor_repository().read_latest(party_ctx))
+            if (existing.provider_code == "demo")
+                contributor = existing;
+        if (contributor.id.is_nil()) {
+            contributor.tenant_id = h.tenant_id();
+            contributor.id = uuid();
+            contributor.party_id = test_party;
+            contributor.modified_by = db_user;
+            contributor.performed_by = db_user;
+            contributor.change_reason_code = "system.test";
+            contributor.change_commentary = "feed config test seed";
+            contributor.recorded_at = now;
+            repo::fx_vol_contributor_repository().write(party_ctx, contributor);
+        }
+
+        dom::fx_vol_surface_feed surface;
+        surface.tenant_id = h.tenant_id();
+        surface.id = surface_enabled_id;
+        surface.party_id = test_party;
+        surface.config_id = main_container.id;
+        surface.base_currency_code = "EUR";
+        surface.quote_currency_code = "USD";
+        surface.source_name = surface_source;
+        surface.ticks_per_hour = 4;
+        surface.enabled = true;
+        surface.auto_start = false;
+        surface.asset_class_code = "fx";
+        surface.arrival_mode = "periodic";
+        surface.skew_reversion = 3.0;
+        surface.skew_volatility = 0.6;
+        surface.curvature_reversion = 3.0;
+        surface.curvature_volatility = 0.4;
+        surface.spot_variance_correlation = 0.3;
+        surface.spot_skew_correlation = -0.4;
+        surface.segment_correlation = 0.9;
+        surface.start_skew = -0.1;
+        surface.start_curvature = 0.8;
+        surface.modified_by = db_user;
+        surface.performed_by = db_user;
+        surface.change_reason_code = "system.test";
+        surface.change_commentary = "feed config test seed";
+        surface.recorded_at = now;
+        repo::fx_vol_surface_feed_repository().write(party_ctx, surface);
+
+        const std::vector<std::pair<std::string, double>> expiries{{"1M", 0.070}, {"3M", 0.0725}};
+        for (const auto& [tenor, atm_vol] : expiries) {
+            dom::fx_vol_surface_feed_expiry expiry;
+            expiry.tenant_id = h.tenant_id();
+            expiry.id = uuid();
+            expiry.party_id = test_party;
+            expiry.feed_id = surface_enabled_id;
+            expiry.tenor = tenor;
+            expiry.atm_vol = atm_vol;
+            expiry.variance_reversion = 2.0;
+            expiry.variance_volatility = 0.08;
+            expiry.modified_by = db_user;
+            expiry.performed_by = db_user;
+            expiry.change_reason_code = "system.test";
+            expiry.change_commentary = "feed config test seed";
+            expiry.recorded_at = now;
+            repo::fx_vol_surface_feed_expiry_repository().write(party_ctx, expiry);
+        }
+
+        dom::fx_vol_surface_feed_contributor link;
+        link.tenant_id = h.tenant_id();
+        link.id = uuid();
+        link.party_id = test_party;
+        link.feed_id = surface_enabled_id;
+        link.contributor_id = contributor.id;
+        link.modified_by = db_user;
+        link.performed_by = db_user;
+        link.change_reason_code = "system.test";
+        link.change_commentary = "feed config test seed";
+        link.recorded_at = now;
+        repo::fx_vol_surface_feed_contributor_repository().write(party_ctx, link);
+    }
+
     const auto make_ir = [&](const dom::market_data_generation_config& container,
                              const std::string& currency,
                              const std::string& source_name,
@@ -350,8 +514,10 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
             .ir_enabled_id = ir_enabled.id,
             .ir_disabled_id = ir_disabled.id,
             .ir_no_entries_id = ir_no_entries.id,
+            .surface_enabled_id = surface_enabled_id,
             .fx_enabled_source = fx_enabled.source_name,
-            .ir_enabled_source = ir_enabled.source_name};
+            .ir_enabled_source = ir_enabled.source_name,
+            .surface_enabled_source = surface_source};
 }
 
 // The handler under test runs on the NATS worker thread, exactly as the
@@ -383,25 +549,25 @@ struct config_fixture {
         start_sub = nats.queue_subscribe(
             test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.stop(std::move(msg));
             });
         list_sub = nats.queue_subscribe(
             test_list_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.list(std::move(msg));
             });
         calibrate_sub = nats.queue_subscribe(
             test_calibrate_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.calibrate(std::move(msg));
             });
     }
@@ -420,6 +586,7 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
     // FX start by config_id: the server resolves the config, its children,
@@ -466,12 +633,16 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     CHECK_FALSE(fx_run->start->from_fixing);
     CHECK(fx_run->start->item.empty());
     CHECK(fx_run->start->value == "1.08");
-    // A curve starts from no published value, so its run carries no start.
+    // The curve's config states a fixed price, so its run kept its initial rate and states the
+    // level it kept, as the FX run does.
     const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
         return one.source_name == seeds.ir_enabled_source;
     });
     REQUIRE(ir_run != list.running_feeds.end());
-    CHECK_FALSE(ir_run->start.has_value());
+    REQUIRE(ir_run->start.has_value());
+    CHECK_FALSE(ir_run->start->from_fixing);
+    CHECK(ir_run->start->item.empty());
+    CHECK(ir_run->start->value == "0.025");
 
     // Stop the IR feed by config_id: the server resolves it to the
     // config's source_name.
@@ -495,6 +666,43 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     CHECK(f.fleet.running_count() == 0);
 }
 
+TEST_CASE("feed_config_starts_a_volatility_surface_by_config_id",
+          "[feed_config_handler][integration]") {
+    config_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto seeds = seed_configs(f.db, test_party);
+    seed_pair_expiry_calendar(f.db,
+                              "EUR/USD",
+                              "TARGET",
+                              std::chrono::year{2026} / std::chrono::January / 1,
+                              std::chrono::year{2027} / std::chrono::December / 31);
+    const auto token = mint_token(f.db.tenant_id().to_string(),
+                                  test_party,
+                                  {"synthetic::fx_spot_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
+                                   "synthetic::feeds:run"});
+
+    // The surface resolves its feed row, its expiry rows and its contributor rows, and the
+    // factory builds it: a surface with no market still starts and publishes the level it was
+    // configured with.
+    const auto surface_start = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
+    REQUIRE(surface_start.success);
+    CHECK(surface_start.message == "Feed started: " + seeds.surface_enabled_source);
+    CHECK(f.fleet.running_count() == 1);
+
+    const auto surface_stop = send_request<stop_feed_request, stop_feed_response>(
+        f.nats,
+        test_stop_subject,
+        token,
+        stop_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
+    REQUIRE(surface_stop.success);
+    CHECK(f.fleet.running_count() == 0);
+}
+
 TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly",
           "[feed_config_handler][integration]") {
     config_fixture f;
@@ -504,6 +712,7 @@ TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly",
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
     const auto missing_id = boost::uuids::to_string(boost::uuids::random_generator()());
@@ -581,6 +790,7 @@ TEST_CASE("feed_config_start_rejects_missing_children", "[feed_config_handler][i
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
     const auto fx_no_comps = send_request<start_feed_request, start_feed_response>(
@@ -708,8 +918,8 @@ TEST_CASE("a stored FX spot config is written back with every field it holds",
     CHECK(w.variance_calibration_id == cfg.variance_calibration_id);
     // A field the write type gains and write_of forgets compiles silently; the count keeps the
     // two in step.
-    CHECK(std::tuple_size_v<decltype(wire_fields(
-              std::type_identity<std::remove_cvref_t<decltype(w)>>{}))> == 21);
+    CHECK(decltype(wire_fields(std::type_identity<std::remove_cvref_t<decltype(w)>>{}))::size ==
+          21);
 }
 
 TEST_CASE("a run's start states its level whether a fixing set it or the run kept it",

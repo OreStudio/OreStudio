@@ -25,8 +25,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-service_session_service::service_session_service(context ctx)
-    : ctx_(std::move(ctx))
+service_session_service::service_session_service(const context& ctx)
+    : ctx_(ctx)
     , session_repo_() {
 
     BOOST_LOG_SEV(lg(), debug) << "Service session service initialized";

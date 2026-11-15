@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -39,10 +40,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -120,52 +124,116 @@ std::optional<query_builder::condition> report_error_event_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool report_error_event_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using report_error_event_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::report_error_event>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+report_error_event_rows_by_key
+report_error_event_current_rows(report_error_event_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<domain::report_error_event>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    report_error_event_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::report_error_event>&
+report_error_event_rows_of(const report_error_event_rows_by_key& current,
+                           const domain::report_error_event& item) {
+    static const std::vector<domain::report_error_event> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-report_error_event_repository::replace_claim(context ctx, const domain::report_error_event& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+report_error_event_replace_claim(const std::vector<domain::report_error_event>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::report_error_event
-report_error_event_repository::apply_claim(context ctx,
-                                           const domain::report_error_event& v,
-                                           const ores::utility::domain::precondition& claim) {
+report_error_event_apply_claim(const domain::report_error_event& v,
+                               const ores::utility::domain::precondition& claim,
+                               const std::vector<domain::report_error_event>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "report_error_event_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "report_error_event_repository::write: a current row already exists");
     return t;
 }
 
-void report_error_event_repository::write(context ctx, const domain::report_error_event& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_error_event_repository::write(context ctx,
+void report_error_event_repository::write(const context& ctx, const domain::report_error_event& v) {
+    write(
+        ctx, v, report_error_event_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void report_error_event_repository::write(const context& ctx,
                                           const std::vector<domain::report_error_event>& v) {
+    const auto current = report_error_event_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            report_error_event_replace_claim(report_error_event_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void report_error_event_repository::write(context ctx,
+void report_error_event_repository::write(const context& ctx,
                                           const domain::report_error_event& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report error event. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        report_error_event_apply_claim(v,
+                                       claim,
+                                       report_error_event_claim_reads_current(claim) ?
+                                           read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                           std::vector<domain::report_error_event>{});
     query_builder::execute_write_op(ctx,
                                     query_builder::insert(report_error_event_mapper::map(t)),
                                     lg(),
@@ -173,21 +241,29 @@ void report_error_event_repository::write(context ctx,
 }
 
 void report_error_event_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_error_event>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report error events. Count: " << v.size();
+    std::vector<domain::report_error_event> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (report_error_event_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = report_error_event_current_rows(*this, ctx, to_read);
     std::vector<domain::report_error_event> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(report_error_event_apply_claim(
+            v[i], claims[i], report_error_event_rows_of(current, v[i])));
     query_builder::execute_write_op(ctx,
                                     query_builder::insert(report_error_event_mapper::map(batch)),
                                     lg(),
                                     "Writing report error events to database.");
 }
 
-std::vector<domain::report_error_event> report_error_event_repository::read_latest(context ctx) {
+std::vector<domain::report_error_event>
+report_error_event_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
@@ -201,7 +277,7 @@ std::vector<domain::report_error_event> report_error_event_repository::read_late
 }
 
 std::vector<domain::report_error_event>
-report_error_event_repository::read_latest(context ctx, const std::string& id) {
+report_error_event_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report error event. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
@@ -217,7 +293,7 @@ report_error_event_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::report_error_event>
-report_error_event_repository::read_all(context ctx, const std::string& id) {
+report_error_event_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report error event versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
@@ -235,7 +311,7 @@ report_error_event_repository::read_all(context ctx, const std::string& id) {
 
 std::vector<domain::report_error_event>
 report_error_event_repository::read_latest_by_report_instance_id(
-    context ctx,
+    const context& ctx,
     const std::string& report_instance_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -262,7 +338,7 @@ report_error_event_repository::read_latest_by_report_instance_id(
 }
 
 std::uint32_t report_error_event_repository::get_total_error_count_by_report_instance_id(
-    context ctx,
+    const context& ctx,
     const std::string& report_instance_id,
     const std::optional<messaging::report_error_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -284,7 +360,7 @@ std::uint32_t report_error_event_repository::get_total_error_count_by_report_ins
 
 
 report_error_event_repository::remove_status report_error_event_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report error event. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -302,12 +378,12 @@ report_error_event_repository::remove_status report_error_event_repository::remo
     return remove_status::removed;
 }
 
-void report_error_event_repository::remove(context ctx, const std::string& id) {
+void report_error_event_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_error_event> report_error_event_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -331,7 +407,7 @@ std::vector<domain::report_error_event> report_error_event_repository::read_late
 }
 
 std::uint32_t report_error_event_repository::get_total_error_count(
-    context ctx, const std::optional<messaging::report_error_events_filter>& filter) {
+    const context& ctx, const std::optional<messaging::report_error_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report error event count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -347,9 +423,25 @@ std::uint32_t report_error_event_repository::get_total_error_count(
 }
 
 std::vector<domain::report_error_event>
-report_error_event_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_error_event_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::report_error_event> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
@@ -363,7 +455,8 @@ report_error_event_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void report_error_event_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_error_event_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -381,7 +474,7 @@ void report_error_event_repository::remove(context ctx, const std::vector<std::s
 
 std::vector<messaging::report_error_count>
 report_error_event_repository::read_counts_by_report_instance_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
     if (report_instance_ids.empty())
         return {};
 

@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: E711D36E-ACFE-47D6-BB17-5896F7E8A893
+:END:
+#+title: Task: Reconcile the catalogue with the engine
+#+description: The catalogue states every ORE trade type, but whether ORE reads a type natively, through a script, or not at all is nowhere written down. Establish it from ORE's own source and record it per type.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch: feature/reconcile-the-catalogue-with-the-engine
+#+pr: 4748
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader can tell, for every product type, what ORE does with it: the trade type it is registered under, the data element it is read from, whether it is a ScriptedTrade subclass or a native class, and whether it is supported at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- each of the 121 catalogue types states its ORE evidence: registered trade type, data element, and the class it is read as
+- the types ORE cannot carry are named, with the evidence that shows it
+- each type ORE reads through a ScriptedTrade subclass names the library script with the same payoff, where one exists, so the both-forms task has its list
+- the evidence is mined by a script from ORE's Engine source and its script library, names the ORE commit it read, and is checked in as a table the checks read
+- the note links the task that closes each gap, so the coverage work has one index
+
+* Plan
+
+Ask ORE itself rather than read its registrations as text. A harness,
+=trade_catalogue=, calls ORE's =dataBuilders()=, builds every type the trade
+factory holds and prints its class and whether it derives from
+=ScriptedTrade=. A miner, =mine_trade_types.py=, joins that with ORE's source
+(the element =fromXML= reads), the XSD, the Products script library, two
+curated lists (the twins and the elements that break ORE's naming
+convention) and the catalogue. Twins are graded by comparing the library
+script's code with the code ORE's class embeds. The result is checked in
+beside the other mined catalogues, and a generator turns it into the coverage
+note, with a =--check= mode wired into the local gate.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Trade types ORE registers | 120 | =trade_catalogue= built against ORE =3d75a6908= | ORE =3d75a6908= |
+| Read through a ScriptedTrade class | 39 | the same, =form= column | ORE =3d75a6908= |
+| Catalogue types ORE registers | 119 of 121 | =mine_trade_types.py=, then =generate_trade_type_coverage.py= | =7c5602951b= |
+| Registered types whose catalogue form disagrees with ORE's | 34 | the coverage page's counts | =7c5602951b= |
+| Types with a library script for the same product | 35 | the same | =7c5602951b= |
+| Twin matches: identical, near, named | 9, 12, 14 | =awk -F'\t' '{print $10}' trade_types.tsv= | ORE =3d75a6908= |
+
+* Notes
+
+** A check that reproduces the catalogue
+
+=regenerate.sh= run end to end at =3d75a6908= reproduces =trade_types.tsv=
+byte for byte. It also rewrites the index catalogue, which is stale against
+its own tool; that is captured separately and reverted here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4748][#4748]] | [ore,doc] Record what ORE does with every trade type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the commodity task description named no trade types, so the coverage page linked no commodity rows to it | =task_close_out_the_commodity_constructors.org= | Accept | The description names =CommodityPairwiseVarianceSwap= and =CommodityWindowBarrierOption= (commit 2eb0a57ca5) |
+| 2 | Local review: misspell over the changed files | - | Accept | Clean |
+| 3 | PR review 1: a harness error wrote =!message= into the class column and could split a line | =trade_catalogue.cpp=, =mine_trade_types.py= | Accept | The harness writes errors to stderr and exits 1, so =regenerate.sh= stops; the miner refuses any row that is not three cells ending in =native= or =scripted= |
+| 4 | PR review 2: script decoding mangled non-ASCII text | =mine_trade_types.py= | Accept | The suggested =codecs.decode= garbles the same way (tested); the miner now reads C++ escapes with a regex. The TSV is unchanged |
+| 5 | PR review 3: =element_read= is a text search and can match a comment | coverage page, README | Accept | Both now say it is a text search, not a parse |
+| 6 | PR review 4: unguarded regex and positional columns in the generator | =generate_trade_type_coverage.py= | Accept | A missing field names the file; the catalogue columns are read by header name. Both failures tested |
+| 7 | PR review 4: a short type name could match inside a longer one | =generate_trade_type_coverage.py= | Decline | =\\b= stops at letters, so =CommodityOption= does not match inside =CommodityOptionStrip= |
+| 8 | PR review 5: hard-coded task IDs drop a gap kind silently | =generate_trade_type_coverage.py= | Accept | The generator fails when a constant names no task in the story (tested) |
+| 9 | PR review 6: add the datum_catalogue inputs to the check's paths | =local_checks.py= | Decline | The check reads only =trade_types.tsv=; a change to the twin or element lists matters only after a regenerate, which changes the TSV |
+| 10 | PR review 7: the header line is wider than the rest of the file | =regenerate.sh= | Accept | Wrapped |
+| 11 | PR review 7: =regenerate.sh= derives the repo root from =ore_root= | =regenerate.sh= | Decline | =ore_root= is fixed as the script's =../..= and is not an argument |
+| 12 | PR review: confirm the seven failing gate checks fail on main | - | Accept | All seven fail on a clean =origin/main= worktree |
+
+* Result
+
+Every catalogue type now states what ORE does with it, from ORE itself. The
+=trade_catalogue= harness asks ORE's trade factory for each registered type
+and the class it builds; =mine_trade_types.py= adds the data element read in
+ORE's source, whether the XSD declares it, and the library scripts that carry
+the same product, graded by comparing their code with the class's own. The
+result is =external/ore/catalogue/trade_types.tsv= at ORE =3d75a6908=, and
+[[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] renders it with the table that holds each type, whether the generator
+books it, and the task that closes each gap. A =trade-type-coverage= check in
+the local gate fails when the page drifts from its sources.
+
+What it found: ORE reads 39 types through a =ScriptedTrade= class and the
+catalogue states 5 of them so; =CommodityPairwiseVarianceSwap= and the bare
+=ForwardVolatilityAgreement= have no builder but are carried by library
+scripts; =CommodityWindowBarrierOptionData= is read by ORE and missing from
+the XSD; three types read an element other than the convention's; and 35 types
+have a library twin, 9 of them in identical code.

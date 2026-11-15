@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_curve_direct_key::id},
     };
 }
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_curve_direct_write::id},
         utility::codec::field{"curve_definition_id",
                               &commodity_curve_direct_write::curve_definition_id},
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &commodity_curve_direct_change::write},
         utility::codec::field{"precondition", &commodity_curve_direct_change::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_curve_direct_removal::key},
         utility::codec::field{"precondition", &commodity_curve_direct_removal::precondition},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_curve_direct_lookup::key},
         utility::codec::field{"commodity_curve_direct",
                               &commodity_curve_direct_lookup::commodity_curve_direct},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_directs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &commodity_curve_directs_filter::id_one_of},
     };
 }
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &commodity_curve_direct_event::event_id},
         utility::codec::field{"key", &commodity_curve_direct_event::key},
         utility::codec::field{"action", &commodity_curve_direct_event::action},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"commodity_curve_direct",
                               &commodity_curve_direct_version_key::commodity_curve_direct},
         utility::codec::field{"version", &commodity_curve_direct_version_key::version},
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_d
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_direct_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &commodity_curve_direct_versions_filter::version},
         utility::codec::field{"from_version",
                               &commodity_curve_direct_versions_filter::from_version},
@@ -519,7 +519,7 @@ wire_fields(std::type_identity<commodity_curve_direct_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_commodity_curve_directs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_commodity_curve_directs_request::offset},
         utility::codec::field{"limit", &list_commodity_curve_directs_request::limit},
         utility::codec::field{"order", &list_commodity_curve_directs_request::order},
@@ -538,7 +538,7 @@ wire_fields(std::type_identity<commodity_curve_direct_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_directs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodity_curve_directs_response::result},
         utility::codec::field{"directs", &list_commodity_curve_directs_response::directs},
         utility::codec::field{"total", &list_commodity_curve_directs_response::total},
@@ -554,7 +554,7 @@ wire_fields(std::type_identity<list_commodity_curve_directs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_curve_direct_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_curve_direct_request::key},
     };
 }
@@ -568,7 +568,7 @@ wire_fields(std::type_identity<list_commodity_curve_directs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_curve_direct_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_curve_direct_response::result},
         utility::codec::field{"commodity_curve_direct",
                               &get_commodity_curve_direct_response::commodity_curve_direct},
@@ -585,7 +585,7 @@ wire_fields(std::type_identity<list_commodity_curve_directs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_curve_directs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_commodity_curve_directs_request::keys},
     };
 }
@@ -600,7 +600,7 @@ wire_fields(std::type_identity<get_many_commodity_curve_directs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_curve_directs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_commodity_curve_directs_response::result},
         utility::codec::field{"entries", &get_many_commodity_curve_directs_response::entries},
     };
@@ -615,7 +615,7 @@ wire_fields(std::type_identity<get_many_commodity_curve_directs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_commodity_curve_direct_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_commodity_curve_direct_request::change},
         utility::codec::field{"intent", &put_commodity_curve_direct_request::intent},
     };
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<get_many_commodity_curve_directs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_commodity_curve_direct_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_commodity_curve_direct_response::result},
         utility::codec::field{"commodity_curve_direct",
                               &put_commodity_curve_direct_response::commodity_curve_direct},
@@ -647,7 +647,7 @@ wire_fields(std::type_identity<get_many_commodity_curve_directs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_curve_directs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_commodity_curve_directs_request::changes},
         utility::codec::field{"intent", &put_many_commodity_curve_directs_request::intent},
     };
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<put_many_commodity_curve_directs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_curve_directs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_commodity_curve_directs_response::result},
         utility::codec::field{"directs", &put_many_commodity_curve_directs_response::directs},
     };
@@ -679,7 +679,7 @@ wire_fields(std::type_identity<put_many_commodity_curve_directs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_curve_direct_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_commodity_curve_direct_request::removal},
         utility::codec::field{"intent", &delete_commodity_curve_direct_request::intent},
     };
@@ -695,7 +695,7 @@ wire_fields(std::type_identity<delete_commodity_curve_direct_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_curve_direct_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_commodity_curve_direct_response::result},
     };
 }
@@ -710,7 +710,7 @@ wire_fields(std::type_identity<delete_commodity_curve_direct_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_curve_directs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_commodity_curve_directs_request::removals},
         utility::codec::field{"intent", &delete_many_commodity_curve_directs_request::intent},
     };
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<delete_many_commodity_curve_directs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_curve_directs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_commodity_curve_directs_response::result},
     };
 }
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<delete_many_commodity_curve_directs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_direct_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_commodity_curve_direct_versions_request::key},
         utility::codec::field{"offset", &list_commodity_curve_direct_versions_request::offset},
         utility::codec::field{"limit", &list_commodity_curve_direct_versions_request::limit},
@@ -760,7 +760,7 @@ wire_fields(std::type_identity<list_commodity_curve_direct_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_direct_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodity_curve_direct_versions_response::result},
         utility::codec::field{"versions", &list_commodity_curve_direct_versions_response::versions},
         utility::codec::field{"total", &list_commodity_curve_direct_versions_response::total},
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<list_commodity_curve_direct_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_curve_direct_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_curve_direct_version_request::key},
     };
 }
@@ -792,7 +792,7 @@ wire_fields(std::type_identity<get_commodity_curve_direct_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_curve_direct_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_curve_direct_version_response::result},
         utility::codec::field{"version", &get_commodity_curve_direct_version_response::version},
     };

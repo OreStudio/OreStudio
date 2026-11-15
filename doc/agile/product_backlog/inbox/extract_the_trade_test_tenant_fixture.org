@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 90CE9875-6B2F-4CCD-9D71-F76A8F892A1F
+:END:
+#+title: Extract the trade tests' tenant fixture
+#+description: Two suites build the same account, party, portfolio and book by hand; the fixture belongs in ores.testing.
+#+type: capture
+#+level: cross
+#+filetags: :testing:duplication:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The booking check's fixture and =blotter_rail_tests.cpp= each build the same
+tenant by hand: an account to write as, a party with its parent, a currency, a
+portfolio and a book, with =change_reason_code = "system.test"= on each. One
+helper in =ores.testing= should return that tenant, as the database helpers
+there already do.
+
+* Why
+
+The two copies have drifted, which is the point. The booking check learned two
+rules the store enforces: a portfolio is refused when its currency is a random
+code, and a counterparty is its own refdata row and not a party. The blotter
+fixture writes a currency but states no aggregation currency, and books its
+trades below the booking service, so it never meets the counterparty rule. A
+shared fixture is where those rules are stated once and a third suite that
+wants a book gets them free.
+
+The review of the booking check raised this and the change did not take it,
+because moving a fixture into =ores.testing= reaches a library the trading tests
+and the synthetic tests both link, and that is a change of its own.
+
+* References
+
+- [[id:E96AA88B-1355-4957-996E-D0544735F092][Book every generated trade type through the database]], where the copy is
+  =projects/ores.synthetic/core/tests/generated_trade_booking_tests.cpp=.
+- =projects/ores.trading/core/tests/blotter_rail_tests.cpp=, the other copy.
+
+* See also
+
+- [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]], which is where the helper belongs.

@@ -44,11 +44,10 @@ static constexpr std::string_view regulatory_corporate_sector_queue_group = "ore
 
 std::vector<ores::nats::service::subscription> register_regulatory_corporate_sector_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<regulatory_corporate_sector_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<regulatory_corporate_sector_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_regulatory_corporate_sectors_request::nats_subject,
         regulatory_corporate_sector_queue_group,

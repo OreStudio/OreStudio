@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &session_key::code},
     };
 }
@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &session_write::code},
         utility::codec::field{"name", &session_write::name},
         utility::codec::field{"supplier_code", &session_write::supplier_code},
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &session_change::write},
         utility::codec::field{"precondition", &session_change::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &session_removal::key},
         utility::codec::field{"precondition", &session_removal::precondition},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &session_lookup::key},
         utility::codec::field{"session", &session_lookup::session},
     };
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sessions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"supplier_code", &sessions_filter::supplier_code},
         utility::codec::field{"adapter_code", &sessions_filter::adapter_code},
         utility::codec::field{"environment", &sessions_filter::environment},
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &session_event::event_id},
         utility::codec::field{"key", &session_event::key},
         utility::codec::field{"action", &session_event::action},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"session", &session_version_key::session},
         utility::codec::field{"version", &session_version_key::version},
     };
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &session_versions_filter::version},
         utility::codec::field{"from_version", &session_versions_filter::from_version},
         utility::codec::field{"to_version", &session_versions_filter::to_version},
@@ -520,7 +520,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_sessions_request::offset},
         utility::codec::field{"limit", &list_sessions_request::limit},
         utility::codec::field{"order", &list_sessions_request::order},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_sessions_response::result},
         utility::codec::field{"sessions", &list_sessions_response::sessions},
         utility::codec::field{"total", &list_sessions_response::total},
@@ -554,7 +554,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_session_request::key},
     };
 }
@@ -568,7 +568,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_session_response::result},
         utility::codec::field{"session", &get_session_response::session},
     };
@@ -583,7 +583,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_sessions_request::keys},
     };
 }
@@ -597,7 +597,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_sessions_response::result},
         utility::codec::field{"entries", &get_many_sessions_response::entries},
     };
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_session_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_session_request::change},
         utility::codec::field{"intent", &put_session_request::intent},
     };
@@ -627,7 +627,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_session_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_session_response::result},
         utility::codec::field{"session", &put_session_response::session},
     };
@@ -642,7 +642,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_sessions_request::changes},
         utility::codec::field{"intent", &put_many_sessions_request::intent},
     };
@@ -657,7 +657,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_sessions_response::result},
         utility::codec::field{"sessions", &put_many_sessions_response::sessions},
     };
@@ -672,7 +672,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_session_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_session_request::removal},
         utility::codec::field{"intent", &delete_session_request::intent},
     };
@@ -687,7 +687,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_session_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_session_response::result},
     };
 }
@@ -701,7 +701,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_sessions_request::removals},
         utility::codec::field{"intent", &delete_many_sessions_request::intent},
     };
@@ -716,7 +716,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_sessions_response::result},
     };
 }
@@ -730,7 +730,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_session_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_session_versions_request::key},
         utility::codec::field{"offset", &list_session_versions_request::offset},
         utility::codec::field{"limit", &list_session_versions_request::limit},
@@ -748,7 +748,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_session_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_session_versions_response::result},
         utility::codec::field{"versions", &list_session_versions_response::versions},
         utility::codec::field{"total", &list_session_versions_response::total},
@@ -764,7 +764,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_session_version_request::key},
     };
 }
@@ -778,7 +778,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.sessions.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_session_version_response::result},
         utility::codec::field{"version", &get_session_version_response::version},
     };

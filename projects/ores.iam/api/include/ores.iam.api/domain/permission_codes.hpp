@@ -80,6 +80,8 @@ constexpr auto tenants_delete = "iam::tenants:delete";
 constexpr auto tenants_suspend = "iam::tenants:suspend";
 constexpr auto tenants_terminate = "iam::tenants:terminate";
 constexpr auto tenants_impersonate = "iam::tenants:impersonate";
+/// Enter a tenant as a service account, to serve its work.
+constexpr auto tenants_enter_as_service = "iam::tenants:enter_as_service";
 
 // IAM component wildcard
 constexpr auto iam_all = "iam::*";

@@ -47,7 +47,7 @@ namespace ores::synthetic::domain {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &ir_curve_generation_config_process_parameter_value::version},
         utility::codec::field{"tenant_id",

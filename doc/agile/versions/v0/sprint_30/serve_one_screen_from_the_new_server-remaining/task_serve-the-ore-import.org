@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 408B68E8-AFC7-46C3-9C04-ED9C181A308B
+:END:
+#+title: Task: Serve the ORE import and its preview
+#+description: Two routes: the preview that states what importing a document would change, and the import that acts on the same answer, both the service's.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the standard import in two steps. The preview states what importing a
+document would change, and writes nothing. The import acts on the same answer.
+Both are the ORE service's: the gateway hands the document over and states what
+comes back, a refusal included, because the person reads the reason on the step.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers
+  =POST /api/reporting/pricing-engines/ore-import/preview= and
+  =POST /api/reporting/pricing-engines/ore-import= at the BFF's paths, with the
+  BFF's member names and status codes.
+- The preview writes nothing and states the service's own words, a refusal
+  included.
+- The import states what the service saved and the rows it could not write.
+- The screen's id is joined to the configuration the service reads, and a write
+  that names no configuration is joined to an empty one.
+- A document is refused by size by the service, and the route's own body limit is
+  twice the document's so that the JSON escaping does not refuse it first.
+- The gateway reads no XML, builds no XML and validates none.
+- A test proves each refusal; the happy paths need a live estate and this task
+  does not prove them.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-ore-import=.
+
+The two routes are forwarded, not composed. The gateway states the document, the
+configuration the service should write into, the name and variant of a new
+configuration, whether removals are kept, and the reason. It states back what
+the service answers.
+
+This is the only write in the area that acts on a document a person did not
+build through a screen, which is why it is its own task and its own PR.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

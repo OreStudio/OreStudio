@@ -1,0 +1,20 @@
+objects 930, targets 224
+
+ objects  targets  header
+       2        2  ores.database/pq/connection.hpp
+     185       35  ores.database/pq/result.hpp
+     259       53  ores.database/pq/connection_fwd.hpp
+     185       35  ores.database/pq/pool.hpp
+     185       35  ores.database/pq/codec.hpp
+     185       35  ores.database/pq/statement.hpp
+     185       35  ores.database/pq/transaction.hpp
+      97       54  ores.database/domain/database_options.hpp
+     101       32  ores.database/service/postgres_listener_service.hpp
+     185       35  libpq-fe.h
+
+reconstructed, before the change
+     279       71  ores.database/pq/connection.hpp
+     279       71  libpq-fe.h
+
+objects that stopped reading ores.database/pq/connection.hpp: 277
+objects that stopped reading libpq-fe.h: 94

@@ -101,11 +101,11 @@ inline record_run_pricing_response apply_run_pricing(service::report_instance_se
 class report_run_pricing_handler {
 public:
     report_run_pricing_handler(ores::nats::service::client& nats,
-                               ores::database::context ctx,
+                               const ores::database::context& ctx,
                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves reporting.v1.ops.record_run_pricing.

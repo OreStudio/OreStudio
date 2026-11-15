@@ -19,6 +19,7 @@
  */
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/assets/image_routes.hpp"
+#include "ores.http/routes/assets/image_screen_routes.hpp"
 #include "ores.http/routes/assets/image_tag_routes.hpp"
 #include "ores.http/routes/assets/tag_routes.hpp"
 
@@ -30,6 +31,7 @@ void assets_routes::register_routes(
     ores::nats::service::nats_client& session) {
 
     image_routes::register_routes(router, registry, session);
+    image_screen_routes::register_routes(router, registry, session);
     image_tag_routes::register_routes(router, registry, session);
     tag_routes::register_routes(router, registry, session);
 }

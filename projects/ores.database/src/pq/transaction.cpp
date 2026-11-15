@@ -17,6 +17,7 @@
  *
  */
 #include "ores.database/pq/transaction.hpp"
+#include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -214,6 +215,8 @@ std::string transaction::copy_header() {
 
 std::uint64_t
 transaction::copy_data(std::string_view table, std::string_view columns, const std::string& data) {
+    if (done_)
+        throw store_error("The transaction has ended", "25000", error_kind::refused);
     if (!begun_)
         round_trip({});
     PGconn* c = connection_.native();

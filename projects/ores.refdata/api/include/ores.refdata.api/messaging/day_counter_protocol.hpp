@@ -360,7 +360,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &day_counter_key::code},
     };
 }
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &day_counter_write::code},
         utility::codec::field{"description", &day_counter_write::description},
     };
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &day_counter_change::write},
         utility::codec::field{"precondition", &day_counter_change::precondition},
     };
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &day_counter_removal::key},
         utility::codec::field{"precondition", &day_counter_removal::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &day_counter_lookup::key},
         utility::codec::field{"day_counter", &day_counter_lookup::day_counter},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counters_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &day_counters_filter::code_one_of},
     };
 }
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &day_counter_event::event_id},
         utility::codec::field{"key", &day_counter_event::key},
         utility::codec::field{"action", &day_counter_event::action},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"day_counter", &day_counter_version_key::day_counter},
         utility::codec::field{"version", &day_counter_version_key::version},
     };
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_counter_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &day_counter_versions_filter::version},
         utility::codec::field{"from_version", &day_counter_versions_filter::from_version},
         utility::codec::field{"to_version", &day_counter_versions_filter::to_version},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_day_counters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_day_counters_request::offset},
         utility::codec::field{"limit", &list_day_counters_request::limit},
         utility::codec::field{"order", &list_day_counters_request::order},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_day_counters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_day_counters_response::result},
         utility::codec::field{"day_counters", &list_day_counters_response::day_counters},
         utility::codec::field{"total", &list_day_counters_response::total},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_day_counter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_day_counter_request::key},
     };
 }
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_day_counter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_day_counter_response::result},
         utility::codec::field{"day_counter", &get_day_counter_response::day_counter},
     };
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_day_counters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_day_counters_request::keys},
     };
 }
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_day_counters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_day_counters_response::result},
         utility::codec::field{"entries", &get_many_day_counters_response::entries},
     };
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_day_counter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_day_counter_request::change},
         utility::codec::field{"intent", &put_day_counter_request::intent},
     };
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_day_counter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_day_counter_response::result},
         utility::codec::field{"day_counter", &put_day_counter_response::day_counter},
     };
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_day_counters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_day_counters_request::changes},
         utility::codec::field{"intent", &put_many_day_counters_request::intent},
     };
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_day_counters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_day_counters_response::result},
         utility::codec::field{"day_counters", &put_many_day_counters_response::day_counters},
     };
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_day_counter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_day_counter_request::removal},
         utility::codec::field{"intent", &delete_day_counter_request::intent},
     };
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_day_counter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_day_counter_response::result},
     };
 }
@@ -679,7 +679,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_day_counters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_day_counters_request::removals},
         utility::codec::field{"intent", &delete_many_day_counters_request::intent},
     };
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_day_counters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_day_counters_response::result},
     };
 }
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_day_counter_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_day_counter_versions_request::key},
         utility::codec::field{"offset", &list_day_counter_versions_request::offset},
         utility::codec::field{"limit", &list_day_counter_versions_request::limit},
@@ -726,7 +726,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_day_counter_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_day_counter_versions_response::result},
         utility::codec::field{"versions", &list_day_counter_versions_response::versions},
         utility::codec::field{"total", &list_day_counter_versions_response::total},
@@ -742,7 +742,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_day_counter_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_day_counter_version_request::key},
     };
 }
@@ -756,7 +756,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.day_counters.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_day_counter_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_day_counter_version_response::result},
         utility::codec::field{"version", &get_day_counter_version_response::version},
     };

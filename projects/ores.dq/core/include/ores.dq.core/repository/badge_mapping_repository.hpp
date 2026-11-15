@@ -74,7 +74,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit badge_mapping_repository(context ctx);
+    explicit badge_mapping_repository(const context& ctx);
 
     std::string sql();
 

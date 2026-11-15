@@ -30,7 +30,8 @@ accepts. The currency pair conventions were not:
 still hold =UnitedStates.Settlement= and =UnitedKingdom.Settlement=.
 
 Two more files still hold the first vocabulary for the same reason:
-=refdata_overnight_index_conventions_populate.sql=, whose thirteen remaining
+the OreStudio rows of the refdata.conventions dataset
+(=projects/ores.seeder/datasets/conventions/conventions.tsv=), whose seven
 rows keep the synthetic feeds' families and their =refdata.calendars= codes
 (=TARGET=, =Japan=), and =refdata_currency_pair_convention_calendars_seed_populate.sql=.
 

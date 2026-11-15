@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -36,6 +37,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -85,20 +88,84 @@ series_classification_rule_list_order(const ores::utility::domain::order& order,
 
 }
 
-ores::utility::domain::precondition
-series_classification_rule_repository::replace_claim(context ctx,
-                                                     const domain::series_classification_rule& v) {
-    const auto current = read_latest(ctx, v.instrument, v.quote, v.key_kind);
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool series_classification_rule_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using series_classification_rule_rows_by_key =
+    std::map<std::tuple<std::string, std::string, std::string>,
+             std::vector<domain::series_classification_rule>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+series_classification_rule_rows_by_key
+series_classification_rule_current_rows(series_classification_rule_repository& repo,
+                                        const ores::database::context& ctx,
+                                        const std::vector<domain::series_classification_rule>& of) {
+    std::vector<std::string> instruments;
+    instruments.reserve(of.size());
+    std::vector<std::string> quotes;
+    quotes.reserve(of.size());
+    std::vector<std::string> key_kinds;
+    key_kinds.reserve(of.size());
+    for (const auto& row : of) {
+        instruments.push_back(row.instrument);
+        quotes.push_back(row.quote);
+        key_kinds.push_back(row.key_kind);
+    }
+    series_classification_rule_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, instruments, quotes, key_kinds))
+        current[std::make_tuple(item.instrument, item.quote, item.key_kind)].push_back(
+            std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::series_classification_rule>&
+series_classification_rule_rows_of(const series_classification_rule_rows_by_key& current,
+                                   const domain::series_classification_rule& item) {
+    static const std::vector<domain::series_classification_rule> none;
+    const auto found = current.find(std::make_tuple(item.instrument, item.quote, item.key_kind));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition series_classification_rule_replace_claim(
+    const std::vector<domain::series_classification_rule>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::series_classification_rule series_classification_rule_repository::apply_claim(
-    context ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::series_classification_rule series_classification_rule_apply_claim(
     const domain::series_classification_rule& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::series_classification_rule>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -110,41 +177,51 @@ domain::series_classification_rule series_classification_rule_repository::apply_
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.instrument, v.quote, v.key_kind);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void series_classification_rule_repository::write(context ctx,
+}
+
+void series_classification_rule_repository::write(const context& ctx,
                                                   const domain::series_classification_rule& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          series_classification_rule_replace_claim(
+              read_latest(ctx, v.instrument, v.quote, v.key_kind)));
 }
 
 void series_classification_rule_repository::write(
-    context ctx, const std::vector<domain::series_classification_rule>& v) {
+    const context& ctx, const std::vector<domain::series_classification_rule>& v) {
+    const auto current = series_classification_rule_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(series_classification_rule_replace_claim(
+            series_classification_rule_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
 void series_classification_rule_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::series_classification_rule& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rule. "
                                << "instrument: " << v.instrument << " quote: " << v.quote
                                << " key_kind: " << v.key_kind;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = series_classification_rule_apply_claim(
+        v,
+        claim,
+        series_classification_rule_claim_reads_current(claim) ?
+            read_latest(ctx, v.instrument, v.quote, v.key_kind) :
+            std::vector<domain::series_classification_rule>{});
     query_builder::execute_write_query(ctx,
                                        series_classification_rule_mapper::map(t),
                                        lg(),
@@ -152,14 +229,21 @@ void series_classification_rule_repository::write(
 }
 
 void series_classification_rule_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::series_classification_rule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rules. Count: " << v.size();
+    std::vector<domain::series_classification_rule> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (series_classification_rule_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = series_classification_rule_current_rows(*this, ctx, to_read);
     std::vector<domain::series_classification_rule> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(series_classification_rule_apply_claim(
+            v[i], claims[i], series_classification_rule_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        series_classification_rule_mapper::map(batch),
                                        lg(),
@@ -167,7 +251,7 @@ void series_classification_rule_repository::write(
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx) {
+series_classification_rule_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
@@ -184,7 +268,7 @@ series_classification_rule_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx,
+series_classification_rule_repository::read_latest(const context& ctx,
                                                    const std::string& instrument,
                                                    const std::string& quote,
                                                    const std::string& key_kind) {
@@ -209,7 +293,7 @@ series_classification_rule_repository::read_latest(context ctx,
 
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_all(context ctx,
+series_classification_rule_repository::read_all(const context& ctx,
                                                 const std::string& instrument,
                                                 const std::string& quote,
                                                 const std::string& key_kind) {
@@ -232,7 +316,7 @@ series_classification_rule_repository::read_all(context ctx,
 }
 
 std::optional<domain::series_classification_rule>
-series_classification_rule_repository::read_at_version(context ctx,
+series_classification_rule_repository::read_at_version(const context& ctx,
                                                        const std::string& instrument,
                                                        const std::string& quote,
                                                        const std::string& key_kind,
@@ -261,7 +345,7 @@ series_classification_rule_repository::read_at_version(context ctx,
 }
 
 series_classification_rule_repository::remove_status
-series_classification_rule_repository::remove(context ctx,
+series_classification_rule_repository::remove(const context& ctx,
                                               const std::string& instrument,
                                               const std::string& quote,
                                               const std::string& key_kind,
@@ -297,7 +381,7 @@ series_classification_rule_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void series_classification_rule_repository::remove(context ctx,
+void series_classification_rule_repository::remove(const context& ctx,
                                                    const std::string& instrument,
                                                    const std::string& quote,
                                                    const std::string& key_kind) {
@@ -305,7 +389,7 @@ void series_classification_rule_repository::remove(context ctx,
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx,
+series_classification_rule_repository::read_latest(const context& ctx,
                                                    std::uint32_t offset,
                                                    std::uint32_t limit,
                                                    const ores::utility::domain::order& order,
@@ -329,7 +413,7 @@ series_classification_rule_repository::read_latest(context ctx,
 }
 
 std::uint32_t series_classification_rule_repository::get_total_rule_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series classification rule count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -345,12 +429,33 @@ std::uint32_t series_classification_rule_repository::get_total_rule_count(
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx,
+series_classification_rule_repository::read_latest(const context& ctx,
                                                    const std::vector<std::string>& instruments,
                                                    const std::vector<std::string>& quotes,
                                                    const std::vector<std::string>& key_kinds) {
     if (instruments.empty() || quotes.empty() || key_kinds.empty())
         return {};
+    if (quotes.size() != instruments.size() || key_kinds.size() != instruments.size())
+        throw std::invalid_argument("series_classification_rule_repository::read_latest: key "
+                                    "column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (instruments.size() > chunk_size) {
+        std::vector<domain::series_classification_rule> all;
+        for (std::size_t begin = 0; begin < instruments.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, instruments.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(instruments.begin() + begin, instruments.begin() + end),
+                std::vector<std::string>(quotes.begin() + begin, quotes.begin() + end),
+                std::vector<std::string>(key_kinds.begin() + begin, key_kinds.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -368,9 +473,6 @@ series_classification_rule_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (quotes.size() != instruments.size() || key_kinds.size() != instruments.size())
-        throw std::invalid_argument("series_classification_rule_repository::read_latest: key "
-                                    "column vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string>> requested;
     for (std::size_t i = 0; i < instruments.size(); ++i)
         requested.emplace(instruments[i], quotes[i], key_kinds[i]);
@@ -383,7 +485,7 @@ series_classification_rule_repository::read_latest(context ctx,
     return filtered;
 }
 
-void series_classification_rule_repository::remove(context ctx,
+void series_classification_rule_repository::remove(const context& ctx,
                                                    const std::vector<std::string>& instruments,
                                                    const std::vector<std::string>& quotes,
                                                    const std::vector<std::string>& key_kinds) {

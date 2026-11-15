@@ -26,6 +26,7 @@ Output is a dict with the same top-level shape as the JSON entity loader:
 """
 from __future__ import annotations
 
+import json
 import re
 import uuid
 from dataclasses import dataclass, field
@@ -1409,14 +1410,17 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     fm = doc.frontmatter
     for k in (
         "brief", "entity_singular", "entity_plural", "entity_title",
-        "http_area",
+        "http_area", "web_resource", "web_list_by", "web_area", "web_writes",
+        "web_parent_filter", "web_read_only_because", "web_key_read",
+        "web_classification", "web_classification_topic",
     ):
         if k in fm:
             de[k] = fm[k]
 
     # Boolean + string scalars carried in the frontmatter of unified entity
     # org files (these keys come from the table pathway during Step 5 migration).
-    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn"):
+    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn", "web_read_only",
+              "web_system_owned", "web_classification_read_only"):
         if k in fm:
             de[k] = _parse_typed(fm[k])
     if "coding_scheme" in fm:
@@ -2287,11 +2291,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     j: dict[str, Any] = {}
     for key in ("product", "schema", "component", "name", "name_singular",
-                "name_title", "name_singular_words", "brief", "http_area"):
+                "name_title", "name_singular_words", "brief", "http_area",
+                "web_resource", "web_list_by"):
         if key in fm:
             j[key] = fm[key]
-    if "has_tenant_id" in fm:
-        j["has_tenant_id"] = _parse_typed(fm["has_tenant_id"])
+    for key in ("has_tenant_id", "web_read_only"):
+        if key in fm:
+            j[key] = _parse_typed(fm[key])
     # Top-level * Flags section -- the single canonical binding point for
     # :profile: (and any other root-level flags), mirroring
     # org_document_to_model's domain_entity handling.
@@ -3587,6 +3593,7 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
             # relation between rows. A service reads it to tell a listing, which
             # a default may narrow, from a lookup, which it must not.
             "is_key": len(key_columns) == 1 and name == key_columns[0],
+            "read_type": _strip_optional(_column_cpp_type(entity, name)),
             "cpp_type": f"std::vector<{_strip_optional(_column_cpp_type(entity, name))}>"})
     for name in filterable:
         kind = _temporal_kind(entity, name)
@@ -3983,6 +3990,9 @@ def junction_entity_shape(junction: dict[str, Any]) -> dict[str, Any]:
         # The published area is the model's declaration, as it is for an entity:
         # a junction answers under the same contract as the rows it links.
         **({"http_area": junction["http_area"]} if junction.get("http_area") else {}),
+        **({"web_resource": junction["web_resource"]} if junction.get("web_resource") else {}),
+        **({"web_list_by": junction["web_list_by"]} if junction.get("web_list_by") else {}),
+        **({"web_read_only": junction["web_read_only"]} if "web_read_only" in junction else {}),
         "entity_singular": junction.get("name_singular", ""),
         "entity_plural": name,
         "entity_plural_short": name,
@@ -4167,6 +4177,15 @@ _OPERATION_PREFIXES = (
 )
 
 
+# Every verb a derived operation may state. A write changes state and is
+# guarded by the resource's write or delete code, and on a catalogue the system
+# tenant owns, by the system tenant gate too. A verb in neither set would pass
+# both, so the derivation refuses it rather than serve it unguarded.
+_WRITE_VERBS = frozenset(("put", "put_many", "delete", "delete_many"))
+_READ_VERBS = frozenset(("list", "list_scoped", "get", "get_many",
+                         "get_version", "list_versions"))
+
+
 def _operation_verb(name: str) -> str:
     """The verb one derived request states, or an empty string if none."""
     for prefix, verb in _OPERATION_PREFIXES:
@@ -4230,7 +4249,11 @@ def protocol_operations(
         names = [field.get("name") for field in fields]
         leading_type = fields[0].get("cpp_type", "") if fields else ""
         verb = message.get("verb") or _operation_verb(message["name"])
-        is_write = verb in ("put", "put_many", "delete", "delete_many")
+        if verb not in _WRITE_VERBS | _READ_VERBS:
+            raise ValueError(
+                f"{message['name']} states the verb {verb!r}, which is neither "
+                "a read nor a write, so its handler would be unguarded")
+        is_write = verb in _WRITE_VERBS
         guarded_read = (not is_write and verb != ""
                         and message["subject"] not in open_reads)
         operations.append({
@@ -4364,6 +4387,19 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     "'true', 'yes' and '1'"
                 )
             entry["http_route"] = True
+        # The rate policy a public route runs under, by name, when the default
+        # for an open route is not the right budget: a route that takes a
+        # credential shares the sign-in budget. A route that needs a session
+        # counts its account, so a policy there would count nobody it means to.
+        rate_policy = str(props.get("rate_policy", "")).strip()
+        if rate_policy:
+            if entry.get("requires_session") != "false":
+                raise ValueError(
+                    f"message {node.title} states :rate_policy: {rate_policy!r} "
+                    "but needs a session; only a message that states :auth: none "
+                    "takes a named rate policy"
+                )
+            entry["rate_policy"] = rate_policy
         # The verb a generated shell command answers to, when the message's own
         # name is not the word a caller would type. A message is named for the
         # artefact and the action both -- bootstrap_status_request -- while the
@@ -4972,6 +5008,8 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             # projection carries the fact so the HTTP facet can read it; the
             # shell facet ignores it, because a command is a NATS caller.
             "http_route": bool(message.get("http_route")),
+            # The rate policy the HTTP route runs under, or empty for the default.
+            "rate_policy": message.get("rate_policy", ""),
             # Whether replaying the command destroys the environment it runs
             # in. The model states it, because the shape does not: a reset and
             # a status read are both a bare command name.
@@ -5769,6 +5807,282 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_JSON_NUMBER_TYPES = frozenset({
+    "int", "double", "float", "std::int32_t", "std::int64_t", "std::uint32_t",
+    "std::uint64_t", "std::int16_t", "std::uint16_t", "long", "unsigned int"})
+
+
+def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
+    """The record routes a screen reads one resource through, or None.
+
+    The browser names a reference data resource by a key in the address, such
+    as ``/api/refdata/currency-memberships``, and reads it in the shapes the
+    BFF answered with: ``rows`` and ``total`` on a page, ``row`` on a key read.
+    An entity joins that registry by stating its key with ``#+web_resource:``,
+    because three keys differ from the entity's plural and so cannot be
+    derived. Everything else the registry said is read from the model: the key
+    fields, the search, the sortable columns, the filters, the parent a
+    junction is read by and the as-of read. A resource the screen reads but
+    does not write states ``#+web_read_only: true``, or the sentence the
+    catalogue shows with ``#+web_read_only_because:``.
+
+    A screen area may read resources another component owns, so
+    ``#+web_area:`` names the area the routes answer under. The unit stays
+    in its own component's HTTP part, beside the protocol it speaks. ``#+web_writes: many`` gives the write and the removal
+    the batch bodies the synthetic screens send. ``#+web_parent_filter:``
+    names the filter member a parent's rows are read by, where the entity has
+    no list-by request. ``#+web_system_owned: true`` marks a catalogue every
+    tenant shares, which only a system tenant session writes, and
+    ``#+web_key_read: hand-written`` leaves the key route to a hand-written
+    unit. A write member the browser may leave out takes the model's
+    ``:default_value:``.
+
+    Raises:
+        ValueError: if the entity has more than one parent relation and does
+            not name the one the screen reads it by with ``#+web_list_by:``,
+            or names one it does not have.
+    """
+    key = (entity.get("web_resource") or "").strip()
+    if not key:
+        return None
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    plural = entity.get("entity_plural", singular + "s")
+    commands = entity_shell_plan(entity)["commands"]
+
+    def _command(kind: str, precondition: str | None = None) -> dict[str, Any] | None:
+        for command in commands:
+            if command["kind"] != kind:
+                continue
+            if precondition is not None and command["precondition"] != precondition:
+                continue
+            return command
+        return None
+
+    paged = _command("paged")
+    put = _command("put")
+    delete = _command("delete")
+    if paged is None or put is None or delete is None:
+        raise ValueError(
+            f"{singular}: #+web_resource: needs a paged list, a put and a delete")
+    writes = (entity.get("web_writes") or "one").strip()
+    if writes not in ("one", "many"):
+        raise ValueError(f"{singular}: #+web_writes: is one or many, not '{writes}'")
+    put_many = _command("put_many")
+    delete_many = _command("delete_many")
+    if writes == "many" and (put_many is None or delete_many is None):
+        raise ValueError(
+            f"{singular}: #+web_writes: many needs a put-many and a delete-many")
+
+    list_by_commands = [c for c in commands if c["kind"] == "list_by"]
+    wanted = (entity.get("web_list_by") or "").strip()
+    list_by = None
+    if wanted:
+        list_by = next((c for c in list_by_commands
+                        if c["relation"].get("name") == wanted), None)
+        if list_by is None:
+            raise ValueError(
+                f"{singular}: #+web_list_by: names '{wanted}', which is not a "
+                "relation the entity is listed by")
+    elif len(list_by_commands) == 1:
+        list_by = list_by_commands[0]
+    elif len(list_by_commands) > 1:
+        raise ValueError(
+            f"{singular}: the entity is listed by more than one relation, so "
+            "#+web_list_by: names the one the screen reads it by")
+
+    members = filter_members(entity)["members"]
+    key_fields = [_column_name(c)
+                  for c in (entity.get("primary_key") or {}).get("columns") or []]
+    single_key = None
+    if len(key_fields) == 1:
+        single_key = next((m for m in members
+                           if m.get("is_one_of") and m.get("is_key")), None)
+    filters = [{"member": m["member"], "read_type": m["read_type"]}
+               for m in members if m.get("is_equals")]
+    parent_name = (entity.get("web_parent_filter") or "").strip()
+    parent_filter = None
+    if parent_name:
+        if list_by is not None:
+            raise ValueError(
+                f"{singular}: #+web_parent_filter: and a list-by request both name "
+                "the parent; keep one")
+        parent_filter = next((f for f in filters if f["member"] == parent_name), None)
+        if parent_filter is None:
+            raise ValueError(
+                f"{singular}: #+web_parent_filter: names '{parent_name}', which is "
+                "not an equals filter member")
+    key_read = (entity.get("web_key_read") or "generated").strip()
+    if key_read not in ("generated", "hand-written"):
+        raise ValueError(
+            f"{singular}: #+web_key_read: is generated or hand-written, not '{key_read}'")
+    because = (entity.get("web_read_only_because") or "").strip()
+    area = (entity.get("web_area") or "").strip() or component
+    sortable = [f["name"] for f in entity.get("sortable_fields") or []]
+    subject_parts = put["subject"].split(".")
+    if len(subject_parts) < 4:
+        raise ValueError(
+            f"{singular}: the put subject '{put['subject']}' does not name its resource "
+            "as <component>.v<n>.<resource>.<action>, so the permissions cannot be named")
+    resource_name = subject_parts[2]
+    unit = f"{singular}_web"
+
+    def _json_default(column: dict[str, Any]) -> str | None:
+        raw = column.get("default_value")
+        cpp_type = column.get("cpp_type") or ""
+        if raw is None or "::" in str(raw) or cpp_type.startswith("std::optional"):
+            return None
+        text = str(raw).strip()
+        if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
+            text = text[1:-1]
+        if cpp_type == "std::string":
+            return json.dumps(text)
+        try:
+            value = json.loads(text)
+        except ValueError:
+            return None
+        # A default of the wrong JSON type would make every write that omits
+        # the member fail to decode, so the model is refused when it is built.
+        expected = (bool if cpp_type == "bool"
+                    else (int, float) if cpp_type in _JSON_NUMBER_TYPES else None)
+        if expected is not None and (not isinstance(value, expected)
+                                     or (expected is not bool and isinstance(value, bool))):
+            raise ValueError(
+                f"{singular}: the default of {_column_name(column)} is {text}, "
+                f"which is not a {cpp_type}")
+        return text
+
+    write_defaults = []
+    for column in write_record_columns(entity):
+        literal = _json_default(column)
+        if literal is not None:
+            write_defaults.append({"name": _column_name(column), "json": literal})
+
+    def _quoted(names: list[str]) -> list[dict[str, Any]]:
+        return [{"name": name, "last": index == len(names) - 1}
+                for index, name in enumerate(names)]
+
+    return {
+        "key": key,
+        "unit": unit,
+        "base": f"/api/{area}/{key}",
+        "area": area,
+        # The list's filter record, named as the protocol names it for an entity
+        # and a junction alike.
+        "filter_name": f"{plural}_filter",
+        "entity_type": f"ores.{component}.{singular}",
+        "rows_member": entity.get("entity_plural_short") or plural,
+        "row_type": f"ores::{component}::domain::{singular}",
+        "versioned": not bool((entity.get("sql") or {}).get("current_state")
+                              or entity.get("current_state")),
+        "writable": entity.get("web_read_only") is not True and not because,
+        "read_only_because": because,
+        "read_only_because_json": json.dumps(because),
+        "system_owned": entity.get("web_system_owned") is True,
+        "writes_many": writes == "many",
+        "put_many_request": put_many["request"] if put_many else "",
+        "delete_many_request": delete_many["request"] if delete_many else "",
+        "parent_filter": parent_filter,
+        "has_by": list_by is not None or parent_filter is not None,
+        "has_key_route": single_key is not None and key_read == "generated",
+        "key_field": key_fields[0] if len(key_fields) == 1 else "",
+        "key_read_type": single_key["read_type"] if single_key else "",
+        # The removal names the row by the key the model declares, which can be
+        # another field than the storage key the screens address the row by.
+        "removal_key_field": (key_record_fields(entity) or [{}])[0].get("name", ""),
+        "removal_key_type": _strip_optional(
+            (key_record_fields(entity) or [{}])[0].get("cpp_type", "std::string")),
+        "write_defaults": write_defaults,
+        "has_write_defaults": bool(write_defaults),
+        "search": bool(entity.get("has_search")),
+        "key_fields": _quoted(key_fields),
+        "sortable": _quoted(sortable),
+        "filters": filters,
+        "has_filters": bool(filters),
+        "single_key": single_key,
+        "list_request": paged["request"],
+        "put_request": put["request"],
+        "delete_request": delete["request"],
+        "list_by": None if list_by is None else {
+            "member": list_by["relation"]["name"],
+            "request": list_by["request"],
+            "read_type": _strip_optional(
+                list_by["relation"].get("cpp_type") or "std::string"),
+        },
+        "events_component": put["subject"].split(".")[0],
+        "resource_name": resource_name,
+        "read_permission": f"{component}::{resource_name}:read",
+        "write_permission": f"{component}::{resource_name}:write",
+        "delete_permission": f"{component}::{resource_name}:delete",
+    }
+
+
+def entity_web_classification_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
+    """The routes the classification screen maintains one code list through, or None.
+
+    The screen names a list by a key in the address, such as
+    ``/api/classifications/monetary-nature``, and reads every row with the
+    label the label catalogue paints its code with. An entity joins that
+    registry by stating its key with ``#+web_classification:`` and the topic
+    the screen files it under with ``#+web_classification_topic:``. A list of
+    spellings an ORE document must write exactly states
+    ``#+web_classification_read_only: true``.
+
+    The list's shape follows from its write record: a list whose rows have a
+    name is ``named``, one with only a display order is ``ordered``, and one
+    with neither is ``plain``. Only an ordered or named list can be reordered.
+
+    Raises:
+        ValueError: if the entity does not state a topic, or its key is not
+            a single code field.
+    """
+    key = (entity.get("web_classification") or "").strip()
+    if not key:
+        return None
+    singular = entity.get("entity_singular", "")
+    topic = (entity.get("web_classification_topic") or "").strip()
+    if not topic:
+        raise ValueError(f"{singular}: #+web_classification: needs a topic")
+    commands = entity_shell_plan(entity)["commands"]
+
+    def _command(kind: str) -> dict[str, Any]:
+        found = next((c for c in commands if c["kind"] == kind), None)
+        if found is None:
+            raise ValueError(f"{singular}: #+web_classification: needs a {kind} verb")
+        return found
+
+    paged, put = _command("paged"), _command("put")
+    put_many, delete = _command("put_many"), _command("delete")
+    key_fields = key_record_fields(entity)
+    if [f["name"] for f in key_fields] != ["code"]:
+        raise ValueError(f"{singular}: a classification list is keyed by its code alone")
+    written = {f["name"] for f in write_record_for(entity)}
+    has_name = "name" in written
+    has_order = "display_order" in written
+    component = entity.get("component", "")
+    plural = entity.get("entity_plural", singular + "s")
+    resource_name = put["subject"].split(".")[2]
+    return {
+        "key": key,
+        "unit": f"{singular}_classification",
+        "base": f"/api/classifications/{key}",
+        "topic": topic,
+        "entity_type": f"ores.{component}.{singular}",
+        "shape": "named" if has_name else "ordered" if has_order else "plain",
+        "has_name": has_name,
+        "has_order": has_order,
+        "editable": entity.get("web_classification_read_only") is not True,
+        "code_domain": singular,
+        "rows_member": entity.get("entity_plural_short") or plural,
+        "list_request": paged["request"],
+        "put_request": put["request"],
+        "put_many_request": put_many["request"],
+        "delete_request": delete["request"],
+        "write_permission": f"{component}::{resource_name}:write",
+        "delete_permission": f"{component}::{resource_name}:delete",
+    }
+
+
 # The version segment of the canonical NATS subject grammar a declared
 # operation is addressed by: ``<component>.v<version>.<resource>.<action>``.
 # The derived subjects an entity states are the same grammar with a hole for
@@ -5840,6 +6154,7 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
             "request": command["request"],
             "response_type": command["response_type"],
             "requires_session": not command.get("public", False),
+            "rate_policy": command.get("rate_policy", ""),
             # A message with no field takes an empty body, so the handler
             # constructs it rather than parsing an absent one.
             "has_fields": bool(command.get("positionals") or command.get("flags")),

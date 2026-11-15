@@ -21,7 +21,8 @@
 #define ORES_IAM_MESSAGING_BOOTSTRAP_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.database/repository/repository_exception.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
@@ -40,6 +41,7 @@
 #include "ores.utility/version/version.hpp"
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <thread>
 
@@ -62,13 +64,13 @@ using namespace ores::logging;
 class bootstrap_handler {
 public:
     bootstrap_handler(ores::nats::service::client& nats,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       ores::security::jwt::jwt_authenticator signer,
                       std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , party_cache_(std::move(party_cache)) {}
+        , ctx_(ctx)
+        , signer_(signer)
+        , party_cache_(party_cache) {}
 
     void status(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);
@@ -126,13 +128,12 @@ public:
                 reply(nats_,
                       msg,
                       create_initial_admin_response{
-                          .success = false, .error_message = "System is not in bootstrap mode"});
+                          .success = false, .error_message = "System is not in bootstrap mode."});
                 return;
             }
         }
 
         try {
-            using ores::database::repository::execute_parameterized_string_query;
 
             // Hash the password in C++ — pgcrypto is not required in the DB.
             const auto password_hash = ores::security::crypto::password_hasher::hash(req->password);
@@ -142,7 +143,7 @@ public:
             // audit columns take the username, which is the part of the
             // principal before the hostname.
             const auto username = username_of(req->principal);
-            const auto results = execute_parameterized_string_query(
+            const auto results = ores::database::query_builder::execute_parameterized_string_query(
                 ctx_,
                 "SELECT ores_iam_create_initial_admin_fn($1, $2, $3, $4)::text",
                 {username, req->email, password_hash, username},
@@ -152,8 +153,8 @@ public:
             if (results.empty()) {
                 reply(nats_,
                       msg,
-                      create_initial_admin_response{
-                          .success = false, .error_message = "Procedure returned no account_id"});
+                      create_initial_admin_response{.success = false,
+                                                    .error_message = std::string(create_failed)});
                 return;
             }
 
@@ -172,15 +173,41 @@ public:
                   create_initial_admin_response{.success = true,
                                                 .account_id = account_id_str,
                                                 .tenant_id = ctx_.tenant_id().to_string()});
+        } catch (const ores::database::repository::repository_exception& e) {
+            BOOST_LOG_SEV(bootstrap_handler_lg(), error)
+                << msg.subject << " failed (" << e.sqlstate() << "): " << e.what();
+            reply(nats_,
+                  msg,
+                  create_initial_admin_response{.success = false,
+                                                .error_message = create_refusal(e.sqlstate())});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
-                  create_initial_admin_response{.success = false, .error_message = e.what()});
+                  create_initial_admin_response{.success = false,
+                                                .error_message = std::string(create_failed)});
         }
     }
 
+    /**
+     * @brief The words a refused create answers, chosen by its SQLSTATE.
+     *
+     * The caller has no session, so a failure never answers the database's own
+     * text, which can name tables and columns; the log keeps it.
+     */
+    [[nodiscard]] static std::string create_refusal(std::string_view sqlstate) {
+        if (sqlstate == "55000")
+            return "System is not in bootstrap mode.";
+        if (sqlstate == "22023")
+            return "A username, an email address and a password are required.";
+        if (sqlstate == "23505")
+            return "That username is already taken.";
+        return std::string(create_failed);
+    }
+
 private:
+    static constexpr std::string_view create_failed = "The administrator could not be created.";
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;

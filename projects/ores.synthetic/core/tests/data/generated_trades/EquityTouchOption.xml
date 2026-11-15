@@ -4,20 +4,23 @@
     <TradeType>EquityTouchOption</TradeType>
     <EquityTouchOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
           <ExerciseDate>2026-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>DownAndOut</Type>
+        <Type>UpAndIn</Type>
         <Levels>
-          <Level>3162.62</Level>
+          <Level>3865.42</Level>
         </Levels>
       </BarrierData>
       <Name>MSFT.O</Name>
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>5709785.78</PayoffAmount>
+      <Calendar>TARGET</Calendar>
+      <EQIndex>EQ-MSFT.O</EQIndex>
     </EquityTouchOptionData>
   </Trade>
   <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
@@ -25,19 +28,22 @@
     <EquityTouchOptionData>
       <OptionData>
         <LongShort>Long</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
           <ExerciseDate>2031-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>DownAndOut</Type>
+        <Type>UpAndIn</Type>
         <Levels>
-          <Level>1743.96</Level>
+          <Level>2131.5</Level>
         </Levels>
       </BarrierData>
       <Name>MSFT.O</Name>
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>3658095.79</PayoffAmount>
+      <Calendar>TARGET</Calendar>
+      <EQIndex>EQ-MSFT.O</EQIndex>
     </EquityTouchOptionData>
   </Trade>
 </Portfolio>

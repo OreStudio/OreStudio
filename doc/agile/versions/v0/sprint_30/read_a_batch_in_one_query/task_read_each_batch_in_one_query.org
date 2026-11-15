@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: 02E729DE-FEA1-4D7A-9C60-0A6048B43C49
+:END:
+#+title: Task: Read each batch in one query in the service template
+#+description: The service template reads each row of a get-many, put-many and delete-many batch by key; read the batch's rows with one query per path, chosen by key shape.
+#+type: task
+#+level: s1
+#+filetags: :codegen:performance:services:read_a_batch_in_one_query:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-each-batch-in-one-query
+#+pr: 4739
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated get-many, put-many and delete-many paths read their rows with one query per batch, and put-many answers from one read of the rows it wrote.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The service template reads the current rows of each batch path with one query.
+- A put-many still refuses the whole batch when one row fails its precondition, and writes nothing.
+- The regenerated services build and pass their suites, and the codegen drift gate is clean.
+- A 1,000-row put of market observations is measured before and after, with the command, on the same environment.
+
+* Plan
+
+- Add one helper, =<entity>_read_many=, beside =<entity>_read_one= in
+  =ores.cpp.service.service_impl.org=. It returns one entry per key, in the
+  order of the keys, and each entry holds what =_read_one= holds for that key.
+  Every bulk path calls it, so the call sites do not depend on the key shape.
+- When the declared key is the storage key, the helper calls the repository's
+  batch =read_latest= in chunks of 1,000 keys. It joins the rows back to the
+  keys by the text form of each key column (=key_text= and =row_text=), which
+  is the same conversion the compound-key filter already uses.
+- When the declared key is not the storage key, the helper loops over
+  =_read_one=. A batch finder by declared key is a separate task.
+- =prepare_change= takes the current rows as a parameter. Put-many reads all
+  current rows once before the loop. The single put reads its one row.
+- Put-many reads back the written rows with the keys it read before the
+  write. A write keeps the key its change states.
+- Delete-many uses the helper on the gated path and on the declared-key path.
+- Remove =:service_batch_reads_by_trade_id:=. The general path covers its
+  seven trade-id entities, so the flag has no use.
+- Out of scope: the junction service variant (24 services). Its repository
+  has no batch read.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| A put of 1,000 market observations, before (main's service) | median 16.52 s, range 14.55 to 22.00 s, 25 batches in 5 runs | =LD_LIBRARY_PATH=<before> ores.marketdata.core.tests "[.benchmark]"=, runs alternated with the after side; raw times in =evidence/batch_put_benchmark_service_reads.tsv= | origin/main 735c13adfe service file on 6563dcc713 |
+| A put of 1,000 market observations, after | median 5.89 s, range 5.12 to 12.50 s, 25 batches in 5 runs | the same command with the branch library | 6563dcc713 plus the benchmark test |
+| Load average during the runs | 11 to 34 on 8 cores | =uptime= before each run | |
+| Core suites on the branch | dq 124, trading 246, marketdata 409 test cases, all pass | =compass build test_ores.<component>.core.tests= | 6563dcc713 |
+
+* Notes
+
+- The trade-id get-many refused more than 1,000 keys with
+  =filter_too_large=, because one statement carried every key. The helper
+  reads in chunks, so that reason is gone and the refusal is removed. No test
+  asserted it.
+- =:has_batch_read:= is set on seven trading models, but no template reads it.
+  Every repository declares the batch =read_latest=.
+
+** What limits the put after this task
+
+The repository's batch write checks each row's claim with its own read:
+=apply_claim= calls =read_latest= once per row. Before this task a 1,000-row
+put made about 3,000 single-row reads (2,000 in the service, 1,000 in the
+repository); after it, about 1,000. Both sides cost about 5.5 ms a read
+(16.52 s / 3,000 and 5.89 s / 1,000), which is what a read-bound path gives.
+This is inferred from the counts, not profiled. The repository's claim check is
+the next task of the story.
+
+** What the benchmark leaves out
+
+The benchmark calls the service in process, so it leaves out the NATS round
+trip, one message each way per batch on both sides. The end-to-end number is
+the derived source's first history, measured at the end of the story.
+
+** Not in this task
+
+- Services whose declared key is not the storage key read each key on its own,
+  through the same helper. Their repository has no batch read by that key.
+- The 24 junction services and the 4 convention services come from other
+  templates.
+
+** Drift on main
+
+=check_component_drift.py --all= flags
+=ores.refdata.api/messaging/configuration_document_protocol.hpp=. This branch
+changes neither that file nor the protocol templates.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4739][#4739]] | [codegen] Read each bulk batch with one query in the service template |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: test cases are sentences, not snake_case verbs | service_market_observation_batch_tests.cpp | Accept | Renamed the three cases. |
+| 2 | Local review: test cases do not log | service_market_observation_batch_tests.cpp | Accept | Each case logs the size of its put, not the rows. |
+| 3 | Local review: misspell-fixer exits 1 on the repository | (repository) | Decline | Run on this branch's own files it exits 0; the hit is outside this diff. |
+| 4 | Local audit: a test file must end in =_tests.cpp= | service_market_observation_batch_benchmark.cpp | Accept | The benchmark moved into the batch tests file as a hidden case. |
+| 5 | Claude review 1: a get-many key set is no longer bounded | ores.cpp.service.service_impl.org | Accept | The protocol bounds a key set at 1,000. Every generated get-many now refuses more with =filter_too_large=. The put-many and delete-many bound is a capture: callers may send more today. |
+| 6 | Claude review 2: the text-form join could drop a row quietly | ores.cpp.service.service_impl.org | Accept | No key column uses citext or a collation, and both sides convert the typed value with one function. The helper's comment now says so. |
+| 7 | Claude review 3: each row is copied into the result | ores.cpp.service.service_impl.org | Decline | One copy per key next to a database read per chunk. The next task reworks the read. |
+| 8 | Claude review 4: name the services that still read per key | ores.cpp.service.service_impl.org | Decline | The helper's comment states the rule; the services are those whose declared key is not the storage key. |
+| 9 | Claude review 5: a single put now reads before the gate | ores.cpp.service.service_impl.org | Decline | It always did: =prepare_change= read the row and then called =gate_put= with it. Only the place of the read moved. |
+| 10 | Claude review 6: split template and regeneration commits | (branch) | Decline | They are separate commits already. |
+| 11 | Claude review 2.1: the test name says chunks, but only the put crosses one | service_market_observation_batch_tests.cpp | Decline | The name starts with put_many and the put does cross a chunk. |
+| 12 | Claude review 2.2: the get loop has no end guard | service_market_observation_batch_tests.cpp | Accept | The loop stops at rend as well. |
+| 13 | Claude review 2.3 and 2.4: write bound, and the bound tested in one component | (template) | Decline | The write bound is captured; the template is shared and the drift gate covers the other services. |
+
+* Result
+
+The generated get-many, put-many and delete-many paths read their rows through
+one helper, =<entity>_read_many=, which reads a storage-keyed batch with one
+query per chunk of 1,000 keys. Put-many reads the current rows once before it
+checks the changes, and reads the written rows once to answer.
+
+- Acceptance 1 holds for every service keyed by its storage key: 528 entity
+  services call the helper. Services keyed by another declared key still read
+  each key on their own, through the same helper.
+- Acceptance 2 holds: a refused row refuses the whole set and nothing is
+  written. =service_market_observation_batch_tests.cpp= proves it, and fails
+  when the service passes no current row to the check.
+- Acceptance 3 holds: the 14 touched core libraries build, the dq, trading and
+  marketdata core suites pass, and the drift gate flags only a protocol file
+  that main already drifts on.
+- Acceptance 4 holds: a 1,000-row put went from a median of 16.52 s to 5.89 s.
+  The repository's per-row claim read is what remains, and is the next task.

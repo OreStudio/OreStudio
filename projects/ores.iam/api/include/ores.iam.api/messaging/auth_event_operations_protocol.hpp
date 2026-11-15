@@ -106,7 +106,7 @@ struct list_auth_events_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<auth_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &auth_event::id},
         ::ores::utility::codec::field{"event_time", &auth_event::event_time},
         ::ores::utility::codec::field{"account_id", &auth_event::account_id},
@@ -127,7 +127,7 @@ struct list_auth_events_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_auth_events_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"account_id", &list_auth_events_request::account_id},
         ::ores::utility::codec::field{"event_type", &list_auth_events_request::event_type},
         ::ores::utility::codec::field{"from_time", &list_auth_events_request::from_time},
@@ -146,7 +146,7 @@ struct list_auth_events_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_auth_events_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"events", &list_auth_events_response::events},
         ::ores::utility::codec::field{"success", &list_auth_events_response::success},
         ::ores::utility::codec::field{"message", &list_auth_events_response::message},

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F08BDD20-B2CD-4EF1-906D-5E19B2BA42C9
+:END:
+#+title: A published FX forward set is read from spot, not from its as-of
+#+description: Why a surface calibration must rebase a published forward set at its spot row, and what breaks when it copies the set through.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+A published FX forward set quotes ON before the spot date and stores discounts anchored at its as-of, so a spot-starting market must rebase it at the spot row instead of copying it through.
+
+*Why:* A surface is struck against a spot-starting market: pair_market_at refuses a row before the spot date, and the spot date discounts to exactly one on both sides. The ladder's forward rates divide the factors by the spot row's, but the record keeps the unrebased copy. Copying the record through refused every surface on its ON row, 40 per provisioning run.
+
+*How to apply:* When reading a published forward set for a spot-starting use, anchor on the row whose value_date is the spot date, drop rows before it, and divide both factors by the anchor's. Keep the refusal for a row before spot: it is the check that a set really is spot-starting. See spot_starting() in ores.marketdata.service.

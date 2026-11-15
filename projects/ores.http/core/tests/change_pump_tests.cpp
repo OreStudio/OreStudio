@@ -21,6 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 
@@ -45,10 +46,10 @@ TEST_CASE("a_frame_names_its_collection_and_carries_its_tenancy", "[change_pump]
         .entity = "book",
     };
 
-    REQUIRE(frame_text(frame) ==
-            "event: iam.book\n"
-            "data: {\"tenant\":\"acme\",\"party\":\"ops\",\"component\":\"iam\","
-            "\"entity\":\"book\"}\n\n");
+    REQUIRE(frame_text(frame, "2026-11-11T04:30:00.123Z") ==
+            "event: entity-changed\n"
+            "data: {\"component\":\"iam\",\"entity\":\"book\","
+            "\"at\":\"2026-11-11T04:30:00.123Z\",\"tenant\":\"acme\",\"party\":\"ops\"}\n\n");
 }
 
 TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
@@ -113,7 +114,7 @@ TEST_CASE("a_change_with_no_party_builds_its_message", "[change_pump]") {
         .entity = "book",
     };
 
-    REQUIRE(frame_text(frame).find("\"party\":\"\"") != std::string::npos);
+    REQUIRE(frame_text(frame, "t").find("\"party\":\"\"") != std::string::npos);
 }
 
 TEST_CASE("two_windows_for_one_collection_leave_one_pending_frame", "[change_pump]") {
@@ -134,9 +135,14 @@ TEST_CASE("two_windows_for_one_collection_leave_one_pending_frame", "[change_pum
     REQUIRE(pump.pump() == 1);
 
     REQUIRE(slow->size() == 1);
-    REQUIRE(slow->try_pop() ==
-            std::optional<std::string>(
-                "id: " + hub.id_of(2) +
-                "\nevent: iam.book\ndata: {\"tenant\":\"acme\",\"party\":\"ops\","
-                "\"component\":\"iam\",\"entity\":\"book\"}\n\n"));
+    const auto pending = slow->try_pop();
+    REQUIRE(pending);
+    REQUIRE(pending->starts_with("id: " + hub.id_of(2) + "\nevent: entity-changed\n"));
+    REQUIRE(pending->find("\"component\":\"iam\",\"entity\":\"book\"") != std::string::npos);
+}
+
+TEST_CASE("an_instant_reads_as_the_browser_clock_writes_it", "[change_pump]") {
+    using namespace std::chrono;
+    const auto at = sys_days{year{2026} / 11 / 11} + hours{4} + minutes{30} + milliseconds{123};
+    REQUIRE(instant_text(at) == "2026-11-11T04:30:00.123Z");
 }

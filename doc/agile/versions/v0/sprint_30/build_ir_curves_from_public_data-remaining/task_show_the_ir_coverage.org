@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/show-the-ir-coverage
+#+pr: 4677
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-08
-#+environment: prime_origin
+#+updated: 2026-11-13
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A person can see at a glance which currencies have a public source, a calibrated
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                              |
 
 * Acceptance
 
@@ -43,6 +43,36 @@ A person can see at a glance which currencies have a public source, a calibrated
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The screen is the calibration screen with the interest rates class beside
+fx, not a new screen: a person reads one place for "which currencies are
+covered". A row is one supported currency and states its source, the IR
+calibration policy it is read under, its bootstrap config and its latest
+published curve with its as-of; a gap states which of the four is missing
+and the recorded reason.
+
+1. Assemble the rows in the BFF, where the class is already a parameter
+   (=/api/synthetic/calibration/:assetClass=). A row joins three existing
+   reads: the class's synthetic feeds (source and calibration outcome), the
+   IR curve bootstrap configs (the config and its output series), and the
+   published sets of each output series (the latest publish and its as-of).
+   The universe is the union of the feeds and the configs, so a currency
+   that has one and not the other is a row with a gap.
+2. State the gap and its reason per row, in the order a person needs them:
+   no public source, no bootstrap config, no published curve, and a publish
+   older than the feed's cadence. The reason is the one the system records,
+   not a new sentence.
+3. Render the interest rates class on the calibration screen as a coverage
+   table, following =doc/knowledge/ui/feed_screen_standard.org= and the
+   colour rules in =doc/knowledge/ui/ux_language.org=; a gap carries the
+   missing badge the language fixes, not a bespoke colour.
+4. Prove it: a BFF test for the join and each gap reason, and a web test
+   that a row renders its four facts and a gap.
+
+Out of scope: the per-curve inspector. The AUD-AONIA prototype that Gemini
+produced is the right vocabulary for a row's drill-in, but it is a single
+curve's pillars, chart and conventions, with no server contract yet. It is
+captured for a later task, and this task links it.
 
 * Measurements
 
@@ -56,7 +86,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| BFF suite after the join | 92 files, 1289 tests, all passed | =npm test --workspace @ores/bff= (from =projects/ores.web=) | bc0cebb3b0 |
+| Browser suite after the table | 201 files, 2500 tests, all passed | =npm test --workspace @ores/web= (from =projects/ores.web=) | 1c51fbd4a2 |
+| Type checks | both workspaces clean | =npm run typecheck --workspace @ores/bff= and =-\-workspace @ores/web= | 1c51fbd4a2 |
 
 * Notes
 
@@ -75,12 +107,67 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4677][#4677]] | [web] Show the IR coverage of each currency |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A latest set that is withdrawn or superseded renders green as Published | BFF, screen | accepted | The BFF now states =not_live= with the state in the reason; the screen shows it as a gap (45116ff3). |
+| 2 | The stale threshold is four times the cadence | BFF | accepted | 30 minutes, two missed firings; the reason names it and the tests state the boundary. |
+| 3 | A currency with two curves shows the first config, not its latest publish | BFF | accepted | The config whose publish is newest wins; a shared test covers it. |
+| 4 | Two group-by helpers do the same loop | BFF | accepted | One =groupByCurrency=. |
+| 5 | The row carries fields the screen never reads | BFF, web | accepted | =price_source= is gone. |
+| 6 | Five gap reasons are new sentences, not the system's | BFF | noted | The system records a reason only for =no_source=; the rest are the screen's words and the Result says so. |
+| 7 | The IR tab replaces the feed panels, so IR feeds are unreachable | screen | noted | The fx panels assume a pair; the class has no equivalent panel. The run tab and its actions remain. The Result states it. |
+| 8 | The currency universe omits a currency with neither a feed nor a config | BFF | noted | A currency with neither is not a supported currency of the class; the Result states the universe. |
+| 9 | Only the policy's window is drawn | screen | noted | The acceptance names the policy; the window is what the row states. The order and fallback are on the policy screen. |
+| 10 | Fields are declared three times (BFF type, BFF schema, web schema) | BFF, web | declined | The web schema validates the HTTP answer for its own package; sharing it would couple the browser to the BFF's types. |
+| 11 | One published-set read per config inside one GET | BFF | noted | Bounded by the currencies of one class; a single list read does not exist yet. |
+| 12 | All gaps are amber, where a refused feed is red elsewhere on the screen | screen | declined | A missing source is caution, not failure; the language reserves red for broken. |
 
 * Result
+
+Shipped. The calibration screen has an interest rates class beside fx. For
+that class it draws one row per supported currency: the currency, the
+synthetic feed's source name and provider, the class policy's window in days,
+the bootstrap config's name, the latest published set's as-of, and a state.
+The state is "Published" when nothing is missing, and otherwise the first gap
+with the reason the system recorded: no feed, no public source, no bootstrap
+config, no publish, or a publish older than the hour the republish job keeps.
+
+The rows are assembled in the BFF from three reads the system already answers:
+the IR generation configs (source and currency), the class calibration's
+resolved feeds (whether the feed starts from a fixing, the provider and its
+note), the IR curve bootstrap configs (the curve and its output series), and
+each output series' newest published set. The currency universe is the union
+of the feeds and the configs, so a currency with one and not the other is a
+visible gap. The fx response keeps its shape and makes no extra read.
+
+Acceptance:
+
+- The calibration screen lists each supported currency with its source,
+  policy, bootstrap config and latest published curve with its as-of. Met.
+- A currency with a gap shows the gap and its recorded reason. Met: five gap
+  states, each with the system's own note where one exists.
+
+Limitations:
+
+- A currency with several feed configs shows the first that starts from a
+  fixing, then the first by source name. The other configs (a term index, a
+  LIBOR feed) are not rows of their own.
+- A currency with several bootstrap configs across tenants shows the first the
+  tenant-scoped list returns.
+- No manual QA scenario was written; the browser and BFF suites cover the
+  screen's data and states.
+- The currency universe is the union of the class's synthetic configs and its
+  bootstrap configs, so a currency with neither is not a row. A currency with
+  several configs shows the one whose publish is newest.
+- Four of the five gap reasons are the screen's own words: the system records
+  one only for a feed that keeps a fixed level. The other states have no
+  recorded reason to repeat.
+- The interest rates class replaces the fx feed panels with this table,
+  because those panels assume a currency pair. The class's run actions stay on
+  the run tab.
+- The per-curve inspector the AUD-AONIA prototype sketches is captured in the
+  inbox as a later drill-in, not built here.

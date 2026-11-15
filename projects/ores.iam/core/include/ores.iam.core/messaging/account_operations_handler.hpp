@@ -55,6 +55,7 @@
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace ores::iam::messaging {
 
@@ -190,13 +191,13 @@ using namespace ores::logging;
 class account_operations_handler {
 public:
     account_operations_handler(ores::nats::service::client& nats,
-                               ores::database::context ctx,
+                               const ores::database::context& ctx,
                                ores::security::jwt::jwt_authenticator signer,
                                std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , party_cache_(std::move(party_cache)) {
+        , ctx_(ctx)
+        , signer_(signer)
+        , party_cache_(party_cache) {
         reload_token_settings();
     }
 
@@ -509,7 +510,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -544,7 +545,11 @@ public:
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, change_password_response{.success = false, .message = e.what()});
+            // The caller is told the change failed, never the exception's own text.
+            reply(nats_,
+                  msg,
+                  change_password_response{.success = false,
+                                           .message = "The password could not be changed."});
         }
     }
 
@@ -652,7 +657,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -699,7 +704,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -1136,7 +1141,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -1348,7 +1353,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -1535,7 +1540,7 @@ private:
      */
     std::optional<std::pair<boost::uuids::uuid, ores::database::context>>
     self_request_scope(const ores::nats::message& msg) {
-        auto token = ores::service::messaging::bearer_token(msg);
+        auto token = ores::service::messaging::caller_token(msg);
         if (token.empty()) {
             error_reply(nats_, msg, ores::service::error_code::unauthorized);
             return std::nullopt;

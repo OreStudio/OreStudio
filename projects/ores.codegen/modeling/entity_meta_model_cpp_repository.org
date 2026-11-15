@@ -163,7 +163,7 @@ block.
 Example of an inclusion of this paste block in a template:
 
 #+begin_src text
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
     // <<paste:DCA78C69-E508-48D9-9972-A9B8094D91FB>>
 };
 #+end_src
@@ -184,7 +184,7 @@ Prose describing what this method does and why it cannot be templated.
 
 ,#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::party>
-read_system_party(context ctx, const std::string& tenant_id);
+read_system_party(const context& ctx, const std::string& tenant_id);
 ,#+end_src
 #+end_src
 

@@ -35,7 +35,7 @@
 
 begin;
 
-select plan(3);
+select plan(5);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -46,33 +46,63 @@ select results_eq(
         on m.vendor_instrument_id = v.id
        and m.tenant_id = v.tenant_id
        and m.valid_to = ores_utility_infinity_timestamp_fn()
-      left join ores_refdata_overnight_index_conventions_tbl c
-        on c.oresmd_uri = m.oresmd_uri
-       and c.tenant_id = v.tenant_id
-       and c.valid_to = ores_utility_infinity_timestamp_fn()
+      left join (
+          select a.id, a.oresmd_uri from ores_dq_overnight_index_conventions_artefact_tbl a
+          join ores_dq_datasets_tbl d
+            on d.id = a.dataset_id
+           and d.code = 'refdata.conventions'
+           and d.valid_to = ores_utility_infinity_timestamp_fn()
+      ) c on c.oresmd_uri = m.oresmd_uri
       where v.tenant_id = ores_utility_system_tenant_id_fn()
-        and v.id_scheme in ('nyfed_rate_type', 'ecb_sdmx', 'boe_iadb', 'boc_valet', 'boj_stat', 'nb_sdmx', 'riksbank_swestr')
+        and v.id_scheme in ('nyfed_rate_type', 'ecb_sdmx', 'boe_iadb', 'boc_valet', 'boj_stat', 'nb_sdmx', 'riksbank_swestr', 'rba_table', 'bcb_sgs', 'banxico_sie', 'bcch_bde', 'cnb_czeonia', 'mas_dir')
         and v.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
-    $$values ('boc AVG.INTWO CAD-CORRA'),
+    $$values ('banxico SF331451 MXN-FTIIE'),
+             ('bcb 4389 BRL-CDI'),
+             ('bcch F022.TIB.TIP.D001.NO.Z.D CLP-CAMARA'),
+             ('boc AVG.INTWO CAD-CORRA'),
              ('boe IUDSOIA GBP-SONIA'),
              ('boj FM01.STRDCLUCON JPY-TONA'),
              ('boj FM01.STRDCLUCON JPY-TONAR'),
+             ('cnb CZEONIA CZK-CZEONIA'),
              ('ecb EST.B.EU000A2X2A25.WT EUR-ESTER'),
              ('ecb EST.B.EU000A2X2A25.WT EUR-ESTR'),
+             ('mas SORA SGD-SORA'),
              ('norgesbank SHORT_RATES.B.NOWA.ON.R NOK-NOWA'),
              ('nyfed SOFR USD-SOFR'),
+             ('rba f1.FIRMMCRID AUD-AONIA'),
              ('riksbank SWESTR SEK-SWESTR')$$,
-    'each overnight series maps to the item of its index conventions, the built-in one and the alias a curve names'
+    'each overnight series maps to the item of an overnight index convention of the conventions dataset'
 );
 
 select is_empty(
     $$select code from ores_marketdata_providers_tbl
       where tenant_id = ores_utility_system_tenant_id_fn()
-        and code in ('nyfed', 'ecb', 'boe', 'boc', 'boj', 'norgesbank', 'riksbank')
+        and code in ('nyfed', 'ecb', 'boe', 'boc', 'boj', 'norgesbank', 'riksbank', 'rba', 'bcb', 'banxico', 'bcch', 'cnb', 'mas')
         and valid_to = ores_utility_infinity_timestamp_fn()
         and (terms_url = '' or terms_credit = '' or not allows_storage)$$,
     'each publisher of an overnight series states its terms and its credit'
+);
+
+select is_empty(
+    $$select code from ores_marketdata_providers_tbl
+      where tenant_id = ores_utility_system_tenant_id_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
+        and credential_ref <> ''
+        and credential_ref !~ '^env:ORES_MARKETDATA_[A-Z0-9_]+$'$$,
+    'a provider names its key by an env ref, never by the key itself'
+);
+
+select results_eq(
+    $$select code || ' ' || credential_ref from ores_marketdata_providers_tbl
+      where tenant_id = ores_utility_system_tenant_id_fn()
+        and code in ('banxico', 'bcch', 'riksbank')
+        and valid_to = ores_utility_infinity_timestamp_fn()
+      order by 1$$,
+    $$values ('banxico env:ORES_MARKETDATA_BANXICO_API_KEY'),
+             ('bcch env:ORES_MARKETDATA_BCCH_PASSWORD'),
+             ('riksbank env:ORES_MARKETDATA_RIKSBANK_API_KEY')$$,
+    'each publisher that needs a key or password names its variable'
 );
 
 select results_eq(
@@ -83,15 +113,21 @@ select results_eq(
        and f.tenant_id = s.tenant_id
        and f.valid_to = ores_utility_infinity_timestamp_fn()
       where s.tenant_id = ores_utility_system_tenant_id_fn()
-        and f.name in ('nyfed-sofr', 'ecb-estr', 'boe-sonia', 'boc-corra', 'boj-tona', 'norgesbank-nowa', 'riksbank-swestr')
+        and f.name in ('nyfed-sofr', 'ecb-estr', 'boe-sonia', 'boc-corra', 'boj-tona', 'norgesbank-nowa', 'riksbank-swestr', 'rba-aonia', 'bcb-cdi', 'banxico-tiie-fondeo', 'bcch-camara', 'cnb-czeonia', 'mas-sora')
         and s.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
-    $$values ('boc-corra interest_rates oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
+    $$values ('banxico-tiie-fondeo interest_rates oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE'),
+             ('bcb-cdi interest_rates oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
+             ('bcch-camara interest_rates oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA'),
+             ('boc-corra interest_rates oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
              ('boe-sonia interest_rates oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
              ('boj-tona interest_rates oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
+             ('cnb-czeonia interest_rates oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA'),
              ('ecb-estr interest_rates oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
+             ('mas-sora interest_rates oresmd://ir/SGD?type=fixing&index=ibor&name=SORA'),
              ('norgesbank-nowa interest_rates oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
              ('nyfed-sofr interest_rates oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
+             ('rba-aonia interest_rates oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),
              ('riksbank-swestr interest_rates oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR')$$,
     'each overnight feed is scoped to the item of its series'
 );

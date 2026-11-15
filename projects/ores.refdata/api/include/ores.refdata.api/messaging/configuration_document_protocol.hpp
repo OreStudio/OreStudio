@@ -110,8 +110,15 @@ namespace ores::refdata::messaging {
 /**
  * @brief An FX convention as a conventions document carries it: the pair, its
  * convention, and the advance calendars the document lists.
+ *
+ * @c id is the name the document gives the convention, which is what another
+ * convention resolves it by. ORE examples spell it more than one way, and a
+ * document states the name its own references use, so the name travels with the
+ * row rather than being derived from the pair again. Empty means the canonical
+ * spelling, which is what a row refdata holds needs.
  */
 struct fx_convention {
+    std::string id;
     ores::refdata::domain::currency_pair pair;
     ores::refdata::domain::currency_pair_convention convention;
     int spot_days = 0;
@@ -332,7 +339,8 @@ struct delete_curve_configuration_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_convention>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"id", &fx_convention::id},
         ::ores::utility::codec::field{"pair", &fx_convention::pair},
         ::ores::utility::codec::field{"convention", &fx_convention::convention},
         ::ores::utility::codec::field{"spot_days", &fx_convention::spot_days},
@@ -349,7 +357,7 @@ struct delete_curve_configuration_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_configuration_document>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"config", &curve_configuration_document::config},
         ::ores::utility::codec::field{"sections", &curve_configuration_document::sections},
         ::ores::utility::codec::field{"definitions", &curve_configuration_document::definitions},
@@ -496,7 +504,7 @@ struct delete_curve_configuration_document_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<save_curve_configuration_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"document",
                                       &save_curve_configuration_document_request::document},
         ::ores::utility::codec::field{"reason_code",
@@ -516,7 +524,7 @@ wire_fields(std::type_identity<save_curve_configuration_document_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<save_curve_configuration_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success",
                                       &save_curve_configuration_document_response::success},
         ::ores::utility::codec::field{"message",
@@ -535,7 +543,7 @@ wire_fields(std::type_identity<save_curve_configuration_document_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_configuration_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_id",
                                       &get_curve_configuration_document_request::configuration_id},
         ::ores::utility::codec::field{"party_id",
@@ -553,7 +561,7 @@ wire_fields(std::type_identity<get_curve_configuration_document_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_configuration_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success",
                                       &get_curve_configuration_document_response::success},
         ::ores::utility::codec::field{"message",
@@ -573,7 +581,7 @@ wire_fields(std::type_identity<get_curve_configuration_document_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_configuration_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{
             "configuration_id", &delete_curve_configuration_document_request::configuration_id},
     };
@@ -589,7 +597,7 @@ wire_fields(std::type_identity<delete_curve_configuration_document_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_configuration_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success",
                                       &delete_curve_configuration_document_response::success},
         ::ores::utility::codec::field{"message",

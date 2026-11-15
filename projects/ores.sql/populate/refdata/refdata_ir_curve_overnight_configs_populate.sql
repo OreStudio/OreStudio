@@ -34,9 +34,10 @@
  *
  * Eight currencies of the feed have no config here. BRL and NOK state day
  * counts, BUS/252 and ACT/ACT.ISMA, that the bootstrap engine does not
- * implement. CNY and TWD have no overnight index convention. ILS, CNH, HUF and
- * PLN quote an index that has ceased, is a term rate or is unresolved, which the
- * task to replace those feeds decides first.
+ * implement. CNY and TWD have no overnight index convention. CNH names HIBOR,
+ * a term rate, and PLN names POLONIA, whose route is not read; neither is
+ * bootstrapped. ILS names SHIR and HUF names HUFONIA after the ceased and
+ * misnamed feeds were replaced, but no stored rate carries either yet.
  *
  * Each config follows the USD one: a FUNDING curve, which discounts off nothing,
  * interpolated LOG_LINEAR_DISCOUNT, with the tenor convention RATES_SPOT_FORWARD

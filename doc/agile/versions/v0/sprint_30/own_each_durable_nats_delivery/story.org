@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 229811EA-0DC9-462B-93BA-AB3B438813D3
+:END:
+#+title: Story: Own each durable NATS delivery with one RAII transaction
+#+description: A durable NATS delivery has one owner, is settled once by commit, rollback or reject, and rolls back when dropped unsettled, so no delivery is freed twice or answered after its subscription ends.
+#+type: story
+#+level: s2
+#+filetags: :nats:messaging:reliability:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-12
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A service that reads a durable NATS subject never crashes on, loses, or
+answers twice a delivery it was handed. Each delivery has one owner. The owner
+settles it once: commit, rollback, rollback after a delay, or reject. A
+delivery its owner drops without settling rolls back, so the server delivers
+it again. The type makes the wrong uses fail to compile, not fail at run time.
+
+The story comes from a crash. With its provisioning steps on several workers,
+the IAM service freed one NATS message twice and died in the cnats garbage
+collector. The subscription let cnats acknowledge and free each delivery when
+the callback returned, while the client's own handle also owned it. A
+delivery passed to a worker outlived the callback, so both owners freed it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | All tasks done.                        |
+| Waiting on    | Nothing.                               |
+| Next          | Merge the PR.                          |
+| Last touched  | 2026-11-12                             |
+
+* Acceptance
+
+- A durable subscription takes a handler of a move-only =delivery=. A copy of
+  a delivery does not compile.
+- Commit, rollback, rollback after a delay and reject consume the delivery. A
+  delivery dropped unsettled rolls back.
+- The transport asks cnats for manual acks in one place, so cnats never frees
+  a delivery the client owns. A test keeps a delivery past its callback,
+  settles it on another thread, and proves the server delivered it once.
+- A delivery's keep-alive thread belongs to the delivery and ends before it is
+  settled or freed.
+- A subscription is not destroyed while a delivery it made is open.
+- A core message carries no acknowledgement, and =ack_guard= is gone.
+- The pattern page /Acknowledge What Was Handled/ shows the new type and states
+  the ownership rule.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6DAA3511-405E-4C0A-B714-D862680C135F][Scaffold story: Own each durable NATS delivery with one RAII transaction]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DCF819F8-23C0-49A7-8317-8D406B12317D][Own each durable NATS delivery with one RAII transaction]] | DONE | 2026-11-11 | 2026-11-12 | Initial task for: Own each durable NATS delivery with one RAII transaction |
+
+* Decisions
+
+- A delivery is a transaction, like a database one: one owner, one answer,
+  rollback on drop. The alternative, a shared handle with a guard, is what
+  allowed two owners and an answer whose timing depended on the last copy.
+- The answers are rvalue-qualified, so a second answer is a use after move,
+  which clang-tidy's bugprone-use-after-move reports.
+
+* Out of scope
+
+- Running steps on several workers. That is the story /Run a service's steps
+  concurrently/, which is rebased on this one.

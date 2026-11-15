@@ -1,1 +1,0 @@
-No trade of the portfolio can be written; the first refusal is: required element 'Payer' is absent from 'totalReturnData' (in Trade 'ce40eb75-6d18-5286-86ba-535d3e568c3f')

@@ -6,7 +6,7 @@
       <BarrierData>
         <Type>UpAndOut</Type>
         <Levels>
-          <Level>0</Level>
+          <Level>0.08</Level>
         </Levels>
       </BarrierData>
       <BarrierStartDate>2025-11-02</BarrierStartDate>
@@ -14,17 +14,20 @@
         <Payer>true</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-11-02">7675517.41</Notional>
+          <Notional>7675517.41</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-11-02</StartDate>
             <EndDate>2027-11-02</EndDate>
             <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FixedLegData>
@@ -37,23 +40,28 @@
         <Payer>false</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-11-02">7675517.41</Notional>
+          <Notional>7675517.41</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-11-02</StartDate>
             <EndDate>2027-11-02</EndDate>
             <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>EUR-ESTR</Index>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-11-02">0.0009</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -65,25 +73,28 @@
       <BarrierData>
         <Type>UpAndOut</Type>
         <Levels>
-          <Level>0</Level>
+          <Level>0.08</Level>
         </Levels>
       </BarrierData>
       <BarrierStartDate>2025-08-02</BarrierStartDate>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-08-02">6592217.61</Notional>
+          <Notional>6592217.61</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-08-02</StartDate>
             <EndDate>2030-08-02</EndDate>
             <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FixedLegData>
@@ -93,26 +104,31 @@
         </FixedLegData>
       </LegData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-08-02">6592217.61</Notional>
+          <Notional>6592217.61</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-08-02</StartDate>
             <EndDate>2030-08-02</EndDate>
             <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>EUR-ESTR</Index>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-08-02">0.0023</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

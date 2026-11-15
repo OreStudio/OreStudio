@@ -47,7 +47,7 @@ namespace ores::refdata::domain {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_config>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &inflation_cap_floor_volatility_config::version},
         utility::codec::field{"tenant_id", &inflation_cap_floor_volatility_config::tenant_id},
         utility::codec::field{"id", &inflation_cap_floor_volatility_config::id},

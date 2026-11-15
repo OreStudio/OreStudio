@@ -116,8 +116,8 @@ std::string lowered(std::string value) {
 
 }
 
-cut_read_service::cut_read_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cut_read_service::cut_read_service(const context& ctx)
+    : ctx_(ctx) {}
 
 std::optional<domain::cut_kind> cut_read_service::kind_of(const std::string& code) {
     repository::cut_kind_repository kinds_repo;

@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_weighted_average_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_weighted_average_key::id},
     };
 }
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_weighted_average_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_weighted_average_write::id},
         utility::codec::field{"curve_segment_id",
                               &curve_segment_weighted_average_write::curve_segment_id},
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_weighted_average_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_segment_weighted_average_change::write},
         utility::codec::field{"precondition", &curve_segment_weighted_average_change::precondition},
     };
@@ -439,7 +439,7 @@ wire_fields(std::type_identity<curve_segment_weighted_average_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_weighted_average_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_weighted_average_removal::key},
         utility::codec::field{"precondition",
                               &curve_segment_weighted_average_removal::precondition},
@@ -456,7 +456,7 @@ wire_fields(std::type_identity<curve_segment_weighted_average_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_weighted_average_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_weighted_average_lookup::key},
         utility::codec::field{
             "curve_segment_weighted_average",
@@ -474,7 +474,7 @@ wire_fields(std::type_identity<curve_segment_weighted_average_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_weighted_averages_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_segment_weighted_averages_filter::id_one_of},
     };
 }
@@ -488,7 +488,7 @@ wire_fields(std::type_identity<curve_segment_weighted_averages_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_weighted_average_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_segment_weighted_average_event::event_id},
         utility::codec::field{"key", &curve_segment_weighted_average_event::key},
         utility::codec::field{"action", &curve_segment_weighted_average_event::action},
@@ -509,7 +509,7 @@ wire_fields(std::type_identity<curve_segment_weighted_averages_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_weighted_average_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "curve_segment_weighted_average",
             &curve_segment_weighted_average_version_key::curve_segment_weighted_average},
@@ -527,7 +527,7 @@ wire_fields(std::type_identity<curve_segment_weighted_average_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_weighted_average_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_segment_weighted_average_versions_filter::version},
         utility::codec::field{"from_version",
                               &curve_segment_weighted_average_versions_filter::from_version},
@@ -546,7 +546,7 @@ wire_fields(std::type_identity<curve_segment_weighted_average_versions_filter>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_weighted_averages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_segment_weighted_averages_request::offset},
         utility::codec::field{"limit", &list_curve_segment_weighted_averages_request::limit},
         utility::codec::field{"order", &list_curve_segment_weighted_averages_request::order},
@@ -565,7 +565,7 @@ wire_fields(std::type_identity<list_curve_segment_weighted_averages_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_weighted_averages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_segment_weighted_averages_response::result},
         utility::codec::field{
             "segment_weighted_averages",
@@ -584,7 +584,7 @@ wire_fields(std::type_identity<list_curve_segment_weighted_averages_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_weighted_average_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_weighted_average_request::key},
     };
 }
@@ -599,7 +599,7 @@ wire_fields(std::type_identity<get_curve_segment_weighted_average_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_weighted_average_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_segment_weighted_average_response::result},
         utility::codec::field{
             "curve_segment_weighted_average",
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<get_curve_segment_weighted_average_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_weighted_averages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_segment_weighted_averages_request::keys},
     };
 }
@@ -632,7 +632,7 @@ wire_fields(std::type_identity<get_many_curve_segment_weighted_averages_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_weighted_averages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_segment_weighted_averages_response::result},
         utility::codec::field{"entries",
                               &get_many_curve_segment_weighted_averages_response::entries},
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_many_curve_segment_weighted_averages_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_weighted_average_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_segment_weighted_average_request::change},
         utility::codec::field{"intent", &put_curve_segment_weighted_average_request::intent},
     };
@@ -665,7 +665,7 @@ wire_fields(std::type_identity<put_curve_segment_weighted_average_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_weighted_average_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_segment_weighted_average_response::result},
         utility::codec::field{
             "curve_segment_weighted_average",
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<put_curve_segment_weighted_average_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_weighted_averages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_curve_segment_weighted_averages_request::changes},
         utility::codec::field{"intent", &put_many_curve_segment_weighted_averages_request::intent},
@@ -700,7 +700,7 @@ wire_fields(std::type_identity<put_many_curve_segment_weighted_averages_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_weighted_averages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_segment_weighted_averages_response::result},
         utility::codec::field{
             "segment_weighted_averages",
@@ -718,7 +718,7 @@ wire_fields(std::type_identity<put_many_curve_segment_weighted_averages_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_weighted_average_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_segment_weighted_average_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_weighted_average_request::intent},
     };
@@ -734,7 +734,7 @@ wire_fields(std::type_identity<delete_curve_segment_weighted_average_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_weighted_average_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_segment_weighted_average_response::result},
     };
 }
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<delete_curve_segment_weighted_average_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_weighted_averages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_weighted_averages_request::removals},
         utility::codec::field{"intent",
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_weighted_averages_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_weighted_averages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_curve_segment_weighted_averages_response::result},
     };
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_weighted_averages_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_weighted_average_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_segment_weighted_average_versions_request::key},
         utility::codec::field{"offset",
                               &list_curve_segment_weighted_average_versions_request::offset},
@@ -806,7 +806,7 @@ wire_fields(std::type_identity<list_curve_segment_weighted_average_versions_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_weighted_average_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_curve_segment_weighted_average_versions_response::result},
         utility::codec::field{"versions",
@@ -826,7 +826,7 @@ wire_fields(std::type_identity<list_curve_segment_weighted_average_versions_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_weighted_average_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_weighted_average_version_request::key},
     };
 }
@@ -841,7 +841,7 @@ wire_fields(std::type_identity<get_curve_segment_weighted_average_version_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_weighted_average_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_curve_segment_weighted_average_version_response::result},
         utility::codec::field{"version",

@@ -114,16 +114,16 @@ def _function(source, signature):
 def test_the_flag_declares_a_single_and_a_batch_insert(tmp_path):
     header = _header(tmp_path, _model(APPEND_INSERT))
 
-    assert "void insert(context ctx, const domain::tick_record& v);" in header
-    assert "void insert(context ctx, const std::vector<domain::tick_record>& v);" in header
+    assert "void insert(const context& ctx, const domain::tick_record& v);" in header
+    assert "void insert(const context& ctx, const std::vector<domain::tick_record>& v);" in header
 
 
 def test_an_insert_writes_without_a_claim(tmp_path):
     source = _implementation(tmp_path, _model(APPEND_INSERT))
 
     for signature in (
-            "void tick_record_repository::insert(context ctx, const domain::tick_record& v)",
-            "void tick_record_repository::insert(\n    context ctx, "
+            "void tick_record_repository::insert(const context& ctx, const domain::tick_record& v)",
+            "void tick_record_repository::insert(\n    const context& ctx, "
             "const std::vector<domain::tick_record>& v)"):
         body = _function(source, signature)
         assert "execute_write_query(ctx, tick_record_mapper::map(v)" in body

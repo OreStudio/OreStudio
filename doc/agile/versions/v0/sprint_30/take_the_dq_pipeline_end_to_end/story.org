@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 7D2BBBBC-36A3-4BFB-9673-0F9005991D94
+:END:
+#+title: Story: Take the DQ pipeline end to end, from a seeded artefact table to a published system
+#+description: Reference data is seeded as DQ artefacts and never published, the seeding model is inconsistent, and the DQ UI was never ported to ores.web.
+#+type: story
+#+level: s2
+#+filetags: :dq:data:architecture:publishing:web:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Carry reference data from a blank database to a usable one, deliberately. Today
+a recreate seeds DQ artefacts, nothing publishes them, some tables are seeded
+directly instead, and there is no screen anywhere that shows what is published.
+This story settles the model, implements it, and gives it a place to be seen and
+driven.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The end-to-end review of the publishing pipeline is running. |
+| Waiting on    | Nothing.                               |
+| Next          | Review the findings, then sequence the two implementation tasks. |
+| Last touched  | 2026-11-14                               |
+
+* Acceptance
+
+- The publishing model is documented in **one** page, with UML where a table
+  cannot carry the meaning, and with provenance, methodology and reproducibility
+  sections: what a blank database holds, what a recreate publishes, what a
+  tenant is provisioned with, and in what order.
+- That page is signed off before any implementation task starts.
+- Every dataset is classified as base-system or ACME, with the reason stated.
+- No dataset is seeded and left unpublished, and no refdata table is populated
+  by a second, silent path without that being deliberate.
+- A recreated database can value every trade type the system books.
+- ores.web shows each dataset, its artefacts, whether it is published, and
+  offers the publish action.
+
+
+* Approach
+
+The investigation found one question behind most of the defects: *what turns a
+blank database into a usable one?* Four documents answered it four ways. The
+mop-up therefore starts by settling the levels, because every other task depends
+on being able to say which bucket a dataset lives in.
+
+| Level | Holds | Published | By |
+|-------+-------+-----------+----|
+| Installation | schema, system vocabulary, the system party, WRLD | at migration | populate |
+| World | calendars, currencies, commodity and equity underlyings, conventions | once, into the system tenant | one world bundle |
+| Tenant | the tenant's own rows, and its copies of what a party may override | per tenant, declared | the tenant bootstrap |
+
+The sequence is deliberate: 1 settles the vocabulary, 2 makes bring-up complete,
+3 removes the silent copy that made the gap invisible, 4 collapses the doubling,
+5 makes the remaining promises true, 6 documents what settled. Each closes at
+least one defect in the investigation, and none depends on the screen work.
+
+The earlier task *Publish every seeded dataset at the level it belongs* is
+superseded by these six: its scope is now split across settling the levels,
+publishing at bring-up and collapsing the double writers. It stays in the
+backlog as history until it is closed as abandoned.
+
+The screens task stays last. "Is my reference data complete?" is a question about
+levels, so it can only be designed once 1 and 2 have an answer.
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | BACKLOG | | | Level names and the world bundle. Blocks the rest. |
+| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | BACKLOG | | | Closes D1 and D12. |
+| [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | BACKLOG | | | Flow D, undocumented. |
+| [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | BACKLOG | | | Defect D5 and D14. |
+| [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | Defects D2, D4, D6, D7. |
+| [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | BACKLOG | | | Defects D8 and D9, plus the legacy catalogue. |
+| [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens. |
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:22B17001-2467-4CE2-9E70-583420BDF74F][Scaffold story: Take the DQ pipeline end to end]] | STARTED | 2026-11-14 | | Story scaffolding rides this task. |
+| [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | STARTED | 2026-11-14 | | The analysis: documented model, implemented model, inventories, defects. |
+| [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | BACKLOG | | | The implementation: base-system publication at recreate, ACME per tenant. |
+| [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens built from the shared parts. Not a port. |
+| [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | BACKLOG | | | One documented level model, one bundle per level, and no name that means two opposite things. |
+| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | BACKLOG | | | A recreated database carries the canonical reference data, so no test has to provision or publish for itself. |
+| [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | BACKLOG | | | The provisioner stops copying tables nobody documented and runs a declared bootstrap instead. |
+| [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | BACKLOG | | | Every reference table has one writer, chosen by which model owns the data. |
+| [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | The audit row, atomicity, the spurious dependency and the unreachable datasets are made true or removed. |
+| [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | BACKLOG | | | The catalogued legacy patterns are retired and the documents state the live model once. |
+
+* Decisions
+
+- The analysis precedes the implementation. The two are separate tasks because
+  the shape of the fix depends on which datasets are base-system and which are
+  per-tenant, and that is not yet settled.
+- The DQ UI belongs in this story rather than beside it. A publishing model with
+  no way to see publish state is the reason the gap went unnoticed: a recreate
+  looked successful while the catalogues were empty.
+
+
+* Related backlog
+
+The backlog already carries analysis on this theme. These items are not
+duplicates to be closed; they are inputs the tasks must absorb, and two of them
+correct the plan below.
+
+| Item |
+|------|
+| [[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]] |
+| [[id:A5B4097A-0FF4-4855-9BBE-D7461FC096F5][One source for reference data that the system and each tenant read]] |
+| [[id:A8DF818F-6CC3-40A0-9D1D-B5B2839D8EFD][Clarify and enforce system-tenant vs per-tenant dataset publish scope]] |
+| [[id:263C0B6B-D983-44F7-8D57-BB095972445A][Story: DQ/Refdata service boundary cleanup]] |
+| [[id:B5EFB803-EB60-4438-9304-3BC64FB54E1A][Three-level provisioning: end-to-end testing]] |
+| [[id:C743B8B4-563C-472F-9F01-BB8B98C9300A][The LEI dataset is system-tenant only, so a party cannot read it]] |
+| [[id:1CAA4761-AF7A-4264-8A41-C514083A4FA9][publish_from_dq codegen facet: hand-writing artefact tables is a recurring cost]] |
+| [[id:0BE07732-FE6C-40C9-87BC-22D3E651AD3F][Suppress staging dataset publication warnings]] |
+| [[id:30000917-5A85-4301-9D36-7C44CB51707F][Librarian errors]] |
+| [[id:35AA0437-F71C-488B-B9B9-8B10B9577FB8][Lock down data librarian for production tenants]] |
+| [[id:8897A0BD-A542-4C65-BF90-F5F8BD1491CB][The minimal Acme tenant lacks reference data some example trades need]] |
+| [[id:C4A1ACE8-4A3A-4CA4-8F53-A025AB6585B4][The provision_tenant step is published and never consumed, leaving a tenant half bootstrapped]] |
+| [[id:907B5B32-0B4F-4F16-8353-34B3799CCC4F][Fix the flaky conventions publish pgTAP test]] |
+| [[id:C1C77943-A2F6-42C9-8DB7-648F21DA4678][The starter FX spot dataset cannot publish]] |
+
+Two of them change the shape of the work:
+
+- *World data versus party configuration* and *One source for reference data
+  that the system and each tenant read* settle the levels in advance: the reason
+  the same dataset is written twice is that *different readers look in different
+  places*. Some code checks the system tenant; the screens read the caller's
+  tenant, and row-level security hides the system tenant's rows from them. So
+  collapsing the double writers is not a deletion -- it is a decision about who
+  reads what, taken first.
+- *The LEI dataset is system-tenant only, so a party cannot read it* is the same
+  defect already biting a credit trade. It confirms that the level split has to
+  reach the readers, not just the writers.
+
+* Out of scope
+
+- Re-seeding the corpus. This story moves what exists to where it belongs; it
+  does not add new market data.

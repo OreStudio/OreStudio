@@ -52,7 +52,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit trade_envelope_reader(context ctx);
+    explicit trade_envelope_reader(const context& ctx);
 
     /**
      * @brief Reads the envelopes of a set of trades, keyed by trade id.

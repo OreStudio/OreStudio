@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 4E41BCBD-394F-4E5F-983A-BA90728BC154
+:END:
+#+title: Task: Fix the remaining nightly failures
+#+description: Fix the Windows build, the macOS http client hang and the codegen drift that the nightly runs of 2026-11-10 show.
+#+type: task
+#+level: s1
+#+filetags: :nightly-ci-failures:sprint_30:v0:
+#+owner: marco
+#+branch: feature/fix-nightly-windows-macos
+#+pr: 4564
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The nightly Windows, macOS and Codegen drift runs on main pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- The Windows build has no POSIX-only call outside ores.platform.
+- No http client test can wait without a bound on the test server.
+- The codegen drift checks pass on Linux.
+
+* Plan
+
+1. Read the failed runs on main: Nightly Windows 42778394815, Nightly MacOS
+   42789061876 and Codegen drift 42909172598.
+2. Remove the Windows errors that main had not fixed yet. #4556 fixed the
+   first four. The Windows build stops at its first errors, so scan the tree
+   for POSIX headers outside =ores.platform= too.
+3. Route each platform call through =ores.platform=.
+4. Remove each unbounded wait on the macOS http client test server.
+5. Run the ORE engine test only on Linux.
+6. Clear each step of the drift run.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Unguarded POSIX headers outside ores.platform | 2 before, 0 after | =grep -rlnE '#include <(unistd/sys/...)>' projects= | 6716bac2c3 |
+| Unseeded handler permissions | 3 before, 0 after | =check_handler_permissions.py= | 6716bac2c3 |
+| ores.http.client.tests, three runs | 11 of 11 each run | =ores.http.client.tests= | 6716bac2c3 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4564][#4564]] | [ci] Fix the nightly Windows, macOS and drift failures |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- Windows: the http client tests take the process id from =current_pid=. A
+  new =ores::platform::process::peak_resident_bytes= takes the place of
+  =getrusage= in the reporting benchmark. It also corrects the macOS unit,
+  which =getrusage= gives in bytes.
+- macOS: the cases that refuse a certificate hung for 600 s. The test server
+  ran accept, handshake and read with no deadline. It now runs every step
+  asynchronously, and its destructor stops its context. The cause of the hang
+  is not proven. If the next nightly still hangs, the cause is in the client.
+- The ORE engine test runs only on Linux, where the engine is built.
+- Drift: the three FX forward publish read permissions are seeded for
+  Trading and Operations. The two new provisioning steps have translations.
+  The synthetic tests' model declares =Boost::process=. The
+  =fx_forward_operation= shell recipe is generated.
+
+No Windows or macOS build ran locally. The next nightly runs are the proof.

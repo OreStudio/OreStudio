@@ -3,7 +3,7 @@
 #ifndef ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
 #define ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 {{#trade_type_catalogue}}
@@ -87,7 +87,7 @@ template <typename T>
  * replaces a row.
  */
 template <typename Repository, typename Row, typename Stamp, typename Claim>
-void write_rows(ores::database::context ctx,
+void write_rows(const ores::database::context& ctx,
                 std::vector<Row>& rows,
                 const instrument_keys& keys,
                 Stamp& stamp,
@@ -107,7 +107,7 @@ void write_rows(ores::database::context ctx,
  * in the order the catalogue lists them.
  */
 template <typename Stamp, typename Claim>
-void write_instrument_batch(ores::database::context ctx,
+void write_instrument_batch(const ores::database::context& ctx,
                             domain::instrument_batch& batch,
                             const instrument_keys& keys,
                             Stamp&& stamp,

@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: B773B120-7C5D-47C2-A44E-484E13BEEFF7
+:END:
+#+title: Task: Model the gateway's forwarding part so codegen owns it
+#+description: The ores.http.nats part is missing from ores.http's #+parts: and states the adapter kind, though it owns its own include root. Regenerating ores.http refuses, and the part's CMake is hand-written.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/model-the-http-nats-part
+#+pr: 4579
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the ores.http.nats part a modelled part: listed in #+parts:, with the kind its layout has, its CMake and umbrella header generated, and no drift.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- compass codegen regenerate --all runs with no error for ores.http.
+- check_component_drift.py --component http-cpp reports no drift.
+
+* Plan
+
+The part was written by hand in PR #4571 and modelled as an adapter, the kind
+of a component's route module, which shares the composite's include root. It
+owns its own root, =include/ores.http.nats/=, as =ores.http.core= does, so it is
+a core part:
+
+- =ores.http='s =#+parts:= lists =nats=.
+- The part states the =core= kind and the name =http.nats=, the form the
+  modelled parts use, so the profile's baseline links =ores.http.api.lib=.
+- Codegen writes its CMake, its export header, its umbrella header and its
+  test main. The model's own block keeps only =ores.logging.lib=, which the
+  baseline lacks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4579][#4579]] | [http] Let codegen own the gateway's forwarding part |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4579 review: the model's prose still describes an adapter and its own dependency list. | =component_overview.org= | Accepted | The prose states the core kind and which links the baseline gives. |
+| 2 | PR #4579 review: the baseline links more than the part needs. | =src/CMakeLists.txt= | Declined | It is the same baseline =ores.http.core= and =ores.http.api= take, and the server links with no cycle. |
+| 3 | PR #4579 review: the test main changed listeners. | =tests/main.cpp= | No change | It is the same main =ores.http.core= has, apart from the suite name. |
+| 4 | PR #4579 review: a shared library with no export macros. | =forwarding.hpp= | Accepted | The part hides its symbols, as =ores.http.core= and =ores.http.api= do, and exports the five functions its header declares. |
+| 5 | PR #4579 review: the test block repeats the baseline. | =component_overview.org= | Accepted | Removed. |
+| 6 | PR #4579 review: the umbrella header names =ores::http::nats=, the code =ores::http::forwarding=. | umbrella header | Declined | The generated umbrella names every part's namespace from its name, and renaming the code's namespace would touch every route unit for no behaviour. |
+
+* Result
+
+=ores.http.nats= is a modelled core part of =ores.http=, built as a shared
+library like =ores.http.core= and =ores.http.api=. The drift check for
+=ores.http= reports no drift, so =compass codegen regenerate= no longer refuses
+the component. The server builds, and the nine =ores.http= suites pass.

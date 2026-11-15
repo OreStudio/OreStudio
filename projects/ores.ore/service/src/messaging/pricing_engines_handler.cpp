@@ -196,13 +196,13 @@ bool remove_header(ores::nats::service::nats_client& owners,
 } // namespace
 
 pricing_engines_handler::pricing_engines_handler(ores::nats::service::client& nats,
-                                                 ores::database::context ctx,
+                                                 const ores::database::context& ctx,
                                                  ores::security::jwt::jwt_authenticator signer,
                                                  ores::nats::service::nats_client outbound_nats)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , signer_(std::move(signer))
-    , outbound_nats_(std::move(outbound_nats)) {}
+    , ctx_(ctx)
+    , signer_(signer)
+    , outbound_nats_(outbound_nats) {}
 
 void pricing_engines_handler::export_pricing_engines(ores::nats::message msg) {
     const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);

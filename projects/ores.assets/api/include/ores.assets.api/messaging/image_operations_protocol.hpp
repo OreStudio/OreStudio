@@ -175,7 +175,7 @@ struct ensure_image_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<upload_image_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"mime_type", &upload_image_request::mime_type},
         ::ores::utility::codec::field{"data", &upload_image_request::data},
     };
@@ -190,7 +190,7 @@ struct ensure_image_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<upload_image_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &upload_image_response::result},
         ::ores::utility::codec::field{"image_id", &upload_image_response::image_id},
     };
@@ -205,7 +205,7 @@ struct ensure_image_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_upload_policy_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -217,7 +217,7 @@ struct ensure_image_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_upload_policy_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_image_upload_policy_response::result},
         ::ores::utility::codec::field{"formats", &get_image_upload_policy_response::formats},
         ::ores::utility::codec::field{"max_size_bytes",
@@ -236,7 +236,7 @@ struct ensure_image_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ensure_image_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"code", &ensure_image_request::code},
     };
 }
@@ -250,7 +250,7 @@ struct ensure_image_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ensure_image_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &ensure_image_response::result},
         ::ores::utility::codec::field{"image_id", &ensure_image_response::image_id},
     };

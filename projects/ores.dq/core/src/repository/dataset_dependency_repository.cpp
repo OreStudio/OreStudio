@@ -31,8 +31,8 @@ using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-dataset_dependency_repository::dataset_dependency_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+dataset_dependency_repository::dataset_dependency_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<domain::dataset_dependency> dataset_dependency_repository::read_latest() {
     constexpr auto max = db_timestamp::max();

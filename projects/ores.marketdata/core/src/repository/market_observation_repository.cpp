@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/range_bound.hpp"
@@ -52,12 +53,14 @@
 #include <cstdint>
 #include <format>
 #include <initializer_list>
+#include <iterator>
 #include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -152,39 +155,97 @@ std::optional<query_builder::condition> market_observation_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool market_observation_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using market_observation_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::market_observation>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+market_observation_rows_by_key
+market_observation_current_rows(market_observation_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<domain::market_observation>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    market_observation_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::market_observation>&
+market_observation_rows_of(const market_observation_rows_by_key& current,
+                           const domain::market_observation& item) {
+    static const std::vector<domain::market_observation> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-market_observation_repository::replace_claim(context ctx, const domain::market_observation& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+market_observation_replace_claim(const std::vector<domain::market_observation>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::market_observation
-market_observation_repository::apply_claim(context ctx,
-                                           const domain::market_observation& v,
-                                           const ores::utility::domain::precondition& claim) {
+market_observation_apply_claim(const domain::market_observation& v,
+                               const ores::utility::domain::precondition& claim,
+                               const std::vector<domain::market_observation>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "market_observation_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "market_observation_repository::write: a current row already exists");
     return t;
 }
 
-void market_observation_repository::write(context ctx, const domain::market_observation& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_observation_repository::insert(context ctx, const domain::market_observation& v) {
+void market_observation_repository::write(const context& ctx, const domain::market_observation& v) {
+    write(
+        ctx, v, market_observation_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void market_observation_repository::insert(const context& ctx,
+                                           const domain::market_observation& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market observation. " << "id: " << v.id;
     series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
     if (manual_point_guard::unshadowed(ctx, std::vector<domain::market_observation>{v}).empty())
@@ -195,7 +256,7 @@ void market_observation_repository::insert(context ctx, const domain::market_obs
                                        "Inserting market observation into database.");
 }
 
-void market_observation_repository::insert(context ctx,
+void market_observation_repository::insert(const context& ctx,
                                            const std::vector<domain::market_observation>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
     series_shape_check::check(ctx, v);
@@ -213,40 +274,55 @@ void market_observation_repository::insert(context ctx,
                                        "Inserting market observations into database.");
 }
 
-void market_observation_repository::write(context ctx,
+void market_observation_repository::write(const context& ctx,
                                           const std::vector<domain::market_observation>& v) {
+    const auto current = market_observation_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            market_observation_replace_claim(market_observation_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void market_observation_repository::write(context ctx,
+void market_observation_repository::write(const context& ctx,
                                           const domain::market_observation& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market observation. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        market_observation_apply_claim(v,
+                                       claim,
+                                       market_observation_claim_reads_current(claim) ?
+                                           read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                           std::vector<domain::market_observation>{});
     query_builder::execute_write_query(
         ctx, market_observation_mapper::map(t), lg(), "Writing market observation to database.");
 }
 
 void market_observation_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_observation>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market observations. Count: " << v.size();
+    std::vector<domain::market_observation> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (market_observation_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = market_observation_current_rows(*this, ctx, to_read);
     std::vector<domain::market_observation> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(market_observation_apply_claim(
+            v[i], claims[i], market_observation_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        market_observation_mapper::map(batch),
                                        lg(),
                                        "Writing market observations to database.");
 }
 
-std::vector<domain::market_observation> market_observation_repository::read_latest(context ctx) {
+std::vector<domain::market_observation>
+market_observation_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
@@ -262,7 +338,7 @@ std::vector<domain::market_observation> market_observation_repository::read_late
 }
 
 std::vector<domain::market_observation>
-market_observation_repository::read_latest(context ctx, const std::string& id) {
+market_observation_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market observation. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -280,7 +356,7 @@ market_observation_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::market_observation>
-market_observation_repository::read_all(context ctx, const std::string& id) {
+market_observation_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market observation versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
@@ -297,7 +373,7 @@ market_observation_repository::read_all(context ctx, const std::string& id) {
 
 
 std::vector<domain::market_observation> market_observation_repository::read_latest_by_series_id(
-    context ctx,
+    const context& ctx,
     const std::string& series_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -324,7 +400,7 @@ std::vector<domain::market_observation> market_observation_repository::read_late
 }
 
 std::uint32_t market_observation_repository::get_total_market_observation_count_by_series_id(
-    context ctx,
+    const context& ctx,
     const std::string& series_id,
     const std::optional<messaging::market_observations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observations count. series_id: "
@@ -346,7 +422,7 @@ std::uint32_t market_observation_repository::get_total_market_observation_count_
 
 
 market_observation_repository::remove_status market_observation_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -366,12 +442,12 @@ market_observation_repository::remove_status market_observation_repository::remo
     return remove_status::removed;
 }
 
-void market_observation_repository::remove(context ctx, const std::string& id) {
+void market_observation_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_observation> market_observation_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -397,7 +473,7 @@ std::vector<domain::market_observation> market_observation_repository::read_late
 }
 
 std::uint32_t market_observation_repository::get_total_market_observation_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_observations_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observation count";
@@ -416,9 +492,25 @@ std::uint32_t market_observation_repository::get_total_market_observation_count(
 }
 
 std::vector<domain::market_observation>
-market_observation_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_observation_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::market_observation> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -434,7 +526,8 @@ market_observation_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void market_observation_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_observation_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -453,7 +546,7 @@ void market_observation_repository::remove(context ctx, const std::vector<std::s
 
 
 std::vector<domain::market_observation>
-market_observation_repository::read_latest_for_series(context ctx,
+market_observation_repository::read_latest_for_series(const context& ctx,
                                                       const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest observations for series: " << series_id;
     static constexpr auto max = db_timestamp::max();
@@ -473,7 +566,7 @@ market_observation_repository::read_latest_for_series(context ctx,
 }
 
 std::vector<domain::market_observation>
-market_observation_repository::read_latest_all(context ctx) {
+market_observation_repository::read_latest_all(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -499,7 +592,7 @@ namespace {
  * service context, which reads the store on its own authority, as every service read does. The
  * id is stored nowhere, so every read computes it. @p allowed is the right the read needs.
  */
-std::string stream_of(market_observation_repository::context ctx,
+std::string stream_of(const market_observation_repository::context& ctx,
                       const boost::uuids::uuid& series_id,
                       bool (*allowed)(const ores::database::context&, const std::string&)) {
     const auto series =
@@ -518,7 +611,7 @@ std::string stream_of(market_observation_repository::context ctx,
  * no statement derives the id.
  */
 std::pair<std::vector<std::string>, std::vector<std::string>>
-streams_of_every_series(market_observation_repository::context ctx) {
+streams_of_every_series(const market_observation_repository::context& ctx) {
     const auto party = ctx.party_id();
     const auto usable = party ? computable_providers(ctx) : std::set<std::string>{};
     std::vector<std::string> series;
@@ -578,9 +671,10 @@ std::string latest_tick_points(std::string_view bound, std::string_view max) {
  * read is small; keeping it separate from the observation scan leaves the
  * tick path unchanged.
  */
-std::vector<observation_record> read_manual_points(market_observation_repository::context ctx,
-                                                   const boost::uuids::uuid& series_id,
-                                                   ores::logging::logger_t& log) {
+std::vector<observation_record>
+read_manual_points(const market_observation_repository::context& ctx,
+                   const boost::uuids::uuid& series_id,
+                   ores::logging::logger_t& log) {
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     static const std::string sql = R"(
@@ -593,6 +687,7 @@ std::vector<observation_record> read_manual_points(market_observation_repository
          AND o.observation_datetime = l.observation_datetime AND o.valid_to = $3
         WHERE l.tenant_id = $1 AND l.series_id = $2 AND l.point_source_kind = 'manual'
             AND l.valid_to = $3
+        ORDER BY o.oresmd_uri, o.observation_datetime, o.valid_from
     )";
 
     const auto rows = query_builder::execute_parameterized_multi_column_query(
@@ -610,8 +705,9 @@ std::vector<observation_record> read_manual_points(market_observation_repository
 /*
  * The manual points of every series of the tenant: the read above without its series.
  */
-std::vector<observation_record> read_manual_points_all(market_observation_repository::context ctx,
-                                                       ores::logging::logger_t& log) {
+std::vector<observation_record>
+read_manual_points_all(const market_observation_repository::context& ctx,
+                       ores::logging::logger_t& log) {
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sql = R"(
         SELECT o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
@@ -623,6 +719,7 @@ std::vector<observation_record> read_manual_points_all(market_observation_reposi
          AND o.observation_datetime = l.observation_datetime AND o.valid_to = $2
         WHERE l.tenant_id = $1 AND l.point_source_kind = 'manual'
             AND l.valid_to = $2
+        ORDER BY o.series_id, o.oresmd_uri, o.observation_datetime, o.valid_from
     )";
 
     const auto rows = query_builder::execute_parameterized_multi_column_query(
@@ -640,7 +737,7 @@ std::vector<observation_record> read_manual_points_all(market_observation_reposi
 }
 
 std::vector<observation_record> market_observation_repository::read_as_of_records(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
     using ores::platform::time::datetime;
@@ -694,6 +791,8 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     // A current manual point owns its coordinate until cleared, overlaying the
     // fed value and any later automatic write. One whose instant is after the
     // snapshot instant is not in it; one the snapshot covers is, whenever keyed.
+    // The points come oldest first for each coordinate, so the newest one the
+    // snapshot covers is the one left standing.
     for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
         if (manual.observation.observation_datetime > as_of_datetime)
             continue;
@@ -710,7 +809,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
 }
 
 std::vector<domain::market_observation> market_observation_repository::read_as_of(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
     const auto records = read_as_of_records(ctx, series_id, as_of_datetime);
@@ -722,7 +821,7 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
 }
 
 std::vector<domain::market_observation> market_observation_repository::read_as_of_all(
-    context ctx, const std::chrono::system_clock::time_point& as_of_datetime) {
+    const context& ctx, const std::chrono::system_clock::time_point& as_of_datetime) {
     using ores::platform::time::datetime;
     const auto tid = ctx.tenant_id().to_string();
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
@@ -782,7 +881,8 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
             {market_observation_mapper::map(as_of_observation(row, 0, "read_as_of_all")),
              as_of_recorded_at(row, 0, "read_as_of_all")});
 
-    // A current manual point owns its datum until cleared, as in the read for one series.
+    // A current manual point owns its datum until cleared, as in the read for one series:
+    // oldest first, so the newest one the snapshot covers is the one left standing.
     std::map<std::pair<std::string, std::string>, std::size_t> position;
     for (std::size_t i = 0; i != result.size(); ++i)
         position[{boost::uuids::to_string(result[i].observation.series_id),
@@ -792,10 +892,12 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
             continue;
         const auto key = std::pair{boost::uuids::to_string(manual.observation.series_id),
                                    manual.observation.oresmd_uri};
-        if (const auto it = position.find(key); it != position.end())
+        if (const auto it = position.find(key); it != position.end()) {
             result[it->second] = std::move(manual);
-        else
+        } else {
+            position[key] = result.size();
             result.push_back(std::move(manual));
+        }
     }
 
     std::vector<domain::market_observation> observations;
@@ -807,7 +909,7 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
 
 std::vector<std::vector<domain::market_observation>>
 market_observation_repository::read_as_of_buckets(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& latest_boundary,
     const std::chrono::seconds& bucket_size,
@@ -904,7 +1006,7 @@ market_observation_repository::read_as_of_buckets(
 }
 
 std::vector<series_instant> market_observation_repository::read_instants(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& from_datetime,
     const std::chrono::system_clock::time_point& to_datetime,
@@ -1018,7 +1120,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
 }
 
 void market_observation_repository::write_manual_point(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::string& oresmd_uri,
     std::chrono::system_clock::time_point observation_datetime,
@@ -1086,7 +1188,7 @@ void market_observation_repository::write_manual_point(
 }
 
 void market_observation_repository::clear_manual_point(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::string& oresmd_uri,
     std::chrono::system_clock::time_point observation_datetime) {
@@ -1122,7 +1224,7 @@ void market_observation_repository::clear_manual_point(
     uow.commit();
 }
 
-std::size_t market_observation_repository::clear_manual_points(context ctx,
+std::size_t market_observation_repository::clear_manual_points(const context& ctx,
                                                                const boost::uuids::uuid& series_id,
                                                                const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Clearing every manual point for series: " << series_id

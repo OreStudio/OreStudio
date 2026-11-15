@@ -46,7 +46,7 @@ namespace ores::synthetic::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &gmm_component::version},
         utility::codec::field{"tenant_id", &gmm_component::tenant_id},
         utility::codec::field{"id", &gmm_component::id},

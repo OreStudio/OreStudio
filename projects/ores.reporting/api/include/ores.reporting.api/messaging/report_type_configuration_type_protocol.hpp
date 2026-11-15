@@ -318,7 +318,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_type_configuration_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_type_code",
                               &report_type_configuration_type_key::report_type_code},
         utility::codec::field{"configuration_type_code",
@@ -335,7 +335,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_type_configuration_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_type_code",
                               &report_type_configuration_type_write::report_type_code},
         utility::codec::field{"configuration_type_code",
@@ -353,7 +353,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<report_type_configuration_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &report_type_configuration_type_change::write},
         utility::codec::field{"precondition", &report_type_configuration_type_change::precondition},
     };
@@ -369,7 +369,7 @@ wire_fields(std::type_identity<report_type_configuration_type_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<report_type_configuration_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_type_configuration_type_removal::key},
         utility::codec::field{"precondition",
                               &report_type_configuration_type_removal::precondition},
@@ -386,7 +386,7 @@ wire_fields(std::type_identity<report_type_configuration_type_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<report_type_configuration_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_type_configuration_type_lookup::key},
         utility::codec::field{
             "report_type_configuration_type",
@@ -404,7 +404,7 @@ wire_fields(std::type_identity<report_type_configuration_type_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<report_type_configuration_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_type_code",
                               &report_type_configuration_types_filter::report_type_code},
         utility::codec::field{"report_type_code_one_of",
@@ -422,7 +422,7 @@ wire_fields(std::type_identity<report_type_configuration_types_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_report_type_configuration_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_report_type_configuration_types_request::offset},
         utility::codec::field{"limit", &list_report_type_configuration_types_request::limit},
         utility::codec::field{"order", &list_report_type_configuration_types_request::order},
@@ -440,7 +440,7 @@ wire_fields(std::type_identity<list_report_type_configuration_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_report_type_configuration_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_report_type_configuration_types_response::result},
         utility::codec::field{
             "report_type_configuration_types",
@@ -459,7 +459,7 @@ wire_fields(std::type_identity<list_report_type_configuration_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_report_type_configuration_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_report_type_configuration_type_request::key},
     };
 }
@@ -474,7 +474,7 @@ wire_fields(std::type_identity<get_report_type_configuration_type_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_report_type_configuration_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_report_type_configuration_type_response::result},
         utility::codec::field{
             "report_type_configuration_type",
@@ -492,7 +492,7 @@ wire_fields(std::type_identity<get_report_type_configuration_type_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_report_type_configuration_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_report_type_configuration_types_request::keys},
     };
 }
@@ -507,7 +507,7 @@ wire_fields(std::type_identity<get_many_report_type_configuration_types_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_report_type_configuration_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_report_type_configuration_types_response::result},
         utility::codec::field{"entries",
                               &get_many_report_type_configuration_types_response::entries},
@@ -524,7 +524,7 @@ wire_fields(std::type_identity<get_many_report_type_configuration_types_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_report_type_configuration_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_report_type_configuration_type_request::change},
         utility::codec::field{"intent", &put_report_type_configuration_type_request::intent},
     };
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<put_report_type_configuration_type_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_report_type_configuration_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_report_type_configuration_type_response::result},
         utility::codec::field{
             "report_type_configuration_type",
@@ -558,7 +558,7 @@ wire_fields(std::type_identity<put_report_type_configuration_type_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_report_type_configuration_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_report_type_configuration_types_request::changes},
         utility::codec::field{"intent", &put_many_report_type_configuration_types_request::intent},
@@ -575,7 +575,7 @@ wire_fields(std::type_identity<put_many_report_type_configuration_types_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_report_type_configuration_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_report_type_configuration_types_response::result},
         utility::codec::field{
             "report_type_configuration_types",
@@ -593,7 +593,7 @@ wire_fields(std::type_identity<put_many_report_type_configuration_types_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_report_type_configuration_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_report_type_configuration_type_request::removal},
         utility::codec::field{"intent", &delete_report_type_configuration_type_request::intent},
     };
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<delete_report_type_configuration_type_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_report_type_configuration_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_report_type_configuration_type_response::result},
     };
 }
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<delete_report_type_configuration_type_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_report_type_configuration_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_report_type_configuration_types_request::removals},
         utility::codec::field{"intent",
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<delete_many_report_type_configuration_types_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_report_type_configuration_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_report_type_configuration_types_response::result},
     };
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<delete_many_report_type_configuration_types_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_report_type_code_report_type_configuration_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "report_type_code",
             &list_by_report_type_code_report_type_configuration_types_request::report_type_code},
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<list_by_report_type_code_report_type_configuratio
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_report_type_code_report_type_configuration_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_report_type_code_report_type_configuration_types_response::result},
         utility::codec::field{"report_type_configuration_types",

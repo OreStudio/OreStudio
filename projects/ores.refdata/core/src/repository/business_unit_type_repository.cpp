@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/business_unit_type_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -101,19 +105,75 @@ std::optional<query_builder::condition> business_unit_type_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool business_unit_type_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using business_unit_type_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::business_unit_type>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+business_unit_type_rows_by_key
+business_unit_type_current_rows(business_unit_type_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<domain::business_unit_type>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    business_unit_type_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::business_unit_type>&
+business_unit_type_rows_of(const business_unit_type_rows_by_key& current,
+                           const domain::business_unit_type& item) {
+    static const std::vector<domain::business_unit_type> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-business_unit_type_repository::replace_claim(context ctx, const domain::business_unit_type& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+business_unit_type_replace_claim(const std::vector<domain::business_unit_type>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::business_unit_type
-business_unit_type_repository::apply_claim(context ctx,
-                                           const domain::business_unit_type& v,
-                                           const ores::utility::domain::precondition& claim) {
+business_unit_type_apply_claim(const domain::business_unit_type& v,
+                               const ores::utility::domain::precondition& claim,
+                               const std::vector<domain::business_unit_type>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -125,57 +185,73 @@ business_unit_type_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void business_unit_type_repository::write(context ctx, const domain::business_unit_type& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void business_unit_type_repository::write(context ctx,
+void business_unit_type_repository::write(const context& ctx, const domain::business_unit_type& v) {
+    write(
+        ctx, v, business_unit_type_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void business_unit_type_repository::write(const context& ctx,
                                           const std::vector<domain::business_unit_type>& v) {
+    const auto current = business_unit_type_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            business_unit_type_replace_claim(business_unit_type_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void business_unit_type_repository::write(context ctx,
+void business_unit_type_repository::write(const context& ctx,
                                           const domain::business_unit_type& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business unit type. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        business_unit_type_apply_claim(v,
+                                       claim,
+                                       business_unit_type_claim_reads_current(claim) ?
+                                           read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                           std::vector<domain::business_unit_type>{});
     query_builder::execute_write_query(
         ctx, business_unit_type_mapper::map(t), lg(), "Writing business unit type to database.");
 }
 
 void business_unit_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::business_unit_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business unit types. Count: " << v.size();
+    std::vector<domain::business_unit_type> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (business_unit_type_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = business_unit_type_current_rows(*this, ctx, to_read);
     std::vector<domain::business_unit_type> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(business_unit_type_apply_claim(
+            v[i], claims[i], business_unit_type_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        business_unit_type_mapper::map(batch),
                                        lg(),
                                        "Writing business unit types to database.");
 }
 
-std::vector<domain::business_unit_type> business_unit_type_repository::read_latest(context ctx) {
+std::vector<domain::business_unit_type>
+business_unit_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_type_entity>> |
@@ -191,7 +267,7 @@ std::vector<domain::business_unit_type> business_unit_type_repository::read_late
 }
 
 std::vector<domain::business_unit_type>
-business_unit_type_repository::read_latest(context ctx, const std::string& id) {
+business_unit_type_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit type. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -208,7 +284,7 @@ business_unit_type_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::business_unit_type>
-business_unit_type_repository::read_latest_by_code(context ctx, const std::string& code) {
+business_unit_type_repository::read_latest_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit type by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -225,7 +301,44 @@ business_unit_type_repository::read_latest_by_code(context ctx, const std::strin
 }
 
 std::vector<domain::business_unit_type>
-business_unit_type_repository::read_any_by_code(context ctx, const std::string& code) {
+business_unit_type_repository::read_latest_by_code(const context& ctx,
+                                                   const std::vector<std::string>& codes) {
+    if (codes.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::business_unit_type> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest_by_code(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit types by code. Count: "
+                               << codes.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<business_unit_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    auto found =
+        query_builder::execute_read_query<business_unit_type_entity, domain::business_unit_type>(
+            ctx,
+            query,
+            [](const auto& entities) { return business_unit_type_mapper::map(entities); },
+            lg(),
+            "Reading latest business unit types by code.");
+    return found;
+}
+
+std::vector<domain::business_unit_type>
+business_unit_type_repository::read_any_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any business unit type by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_type_entity>> |
@@ -242,7 +355,7 @@ business_unit_type_repository::read_any_by_code(context ctx, const std::string& 
 
 
 std::vector<domain::business_unit_type>
-business_unit_type_repository::read_all(context ctx, const std::string& id) {
+business_unit_type_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all business unit type versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_type_entity>> |
@@ -258,7 +371,7 @@ business_unit_type_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::business_unit_type> business_unit_type_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading business unit type at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -281,7 +394,7 @@ std::optional<domain::business_unit_type> business_unit_type_repository::read_at
 }
 
 business_unit_type_repository::remove_status business_unit_type_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit type. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -310,12 +423,12 @@ business_unit_type_repository::remove_status business_unit_type_repository::remo
     return remove_status::removed;
 }
 
-void business_unit_type_repository::remove(context ctx, const std::string& id) {
+void business_unit_type_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::business_unit_type> business_unit_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -341,7 +454,7 @@ std::vector<domain::business_unit_type> business_unit_type_repository::read_late
 }
 
 std::uint32_t business_unit_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::business_unit_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business unit type count";
@@ -360,9 +473,25 @@ std::uint32_t business_unit_type_repository::get_total_type_count(
 }
 
 std::vector<domain::business_unit_type>
-business_unit_type_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+business_unit_type_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::business_unit_type> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -378,7 +507,8 @@ business_unit_type_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void business_unit_type_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void business_unit_type_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

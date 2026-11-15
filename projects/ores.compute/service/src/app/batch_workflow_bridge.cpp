@@ -38,10 +38,10 @@ using namespace ores::logging;
 
 batch_workflow_bridge::batch_workflow_bridge(std::uint32_t interval_seconds,
                                              ores::nats::service::client& nats,
-                                             ores::database::context ctx)
+                                             const ores::database::context& ctx)
     : interval_seconds_(interval_seconds)
     , nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(ctx) {}
 
 void batch_workflow_bridge::poll_once() {
     repository::workflow_batch_link_repository link_repo;

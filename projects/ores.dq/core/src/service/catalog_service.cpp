@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -49,13 +51,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 
-catalog_service::catalog_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+catalog_service::catalog_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -73,6 +76,46 @@ std::vector<domain::catalog> catalog_read_one(repository::catalog_repository& re
                                               const ores::database::context& ctx,
                                               const messaging::catalog_key& key) {
     return repo.read_latest(ctx, key.name);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::catalog>>
+catalog_read_many(repository::catalog_repository& repo,
+                  const ores::database::context& ctx,
+                  const std::vector<messaging::catalog_key>& keys) {
+    std::vector<std::vector<domain::catalog>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> name_keys;
+    name_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        name_keys.push_back(key.name);
+    }
+    std::map<key_tuple, std::vector<domain::catalog>> by_key;
+    for (auto& row : repo.read_latest(ctx, name_keys)) {
+        key_tuple named(row.name);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(key.name));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -115,9 +158,9 @@ catalog_service::list_catalogs(const messaging::list_catalogs_request& request) 
         return response;
     }
     if (request.filter && request.filter->name_one_of &&
-        request.filter->name_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "name_one_of", .limit = "1000"});
+        request.filter->name_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "name_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -152,16 +195,23 @@ catalog_service::get_catalog(const messaging::get_catalog_request& request) {
 messaging::get_many_catalogs_response
 catalog_service::get_many_catalogs(const messaging::get_many_catalogs_request& request) {
     messaging::get_many_catalogs_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = catalog_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::catalog_lookup entry;
-        entry.key = k;
-        auto found = catalog_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.catalog = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.catalog = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -171,7 +221,9 @@ messaging::put_catalog_response
 catalog_service::put_catalog(const messaging::put_catalog_request& request) {
     messaging::put_catalog_response response;
     domain::catalog value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current =
+        catalog_read_one(repo_, ctx_, catalog_key_from(catalog_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -184,11 +236,18 @@ catalog_service::put_catalog(const messaging::put_catalog_request& request) {
 messaging::put_many_catalogs_response
 catalog_service::put_many_catalogs(const messaging::put_many_catalogs_request& request) {
     messaging::put_many_catalogs_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::catalog_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(catalog_key_from(catalog_to_domain(change.write)));
+    const auto current = catalog_read_many(repo_, ctx_, keys);
     std::vector<domain::catalog> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::catalog value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -206,9 +265,11 @@ catalog_service::put_many_catalogs(const messaging::put_many_catalogs_request& r
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.catalogs.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = catalog_read_one(repo_, ctx_, catalog_key_from(value));
-        response.catalogs.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = catalog_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.catalogs.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -320,12 +381,12 @@ catalog_service::get_catalog_version(const messaging::get_catalog_version_reques
 ores::utility::domain::result
 catalog_service::prepare_change(const messaging::catalog_change& change,
                                 const ores::utility::domain::change_intent& intent,
+                                const std::vector<domain::catalog>& current,
                                 domain::catalog& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = catalog_to_domain(change.write);
-    const auto current = catalog_read_one(repo_, ctx_, catalog_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

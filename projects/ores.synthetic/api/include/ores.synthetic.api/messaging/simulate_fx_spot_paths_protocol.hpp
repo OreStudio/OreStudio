@@ -101,7 +101,7 @@ struct simulate_fx_spot_paths_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_fx_spot_paths_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"gmm_means", &simulate_fx_spot_paths_request::gmm_means},
         ::ores::utility::codec::field{"gmm_stdevs", &simulate_fx_spot_paths_request::gmm_stdevs},
         ::ores::utility::codec::field{"gmm_weights", &simulate_fx_spot_paths_request::gmm_weights},
@@ -124,7 +124,7 @@ struct simulate_fx_spot_paths_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_fx_spot_paths_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &simulate_fx_spot_paths_response::success},
         ::ores::utility::codec::field{"message", &simulate_fx_spot_paths_response::message},
         ::ores::utility::codec::field{"paths", &simulate_fx_spot_paths_response::paths},

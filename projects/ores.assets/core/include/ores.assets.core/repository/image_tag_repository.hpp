@@ -54,7 +54,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit image_tag_repository(context ctx);
+    explicit image_tag_repository(const context& ctx);
 
     std::string sql();
 

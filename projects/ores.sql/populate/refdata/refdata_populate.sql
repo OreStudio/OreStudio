@@ -38,7 +38,7 @@
 
 \echo ''
 \echo '--- Instrument Conventions Seed Data ---'
-\ir ./refdata_conventions_seed_populate.sql
+\ir ./refdata_conventions_artefact_populate.sql
 
 \echo ''
 \echo '--- CRM Topology Bundles Seed Data ---'
@@ -90,10 +90,11 @@
 \echo '--- IR Curve Bootstrap Configs Seed Data ---'
 \ir ./refdata_ir_curve_bootstrap_configs_populate.sql
 \ir ./refdata_ir_curve_overnight_configs_populate.sql
+\ir ./refdata_ir_curve_bootstrap_ibor_configs_populate.sql
 
 \echo ''
-\echo '--- FX Volatility Surface Blueprint Seed Data ---'
-\ir ./refdata_fx_vol_surface_blueprint_populate.sql
+\echo '--- FX Volatility Surface Blueprints ---'
+\ir ./refdata_fx_vol_surface_blueprints_artefact_populate.sql
 
 \echo ''
 \ir ./refdata_floating_index_types_populate.sql

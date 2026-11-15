@@ -24,7 +24,10 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.http.api/net/http_server.hpp"
+#include "ores.http.core/routes/change_reason_routes.hpp"
 #include "ores.http.core/routes/change_routes.hpp"
+#include "ores.http.core/routes/history_routes.hpp"
+#include "ores.http.core/routes/site_routes.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.core/routes/web_bundle_routes.hpp"
@@ -33,14 +36,21 @@
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
+#include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
+#include "ores.http/routes/iam/browser_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/iam/session_renewal.hpp"
+#include "ores.http/routes/marketdata/marketdata_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
+#include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
+#include "ores.http/routes/trading/trading_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -51,6 +61,9 @@
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
 #include <filesystem>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <utility>
 
 namespace ores::http::server::app {
@@ -171,8 +184,34 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
+    ores::http::routes::history_routes::register_routes(router, registry, service_nats);
+
+    ores::http::routes::change_reason_routes::register_routes(router, registry, service_nats);
+
+    /*
+     * The site the served client reads about itself is the BFF's file, chosen the
+     * same way, so a deployment states it once for both. A server with none still
+     * answers the liveness probe.
+     */
+    std::optional<http::site::loaded_site> site;
+    try {
+        site = http::site::load_site(cfg.site_config, cfg.site_env, [](std::string_view name) {
+            return ores::platform::environment::environment::get_value(std::string(name));
+        });
+        BOOST_LOG_SEV(lg(), info) << "Serving site environment " << site->served.id << " from "
+                                  << site->source;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "No site routes: " << e.what();
+    }
+    ores::http::routes::site_routes::register_routes(router, registry, std::move(site));
+
     ores::http::routes::synthetic::synthetic_routes::register_routes(
         router, registry, service_nats);
+    ores::http::routes::marketdata::marketdata_routes::register_routes(
+        router, registry, service_nats);
+    ores::http::routes::reporting::reporting_routes::register_routes(
+        router, registry, service_nats, cfg.storage_dir);
+    ores::http::routes::trading::trading_routes::register_routes(router, registry, service_nats);
 
     /*
      * The browser's door: a sign-in keeps the token here and gives the browser a
@@ -184,6 +223,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     session_cookie.secure = cfg.server.enable_ssl;
     session_cookie.path = cfg.web_session_path;
     server.set_cookie_settings(session_cookie);
+    // A browser session outlives its first token: the gateway renews it before it expires.
+    server.set_token_renewer(http::routes::iam::session_renewal::renewer(
+        service_nats, [&server] { return server.verifier(); }));
 
     /*
      * The door finds the verifier when a sign-in needs it. The runner installs the
@@ -193,6 +235,15 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     http::routes::iam::auth_session_routes auth_sessions(
         service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
     auth_sessions.register_routes(router, registry);
+
+    // The browser's own session routes, at the BFF's addresses, beside the door.
+    http::routes::iam::browser_session_routes browser_sessions(
+        service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
+    browser_sessions.register_routes(router, registry);
+
+    // The setup screens say whether the browser sent the cookie, so they share it.
+    http::routes::iam::bootstrap_screen_routes bootstrap_screens(service_nats, session_cookie);
+    bootstrap_screens.register_routes(router, registry);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
     storage.register_routes(router, registry);

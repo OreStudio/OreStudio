@@ -203,6 +203,55 @@ std::nullopt
 | sequence_number | Sequence   |
 | underlying_name | Underlying |
 
+** Custom repository methods
+
+The trade read path fetches the constituents of many equity baskets at once
+when it assembles the export payload, and no generated read covers that:
+=read_latest(context, ids)= filters on the child's own key and
+=read_latest_by_trade_id= reads one instrument at a time. The batch read
+below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 4BF509EE-AE3F-4ABB-A102-CD8D4EFD2293
+:END:
+
+Reads every current constituent of the given instruments, ordered by
+instrument and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief The current constituents of every given instrument, in one statement.
+     *
+     * An empty input reads nothing, so a caller with no instruments pays
+     * no query.
+     */
+std::vector<domain::equity_basket_constituent>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::equity_basket_constituent>
+equity_basket_constituent_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                                            "valid_to"_c == max) |
+                       query_builder::order_by("trade_id"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<equity_basket_constituent_entity,
+                                             domain::equity_basket_constituent>(
+        ctx,
+        query,
+        [](const auto& entities) { return equity_basket_constituent_mapper::map(entities); },
+        lg(),
+        "Reading equity basket constituents for multiple instruments.");
+}
+#+end_src
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

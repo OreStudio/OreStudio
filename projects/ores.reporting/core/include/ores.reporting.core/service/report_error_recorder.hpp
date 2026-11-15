@@ -52,14 +52,15 @@ struct recorded_engine_errors {
  */
 class ORES_REPORTING_CORE_EXPORT report_error_recorder final {
 public:
-    explicit report_error_recorder(ores::database::context ctx);
+    explicit report_error_recorder(const ores::database::context& ctx);
 
     /**
-     * @brief Writes the run's log rows that say something went wrong.
+     * @brief Writes the run's log rows against the run.
      *
-     * The rows cover every line the node marshalled; the ones whose severity is
-     * @c error or @c warning are written, and the rest are dropped, because a
-     * notice is not a reason.
+     * The rows cover every line the node marshalled and every one is written: a
+     * notice is part of the account of what the engine was handed, and the run
+     * is where that account belongs. A notice becomes an @c info row, because
+     * the engine has five levels and the store keeps four.
      *
      * @return The rows the run holds from this read, or why they were not
      * written.

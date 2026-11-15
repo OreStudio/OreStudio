@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/iam/auth_session_routes.hpp"
+#include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -85,6 +86,7 @@ void auth_session_routes::register_routes(
                              .description("Opens a session and sets the cookie it rides in")
                              .tags({"auth"})
                              .auth_optional()
+                             .rate_limit(ores::http::net::rate_policies::credential)
                              .handler([this](const http_request& req) { return sign_in(req); });
     const auto sign_in_built = sign_in_route.build();
     router->add_route(sign_in_built);

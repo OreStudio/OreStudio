@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &trade_party_role_key::trade_id},
         utility::codec::field{"role", &trade_party_role_key::role},
     };
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &trade_party_role_write::trade_id},
         utility::codec::field{"role", &trade_party_role_write::role},
         utility::codec::field{"trade_activity_id", &trade_party_role_write::trade_activity_id},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &trade_party_role_change::write},
         utility::codec::field{"precondition", &trade_party_role_change::precondition},
     };
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &trade_party_role_removal::key},
         utility::codec::field{"precondition", &trade_party_role_removal::precondition},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &trade_party_role_lookup::key},
         utility::codec::field{"trade_party_role", &trade_party_role_lookup::trade_party_role},
     };
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_roles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &trade_party_roles_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &trade_party_roles_filter::trade_id_one_of},
     };
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &trade_party_role_event::event_id},
         utility::codec::field{"key", &trade_party_role_event::key},
         utility::codec::field{"action", &trade_party_role_event::action},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_party_role", &trade_party_role_version_key::trade_party_role},
         utility::codec::field{"version", &trade_party_role_version_key::version},
     };
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_party_role_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &trade_party_role_versions_filter::version},
         utility::codec::field{"from_version", &trade_party_role_versions_filter::from_version},
         utility::codec::field{"to_version", &trade_party_role_versions_filter::to_version},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_party_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_trade_party_roles_request::offset},
         utility::codec::field{"limit", &list_trade_party_roles_request::limit},
         utility::codec::field{"order", &list_trade_party_roles_request::order},
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_party_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_trade_party_roles_response::result},
         utility::codec::field{"roles", &list_trade_party_roles_response::roles},
         utility::codec::field{"total", &list_trade_party_roles_response::total},
@@ -573,7 +573,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_party_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_trade_party_role_request::key},
     };
 }
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_party_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_trade_party_role_response::result},
         utility::codec::field{"trade_party_role", &get_trade_party_role_response::trade_party_role},
     };
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_trade_party_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_trade_party_roles_request::keys},
     };
 }
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_trade_party_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_trade_party_roles_response::result},
         utility::codec::field{"entries", &get_many_trade_party_roles_response::entries},
     };
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trade_party_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_trade_party_role_request::change},
         utility::codec::field{"intent", &put_trade_party_role_request::intent},
     };
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trade_party_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_trade_party_role_response::result},
         utility::codec::field{"trade_party_role", &put_trade_party_role_response::trade_party_role},
     };
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_trade_party_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_trade_party_roles_request::changes},
         utility::codec::field{"intent", &put_many_trade_party_roles_request::intent},
     };
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_trade_party_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_trade_party_roles_response::result},
         utility::codec::field{"roles", &put_many_trade_party_roles_response::roles},
     };
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trade_party_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_trade_party_role_request::removal},
         utility::codec::field{"intent", &delete_trade_party_role_request::intent},
     };
@@ -706,7 +706,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trade_party_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_trade_party_role_response::result},
     };
 }
@@ -721,7 +721,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.trade_party_roles
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_trade_party_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_trade_party_roles_request::removals},
         utility::codec::field{"intent", &delete_many_trade_party_roles_request::intent},
     };
@@ -737,7 +737,7 @@ wire_fields(std::type_identity<delete_many_trade_party_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_trade_party_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_trade_party_roles_response::result},
     };
 }
@@ -752,7 +752,7 @@ wire_fields(std::type_identity<delete_many_trade_party_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_trade_party_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &list_by_trade_id_trade_party_roles_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_trade_party_roles_request::scope},
         utility::codec::field{"offset", &list_by_trade_id_trade_party_roles_request::offset},
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<list_by_trade_id_trade_party_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_trade_party_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_trade_party_roles_response::result},
         utility::codec::field{"roles", &list_by_trade_id_trade_party_roles_response::roles},
         utility::codec::field{"total", &list_by_trade_id_trade_party_roles_response::total},
@@ -789,7 +789,7 @@ wire_fields(std::type_identity<list_by_trade_id_trade_party_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_trade_party_role_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_trade_party_role_versions_request::key},
         utility::codec::field{"offset", &list_trade_party_role_versions_request::offset},
         utility::codec::field{"limit", &list_trade_party_role_versions_request::limit},
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<list_trade_party_role_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_trade_party_role_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_trade_party_role_versions_response::result},
         utility::codec::field{"versions", &list_trade_party_role_versions_response::versions},
         utility::codec::field{"total", &list_trade_party_role_versions_response::total},
@@ -824,7 +824,7 @@ wire_fields(std::type_identity<list_trade_party_role_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_party_role_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_trade_party_role_version_request::key},
     };
 }
@@ -839,7 +839,7 @@ wire_fields(std::type_identity<list_trade_party_role_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_trade_party_role_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_trade_party_role_version_response::result},
         utility::codec::field{"version", &get_trade_party_role_version_response::version},
     };

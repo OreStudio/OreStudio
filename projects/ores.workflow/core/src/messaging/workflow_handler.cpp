@@ -35,13 +35,13 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 workflow_handler::workflow_handler(ores::nats::service::client& nats,
-                                   ores::database::context ctx,
+                                   const ores::database::context& ctx,
                                    ores::security::jwt::jwt_authenticator signer,
                                    std::shared_ptr<service::workflow_engine> engine)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , signer_(std::move(signer))
-    , engine_(std::move(engine)) {}
+    , ctx_(ctx)
+    , signer_(signer)
+    , engine_(engine) {}
 
 void workflow_handler::retry_instance(ores::nats::message msg) {
     const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);

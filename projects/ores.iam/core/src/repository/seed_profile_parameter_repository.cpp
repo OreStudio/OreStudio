@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/seed_profile_parameter_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/seed_profile_parameter.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -110,20 +114,75 @@ std::optional<query_builder::condition> seed_profile_parameter_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool seed_profile_parameter_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using seed_profile_parameter_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::seed_profile_parameter>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+seed_profile_parameter_rows_by_key
+seed_profile_parameter_current_rows(seed_profile_parameter_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const std::vector<domain::seed_profile_parameter>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    seed_profile_parameter_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::seed_profile_parameter>&
+seed_profile_parameter_rows_of(const seed_profile_parameter_rows_by_key& current,
+                               const domain::seed_profile_parameter& item) {
+    static const std::vector<domain::seed_profile_parameter> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-seed_profile_parameter_repository::replace_claim(context ctx,
-                                                 const domain::seed_profile_parameter& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+seed_profile_parameter_replace_claim(const std::vector<domain::seed_profile_parameter>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::seed_profile_parameter
-seed_profile_parameter_repository::apply_claim(context ctx,
-                                               const domain::seed_profile_parameter& v,
-                                               const ores::utility::domain::precondition& claim) {
+seed_profile_parameter_apply_claim(const domain::seed_profile_parameter& v,
+                                   const ores::utility::domain::precondition& claim,
+                                   const std::vector<domain::seed_profile_parameter>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,38 +194,47 @@ seed_profile_parameter_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void seed_profile_parameter_repository::write(context ctx,
+}
+
+void seed_profile_parameter_repository::write(const context& ctx,
                                               const domain::seed_profile_parameter& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          seed_profile_parameter_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void seed_profile_parameter_repository::write(
-    context ctx, const std::vector<domain::seed_profile_parameter>& v) {
+    const context& ctx, const std::vector<domain::seed_profile_parameter>& v) {
+    const auto current = seed_profile_parameter_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            seed_profile_parameter_replace_claim(seed_profile_parameter_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void seed_profile_parameter_repository::write(context ctx,
+void seed_profile_parameter_repository::write(const context& ctx,
                                               const domain::seed_profile_parameter& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing seed profile parameter. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        seed_profile_parameter_apply_claim(v,
+                                           claim,
+                                           seed_profile_parameter_claim_reads_current(claim) ?
+                                               read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                               std::vector<domain::seed_profile_parameter>{});
     query_builder::execute_write_query(ctx,
                                        seed_profile_parameter_mapper::map(t),
                                        lg(),
@@ -174,14 +242,21 @@ void seed_profile_parameter_repository::write(context ctx,
 }
 
 void seed_profile_parameter_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::seed_profile_parameter>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing seed profile parameters. Count: " << v.size();
+    std::vector<domain::seed_profile_parameter> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (seed_profile_parameter_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = seed_profile_parameter_current_rows(*this, ctx, to_read);
     std::vector<domain::seed_profile_parameter> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(seed_profile_parameter_apply_claim(
+            v[i], claims[i], seed_profile_parameter_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        seed_profile_parameter_mapper::map(batch),
                                        lg(),
@@ -189,7 +264,7 @@ void seed_profile_parameter_repository::write(
 }
 
 std::vector<domain::seed_profile_parameter>
-seed_profile_parameter_repository::read_latest(context ctx) {
+seed_profile_parameter_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<seed_profile_parameter_entity>> |
@@ -206,7 +281,7 @@ seed_profile_parameter_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::seed_profile_parameter>
-seed_profile_parameter_repository::read_latest(context ctx, const std::string& id) {
+seed_profile_parameter_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest seed profile parameter. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -225,7 +300,7 @@ seed_profile_parameter_repository::read_latest(context ctx, const std::string& i
 
 
 std::vector<domain::seed_profile_parameter>
-seed_profile_parameter_repository::read_all(context ctx, const std::string& id) {
+seed_profile_parameter_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all seed profile parameter versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<seed_profile_parameter_entity>> |
@@ -242,7 +317,7 @@ seed_profile_parameter_repository::read_all(context ctx, const std::string& id) 
 }
 
 std::optional<domain::seed_profile_parameter> seed_profile_parameter_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading seed profile parameter at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -266,7 +341,7 @@ std::optional<domain::seed_profile_parameter> seed_profile_parameter_repository:
 
 std::vector<domain::seed_profile_parameter>
 seed_profile_parameter_repository::read_latest_by_seed_profile_id(
-    context ctx,
+    const context& ctx,
     const std::string& seed_profile_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -295,7 +370,7 @@ seed_profile_parameter_repository::read_latest_by_seed_profile_id(
 
 std::uint32_t
 seed_profile_parameter_repository::get_total_seed_profile_parameter_count_by_seed_profile_id(
-    context ctx,
+    const context& ctx,
     const std::string& seed_profile_id,
     const std::optional<messaging::seed_profile_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -319,7 +394,7 @@ seed_profile_parameter_repository::get_total_seed_profile_parameter_count_by_see
 
 
 seed_profile_parameter_repository::remove_status seed_profile_parameter_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing seed profile parameter. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -348,12 +423,12 @@ seed_profile_parameter_repository::remove_status seed_profile_parameter_reposito
     return remove_status::removed;
 }
 
-void seed_profile_parameter_repository::remove(context ctx, const std::string& id) {
+void seed_profile_parameter_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::seed_profile_parameter> seed_profile_parameter_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -379,7 +454,7 @@ std::vector<domain::seed_profile_parameter> seed_profile_parameter_repository::r
 }
 
 std::uint32_t seed_profile_parameter_repository::get_total_seed_profile_parameter_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::seed_profile_parameters_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active seed profile parameter count";
@@ -398,9 +473,25 @@ std::uint32_t seed_profile_parameter_repository::get_total_seed_profile_paramete
 }
 
 std::vector<domain::seed_profile_parameter>
-seed_profile_parameter_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+seed_profile_parameter_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::seed_profile_parameter> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -416,7 +507,8 @@ seed_profile_parameter_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void seed_profile_parameter_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void seed_profile_parameter_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

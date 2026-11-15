@@ -24,6 +24,7 @@
 #include "ores.http.api/domain/body_source.hpp"
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/export.hpp"
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -85,9 +86,23 @@ struct ORES_HTTP_API_EXPORT http_response final {
     static http_response error(http_status status, const std::string& message);
 
     /**
+     * @brief Creates an error response whose body names a code and a message.
+     *
+     * The browser reads a refusal as a code it can act on and a sentence it can
+     * show, so a route the browser calls answers in this shape.
+     */
+    static http_response
+    api_error(http_status status, const std::string& code, const std::string& message);
+
+    /**
      * @brief Creates a 404 Not Found response.
      */
     static http_response not_found(const std::string& message = "Not Found");
+
+    /**
+     * @brief Refuses a range that starts past the end of what the body holds.
+     */
+    static http_response range_not_satisfiable(std::uint64_t total);
 
     /**
      * @brief Creates a 401 Unauthorized response.

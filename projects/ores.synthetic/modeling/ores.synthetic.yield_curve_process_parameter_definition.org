@@ -1,10 +1,16 @@
 :PROPERTIES:
 :ID: 5F5B8448-ADA9-4424-8A5D-91B30A200DAA
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.yield_curve_process_parameter_definition
 #+description: Codegen entity model for the synthetic yield_curve_process_parameter_definition table; reference data describing which named parameters each yield curve process type accepts, with user-facing descriptions and validation bounds.
 #+type: ores.codegen.entity
+#+web_resource: parameter-definitions
+#+web_writes: many
+#+web_read_only_because: The server addresses a parameter definition by its name alone, which several process types share, so a write would reach whichever type it found first.
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: yield_curve_process_parameter_definition

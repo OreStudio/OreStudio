@@ -1,0 +1,698 @@
+:PROPERTIES:
+:ID: BDB130FB-08AC-4545-B023-A661A261C657
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.marketdata.fx_vol_surface_operations
+#+description: Codegen operation model for the calibration of a party's FX volatility surface blueprint into a candidate, and the approval-gated publish of a candidate.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: fx_vol_surface_operation
+#+namespace: ores::marketdata::messaging
+#+brief: The calibration, publish and read of a party's FX volatility surfaces.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+The calibration behind the calibrate journey. A caller names a blueprint of its
+party and an as-of. The service checks the recipe before it reads a quote, reads
+the quotes the pillars name and the party's published forward set, fits the
+smile model and writes the candidate: the grid as observations of the output
+series with lineage, and the checks as a calibration record. The reply carries
+what the record holds, so a caller reads the fit and its errors at once. A
+refusal is a reply with =success= false and a message that names what failed.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** fx_vol_pillar_fit
+
+#+begin_src cpp :name comment
+/**
+ * @brief How far one quoted pillar is from the calibrated surface.
+ */
+#+end_src
+
+*** point
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** quoted
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** fitted
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** error
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** beyond_tolerance
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+** fx_vol_grid_point
+
+#+begin_src cpp :name comment
+/**
+ * @brief One point of the candidate's grid, as written to the output series.
+ */
+#+end_src
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** log_moneyness
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** volatility
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** fx_vol_violation
+
+#+begin_src cpp :name comment
+/**
+ * @brief One arbitrage condition the calibrated surface breaks.
+ */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fx_vol_missing_pillar
+
+#+begin_src cpp :name comment
+/**
+ * @brief A pillar no contributor quoted at the as-of, with the series it read.
+ */
+#+end_src
+
+*** point
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** calibrate_fx_vol_surface_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.calibrate_fx_vol_surface
+:response: calibrate_fx_vol_surface_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Calibrates one FX volatility surface blueprint of the caller's party at an as-of and writes the candidate. The recipe is checked before any quote is read. A refusal names what failed, and writes nothing.
+ */
+#+end_src
+
+*** blueprint_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The blueprint to calibrate.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the calibration reads its quotes and forwards at.
+ */
+#+end_src
+
+** calibrate_fx_vol_surface_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The candidate the calibration wrote, or why it refused.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** forward_publish_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** rho
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** eta
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** gamma
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** converged
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** max_abs_error
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** pillars
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_pillar_fit>
+:END:
+
+*** grid
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_grid_point>
+:END:
+
+*** violations
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_violation>
+:END:
+
+*** missing
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_missing_pillar>
+:END:
+
+** publish_fx_vol_surface_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.publish_fx_vol_surface
+:response: publish_fx_vol_surface_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Raises, or applies, the publish of a calibrated surface of the caller's party. A call that names no approved request raises a marketdata.fx_vol_surface_publish request for the calibration of the blueprint at the as-of, and records its checks for the decider. A call that names the approved request publishes that calibration and ends the set it replaces. A blueprint with no calibration at the as-of is refused, and nothing is written.
+ */
+#+end_src
+
+*** blueprint_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approved request this call applies, or empty to raise one.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the surface should be published, for the decider to read.
+ */
+#+end_src
+
+** publish_fx_vol_surface_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the call did: raised a request, published a surface, or refused and why.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_fx_vol_surface_publish_subject_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_fx_vol_surface_publish_subject
+:response: get_fx_vol_surface_publish_subject_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the subject of a surface publish request: the candidate it authorises, the checks the raise recorded, and what has happened to it since.
+ */
+#+end_src
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_fx_vol_surface_publish_subject_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The subject of a surface publish request, or why it cannot be read.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calibration_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** converged
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** max_abs_error
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** pillars_beyond_tolerance
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** violation_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** superseded_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** superseded_by_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fx_vol_surface_point
+
+#+begin_src cpp :name comment
+/**
+ * @brief One point of a published surface: its expiry, its strike and its volatility.
+ */
+#+end_src
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** volatility
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** get_published_fx_vol_surface_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_published_fx_vol_surface
+:response: get_published_fx_vol_surface_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the published surface of a blueprint of the caller's party: the newest published set at or before the as-of, exactly as it was published. Naming an expiry reads that expiry across the strikes; naming a strike reads that strike across the expiries. A candidate is never read.
+ */
+#+end_src
+
+*** blueprint_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The expiry to slice at, such as 3M, or empty for every expiry.
+ */
+#+end_src
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The strike to slice at, such as ATM or DEL/Spot/Put/25, or empty for every strike.
+ */
+#+end_src
+
+** get_published_fx_vol_surface_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The published surface, or the slice of it asked for, and the publish it answers from.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** model
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The smile model the surface was calibrated with, such as ssvi.
+ */
+#+end_src
+
+*** strike_convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What a strike column means: `delta` when the strikes are delta codes,
+ * `absolute` when they are levels.
+ */
+#+end_src
+
+*** delta_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The delta convention the strikes were quoted under, such as spot or
+ * forward, and whether they are premium-adjusted. Empty when the strikes are
+ * levels.
+ */
+#+end_src
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The server's verdict on the publish's age, not a threshold for a
+ * client to apply.
+ */
+#+end_src
+
+*** publish_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series the surface is published into.
+ *
+ * Every publish of a blueprint writes this series, so it names the surface a
+ * slice belongs to rather than the publish the answer answers from.
+ */
+#+end_src
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** superseded_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** expiries
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The expiries the answer holds, shortest first.
+ */
+#+end_src
+
+*** strikes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The strikes the answer holds, in the blueprint's order.
+ */
+#+end_src
+
+*** points
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_surface_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The points, expiry by expiry, each expiry's strikes in order.
+ */
+#+end_src

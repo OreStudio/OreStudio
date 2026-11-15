@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/instrument_underlying_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -108,23 +111,87 @@ std::optional<query_builder::condition> instrument_underlying_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool instrument_underlying_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using instrument_underlying_rows_by_key =
+    std::map<std::tuple<std::string, std::string, std::string>,
+             std::vector<domain::instrument_underlying>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+instrument_underlying_rows_by_key
+instrument_underlying_current_rows(instrument_underlying_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const std::vector<domain::instrument_underlying>& of) {
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(of.size());
+    std::vector<std::string> underlying_roles;
+    underlying_roles.reserve(of.size());
+    std::vector<std::string> sequence_numbers;
+    sequence_numbers.reserve(of.size());
+    for (const auto& row : of) {
+        trade_ids.push_back(boost::uuids::to_string(row.trade_id));
+        underlying_roles.push_back(row.underlying_role);
+        sequence_numbers.push_back(std::to_string(row.sequence_number));
+    }
+    instrument_underlying_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, trade_ids, underlying_roles, sequence_numbers))
+        current[std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                item.underlying_role,
+                                std::to_string(item.sequence_number))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::instrument_underlying>&
+instrument_underlying_rows_of(const instrument_underlying_rows_by_key& current,
+                              const domain::instrument_underlying& item) {
+    static const std::vector<domain::instrument_underlying> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                                    item.underlying_role,
+                                                    std::to_string(item.sequence_number)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-instrument_underlying_repository::replace_claim(context ctx,
-                                                const domain::instrument_underlying& v) {
-    const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.trade_id),
-                                     v.underlying_role,
-                                     std::to_string(v.sequence_number));
+instrument_underlying_replace_claim(const std::vector<domain::instrument_underlying>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::instrument_underlying
-instrument_underlying_repository::apply_claim(context ctx,
-                                              const domain::instrument_underlying& v,
-                                              const ores::utility::domain::precondition& claim) {
+instrument_underlying_apply_claim(const domain::instrument_underlying& v,
+                                  const ores::utility::domain::precondition& claim,
+                                  const std::vector<domain::instrument_underlying>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -136,42 +203,55 @@ instrument_underlying_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx,
-                                             boost::uuids::to_string(v.trade_id),
-                                             v.underlying_role,
-                                             std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void instrument_underlying_repository::write(context ctx, const domain::instrument_underlying& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void instrument_underlying_repository::write(context ctx,
+void instrument_underlying_repository::write(const context& ctx,
+                                             const domain::instrument_underlying& v) {
+    write(ctx,
+          v,
+          instrument_underlying_replace_claim(read_latest(ctx,
+                                                          boost::uuids::to_string(v.trade_id),
+                                                          v.underlying_role,
+                                                          std::to_string(v.sequence_number))));
+}
+
+void instrument_underlying_repository::write(const context& ctx,
                                              const std::vector<domain::instrument_underlying>& v) {
+    const auto current = instrument_underlying_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            instrument_underlying_replace_claim(instrument_underlying_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void instrument_underlying_repository::write(context ctx,
+void instrument_underlying_repository::write(const context& ctx,
                                              const domain::instrument_underlying& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument underlying. " << "trade_id: " << v.trade_id
                                << " underlying_role: " << v.underlying_role
                                << " sequence_number: " << v.sequence_number;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        instrument_underlying_apply_claim(v,
+                                          claim,
+                                          instrument_underlying_claim_reads_current(claim) ?
+                                              read_latest(ctx,
+                                                          boost::uuids::to_string(v.trade_id),
+                                                          v.underlying_role,
+                                                          std::to_string(v.sequence_number)) :
+                                              std::vector<domain::instrument_underlying>{});
     query_builder::execute_write_query(ctx,
                                        instrument_underlying_mapper::map(t),
                                        lg(),
@@ -179,14 +259,21 @@ void instrument_underlying_repository::write(context ctx,
 }
 
 void instrument_underlying_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::instrument_underlying>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument underlyings. Count: " << v.size();
+    std::vector<domain::instrument_underlying> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (instrument_underlying_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = instrument_underlying_current_rows(*this, ctx, to_read);
     std::vector<domain::instrument_underlying> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(instrument_underlying_apply_claim(
+            v[i], claims[i], instrument_underlying_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        instrument_underlying_mapper::map(batch),
                                        lg(),
@@ -194,7 +281,7 @@ void instrument_underlying_repository::write(
 }
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_latest(context ctx) {
+instrument_underlying_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -212,7 +299,7 @@ instrument_underlying_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_latest(context ctx,
+instrument_underlying_repository::read_latest(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& underlying_role,
                                               const std::string& sequence_number) {
@@ -239,7 +326,7 @@ instrument_underlying_repository::read_latest(context ctx,
 
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_all(context ctx,
+instrument_underlying_repository::read_all(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& underlying_role,
                                            const std::string& sequence_number) {
@@ -264,7 +351,7 @@ instrument_underlying_repository::read_all(context ctx,
 }
 
 std::optional<domain::instrument_underlying>
-instrument_underlying_repository::read_at_version(context ctx,
+instrument_underlying_repository::read_at_version(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& underlying_role,
                                                   const std::string& sequence_number,
@@ -297,7 +384,7 @@ instrument_underlying_repository::read_at_version(context ctx,
 
 std::vector<domain::instrument_underlying>
 instrument_underlying_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -325,7 +412,7 @@ instrument_underlying_repository::read_latest_by_trade_id(
 }
 
 std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_underlyings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument underlyings count. trade_id: "
@@ -347,7 +434,7 @@ std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_
 
 
 instrument_underlying_repository::remove_status
-instrument_underlying_repository::remove(context ctx,
+instrument_underlying_repository::remove(const context& ctx,
                                          const std::string& trade_id,
                                          const std::string& underlying_role,
                                          const std::string& sequence_number,
@@ -384,7 +471,7 @@ instrument_underlying_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void instrument_underlying_repository::remove(context ctx,
+void instrument_underlying_repository::remove(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& underlying_role,
                                               const std::string& sequence_number) {
@@ -392,7 +479,7 @@ void instrument_underlying_repository::remove(context ctx,
 }
 
 std::vector<domain::instrument_underlying> instrument_underlying_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -419,7 +506,7 @@ std::vector<domain::instrument_underlying> instrument_underlying_repository::rea
 }
 
 std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::instrument_underlyings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument underlying count";
@@ -438,12 +525,35 @@ std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_
 }
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_latest(context ctx,
+instrument_underlying_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& underlying_roles,
                                               const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || underlying_roles.empty() || sequence_numbers.empty())
         return {};
+    if (underlying_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
+        throw std::invalid_argument("instrument_underlying_repository::read_latest: key column "
+                                    "vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (trade_ids.size() > chunk_size) {
+        std::vector<domain::instrument_underlying> all;
+        for (std::size_t begin = 0; begin < trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, trade_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(trade_ids.begin() + begin, trade_ids.begin() + end),
+                std::vector<std::string>(underlying_roles.begin() + begin,
+                                         underlying_roles.begin() + end),
+                std::vector<std::string>(sequence_numbers.begin() + begin,
+                                         sequence_numbers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -461,9 +571,6 @@ instrument_underlying_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (underlying_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
-        throw std::invalid_argument("instrument_underlying_repository::read_latest: key column "
-                                    "vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string>> requested;
     for (std::size_t i = 0; i < trade_ids.size(); ++i)
         requested.emplace(trade_ids[i], underlying_roles[i], sequence_numbers[i]);
@@ -478,7 +585,7 @@ instrument_underlying_repository::read_latest(context ctx,
     return filtered;
 }
 
-void instrument_underlying_repository::remove(context ctx,
+void instrument_underlying_repository::remove(const context& ctx,
                                               const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& underlying_roles,
                                               const std::vector<std::string>& sequence_numbers) {
@@ -495,7 +602,7 @@ void instrument_underlying_repository::remove(context ctx,
 
 std::vector<domain::instrument_underlying>
 instrument_underlying_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

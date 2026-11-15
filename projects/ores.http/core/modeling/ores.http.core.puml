@@ -23,20 +23,100 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace http #F2F2F2 {
+        namespace routes #F2F2F2 {
+            class change_reason_routes {
+                +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+            }
+            class history_routes {
+                +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                +served_types() : [[nodiscard]] static span<const string_view>
+                +serves(string_view entity_type) : [[nodiscard]] static bool
+                +handle_history(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+            }
+            class site_routes {
+                +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, optional<ores::http::site::loaded_site> site) : void
+                +site_state(const ores::http::site::loaded_site& site) : [[nodiscard]] static ores::http::domain::http_response
+                +deployment(const ores::http::site::loaded_site& site) : [[nodiscard]] static ores::http::domain::http_response
+                +read_client_log(const string& body) : [[nodiscard]] static optional<vector<client_entry>>
+                +handle_client_log(const ores::http::domain::http_request& req) : [[nodiscard]] static ores::http::domain::http_response
+            }
+        }
         namespace server #F2F2F2 {
             namespace routes #F2F2F2 {
+                class bundle_entry <<struct>> {
+                    +path : string
+                    +size : uintmax_t
+                    +compressed : bool
+                }
+                class bundle_manifest {
+                    -root_ : filesystem::path
+                    -entries_ : unordered_map<string, bundle_entry>
+                    +bundle_manifest(filesystem::path root)
+                    +find(const string& path) : [[nodiscard]] const bundle_entry*
+                    +root() : [[nodiscard]] const filesystem::path&
+                    +size() : [[nodiscard]] size_t
+                }
+                class change_routes {
+                    -hub_ : shared_ptr<stream::change_hub>
+                    -keep_alive_ : chrono::milliseconds
+                    -watches_ : stream::watch_registry
+                    +change_routes(shared_ptr<stream::change_hub> hub, chrono::milliseconds keep_alive)
+                    +register_routes(shared_ptr<http::net::router> router, shared_ptr<http::openapi::endpoint_registry> registry) : void
+                    +read_watches(const string& body) : [[nodiscard]] static optional<unordered_set<string>>
+                    +watches() : [[nodiscard]] stream::watch_registry&
+                    -lg() : auto&
+                    -handle_changes(const domain::http_request& req, bool watched) : boost::asio::awaitable<domain::http_response>
+                    -handle_watch(const domain::http_request& req) : domain::http_response
+                }
+                class storage_entry_source {
+                    -entry_ : storage::filesystem::archive_reader::stream
+                    +storage_entry_source(filesystem::path packed, string_view name, uint64_t offset, uint64_t length)
+                    +found() : [[nodiscard]] bool
+                    +size() : [[nodiscard]] optional<uint64_t>
+                    +read(span<char> into) : size_t
+                }
+                class storage_file_source {
+                    +to_end : static constexpr uint64_t
+                    -path_ : filesystem::path
+                    -in_ : ifstream
+                    -size_ : uint64_t
+                    -produced_ : uint64_t
+                    +storage_file_source(filesystem::path path, uint64_t offset, uint64_t length)
+                    +size() : [[nodiscard]] optional<uint64_t>
+                    +read(span<char> into) : size_t
+                }
                 class storage_routes {
                     -store_ : storage::filesystem::local_store
                     -auth_service_ : shared_ptr<iam::service::authorization_service>
-                    +storage_routes(string storage_dir, shared_ptr<iam::service::authorization_service> auth_service)
+                    -max_upload_bytes_ : uint64_t
+                    +storage_routes(string storage_dir, shared_ptr<iam::service::authorization_service> auth_service, uint64_t max_upload_bytes)
                     +register_routes(shared_ptr<http::net::router> router, shared_ptr<http::openapi::endpoint_registry> registry) : void
                     -lg() : auto&
-                    -check_auth(const http::domain::http_request& req, string_view required_permission, string_view operation_name) : expected<auth_result, http::domain::http_response>
+                    -check_auth(const http::domain::http_request& req, string_view required_permission, string_view operation_name, string_view grant_op, string_view bucket, string_view key)
                     -handle_put(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
+                    -make_upload_sink(const http::domain::http_request& req) : [[nodiscard]] unique_ptr<http::domain::body_sink>
                     -handle_get(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
                     -handle_head(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
                     -handle_delete(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
                     -handle_list(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
+                }
+                class storage_upload_sink {
+                    -store_ : storage::filesystem::local_store&
+                    -bucket_ : string
+                    -key_ : string
+                    -part_ : filesystem::path
+                    -out_ : ofstream
+                    -byte_count_ : uint64_t
+                    -digest_ : string
+                    -kept_ : bool
+                    +storage_upload_sink(storage::filesystem::local_store& store, const string& bucket, const string& key)
+                    +digest() : [[nodiscard]] const string&
+                    +byte_count() : [[nodiscard]] uint64_t
+                    #consume_chunk(string_view chunk) : bool
+                    #finish_body() : bool
+                    #publish_chunk() : bool
+                    #discard() : void
+                    -close_part() : void
                 }
                 class variability_routes {
                     -ctx_ : database::context
@@ -47,6 +127,171 @@ namespace ores #F2F2F2 {
                     -lg() : auto&
                     -handle_list_system_settings(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
                 }
+                class web_bundle_routes {
+                    -manifest_ : bundle_manifest
+                    +web_bundle_routes(filesystem::path root)
+                    +register_routes(shared_ptr<http::net::router> router, shared_ptr<http::openapi::endpoint_registry> registry) : void
+                    +size() : [[nodiscard]] size_t
+                    -lg() : auto&
+                    -answer(const string& path, const http::domain::http_request& request) : [[nodiscard]] http::domain::http_response
+                    -index(const http::domain::http_request& request) : [[nodiscard]] http::domain::http_response
+                    -file(const bundle_entry& entry, const string& path, const http::domain::http_request& request) : [[nodiscard]] http::domain::http_response
+                }
+            }
+        }
+        namespace site #F2F2F2 {
+            class environment_tls <<struct>> {
+                +ca : optional<string>
+                +cert : optional<string>
+                +key : optional<string>
+            }
+            class environment <<struct>> {
+                +id : string
+                +displayName : string
+                +description : string
+                +host : string
+                +port : int64_t
+                +subjectPrefix : string
+                +httpBaseUrl : string
+                +tls : environment_tls
+                +nonProduction : bool
+            }
+            class shared_tls <<struct>> {
+                +ca : string
+                +cert : string
+                +key : string
+            }
+            class developer_account <<struct>> {
+                +username : string
+                +label : string
+                +description : string
+            }
+            class site_configuration <<struct>> {
+                +active : string
+                +environments : vector<environment>
+                +tls : shared_tls
+                +developerTools : bool
+                +developerAccounts : vector<developer_account>
+            }
+            class loaded_site <<struct>> {
+                +configuration : site_configuration
+                +served : environment
+                +source : string
+            }
+            class site_configuration_error {
+            }
+        }
+        namespace stream #F2F2F2 {
+            class change_event <<struct>> {
+                +tenant : string
+                +party : string
+                +component : string
+                +entity : string
+            }
+            class coalesced_frame <<struct>> {
+                +tenant : string
+                +party : string
+                +component : string
+                +entity : string
+            }
+            class change_coalescer {
+                -mu_ : mutable mutex
+                -dirty_ : set<key>
+                +record(const change_event& event) : void
+                +set_wake(function<void()> wake) : void
+                +drain() : vector<coalesced_frame>
+                +pending() : [[nodiscard]] size_t
+            }
+            class entity_event_address <<struct>> {
+                +component : string
+                +collection : string
+                +action : string
+            }
+            class change_feed {
+                -coalescer_ : change_coalescer&
+                +notify(const ores::nats::message& message) : bool
+            }
+            class watch_set {
+                -mu_ : mutable mutex
+                -collections_ : unordered_set<string>
+                +replace(unordered_set<string> collections) : void
+                +contains(const string& collection) : [[nodiscard]] bool
+            }
+            class watch_registry {
+                -mu_ : mutex
+                -sets_ : unordered_map<string, weak_ptr<watch_set>>
+                +open(const string& session) : [[nodiscard]] shared_ptr<watch_set>
+                +watch(const string& session, unordered_set<string> collections) : bool
+            }
+            class stream_scope <<struct>> {
+                +tenant : string
+                +party : string
+                +sees_all_parties : bool
+                +watching : shared_ptr<const watch_set>
+                +wants(const string& collection) : [[nodiscard]] bool
+            }
+            class change_subscription {
+                -scope_ : stream_scope
+                -mu_ : mutable mutex
+                -pending_ : list<pending_frame>
+                -pending_by_collection_ : unordered_map<string, list<pending_frame>::iterator>
+                -capacity_ : size_t
+                -closed_ : bool
+                +push(string collection, string frame) : void
+                +try_pop() : optional<string>
+                +set_waker(function<void()> waker) : void
+                +clear_waker() : void
+                +close() : void
+                +scope() : [[nodiscard]] const stream_scope&
+                +closed() : [[nodiscard]] bool
+                +size() : [[nodiscard]] size_t
+            }
+            class change_hub {
+                -system_tenant_ : string
+                -epoch_ : string
+                -mu_ : mutable mutex
+                -subscriptions_ : vector<shared_ptr<change_subscription>>
+                -capacity_ : size_t
+                -retention_ : size_t
+                -next_id_ : uint64_t
+                -retained_ : deque<retained_frame>
+                +id_of(uint64_t sequence) : [[nodiscard]] string
+                +read_id(string_view id) : optional<resume_point>
+                +subscribe(stream_scope scope, optional<resume_point> resumed) : [[nodiscard]] shared_ptr<change_subscription>
+                +publish(const string& tenant, const string& party, const string& collection, string frame) : void
+                +open_streams() : [[nodiscard]] size_t
+                -conflation_key(const string& tenant, const string& party, const string& collection) : string
+            }
+            class change_stream_source {
+                +subscription_ : shared_ptr<change_subscription>
+                +keep_alive_ : chrono::milliseconds
+                +ready_ : deque<string>
+                +keep_alive_(keep_alive) : ,
+                +~change_stream_source()
+                +size() : [[nodiscard]] optional<uint64_t>
+                +read(span<char> into) : boost::asio::awaitable<size_t>
+                +take_from_ready(span<char> into) : size_t
+            }
+            class change_pump {
+                -coalescer_ : change_coalescer&
+                -hub_ : change_hub&
+                +pump() : size_t
+            }
+            class change_ticker {
+                -pump_ : change_pump
+                -coalescer_ : change_coalescer&
+                -window_ : chrono::milliseconds
+                -open_ : shared_ptr<window>
+                -stopped_ : atomic<bool>
+                -mu_ : mutable mutex
+                -executor_ : shared_ptr<boost::asio::any_io_executor>
+                +change_ticker(change_coalescer& coalescer, change_hub& hub, chrono::milliseconds window)
+                +~change_ticker()
+                +run(boost::asio::any_io_executor executor) : boost::asio::awaitable<void>
+                +arm() : void
+                +stop() : void
+                +running() : [[nodiscard]] bool
+                -post(function<void(const shared_ptr<window>&)> change) : void
             }
         }
     }

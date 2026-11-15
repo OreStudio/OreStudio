@@ -1124,9 +1124,9 @@ invented contract.
 |------+-----------------|
 | =get= | =GET /{resource}/{key}= |
 | =get_many= | =GET /{resource}?keys=...= |
-| =list= | =GET /{resource}?offset=&limit=&order=&<filter>= |
+| =list= | =GET /{resource}?offset=&limit=&sort=&descending=&<filter>= |
 | =list_by_<relation>= | =GET /{resource}?<relation>=...&scope=subtree= |
-| =list= (versions) | =GET /{resource}/{key}/versions?offset=&limit=&order=&<filter>= |
+| =list= (versions) | =GET /{resource}/{key}/versions?offset=&limit=&sort=&descending=&<filter>= |
 | =get= (a version) | =GET /{resource}/{key}/versions/{version}= |
 | =put= | =PUT /{resource}/{key}=, or =POST /{resource}= to create |
 | =put_many= | =PUT /{resource}= |

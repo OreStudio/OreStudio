@@ -461,7 +461,7 @@ ores::history::service::dispatch_registry& history_registry() {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
@@ -687,6 +687,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_csas_from_dq_request::nats_subject,
             publish_currencies_from_dq_request::nats_subject,
             publish_curve_configuration_from_dq_request::nats_subject,
+            publish_fx_vol_surface_blueprints_from_dq_request::nats_subject,
             publish_currency_groups_from_dq_request::nats_subject,
             publish_currency_currency_groups_from_dq_request::nats_subject,
             publish_currency_pairs_from_dq_request::nats_subject,
@@ -718,7 +719,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_tenor_schedules_from_dq_request::nats_subject};
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)
-            routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
+            routes.on(subject,
+                      [h](ores::nats::delivery delivery) { h->handle(std::move(delivery)); });
 
         subs.push_back(
             ores::service::messaging::serve_step_commands(nats, registrar_queue_group, routes));

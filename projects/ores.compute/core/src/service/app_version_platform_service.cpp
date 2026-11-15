@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-app_version_platform_service::app_version_platform_service(context ctx)
-    : ctx_(std::move(ctx))
+app_version_platform_service::app_version_platform_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

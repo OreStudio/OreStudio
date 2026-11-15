@@ -142,8 +142,6 @@ select ores_utility_allow_version_replace_fn();
 
 \ir ../refdata/refdata_calendar_exceptions_populate.sql
 \ir ../refdata/refdata_calendar_events_populate.sql
-\ir ../refdata/refdata_overnight_index_conventions_populate.sql
-\ir ../refdata/refdata_builtin_index_conventions_populate.sql
 \ir ../refdata/refdata_currency_countries_populate.sql
 \ir ../refdata/refdata_currency_calendars_populate.sql
 \ir ../refdata/refdata_currency_pair_convention_calendars_populate.sql

@@ -293,7 +293,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &party_summary::id},
         ::ores::utility::codec::field{"name", &party_summary::name},
         ::ores::utility::codec::field{"party_category", &party_summary::party_category},
@@ -310,7 +310,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<database_info>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"fingerprint", &database_info::fingerprint},
         ::ores::utility::codec::field{"environment", &database_info::environment},
         ::ores::utility::codec::field{"commit", &database_info::commit},
@@ -327,7 +327,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"principal", &login_request::principal},
         ::ores::utility::codec::field{"password", &login_request::password},
     };
@@ -342,7 +342,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &login_response::success},
         ::ores::utility::codec::field{"account_id", &login_response::account_id},
         ::ores::utility::codec::field{"tenant_id", &login_response::tenant_id},
@@ -381,7 +381,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<logout_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -393,7 +393,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<logout_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &logout_response::success},
         ::ores::utility::codec::field{"message", &logout_response::message},
     };
@@ -408,7 +408,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<public_key_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -420,7 +420,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<refresh_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -432,7 +432,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<refresh_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &refresh_response::success},
         ::ores::utility::codec::field{"token", &refresh_response::token},
         ::ores::utility::codec::field{"message", &refresh_response::message},
@@ -449,7 +449,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<service_login_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"username", &service_login_request::username},
         ::ores::utility::codec::field{"password", &service_login_request::password},
     };
@@ -464,7 +464,7 @@ struct service_login_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<service_login_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &service_login_response::success},
         ::ores::utility::codec::field{"token", &service_login_response::token},
         ::ores::utility::codec::field{"message", &service_login_response::message},

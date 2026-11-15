@@ -36,3 +36,26 @@ insert into ores_scheduler_job_definitions_tbl (
     'system', 'system', 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()
 );
+
+-- Seed the curve republish job (system scope, every 15 minutes). It bootstraps
+-- and publishes every IR curve the system tenant holds a bootstrap config for,
+-- so the published curves follow the quotes instead of staying at the
+-- provisioning as-of. The cadence is this row's; one job states it for every
+-- curve, because the curves share one market.
+insert into ores_scheduler_job_definitions_tbl (
+    id, tenant_id, party_id, job_name, description, command,
+    schedule_expression, action_type, action_payload, is_active,
+    modified_by, performed_by, change_reason_code, change_commentary,
+    valid_from, valid_to
+) values (
+    gen_random_uuid(), NULL, NULL,
+    'ores.marketdata.curve_republish',
+    'Bootstrap and publish every system IR curve every 15 minutes',
+    '',
+    '*/15 * * * *',
+    'nats_request',
+    '{"subject": "marketdata.v1.ops.publish_due_curves"}',
+    true,
+    'system', 'system', 'system.new_record', '',
+    current_timestamp, ores_utility_infinity_timestamp_fn()
+);

@@ -32,6 +32,7 @@ set(files
     "crypto_sha256_tests.cpp"
     "decimal_decimal_tests.cpp"
     "domain_hierarchy_tests.cpp"
+    "domain_protocol_tests.cpp"
     "faker_datetime_tests.cpp"
     "faker_internet_tests.cpp"
     "generation_context_tests.cpp"

@@ -46,7 +46,7 @@ namespace ores::analytics::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engine_type>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &pricing_engine_type::version},
         utility::codec::field{"tenant_id", &pricing_engine_type::tenant_id},
         utility::codec::field{"code", &pricing_engine_type::code},

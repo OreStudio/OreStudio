@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -40,10 +41,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -112,20 +116,76 @@ std::optional<query_builder::condition> party_contact_information_filter_conditi
 
 }
 
-ores::utility::domain::precondition
-party_contact_information_repository::replace_claim(context ctx,
-                                                    const domain::party_contact_information& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool party_contact_information_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using party_contact_information_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::party_contact_information>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+party_contact_information_rows_by_key
+party_contact_information_current_rows(party_contact_information_repository& repo,
+                                       const ores::database::context& ctx,
+                                       const std::vector<domain::party_contact_information>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    party_contact_information_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::party_contact_information>&
+party_contact_information_rows_of(const party_contact_information_rows_by_key& current,
+                                  const domain::party_contact_information& item) {
+    static const std::vector<domain::party_contact_information> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition party_contact_information_replace_claim(
+    const std::vector<domain::party_contact_information>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::party_contact_information party_contact_information_repository::apply_claim(
-    context ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::party_contact_information party_contact_information_apply_claim(
     const domain::party_contact_information& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::party_contact_information>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -137,38 +197,47 @@ domain::party_contact_information party_contact_information_repository::apply_cl
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void party_contact_information_repository::write(context ctx,
+}
+
+void party_contact_information_repository::write(const context& ctx,
                                                  const domain::party_contact_information& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          party_contact_information_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void party_contact_information_repository::write(
-    context ctx, const std::vector<domain::party_contact_information>& v) {
+    const context& ctx, const std::vector<domain::party_contact_information>& v) {
+    const auto current = party_contact_information_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(party_contact_information_replace_claim(
+            party_contact_information_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void party_contact_information_repository::write(context ctx,
+void party_contact_information_repository::write(const context& ctx,
                                                  const domain::party_contact_information& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party contact information. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        party_contact_information_apply_claim(v,
+                                              claim,
+                                              party_contact_information_claim_reads_current(claim) ?
+                                                  read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                  std::vector<domain::party_contact_information>{});
     query_builder::execute_write_query(ctx,
                                        party_contact_information_mapper::map(t),
                                        lg(),
@@ -176,14 +245,21 @@ void party_contact_information_repository::write(context ctx,
 }
 
 void party_contact_information_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::party_contact_information>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party contact informations. Count: " << v.size();
+    std::vector<domain::party_contact_information> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (party_contact_information_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = party_contact_information_current_rows(*this, ctx, to_read);
     std::vector<domain::party_contact_information> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(party_contact_information_apply_claim(
+            v[i], claims[i], party_contact_information_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        party_contact_information_mapper::map(batch),
                                        lg(),
@@ -191,7 +267,7 @@ void party_contact_information_repository::write(
 }
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest(context ctx) {
+party_contact_information_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_contact_information_entity>> |
@@ -208,7 +284,7 @@ party_contact_information_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest(context ctx, const std::string& id) {
+party_contact_information_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -226,7 +302,7 @@ party_contact_information_repository::read_latest(context ctx, const std::string
 }
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest_by_code(context ctx,
+party_contact_information_repository::read_latest_by_code(const context& ctx,
                                                           const std::string& party_id,
                                                           const std::string& contact_type) {
     BOOST_LOG_SEV(lg(), debug)
@@ -248,7 +324,7 @@ party_contact_information_repository::read_latest_by_code(context ctx,
         "Reading latest party contact information by contact_type.");
 }
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest_by_contact_type(context ctx,
+party_contact_information_repository::read_latest_by_contact_type(const context& ctx,
                                                                   const std::string& contact_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information by contact_type: "
                                << contact_type;
@@ -275,7 +351,51 @@ party_contact_information_repository::read_latest_by_contact_type(context ctx,
 }
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_any_by_contact_type(context ctx,
+party_contact_information_repository::read_latest_by_contact_type(
+    const context& ctx, const std::vector<std::string>& contact_types) {
+    if (contact_types.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (contact_types.size() > chunk_size) {
+        std::vector<domain::party_contact_information> all;
+        for (std::size_t begin = 0; begin < contact_types.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, contact_types.size());
+            auto part =
+                read_latest_by_contact_type(ctx,
+                                            std::vector<std::string>(contact_types.begin() + begin,
+                                                                     contact_types.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest party contact informations by contact_type. Count: "
+        << contact_types.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<party_contact_information_entity>> |
+        query_builder::where("tenant_id"_c == tid && "contact_type"_c.in(contact_types) &&
+                             "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<party_contact_information_entity,
+                                                   domain::party_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest party contact informations by contact_type.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::party_contact_information>
+party_contact_information_repository::read_any_by_contact_type(const context& ctx,
                                                                const std::string& contact_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any party contact information by contact_type: "
                                << contact_type;
@@ -306,7 +426,7 @@ party_contact_information_repository::read_any_by_contact_type(context ctx,
 
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_all(context ctx, const std::string& id) {
+party_contact_information_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party contact information versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -324,7 +444,7 @@ party_contact_information_repository::read_all(context ctx, const std::string& i
 }
 
 std::optional<domain::party_contact_information>
-party_contact_information_repository::read_at_version(context ctx,
+party_contact_information_repository::read_at_version(const context& ctx,
                                                       const std::string& id,
                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party contact information at version. " << "id: " << id
@@ -350,7 +470,7 @@ party_contact_information_repository::read_at_version(context ctx,
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest_by_party_id(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -378,7 +498,7 @@ party_contact_information_repository::read_latest_by_party_id(
 
 std::uint32_t
 party_contact_information_repository::get_total_party_contact_information_count_by_party_id(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -401,7 +521,7 @@ party_contact_information_repository::get_total_party_contact_information_count_
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_by_party_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -426,7 +546,7 @@ party_contact_information_repository::read_by_party_id_as_of(
 }
 
 party_contact_information_repository::remove_status party_contact_information_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party contact information. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -455,12 +575,12 @@ party_contact_information_repository::remove_status party_contact_information_re
     return remove_status::removed;
 }
 
-void party_contact_information_repository::remove(context ctx, const std::string& id) {
+void party_contact_information_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::party_contact_information> party_contact_information_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -486,7 +606,7 @@ std::vector<domain::party_contact_information> party_contact_information_reposit
 }
 
 std::uint32_t party_contact_information_repository::get_total_party_contact_information_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::party_contact_informations_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party contact information count";
@@ -505,10 +625,25 @@ std::uint32_t party_contact_information_repository::get_total_party_contact_info
 }
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest(context ctx,
+party_contact_information_repository::read_latest(const context& ctx,
                                                   const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::party_contact_information> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -524,7 +659,7 @@ party_contact_information_repository::read_latest(context ctx,
     return result;
 }
 
-void party_contact_information_repository::remove(context ctx,
+void party_contact_information_repository::remove(const context& ctx,
                                                   const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

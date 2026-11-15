@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &balance_guaranteed_swap_tranche_notional_key::trade_id},
         utility::codec::field{"tranche_number",
                               &balance_guaranteed_swap_tranche_notional_key::tranche_number},
@@ -460,7 +460,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &balance_guaranteed_swap_tranche_notional_write::trade_id},
         utility::codec::field{"tranche_number",
@@ -486,7 +486,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_write>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &balance_guaranteed_swap_tranche_notional_change::write},
         utility::codec::field{"precondition",
                               &balance_guaranteed_swap_tranche_notional_change::precondition},
@@ -503,7 +503,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_change>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &balance_guaranteed_swap_tranche_notional_removal::key},
         utility::codec::field{"precondition",
                               &balance_guaranteed_swap_tranche_notional_removal::precondition},
@@ -520,7 +520,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_removal>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &balance_guaranteed_swap_tranche_notional_lookup::key},
         utility::codec::field{"balance_guaranteed_swap_tranche_notional",
                               &balance_guaranteed_swap_tranche_notional_lookup::
@@ -538,7 +538,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_lookup>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notionals_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &balance_guaranteed_swap_tranche_notionals_filter::trade_id},
         utility::codec::field{"trade_id_one_of",
@@ -556,7 +556,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notionals_filter>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id",
                               &balance_guaranteed_swap_tranche_notional_event::event_id},
         utility::codec::field{"key", &balance_guaranteed_swap_tranche_notional_event::key},
@@ -579,7 +579,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_event>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"balance_guaranteed_swap_tranche_notional",
                               &balance_guaranteed_swap_tranche_notional_version_key::
                                   balance_guaranteed_swap_tranche_notional},
@@ -598,7 +598,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_version_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &balance_guaranteed_swap_tranche_notional_versions_filter::version},
         utility::codec::field{
@@ -619,7 +619,7 @@ wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional_versions
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset",
                               &list_balance_guaranteed_swap_tranche_notionals_request::offset},
         utility::codec::field{"limit",
@@ -643,7 +643,7 @@ wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notionals_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_balance_guaranteed_swap_tranche_notionals_response::result},
         utility::codec::field{"balance_guaranteed_swap_tranche_notionals",
@@ -664,7 +664,7 @@ wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notionals_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_balance_guaranteed_swap_tranche_notional_request::key},
     };
 }
@@ -679,7 +679,7 @@ wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_balance_guaranteed_swap_tranche_notional_response::result},
         utility::codec::field{"balance_guaranteed_swap_tranche_notional",
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_balance_guaranteed_swap_tranche_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys",
                               &get_many_balance_guaranteed_swap_tranche_notionals_request::keys},
     };
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<get_many_balance_guaranteed_swap_tranche_notional
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_balance_guaranteed_swap_tranche_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_balance_guaranteed_swap_tranche_notionals_response::result},
         utility::codec::field{
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<get_many_balance_guaranteed_swap_tranche_notional
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_balance_guaranteed_swap_tranche_notional_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change",
                               &put_balance_guaranteed_swap_tranche_notional_request::change},
         utility::codec::field{"intent",
@@ -750,7 +750,7 @@ wire_fields(std::type_identity<put_balance_guaranteed_swap_tranche_notional_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_balance_guaranteed_swap_tranche_notional_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_balance_guaranteed_swap_tranche_notional_response::result},
         utility::codec::field{"balance_guaranteed_swap_tranche_notional",
@@ -769,7 +769,7 @@ wire_fields(std::type_identity<put_balance_guaranteed_swap_tranche_notional_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_balance_guaranteed_swap_tranche_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_balance_guaranteed_swap_tranche_notionals_request::changes},
         utility::codec::field{"intent",
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<put_many_balance_guaranteed_swap_tranche_notional
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_balance_guaranteed_swap_tranche_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_balance_guaranteed_swap_tranche_notionals_response::result},
         utility::codec::field{"balance_guaranteed_swap_tranche_notionals",
@@ -806,7 +806,7 @@ wire_fields(std::type_identity<put_many_balance_guaranteed_swap_tranche_notional
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_balance_guaranteed_swap_tranche_notional_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_balance_guaranteed_swap_tranche_notional_request::removal},
         utility::codec::field{"intent",
@@ -824,7 +824,7 @@ wire_fields(std::type_identity<delete_balance_guaranteed_swap_tranche_notional_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_balance_guaranteed_swap_tranche_notional_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_balance_guaranteed_swap_tranche_notional_response::result},
     };
@@ -840,7 +840,7 @@ wire_fields(std::type_identity<delete_balance_guaranteed_swap_tranche_notional_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "removals", &delete_many_balance_guaranteed_swap_tranche_notionals_request::removals},
         utility::codec::field{
@@ -858,7 +858,7 @@ wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notio
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &delete_many_balance_guaranteed_swap_tranche_notionals_response::result},
     };
@@ -874,7 +874,7 @@ wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notio
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "trade_id",
             &list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request::trade_id},
@@ -901,7 +901,7 @@ wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notio
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response::result},
         utility::codec::field{"balance_guaranteed_swap_tranche_notionals",
@@ -922,7 +922,7 @@ wire_fields(std::type_identity<delete_many_balance_guaranteed_swap_tranche_notio
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notional_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_balance_guaranteed_swap_tranche_notional_versions_request::key},
         utility::codec::field{
@@ -946,7 +946,7 @@ wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notional_ver
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notional_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_balance_guaranteed_swap_tranche_notional_versions_response::result},
         utility::codec::field{
@@ -966,7 +966,7 @@ wire_fields(std::type_identity<list_balance_guaranteed_swap_tranche_notional_ver
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &get_balance_guaranteed_swap_tranche_notional_version_request::key},
     };
@@ -982,7 +982,7 @@ wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_vers
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_balance_guaranteed_swap_tranche_notional_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &get_balance_guaranteed_swap_tranche_notional_version_response::result},
         utility::codec::field{

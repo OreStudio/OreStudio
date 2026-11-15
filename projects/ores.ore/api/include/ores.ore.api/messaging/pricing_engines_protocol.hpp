@@ -281,7 +281,7 @@ struct import_pricing_engines_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_export_problem>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"code", &pricing_engines_export_problem::code},
         ::ores::utility::codec::field{"message", &pricing_engines_export_problem::message},
     };
@@ -296,7 +296,7 @@ struct import_pricing_engines_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<export_pricing_engines_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_id",
                                       &export_pricing_engines_request::configuration_id},
     };
@@ -311,7 +311,7 @@ struct import_pricing_engines_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<export_pricing_engines_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &export_pricing_engines_response::success},
         ::ores::utility::codec::field{"message", &export_pricing_engines_response::message},
         ::ores::utility::codec::field{"count", &export_pricing_engines_response::count},
@@ -329,7 +329,7 @@ struct import_pricing_engines_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_product>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"type_code", &pricing_engines_import_product::type_code},
         ::ores::utility::codec::field{"model", &pricing_engines_import_product::model},
         ::ores::utility::codec::field{"engine", &pricing_engines_import_product::engine},
@@ -346,7 +346,7 @@ struct import_pricing_engines_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_row>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"key", &pricing_engines_import_row::key},
         ::ores::utility::codec::field{"entity", &pricing_engines_import_row::entity},
         ::ores::utility::codec::field{"change", &pricing_engines_import_row::change},
@@ -365,7 +365,7 @@ struct import_pricing_engines_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_issue>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind", &pricing_engines_import_issue::kind},
         ::ores::utility::codec::field{"subject", &pricing_engines_import_issue::subject},
         ::ores::utility::codec::field{"detail", &pricing_engines_import_issue::detail},
@@ -382,7 +382,7 @@ struct import_pricing_engines_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<preview_pricing_engines_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"content", &preview_pricing_engines_import_request::content},
         ::ores::utility::codec::field{
             "target_configuration_id",
@@ -400,7 +400,7 @@ wire_fields(std::type_identity<preview_pricing_engines_import_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<preview_pricing_engines_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &preview_pricing_engines_import_response::success},
         ::ores::utility::codec::field{"message", &preview_pricing_engines_import_response::message},
         ::ores::utility::codec::field{"root_element",
@@ -433,7 +433,7 @@ wire_fields(std::type_identity<preview_pricing_engines_import_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_pricing_engines_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"content", &import_pricing_engines_request::content},
         ::ores::utility::codec::field{"target_configuration_id",
                                       &import_pricing_engines_request::target_configuration_id},
@@ -457,7 +457,7 @@ wire_fields(std::type_identity<preview_pricing_engines_import_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_import_error>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"key", &pricing_engines_import_error::key},
         ::ores::utility::codec::field{"message", &pricing_engines_import_error::message},
     };
@@ -472,7 +472,7 @@ wire_fields(std::type_identity<preview_pricing_engines_import_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_pricing_engines_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &import_pricing_engines_response::success},
         ::ores::utility::codec::field{"message", &import_pricing_engines_response::message},
         ::ores::utility::codec::field{"configuration_id",

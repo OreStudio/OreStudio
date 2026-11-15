@@ -89,7 +89,7 @@ struct tenor_basis_swap_part_identity {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_part_identity>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &tenor_basis_swap_part_identity::version},
         utility::codec::field{"tenant_id", &tenor_basis_swap_part_identity::tenant_id},
         utility::codec::field{"id", &tenor_basis_swap_part_identity::id},

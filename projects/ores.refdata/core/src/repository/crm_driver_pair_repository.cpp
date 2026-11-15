@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/crm_driver_pair_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,19 +104,75 @@ crm_driver_pair_filter_condition(const std::optional<messaging::crm_driver_pairs
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool crm_driver_pair_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using crm_driver_pair_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::crm_driver_pair>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+crm_driver_pair_rows_by_key
+crm_driver_pair_current_rows(crm_driver_pair_repository& repo,
+                             const ores::database::context& ctx,
+                             const std::vector<domain::crm_driver_pair>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    crm_driver_pair_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::crm_driver_pair>&
+crm_driver_pair_rows_of(const crm_driver_pair_rows_by_key& current,
+                        const domain::crm_driver_pair& item) {
+    static const std::vector<domain::crm_driver_pair> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-crm_driver_pair_repository::replace_claim(context ctx, const domain::crm_driver_pair& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+crm_driver_pair_replace_claim(const std::vector<domain::crm_driver_pair>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::crm_driver_pair
-crm_driver_pair_repository::apply_claim(context ctx,
-                                        const domain::crm_driver_pair& v,
-                                        const ores::utility::domain::precondition& claim) {
+crm_driver_pair_apply_claim(const domain::crm_driver_pair& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::crm_driver_pair>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -124,54 +184,67 @@ crm_driver_pair_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void crm_driver_pair_repository::write(context ctx, const domain::crm_driver_pair& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void crm_driver_pair_repository::write(context ctx, const std::vector<domain::crm_driver_pair>& v) {
+void crm_driver_pair_repository::write(const context& ctx, const domain::crm_driver_pair& v) {
+    write(ctx, v, crm_driver_pair_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void crm_driver_pair_repository::write(const context& ctx,
+                                       const std::vector<domain::crm_driver_pair>& v) {
+    const auto current = crm_driver_pair_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(crm_driver_pair_replace_claim(crm_driver_pair_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void crm_driver_pair_repository::write(context ctx,
+void crm_driver_pair_repository::write(const context& ctx,
                                        const domain::crm_driver_pair& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing CRM driver pair. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = crm_driver_pair_apply_claim(v,
+                                               claim,
+                                               crm_driver_pair_claim_reads_current(claim) ?
+                                                   read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                   std::vector<domain::crm_driver_pair>{});
     query_builder::execute_write_query(
         ctx, crm_driver_pair_mapper::map(t), lg(), "Writing CRM driver pair to database.");
 }
 
 void crm_driver_pair_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::crm_driver_pair>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing CRM driver pairs. Count: " << v.size();
+    std::vector<domain::crm_driver_pair> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (crm_driver_pair_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = crm_driver_pair_current_rows(*this, ctx, to_read);
     std::vector<domain::crm_driver_pair> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            crm_driver_pair_apply_claim(v[i], claims[i], crm_driver_pair_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, crm_driver_pair_mapper::map(batch), lg(), "Writing CRM driver pairs to database.");
 }
 
-std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_latest(context ctx) {
+std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<crm_driver_pair_entity>> |
@@ -187,7 +260,7 @@ std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_latest(con
 }
 
 std::vector<domain::crm_driver_pair>
-crm_driver_pair_repository::read_latest(context ctx, const std::string& id) {
+crm_driver_pair_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM driver pair. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -204,7 +277,7 @@ crm_driver_pair_repository::read_latest(context ctx, const std::string& id) {
 }
 
 
-std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_all(context ctx,
+std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all CRM driver pair versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -221,7 +294,7 @@ std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_all(contex
 }
 
 std::optional<domain::crm_driver_pair> crm_driver_pair_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading CRM driver pair at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -245,7 +318,7 @@ std::optional<domain::crm_driver_pair> crm_driver_pair_repository::read_at_versi
 
 
 crm_driver_pair_repository::remove_status crm_driver_pair_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing CRM driver pair. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -274,12 +347,12 @@ crm_driver_pair_repository::remove_status crm_driver_pair_repository::remove(
     return remove_status::removed;
 }
 
-void crm_driver_pair_repository::remove(context ctx, const std::string& id) {
+void crm_driver_pair_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -305,7 +378,7 @@ std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_latest(
 }
 
 std::uint32_t crm_driver_pair_repository::get_total_crm_driver_pair_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::crm_driver_pairs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CRM driver pair count";
@@ -324,9 +397,24 @@ std::uint32_t crm_driver_pair_repository::get_total_crm_driver_pair_count(
 }
 
 std::vector<domain::crm_driver_pair>
-crm_driver_pair_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+crm_driver_pair_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::crm_driver_pair> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -342,7 +430,7 @@ crm_driver_pair_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void crm_driver_pair_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void crm_driver_pair_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -361,7 +449,7 @@ void crm_driver_pair_repository::remove(context ctx, const std::vector<std::stri
 
 
 std::vector<domain::crm_driver_pair>
-crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
+crm_driver_pair_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<crm_driver_pair_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);

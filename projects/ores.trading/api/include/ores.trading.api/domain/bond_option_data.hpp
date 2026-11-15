@@ -199,7 +199,7 @@ struct bond_option_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_option_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"long_short", &bond_option_data::long_short},
         utility::codec::field{"option_type", &bond_option_data::option_type},
         utility::codec::field{"payoff_type", &bond_option_data::payoff_type},

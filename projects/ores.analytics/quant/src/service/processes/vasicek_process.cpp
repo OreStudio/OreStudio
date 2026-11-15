@@ -45,4 +45,12 @@ double vasicek_process::discount_factor(std::size_t ticks_ahead) const {
     return inner_.discount_factor(ticks_ahead);
 }
 
+double vasicek_process::next_with_normal(double standard_normal) {
+    return inner_.next_with_normal(standard_normal);
+}
+
+bool vasicek_process::supports_external_normal() const {
+    return inner_.supports_external_normal();
+}
+
 }

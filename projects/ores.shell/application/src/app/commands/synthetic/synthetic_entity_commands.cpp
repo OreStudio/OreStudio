@@ -21,6 +21,10 @@
 #include "ores.shell/app/commands/synthetic/folder_commands.hpp"
 #include "ores.shell/app/commands/synthetic/fx_spot_fixing_item_commands.hpp"
 #include "ores.shell/app/commands/synthetic/fx_spot_generation_config_commands.hpp"
+#include "ores.shell/app/commands/synthetic/fx_vol_contributor_commands.hpp"
+#include "ores.shell/app/commands/synthetic/fx_vol_surface_feed_commands.hpp"
+#include "ores.shell/app/commands/synthetic/fx_vol_surface_feed_contributor_commands.hpp"
+#include "ores.shell/app/commands/synthetic/fx_vol_surface_feed_expiry_commands.hpp"
 #include "ores.shell/app/commands/synthetic/gmm_component_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_process_parameter_value_commands.hpp"
@@ -63,6 +67,10 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     trade_generation_counterparty_commands::register_commands(root_menu, session);
     variance_calibration_input_commands::register_commands(root_menu, session);
     variance_calibration_input_point_commands::register_commands(root_menu, session);
+    fx_vol_contributor_commands::register_commands(root_menu, session);
+    fx_vol_surface_feed_commands::register_commands(root_menu, session);
+    fx_vol_surface_feed_expiry_commands::register_commands(root_menu, session);
+    fx_vol_surface_feed_contributor_commands::register_commands(root_menu, session);
     variance_calibration_commands::register_commands(root_menu, session);
     yield_curve_process_type_commands::register_commands(root_menu, session);
     yield_curve_process_parameter_definition_commands::register_commands(root_menu, session);

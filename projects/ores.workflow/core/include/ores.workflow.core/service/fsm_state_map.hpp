@@ -20,7 +20,7 @@
 #ifndef ORES_WORKFLOW_CORE_SERVICE_FSM_STATE_MAP_HPP
 #define ORES_WORKFLOW_CORE_SERVICE_FSM_STATE_MAP_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.workflow.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <stdexcept>
@@ -62,7 +62,7 @@ struct fsm_state_map {
  * at startup means the seed is missing rather than that a workflow is broken.
  */
 [[nodiscard]] ORES_WORKFLOW_CORE_EXPORT fsm_state_map
-load_fsm_states(ores::database::context ctx, const std::string& machine_name);
+load_fsm_states(const ores::database::context& ctx, const std::string& machine_name);
 
 }
 

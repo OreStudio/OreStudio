@@ -58,11 +58,11 @@ using namespace ores::logging;
 class curve_republish_handler {
 public:
     curve_republish_handler(ores::nats::service::client& nats,
-                            ores::database::context ctx,
+                            const ores::database::context& ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void republish(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -83,9 +83,12 @@ public:
             try {
                 const auto bootstrap_config_id =
                     boost::lexical_cast<boost::uuids::uuid>(req->bootstrap_config_id);
-                ores::marketdata::service::app::curve_republish_service::republish(
-                    req_ctx, bootstrap_config_id, req->as_of);
-                resp.success = true;
+                const auto built =
+                    ores::marketdata::service::app::curve_republish_service::republish(
+                        req_ctx, bootstrap_config_id, req->as_of);
+                resp.success = built.has_value();
+                if (!built)
+                    resp.message = "Deferred. " + built.error().reason;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(curve_republish_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
@@ -121,13 +124,17 @@ public:
             try {
                 const auto bootstrap_config_id =
                     boost::lexical_cast<boost::uuids::uuid>(req->bootstrap_config_id);
-                const auto points =
+                const auto computed =
                     ores::marketdata::service::app::curve_republish_service::compute(
                         req_ctx, bootstrap_config_id, req->as_of);
-                resp.points.reserve(points.size());
-                for (const auto& p : points)
-                    resp.points.push_back({p.point_id, p.date, p.discount_factor});
-                resp.success = true;
+                if (!computed) {
+                    resp.message = "Deferred. " + computed.error().reason;
+                } else {
+                    resp.points.reserve(computed->size());
+                    for (const auto& p : *computed)
+                        resp.points.push_back({p.point_id, p.date, p.discount_factor});
+                    resp.success = true;
+                }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(curve_republish_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();

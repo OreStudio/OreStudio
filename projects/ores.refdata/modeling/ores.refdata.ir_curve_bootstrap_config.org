@@ -7,6 +7,7 @@
 #+description: Codegen entity model for the refdata ir_curve_bootstrap_config table; the recipe (source series, family role, build-order dependency, interpolation, day-count, split tenor) that bootstraps a raw instrument grid into a discount curve.
 #+type: ores.codegen.entity
 #+http_area: reference-data
+#+web_resource: ir-curve-bootstrap-configs
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: ir_curve_bootstrap_config

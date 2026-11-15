@@ -28,10 +28,14 @@
  * ScriptedTrade with its inline or library script, Autocallable_01,
  * DoubleDigitalOption and PerformanceOption_01. trade_type_code
  * discriminates the exact product and script_name names the payoff
- * script, while the optional JSON fields carry the script's events, its
- * underlyings and its parameters. The table stays flat by design: it holds
- * no nested sub-struct, because the script definition is embedded text and
- * not a set of typed columns.
+ * script. The only free text the trade keeps is the script itself, with the name
+ * of the variable its result lands in: a variable is a scripted_parameter row
+ * and an underlying block is an instrument_underlying row, so the trade states
+ * no blob.
+ *
+ * The table stays flat by design: it holds no nested sub-struct, because
+ * what a script reads is a list of named variables and a list of underlying
+ * blocks, and both are rows of their own.
  *
  * The table is a flat instrument sub-type, so it binds
  * :profile: trading-instrument. Two table features justify that binding:
@@ -54,9 +58,7 @@ create table if not exists "ores_trading_scripted_instruments_tbl" (
     "trade_activity_id" uuid not null,
     "script_name" text not null,
     "script_body" text null,
-    "events_json" text null,
-    "underlyings_json" text null,
-    "parameters_json" text null,
+    "script_npv" text null,
     "description" text null,
     "data_element" text null,
     "modified_by" text not null,

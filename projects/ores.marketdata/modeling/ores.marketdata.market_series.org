@@ -258,7 +258,7 @@ series without knowing how the registry decomposed its key. The method has no
 default for the provider: a caller that does not know it cannot name a series.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_series> read_latest_by_key(context ctx,
+std::vector<domain::market_series> read_latest_by_key(const context& ctx,
     const std::string& oresmd_uri, const std::string& provider_code,
     const std::string& party_id = {});
 #+end_src
@@ -269,7 +269,7 @@ std::vector<domain::market_series> read_latest_by_key(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_series>
-market_series_repository::read_latest_by_key(context ctx, const std::string& oresmd_uri,
+market_series_repository::read_latest_by_key(const context& ctx, const std::string& oresmd_uri,
                                              const std::string& provider_code,
                                              const std::string& party_id) {
     static constexpr auto max = db_timestamp::max();
@@ -310,13 +310,13 @@ wants a value and does not care who supplied it, such as the spot of an FX forwa
 has no provider to name.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_series> read_latest_by_uri(context ctx,
+std::vector<domain::market_series> read_latest_by_uri(const context& ctx,
     const std::string& oresmd_uri);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_series>
-market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri) {
+market_series_repository::read_latest_by_uri(const context& ctx, const std::string& oresmd_uri) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_entity>> |

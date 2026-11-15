@@ -28,10 +28,13 @@
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -49,13 +52,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
 
-login_info_service::login_info_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+login_info_service::login_info_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -75,6 +79,46 @@ std::vector<domain::login_info> login_info_read_one(repository::login_info_repos
     return repo.read_latest(ctx, boost::uuids::to_string(key.account_id));
 }
 
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::login_info>>
+login_info_read_many(repository::login_info_repository& repo,
+                     const ores::database::context& ctx,
+                     const std::vector<messaging::login_info_key>& keys) {
+    std::vector<std::vector<domain::login_info>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> account_id_keys;
+    account_id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        account_id_keys.push_back(boost::uuids::to_string(key.account_id));
+    }
+    std::map<key_tuple, std::vector<domain::login_info>> by_key;
+    for (auto& row : repo.read_latest(ctx, account_id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.account_id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.account_id)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
+}
+
 }
 
 messaging::list_login_info_response
@@ -87,9 +131,10 @@ login_info_service::list_login_info(const messaging::list_login_info_request& re
         return response;
     }
     if (request.filter && request.filter->account_id_one_of &&
-        request.filter->account_id_one_of->size() > 1000) {
+        request.filter->account_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "account_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "account_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     response.login_info =
@@ -113,16 +158,23 @@ login_info_service::get_login_info(const messaging::get_login_info_request& requ
 messaging::get_many_login_info_response
 login_info_service::get_many_login_info(const messaging::get_many_login_info_request& request) {
     messaging::get_many_login_info_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = login_info_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::login_info_lookup entry;
-        entry.key = k;
-        auto found = login_info_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.login_info = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.login_info = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

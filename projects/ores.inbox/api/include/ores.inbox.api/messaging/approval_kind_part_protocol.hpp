@@ -302,7 +302,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_kind_part_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"kind_code", &approval_kind_part_key::kind_code},
         utility::codec::field{"part_code", &approval_kind_part_key::part_code},
     };
@@ -317,7 +317,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_kind_part_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"kind_code", &approval_kind_part_write::kind_code},
         utility::codec::field{"part_code", &approval_kind_part_write::part_code},
     };
@@ -332,7 +332,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_kind_part_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &approval_kind_part_change::write},
         utility::codec::field{"precondition", &approval_kind_part_change::precondition},
     };
@@ -347,7 +347,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_kind_part_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &approval_kind_part_removal::key},
         utility::codec::field{"precondition", &approval_kind_part_removal::precondition},
     };
@@ -362,7 +362,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_kind_part_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &approval_kind_part_lookup::key},
         utility::codec::field{"approval_kind_part", &approval_kind_part_lookup::approval_kind_part},
     };
@@ -377,7 +377,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_kind_parts_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"kind_code", &approval_kind_parts_filter::kind_code},
         utility::codec::field{"kind_code_one_of", &approval_kind_parts_filter::kind_code_one_of},
     };
@@ -392,7 +392,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_kind_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_approval_kind_parts_request::offset},
         utility::codec::field{"limit", &list_approval_kind_parts_request::limit},
         utility::codec::field{"order", &list_approval_kind_parts_request::order},
@@ -409,7 +409,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_kind_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_approval_kind_parts_response::result},
         utility::codec::field{"approval_kind_parts",
                               &list_approval_kind_parts_response::approval_kind_parts},
@@ -426,7 +426,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_kind_part_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_approval_kind_part_request::key},
     };
 }
@@ -440,7 +440,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_kind_part_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_approval_kind_part_response::result},
         utility::codec::field{"approval_kind_part",
                               &get_approval_kind_part_response::approval_kind_part},
@@ -456,7 +456,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_kind_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_approval_kind_parts_request::keys},
     };
 }
@@ -471,7 +471,7 @@ struct list_by_kind_code_approval_kind_parts_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_approval_kind_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_approval_kind_parts_response::result},
         utility::codec::field{"entries", &get_many_approval_kind_parts_response::entries},
     };
@@ -486,7 +486,7 @@ wire_fields(std::type_identity<get_many_approval_kind_parts_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_kind_part_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_approval_kind_part_request::change},
         utility::codec::field{"intent", &put_approval_kind_part_request::intent},
     };
@@ -501,7 +501,7 @@ wire_fields(std::type_identity<get_many_approval_kind_parts_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_kind_part_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_approval_kind_part_response::result},
         utility::codec::field{"approval_kind_part",
                               &put_approval_kind_part_response::approval_kind_part},
@@ -517,7 +517,7 @@ wire_fields(std::type_identity<get_many_approval_kind_parts_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_kind_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_approval_kind_parts_request::changes},
         utility::codec::field{"intent", &put_many_approval_kind_parts_request::intent},
     };
@@ -533,7 +533,7 @@ wire_fields(std::type_identity<get_many_approval_kind_parts_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_approval_kind_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_approval_kind_parts_response::result},
         utility::codec::field{"approval_kind_parts",
                               &put_many_approval_kind_parts_response::approval_kind_parts},
@@ -549,7 +549,7 @@ wire_fields(std::type_identity<put_many_approval_kind_parts_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_kind_part_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_approval_kind_part_request::removal},
         utility::codec::field{"intent", &delete_approval_kind_part_request::intent},
     };
@@ -564,7 +564,7 @@ wire_fields(std::type_identity<put_many_approval_kind_parts_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_kind_part_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_approval_kind_part_response::result},
     };
 }
@@ -579,7 +579,7 @@ wire_fields(std::type_identity<put_many_approval_kind_parts_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_approval_kind_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_approval_kind_parts_request::removals},
         utility::codec::field{"intent", &delete_many_approval_kind_parts_request::intent},
     };
@@ -595,7 +595,7 @@ wire_fields(std::type_identity<delete_many_approval_kind_parts_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_approval_kind_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_approval_kind_parts_response::result},
     };
 }
@@ -610,7 +610,7 @@ wire_fields(std::type_identity<delete_many_approval_kind_parts_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_kind_code_approval_kind_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"kind_code",
                               &list_by_kind_code_approval_kind_parts_request::kind_code},
         utility::codec::field{"scope", &list_by_kind_code_approval_kind_parts_request::scope},
@@ -631,7 +631,7 @@ wire_fields(std::type_identity<list_by_kind_code_approval_kind_parts_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_kind_code_approval_kind_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_kind_code_approval_kind_parts_response::result},
         utility::codec::field{"approval_kind_parts",
                               &list_by_kind_code_approval_kind_parts_response::approval_kind_parts},

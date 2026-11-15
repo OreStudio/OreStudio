@@ -47,7 +47,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_barrier_option_instrument>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"identity", &fx_barrier_option_instrument::identity},
         utility::codec::field{"bought_currency", &fx_barrier_option_instrument::bought_currency},
         utility::codec::field{"bought_amount", &fx_barrier_option_instrument::bought_amount},

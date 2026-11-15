@@ -220,7 +220,7 @@ struct export_run_configuration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_input_file>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &run_input_file::name},
         ::ores::utility::codec::field{"content", &run_input_file::content},
     };
@@ -235,7 +235,7 @@ struct export_run_configuration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<saved_document>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_type_code",
                                       &saved_document::configuration_type_code},
         ::ores::utility::codec::field{"configuration_id", &saved_document::configuration_id},
@@ -251,7 +251,7 @@ struct export_run_configuration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_run_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &import_run_configuration_request::report_definition_id},
         ::ores::utility::codec::field{"name", &import_run_configuration_request::name},
@@ -268,7 +268,7 @@ struct export_run_configuration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_run_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &import_run_configuration_response::success},
         ::ores::utility::codec::field{"message", &import_run_configuration_response::message},
         ::ores::utility::codec::field{"correlation_id",
@@ -288,7 +288,7 @@ struct export_run_configuration_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<run_configuration_import_execute_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{
             "report_definition_id",
             &run_configuration_import_execute_request::report_definition_id},
@@ -311,7 +311,7 @@ wire_fields(std::type_identity<run_configuration_import_execute_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<run_configuration_import_execute_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &run_configuration_import_execute_result::success},
         ::ores::utility::codec::field{"message", &run_configuration_import_execute_result::message},
         ::ores::utility::codec::field{"stored", &run_configuration_import_execute_result::stored},
@@ -344,7 +344,7 @@ wire_fields(std::type_identity<run_configuration_import_execute_result>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<run_configuration_import_rollback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"correlation_id",
                                       &run_configuration_import_rollback_request::correlation_id},
         ::ores::utility::codec::field{"bearer_token",
@@ -368,7 +368,7 @@ wire_fields(std::type_identity<run_configuration_import_rollback_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<export_run_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &export_run_configuration_request::report_definition_id},
     };
@@ -383,7 +383,7 @@ wire_fields(std::type_identity<run_configuration_import_rollback_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<export_run_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &export_run_configuration_response::success},
         ::ores::utility::codec::field{"message", &export_run_configuration_response::message},
         ::ores::utility::codec::field{"files", &export_run_configuration_response::files},

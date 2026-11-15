@@ -300,6 +300,19 @@ a =package= instance reads it to find the instance and the packages it stores.
 The report definitions to schedule. Each gets a scheduler job, so it fires
 without anyone asking again.
 
+*** schedule_expression
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The expression the one definition this call schedules fires on, written by the
+same handler that makes its job, so an expression no job honours cannot be left
+standing by a caller that gave up between the two writes. Empty leaves the
+definitions as they are, which is what a call that only makes jobs states.
+
+An expression is one definition's, because it is written onto that definition,
+so a request that states one names a single id and no other.
+
 ** schedule_report_definitions_response
 
 *** success

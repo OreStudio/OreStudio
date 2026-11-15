@@ -67,46 +67,9 @@ std::optional<std::string> iso_optional(const std::optional<std::chrono::year_mo
     return ores::platform::time::datetime::to_iso8601_date(*d);
 }
 
-/**
- * @brief The instrument's own rows, as the tables hold them.
- *
- * The rows stay in the order their query returned: by instrument, then by
- * the owner's role and number, then by the child's own ordinal. A reader
- * therefore walks a container's children in document order without
- * sorting again.
- */
-struct instrument_rows final {
-    std::vector<domain::bond_leg> legs;
-    std::vector<domain::bond_leg_amount> amounts;
-    std::vector<domain::bond_leg_rate> rates;
-    std::vector<domain::bond_leg_amortization> amortizations;
-    std::vector<domain::instrument_schedule> schedules;
-    std::vector<domain::instrument_schedule_date> schedule_dates;
-    std::optional<domain::instrument_option> option;
-    std::vector<domain::instrument_option_premium> option_premiums;
-    std::vector<domain::instrument_option_exercise_fee> option_exercise_fees;
-    std::vector<domain::instrument_option_payment_date> option_payment_dates;
-    std::vector<domain::instrument_option_exercise_price> option_exercise_prices;
-    std::optional<domain::instrument_strike> strike;
-    std::optional<domain::bond_forward> forward;
-};
-
-/**
- * @brief The rows a bond security owns, as the issue-keyed tables hold them.
- *
- * A bond's own legs belong to the security rather than to the trade, so
- * they and everything they state key on the issue. The option block, the
- * strike and the forward are the trade's product and stay in
- * instrument_rows.
- */
-struct issue_leg_rows final {
-    std::vector<domain::bond_issue_leg> legs;
-    std::vector<domain::bond_issue_leg_amount> amounts;
-    std::vector<domain::bond_issue_leg_rate> rates;
-    std::vector<domain::bond_issue_leg_amortization> amortizations;
-    std::vector<domain::bond_issue_leg_schedule> schedules;
-    std::vector<domain::bond_issue_leg_schedule_date> schedule_dates;
-};
+// The role the security's rows are read under: the issue-keyed tables
+// already say whose rows they are, and the container still names the role.
+constexpr std::string_view bond_leg_role = "bond";
 
 /**
  * @brief The leg role a leg or one of its children belongs to.
@@ -116,10 +79,6 @@ struct issue_leg_rows final {
  * rows these are, so a row there carries no role and the answer is the
  * bond.
  */
-// The role the security's rows are read under: the issue-keyed tables
-// already say whose rows they are, and the container still names the role.
-constexpr std::string_view bond_leg_role = "bond";
-
 std::string_view leg_role_of(const domain::bond_leg& row) {
     return row.leg_role;
 }
@@ -192,9 +151,9 @@ struct leg_amounts final {
     std::vector<domain::bond_float_data> gearing;
 };
 
-std::unordered_map<std::string, instrument_rows>
-read_family_rows(ores::database::context ctx, const std::vector<std::string>& trade_ids) {
-    std::unordered_map<std::string, instrument_rows> rows;
+std::unordered_map<std::string, bond_trade_rows>
+read_family_rows(const ores::database::context& ctx, const std::vector<std::string>& trade_ids) {
+    std::unordered_map<std::string, bond_trade_rows> rows;
 
     for (auto& row : repository::read_legs_by_trade_ids(ctx, trade_ids))
         rows[boost::uuids::to_string(row.trade_id)].legs.push_back(std::move(row));
@@ -246,7 +205,8 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& tr
  * them into each instrument's container rather than moving them.
  */
 std::unordered_map<std::string, issue_leg_rows>
-read_issue_family_rows(ores::database::context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_family_rows(const ores::database::context& ctx,
+                       const std::vector<std::string>& issue_ids) {
     std::unordered_map<std::string, issue_leg_rows> rows;
     if (issue_ids.empty())
         return rows;
@@ -344,7 +304,7 @@ domain::bond_schedule_data schedule_for(const std::vector<ScheduleRow>& schedule
 /**
  * @brief Reads one of a trade-keyed owner's schedules.
  */
-domain::bond_schedule_data schedule_for(const instrument_rows& rows,
+domain::bond_schedule_data schedule_for(const bond_trade_rows& rows,
                                         std::string_view owner_role,
                                         int owner_number,
                                         std::string_view role) {
@@ -515,12 +475,11 @@ domain::bond_leg_data build_leg(const Rows& rows, const LegRow& row) {
 }
 
 void apply_leg_family(domain::bond_instrument_data& data,
-                      const instrument_rows& rows,
+                      const bond_trade_rows& rows,
                       const issue_leg_rows& issue_rows) {
     // The security's legs come first, in the order the issue's leg list
     // holds them; they are shared by every instrument of the ISIN.
-    for (const auto& row : issue_rows.legs)
-        data.bond_legs.push_back(build_leg(issue_rows, row));
+    data.bond_legs = bond_legs_of(issue_rows);
 
     for (const auto& row : rows.legs) {
         if (row.leg_role == "trs_funding")
@@ -571,7 +530,7 @@ to_payment_rules(const domain::instrument_option& row) {
     return rules;
 }
 
-void apply_option_block(domain::bond_instrument_data& data, const instrument_rows& rows) {
+void apply_option_block(domain::bond_instrument_data& data, const bond_trade_rows& rows) {
     if (rows.option) {
         const auto& row = *rows.option;
 
@@ -650,7 +609,7 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         optional_schedule(schedule_for(rows, "option", 1, "exercise_schedule"));
 }
 
-void apply_strike(domain::bond_instrument_data& data, const instrument_rows& rows) {
+void apply_strike(domain::bond_instrument_data& data, const bond_trade_rows& rows) {
     if (!rows.strike)
         return;
     const auto& row = *rows.strike;
@@ -662,7 +621,7 @@ void apply_strike(domain::bond_instrument_data& data, const instrument_rows& row
                                                 row.bare_currency};
 }
 
-void apply_forward(domain::bond_instrument_data& data, const instrument_rows& rows) {
+void apply_forward(domain::bond_instrument_data& data, const bond_trade_rows& rows) {
     if (!rows.forward)
         return;
     const auto& row = *rows.forward;
@@ -693,7 +652,7 @@ void apply_forward(domain::bond_instrument_data& data, const instrument_rows& ro
  * the writer put them there. The schedule is not a column and comes from
  * the shared schedule tables under the owner the swap names.
  */
-void apply_trs_residue(domain::bond_instrument_data& data, const instrument_rows& rows) {
+void apply_trs_residue(domain::bond_instrument_data& data, const bond_trade_rows& rows) {
     if (data.trs) {
         data.trs_payer = data.trs->payer;
         data.trs_initial_price = data.trs->initial_price;
@@ -720,8 +679,38 @@ void apply_option_residue(domain::bond_instrument_data& data) {
 
 }
 
-bond_instrument_reader::bond_instrument_reader(context ctx)
-    : ctx_(std::move(ctx)) {}
+void assemble_bond(domain::bond_instrument_data& data,
+                   const bond_trade_rows& trade,
+                   const issue_leg_rows& issue) {
+    apply_leg_family(data, trade, issue);
+    apply_option_block(data, trade);
+    apply_strike(data, trade);
+    apply_forward(data, trade);
+    if (!trade.underlyings.empty())
+        data.instrument_underlyings = trade.underlyings;
+    if (trade.bond_option)
+        data.option = trade.bond_option;
+    if (trade.trs)
+        data.trs = trade.trs;
+    if (trade.repo)
+        data.repo = trade.repo;
+    if (trade.future)
+        data.future = trade.future;
+    if (trade.ascot)
+        data.ascot_row = trade.ascot;
+    apply_option_residue(data);
+    apply_trs_residue(data, trade);
+}
+
+std::vector<domain::bond_leg_data> bond_legs_of(const issue_leg_rows& rows) {
+    std::vector<domain::bond_leg_data> legs;
+    for (const auto& row : rows.legs)
+        legs.push_back(build_leg(rows, row));
+    return legs;
+}
+
+bond_instrument_reader::bond_instrument_reader(const context& ctx)
+    : ctx_(ctx) {}
 
 std::unordered_map<std::string, domain::bond_instrument_data>
 bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_ids) const {
@@ -764,7 +753,7 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
 
     // An instrument with no rows of its own still reads, so the two
     // lookups fall back to empty row sets rather than skipping the build.
-    static const instrument_rows no_trade_rows;
+    static const bond_trade_rows no_trade_rows;
     static const issue_leg_rows no_issue_rows;
 
     std::unordered_map<std::string, std::vector<domain::instrument_underlying>> underlyings;
@@ -790,27 +779,22 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
         const auto& trade_rows = family == leg_family.end() ? no_trade_rows : family->second;
         const auto& security_rows =
             issue_family_row == issue_family.end() ? no_issue_rows : issue_family_row->second;
-        apply_leg_family(data, trade_rows, security_rows);
-        apply_option_block(data, trade_rows);
-        apply_strike(data, trade_rows);
-        apply_forward(data, trade_rows);
+        auto own = trade_rows;
         if (auto it = underlyings.find(id); it != underlyings.end())
-            data.instrument_underlyings = std::move(it->second);
-
+            own.underlyings = std::move(it->second);
         const auto& ttc = data.instrument.identity.trade_type_code;
+        const auto& trade_id = data.instrument.identity.trade_id;
         if (ttc == "BondOption")
-            data.option = option_svc.get_option(row.identity.trade_id);
+            own.bond_option = option_svc.get_option(trade_id);
         else if (ttc == "BondTRS")
-            data.trs = trs_svc.get_trs(row.identity.trade_id);
+            own.trs = trs_svc.get_trs(trade_id);
         else if (ttc == "BondRepo")
-            data.repo = repo_svc.get_repo(row.identity.trade_id);
+            own.repo = repo_svc.get_repo(trade_id);
         else if (ttc == "BondFuture")
-            data.future = future_svc.get_future(row.identity.trade_id);
+            own.future = future_svc.get_future(trade_id);
         else if (ttc == "Ascot")
-            data.ascot_row = ascot_svc.get_ascot(row.identity.trade_id);
-
-        apply_option_residue(data);
-        apply_trs_residue(data, trade_rows);
+            own.ascot = ascot_svc.get_ascot(trade_id);
+        assemble_bond(data, own, security_rows);
 
         result.emplace(id, std::move(data));
     }

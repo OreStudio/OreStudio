@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 281CBA86-E948-472D-89C1-CBCE7DADAD12
+:END:
+#+title: Task: Serve the pricing engines' writes
+#+description: Three routes: the document save across the header, its products and its parameters, the update, and the removal.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the pricing engines' three writes. A write takes the whole document, as a
+read answers it, and the analytics service saves it across the header, its
+products and its parameters. A write that omits a product or a parameter that
+the earlier version held removes it, which is how the document save of that
+service behaves.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C1830F26-2A60-49CE-AC82-6B784F34F79E][Serve the pricing engines' reads]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =POST /api/reporting/pricing-engines=,
+  =PUT /api/reporting/pricing-engines/:id= and
+  =DELETE /api/reporting/pricing-engines/:id= at the BFF's member names and
+  status codes: 201 on a create and 204 on a removal.
+- A create writes the reporting configuration header first and the document
+  second, and removes the header when the document write fails.
+- A write removes the products and the parameters that the document no longer
+  names.
+- A removal removes the document through the service, and a service that says it
+  did not is a refusal that carries its sentence.
+- A body that names a member the route does not know is refused, as in the
+  earlier families.
+- A test proves each refusal; the happy paths need a live estate and this task
+  does not prove them.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-pricing-engines-writes=.
+
+The save builds on the document unit that the reads task adds. It writes up to
+five hundred products and five thousand parameters, and the limits are the BFF's
+so a document the screen accepts is a document the gateway accepts.
+
+The reason a write carries travels with it. The analytics service's document
+save has no field for one, so the gateway states it as the BFF does and the rows
+carry it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

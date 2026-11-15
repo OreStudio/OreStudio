@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: F803A3DD-3D53-4BDF-8E92-81AFB914D7E1
+:END:
+#+title: Task: Publish one curated convention set
+#+description: Replace ore.conventions and the two system-tenant seeds of index conventions with one curated refdata.conventions DQ dataset, fix the builders provisioning stopped on, and provision to completion.
+#+type: task
+#+level: s1
+#+filetags: :draw_only_swap_indices_with_one_convention:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/draw-only-swap-indices-with-one-convention
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every tenant holds every convention its trades and curves name, from one
+curated DQ dataset, and a fresh environment provisions to completion.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] |
+| Now          | Implemented and verified.              |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
+
+* Acceptance
+
+- refdata.conventions is a system DQ dataset with its own methodology, built
+  from a committed table that names the source of each row.
+- ore.conventions, refdata_builtin_index_conventions_populate.sql and
+  refdata_overnight_index_conventions_populate.sql are gone, and nothing
+  writes an index convention straight into the system tenant.
+- The dataset is in the bundles of the system party and of every party, and
+  each dataset that names a convention depends on it.
+- The gate checks the generated script, ORE's coverage and the generator.
+- A fresh environment provisions the system and Acme to completion.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+
+One task, one PR. Its activities:
+
+1. Decommission the hacks of the first attempt: a script that copied the
+   system tenant's index conventions into ore.conventions at populate time,
+   and a planner filter that hid an index with no definition.
+2. Bootstrap the curated table from the three sources once: the ORE examples
+   (ore.conventions), the ORE engine (the mined built-in index conventions)
+   and the overnight index conventions OreStudio seeded by hand. The
+   methodology records each overlap and its decision.
+3. Move the generator to =projects/ores.seeder/datasets/conventions/=, read the
+   table, register the methodology with the dataset, and rename the dataset
+   refdata.conventions everywhere it is named.
+4. Add =propose.py=, which compares the table with what ORE holds, for an ORE
+   upgrade and for the gate.
+5. Declare the dependencies that were missing: the FX volatility blueprints
+   and Acme's market documents on the conventions.
+6. Fix what provisioning stopped on: an index whose aliases state the same
+   terms is one index; a schedule tenor such as 12M or 28D reads; the planner
+   draws a swap convention by id, so an index whose conventions state other
+   legs builds by the one it drew.
+7. Prove it: unit and pgTAP tests, the gate checks, and a fresh environment
+   provisioned to completion.
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Every leg's day count now goes through the table; a day count outside it fails | day_count.hpp | Accepted | The database holds six day counts, all in the table. A seeder test checks that every day count conventions.tsv normalises to has a trade code. |
+| 2 | history_pending_ ends when every remaining pair fails | derived_fx_vol_adapter.cpp | Accepted | A comment says a failed pair is tried again after the next refresh. The loop sleeps 50 ms between passes. |
+| 3 | coalesce_demands may repeat an image id | derived_fx_vol_feed.cpp | Declined | demand() only erases the id's last-sent day, so a repeat is harmless. |
+| 4 | the_one_at depends on order with three aliases | convention_lookup.cpp | Declined | found stays in the first class seen, so any candidate of another class is refused whatever the order. |
+| 5 | funding_index_in and underlying_index_of take the first convention, not the least id | trade_population_planner.cpp | Declined | The draw passes the id it found, and the builder builds by it; the dataset order is stable. |
+| 6 | An empty frequency from a free-form period | cadence.hpp | Declined | The swap leg mapper stores an empty frequency as null, which the trigger skips. |
+| 7 | Zero commodity quantity for other types | commodity_instrument.org | Declined | The check accepts zero only with an accumulation amount, so other types still need a positive quantity. |
+
+* Result
+
+=refdata.conventions= is a system DQ dataset with its own methodology, built
+from one curated table that names the source of each row: the ORE examples,
+the conventions built into the ORE engine, and the overnight index
+conventions seeded by hand. The three populate scripts that wrote index
+conventions straight into the system tenant are gone, and every dataset that
+names a convention depends on the new one.
+
+Provisioning stopped at =generate_trades= because several swap conventions
+name one index. The planner now draws a swap by its convention id, and the
+builders look a swap up by id. Aliases that state the same terms read as one
+index, and any schedule tenor reads as a cadence. An equity swap's funding
+leg and an RPA's underlying swap are drawn by their convention too.
+
+Provisioning to completion uncovered four more defects, all fixed here:
+
+- A generated accumulator or TaRF states a zero quantity, which the
+  commodity table refused. A zero quantity is accepted when the row states
+  an accumulation amount.
+- The credit legs now state ACT/360 as ORE's A360. The recorded trades were
+  re-recorded; the diff is only those eight day counts.
+- The derived FX vol source wrote ten pairs of history in one pass, about
+  four and a half minutes, and answered no demand meanwhile. It now keeps
+  one pair a pass.
+- The source kept one pending demand, so a burst of party subscriptions lost
+  the image that names the ids a party needs first. A replaced demand now
+  keeps the images of both.
+
+With /Run a service's steps concurrently/ merged, a fresh environment
+provisioned the system (3 of 3 steps) and Acme (17 of 17) to completion, with
+no failed unit and no crash in the journal.
+

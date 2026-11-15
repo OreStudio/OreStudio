@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/trade_portfolio_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -107,20 +110,81 @@ trade_portfolio_filter_condition(const std::optional<messaging::trade_portfolios
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool trade_portfolio_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using trade_portfolio_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::trade_portfolio>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+trade_portfolio_rows_by_key
+trade_portfolio_current_rows(trade_portfolio_repository& repo,
+                             const ores::database::context& ctx,
+                             const std::vector<domain::trade_portfolio>& of) {
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(of.size());
+    std::vector<std::string> sequence_numbers;
+    sequence_numbers.reserve(of.size());
+    for (const auto& row : of) {
+        trade_ids.push_back(boost::uuids::to_string(row.trade_id));
+        sequence_numbers.push_back(std::to_string(row.sequence_number));
+    }
+    trade_portfolio_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, trade_ids, sequence_numbers))
+        current[std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                std::to_string(item.sequence_number))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::trade_portfolio>&
+trade_portfolio_rows_of(const trade_portfolio_rows_by_key& current,
+                        const domain::trade_portfolio& item) {
+    static const std::vector<domain::trade_portfolio> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                                    std::to_string(item.sequence_number)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-trade_portfolio_repository::replace_claim(context ctx, const domain::trade_portfolio& v) {
-    const auto current =
-        read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
+trade_portfolio_replace_claim(const std::vector<domain::trade_portfolio>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::trade_portfolio
-trade_portfolio_repository::apply_claim(context ctx,
-                                        const domain::trade_portfolio& v,
-                                        const ores::utility::domain::precondition& claim) {
+trade_portfolio_apply_claim(const domain::trade_portfolio& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::trade_portfolio>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -132,56 +196,73 @@ trade_portfolio_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(
-                ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void trade_portfolio_repository::write(context ctx, const domain::trade_portfolio& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void trade_portfolio_repository::write(context ctx, const std::vector<domain::trade_portfolio>& v) {
+void trade_portfolio_repository::write(const context& ctx, const domain::trade_portfolio& v) {
+    write(ctx,
+          v,
+          trade_portfolio_replace_claim(read_latest(
+              ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number))));
+}
+
+void trade_portfolio_repository::write(const context& ctx,
+                                       const std::vector<domain::trade_portfolio>& v) {
+    const auto current = trade_portfolio_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(trade_portfolio_replace_claim(trade_portfolio_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void trade_portfolio_repository::write(context ctx,
+void trade_portfolio_repository::write(const context& ctx,
                                        const domain::trade_portfolio& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade portfolio. " << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = trade_portfolio_apply_claim(v,
+                                               claim,
+                                               trade_portfolio_claim_reads_current(claim) ?
+                                                   read_latest(ctx,
+                                                               boost::uuids::to_string(v.trade_id),
+                                                               std::to_string(v.sequence_number)) :
+                                                   std::vector<domain::trade_portfolio>{});
     query_builder::execute_write_query(
         ctx, trade_portfolio_mapper::map(t), lg(), "Writing trade portfolio to database.");
 }
 
 void trade_portfolio_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_portfolio>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade portfolios. Count: " << v.size();
+    std::vector<domain::trade_portfolio> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (trade_portfolio_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = trade_portfolio_current_rows(*this, ctx, to_read);
     std::vector<domain::trade_portfolio> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            trade_portfolio_apply_claim(v[i], claims[i], trade_portfolio_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, trade_portfolio_mapper::map(batch), lg(), "Writing trade portfolios to database.");
 }
 
-std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(context ctx) {
+std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_portfolio_entity>> |
@@ -197,7 +278,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(con
 }
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade portfolio. " << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
@@ -217,7 +298,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
 
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade portfolio versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -236,7 +317,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_all(
 }
 
 std::optional<domain::trade_portfolio>
-trade_portfolio_repository::read_at_version(context ctx,
+trade_portfolio_repository::read_at_version(const context& ctx,
                                             const std::string& trade_id,
                                             const std::string& sequence_number,
                                             std::uint32_t version) {
@@ -264,7 +345,7 @@ trade_portfolio_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -291,7 +372,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest_by_
 }
 
 std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade portfolios count. trade_id: "
@@ -313,7 +394,7 @@ std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count_by_tra
 
 
 trade_portfolio_repository::remove_status
-trade_portfolio_repository::remove(context ctx,
+trade_portfolio_repository::remove(const context& ctx,
                                    const std::string& trade_id,
                                    const std::string& sequence_number,
                                    std::optional<std::uint32_t> version) {
@@ -347,14 +428,14 @@ trade_portfolio_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_portfolio_repository::remove(context ctx,
+void trade_portfolio_repository::remove(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -380,7 +461,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
 }
 
 std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_portfolios_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade portfolio count";
@@ -399,11 +480,32 @@ std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count(
 }
 
 std::vector<domain::trade_portfolio>
-trade_portfolio_repository::read_latest(context ctx,
+trade_portfolio_repository::read_latest(const context& ctx,
                                         const std::vector<std::string>& trade_ids,
                                         const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
         return {};
+    if (sequence_numbers.size() != trade_ids.size())
+        throw std::invalid_argument(
+            "trade_portfolio_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (trade_ids.size() > chunk_size) {
+        std::vector<domain::trade_portfolio> all;
+        for (std::size_t begin = 0; begin < trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, trade_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(trade_ids.begin() + begin, trade_ids.begin() + end),
+                std::vector<std::string>(sequence_numbers.begin() + begin,
+                                         sequence_numbers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -420,9 +522,6 @@ trade_portfolio_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (sequence_numbers.size() != trade_ids.size())
-        throw std::invalid_argument(
-            "trade_portfolio_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < trade_ids.size(); ++i)
         requested.emplace(trade_ids[i], sequence_numbers[i]);
@@ -436,7 +535,7 @@ trade_portfolio_repository::read_latest(context ctx,
     return filtered;
 }
 
-void trade_portfolio_repository::remove(context ctx,
+void trade_portfolio_repository::remove(const context& ctx,
                                         const std::vector<std::string>& trade_ids,
                                         const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

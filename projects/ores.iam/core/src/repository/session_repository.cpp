@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/session.hpp"
@@ -42,6 +43,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -110,76 +113,151 @@ session_filter_condition(const std::optional<messaging::sessions_filter>& filter
 
 }
 
-ores::utility::domain::precondition session_repository::replace_claim(context ctx,
-                                                                      const domain::session& v) {
-    const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.id),
-                                     ores::platform::time::datetime::to_db_string(v.start_time));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool session_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using session_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::session>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+session_rows_by_key session_current_rows(session_repository& repo,
+                                         const ores::database::context& ctx,
+                                         const std::vector<domain::session>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    std::vector<std::string> start_times;
+    start_times.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+        start_times.push_back(ores::platform::time::datetime::to_db_string(row.start_time));
+    }
+    session_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids, start_times))
+        current[std::make_tuple(boost::uuids::to_string(item.id),
+                                ores::platform::time::datetime::to_db_string(item.start_time))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::session>& session_rows_of(const session_rows_by_key& current,
+                                                    const domain::session& item) {
+    static const std::vector<domain::session> none;
+    const auto found = current.find(
+        std::make_tuple(boost::uuids::to_string(item.id),
+                        ores::platform::time::datetime::to_db_string(item.start_time)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition
+session_replace_claim(const std::vector<domain::session>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::session session_repository::apply_claim(context ctx,
-                                                const domain::session& v,
-                                                const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::session session_apply_claim(const domain::session& v,
+                                    const ores::utility::domain::precondition& claim,
+                                    const std::vector<domain::session>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "session_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx,
-                     boost::uuids::to_string(v.id),
-                     ores::platform::time::datetime::to_db_string(v.start_time))
-             .empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument("session_repository::write: a current row already exists");
     return t;
 }
 
-void session_repository::write(context ctx, const domain::session& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void session_repository::write(context ctx, const std::vector<domain::session>& v) {
+void session_repository::write(const context& ctx, const domain::session& v) {
+    write(ctx,
+          v,
+          session_replace_claim(
+              read_latest(ctx,
+                          boost::uuids::to_string(v.id),
+                          ores::platform::time::datetime::to_db_string(v.start_time))));
+}
+
+void session_repository::write(const context& ctx, const std::vector<domain::session>& v) {
+    const auto current = session_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(session_replace_claim(session_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void session_repository::write(context ctx,
+void session_repository::write(const context& ctx,
                                const domain::session& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing session. " << "id: " << v.id
                                << " start_time: " << v.start_time;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = session_apply_claim(
+        v,
+        claim,
+        session_claim_reads_current(claim) ?
+            read_latest(ctx,
+                        boost::uuids::to_string(v.id),
+                        ores::platform::time::datetime::to_db_string(v.start_time)) :
+            std::vector<domain::session>{});
     query_builder::execute_write_op(ctx,
                                     query_builder::insert_or_replace(session_mapper::map(t)),
                                     lg(),
                                     "Writing session to database.");
 }
 
-void session_repository::write(context ctx,
+void session_repository::write(const context& ctx,
                                const std::vector<domain::session>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sessions. Count: " << v.size();
+    std::vector<domain::session> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (session_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = session_current_rows(*this, ctx, to_read);
     std::vector<domain::session> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(session_apply_claim(v[i], claims[i], session_rows_of(current, v[i])));
     query_builder::execute_write_op(ctx,
                                     query_builder::insert_or_replace(session_mapper::map(batch)),
                                     lg(),
                                     "Writing sessions to database.");
 }
 
-std::vector<domain::session> session_repository::read_latest(context ctx) {
+std::vector<domain::session> session_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -193,8 +271,9 @@ std::vector<domain::session> session_repository::read_latest(context ctx) {
         "Reading latest sessions");
 }
 
-std::vector<domain::session>
-session_repository::read_latest(context ctx, const std::string& id, const std::string& start_time) {
+std::vector<domain::session> session_repository::read_latest(const context& ctx,
+                                                             const std::string& id,
+                                                             const std::string& start_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest session. " << "id: " << id
                                << " start_time: " << start_time;
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +289,7 @@ session_repository::read_latest(context ctx, const std::string& id, const std::s
         "Reading latest session by id.");
 }
 
-std::vector<domain::session> session_repository::read_latest_by_id(context ctx,
+std::vector<domain::session> session_repository::read_latest_by_id(const context& ctx,
                                                                    const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest session by id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -225,9 +304,42 @@ std::vector<domain::session> session_repository::read_latest_by_id(context ctx,
         "Reading latest session by id.");
 }
 
-
 std::vector<domain::session>
-session_repository::read_all(context ctx, const std::string& id, const std::string& start_time) {
+session_repository::read_latest_by_id(const context& ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::session> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part = read_latest_by_id(
+                ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest sessions by id. Count: " << ids.size();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<session_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
+    auto found = query_builder::execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading latest sessions by id.");
+    return found;
+}
+
+
+std::vector<domain::session> session_repository::read_all(const context& ctx,
+                                                          const std::string& id,
+                                                          const std::string& start_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all session versions. " << "id: " << id
                                << " start_time: " << start_time;
     const auto tid = ctx.tenant_id().to_string();
@@ -245,7 +357,7 @@ session_repository::read_all(context ctx, const std::string& id, const std::stri
 }
 
 
-session_repository::remove_status session_repository::remove(context ctx,
+session_repository::remove_status session_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              const std::string& start_time,
                                                              std::optional<std::uint32_t> version) {
@@ -267,12 +379,14 @@ session_repository::remove_status session_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void session_repository::remove(context ctx, const std::string& id, const std::string& start_time) {
+void session_repository::remove(const context& ctx,
+                                const std::string& id,
+                                const std::string& start_time) {
     static_cast<void>(remove(ctx, id, start_time, std::nullopt));
 }
 
 std::vector<domain::session>
-session_repository::read_latest(context ctx,
+session_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -295,7 +409,7 @@ session_repository::read_latest(context ctx,
 }
 
 std::uint32_t session_repository::get_total_session_count(
-    context ctx, const std::optional<messaging::sessions_filter>& filter) {
+    const context& ctx, const std::optional<messaging::sessions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active session count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -306,10 +420,32 @@ std::uint32_t session_repository::get_total_session_count(
         ctx, query, session_filter_condition(filter), lg(), "Counting sessions");
 }
 
-std::vector<domain::session> session_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& start_times) {
+std::vector<domain::session>
+session_repository::read_latest(const context& ctx,
+                                const std::vector<std::string>& ids,
+                                const std::vector<std::string>& start_times) {
     if (ids.empty() || start_times.empty())
         return {};
+    if (start_times.size() != ids.size())
+        throw std::invalid_argument(
+            "session_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::session> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(ids.begin() + begin, ids.begin() + end),
+                std::vector<std::string>(start_times.begin() + begin, start_times.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) &&
@@ -323,9 +459,6 @@ std::vector<domain::session> session_repository::read_latest(
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (start_times.size() != ids.size())
-        throw std::invalid_argument(
-            "session_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < ids.size(); ++i)
         requested.emplace(ids[i], start_times[i]);
@@ -340,7 +473,7 @@ std::vector<domain::session> session_repository::read_latest(
     return filtered;
 }
 
-void session_repository::remove(context ctx,
+void session_repository::remove(const context& ctx,
                                 const std::vector<std::string>& ids,
                                 const std::vector<std::string>& start_times) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -354,7 +487,7 @@ void session_repository::remove(context ctx,
 }
 
 
-std::optional<domain::session> session_repository::read(context ctx,
+std::optional<domain::session> session_repository::read(const context& ctx,
                                                         const boost::uuids::uuid& session_id) {
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
     const auto query = query_builder::read<std::vector<session_entity>> |
@@ -371,7 +504,7 @@ std::optional<domain::session> session_repository::read(context ctx,
     return sessions.front();
 }
 
-void session_repository::update_bytes(context ctx,
+void session_repository::update_bytes(const context& ctx,
                                       const boost::uuids::uuid& session_id,
                                       const std::chrono::system_clock::time_point& start_time,
                                       std::uint64_t bytes_sent,
@@ -389,7 +522,7 @@ void session_repository::update_bytes(context ctx,
         "Updating session bytes");
 }
 
-void session_repository::end_session(context ctx,
+void session_repository::end_session(const context& ctx,
                                      const boost::uuids::uuid& session_id,
                                      const std::chrono::system_clock::time_point& start_time,
                                      const std::chrono::system_clock::time_point& end_time,
@@ -410,7 +543,7 @@ void session_repository::end_session(context ctx,
 }
 
 std::vector<domain::session>
-session_repository::read_by_account(context ctx,
+session_repository::read_by_account(const context& ctx,
                                     const boost::uuids::uuid& account_id,
                                     std::uint32_t limit_count,
                                     std::uint32_t offset_count) {
@@ -431,7 +564,8 @@ session_repository::read_by_account(context ctx,
 }
 
 std::vector<domain::session>
-session_repository::read_active_by_account(context ctx, const boost::uuids::uuid& account_id) {
+session_repository::read_active_by_account(const context& ctx,
+                                           const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("account_id"_c == account_id_str &&
@@ -446,7 +580,7 @@ session_repository::read_active_by_account(context ctx, const boost::uuids::uuid
         "Reading active sessions by account");
 }
 
-std::uint32_t session_repository::count_by_account(context ctx,
+std::uint32_t session_repository::count_by_account(const context& ctx,
                                                    const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = query_builder::read<std::vector<session_entity>>;
@@ -454,7 +588,7 @@ std::uint32_t session_repository::count_by_account(context ctx,
         ctx, query, "account_id"_c == account_id_str, lg(), "Counting sessions by account");
 }
 
-std::vector<domain::session> session_repository::read_all_active(context ctx) {
+std::vector<domain::session> session_repository::read_all_active(const context& ctx) {
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where(query_builder::is_null("end_time")) |
                        query_builder::order_by("start_time"_c.desc());

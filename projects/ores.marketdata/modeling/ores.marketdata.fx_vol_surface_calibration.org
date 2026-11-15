@@ -1,0 +1,354 @@
+:PROPERTIES:
+:ID: 1A88AD06-3C1A-4FAB-B3AD-D5CC95195D5F
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.fx_vol_surface_calibration
+#+description: The candidate one calibration of an FX volatility surface blueprint wrote at an as-of: the fitted parameters, the error of each pillar, the arbitrage the surface admits and the pillars it could not read.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags:
+#+entity_singular: fx_vol_surface_calibration
+#+entity_plural: fx_vol_surface_calibrations
+#+entity_title: Fx Vol Surface Calibration
+#+brief: The candidate of one FX volatility surface calibration and its checks.
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+A calibration fits a blueprint's smile model to the quotes its pillars read at an
+as-of, and writes the surface as observations of the blueprint's output series.
+Those observations are the candidate's grid. This record is what the
+calibration found beside them: the fitted parameters, how far each pillar's
+quote is from the surface, the arbitrage the surface admits, and the pillars
+no contributor quoted. They belong to one calibration, not to the blueprint,
+so they are held here, against the candidate, and the publish of the
+candidate reads them.
+
+The blueprint and the as-of are the natural key. A calibration of the same
+blueprint at the same as-of writes a new version of this record, so a rerun
+converges on one candidate and its history keeps the earlier fits.
+
+The three JSON arrays are the checks, in the shapes the calibrate reply uses.
+=pillar_fits= has one entry for each pillar that had a quote, naming its point,
+the weighted quote, the fitted volatility, the error and whether the error is
+beyond the tolerance. =violations= names each arbitrage condition the surface
+breaks, by kind and expiry. =missing_pillars= names each pillar no contributor
+quoted, with the series it read. The source series of each grid point, and the
+weight each carried, are in the point's =observation_lineage=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID identifying this record, derived from the blueprint and the as-of so a rerun names the same record.
+
+** blueprint_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+The =fx_vol_surface_blueprint= (in ores.refdata) the calibration followed.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:natural_key: true
+:sortable: true
+:END:
+
+The instant the calibration read its quotes and forwards at, and the instant its grid is dated.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The party that owns the blueprint, and so the surface.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** blueprint_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The version of the blueprint the calibration followed.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** output_series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The =market_series= the grid was written to, as observations at the as-of.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** forward_publish_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The published =fx_forward_publish= the calibration read its spot and forwards from.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** smile_model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The model fitted, such as =ssvi=.
+
+#+begin_src cpp :name generator
+std::string("ssvi")
+#+end_src
+
+** rho
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The fitted SSVI skew, shared by every expiry.
+
+#+begin_src cpp :name generator
+-0.3
+#+end_src
+
+** eta
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The fitted SSVI curvature level, shared by every expiry.
+
+#+begin_src cpp :name generator
+0.9
+#+end_src
+
+** gamma
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The fitted SSVI curvature power, shared by every expiry.
+
+#+begin_src cpp :name generator
+0.35
+#+end_src
+
+** converged
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the search stopped within its tolerance, with no expiry's ATM variance held at its bound.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** max_abs_error
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The largest absolute error of a pillar, in volatility.
+
+#+begin_src cpp :name generator
+0.0001
+#+end_src
+
+** pillars_beyond_tolerance
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many pillars are further from the surface than the tolerance.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** pillar_fits
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON array: for each quoted pillar its point, expiry, label, weighted quote, fitted volatility, error, and whether the error is beyond the tolerance.
+
+#+begin_src cpp :name generator
+std::string("[]")
+#+end_src
+
+** violations
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON array of the arbitrage conditions the surface breaks, each a kind (calendar or butterfly), an expiry and a description. Empty for a surface free of arbitrage.
+
+#+begin_src cpp :name generator
+std::string("[]")
+#+end_src
+
+** missing_pillars
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON array of the pillars no contributor quoted at the as-of, each its point and the series it read.
+
+#+begin_src cpp :name generator
+std::string("[]")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_fx_vol_surface_calibrations_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+The record is party-scoped, as the output series it describes is.
+
+** Checks
+
+| expression                                                   |
+|--------------------------------------------------------------|
+| "as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone |
+| "smile_model" <> ''                                          |
+| "max_abs_error" >= 0                                         |
+| "pillars_beyond_tolerance" >= 0                              |
+| jsonb_typeof("pillar_fits") = 'array'                        |
+| jsonb_typeof("violations") = 'array'                         |
+| jsonb_typeof("missing_pillars") = 'array'                    |
+
+** Indexes
+
+| name                                   | columns                                    | unique | current_only |
+|----------------------------------------+--------------------------------------------+--------+--------------|
+| fx_vol_surface_calibrations_blueprint  | tenant_id, blueprint_id, as_of desc        | false  | true         |
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calibration
+:entity_plural_short:   calibrations
+:entity_singular_words: FX volatility surface calibration
+:entity_plural_words:   FX volatility surface calibrations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| as_of         | As Of         |
+| smile_model   | Model         |
+| max_abs_error | Max Error     |
+| converged     | Converged     |
+
+* See also
+
+- [[id:E8B8D507-2113-476B-B6C2-BAECF35CCD79][ores.marketdata.fx_forward_publish]] -- the published forward set a calibration reads.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] -- the design this record serves.

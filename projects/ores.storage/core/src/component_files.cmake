@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "filesystem/archive_reader.cpp"
     "filesystem/archiver.cpp"
     "filesystem/local_store.cpp"
     "messaging/objects_handler.cpp"
@@ -30,6 +31,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/archive_reader.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/archiver.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/filesystem/local_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.core/messaging/objects_handler.hpp"

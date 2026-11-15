@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 459AB808-737A-4CA0-9BF1-955D629880B2
+:END:
+#+title: Task: Make each repeated request safe to repeat
+#+description: A retry is correct only when repeating the request changes nothing. Give each retried request a stable identity, have the step read the result an earlier attempt may have produced, and prove a repeat writes no second candidate or raises a second approval request.
+#+type: task
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bound-the-work-of-a-request-task
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A retried request carries the same identity as the attempt it repeats, so a service that already did the work recognises it. A step reads the effect of an attempt that timed out before it asks again, and no repeat writes a second candidate or raises a second approval request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- A repeated calibration keeps its as-of, so its calibration id and its observations are the same rows as the first attempt.
+- A step checks whether the work already happened before it asks again, and completes from the result it finds.
+- A repeat raises no second approval request.
+- A test proves a repeat of each retried request leaves the store unchanged.
+
+* Plan
+
+- Let a retried call be an operation, not only a request, so it can read what
+  an earlier attempt did before it acts again. =call_with_retry= takes the
+  operation; =request_with_retry= stays as the thin form for a request.
+- At each publish a step repeats, read the published state first: the surface
+  by blueprint and as-of, the forward set by pair and as-of, the curve by its
+  configuration. A publish already found answers for the work, so no second
+  approval request is raised.
+- Keep the calibration's as-of minted once per blueprint, so a repeat names
+  the same calibration id and the same observation rows.
+- Prove the identity with a test of =calibration_id_of=, and the lost-reply
+  repeat with a unit test where the first attempt writes and throws and the
+  second takes the result.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.iam.core.tests= | 348 cases, 346 passed; the 2 failures are the initial-admin database guard | =compass test run -- -R "ores.iam.core.tests"= | this branch |
+| The lost-reply repeat case | passes; the work happens once across 2 attempts | same | this branch |
+| The calibration identity case | passes; the id changes with the as-of | =compass test run -- -R "ores.marketdata.service.tests"= | this branch |
+| =ores.marketdata.service.tests= | 250 cases, 210 passed; the 40 failures are the environment's out-of-sync schema (=column "source_weights" does not exist=) | same | this branch |
+| Build of the iam targets | succeeded, 1 m 53 s | =compass build ores.iam.core.tests ores.iam.service.lib= | this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A retried call is now an operation rather than only a request.
+=call_with_retry= takes a callable, so a repeat can first read what an earlier
+attempt did; =request_with_retry= remains the thin form for a request whose
+repeat is safe as it stands.
+
+The three publish paths read the published state before they act again:
+
+- A surface, by blueprint and as-of, answers =get_published_fx_vol_surface=.
+  A published surface returns as the answer, so the repeat raises no second
+  request.
+- A forward set, by pair and as-of, answers =get_published_fx_forward=.
+- A curve, by its bootstrap configuration, answers =list_published_curves=.
+
+A calibration is identified by its blueprint and the as-of the step mints once
+per blueprint. A repeat therefore names the same calibration id, writes the
+same observation rows through the current-row unique index, and reads back as
+the same candidate. A test of =calibration_id_of= proves the id is a function
+of those two values and changes with the instant.
+
+The unit case "A repeat takes the result an earlier attempt already produced"
+models the lost reply: the first attempt writes and throws a timeout, the second
+reads what the first wrote and returns it. The work happens once across two
+attempts, and the test fails if it happens twice.
+
+The database-level repeat of a publish is not exercised here. This
+environment's schema is out of sync, so the marketdata suites that would write
+those rows cannot run clean. What is proven is the identity (a test of
+=calibration_id_of=) and the shape of the repeat (the unit case); a rerun on a
+recreated database is the check that closes it.
+
+- On a recreated database and a full build, =ores.marketdata.service.tests= passes in full: 250 of 250 (2026-11-13).
+
+The review round corrected the curve read back, which was the one of the three
+that could take work it had not done. It answered any set of its configuration
+at any as-of, so a second provisioning run found the first run's publish,
+reported it as its own and published nothing. It now answers the set whose as-of
+is the one the publish states, at the precision the store keeps, and it reads the
+candidate a raise of its own left behind: a repeat takes what it wrote and still
+raises no second request, and a new run publishes its own instant.
+
+The review round also stopped the read back running on the first attempt.
+=do_unless_already_done= states the rule once for all three publishes: the first
+attempt acts, because nothing an earlier attempt did is there to find, and a
+repeat reads first. Two cases hold it: the first attempt does not read back, and
+a repeat whose read back answers does not do the work again.
+
+The whole-table calendar write is repeated without a read, and the step now says
+why: the request extends each calendar from the watermark the store holds up to
+the year it names, so a second attempt finds those days and writes none again.

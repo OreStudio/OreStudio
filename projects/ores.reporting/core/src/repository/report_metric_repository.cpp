@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -135,79 +139,148 @@ report_metric_filter_condition(const std::optional<messaging::report_metrics_fil
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool report_metric_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using report_metric_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::report_metric>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+report_metric_rows_by_key report_metric_current_rows(report_metric_repository& repo,
+                                                     const ores::database::context& ctx,
+                                                     const std::vector<domain::report_metric>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    report_metric_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::report_metric>&
+report_metric_rows_of(const report_metric_rows_by_key& current, const domain::report_metric& item) {
+    static const std::vector<domain::report_metric> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-report_metric_repository::replace_claim(context ctx, const domain::report_metric& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+report_metric_replace_claim(const std::vector<domain::report_metric>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::report_metric report_metric_repository::apply_claim(
-    context ctx, const domain::report_metric& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::report_metric report_metric_apply_claim(const domain::report_metric& v,
+                                                const ores::utility::domain::precondition& claim,
+                                                const std::vector<domain::report_metric>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "report_metric_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "report_metric_repository::write: a current row already exists");
     return t;
 }
 
-void report_metric_repository::write(context ctx, const domain::report_metric& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_metric_repository::insert(context ctx, const domain::report_metric& v) {
+void report_metric_repository::write(const context& ctx, const domain::report_metric& v) {
+    write(ctx, v, report_metric_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void report_metric_repository::insert(const context& ctx, const domain::report_metric& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting report metric. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, report_metric_mapper::map(v), lg(), "Inserting report metric into database.");
 }
 
-void report_metric_repository::insert(context ctx, const std::vector<domain::report_metric>& v) {
+void report_metric_repository::insert(const context& ctx,
+                                      const std::vector<domain::report_metric>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting report metrics. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, report_metric_mapper::map(v), lg(), "Inserting report metrics into database.");
 }
 
-void report_metric_repository::write(context ctx, const std::vector<domain::report_metric>& v) {
+void report_metric_repository::write(const context& ctx,
+                                     const std::vector<domain::report_metric>& v) {
+    const auto current = report_metric_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(report_metric_replace_claim(report_metric_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void report_metric_repository::write(context ctx,
+void report_metric_repository::write(const context& ctx,
                                      const domain::report_metric& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report metric. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = report_metric_apply_claim(v,
+                                             claim,
+                                             report_metric_claim_reads_current(claim) ?
+                                                 read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                 std::vector<domain::report_metric>{});
     query_builder::execute_write_query(
         ctx, report_metric_mapper::map(t), lg(), "Writing report metric to database.");
 }
 
 void report_metric_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_metric>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report metrics. Count: " << v.size();
+    std::vector<domain::report_metric> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (report_metric_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = report_metric_current_rows(*this, ctx, to_read);
     std::vector<domain::report_metric> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            report_metric_apply_claim(v[i], claims[i], report_metric_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, report_metric_mapper::map(batch), lg(), "Writing report metrics to database.");
 }
 
-std::vector<domain::report_metric> report_metric_repository::read_latest(context ctx) {
+std::vector<domain::report_metric> report_metric_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_metric_entity>> |
@@ -222,7 +295,7 @@ std::vector<domain::report_metric> report_metric_repository::read_latest(context
         "Reading latest report metrics");
 }
 
-std::vector<domain::report_metric> report_metric_repository::read_latest(context ctx,
+std::vector<domain::report_metric> report_metric_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report metric. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -240,7 +313,7 @@ std::vector<domain::report_metric> report_metric_repository::read_latest(context
 }
 
 
-std::vector<domain::report_metric> report_metric_repository::read_all(context ctx,
+std::vector<domain::report_metric> report_metric_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report metric versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -258,7 +331,7 @@ std::vector<domain::report_metric> report_metric_repository::read_all(context ct
 
 
 report_metric_repository::remove_status report_metric_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report metric. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -277,12 +350,12 @@ report_metric_repository::remove_status report_metric_repository::remove(
     return remove_status::removed;
 }
 
-void report_metric_repository::remove(context ctx, const std::string& id) {
+void report_metric_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_metric>
-report_metric_repository::read_latest(context ctx,
+report_metric_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -307,7 +380,7 @@ report_metric_repository::read_latest(context ctx,
 }
 
 std::uint32_t report_metric_repository::get_total_metric_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::report_metrics_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report metric count";
@@ -326,9 +399,24 @@ std::uint32_t report_metric_repository::get_total_metric_count(
 }
 
 std::vector<domain::report_metric>
-report_metric_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_metric_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::report_metric> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -343,7 +431,7 @@ report_metric_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void report_metric_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_metric_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

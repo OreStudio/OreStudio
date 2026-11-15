@@ -234,7 +234,7 @@ rows, as an equity position's are.
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_instrument_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"instrument", &bond_instrument_data::instrument},
         utility::codec::field{"issue", &bond_instrument_data::issue},
         utility::codec::field{"call_dates", &bond_instrument_data::call_dates},

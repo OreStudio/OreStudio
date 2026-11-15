@@ -23,9 +23,10 @@
 #include "feed_kind_registry.hpp"
 #include "feed_run_control.hpp"
 #include "generator_fleet.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -65,17 +66,17 @@ public:
     feed_selection_handler(ores::nats::service::client& nats,
                            generator_fleet& generators,
                            ores::nats::service::nats_client& auth_nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier,
                            const feed_kind_registry& registry,
-                           ores::analytics::quant::service::tick_scheduler& scheduler)
+                           ores::analytics::quant::service::run_market& market)
         : nats_(nats)
         , generators_(generators)
         , auth_nats_(auth_nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , registry_(registry)
-        , scheduler_(scheduler) {}
+        , market_(market) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::synthetic::messaging;
@@ -135,7 +136,7 @@ private:
             const auto label = std::to_string(wanted.size()) + " selected feeds";
             if (starting) {
                 const ores::synthetic::feed::feed_build_context build{
-                    .nats = nats_, .auth_nats = auth_nats_, .scheduler = scheduler_};
+                    .nats = nats_, .auth_nats = auth_nats_, .market = market_};
                 const auto outcome = start_feeds(
                     registry_,
                     generators_,
@@ -177,7 +178,7 @@ private:
     matching_ids(const ores::database::context& ctx,
                  const ores::synthetic::feed::feed_filter& filter) const {
         const auto running = generators_.running_source_names();
-        const auto rows = ores::database::repository::execute_raw_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
             ctx,
             "select id from (" + ores::synthetic::feed::feeds_query() + ") f where " +
                 ores::synthetic::feed::where_clause(
@@ -198,7 +199,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;
-    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    ores::analytics::quant::service::run_market& market_;
 };
 
 }

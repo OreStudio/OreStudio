@@ -18,13 +18,34 @@
  *
  */
 #include "ores.http.api/net/router.hpp"
+#include <algorithm>
 #include <sstream>
+#include <string_view>
+#include <vector>
 
 namespace ores::http::net {
 
 using namespace ores::logging;
 
 namespace {
+
+/**
+ * @brief A pattern's standing against another that matches the same path: one
+ * entry per segment, a literal ranked above a parameter. Compared in order, so
+ * the first segment that differs decides, and a longer pattern beats its prefix.
+ */
+std::vector<int> specificity_of(const std::string& pattern) {
+    std::vector<int> rank;
+    std::size_t start = 0;
+    while (start <= pattern.size()) {
+        const auto end = std::min(pattern.find('/', start), pattern.size());
+        const auto segment = std::string_view(pattern).substr(start, end - start);
+        if (!segment.empty())
+            rank.push_back(segment.front() == '{' ? 1 : 2);
+        start = end + 1;
+    }
+    return rank;
+}
 
 /**
  * @brief Converts a path pattern like "/users/{id}" to a regex and extracts param names.
@@ -136,6 +157,11 @@ route_builder& route_builder::max_body(std::uint64_t bytes) {
     return *this;
 }
 
+route_builder& route_builder::rate_limit(std::string_view policy) {
+    rate_policy_ = std::string(policy);
+    return *this;
+}
+
 route_builder& route_builder::sink(
     std::function<std::unique_ptr<domain::body_sink>(const domain::http_request&)> factory) {
     sink_ = std::move(factory);
@@ -196,6 +222,7 @@ domain::route route_builder::build() const {
     r.query_params = query_params_;
     r.sink = sink_;
     r.max_body_size = max_body_size_;
+    r.rate_policy = rate_policy_;
     r.body_schema = body_schema_;
     r.success_response_schema = success_response_schema_;
     return r;
@@ -238,6 +265,7 @@ void router::add_route(const domain::route& route) {
     BOOST_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
                               << route.pattern;
     routes_.push_back(route);
+    ranks_.push_back(specificity_of(route.pattern));
 }
 
 std::optional<domain::route>
@@ -248,19 +276,38 @@ router::match(domain::http_method method,
     BOOST_LOG_SEV(lg(), trace) << "Matching path: " << path
                                << " method: " << static_cast<int>(method);
 
-    for (const auto& route : routes_) {
-        if (route.method != method) {
+    /*
+     * A path two patterns match goes to the more specific one, as the BFF's
+     * framework sent it: a literal segment beats a parameter at the first place
+     * they differ, so /parties/children never reaches /parties/{id}. Order of
+     * registration decides only between patterns of equal standing.
+     */
+    const domain::route* best = nullptr;
+    const std::vector<int>* best_rank = nullptr;
+    std::unordered_map<std::string, std::string> best_params;
+    std::unordered_map<std::string, std::string> params;
+    for (std::size_t i = 0; i < routes_.size(); ++i) {
+        const auto& route = routes_[i];
+        if (route.method != method)
             continue;
-        }
-
-        if (route.match(path, path_params)) {
-            BOOST_LOG_SEV(lg(), trace) << "Matched route: " << route.pattern;
-            return route;
+        params.clear();
+        if (!route.match(path, params))
+            continue;
+        if (best == nullptr || ranks_[i] > *best_rank) {
+            best = &route;
+            best_rank = &ranks_[i];
+            std::swap(best_params, params);
         }
     }
 
-    BOOST_LOG_SEV(lg(), trace) << "No matching route found for: " << path;
-    return std::nullopt;
+    if (best == nullptr) {
+        BOOST_LOG_SEV(lg(), trace) << "No matching route found for: " << path;
+        return std::nullopt;
+    }
+    BOOST_LOG_SEV(lg(), trace) << "Matched route: " << best->pattern;
+    for (auto& [name, value] : best_params)
+        path_params[name] = std::move(value);
+    return *best;
 }
 
 }

@@ -69,9 +69,10 @@ struct storage_grant final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<storage_grant>) {
-    return std::tuple{utility::codec::field{"bucket", &storage_grant::bucket},
-                      utility::codec::field{"key_prefix", &storage_grant::key_prefix},
-                      utility::codec::field{"op", &storage_grant::op}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"bucket", &storage_grant::bucket},
+        utility::codec::field{"key_prefix", &storage_grant::key_prefix},
+        utility::codec::field{"op", &storage_grant::op}};
 }
 static_assert(utility::codec::names_every_member<storage_grant>());
 

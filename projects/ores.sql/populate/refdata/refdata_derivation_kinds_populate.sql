@@ -47,7 +47,10 @@ values
      3, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds'),
     (ores_utility_system_tenant_id_fn(), 'FX_VOL_DERIVATION', 0, 'FX Volatility Derivation',
      'Series produced by deriving FX option volatility quotes from the history of public FX fixings.',
-     4, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds')
+     4, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds'),
+    (ores_utility_system_tenant_id_fn(), 'FX_VOL_SURFACE_CALIBRATION', 0, 'FX Volatility Surface Calibration',
+     'Series produced by calibrating a smile model to the FX option quotes a surface blueprint names.',
+     5, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

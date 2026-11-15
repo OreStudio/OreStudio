@@ -53,7 +53,7 @@ struct node {
 };
 
 /// The node the identity and the coordinates name, or the reason they name none.
-std::expected<node, std::string> locate(ores::database::context ctx,
+std::expected<node, std::string> locate(const ores::database::context& ctx,
                                         const messaging::resolve_series_identity_request& identity,
                                         const std::vector<std::string>& coordinates) {
     using namespace ores::marketdata::datum;
@@ -113,7 +113,7 @@ bool is_number(const std::string& text) {
 }
 
 messaging::key_manual_point_response
-manual_point_service::key(ores::database::context ctx,
+manual_point_service::key(const ores::database::context& ctx,
                           const messaging::key_manual_point_request& request,
                           std::chrono::system_clock::time_point now) {
     messaging::key_manual_point_response response;
@@ -148,7 +148,7 @@ manual_point_service::key(ores::database::context ctx,
 }
 
 messaging::clear_manual_point_response
-manual_point_service::clear(ores::database::context ctx,
+manual_point_service::clear(const ores::database::context& ctx,
                             const messaging::clear_manual_point_request& request) {
     messaging::clear_manual_point_response response;
     const auto at = locate(ctx, request.identity, request.coordinates);

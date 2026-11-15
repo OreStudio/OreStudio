@@ -75,6 +75,7 @@ that happens to hold the model.
 * Dependencies
 
 - =ores.http.api= -- the router, the route builder, the OpenAPI registry and
+- =ores.http.nats= -- the gateway's one forwarding step to the services.
   the request/response types.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.synthetic.api= -- the canonical protocol messages the units send.
@@ -95,6 +96,7 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.logging.lib
     PRIVATE
+        ores.http.nats.lib
         ores.synthetic.api.lib
         ores.utility.lib)
 #+end_src

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0721569D-CBEF-4779-8726-F62A7179D567
+:END:
+#+title: Story: Hotfix: Clear the Windows, GCC and test breakages CI now reports
+#+description: CI reports a Windows export collision, a GCC name collision and a set of failing tests.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:hotfix:build:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Clear the four breakages CI reports on main: the Windows export collision, the
+GCC 16 name collision, the banxico test that the environment lookup change
+broke, and the PostgreSQL build that fails our queries.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | All four fixes are written and the image builds. |
+| Waiting on    | The next nightly and continuous runs.  |
+| Next          | Confirm each platform, then close.     |
+| Last touched  | 2026-11-14                               |
+
+* Acceptance
+
+- The Windows builds compile =context.hpp=.
+- The GCC build compiles =curve_routes.cpp=.
+- =ores.marketdata.official.tests= passes.
+- =ores.marketdata.core.tests= passes on the image.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ADB5B95A-170D-48EF-ADE5-5D8846115333][Scaffold story: Hotfix: Clear the Windows, GCC and test breakages CI now reports]] | DONE | 2026-11-14 | 2026-11-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A65EA574-2943-4847-AB76-301F7A16B975][Implement Hotfix: Clear the Windows, GCC and test breakages CI now reports]] | DONE | | 2026-11-14 | Initial task for: Hotfix: Clear the Windows, GCC and test breakages CI now reports |
+
+* Decisions
+
+* Out of scope
+
+-

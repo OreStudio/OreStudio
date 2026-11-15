@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 7DBBB2FC-D11E-4CE9-AF65-F8AC3C39964A
+:END:
+#+title: Task: Derive the volatility grid in one pass, in memory
+#+description: The derived source computes a volatility quote by scanning the same window of returns again for every expiry of every day, one day at a time across a service boundary, and stores ten years of it per tenant. The data is a hundred megabytes and the arithmetic is a few hundred million floating point operations. Replace the per-day, per-expiry walk with a prefix-sum pass over in-memory arrays that fills the whole grid at once, derive only the as-of day by default, and materialise history in bulk only when a vintage is being built.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:quant:volatility:surfaces:performance:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/derive-the-volatility-grid-in-one-pass
+#+pr: 4750
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One pass over the fixings fills the whole volatility grid in memory in under a second, the feed derives only the as-of day, and a historical vintage is one bulk write rather than a per-day crawl.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The derivation is a pure function over flat arrays: returns and four prefix sums per pair, then per day and expiry a constant-time moment lookup, the shrink, the Gram-Charlier clamp and the five labels.
+- The feed derives the newest days of the sample and publishes them in the same tick shape it does today, and a second pass over the same days writes nothing. The tail is five days rather than the as-of day alone, so a day that arrives twice owes nothing twice.
+- A separate operation materialises a whole history: the same function over the full day range, written with one bulk copy. *Not done here*: no such operation exists yet, and a model or window change leaves the stored days in place. Captured in the backlog as the derived source failing to warm a tenant inside the blueprint step's wait.
+- The grid the old walk produced and the grid the pass produces agree, expiry by expiry, to a level of 1e-12 and a wing margin of 1e-9.
+- A provisioning run of a fresh tenant completes the blueprint and surface steps with 39 pairs and a 10Y grid. *Moved* to the sizing story's task that publishes every pair out to the horizon its data allows: it needs the horizon, the per-party derivation and the calibration's tolerance, and this branch changes neither the ladder nor the catalogue, so what provisioning publishes is what main publishes.
+
+* Plan
+
+**Why
+
+Measured on a provisioned environment with a ten-year fixing history: 301,743 fixing rows over
+141 series, and a derived grid of 39 pairs x 2,600 business days x 13 expiries x 5 labels =
+**6.59 million quotes**. The derivation walks that grid one day at a time, through the service
+boundary, and for each of a day's 13 expiries it scans the same trailing window of returns
+again -- 2,520 values for the 10Y expiry. That is the shape to replace, not the arithmetic.
+
+**The data fits in memory**
+
+| What | Size |
+|------|------|
+| Fixings, ten years, 141 series | 301,743 rows, about 2.4 MB as values plus day indices |
+| Returns, 39 pairs | 101,400 doubles, about 0.8 MB |
+| The whole derived grid | 6.59 M quotes, about 53 MB at 8 bytes each |
+| Per-pair workspace: returns and four prefix sums | 104 KB, so 4 MB for every pair |
+
+**The one pass**
+
+Per pair, once: align the two legs' fixing series by date, take daily log returns, and build four
+prefix-sum arrays -- of x, x squared, x cubed, x to the fourth. A window's mean, variance,
+skewness and excess kurtosis are then four subtractions and a few multiplies, however long the
+window is. Today each (day, expiry) pair rescans its window, about 3.3 billion operations for the
+full history; the prefix sums make it about 6.5 million.
+
+Then per (day, expiry): the shrink toward the prior, the clamp into the Gram-Charlier region, the
+smile inversion, and the five labels -- ATM, 25RR, 25BF, 10RR, 10BF. About 200 floating point
+operations each, 1.3 million of them.
+
+**Where it lives**
+
+- =quant=: =derive_history(returns, expiries, settings, out)= over flat arrays -- a pure function,
+  no allocation, no I/O, the one definition of the model. The existing derivation tests move onto
+  it; =realised_volatility='s per-expiry window walk goes, or becomes a thin wrapper, because one
+  mechanism producing one answer is the rule this arc established.
+- =synthetic=: the feed derives the **as-of day only** by default, into a one-day buffer -- 2,535
+  quotes, microseconds -- and publishes it in the tick shape it publishes today. No history walk,
+  no round trips.
+- A separate, explicit operation materialises a whole history: the same function over the full day
+  range into the 53 MB buffer, then a bulk copy. That is the only path that ever writes 6.6
+  million rows, it runs when a vintage is built rather than when a tenant is provisioned, and it
+  is what makes a DQ-seeded window possible.
+
+**Layout**
+
+#+begin_src cpp
+std::vector<double> fixing_values;          // [series][day]
+std::vector<int32_t> fixing_day;            // day index, for the join
+std::vector<double> returns;                // [day], reused per pair
+std::array<std::vector<double>, 4> sums;    // prefix sums, n + 1 each
+std::vector<double> quotes;                 // [pair][day][expiry][label], flat
+#+end_src
+
+The loop is =for pair -> returns once -> prefix sums once -> for day -> for expiry -> moments,
+smile, five labels=. Pairs are independent, so a chunk-by-pair mode bounds memory if the pair
+count grows, and the whole thing parallelises without changing the shape.
+
+**Estimates, not measurements**
+
+Load about 100 ms (query-bound), returns and prefix sums under 10 ms, 1.3 M evaluations at
+0.1-0.3 s scalar, the 53 MB buffer about 10 ms, and a bulk copy of 6.6 M rows 10-30 s. The
+estimates come from the volumes and operation counts above; a benchmark is not a precondition for
+building this, but the task should end with one so the numbers become facts.
+
+**What it unblocks**
+
+[[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][Surface every pair the ladder carries, out to ten
+years]] cannot provision today: the blueprint step waits minutes while the derived source derives
+ten years of history for its tenant. See
+[[id:002F8F0F-2429-4838-864D-5B29DB571CBF][the captured blocker]]. This task is the fix.
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The fixing history the derivation reads | 301,743 rows, 141 series, 2016-11-16 to 2026-11-13 | =select count(*), count(distinct series_id) from ores_marketdata_market_fixings_tbl= | =9271370767= |
+| The grid the current walk derives | 6.59 M quotes: 39 pairs x 2,600 days x 13 expiries x 5 labels | counted from the catalogue and the fixing window | =9271370767= |
+| Its measured write rate | about 106 quotes per second, so hours for one tenant | observations counted twice, 120 s apart, on a stuck provisioning run | =9271370767= |
+
+* Notes
+
+* Notes
+
+The model itself does not change. This task moves where it runs and how much of the grid it
+computes at once: the shrink, the Gram-Charlier clamp, the smile inversion and the settings are
+the ones the derivation has today, and the grid a fixture already covers is what proves the pass
+agrees with the walk.
+
+The feed's default becomes the as-of day, which is also what its own comment already claims it
+does -- "it publishes the current day only and never a past one, since a past day is computed
+again from the fixings when it is needed". Today a fresh store makes that claim false: it derives
+every day it does not hold, and on a fresh database that is the whole history.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4750][#4750]] | [quant,synthetic] Derive the volatility grid in one pass |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The derivation is one pass over flat arrays. `derive_grid` in
+ores.analytics.quant takes the pair's returns and the expiries and fills
+the whole grid: prefix sums of x, x squared, x cubed and x to the fourth
+give every day's window moments in constant time, then the shrink, the
+Gram-Charlier clamp and the five labels follow per cell. A cell is left
+unquoted where the window does not fit, where fewer than four returns are
+available, or where the smile has no positive spread.
+
+The feed asks for the newest days rather than the whole sample.
+`derive_missing_days` fills the grid once and emits the last
+`newest_days` days that the store does not already hold, and the feed
+keeps a five-day tail: a second pass over the same days writes nothing,
+and a day that arrives twice owes nothing twice.
+
+Measured on this environment, a full 39-pair pass:
+
+- `Kept the derived history of 39 pair(s) in 1.8s: 0 day(s) written, 2 failure(s)`, the two failures being USD/CLP and USD/COP, whose fixings the ECB does not publish.
+- Ten point seven seconds for the pass that also read the fixings and the stored days of every pair.
+- A repeat pass writes zero days.
+
+The grid agrees with the day-at-a-time model cell for cell: a test derives
+600 skewed returns over six expiries both ways and matches the level to
+1e-12 and the wings to 1e-9, the wing margin being the difference of two
+butterflies of about six per cent volatility. `ores.analytics.quant.tests`
+and `ores.synthetic.api.tests` pass, 1018 cases between them.
+
+What this deliberately does not do: it does not materialise a whole
+history in one operation, and it does not change the ladder or the
+catalogue, so what provisioning publishes is unchanged. Both belong to
+the sizing story.

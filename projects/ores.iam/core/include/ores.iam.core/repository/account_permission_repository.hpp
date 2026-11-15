@@ -52,7 +52,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit account_permission_repository(context ctx);
+    explicit account_permission_repository(const context& ctx);
 
     /**
      * @brief Gets all effective permission codes for an account in a single query.

@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_PUBLISHED_CURVE_READER_HPP
 #define ORES_MARKETDATA_SERVICE_APP_PUBLISHED_CURVE_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 
 namespace ores::marketdata::service::app {

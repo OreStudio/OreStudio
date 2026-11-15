@@ -1,0 +1,2 @@
+# Recorded generated trades that differ after they are read back and written again,
+# by type and path. A family's builder task removes its lines; the test fails on any change.

@@ -1,0 +1,7 @@
+# A trader of ACCOUK reads ACCOUS's EURUSD_SSVI surface, and is refused: a read
+# returns only the session party's surfaces. Run with BLUEPRINT (ACCOUS's) and LATE set.
+connect $ORES_NATS_URL
+
+login diane.kay@acme_corporation Secure-Password-123
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${LATE}
+logout

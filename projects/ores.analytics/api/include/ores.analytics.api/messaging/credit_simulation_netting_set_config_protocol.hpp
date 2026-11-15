@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"netting_set_id",
                               &credit_simulation_netting_set_config_key::netting_set_id},
     };
@@ -447,7 +447,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &credit_simulation_netting_set_config_write::id},
         utility::codec::field{
             "credit_simulation_config_id",
@@ -468,7 +468,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &credit_simulation_netting_set_config_change::write},
         utility::codec::field{"precondition",
                               &credit_simulation_netting_set_config_change::precondition},
@@ -485,7 +485,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &credit_simulation_netting_set_config_removal::key},
         utility::codec::field{"precondition",
                               &credit_simulation_netting_set_config_removal::precondition},
@@ -502,7 +502,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &credit_simulation_netting_set_config_lookup::key},
         utility::codec::field{
             "credit_simulation_netting_set_config",
@@ -520,7 +520,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "credit_simulation_config_id",
             &credit_simulation_netting_set_configs_filter::credit_simulation_config_id},
@@ -542,7 +542,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_configs_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &credit_simulation_netting_set_config_event::event_id},
         utility::codec::field{"key", &credit_simulation_netting_set_config_event::key},
         utility::codec::field{"action", &credit_simulation_netting_set_config_event::action},
@@ -564,7 +564,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"credit_simulation_netting_set_config",
                               &credit_simulation_netting_set_config_version_key::
                                   credit_simulation_netting_set_config},
@@ -583,7 +583,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_version_key>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_netting_set_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &credit_simulation_netting_set_config_versions_filter::version},
         utility::codec::field{"from_version",
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<credit_simulation_netting_set_config_versions_fil
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_netting_set_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset",
                               &list_credit_simulation_netting_set_configs_request::offset},
         utility::codec::field{"limit", &list_credit_simulation_netting_set_configs_request::limit},
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<list_credit_simulation_netting_set_configs_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_netting_set_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_credit_simulation_netting_set_configs_response::result},
         utility::codec::field{"netting_sets",
@@ -643,7 +643,7 @@ wire_fields(std::type_identity<list_credit_simulation_netting_set_configs_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_netting_set_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_credit_simulation_netting_set_config_request::key},
     };
 }
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<get_credit_simulation_netting_set_config_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_netting_set_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_credit_simulation_netting_set_config_response::result},
         utility::codec::field{"credit_simulation_netting_set_config",
                               &get_credit_simulation_netting_set_config_response::
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<get_credit_simulation_netting_set_config_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_credit_simulation_netting_set_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys",
                               &get_many_credit_simulation_netting_set_configs_request::keys},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<get_many_credit_simulation_netting_set_configs_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_credit_simulation_netting_set_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_credit_simulation_netting_set_configs_response::result},
         utility::codec::field{"entries",
@@ -710,7 +710,7 @@ wire_fields(std::type_identity<get_many_credit_simulation_netting_set_configs_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_credit_simulation_netting_set_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_credit_simulation_netting_set_config_request::change},
         utility::codec::field{"intent", &put_credit_simulation_netting_set_config_request::intent},
     };
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<put_credit_simulation_netting_set_config_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_credit_simulation_netting_set_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_credit_simulation_netting_set_config_response::result},
         utility::codec::field{"credit_simulation_netting_set_config",
                               &put_credit_simulation_netting_set_config_response::
@@ -744,7 +744,7 @@ wire_fields(std::type_identity<put_credit_simulation_netting_set_config_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_credit_simulation_netting_set_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_credit_simulation_netting_set_configs_request::changes},
         utility::codec::field{"intent",
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<put_many_credit_simulation_netting_set_configs_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_credit_simulation_netting_set_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_credit_simulation_netting_set_configs_response::result},
         utility::codec::field{
@@ -780,7 +780,7 @@ wire_fields(std::type_identity<put_many_credit_simulation_netting_set_configs_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_credit_simulation_netting_set_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_credit_simulation_netting_set_config_request::removal},
         utility::codec::field{"intent",
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<delete_credit_simulation_netting_set_config_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_credit_simulation_netting_set_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_credit_simulation_netting_set_config_response::result},
     };
@@ -814,7 +814,7 @@ wire_fields(std::type_identity<delete_credit_simulation_netting_set_config_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_credit_simulation_netting_set_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_credit_simulation_netting_set_configs_request::removals},
         utility::codec::field{"intent",
@@ -832,7 +832,7 @@ wire_fields(std::type_identity<delete_many_credit_simulation_netting_set_configs
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_credit_simulation_netting_set_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_credit_simulation_netting_set_configs_response::result},
     };
@@ -850,7 +850,7 @@ wire_fields(std::type_identity<delete_many_credit_simulation_netting_set_configs
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<
             list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "credit_simulation_config_id",
             &list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_request::
@@ -890,7 +890,7 @@ wire_fields(std::type_identity<
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<
             list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_response::
@@ -916,7 +916,7 @@ wire_fields(std::type_identity<
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_netting_set_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_credit_simulation_netting_set_config_versions_request::key},
         utility::codec::field{"offset",
@@ -940,7 +940,7 @@ wire_fields(std::type_identity<list_credit_simulation_netting_set_config_version
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_netting_set_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_credit_simulation_netting_set_config_versions_response::result},
         utility::codec::field{
@@ -960,7 +960,7 @@ wire_fields(std::type_identity<list_credit_simulation_netting_set_config_version
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_netting_set_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &get_credit_simulation_netting_set_config_version_request::key},
     };
@@ -976,7 +976,7 @@ wire_fields(std::type_identity<get_credit_simulation_netting_set_config_version_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_netting_set_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_credit_simulation_netting_set_config_version_response::result},
         utility::codec::field{"version",

@@ -20,7 +20,7 @@
 #ifndef ORES_TESTING_PUBLISH_HELPER_HPP
 #define ORES_TESTING_PUBLISH_HELPER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.testing/export.hpp"
 #include <string>
 

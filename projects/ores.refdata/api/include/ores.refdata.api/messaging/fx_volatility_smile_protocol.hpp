@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_volatility_smile_key::id},
     };
 }
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_volatility_smile_write::id},
         utility::codec::field{"fx_volatility_config_id",
                               &fx_volatility_smile_write::fx_volatility_config_id},
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &fx_volatility_smile_change::write},
         utility::codec::field{"precondition", &fx_volatility_smile_change::precondition},
     };
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_volatility_smile_removal::key},
         utility::codec::field{"precondition", &fx_volatility_smile_removal::precondition},
     };
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_volatility_smile_lookup::key},
         utility::codec::field{"fx_volatility_smile",
                               &fx_volatility_smile_lookup::fx_volatility_smile},
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smiles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &fx_volatility_smiles_filter::id_one_of},
     };
 }
@@ -475,7 +475,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_volatility_smile_event::event_id},
         utility::codec::field{"key", &fx_volatility_smile_event::key},
         utility::codec::field{"action", &fx_volatility_smile_event::action},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_volatility_smile",
                               &fx_volatility_smile_version_key::fx_volatility_smile},
         utility::codec::field{"version", &fx_volatility_smile_version_key::version},
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_volatility_smile_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_volatility_smile_versions_filter::version},
         utility::codec::field{"from_version", &fx_volatility_smile_versions_filter::from_version},
         utility::codec::field{"to_version", &fx_volatility_smile_versions_filter::to_version},
@@ -526,7 +526,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fx_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_volatility_smiles_request::offset},
         utility::codec::field{"limit", &list_fx_volatility_smiles_request::limit},
         utility::codec::field{"order", &list_fx_volatility_smiles_request::order},
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fx_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_volatility_smiles_response::result},
         utility::codec::field{"fx_volatility_smiles",
                               &list_fx_volatility_smiles_response::fx_volatility_smiles},
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_volatility_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_volatility_smile_request::key},
     };
 }
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_volatility_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_volatility_smile_response::result},
         utility::codec::field{"fx_volatility_smile",
                               &get_fx_volatility_smile_response::fx_volatility_smile},
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_volatility_smi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_volatility_smiles_request::keys},
     };
 }
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<get_many_fx_volatility_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_volatility_smiles_response::result},
         utility::codec::field{"entries", &get_many_fx_volatility_smiles_response::entries},
     };
@@ -622,7 +622,7 @@ wire_fields(std::type_identity<get_many_fx_volatility_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_volatility_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_fx_volatility_smile_request::change},
         utility::codec::field{"intent", &put_fx_volatility_smile_request::intent},
     };
@@ -637,7 +637,7 @@ wire_fields(std::type_identity<get_many_fx_volatility_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_volatility_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_fx_volatility_smile_response::result},
         utility::codec::field{"fx_volatility_smile",
                               &put_fx_volatility_smile_response::fx_volatility_smile},
@@ -654,7 +654,7 @@ wire_fields(std::type_identity<get_many_fx_volatility_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_fx_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_fx_volatility_smiles_request::changes},
         utility::codec::field{"intent", &put_many_fx_volatility_smiles_request::intent},
     };
@@ -670,7 +670,7 @@ wire_fields(std::type_identity<put_many_fx_volatility_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_fx_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_fx_volatility_smiles_response::result},
         utility::codec::field{"fx_volatility_smiles",
                               &put_many_fx_volatility_smiles_response::fx_volatility_smiles},
@@ -686,7 +686,7 @@ wire_fields(std::type_identity<put_many_fx_volatility_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_fx_volatility_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_fx_volatility_smile_request::removal},
         utility::codec::field{"intent", &delete_fx_volatility_smile_request::intent},
     };
@@ -701,7 +701,7 @@ wire_fields(std::type_identity<put_many_fx_volatility_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_fx_volatility_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_fx_volatility_smile_response::result},
     };
 }
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<put_many_fx_volatility_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_fx_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_fx_volatility_smiles_request::removals},
         utility::codec::field{"intent", &delete_many_fx_volatility_smiles_request::intent},
     };
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_many_fx_volatility_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_fx_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_fx_volatility_smiles_response::result},
     };
 }
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_many_fx_volatility_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_volatility_smile_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_volatility_smile_versions_request::key},
         utility::codec::field{"offset", &list_fx_volatility_smile_versions_request::offset},
         utility::codec::field{"limit", &list_fx_volatility_smile_versions_request::limit},
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<list_fx_volatility_smile_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_volatility_smile_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_volatility_smile_versions_response::result},
         utility::codec::field{"versions", &list_fx_volatility_smile_versions_response::versions},
         utility::codec::field{"total", &list_fx_volatility_smile_versions_response::total},
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<list_fx_volatility_smile_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_volatility_smile_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_volatility_smile_version_request::key},
     };
 }
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<get_fx_volatility_smile_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_volatility_smile_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_volatility_smile_version_response::result},
         utility::codec::field{"version", &get_fx_volatility_smile_version_response::version},
     };

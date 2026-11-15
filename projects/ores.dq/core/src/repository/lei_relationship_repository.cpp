@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/lei_relationship_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/lei_relationship.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -101,54 +105,118 @@ std::optional<query_builder::condition> lei_relationship_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool lei_relationship_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using lei_relationship_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::lei_relationship>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+lei_relationship_rows_by_key
+lei_relationship_current_rows(lei_relationship_repository& repo,
+                              const ores::database::context& ctx,
+                              const std::vector<domain::lei_relationship>& of) {
+    std::vector<std::string> relationship_start_node_node_ids;
+    relationship_start_node_node_ids.reserve(of.size());
+    for (const auto& row : of) {
+        relationship_start_node_node_ids.push_back(row.relationship_start_node_node_id);
+    }
+    lei_relationship_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, relationship_start_node_node_ids))
+        current[std::make_tuple(item.relationship_start_node_node_id)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::lei_relationship>&
+lei_relationship_rows_of(const lei_relationship_rows_by_key& current,
+                         const domain::lei_relationship& item) {
+    static const std::vector<domain::lei_relationship> none;
+    const auto found = current.find(std::make_tuple(item.relationship_start_node_node_id));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-lei_relationship_repository::replace_claim(context ctx, const domain::lei_relationship& v) {
-    const auto current = read_latest(ctx, v.relationship_start_node_node_id);
+lei_relationship_replace_claim(const std::vector<domain::lei_relationship>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::lei_relationship
-lei_relationship_repository::apply_claim(context ctx,
-                                         const domain::lei_relationship& v,
-                                         const ores::utility::domain::precondition& claim) {
+lei_relationship_apply_claim(const domain::lei_relationship& v,
+                             const ores::utility::domain::precondition& claim,
+                             const std::vector<domain::lei_relationship>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "lei_relationship_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, v.relationship_start_node_node_id).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "lei_relationship_repository::write: a current row already exists");
     return t;
 }
 
-void lei_relationship_repository::write(context ctx, const domain::lei_relationship& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void lei_relationship_repository::write(context ctx,
+void lei_relationship_repository::write(const context& ctx, const domain::lei_relationship& v) {
+    write(ctx,
+          v,
+          lei_relationship_replace_claim(read_latest(ctx, v.relationship_start_node_node_id)));
+}
+
+void lei_relationship_repository::write(const context& ctx,
                                         const std::vector<domain::lei_relationship>& v) {
+    const auto current = lei_relationship_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(lei_relationship_replace_claim(lei_relationship_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void lei_relationship_repository::write(context ctx,
+void lei_relationship_repository::write(const context& ctx,
                                         const domain::lei_relationship& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI relationship. "
                                << "relationship_start_node_node_id: "
                                << v.relationship_start_node_node_id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        lei_relationship_apply_claim(v,
+                                     claim,
+                                     lei_relationship_claim_reads_current(claim) ?
+                                         read_latest(ctx, v.relationship_start_node_node_id) :
+                                         std::vector<domain::lei_relationship>{});
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(lei_relationship_mapper::map(t)),
@@ -157,14 +225,21 @@ void lei_relationship_repository::write(context ctx,
 }
 
 void lei_relationship_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::lei_relationship>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI relationships. Count: " << v.size();
+    std::vector<domain::lei_relationship> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (lei_relationship_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = lei_relationship_current_rows(*this, ctx, to_read);
     std::vector<domain::lei_relationship> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            lei_relationship_apply_claim(v[i], claims[i], lei_relationship_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(lei_relationship_mapper::map(batch)),
@@ -172,7 +247,7 @@ void lei_relationship_repository::write(
         "Writing LEI relationships to database.");
 }
 
-std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(context ctx) {
+std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
                        query_builder::order_by("relationship_start_node_node_id"_c);
 
@@ -185,7 +260,7 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(c
 }
 
 std::vector<domain::lei_relationship>
-lei_relationship_repository::read_latest(context ctx,
+lei_relationship_repository::read_latest(const context& ctx,
                                          const std::string& relationship_start_node_node_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI relationship. "
                                << "relationship_start_node_node_id: "
@@ -204,7 +279,7 @@ lei_relationship_repository::read_latest(context ctx,
 
 
 std::vector<domain::lei_relationship>
-lei_relationship_repository::read_all(context ctx,
+lei_relationship_repository::read_all(const context& ctx,
                                       const std::string& relationship_start_node_node_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all LEI relationship versions. "
                                << "relationship_start_node_node_id: "
@@ -224,7 +299,7 @@ lei_relationship_repository::read_all(context ctx,
 
 
 lei_relationship_repository::remove_status
-lei_relationship_repository::remove(context ctx,
+lei_relationship_repository::remove(const context& ctx,
                                     const std::string& relationship_start_node_node_id,
                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing LEI relationship. "
@@ -248,13 +323,13 @@ lei_relationship_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void lei_relationship_repository::remove(context ctx,
+void lei_relationship_repository::remove(const context& ctx,
                                          const std::string& relationship_start_node_node_id) {
     static_cast<void>(remove(ctx, relationship_start_node_node_id, std::nullopt));
 }
 
 std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -276,7 +351,7 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
 }
 
 std::uint32_t lei_relationship_repository::get_total_relationship_count(
-    context ctx, const std::optional<messaging::lei_relationships_filter>& filter) {
+    const context& ctx, const std::optional<messaging::lei_relationships_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI relationship count";
 
     const auto query = query_builder::read<std::vector<lei_relationship_entity>>;
@@ -286,9 +361,27 @@ std::uint32_t lei_relationship_repository::get_total_relationship_count(
 }
 
 std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
-    context ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
+    const context& ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
     if (relationship_start_node_node_ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (relationship_start_node_node_ids.size() > chunk_size) {
+        std::vector<domain::lei_relationship> all;
+        for (std::size_t begin = 0; begin < relationship_start_node_node_ids.size();
+             begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, relationship_start_node_node_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(relationship_start_node_node_ids.begin() + begin,
+                                         relationship_start_node_node_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
                        query_builder::where("relationship_start_node_node_id"_c.in(
                            relationship_start_node_node_ids));
@@ -303,7 +396,7 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
 }
 
 void lei_relationship_repository::remove(
-    context ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
+    const context& ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

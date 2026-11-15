@@ -253,7 +253,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_point_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_forward_publish_point_key::id},
     };
 }
@@ -267,7 +267,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_point_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_forward_publish_point_lookup::key},
         utility::codec::field{"fx_forward_publish_point",
                               &fx_forward_publish_point_lookup::fx_forward_publish_point},
@@ -283,7 +283,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_points_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"publish_id", &fx_forward_publish_points_filter::publish_id},
         utility::codec::field{"id_one_of", &fx_forward_publish_points_filter::id_one_of},
         utility::codec::field{"publish_id_one_of",
@@ -300,7 +300,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_point_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_forward_publish_point_event::event_id},
         utility::codec::field{"key", &fx_forward_publish_point_event::key},
         utility::codec::field{"action", &fx_forward_publish_point_event::action},
@@ -319,7 +319,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_publish_point_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_forward_publish_point",
                               &fx_forward_publish_point_version_key::fx_forward_publish_point},
         utility::codec::field{"version", &fx_forward_publish_point_version_key::version},
@@ -336,7 +336,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_forward_publish_point_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_forward_publish_point_versions_filter::version},
         utility::codec::field{"from_version",
                               &fx_forward_publish_point_versions_filter::from_version},
@@ -354,7 +354,7 @@ wire_fields(std::type_identity<fx_forward_publish_point_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_points_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_forward_publish_points_request::offset},
         utility::codec::field{"limit", &list_fx_forward_publish_points_request::limit},
         utility::codec::field{"order", &list_fx_forward_publish_points_request::order},
@@ -373,7 +373,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_points_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_points_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_forward_publish_points_response::result},
         utility::codec::field{"points", &list_fx_forward_publish_points_response::points},
         utility::codec::field{"total", &list_fx_forward_publish_points_response::total},
@@ -389,7 +389,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_points_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_publish_point_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_forward_publish_point_request::key},
     };
 }
@@ -404,7 +404,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_points_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_publish_point_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_forward_publish_point_response::result},
         utility::codec::field{"fx_forward_publish_point",
                               &get_fx_forward_publish_point_response::fx_forward_publish_point},
@@ -421,7 +421,7 @@ wire_fields(std::type_identity<get_fx_forward_publish_point_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_forward_publish_points_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_forward_publish_points_request::keys},
     };
 }
@@ -436,7 +436,7 @@ wire_fields(std::type_identity<get_many_fx_forward_publish_points_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_forward_publish_points_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_forward_publish_points_response::result},
         utility::codec::field{"entries", &get_many_fx_forward_publish_points_response::entries},
     };
@@ -452,7 +452,7 @@ wire_fields(std::type_identity<get_many_fx_forward_publish_points_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_point_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_forward_publish_point_versions_request::key},
         utility::codec::field{"offset", &list_fx_forward_publish_point_versions_request::offset},
         utility::codec::field{"limit", &list_fx_forward_publish_point_versions_request::limit},
@@ -471,7 +471,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_point_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_publish_point_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_forward_publish_point_versions_response::result},
         utility::codec::field{"versions",
                               &list_fx_forward_publish_point_versions_response::versions},
@@ -489,7 +489,7 @@ wire_fields(std::type_identity<list_fx_forward_publish_point_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_publish_point_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_forward_publish_point_version_request::key},
     };
 }
@@ -504,7 +504,7 @@ wire_fields(std::type_identity<get_fx_forward_publish_point_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_publish_point_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_forward_publish_point_version_response::result},
         utility::codec::field{"version", &get_fx_forward_publish_point_version_response::version},
     };

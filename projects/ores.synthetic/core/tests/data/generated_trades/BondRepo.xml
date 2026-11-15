@@ -6,6 +6,7 @@
       <BondData>
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POPMKXYS6FUC6</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -14,16 +15,56 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2032-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>
       <RepoData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>5790664.33</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2027-01-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.0451</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
       </RepoData>
     </BondRepoData>
@@ -34,6 +75,7 @@
       <BondData>
         <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
         <SecurityId>POP9GXWDOD0J8</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -42,16 +84,56 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2027-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>
       <RepoData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>6103286.3</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2027-01-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.0313</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
       </RepoData>
     </BondRepoData>

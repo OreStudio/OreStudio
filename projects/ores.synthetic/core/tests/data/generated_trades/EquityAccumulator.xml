@@ -4,64 +4,90 @@
     <TradeType>EquityAccumulator</TradeType>
     <EquityAccumulatorData>
       <Currency>USD</Currency>
-      <FixingAmount>723174.17</FixingAmount>
+      <FixingAmount>202.61</FixingAmount>
+      <Strike>3569.3</Strike>
       <Underlying>
         <Type>Equity</Type>
         <Name>.SPX</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <PayoffType>Accumulator</PayoffType>
       </OptionData>
       <StartDate>2026-01-02</StartDate>
       <ObservationDates>
         <Rules>
           <StartDate>2026-01-02</StartDate>
-          <Tenor>1D</Tenor>
-          <Convention>MF</Convention>
+          <EndDate>2036-01-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
       <RangeBounds>
-        <RangeBound startDate="2026-01-02">
+        <RangeBound>
           <RangeTo>3569.3</RangeTo>
-          <Leverage>1</Leverage>
-        </RangeBound>
-        <RangeBound startDate="2026-01-02">
-          <RangeFrom>3569.3</RangeFrom>
           <Leverage>2</Leverage>
         </RangeBound>
+        <RangeBound>
+          <RangeFrom>3569.3</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
       </RangeBounds>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels>
+            <Level>3926.23</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
     </EquityAccumulatorData>
   </Trade>
   <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>EquityAccumulator</TradeType>
     <EquityAccumulatorData>
       <Currency>USD</Currency>
-      <FixingAmount>9466062.35</FixingAmount>
+      <FixingAmount>2061.99</FixingAmount>
+      <Strike>4590.75</Strike>
       <Underlying>
         <Type>Equity</Type>
         <Name>.SPX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
+        <PayoffType>Accumulator</PayoffType>
       </OptionData>
       <StartDate>2025-09-02</StartDate>
       <ObservationDates>
         <Rules>
           <StartDate>2025-09-02</StartDate>
-          <Tenor>1D</Tenor>
-          <Convention>MF</Convention>
+          <EndDate>2033-09-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
       <RangeBounds>
-        <RangeBound startDate="2025-09-02">
+        <RangeBound>
           <RangeTo>4590.75</RangeTo>
-          <Leverage>1</Leverage>
-        </RangeBound>
-        <RangeBound startDate="2025-09-02">
-          <RangeFrom>4590.75</RangeFrom>
           <Leverage>2</Leverage>
         </RangeBound>
+        <RangeBound>
+          <RangeFrom>4590.75</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
       </RangeBounds>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels>
+            <Level>5049.83</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
     </EquityAccumulatorData>
   </Trade>
 </Portfolio>

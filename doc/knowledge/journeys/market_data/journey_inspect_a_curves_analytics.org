@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 01ED4CA6-1215-40ED-9144-DE34553870F6
+:END:
+#+title: User Journey: Inspect a curve's analytics
+#+description: A trader or quant reads what a published curve is built from and what its mathematics say - the market pillars, the zero rate, the implied forward, the discount factor and the shift at each pillar, with the conventions they rest on.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:marketdata:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant reads what a published curve is built from and what its mathematics say - the market pillars, the zero rate, the implied forward, the discount factor and the shift at each pillar, with the conventions they rest on.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to read this curve properly: the rates the market quoted at each pillar,
+the zero rate and the forward the curve implies, the discount factor I would
+price with, and the conventions all of it rests on." The journey is done when
+the person can quote the curve's zero rate at a pillar and say why it differs
+from the market.
+
+* Actor and trigger
+
+The actor is the trader or the quant. The trigger is a trade to price, a curve
+that moved, a forward that looks wrong, a curve a colleague published, or a
+question about compounding and interpolation. The journey starts at *Market data
+/ Curve* — reached from the instrument search — and ends when the person leaves
+the page.
+
+The journey reads and changes nothing. It reads a curve that already exists: a
+published set, or the curve a blueprint last built. It is not the candidate check
+(that is *Check a curve's fit*, where a candidate is judged against the quotes it
+came from) and not the publish record (that is *Published curves*).
+
+* Steps
+
+1. *Open the curve.* The person opens *Market data / Curve* on =AUD-AONIA*. The
+   system states the party, the kind, the publish the curve came from, the spot
+   date and the as-of.
+2. *Read the conventions.* The system states the index, the day count, the
+   compounding, the interpolation, the calendar, the spot lag and the pillar
+   count, because the numbers below mean nothing without them.
+3. *Read the market pillars.* One row per pillar: the tenor, the maturity date
+   the server computed, the year fraction, the rate the market quoted, the
+   provider that sent it and its age.
+4. *Read the bootstrapped curve.* One row per pillar: the zero rate, the implied
+   forward, the discount factor and the shift. The client draws these; it does
+   not compute them, because two clients implementing discount-factor
+   interpolation would drift and one would be wrong about compounding.
+5. *Read the shift.* The system states the distance between the bootstrapped
+   curve and the market at each pillar. The person does not assume it is an
+   applied parallel shift: the column says what it is.
+6. *Compare with the prior close.* The person turns on the comparison. The
+   system states the prior publish's value at each pillar and the change in
+   basis points, and draws it over the current curve as a dashed line.
+7. *Change the axis.* The person switches the metric (zero rate, forward,
+   discount factor) and the axis (tenor, maturity). The numbers do not change;
+   only the drawing does.
+8. *Meet a stale verdict.* The system marks the whole curve stale when its
+   publish is older than the threshold, and says how old it is.
+9. *Meet no published curve.* The party has no published set. The system says so
+   and draws nothing: it does not show a previous publish as if it were current.
+10. *Leave.* The address holds the instrument, the as-of, the metric and the
+    comparison.
+
+* Screens and wireframes
+
+One read-only page: the header with its staleness verdict, the conventions
+strip, the table, and the chart under it.
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| Open the curve | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Read the conventions | A strip of labelled chips under the header | A view no rule draws yet: a fact strip, not a field list |
+| Read the market pillars | Table, one row per pillar | A view no rule draws yet |
+| Read the bootstrapped curve | Switchable columns over the same rows | A view no rule draws yet |
+| Read the shift | One column with its own legend | A view no rule draws yet |
+| Compare with the prior close | A switch, two columns and a dashed series | A view no rule draws yet |
+| Change the axis | Segmented controls over the chart | A view no rule draws yet; the client draws, the server states the values |
+| Meet a stale verdict | A badge with the age and the publish instant | The standard's status badge |
+| Meet no published curve | A notice and no numbers | The standard's empty state, RS-LIST-10 |
+
+The prototype is the visual record:
+[[file:../../prototypes/market_data/inspect-a-curves-analytics/index.html][Inspect a curve's analytics]].
+
+* Prototype
+
+- Source :: =doc/prototypes/market_data/inspect-a-curves-analytics/index.html=
+- Note :: =doc/prototypes/market_data/inspect-a-curves-analytics.org=
+- Variants :: a the market pillars; b the bootstrapped curve; c all columns
+- States :: =stale=, =live=, =none=; =?compare=1= overlays the prior close
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| curve publish | the published set, its as-of and the approval behind it | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][Curve publish]] |
+| market observation | the market rate at each pillar | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][Market observation]] |
+| market series identity | the series each pillar reads | [[id:6C7FBF9C-21F4-44FE-8E12-5731BCE14399][Market series identity]] |
+| provider | who sent each pillar's rate | [[id:5604CFFC-EDD8-4291-BF56-AB7EEE0007E7][Provider]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the curve | the published curve of the party | =marketdata.v1.ops.get_published_curve_sets= | exists |
+| Read the conventions | the curve's conventions and pillars | =marketdata.v1.ops.get_curve_analytics= | missing |
+| Read the bootstrapped curve | zero rate, forward, discount factor, shift | =marketdata.v1.ops.get_curve_analytics= | missing |
+| Compare with the prior close | the prior publish's analytics at the same pillars | =marketdata.v1.ops.get_curve_analytics= | missing |
+| Read a discount factor only | the bootstrapped point a curve config produces | =marketdata.v1.ops.compute_curve= | partial |
+
+=marketdata.v1.ops.compute_curve= answers ={point_id, date, discount_factor}= and
+nothing else, and only for a bootstrap config. The year fraction, the zero rate,
+the implied forward, the shift and the conventions are not stated anywhere, so
+each client would derive them and the two would disagree.
+
+* What is missing
+
+- =marketdata.v1.ops.get_curve_analytics= — the conventions, the market pillars
+  (tenor, maturity, year fraction, rate, provider, series) and the bootstrapped
+  rows (tenor, maturity, year fraction, discount factor, zero rate, implied
+  forward, shift), plus the publish it came from. The arithmetic is stated once
+  in the protocol so two clients cannot implement it differently.
+- The decisions the arithmetic needs: whether =zero_rate= is always continuously
+  compounded (the prototype assumes it is) while =compounding= describes the
+  curve's own convention; what =implied_forward= means at the last pillar (the
+  prototype states the segment ending at the pillar, the first row carrying its
+  zero rate); and what =shift= means (the prototype states curve less market, not
+  an applied shift).
+- The comparison read: the same analytics for the prior publish, so the delta is
+  the server's and not a client subtraction.
+
+* Related journeys
+
+- [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] — where the curve is opened from.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the candidate judged against its quotes, which is a
+  different question from reading the curve that was published.
+- [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] — the market the curve is bootstrapped from.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — the same curve over time.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the act that made this curve what pricing uses.
+
+* Related knowledge
+
+- [[id:D8551E84-3E2F-4A12-92A6-03714EBEFCE9][Series axis]] — how a curve's pillars are declared and ordered.
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ownership and the ticking guarantee]] — who owns an observation.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the words pillar, zero rate, forward and discount factor.
+
+* See also
+
+- [[file:market_data.org][Market data journeys]] — the group this journey belongs to.
+- [[file:../../prototypes/market_data/inspect-a-curves-analytics.org][Inspect a curve's analytics prototype]] — the design note.

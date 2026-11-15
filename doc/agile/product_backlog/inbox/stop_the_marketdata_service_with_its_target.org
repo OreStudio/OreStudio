@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1A8B4A64-FF80-4CE7-A8F4-D619D1FC583D
+:END:
+#+title: Stop the marketdata service with its target
+#+description: compass services stop stopped the target and left ores.marketdata.service running on the code it started with, so requests reached old code after a rebuild.
+#+type: capture
+#+level: cross
+#+filetags: :service:ops:marketdata:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make =compass services stop= stop every unit of the environment, so a start after a rebuild runs only the new code.
+
+* Why
+
+On 2026-11-12, in bright_faraday, =compass services stop= reported the target stopped and a =services start= followed. =ores.marketdata.service-bright_faraday.service= was still the process started at 04:31, before the stop, beside a second marketdata process started at 04:54. The unit is =PartOf= and =WantedBy= the target, with =Restart=always=. Requests reached the old process and ran the code it was started with, so a fix to the market data export did not take effect until the old process was killed by hand. A test of a rebuilt service can pass or fail on code that is not the one built.
+
+* References
+
+- =systemctl --user show -p PartOf,WantedBy,Restart ores.marketdata.service-bright_faraday.service=
+
+* See also
+
+-

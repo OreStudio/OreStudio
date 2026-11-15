@@ -23,6 +23,7 @@
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/uuid/name_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -54,8 +55,9 @@ constexpr int window_days = 1830;
 /// of one reply.
 constexpr int stored_chunk_days = 120;
 
-/// The observations one write carries, well under the broker's megabyte.
-constexpr std::size_t write_batch = 1000;
+/// The observations one write carries: as many as the protocol lets a batch carry, which stays
+/// well under the broker's megabyte.
+constexpr std::size_t write_batch = ores::utility::domain::max_batch_size;
 
 /// An id read from text, or nothing for text that is not one.
 std::optional<boost::uuids::uuid> uuid_of(const std::string& text) {
@@ -70,14 +72,14 @@ std::optional<boost::uuids::uuid> uuid_of(const std::string& text) {
 
 derived_fx_vol_adapter::derived_fx_vol_adapter(ores::nats::service::client& nats,
                                                ores::nats::service::nats_client& svc_nats,
-                                               ores::database::context db_ctx,
+                                               const ores::database::context& db_ctx,
                                                std::string source_name,
                                                std::string provider_code,
                                                boost::uuids::uuid feed_id,
                                                derived_fx_vol_timing timing)
     : nats_(nats)
     , svc_nats_(svc_nats)
-    , db_ctx_(std::move(db_ctx))
+    , db_ctx_(db_ctx)
     , source_name_(std::move(source_name))
     , provider_code_(std::move(provider_code))
     , feed_id_(feed_id)
@@ -340,7 +342,8 @@ void derived_fx_vol_adapter::demand_message(const ores::nats::message& msg) {
     } else {
         response = feed_.answer(*request);
         std::lock_guard lock(mu_);
-        pending_ = std::move(*request);
+        pending_ = pending_ ? feed::coalesce_demands(std::move(*pending_), std::move(*request)) :
+                              std::move(*request);
     }
     ores::service::messaging::reply(nats_, msg, response);
 }
@@ -401,31 +404,52 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
         feed_.demand(*taken);
         next_refresh_ = now;
     }
-    if (now < next_refresh_)
-        return;
 
     const auto today = std::chrono::year_month_day{
         std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())};
     // A publish that fails, such as on a lost connection, ends this refresh: the pair it
     // was sending is sent again on the next, since its day is recorded only once sent.
+    // The latest quotes go out before the history is kept: a party's series of a derived
+    // quote exists only once a quote reaches it, and a fresh history takes many minutes
+    // to write, during which provisioning waits for those series.
+    if (now >= next_refresh_) {
+        try {
+            const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
+                nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
+                              ores::nats::default_wire_codec().encode(tick));
+            });
+            for (const auto& failure : feed_.failures())
+                BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
+            if (sent > 0)
+                BOOST_LOG_SEV(lg(), info)
+                    << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
+            history_pending_ = true;
+            next_refresh_ = now + timing_.refresh_interval;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
+            next_refresh_ = now + timing_.retry_interval;
+            return;
+        }
+    }
+    if (!history_pending_ || now < next_history_)
+        return;
+    // One pair a pass, so a demand that arrives while the history is written, such as a
+    // party subscribing during provisioning, is answered on the next pass rather than
+    // after every pair.
     try {
-        const auto kept = feed_.persist(today);
+        const auto kept = feed_.persist(today, 1);
+        for (const auto& failure : feed_.failures())
+            BOOST_LOG_SEV(lg(), warn) << "The derived history left out " << failure;
         if (kept > 0)
             BOOST_LOG_SEV(lg(), info)
                 << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
-        const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
-            nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
-                          ores::nats::default_wire_codec().encode(tick));
-        });
-        for (const auto& failure : feed_.failures())
-            BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
-        if (sent > 0)
-            BOOST_LOG_SEV(lg(), info)
-                << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
-        next_refresh_ = now + timing_.refresh_interval;
+        // A pass that wrote nothing means every pair is whole or failed; a failed pair is
+        // tried again after the next refresh, as persist states.
+        history_pending_ = kept > 0;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
-        next_refresh_ = now + timing_.retry_interval;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to keep the history of '" << source_name_
+                                  << "': " << e.what();
+        next_history_ = now + timing_.retry_interval;
     }
 }
 

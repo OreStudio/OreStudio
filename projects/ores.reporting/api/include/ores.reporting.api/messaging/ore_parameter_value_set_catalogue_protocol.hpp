@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &ore_parameter_value_set_catalogue_key::code},
     };
 }
@@ -404,7 +404,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &ore_parameter_value_set_catalogue_write::code},
         utility::codec::field{"name", &ore_parameter_value_set_catalogue_write::name},
         utility::codec::field{"relation", &ore_parameter_value_set_catalogue_write::relation},
@@ -423,7 +423,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &ore_parameter_value_set_catalogue_change::write},
         utility::codec::field{"precondition",
                               &ore_parameter_value_set_catalogue_change::precondition},
@@ -440,7 +440,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &ore_parameter_value_set_catalogue_removal::key},
         utility::codec::field{"precondition",
                               &ore_parameter_value_set_catalogue_removal::precondition},
@@ -457,7 +457,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &ore_parameter_value_set_catalogue_lookup::key},
         utility::codec::field{
             "ore_parameter_value_set_catalogue",
@@ -475,7 +475,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogues_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of",
                               &ore_parameter_value_set_catalogues_filter::code_one_of},
     };
@@ -491,7 +491,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogues_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &ore_parameter_value_set_catalogue_event::event_id},
         utility::codec::field{"key", &ore_parameter_value_set_catalogue_event::key},
         utility::codec::field{"action", &ore_parameter_value_set_catalogue_event::action},
@@ -512,7 +512,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "ore_parameter_value_set_catalogue",
             &ore_parameter_value_set_catalogue_version_key::ore_parameter_value_set_catalogue},
@@ -530,7 +530,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_catalogue_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &ore_parameter_value_set_catalogue_versions_filter::version},
         utility::codec::field{"from_version",
@@ -550,7 +550,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_catalogue_versions_filter
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_catalogues_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_ore_parameter_value_set_catalogues_request::offset},
         utility::codec::field{"limit", &list_ore_parameter_value_set_catalogues_request::limit},
         utility::codec::field{"order", &list_ore_parameter_value_set_catalogues_request::order},
@@ -569,7 +569,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_catalogues_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_catalogues_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_ore_parameter_value_set_catalogues_response::result},
         utility::codec::field{"catalogues",
                               &list_ore_parameter_value_set_catalogues_response::catalogues},
@@ -587,7 +587,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_catalogues_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_ore_parameter_value_set_catalogue_request::key},
     };
 }
@@ -602,7 +602,7 @@ wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_ore_parameter_value_set_catalogue_response::result},
         utility::codec::field{
             "ore_parameter_value_set_catalogue",
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_ore_parameter_value_set_catalogues_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_ore_parameter_value_set_catalogues_request::keys},
     };
 }
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_many_ore_parameter_value_set_catalogues_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_ore_parameter_value_set_catalogues_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_ore_parameter_value_set_catalogues_response::result},
         utility::codec::field{"entries",
@@ -653,7 +653,7 @@ wire_fields(std::type_identity<get_many_ore_parameter_value_set_catalogues_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_ore_parameter_value_set_catalogue_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_ore_parameter_value_set_catalogue_request::change},
         utility::codec::field{"intent", &put_ore_parameter_value_set_catalogue_request::intent},
     };
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<put_ore_parameter_value_set_catalogue_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_ore_parameter_value_set_catalogue_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_ore_parameter_value_set_catalogue_response::result},
         utility::codec::field{
             "ore_parameter_value_set_catalogue",
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<put_ore_parameter_value_set_catalogue_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_ore_parameter_value_set_catalogues_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_ore_parameter_value_set_catalogues_request::changes},
         utility::codec::field{"intent",
@@ -705,7 +705,7 @@ wire_fields(std::type_identity<put_many_ore_parameter_value_set_catalogues_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_ore_parameter_value_set_catalogues_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_ore_parameter_value_set_catalogues_response::result},
         utility::codec::field{"catalogues",
@@ -723,7 +723,7 @@ wire_fields(std::type_identity<put_many_ore_parameter_value_set_catalogues_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_ore_parameter_value_set_catalogue_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_ore_parameter_value_set_catalogue_request::removal},
         utility::codec::field{"intent", &delete_ore_parameter_value_set_catalogue_request::intent},
@@ -740,7 +740,7 @@ wire_fields(std::type_identity<delete_ore_parameter_value_set_catalogue_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_ore_parameter_value_set_catalogue_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_ore_parameter_value_set_catalogue_response::result},
     };
 }
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<delete_ore_parameter_value_set_catalogue_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_ore_parameter_value_set_catalogues_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_ore_parameter_value_set_catalogues_request::removals},
         utility::codec::field{"intent",
@@ -773,7 +773,7 @@ wire_fields(std::type_identity<delete_many_ore_parameter_value_set_catalogues_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_ore_parameter_value_set_catalogues_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_ore_parameter_value_set_catalogues_response::result},
     };
@@ -789,7 +789,7 @@ wire_fields(std::type_identity<delete_many_ore_parameter_value_set_catalogues_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_catalogue_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_ore_parameter_value_set_catalogue_versions_request::key},
         utility::codec::field{"offset",
                               &list_ore_parameter_value_set_catalogue_versions_request::offset},
@@ -812,7 +812,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_catalogue_versions_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_catalogue_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_ore_parameter_value_set_catalogue_versions_response::result},
         utility::codec::field{"versions",
@@ -832,7 +832,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_catalogue_versions_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_ore_parameter_value_set_catalogue_version_request::key},
     };
 }
@@ -847,7 +847,7 @@ wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_version_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_catalogue_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_ore_parameter_value_set_catalogue_version_response::result},
         utility::codec::field{"version",

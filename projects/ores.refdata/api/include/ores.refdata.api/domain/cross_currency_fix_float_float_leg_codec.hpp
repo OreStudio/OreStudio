@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cross_currency_fix_float_float_leg>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &cross_currency_fix_float_float_leg::version},
         utility::codec::field{"tenant_id", &cross_currency_fix_float_float_leg::tenant_id},
         utility::codec::field{"id", &cross_currency_fix_float_float_leg::id},

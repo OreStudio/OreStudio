@@ -75,7 +75,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit account_role_repository(context ctx);
+    explicit account_role_repository(const context& ctx);
 
     std::string sql();
 

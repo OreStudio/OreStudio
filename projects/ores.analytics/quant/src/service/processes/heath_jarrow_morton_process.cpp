@@ -145,9 +145,13 @@ heath_jarrow_morton_process::heath_jarrow_morton_process(const heath_jarrow_mort
                                   dt) {}
 
 double heath_jarrow_morton_process::next() {
+    return next_with_normal(normal_(rng_));
+}
+
+double heath_jarrow_morton_process::next_with_normal(double standard_normal) {
     // One shared shock moves every grid rate, exactly the single-factor
     // HJM dynamics on the grid.
-    const double z = normal_(rng_);
+    const double z = standard_normal;
     forward_rates_ = forward_rates_ + drift_dt_ + vol_sqrt_dt_ * z;
     ++tick_;
     return current();
@@ -185,6 +189,10 @@ double heath_jarrow_morton_process::discount_factor(std::size_t ticks_ahead) con
 
 const Eigen::VectorXd& heath_jarrow_morton_process::forward_rates() const {
     return forward_rates_;
+}
+
+bool heath_jarrow_morton_process::supports_external_normal() const {
+    return true;
 }
 
 } // namespace ores::analytics::quant::service

@@ -176,7 +176,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_family_outcome>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"family", &bundle_import_family_outcome::family},
         ::ores::utility::codec::field{"sequence", &bundle_import_family_outcome::sequence},
         ::ores::utility::codec::field{"applied", &bundle_import_family_outcome::applied},
@@ -193,7 +193,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<begin_bundle_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &begin_bundle_import_request::id},
         ::ores::utility::codec::field{"source", &begin_bundle_import_request::source},
         ::ores::utility::codec::field{"families_expected",
@@ -212,7 +212,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<begin_bundle_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &begin_bundle_import_response::success},
         ::ores::utility::codec::field{"message", &begin_bundle_import_response::message},
         ::ores::utility::codec::field{"import_row", &begin_bundle_import_response::import_row},
@@ -228,7 +228,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stage_bundle_family_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"import_id", &stage_bundle_family_request::import_id},
         ::ores::utility::codec::field{"family", &stage_bundle_family_request::family},
         ::ores::utility::codec::field{"sequence", &stage_bundle_family_request::sequence},
@@ -246,7 +246,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stage_bundle_family_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &stage_bundle_family_response::success},
         ::ores::utility::codec::field{"message", &stage_bundle_family_response::message},
     };
@@ -261,7 +261,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commit_bundle_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"import_id", &commit_bundle_import_request::import_id},
     };
 }
@@ -275,7 +275,7 @@ struct commit_bundle_import_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commit_bundle_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &commit_bundle_import_response::success},
         ::ores::utility::codec::field{"message", &commit_bundle_import_response::message},
         ::ores::utility::codec::field{"world_kept", &commit_bundle_import_response::world_kept},

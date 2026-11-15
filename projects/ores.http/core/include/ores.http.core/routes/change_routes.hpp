@@ -29,6 +29,9 @@
 #include <boost/asio/awaitable.hpp>
 #include <chrono>
 #include <memory>
+#include <optional>
+#include <string>
+#include <unordered_set>
 
 namespace ores::http::server::routes {
 
@@ -50,6 +53,21 @@ public:
     void register_routes(std::shared_ptr<http::net::router> router,
                          std::shared_ptr<http::openapi::endpoint_registry> registry);
 
+    /**
+     * @brief The collections a POST /api/events/watch body names, each as the
+     * component and the entity joined by a dot, or nothing when the body is not
+     * one the browser sends: at most 50 watches, each named in lower case.
+     */
+    [[nodiscard]] static std::optional<std::unordered_set<std::string>>
+    read_watches(const std::string& body);
+
+    /**
+     * @brief The session's own watch sets, for a test that drives a stream.
+     */
+    [[nodiscard]] stream::watch_registry& watches() {
+        return watches_;
+    }
+
 private:
     inline static std::string_view logger_name = "ores.http.server.routes.change_routes";
 
@@ -59,10 +77,14 @@ private:
         return instance;
     }
 
-    boost::asio::awaitable<domain::http_response> handle_changes(const domain::http_request& req);
+    boost::asio::awaitable<domain::http_response> handle_changes(const domain::http_request& req,
+                                                                 bool watched);
+
+    domain::http_response handle_watch(const domain::http_request& req);
 
     std::shared_ptr<stream::change_hub> hub_;
     std::chrono::milliseconds keep_alive_;
+    stream::watch_registry watches_;
 };
 
 }

@@ -1060,23 +1060,23 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_r
 
 namespace {
 
-std::vector<ores::trading::domain::bond_leg> legs_of(ores::database::context ctx,
+std::vector<ores::trading::domain::bond_leg> legs_of(const ores::database::context& ctx,
                                                      const std::string& trade_id) {
     return ores::trading::repository::read_legs_by_trade_ids(ctx, {trade_id});
 }
 
-std::vector<ores::trading::domain::instrument_schedule> schedules_of(ores::database::context ctx,
-                                                                     const std::string& trade_id) {
+std::vector<ores::trading::domain::instrument_schedule>
+schedules_of(const ores::database::context& ctx, const std::string& trade_id) {
     return ores::trading::repository::read_schedules_by_trade_ids(ctx, {trade_id});
 }
 
-std::vector<ores::trading::domain::bond_forward> forwards_of(ores::database::context ctx,
+std::vector<ores::trading::domain::bond_forward> forwards_of(const ores::database::context& ctx,
                                                              const std::string& trade_id) {
     return ores::trading::repository::read_forwards_by_trade_ids(ctx, {trade_id});
 }
 
 std::vector<ores::trading::domain::bond_issue_leg>
-issue_legs_of(ores::database::context ctx, const boost::uuids::uuid& issue_id) {
+issue_legs_of(const ores::database::context& ctx, const boost::uuids::uuid& issue_id) {
     return ores::trading::repository::read_issue_legs_by_issue_ids(
         ctx, {boost::uuids::to_string(issue_id)});
 }

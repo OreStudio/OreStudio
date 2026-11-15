@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 73C239AE-8FCE-4A21-95DB-2243C1432A35
+:END:
+#+title: Task: Model the scripted variables as rows, and build ORE's lists at the boundary
+#+description: A scripted trade's parameters, their declared types and their array values become rows in scripted_parameter and scripted_parameter_value; the three JSON columns on scripted_instrument are removed. An index variable holds an oresmd URI, validated against the market series identity, and the ORE projection produces the ORE index name at the boundary on export and reads it back into the URI on import. No migration: the database is dropped and recreated.
+#+type: task
+#+level: s1
+#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/model-the-scripted-variables-as-rows
+#+pr: 4734
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Only the script body is text. The parameters, their types and their array values are rows, an index variable is named by its oresmd URI, and ORE's four typed lists are built from those rows on export.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- scripted_instrument holds no JSON column
+- scripted_parameter and scripted_parameter_value hold every scripted trade's variables, an index one holding an oresmd URI
+- the ORE export builds the four typed lists from the rows and the import writes rows from the document
+- every trade of ORE's example portfolios survives a read and a write through the rows, value for value
+- a scripted trade booked into the database exports its variables, list values and underlying rows back unchanged
+- a report over the provisioned book exports the scripted trades whole, from their rows
+
+The acceptance this task first stated, that the scripted products price with
+the same values as before, is not met, because they did not price before either.
+The report states why, and neither reason is this task: the engine reads
+=BaseCcy= of every scripted trade, which is a setting of the trade and not of a
+pair, so it belongs to [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and
+pricing engines]]; and a generated =ScriptedTrade= states the generic form with
+variables the =AsianBasketOption= script does not read, and the run publishes no
+script library for it to load, which belongs to
+[[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]].
+
+* Plan
+
+The three JSON columns are the shape ORE reads, so the work sits at the two
+boundaries and nowhere else: the columns leave the model, the rows arrive, and
+each side reads what the other writes.
+
+1. The model. =scripted_instrument= keeps the script's name and body and gains
+   =script_npv=, the variable the script's result lands in, which the schema
+   requires beside an embedded body. The three JSON columns leave it.
+   =scripted_parameter= already holds a variable's name, its declared type, its
+   shape and its scalar value, and =scripted_parameter_value= holds a list's
+   members.
+2. The ORE boundary. The projection reads a =ScriptedTradeData= or a named
+   product's element into parameter rows. A product ORE reads through a class of
+   its own, =DoubleDigitalOption= and =PerformanceOption_01=, is read member by
+   member instead: those elements state no type attribute, so the declared type
+   is the kind of leaf the schema gives the member. An Underlying block is an
+   =instrument_underlying= row and not a parameter, because it is an entity with
+   a type, a name, a weight and a price type.
+3. The planner. The synthetic planner states the rows the projection reads, and
+   an index variable holds the equity's oresmd address, so the export writes the
+   ORE name the address resolves to.
+4. The tests. The projection's own round trips, the corpus content round trip
+   over every trade of ORE's example portfolios, the planner's population, and
+   the report over the provisioned book.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Projection round trips | 1386 assertions, 40 cases, all pass | =ores.ore.core.tests "[projection]"= | =bd8a795f63= |
+| Every trade of ORE's example portfolios, value for value | 266 assertions, 1 case, all pass | =ores.ore.core.tests "every trade in the ORE example corpus comes back as it was read"= | =9070878093= |
+| The ORE core suite | 520110 assertions, 539 cases, all pass | =ores.ore.core.tests= | =cf010d9c18= |
+| The planner's population | 1828 assertions, 59 cases, all pass | =ores.synthetic.core.tests "[trade_population]"= | =9070878093= |
+| The trading API suite | 16383 assertions, 4429 cases, all pass | =ores.trading.api.tests= | =cf010d9c18= |
+| A scripted trade's rows, booked and exported through the database | 18 assertions, 1 case, all pass | =ores.trading.core.tests "a_scripted_trade_books_its_variables_and_underlyings_back"= | =bd8a795f63= |
+| The shell's trading suite | 3756 assertions, 1330 cases, all pass | =ores.shell.trading.tests= | =cf010d9c18= |
+| The report over the provisioned book | completed; 1440 metric rows; 538 errors, 311 warnings, 577 infos | =report_operations trigger-report-instance=, then =ores_reporting_report_error_events_tbl= | =cf010d9c18= |
+| The trades the report exported | 475 trades, and the scripted products' elements are stated whole from their rows | =Input/portfolio.xml= of the run's job | =cf010d9c18= |
+| The failures the scripted products still report | 48 rows ask for =BaseCcy=, 9 ask for the =AsianBasketOption= script library, 11 for basket data | =ores_reporting_report_error_events_tbl=, grouped by message | =cf010d9c18= |
+
+* Notes
+
+- The two basket products needed no special case. =AsianBasketOptionData= and
+  =AverageStrikeBasketOptionData= are free style products, which is what
+  =is_named_product= tests for, so the named product's path reads them once the
+  hand written branches are gone. The corpus content round trip proves it: every
+  trade of ORE's example portfolios comes back value for value.
+- =DoubleDigitalOption= and =PerformanceOption_01= keep the members their
+  element states, not the script variables ORE derives from them
+  (=LowerBound1=, =LongShort= and so on). The derivation is not invertible: a
+  call and a collar differ only by a bound that is =QL_MAX_REAL=. The members are
+  also what the document states, so they are what a round trip can prove.
+- A generated =ScriptedTrade= still states =PutCall= as a number, which the
+  =AsianBasketOption= library script cannot read: the product wants
+  =AsianBasketOptionData= with an event schedule, not the generic form. The
+  market data for an equity index is missing as well, so the population's
+  scripted trades are the next task rather than this one; what this task proves
+  is that the rows carry what the export needs.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4734][#4734]] | [trading,ore,synthetic,seeder] Model scripted trades as rows and state what their engine reads |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The scripted instrument holds no JSON column. A scripted trade's variables are
+=scripted_parameter= rows and their list values =scripted_parameter_value= rows,
+an index variable holds an oresmd address, and the ORE projection builds the
+document's typed lists from the rows and reads them back into rows.
+
+Measured on the provisioned Acme book: the report completes, exports 475 trades,
+and states =DoubleDigitalOptionData=, =PerformanceOption01Data= and
+=ScriptedTradeData= whole from the rows, the underlyings resolved from their
+oresmd addresses back to the ORE names the document spells. Every trade of ORE's
+example portfolios survives a read and a write through the rows with no value
+changed, which is the proof the boundary is faithful.
+
+The scripted products still do not price, and did not price before this task.
+The report states the two reasons: the engine reads =BaseCcy= of every scripted
+trade and no configuration states it, which is a setting of the trade rather than
+of a pair, and a generated =ScriptedTrade= states the generic form with a script
+the run publishes no library for.

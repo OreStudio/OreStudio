@@ -357,7 +357,7 @@ one row.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::cut_approval_detail>
-read_latest_by_request(context ctx, const std::string& request_id);
+read_latest_by_request(const context& ctx, const std::string& request_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -367,7 +367,7 @@ read_latest_by_request(context ctx, const std::string& request_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::cut_approval_detail>
-cut_approval_detail_repository::read_latest_by_request(context ctx,
+cut_approval_detail_repository::read_latest_by_request(const context& ctx,
                                                        const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the cut approval detail of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
@@ -400,7 +400,7 @@ inferred from the cut's state.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::cut_approval_detail>
-read_latest_by_cut(context ctx, const std::string& cut_id);
+read_latest_by_cut(const context& ctx, const std::string& cut_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -410,7 +410,7 @@ read_latest_by_cut(context ctx, const std::string& cut_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::cut_approval_detail>
-cut_approval_detail_repository::read_latest_by_cut(context ctx, const std::string& cut_id) {
+cut_approval_detail_repository::read_latest_by_cut(const context& ctx, const std::string& cut_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the cut approval detail of cut: " << cut_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

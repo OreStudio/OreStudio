@@ -245,7 +245,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<published_curve_point>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"pillar", &published_curve_point::pillar},
         ::ores::utility::codec::field{"value", &published_curve_point::value},
         ::ores::utility::codec::field{"value_kind", &published_curve_point::value_kind},
@@ -264,7 +264,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<published_curve_set>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"publish_id", &published_curve_set::publish_id},
         ::ores::utility::codec::field{"request_id", &published_curve_set::request_id},
         ::ores::utility::codec::field{"curve", &published_curve_set::curve},
@@ -302,7 +302,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_published_curves_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &list_published_curves_request::party_id},
         ::ores::utility::codec::field{"search", &list_published_curves_request::search},
         ::ores::utility::codec::field{"include_candidates",
@@ -325,7 +325,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_published_curves_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"sets", &list_published_curves_response::sets},
         ::ores::utility::codec::field{"total", &list_published_curves_response::total},
         ::ores::utility::codec::field{"success", &list_published_curves_response::success},
@@ -342,7 +342,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_curve_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"series_id", &get_published_curve_sets_request::series_id},
         ::ores::utility::codec::field{"limit", &get_published_curve_sets_request::limit},
         ::ores::utility::codec::field{"include_candidates",
@@ -359,7 +359,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_curve_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"sets", &get_published_curve_sets_response::sets},
         ::ores::utility::codec::field{"published_count",
                                       &get_published_curve_sets_response::published_count},
@@ -377,7 +377,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_curve_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"publish_id", &withdraw_curve_request::publish_id},
         ::ores::utility::codec::field{"reason_code", &withdraw_curve_request::reason_code},
         ::ores::utility::codec::field{"comment", &withdraw_curve_request::comment},
@@ -395,7 +395,7 @@ struct withdraw_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_curve_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"withdrawn_at", &withdraw_curve_response::withdrawn_at},
         ::ores::utility::codec::field{"withdrawn_by", &withdraw_curve_response::withdrawn_by},
         ::ores::utility::codec::field{"success", &withdraw_curve_response::success},

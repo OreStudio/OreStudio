@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_SERVICE_INTERNAL_IMPERSONATION_SERVICE_HPP
 #define ORES_IAM_SERVICE_INTERNAL_IMPERSONATION_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/uuid/uuid.hpp>

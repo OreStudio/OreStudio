@@ -46,7 +46,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<booking_nature_type>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &booking_nature_type::version},
         utility::codec::field{"code", &booking_nature_type::code},
         utility::codec::field{"description", &booking_nature_type::description},

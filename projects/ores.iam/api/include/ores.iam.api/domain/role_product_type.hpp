@@ -25,6 +25,7 @@
 #ifndef ORES_IAM_DOMAIN_ROLE_PRODUCT_TYPE_HPP
 #define ORES_IAM_DOMAIN_ROLE_PRODUCT_TYPE_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
 #include <string_view>

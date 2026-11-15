@@ -50,8 +50,8 @@ constexpr auto default_staleness_disconnected_after = std::chrono::minutes(60);
 
 }
 
-crm_ingest_bridge::crm_ingest_bridge(ores::database::context ctx)
-    : ctx_(std::move(ctx))
+crm_ingest_bridge::crm_ingest_bridge(const ores::database::context& ctx)
+    : ctx_(ctx)
     , engines_(std::make_shared<const engines_map>()) {}
 
 void crm_ingest_bridge::refresh() {

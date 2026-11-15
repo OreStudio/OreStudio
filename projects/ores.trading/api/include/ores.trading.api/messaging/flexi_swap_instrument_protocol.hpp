@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &flexi_swap_instrument_key::trade_id},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &flexi_swap_instrument_write::trade_id},
         utility::codec::field{"trade_activity_id", &flexi_swap_instrument_write::trade_activity_id},
         utility::codec::field{"option_long_short", &flexi_swap_instrument_write::option_long_short},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &flexi_swap_instrument_change::write},
         utility::codec::field{"precondition", &flexi_swap_instrument_change::precondition},
     };
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &flexi_swap_instrument_removal::key},
         utility::codec::field{"precondition", &flexi_swap_instrument_removal::precondition},
     };
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &flexi_swap_instrument_lookup::key},
         utility::codec::field{"flexi_swap_instrument",
                               &flexi_swap_instrument_lookup::flexi_swap_instrument},
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instruments_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id_one_of", &flexi_swap_instruments_filter::trade_id_one_of},
     };
 }
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &flexi_swap_instrument_event::event_id},
         utility::codec::field{"key", &flexi_swap_instrument_event::key},
         utility::codec::field{"action", &flexi_swap_instrument_event::action},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_instrument_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"flexi_swap_instrument",
                               &flexi_swap_instrument_version_key::flexi_swap_instrument},
         utility::codec::field{"version", &flexi_swap_instrument_version_key::version},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_instru
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<flexi_swap_instrument_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &flexi_swap_instrument_versions_filter::version},
         utility::codec::field{"from_version", &flexi_swap_instrument_versions_filter::from_version},
         utility::codec::field{"to_version", &flexi_swap_instrument_versions_filter::to_version},
@@ -513,7 +513,7 @@ wire_fields(std::type_identity<flexi_swap_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_flexi_swap_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_flexi_swap_instruments_request::offset},
         utility::codec::field{"limit", &list_flexi_swap_instruments_request::limit},
         utility::codec::field{"order", &list_flexi_swap_instruments_request::order},
@@ -531,7 +531,7 @@ wire_fields(std::type_identity<flexi_swap_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_flexi_swap_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_flexi_swap_instruments_response::result},
         utility::codec::field{"flexi_swap_instruments",
                               &list_flexi_swap_instruments_response::flexi_swap_instruments},
@@ -548,7 +548,7 @@ wire_fields(std::type_identity<flexi_swap_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_flexi_swap_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_flexi_swap_instrument_request::key},
     };
 }
@@ -562,7 +562,7 @@ wire_fields(std::type_identity<flexi_swap_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_flexi_swap_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_flexi_swap_instrument_response::result},
         utility::codec::field{"flexi_swap_instrument",
                               &get_flexi_swap_instrument_response::flexi_swap_instrument},
@@ -579,7 +579,7 @@ wire_fields(std::type_identity<flexi_swap_instrument_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_flexi_swap_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_flexi_swap_instruments_request::keys},
     };
 }
@@ -594,7 +594,7 @@ wire_fields(std::type_identity<get_many_flexi_swap_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_flexi_swap_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_flexi_swap_instruments_response::result},
         utility::codec::field{"entries", &get_many_flexi_swap_instruments_response::entries},
     };
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<get_many_flexi_swap_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_flexi_swap_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_flexi_swap_instrument_request::change},
         utility::codec::field{"intent", &put_flexi_swap_instrument_request::intent},
     };
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<get_many_flexi_swap_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_flexi_swap_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_flexi_swap_instrument_response::result},
         utility::codec::field{"flexi_swap_instrument",
                               &put_flexi_swap_instrument_response::flexi_swap_instrument},
@@ -641,7 +641,7 @@ wire_fields(std::type_identity<get_many_flexi_swap_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_flexi_swap_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_flexi_swap_instruments_request::changes},
         utility::codec::field{"intent", &put_many_flexi_swap_instruments_request::intent},
     };
@@ -657,7 +657,7 @@ wire_fields(std::type_identity<put_many_flexi_swap_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_flexi_swap_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_flexi_swap_instruments_response::result},
         utility::codec::field{"flexi_swap_instruments",
                               &put_many_flexi_swap_instruments_response::flexi_swap_instruments},
@@ -673,7 +673,7 @@ wire_fields(std::type_identity<put_many_flexi_swap_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_flexi_swap_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_flexi_swap_instrument_request::removal},
         utility::codec::field{"intent", &delete_flexi_swap_instrument_request::intent},
     };
@@ -689,7 +689,7 @@ wire_fields(std::type_identity<put_many_flexi_swap_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_flexi_swap_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_flexi_swap_instrument_response::result},
     };
 }
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<delete_flexi_swap_instrument_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_flexi_swap_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_flexi_swap_instruments_request::removals},
         utility::codec::field{"intent", &delete_many_flexi_swap_instruments_request::intent},
     };
@@ -720,7 +720,7 @@ wire_fields(std::type_identity<delete_many_flexi_swap_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_flexi_swap_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_flexi_swap_instruments_response::result},
     };
 }
@@ -735,7 +735,7 @@ wire_fields(std::type_identity<delete_many_flexi_swap_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_flexi_swap_instrument_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_flexi_swap_instrument_versions_request::key},
         utility::codec::field{"offset", &list_flexi_swap_instrument_versions_request::offset},
         utility::codec::field{"limit", &list_flexi_swap_instrument_versions_request::limit},
@@ -754,7 +754,7 @@ wire_fields(std::type_identity<list_flexi_swap_instrument_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_flexi_swap_instrument_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_flexi_swap_instrument_versions_response::result},
         utility::codec::field{"versions", &list_flexi_swap_instrument_versions_response::versions},
         utility::codec::field{"total", &list_flexi_swap_instrument_versions_response::total},
@@ -771,7 +771,7 @@ wire_fields(std::type_identity<list_flexi_swap_instrument_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_flexi_swap_instrument_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_flexi_swap_instrument_version_request::key},
     };
 }
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<get_flexi_swap_instrument_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_flexi_swap_instrument_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_flexi_swap_instrument_version_response::result},
         utility::codec::field{"version", &get_flexi_swap_instrument_version_response::version},
     };

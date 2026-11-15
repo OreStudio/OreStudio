@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 1E08BE17-D216-4CE6-8EE3-BE761DB9D551
+:END:
+#+title: Task: Prebuild the CI image
+#+description: Build a CI container image with clang, packages, PostgreSQL and vcpkg dependencies installed.
+#+type: task
+#+level: s1
+#+filetags: :ci:build:make_the_build_faster:sprint_30:v0:
+#+owner: marco
+#+branch: feature/prebuild-the-ci-image
+#+pr: 4649
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+CI setup before the build takes at most 2 min instead of 7 to 10 min, because the toolchain, packages and dependencies come pre-installed in an image.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
+| Now          | Phase 1 and the image merged in #4617. Phase 2 moves the Linux build jobs into the image. |
+| Waiting on   | A continuous run of the phase 2 branch. |
+| Next         | Measure the setup time in the image against the runner. |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- A versioned image holds the toolchain, dev packages, PostgreSQL and the vcpkg binary packages.
+- continuous-linux.yml runs in that image and its setup steps take at most 2 min.
+- A vcpkg.json change rebuilds the image.
+
+* Plan
+
+The step times below show where the 7 to 10 min of setup go. Two findings
+change the premise of the task:
+
+- The vcpkg cache is warm. CTest restores 123 packages in 1.1 s, so an image
+  that holds the vcpkg packages saves almost no time. It helps only after a
+  =vcpkg.json= change, when the cache misses.
+- The runner disk is now 145 GB, with 86 GB free before cleanup. The debug
+  job grows the disk by about 47 GB, so it peaks at about 106 GB without the
+  cleanup. "Free disk space" (82 to 260 s) is the largest setup step, and the
+  build no longer needs it.
+
+The work is in two phases. Each phase ends in a measured run.
+
+1. Remove the setup that the build does not need, with no image:
+   - Remove "Free disk space". Keep a =df= report before the build.
+   - Install clang 19 from apt.llvm.org with =build/scripts/install_llvm.sh=
+     instead of the 1 GB LLVM release download. Both give 19.1.7; the
+     Ubuntu archive has only 19.1.1.
+   - Move "Validate SQL Schema" (40 to 95 s) to the relevance-guard job,
+     where it runs in parallel with nothing on the critical path.
+   Expected setup: about 4 min. The compiler binary changes, so the first
+   run after the change misses sccache once.
+2. Put clang, the dev packages and PostgreSQL with TimescaleDB in an image on
+   GHCR, built from =build/docker/ci/Dockerfile= by a workflow that runs when
+   the Dockerfile or the scripts it copies change. Run the build job in that
+   image. The Dockerfile is in the repository from phase 1, so the image can
+   be built again at any time.
+   - The continuous build, the nightly build and the nightly include check
+     run in the image. A small job names the tag from =versions.env=, so each
+     run takes the image of the commit it builds.
+   - The image adds valgrind for the nightly memcheck, clang-tidy for the
+     include check, and gh for the cache steps.
+   - =build/scripts/start_ci_postgres.sh= starts the cluster of the image as
+     the postgres user, because the container runs as root and the setup
+     action cannot.
+   - The nightly SQL validation moves to its own job, as in the continuous
+     build, because the image has no pip packages.
+   - =nightly-format.yml= stays on the runner: it builds nothing. The unity
+     batch measurement stays on the runner, so its runs compare like with
+     like.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Setup before CTest, debug | 8 min 4 s | =gh api .../runs/43027034259/jobs= step times | 43027034259 head |
+| Free disk space | 82 to 260 s | step times of runs 43027034259, 42954775219, 42901694791 | those runs |
+| Install Clang | 87 to 119 s | same | same |
+| Validate SQL Schema | 40 to 95 s | same | same |
+| Restore sccache plus ccache action | 20 to 94 s | same | same |
+| Install dev packages | 16 to 29 s | same | same |
+| PostgreSQL extensions, setup, configure | 20 to 25 s | same | same |
+| Setup Database | 22 to 44 s | same | same |
+| vcpkg restore of 123 packages | 1.1 s | =gh run view --job <id> --log=, line "Restored 123 package(s)" | 43027034259 |
+| Disk used: start, after cleanup, before build, after build (debug) | 59, 23, 41, 70 GB of 145 GB | =/dev/root= lines of the job log | 43027034259, 42954775219, 42901694791 |
+| Disk used: same points (release) | 59, 23, 38, 46 GB of 145 GB | same | same |
+| CI image built locally; every tool matches versions.env | ores-ci:ubuntu24.04-clang19-gcc14-fe53a4311bc1, 1.41 GB | =build/docker/ci/build.sh --engine podman= | this branch |
+
+* Notes
+
+- actions/cache puts the cache path in the cache version, and a container
+  job sees the workspace as =/__w/OreStudio/OreStudio=, not
+  =/home/runner/work/OreStudio/OreStudio=. Run 43137261612 computed version
+  3349367a..., the hash of the =/__w= path with zstd, and missed both the
+  sccache and the vcpkg entries that main saved on the runner. The first
+  container build on main is cold, and later container builds hit. Phase 1
+  already makes that build cold, because the apt.llvm.org clang is a
+  different binary from the release tarball.
+- In run 43137261612 the setup before CTest took about 2 min in the image:
+  container start 20 to 31 s, checkout 36 to 39 s, PostgreSQL 4 to 7 s,
+  database 40 to 45 s. On the runner it took about 8 min.
+
+- Phase 1 keeps clang 19.1.7 but takes the binary from apt.llvm.org, not
+  from the LLVM release tarball. sccache keys hash the compiler binary, so the
+  first run of each variant after the merge compiles cold.
+- The image holds no vcpkg packages, contrary to the first acceptance item.
+  The actions cache restores all 123 packages in 1.1 s, so the image would
+  save nothing, and an image without them does not go stale when
+  =vcpkg.json= changes. The third acceptance item then does not apply.
+- The CTest step already prints =df -h= before and after the build, so the
+  removal of "Free disk space" keeps a record of the disk headroom.
+- CTest runs no Python, so the build job does not need the =pystache= install
+  that the SQL validation step did.
+- All versions live in =build/docker/ci/versions.env=. The Dockerfile has no
+  defaults, =build.sh= passes the file as build arguments and checks each tool
+  against it, and continuous-linux.yml reads =LLVM_MAJOR= from it. A new
+  compiler is a one-line change there.
+- nightly-linux.yml has the same setup steps. It changes after phase 1 is
+  measured on continuous-linux.yml.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4649][#4649]] | [ci] Run the container steps with bash, as on the runner |
+| [[https://github.com/OreStudio/OreStudio/pull/4638][#4638]] | [ci] Point the vcpkg and sccache caches at the container workspace |
+| [[https://github.com/OreStudio/OreStudio/pull/4632][#4632]] | [ci] Run the Linux build jobs in the CI image |
+| [[https://github.com/OreStudio/OreStudio/pull/4617][#4617]] | [ci] Add the Linux CI image and cut the continuous build setup |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Disk headroom after the cleanup step goes | continuous-linux.yml | Decline | 106 GB is total disk use, so 39 GB stays free. The df -h steps before and after CTest stay and show the peak. |
+| 2 | The old action set CC and CXX | continuous-linux.yml | Accept | The step sets CC and CXX to the apt.llvm.org clang, so the vcpkg C ports do not go to gcc. |
+| 3 | First run after merge has a cold sccache | — | Decline | Expected. The Notes say so. |
+| 4 | Required check names change | — | Decline | main has no required status checks. |
+| 5 | Comment says the version is fixed, apt gives the newest point release | install_llvm.sh | Accept | The comment now says a new point release needs no commit. |
+| 6 | No retry on the key download | install_llvm.sh | Accept | curl --retry 3. |
+| 7 | Tag does not cover the base image or apt packages | build.sh | Accept | The comment says the tag identifies inputs, not content, and a published tag is not built again. |
+| 8 | Default PostgreSQL cluster in the image | Dockerfile | Defer | Phase 2 decides how the build job starts the database. |
+| 9 | Image runs as root | Dockerfile | Defer | Phase 2, with item 8. |
+| 10 | head -n 1 under pipefail | build.sh | Decline | The output is a few lines, so head reads all of it. |
+| 11 | No check for gcc, git, python3 | build.sh | Accept | build.sh prints their versions. |
+| 12 | No checksums on the CMake, Ninja, Node downloads | Dockerfile | Defer | A checksum per version makes a version change two edits. Decide in phase 2. |
+
+* Result

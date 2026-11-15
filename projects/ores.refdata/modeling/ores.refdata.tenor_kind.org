@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: E63689F3-92E1-48C7-8772-AA6FA6C45D40
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.tenor_kind
 #+description: Codegen entity model for the refdata tenor_kind table: whether a tenor resolves as a fixed period or by special convention-specific rule.
 #+type: ores.codegen.entity
+#+web_classification: tenor-kind
+#+web_classification_topic: tenors
 #+component: refdata
 #+filetags: :model:entity:refdata:tenor:
 #+entity_singular: tenor_kind

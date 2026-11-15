@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 14C79EA2-4E36-4EF2-A0DB-0EB932655029
+:END:
+#+title: A keyed Brownian path is a pure function of seed and time
+#+description: A Brownian motion built on a grid of keyed cells and refined inside each cell by a dyadic Brownian bridge from counter-based draws, so any query at any time returns the same value whoever asks and in whatever order.
+#+type: knowledge
+#+level: cross
+#+filetags: :stochastic_processes:random_numbers:synthetic:knowledge:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+* Summary
+
+A shared factor of the latent market must return the same value at a time
+whoever asks, in whatever order, or one feed's ticks would move another feed's
+prices. Advancing a Brownian motion lazily from the last query fails that test:
+the value depends on the query times. A keyed path does not. Time is cut into
+cells of fixed width; each cell's increment is a keyed draw; a time inside a
+cell is reached by bisecting the cell with a Brownian bridge whose every node is
+also a keyed draw. Every node has fixed coordinates, so the path is a function of
+the seed and the time alone. It is exact at its nodes and exact in distribution
+to the width of its finest step, not below it.
+
+* Detail
+
+** Construction
+
+Fix a cell width $\Delta$ in simulated time and a depth $D$. For a factor $k$,
+cell $c$ covers $[c\Delta, (c+1)\Delta)$.
+
+- *Cell increments.* $F_k((c+1)\Delta) - F_k(c\Delta) = \sqrt{\Delta}\, Z_{k,c}$,
+  with $Z_{k,c}$ a standard normal drawn from the key (run seed, factor $k$,
+  cell $c$).
+- *Bridge nodes.* Given the values at $t_a$ and $t_b$, the midpoint
+  $t_m = (t_a + t_b)/2$ takes the value
+  \[
+  F_k(t_m) = \tfrac{1}{2}\big(F_k(t_a) + F_k(t_b)\big) + \sqrt{\tfrac{t_b - t_a}{4}}\; Z,
+  \]
+  with $Z$ a standard normal drawn from the key (run seed, factor $k$, cell
+  $c$, node). Given its endpoints, a Brownian motion at the midpoint is normal
+  with the endpoints' mean and variance $(t_m - t_a)(t_b - t_m)/(t_b - t_a) = (t_b - t_a)/4$,
+  so the refinement has the law of Brownian motion at every node (Glasserman,
+  2003, section 3.1).
+
+This is Lévy's midpoint construction of Brownian motion. Its values at the
+dyadic points agree with the partial sums of the Lévy-Ciesielski series in the
+Schauder functions (Karatzas and Shreve, 1991, section 2.3), which is why the
+two names are used for it.
+
+** Addressing a node
+
+Inside a cell, the node at level $\ell \ge 1$ with index $m$ has the heap index
+$h = 2^{\ell - 1} + m$, $0 \le m < 2^{\ell - 1}$, unique below $2^D$. The draw
+index $c \cdot 2^D + h$ addresses every node of every cell with one integer,
+with $h = 0$ reserved for the cell increment. The run's =rng_stream= is
+Philox4x32-10 keyed by the run seed, with a stream id in the high half of the
+counter and the draw index in the low half
+([[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]]).
+A factor takes its own stream id, hashed from the factor and a purpose of its
+own, and computes the block at a draw index directly instead of reading draws
+in order. The uniform maps to a normal by the inverse normal distribution,
+which the quant library already provides as =normal_quantile=. The 64-bit draw
+index leaves $2^{64 - D}$ cells, which at $\Delta$ of one hour and $D = 30$ is
+about 1.96 million years of simulated time.
+
+** Reading a value
+
+To read $F_k(t)$, start from the cell's endpoints and descend toward $t$, one
+bisection a level, $D$ levels at most. The finest step is
+$\delta = \Delta / 2^D$. Between two adjacent finest nodes the value is
+interpolated linearly. That has the right conditional mean and a conditional
+variance short by $(s - x)(x + \delta - s)/\delta \le \delta/4$ at a time $s$ in
+$[x, x + \delta]$. So an increment is exact in distribution when its ends sit on
+nodes, and each end off a node loses at most $\delta/4$ of variance.
+
+| Cell $\Delta$ | Depth $D$ | Finest step $\delta$ |
+|---------------+-----------+----------------------|
+| 1 hour        | 16        | about 55 milliseconds |
+| 1 hour        | 30        | about 3.4 microseconds |
+
+The finest step is in /simulated/ time. At a speed of 1440, one day of market a
+minute of wall time, one millisecond of wall time is 1.44 simulated seconds, so
+even a depth of 16 resolves every tick a scheduler can make. At real-time speed
+a depth of 16 leaves ticks of a Hawkes burst below the finest step, which is why
+the depth is a parameter and its bound is stated beside it. A test with two
+ticks inside one finest step pins the behaviour.
+
+** The value at a cell boundary
+
+$F_k(c\Delta)$ is the sum of the increments of every earlier cell. Summing them
+on every query would cost $O(c)$. The latent market keeps the running boundary
+value as simulated time advances. Simulated time only moves forward, and the
+latent market keeps each series' driver value at its last tick, so it never
+needs a boundary in the past. Caching the values of a deterministic function
+does not change them, so the cache keeps the path a function of seed and time.
+
+Simulated time can jump: a speed change, a long idle gap or a run that starts
+late can pass many cells between two reads. The cache then sums the increments
+of every cell it passed, which costs one draw a skipped cell and leaves the
+values unchanged. A run that starts at a simulated time $t_0 > 0$ starts its sum
+at the cell of $t_0$, with $F_k(t_0) = 0$; every increment is then measured from
+there, which a Brownian motion allows. A test reads a factor before and after a
+jump of many cells and checks the values against a read with no jump.
+
+** What is fixed and what is not
+
+Adding a feed, or a burst on another feed, only reads more nodes of the same
+tree. No node is drawn twice and none depends on when it was first read. The
+path is reproducible across machines as far as the floating-point arithmetic of
+the bisection is: the same build reproduces it bit for bit.
+
+** References
+
+- Glasserman, P. (2003). /Monte Carlo Methods in Financial Engineering/.
+  Stochastic Modelling and Applied Probability 53. Springer. Section 3.1, the
+  Brownian bridge construction.
+  [[https://doi.org/10.1007/978-0-387-21617-1][doi:10.1007/978-0-387-21617-1]].
+- Karatzas, I., and Shreve, S. E. (1991). /Brownian Motion and Stochastic
+  Calculus/, 2nd ed. Graduate Texts in Mathematics 113. Springer. Section 2.3,
+  the Lévy-Ciesielski construction.
+  [[https://doi.org/10.1007/978-1-4612-0949-2][doi:10.1007/978-1-4612-0949-2]]
+  (the 1998 printing of the second edition).
+- Salmon, J. K., Moraes, M. A., Dror, R. O., and Shaw, D. E. (2011). Parallel
+  random numbers: as easy as 1, 2, 3. /Proceedings of SC11/, ACM.
+  [[https://doi.org/10.1145/2063384.2063405][doi:10.1145/2063384.2063405]].
+
+* See also
+
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- the design whose factors this evaluates.
+- [[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]] -- the property that makes a node addressable.
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] -- the structure note that orders this cluster, and where to read this page in it.
+- [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] -- the process this constructs.
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] -- completes: the burst that sets how fine the depth must be.

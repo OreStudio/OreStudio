@@ -8,9 +8,9 @@
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-11-11
 
-Run C++ compilation as: make -C build/output/linux-clang-debug-make -j2 <target>. Never use -j $(nproc). Non-compilation doc targets (compass build --direct skills/site, or the equivalent cmake deploy_skills target) run directly without a -j cap.
+Cap C++ compilation with a small -j through compass build <target>, never by calling make, ninja or cmake --build directly (see [[id:877BF897-FE27-4F45-8293-E207D23AC1F7][Never run builds with cmake directly]]). Never use -j $(nproc). Non-compilation doc targets (compass build --direct skills/site, or the equivalent cmake deploy_skills target) run directly without a -j cap.
 
 *Why:* Machine crashed on full-tree make all -j$(nproc): Qt/shared-library link steps are memory-heavy. Emacs-only targets don't compile C++ so they carry no risk.
 

@@ -70,7 +70,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit calendar_materialisation_service(context ctx);
+    explicit calendar_materialisation_service(const context& ctx);
 
     /**
      * @brief Regenerates (extends) a single calendar's materialised

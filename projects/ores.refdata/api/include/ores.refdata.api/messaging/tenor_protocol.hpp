@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &tenor_key::code},
     };
 }
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &tenor_write::code},
         utility::codec::field{"display_name", &tenor_write::display_name},
         utility::codec::field{"description", &tenor_write::description},
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &tenor_change::write},
         utility::codec::field{"precondition", &tenor_change::precondition},
     };
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_removal::key},
         utility::codec::field{"precondition", &tenor_removal::precondition},
     };
@@ -521,7 +521,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_lookup::key},
         utility::codec::field{"tenor", &tenor_lookup::tenor},
     };
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenors_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &tenors_filter::code_one_of},
     };
 }
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &tenor_event::event_id},
         utility::codec::field{"key", &tenor_event::key},
         utility::codec::field{"action", &tenor_event::action},
@@ -569,7 +569,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenor", &tenor_version_key::tenor},
         utility::codec::field{"version", &tenor_version_key::version},
     };
@@ -584,7 +584,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &tenor_versions_filter::version},
         utility::codec::field{"from_version", &tenor_versions_filter::from_version},
         utility::codec::field{"to_version", &tenor_versions_filter::to_version},
@@ -600,7 +600,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenors_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_tenors_request::offset},
         utility::codec::field{"limit", &list_tenors_request::limit},
         utility::codec::field{"order", &list_tenors_request::order},
@@ -618,7 +618,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenors_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_tenors_response::result},
         utility::codec::field{"tenors", &list_tenors_response::tenors},
         utility::codec::field{"total", &list_tenors_response::total},
@@ -634,7 +634,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_request::key},
     };
 }
@@ -648,7 +648,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_tenor_response::result},
         utility::codec::field{"tenor", &get_tenor_response::tenor},
     };
@@ -663,7 +663,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_tenors_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_tenors_request::keys},
     };
 }
@@ -677,7 +677,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_tenors_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_tenors_response::result},
         utility::codec::field{"entries", &get_many_tenors_response::entries},
     };
@@ -692,7 +692,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_tenor_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_tenor_request::change},
         utility::codec::field{"intent", &put_tenor_request::intent},
     };
@@ -707,7 +707,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_tenor_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_tenor_response::result},
         utility::codec::field{"tenor", &put_tenor_response::tenor},
     };
@@ -722,7 +722,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_tenors_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_tenors_request::changes},
         utility::codec::field{"intent", &put_many_tenors_request::intent},
     };
@@ -737,7 +737,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_tenors_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_tenors_response::result},
         utility::codec::field{"tenors", &put_many_tenors_response::tenors},
     };
@@ -752,7 +752,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_tenor_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_tenor_request::removal},
         utility::codec::field{"intent", &delete_tenor_request::intent},
     };
@@ -767,7 +767,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_tenor_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_tenor_response::result},
     };
 }
@@ -781,7 +781,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_tenors_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_tenors_request::removals},
         utility::codec::field{"intent", &delete_many_tenors_request::intent},
     };
@@ -796,7 +796,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_tenors_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_tenors_response::result},
     };
 }
@@ -810,7 +810,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenor_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_tenor_versions_request::key},
         utility::codec::field{"offset", &list_tenor_versions_request::offset},
         utility::codec::field{"limit", &list_tenor_versions_request::limit},
@@ -828,7 +828,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tenor_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_tenor_versions_response::result},
         utility::codec::field{"versions", &list_tenor_versions_response::versions},
         utility::codec::field{"total", &list_tenor_versions_response::total},
@@ -844,7 +844,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_version_request::key},
     };
 }
@@ -858,7 +858,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tenor_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_tenor_version_response::result},
         utility::codec::field{"version", &get_tenor_version_response::version},
     };
@@ -873,7 +873,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_tenor_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenor_code", &resolve_tenor_request::tenor_code},
         utility::codec::field{"convention_code", &resolve_tenor_request::convention_code},
         utility::codec::field{"calendar_code", &resolve_tenor_request::calendar_code},
@@ -891,7 +891,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_tenor_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &resolve_tenor_response::result},
         utility::codec::field{"anchor_date", &resolve_tenor_response::anchor_date},
         utility::codec::field{"date_before_roll", &resolve_tenor_response::date_before_roll},
@@ -910,7 +910,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_tenor_resolution_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenor", &preview_tenor_resolution_request::tenor},
         utility::codec::field{"convention", &preview_tenor_resolution_request::convention},
         utility::codec::field{"resolution", &preview_tenor_resolution_request::resolution},
@@ -929,7 +929,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convention_tenor_resolution>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenor_code", &convention_tenor_resolution::tenor_code},
         utility::codec::field{"result", &convention_tenor_resolution::result},
         utility::codec::field{"anchor_date", &convention_tenor_resolution::anchor_date},
@@ -947,7 +947,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_code", &resolve_convention_request::convention_code},
         utility::codec::field{"calendar_code", &resolve_convention_request::calendar_code},
         utility::codec::field{"horizon", &resolve_convention_request::horizon},
@@ -964,7 +964,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.tenors.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &resolve_convention_response::result},
         utility::codec::field{"roll_rule", &resolve_convention_response::roll_rule},
         utility::codec::field{"calendar", &resolve_convention_response::calendar},

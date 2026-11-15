@@ -157,6 +157,14 @@ struct ORES_HTTP_API_EXPORT route final {
     std::uint64_t max_body_size = 0;
 
     /**
+     * @brief The rate policy this route runs under, by name.
+     *
+     * Empty means the default for the route's authentication position. Routes
+     * that name the same policy share its budget.
+     */
+    std::string rate_policy;
+
+    /**
      * @brief OpenAPI summary for documentation.
      */
     std::string summary;

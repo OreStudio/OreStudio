@@ -96,8 +96,15 @@ import type { YieldVolatilityConfig } from '../domain/yield_volatility_config.js
 /**
  * @brief An FX convention as a conventions document carries it: the pair, its
  * convention, and the advance calendars the document lists.
+ *
+ * @c id is the name the document gives the convention, which is what another
+ * convention resolves it by. ORE examples spell it more than one way, and a
+ * document states the name its own references use, so the name travels with the
+ * row rather than being derived from the pair again. Empty means the canonical
+ * spelling, which is what a row refdata holds needs.
  */
 export interface FxConvention {
+    id: string;
     pair: CurrencyPair;
     convention: CurrencyPairConvention;
     spot_days: number;

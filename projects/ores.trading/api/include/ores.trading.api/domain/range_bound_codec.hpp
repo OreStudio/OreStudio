@@ -46,7 +46,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &range_bound::version},
         utility::codec::field{"tenant_id", &range_bound::tenant_id},
         utility::codec::field{"trade_id", &range_bound::trade_id},

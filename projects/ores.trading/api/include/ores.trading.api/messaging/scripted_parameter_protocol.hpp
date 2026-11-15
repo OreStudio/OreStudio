@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &scripted_parameter_key::trade_id},
         utility::codec::field{"sequence_number", &scripted_parameter_key::sequence_number},
     };
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &scripted_parameter_write::trade_id},
         utility::codec::field{"sequence_number", &scripted_parameter_write::sequence_number},
         utility::codec::field{"trade_activity_id", &scripted_parameter_write::trade_activity_id},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &scripted_parameter_change::write},
         utility::codec::field{"precondition", &scripted_parameter_change::precondition},
     };
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &scripted_parameter_removal::key},
         utility::codec::field{"precondition", &scripted_parameter_removal::precondition},
     };
@@ -487,7 +487,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &scripted_parameter_lookup::key},
         utility::codec::field{"scripted_parameter", &scripted_parameter_lookup::scripted_parameter},
     };
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameters_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &scripted_parameters_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &scripted_parameters_filter::trade_id_one_of},
     };
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &scripted_parameter_event::event_id},
         utility::codec::field{"key", &scripted_parameter_event::key},
         utility::codec::field{"action", &scripted_parameter_event::action},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"scripted_parameter",
                               &scripted_parameter_version_key::scripted_parameter},
         utility::codec::field{"version", &scripted_parameter_version_key::version},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_parameter_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &scripted_parameter_versions_filter::version},
         utility::codec::field{"from_version", &scripted_parameter_versions_filter::from_version},
         utility::codec::field{"to_version", &scripted_parameter_versions_filter::to_version},
@@ -568,7 +568,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_scripted_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_scripted_parameters_request::offset},
         utility::codec::field{"limit", &list_scripted_parameters_request::limit},
         utility::codec::field{"order", &list_scripted_parameters_request::order},
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_scripted_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_scripted_parameters_response::result},
         utility::codec::field{"scripted_parameters",
                               &list_scripted_parameters_response::scripted_parameters},
@@ -603,7 +603,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_scripted_parameter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_scripted_parameter_request::key},
     };
 }
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_scripted_parameter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_scripted_parameter_response::result},
         utility::codec::field{"scripted_parameter",
                               &get_scripted_parameter_response::scripted_parameter},
@@ -633,7 +633,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_scripted_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_scripted_parameters_request::keys},
     };
 }
@@ -648,7 +648,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_paramete
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_scripted_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_scripted_parameters_response::result},
         utility::codec::field{"entries", &get_many_scripted_parameters_response::entries},
     };
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<get_many_scripted_parameters_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_scripted_parameter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_scripted_parameter_request::change},
         utility::codec::field{"intent", &put_scripted_parameter_request::intent},
     };
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<get_many_scripted_parameters_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_scripted_parameter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_scripted_parameter_response::result},
         utility::codec::field{"scripted_parameter",
                               &put_scripted_parameter_response::scripted_parameter},
@@ -694,7 +694,7 @@ wire_fields(std::type_identity<get_many_scripted_parameters_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_scripted_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_scripted_parameters_request::changes},
         utility::codec::field{"intent", &put_many_scripted_parameters_request::intent},
     };
@@ -710,7 +710,7 @@ wire_fields(std::type_identity<get_many_scripted_parameters_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_scripted_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_scripted_parameters_response::result},
         utility::codec::field{"scripted_parameters",
                               &put_many_scripted_parameters_response::scripted_parameters},
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<put_many_scripted_parameters_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_scripted_parameter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_scripted_parameter_request::removal},
         utility::codec::field{"intent", &delete_scripted_parameter_request::intent},
     };
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<put_many_scripted_parameters_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_scripted_parameter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_scripted_parameter_response::result},
     };
 }
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<put_many_scripted_parameters_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_scripted_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_scripted_parameters_request::removals},
         utility::codec::field{"intent", &delete_many_scripted_parameters_request::intent},
     };
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<delete_many_scripted_parameters_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_scripted_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_scripted_parameters_response::result},
     };
 }
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<delete_many_scripted_parameters_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_scripted_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &list_by_trade_id_scripted_parameters_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_scripted_parameters_request::scope},
         utility::codec::field{"offset", &list_by_trade_id_scripted_parameters_request::offset},
@@ -807,7 +807,7 @@ wire_fields(std::type_identity<list_by_trade_id_scripted_parameters_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_scripted_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_scripted_parameters_response::result},
         utility::codec::field{"scripted_parameters",
                               &list_by_trade_id_scripted_parameters_response::scripted_parameters},
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<list_by_trade_id_scripted_parameters_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_scripted_parameter_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_scripted_parameter_versions_request::key},
         utility::codec::field{"offset", &list_scripted_parameter_versions_request::offset},
         utility::codec::field{"limit", &list_scripted_parameter_versions_request::limit},
@@ -844,7 +844,7 @@ wire_fields(std::type_identity<list_scripted_parameter_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_scripted_parameter_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_scripted_parameter_versions_response::result},
         utility::codec::field{"versions", &list_scripted_parameter_versions_response::versions},
         utility::codec::field{"total", &list_scripted_parameter_versions_response::total},
@@ -861,7 +861,7 @@ wire_fields(std::type_identity<list_scripted_parameter_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_scripted_parameter_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_scripted_parameter_version_request::key},
     };
 }
@@ -876,7 +876,7 @@ wire_fields(std::type_identity<get_scripted_parameter_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_scripted_parameter_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_scripted_parameter_version_response::result},
         utility::codec::field{"version", &get_scripted_parameter_version_response::version},
     };

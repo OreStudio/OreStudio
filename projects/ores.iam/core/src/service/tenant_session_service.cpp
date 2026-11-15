@@ -18,8 +18,9 @@
  *
  */
 #include "ores.iam.core/service/tenant_session_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -56,7 +57,7 @@ std::string_view describe(tenant_session_refusal refusal) {
         case tenant_session_refusal::already_inside_a_tenant:
             return "The session is already inside a tenant; leave it first.";
         case tenant_session_refusal::not_permitted:
-            return "Entering a tenant needs the permission iam::tenants:impersonate.";
+            return "The caller does not hold the permission this entry needs.";
         case tenant_session_refusal::unreadable_tenant_id:
             return "The tenant id could not be read.";
         case tenant_session_refusal::system_tenant:
@@ -67,17 +68,21 @@ std::string_view describe(tenant_session_refusal refusal) {
             return "The tenant has no system party yet, so there is nothing to act as.";
         case tenant_session_refusal::no_read_permissions:
             return "The caller holds no read permission to carry into the tenant.";
+        case tenant_session_refusal::not_a_service_account:
+            return "Only a service account enters a tenant to work inside it.";
+        case tenant_session_refusal::unknown_party:
+            return "The tenant holds no such party.";
         case tenant_session_refusal::not_inside_a_tenant:
             return "The session is not inside a tenant.";
     }
     return "The request was refused.";
 }
 
-tenant_session_service::tenant_session_service(context ctx,
+tenant_session_service::tenant_session_service(const context& ctx,
                                                security::jwt::jwt_authenticator signer,
                                                std::chrono::seconds lifetime)
-    : ctx_(std::move(ctx))
-    , signer_(std::move(signer))
+    : ctx_(ctx)
+    , signer_(signer)
     , lifetime_(lifetime) {}
 
 std::vector<std::string>
@@ -172,25 +177,119 @@ tenant_session_service::enter(const tenant_session_caller& caller,
             .access_lifetime_s = static_cast<int>(lifetime_.count())};
 }
 
+messaging::enter_tenant_as_service_response tenant_session_service::enter_as_service(
+    const tenant_session_caller& caller,
+    const messaging::enter_tenant_as_service_request& request) {
+    const auto refused = [](tenant_session_refusal refusal) {
+        return messaging::enter_tenant_as_service_response{
+            .success = false, .message = std::string(describe(refusal))};
+    };
+
+    if (caller.account_type != service_account_type)
+        return refused(tenant_session_refusal::not_a_service_account);
+    if (!caller.tenant_id.is_system())
+        return refused(tenant_session_refusal::outside_system_administration);
+    if (caller.acting_from_tenant_id)
+        return refused(tenant_session_refusal::already_inside_a_tenant);
+    if (!authorization_service::check_permission(
+            caller.permissions, ores::iam::domain::permissions::tenants_enter_as_service))
+        return refused(tenant_session_refusal::not_permitted);
+
+    const auto target = utility::uuid::tenant_id::from_string(request.tenant_id);
+    if (!target)
+        return refused(tenant_session_refusal::unreadable_tenant_id);
+    if (target->is_system())
+        return refused(tenant_session_refusal::system_tenant);
+
+    const auto system_ctx = database::service::tenant_context::with_system_tenant(ctx_);
+    const auto tenants = repository::read_active_tenant_by_id(system_ctx, target->to_uuid());
+    if (tenants.empty())
+        return refused(tenant_session_refusal::unknown_tenant);
+    const auto& tenant = tenants.front();
+
+
+    const auto target_id = target->to_string();
+    const auto target_ctx = ctx_.with_tenant(*target, caller.username);
+    const auto inside = party_inside(*target, caller.username);
+    if (!inside)
+        return refused(tenant_session_refusal::no_system_party);
+
+    /*
+     * Work that belongs to a party acts as that party, because several checks
+     * read the acting party, and sees what that party sees.
+     */
+    std::string acting_party = inside->party_id;
+    std::vector<std::string> visible = inside->visible;
+    if (!request.party_id.empty()) {
+        const auto parties = ores::database::query_builder::execute_parameterized_string_query(
+            target_ctx,
+            "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
+            {target_id, request.party_id},
+            tenant_session_service_lg(),
+            "Reading the parties the party served sees");
+        if (parties.empty())
+            return refused(tenant_session_refusal::unknown_party);
+        acting_party = request.party_id;
+        visible = parties;
+    }
+
+    const auto now = std::chrono::system_clock::now();
+    security::jwt::jwt_claims claims;
+    claims.subject = boost::uuids::to_string(caller.account_id);
+    claims.username = caller.username;
+    claims.tenant_id = target_id;
+    claims.party_id = acting_party;
+    claims.visible_party_ids = std::move(visible);
+    claims.roles = caller.permissions;
+    claims.session_id = caller.session_id;
+    claims.session_start_time = now;
+    claims.acting_from_tenant_id = caller.tenant_id.to_string();
+    claims.issued_at = now;
+    claims.expires_at = now + lifetime_;
+    const auto token = signer_.create_token(claims);
+    if (!token) {
+        BOOST_LOG_SEV(tenant_session_service_lg(), error)
+            << "Failed to sign the service session for tenant " << target_id;
+        return {.success = false, .message = "The session could not be issued."};
+    }
+
+    repository::auth_event_log(target_ctx)
+        .record_tenant_entered(now,
+                               target_id,
+                               boost::uuids::to_string(caller.account_id),
+                               caller.username,
+                               caller.session_id,
+                               inside->party_id);
+
+    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+        << "Service account " << caller.username << " entered tenant " << tenant.code
+        << " to serve its work";
+    return {.success = true,
+            .token = *token,
+            .tenant_id = target_id,
+            .tenant_code = tenant.code,
+            .party_id = acting_party,
+            .access_lifetime_s = static_cast<int>(lifetime_.count())};
+}
+
 std::optional<tenant_session_service::inside_party>
 tenant_session_service::party_inside(const utility::uuid::tenant_id& target,
                                      const std::string& username) const {
-    using ores::database::repository::execute_parameterized_multi_column_query;
-    using ores::database::repository::execute_parameterized_string_query;
     const auto target_id = target.to_string();
     const auto target_ctx = ctx_.with_tenant(target, username);
-    const auto system_party = execute_parameterized_multi_column_query(
-        target_ctx,
-        "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
-        {target_id},
-        tenant_session_service_lg(),
-        "Reading the system party of the tenant acted inside");
+    const auto system_party =
+        ores::database::query_builder::execute_parameterized_multi_column_query(
+            target_ctx,
+            "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
+            {target_id},
+            tenant_session_service_lg(),
+            "Reading the system party of the tenant acted inside");
     if (system_party.empty() || system_party.front().size() < 2 || !system_party.front()[0])
         return std::nullopt;
     inside_party r;
     r.party_id = *system_party.front()[0];
     r.party_name = system_party.front()[1].value_or("");
-    r.visible = execute_parameterized_string_query(
+    r.visible = ores::database::query_builder::execute_parameterized_string_query(
         target_ctx,
         "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
         {target_id, r.party_id},

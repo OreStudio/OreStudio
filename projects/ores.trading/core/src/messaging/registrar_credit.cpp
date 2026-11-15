@@ -31,7 +31,7 @@ namespace ores::trading::messaging::detail {
 
 std::vector<ores::nats::service::subscription>
 register_credit_handlers(ores::nats::service::client& nats,
-                         ores::database::context ctx,
+                         const ores::database::context& ctx,
                          std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     auto subs = register_credit_instrument_handlers(nats, ctx, verifier);
     auto constituent_subs = register_credit_basket_constituent_handlers(nats, ctx, verifier);

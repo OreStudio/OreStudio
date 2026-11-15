@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_INSTANCE_TRIGGER_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -110,14 +110,14 @@ using namespace ores::logging;
 class report_instance_trigger_handler {
 public:
     report_instance_trigger_handler(ores::nats::service::client& nats,
-                                    ores::database::context ctx,
+                                    const ores::database::context& ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                     ores::workflow::service::fsm_state_map instance_states,
                                     ores::nats::service::nats_client& svc_nats)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
-        , instance_states_(std::move(instance_states))
+        , ctx_(ctx)
+        , verifier_(verifier)
+        , instance_states_(instance_states)
         , svc_nats_(svc_nats) {}
 
     void trigger(ores::nats::message msg) {
@@ -614,7 +614,7 @@ private:
      */
     std::optional<std::string> find_in_flight(const std::string& tenant,
                                               const std::string& definition_id) {
-        const auto rows = ores::database::repository::execute_parameterized_string_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_string_query(
             ctx_,
             "SELECT coalesce(ores_reporting_in_flight_instance_fn($1::uuid, $2::uuid)::text, '')",
             {tenant, definition_id},

@@ -99,8 +99,8 @@ using namespace ores::logging;
 
 class ORES_COMPUTE_CORE_EXPORT work_handler {
 public:
-    explicit work_handler(ores::database::context ctx)
-        : ctx_(std::move(ctx)) {}
+    explicit work_handler(const ores::database::context& ctx)
+        : ctx_(ctx) {}
 
     void heartbeat(ores::nats::message msg) {
         BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;

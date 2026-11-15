@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 7C1E4A52-9B3D-4F67-8E21-5A6C9D0B3F14
+:END:
+#+title: Requests a provisioning step makes, and the deadline each states
+#+description: One row per class of request the provisioning handler makes, with the work it asks for, the deadline it states and why that deadline.
+#+type: investigation
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+
+The inventory the task [[id:F55B666A-60C3-428D-8255-D2B6B67879A7][State each workflow request's deadline against its work]]
+asks for. It covers every request
+=projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp=
+makes, at commit =35f6e8a7f8= on this branch. Every call site was extracted with
+=grep -n "\.request("= and grouped by the request it sends; a class of call
+sites that sends one request type is one row.
+
+* The three deadlines
+
+| Class | Deadline | Rule |
+|-------+----------+------|
+| read or handshake | 30 s, the platform default | One round trip. A read that needs longer is a fault, not a slow host. |
+| derive or write a set of rows | 120 s, =work_request_deadline= | Minutes of work on a loaded host. The deadline is derived below. |
+| regenerate a whole table | 600 s, =bulk_request_deadline= | The slowest healthy run this build has measured, with room to spare. |
+
+** Why 120 s for the middle class
+
+- The surface step measured 99 s for 40 calibrations and publishes on a quiet
+  machine, about 2.5 s each: the Measurements table of
+  [[id:1BA4328A-2620-460A-A7EF-21DC705170BE][Calibrate and publish each party's surfaces in provisioning]] at
+  =f32a0d88e7=.
+- One calibration outlived the shared 30 s default when the host was loaded,
+  which failed step 13 of 15 of a provisioning run with
+  =NATS request timed out=.
+- 120 s is 48 times the quiet measurement and four times the shared default.
+- It is also a tenth of the 1200 s a step must stand still before the engine
+  fails it, so one slow request can never be what exhausts a step's patience.
+  The engine resets that budget on every progress a step reports.
+
+** Why 600 s for the bulk class
+
+- =build_calendars= wrote 13,515 days for each of 35 calendars in 168.4 s on a
+  quiet host after the batch-write fix, and timed out at 600 s before it:
+  [[id:6EA15737-5413-46FB-9660-9C279B42B454][Build the calendars without a read per day]].
+- The deadline keeps the 600 s that step already used. It is now stated once,
+  by name, rather than as a literal at the call site.
+
+* Derive or write a set of rows: 120 s
+
+| Request | Work | Call site |
+|---------+------+-----------|
+| =compute_curve_request= | Bootstraps an IR curve from its quotes. | =publish_curves=, ~1116 |
+| =publish_curve_request= | Writes the curve and its points. | =publish_curves=, ~1127 |
+| =publish_fx_forward_request= | Builds and writes a forward set from spot and the party's published funding curves. | =publish_party_forwards_step=, ~1585 |
+| =calibrate_fx_vol_surface_request= | Fits SSVI to the party's quotes and writes the grid, its lineage and the calibration record. | =publish_party_surfaces_step=, ~1697 |
+| =publish_fx_vol_surface_request= | Writes the surface the calibration produced. | =publish_party_surfaces_step=, ~1711 |
+
+* Regenerate a whole table: 600 s
+
+| Request | Work | Call site |
+|---------+------+-----------|
+| =regenerate_calendar_dates_request= | Writes every day of every calendar in use, 13,515 days each. | =build_calendars_step=, ~2014 |
+
+* Read or handshake: the shared 30 s, deliberately
+
+Every row here is bounded by the tenant's own provisioning data: a catalogue of
+tens of rows, not the tenant's whole market data. One row per class:
+
+| Request | Work |
+|---------+------|
+| =list_parties_request=, =list_books_request= | Finds a party or a book by name or currency, a page of tens. |
+| =list_currency_pair_conventions_request= | The pairs the tenant holds, tens. |
+| =list_ir_curve_bootstrap_configs_request=, =list_ir_curve_bootstrap_pillars_request= | The system's and the party's curve blueprints, tens. |
+| =list_fx_vol_surface_blueprints_request=, =list_fx_vol_surface_pillars_request=, =list_fx_vol_surface_pillar_sources_request= | The system's and the party's surface blueprints, tens. |
+| =list_market_series_request=, =put_many_market_series_request= | The series a blueprint names, and their write, tens. |
+| =list_published_curves_request=, =get_published_fx_forward_request=, =get_published_fx_vol_surface_request= | A published-set read for one pair or blueprint. |
+| =list_report_definitions_request=, =schedule_report_definitions_request= | One party's seeded report catalogue, dozens; one schedule is a job and a grant. |
+| =list_trade_generation_*=, =put_trade_generation_config_request=, =put_many_trade_generation_*= | The trade generator's config, book, counterparty and trade-type rows, tens. |
+| =put_party_request=, =put_party_identifier_request=, =put_many_account_parties_request=, =set_my_default_party_request= | One row, or one party's links. |
+| =put_many_fx_vol_surface_blueprints_request=, =put_many_fx_vol_surface_pillars_request=, =put_many_fx_vol_surface_pillar_sources_request=, =put_many_ir_curve_bootstrap_configs_request=, =put_many_ir_curve_bootstrap_pillars_request= | The blueprint set a party is given, hundreds at most, in one write. |
+| =set_approvals_mode_request=, =complete_system_onboarding_request=, =complete_party_onboarding_request= | One flag or one state change. |
+| =reset_password_request= | One password hash for one account. |
+| =ensure_image_request=, =attach_account_pictures_request= | One image, or one image per account of a small party. Deliberately the shared default: the step that runs it has a 120 s stall budget, so a longer request deadline could not be enforced. |
+
+* Not covered
+
+- =generate_trades_step= writes trades through
+  =ores.synthetic::service::trade_population_service= and its own =nats_client=,
+  not =internal_request_client=. Its requests keep their own deadlines and are
+  out of this task's scope, as the story records.

@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &currency_market_tier_key::code},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &currency_market_tier_write::code},
         utility::codec::field{"name", &currency_market_tier_write::name},
         utility::codec::field{"description", &currency_market_tier_write::description},
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &currency_market_tier_change::write},
         utility::codec::field{"precondition", &currency_market_tier_change::precondition},
     };
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_market_tier_removal::key},
         utility::codec::field{"precondition", &currency_market_tier_removal::precondition},
     };
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_market_tier_lookup::key},
         utility::codec::field{"currency_market_tier",
                               &currency_market_tier_lookup::currency_market_tier},
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tiers_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &currency_market_tiers_filter::code_one_of},
     };
 }
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &currency_market_tier_event::event_id},
         utility::codec::field{"key", &currency_market_tier_event::key},
         utility::codec::field{"action", &currency_market_tier_event::action},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"currency_market_tier",
                               &currency_market_tier_version_key::currency_market_tier},
         utility::codec::field{"version", &currency_market_tier_version_key::version},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_market_tier_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &currency_market_tier_versions_filter::version},
         utility::codec::field{"from_version", &currency_market_tier_versions_filter::from_version},
         utility::codec::field{"to_version", &currency_market_tier_versions_filter::to_version},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_currency_market_tiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_currency_market_tiers_request::offset},
         utility::codec::field{"limit", &list_currency_market_tiers_request::limit},
         utility::codec::field{"order", &list_currency_market_tiers_request::order},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_currency_market_tiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_currency_market_tiers_response::result},
         utility::codec::field{"types", &list_currency_market_tiers_response::types},
         utility::codec::field{"total", &list_currency_market_tiers_response::total},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_currency_market_tier_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_currency_market_tier_request::key},
     };
 }
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_currency_market_tier_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_currency_market_tier_response::result},
         utility::codec::field{"currency_market_tier",
                               &get_currency_market_tier_response::currency_market_tier},
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_market_t
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_currency_market_tiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_currency_market_tiers_request::keys},
     };
 }
@@ -593,7 +593,7 @@ wire_fields(std::type_identity<get_many_currency_market_tiers_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_currency_market_tiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_currency_market_tiers_response::result},
         utility::codec::field{"entries", &get_many_currency_market_tiers_response::entries},
     };
@@ -608,7 +608,7 @@ wire_fields(std::type_identity<get_many_currency_market_tiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_currency_market_tier_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_currency_market_tier_request::change},
         utility::codec::field{"intent", &put_currency_market_tier_request::intent},
     };
@@ -623,7 +623,7 @@ wire_fields(std::type_identity<get_many_currency_market_tiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_currency_market_tier_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_currency_market_tier_response::result},
         utility::codec::field{"currency_market_tier",
                               &put_currency_market_tier_response::currency_market_tier},
@@ -640,7 +640,7 @@ wire_fields(std::type_identity<get_many_currency_market_tiers_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_currency_market_tiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_currency_market_tiers_request::changes},
         utility::codec::field{"intent", &put_many_currency_market_tiers_request::intent},
     };
@@ -656,7 +656,7 @@ wire_fields(std::type_identity<put_many_currency_market_tiers_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_currency_market_tiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_currency_market_tiers_response::result},
         utility::codec::field{"types", &put_many_currency_market_tiers_response::types},
     };
@@ -671,7 +671,7 @@ wire_fields(std::type_identity<put_many_currency_market_tiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_currency_market_tier_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_currency_market_tier_request::removal},
         utility::codec::field{"intent", &delete_currency_market_tier_request::intent},
     };
@@ -686,7 +686,7 @@ wire_fields(std::type_identity<put_many_currency_market_tiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_currency_market_tier_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_currency_market_tier_response::result},
     };
 }
@@ -701,7 +701,7 @@ wire_fields(std::type_identity<put_many_currency_market_tiers_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_market_tiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_currency_market_tiers_request::removals},
         utility::codec::field{"intent", &delete_many_currency_market_tiers_request::intent},
     };
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<delete_many_currency_market_tiers_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_market_tiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_currency_market_tiers_response::result},
     };
 }
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_many_currency_market_tiers_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_market_tier_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_currency_market_tier_versions_request::key},
         utility::codec::field{"offset", &list_currency_market_tier_versions_request::offset},
         utility::codec::field{"limit", &list_currency_market_tier_versions_request::limit},
@@ -751,7 +751,7 @@ wire_fields(std::type_identity<list_currency_market_tier_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_market_tier_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_currency_market_tier_versions_response::result},
         utility::codec::field{"versions", &list_currency_market_tier_versions_response::versions},
         utility::codec::field{"total", &list_currency_market_tier_versions_response::total},
@@ -768,7 +768,7 @@ wire_fields(std::type_identity<list_currency_market_tier_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_market_tier_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_currency_market_tier_version_request::key},
     };
 }
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<get_currency_market_tier_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_market_tier_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_currency_market_tier_version_response::result},
         utility::codec::field{"version", &get_currency_market_tier_version_response::version},
     };

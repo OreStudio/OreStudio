@@ -22,9 +22,9 @@
  * Provider Feeds: LSEG, ICE and Tradeweb
  *
  * Registers three synthetic feeds datasets, one for each provider that has feeds of a kind
- * the platform can simulate today. CME, LSE and Eurex have none yet: the futures, equity and
- * exchange kinds they quote do not exist, and the IR curve config admits term tenors only for
- * the LIBOR and EURIBOR families, so a CME Term SOFR curve cannot be stored. Each is published like every synthetic feeds dataset,
+ * the platform can simulate today. CME, LSE and Eurex have none yet: the futures, equity
+ * and exchange kinds they quote do not exist, and the IR curve config admits term tenors only
+ * for the LIBOR and EURIBOR families, so a CME Term SOFR curve cannot be stored. Each is published like every synthetic feeds dataset,
  * by ores_synthetic_publish_feeds_from_dq_fn, but as a system collection: the dataset is a
  * member of the system_core bundle, a publish that names no party, so the feeds are held by
  * the system tenant's system party, sandboxed, and run once there. A tenant sees them and
@@ -36,9 +36,10 @@
  *     cross-rates matrix. A WM style composite, started at the level the
  *     Bloomberg USD spots imply.
  *   - ICE: LIBOR curves of the tenors the Bloomberg feeds leave out: USD 1M and 6M, GBP,
- *     CHF and JPY 3M.
- *   - Tradeweb: dealer composite curves of the six and one month EURIBOR, the one month GBP
- *     and JPY LIBOR and the six month CHF LIBOR.
+ *     CHF and JPY 3M. LIBOR is retired, so the curves are learning material: the feed
+ *     simulates a benchmark that no longer publishes, and claims no live market.
+ *   - Tradeweb: dealer composite curves of the six and one month EURIBOR, and the one month
+ *     GBP and JPY LIBOR and six month CHF LIBOR, kept as learning material.
  *
  * FX spots are a two-component geometric Gaussian mixture, as Bloomberg's: a primary
  * component of weight 0.95 and a per-tick stdev of the pair's annualised vol / 3970.9, at
@@ -58,9 +59,9 @@ begin
             ('synthetic.feeds.lseg', 'Synthetic Feeds: LSEG',
              'The cross rates a simulated LSEG quotes: fourteen spot pairs between the major non-USD currencies.'),
             ('synthetic.feeds.ice', 'Synthetic Feeds: ICE Data Services',
-             'The LIBOR-family curves a simulated ICE Data Services publishes, for the tenors the Bloomberg feeds do not cover.'),
+             'The LIBOR-family curves a simulated ICE Data Services publishes, for the tenors the Bloomberg feeds do not cover. LIBOR is retired; the curves are learning material.'),
             ('synthetic.feeds.tradeweb', 'Synthetic Feeds: Tradeweb',
-             'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR and LIBOR tenors the other providers do not.')
+             'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR tenors the other providers do not, and the LIBOR tenors kept as learning material.')
         ) as t(code, title, description)
     loop
         perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -121,6 +122,9 @@ begin
 
     -- dataset, provider, name, currency, index family, index tenor (term families only), annual kappa,
     -- annual sigma, theta (the mean and the start level).
+    -- The LIBOR rows below simulate a retired benchmark. They are kept as learning
+    -- material: a curve built on a ceased IBOR is a case a person should be able to
+    -- exercise, and the description says that no live market is claimed.
     insert into t_provider_ir values
         ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'USD', 'libor', '1M', 0.50, 0.007, 0.0430),
         ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'USD', 'libor', '6M', 0.45, 0.008, 0.0450),

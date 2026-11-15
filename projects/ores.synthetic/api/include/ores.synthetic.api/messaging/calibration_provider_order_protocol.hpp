@@ -383,7 +383,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &calibration_provider_order_key::id},
     };
 }
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &calibration_provider_order_write::id},
         utility::codec::field{"policy_id", &calibration_provider_order_write::policy_id},
         utility::codec::field{"provider_code", &calibration_provider_order_write::provider_code},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &calibration_provider_order_change::write},
         utility::codec::field{"precondition", &calibration_provider_order_change::precondition},
     };
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calibration_provider_order_removal::key},
         utility::codec::field{"precondition", &calibration_provider_order_removal::precondition},
     };
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calibration_provider_order_lookup::key},
         utility::codec::field{"calibration_provider_order",
                               &calibration_provider_order_lookup::calibration_provider_order},
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_orders_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"policy_id", &calibration_provider_orders_filter::policy_id},
         utility::codec::field{"provider_code", &calibration_provider_orders_filter::provider_code},
         utility::codec::field{"id_one_of", &calibration_provider_orders_filter::id_one_of},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_provider_order_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &calibration_provider_order_event::event_id},
         utility::codec::field{"key", &calibration_provider_order_event::key},
         utility::codec::field{"action", &calibration_provider_order_event::action},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<calibration_provider_order_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calibration_provider_order",
                               &calibration_provider_order_version_key::calibration_provider_order},
         utility::codec::field{"version", &calibration_provider_order_version_key::version},
@@ -517,7 +517,7 @@ wire_fields(std::type_identity<calibration_provider_order_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<calibration_provider_order_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &calibration_provider_order_versions_filter::version},
         utility::codec::field{"from_version",
                               &calibration_provider_order_versions_filter::from_version},
@@ -536,7 +536,7 @@ wire_fields(std::type_identity<calibration_provider_order_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_calibration_provider_orders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_calibration_provider_orders_request::offset},
         utility::codec::field{"limit", &list_calibration_provider_orders_request::limit},
         utility::codec::field{"order", &list_calibration_provider_orders_request::order},
@@ -555,7 +555,7 @@ wire_fields(std::type_identity<list_calibration_provider_orders_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_calibration_provider_orders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calibration_provider_orders_response::result},
         utility::codec::field{"provider_orders",
                               &list_calibration_provider_orders_response::provider_orders},
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<list_calibration_provider_orders_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_calibration_provider_order_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calibration_provider_order_request::key},
     };
 }
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<get_calibration_provider_order_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_calibration_provider_order_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calibration_provider_order_response::result},
         utility::codec::field{"calibration_provider_order",
                               &get_calibration_provider_order_response::calibration_provider_order},
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<get_calibration_provider_order_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_calibration_provider_orders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_calibration_provider_orders_request::keys},
     };
 }
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<get_many_calibration_provider_orders_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_calibration_provider_orders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_calibration_provider_orders_response::result},
         utility::codec::field{"entries", &get_many_calibration_provider_orders_response::entries},
     };
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<get_many_calibration_provider_orders_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_calibration_provider_order_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_calibration_provider_order_request::change},
         utility::codec::field{"intent", &put_calibration_provider_order_request::intent},
     };
@@ -652,7 +652,7 @@ wire_fields(std::type_identity<put_calibration_provider_order_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_calibration_provider_order_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_calibration_provider_order_response::result},
         utility::codec::field{"calibration_provider_order",
                               &put_calibration_provider_order_response::calibration_provider_order},
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<put_calibration_provider_order_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_calibration_provider_orders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_calibration_provider_orders_request::changes},
         utility::codec::field{"intent", &put_many_calibration_provider_orders_request::intent},
     };
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<put_many_calibration_provider_orders_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_calibration_provider_orders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_calibration_provider_orders_response::result},
         utility::codec::field{"provider_orders",
                               &put_many_calibration_provider_orders_response::provider_orders},
@@ -702,7 +702,7 @@ wire_fields(std::type_identity<put_many_calibration_provider_orders_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_calibration_provider_order_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_calibration_provider_order_request::removal},
         utility::codec::field{"intent", &delete_calibration_provider_order_request::intent},
     };
@@ -718,7 +718,7 @@ wire_fields(std::type_identity<delete_calibration_provider_order_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_calibration_provider_order_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_calibration_provider_order_response::result},
     };
 }
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<delete_calibration_provider_order_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_calibration_provider_orders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_calibration_provider_orders_request::removals},
         utility::codec::field{"intent", &delete_many_calibration_provider_orders_request::intent},
@@ -750,7 +750,7 @@ wire_fields(std::type_identity<delete_many_calibration_provider_orders_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_calibration_provider_orders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_calibration_provider_orders_response::result},
     };
 }
@@ -765,7 +765,7 @@ wire_fields(std::type_identity<delete_many_calibration_provider_orders_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_calibration_provider_order_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_calibration_provider_order_versions_request::key},
         utility::codec::field{"offset", &list_calibration_provider_order_versions_request::offset},
         utility::codec::field{"limit", &list_calibration_provider_order_versions_request::limit},
@@ -784,7 +784,7 @@ wire_fields(std::type_identity<list_calibration_provider_order_versions_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_calibration_provider_order_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calibration_provider_order_versions_response::result},
         utility::codec::field{"versions",
                               &list_calibration_provider_order_versions_response::versions},
@@ -802,7 +802,7 @@ wire_fields(std::type_identity<list_calibration_provider_order_versions_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_calibration_provider_order_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calibration_provider_order_version_request::key},
     };
 }
@@ -817,7 +817,7 @@ wire_fields(std::type_identity<get_calibration_provider_order_version_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_calibration_provider_order_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calibration_provider_order_version_response::result},
         utility::codec::field{"version", &get_calibration_provider_order_version_response::version},
     };

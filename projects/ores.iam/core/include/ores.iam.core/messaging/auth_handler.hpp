@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam.api/domain/role_codec.hpp"
@@ -74,16 +74,6 @@ namespace {
 inline auto& auth_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.messaging.auth_handler");
     return instance;
-}
-
-inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
-    if (it == msg.headers.end())
-        return {};
-    const auto& val = it->second;
-    if (!val.starts_with(ores::nats::headers::bearer_prefix))
-        return {};
-    return val.substr(ores::nats::headers::bearer_prefix.size());
 }
 
 /**
@@ -421,13 +411,13 @@ using namespace ores::logging;
 class auth_handler {
 public:
     auth_handler(ores::nats::service::client& nats,
-                 ores::database::context ctx,
+                 const ores::database::context& ctx,
                  ores::security::jwt::jwt_authenticator signer,
                  std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , party_cache_(std::move(party_cache)) {
+        , ctx_(ctx)
+        , signer_(signer)
+        , party_cache_(party_cache) {
         reload_token_settings();
     }
 
@@ -1022,7 +1012,7 @@ public:
 
     void logout(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
-        auto token = auth_extract_bearer_token(msg);
+        auto token = ores::service::messaging::caller_token(msg);
         try {
             if (!token.empty()) {
                 auto claims_result = signer_.validate(token);
@@ -1084,7 +1074,7 @@ public:
     void refresh(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
 
-        const auto token = auth_extract_bearer_token(msg);
+        const auto token = ores::service::messaging::caller_token(msg);
         if (token.empty()) {
             reply(nats_,
                   msg,

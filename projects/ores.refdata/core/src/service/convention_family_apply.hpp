@@ -19,7 +19,7 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_APPLY_HPP
 #define ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_APPLY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>
 #include <vector>

@@ -36,7 +36,7 @@ BEGIN
     -- party_essentials, so the dependency is declared here even though the
     -- bundle display_order already puts them in the right order.
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.report_definitions', 'ore.conventions', 'convention_source');
+        'ore.report_definitions', 'refdata.conventions', 'convention_source');
 
     -- A parameter names the value domain of its value, and the insert checks
     -- the domain, so the domains publish first.

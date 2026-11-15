@@ -44,11 +44,10 @@ static constexpr std::string_view curve_segment_projection_queue_group = "ores.r
 
 std::vector<ores::nats::service::subscription> register_curve_segment_projection_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<curve_segment_projection_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<curve_segment_projection_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_curve_segment_projections_request::nats_subject,
         curve_segment_projection_queue_group,

@@ -173,7 +173,7 @@ std::vector<std::string> in_term_order(std::vector<std::string> stated) {
     return ordered;
 }
 
-series_shape read_series_shape(ores::database::context ctx, const std::string& series_id) {
+series_shape read_series_shape(const ores::database::context& ctx, const std::string& series_id) {
     using namespace ores::marketdata;
     const std::vector<std::string> ids{series_id};
 

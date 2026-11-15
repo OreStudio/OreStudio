@@ -281,6 +281,7 @@ describe('GET /api/reporting/runs/:id/errors', () => {
                         subject_version: 3,
                         subject_as_of: '2026-05-05 00:00:00.000000Z',
                         event_time: '2026-10-25 09:51:53.527119Z',
+                        location: 'OREData/ored/portfolio/portfolio.cpp:103',
                     },
                 ],
             },
@@ -298,10 +299,37 @@ describe('GET /api/reporting/runs/:id/errors', () => {
                     message: 'Cannot build all required curves!',
                     subject: 'trade',
                     subject_id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
+                    // The place inside the engine is what tells two rows of one
+                    // message apart, so the screen is served it.
+                    location: 'OREData/ored/portfolio/portfolio.cpp:103',
                 },
             ],
         });
         expect(calls[0]?.body).toMatchObject({ report_instance_id: RUN, limit: 500 });
+    });
+
+    it('serves a row that reached no engine line with no location', async () => {
+        const { response } = await get('application', URL_OF_ERRORS, {
+            ...ANSWERS,
+            'reporting.v1.report_error_events.list_by_report_instance_id': {
+                result: OK,
+                total: 1,
+                errors: [
+                    {
+                        id: ERROR,
+                        scope_code: 'Report',
+                        severity: 'error',
+                        message: 'The run failed.',
+                        subject: null,
+                        subject_id: null,
+                        event_time: '2026-10-25 09:51:53.527119Z',
+                    },
+                ],
+            },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ errors: [{ location: null }] });
     });
 
     it('names the curve a curve problem is about, one row per problem', async () => {

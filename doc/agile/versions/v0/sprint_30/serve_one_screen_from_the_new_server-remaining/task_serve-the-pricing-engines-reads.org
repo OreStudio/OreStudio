@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: C1830F26-2A60-49CE-AC82-6B784F34F79E
+:END:
+#+title: Task: Serve the pricing engines' reads
+#+description: Five routes: the page of engines, one document with its bound reports, its history, its ORE document as a file, and the vocabulary the editor draws its controls from.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-pricing-engines-reads
+#+pr: 4749
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-15
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the pricing engines' five reads. A pricing engine configuration is three
+tables in the analytics service: a header, one row for each product and one row
+for each parameter. The screens never see the split, so a read answers the whole
+document.
+
+The ORE document of a configuration is one more read: the ORE service writes it
+and names it, and the route hands it to the browser as a file. The vocabulary is
+the last: the lookups the editor draws its controls from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The C++ server answers =GET /api/reporting/pricing-engines=,
+  =GET /api/reporting/pricing-engines/:id=,
+  =GET /api/reporting/pricing-engines/:id/history=,
+  =GET /api/reporting/pricing-engines/:id/ore-document= and
+  =GET /api/reporting/pricing-engines/vocabulary= at the BFF's paths, with the
+  BFF's member names and status codes.
+- The page states each configuration's parties, its count of products and its
+  count of parameters.
+- One configuration states the document and the reports that bind it.
+- The ORE document is answered as a file, under the name the service states, as
+  =application/xml=, and an export that says it could not write one is a refusal
+  that carries the service's sentence.
+- The vocabulary is paired in the inventory as a route that is not an API, as
+  =choices= was, because the editor calls it and the screen breaks without it.
+- A test proves each route against the answer the BFF gives.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-pricing-engines-reads=.
+
+The document read is the unit the writes task extends: the header, its products,
+its parameters, its bound reports and the party names, stated as one document.
+The history reads the versions of all three tables.
+
+The ORE document joins two ids. The screen names the configuration by the id it
+shows; the ORE service reads a document by the reporting configuration that the
+record fills. The gateway makes that join and the screen never learns the second
+id.
+
+The vocabulary is one read of fifteen lookup collections, keyed by the names the
+editor's controls use. The inventory states it as not an API and in no area, so
+serving it changes no area's count. It is served because the editor calls it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The reporting part's suite | 73 cases, 587 assertions | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | b2368f4ce1 |
+| The pricing engines' own cases | 10 cases, 46 assertions | =ores.http.reporting.tests [pricing_engines]= | b2368f4ce1 |
+| The gateway's routes | 1012 of 1340 | =python3 build/scripts/route_inventory.py --check= | b2368f4ce1 |
+| The BFF's routes paired with a C++ one | 246 of 328, reporting 38 of 44 | =python3 build/scripts/route_inventory.py --check= | b2368f4ce1 |
+| The local gate | 44 of 45 checks passed; the one failure is component-drift, a gap on main that this branch does not cause | =compass check --exclude-heavy= | b2368f4ce1 |
+
+* Notes
+
+** The history read is one statement, shared with =/api/history=
+
+The versions of a record are read and written by =history_routes= in
+=ores.http.core=, and this screen's timeline composes them. A document's timeline
+is three entity types — the configuration, its products and its parameters — and
+the route reads all three, because a save writes them together and a person reads
+one timeline. A product is named by its type code, and a parameter by the product
+it belongs to and its own name, because a parameter's name repeats across
+products.
+
+The product and parameter types are deliberately not added to =/api/history='s
+served set. That route answers the records a history screen offers on its own;
+this one is a document's timeline, and it read the three types directly in the
+BFF too.
+
+** The ORE document joins two ids, and the file's name stays the service's**
+
+The screen names a configuration by the id it shows. The ORE service reads a
+document by the reporting configuration the record fills. The gateway makes that
+join, so the screen never learns the second id.
+
+The header is the BFF's =attachmentOf= exactly: a name of printable ASCII is
+quoted alone, and a name with any other byte states both a plain name and its
+UTF-8 encoding, so the browser saves the file under the name the service stated.
+A reply that carries more than one file is a 502, because one response cannot name
+two files.
+
+** The vocabulary is served although the inventory says it is not an API**
+
+Fifteen lookup collections are read at once and keyed by the names the editor's
+controls use: the product types, the model and engine pairs, the settings each
+pair carries, the globals, the models, the methods, the sensitivity templates,
+the tenors, and the value sets the settings link to. Each entry carries the ORE
+guide's words for it and the value set that states which values it accepts,
+because a form that offers a value the tables refuse is worse than a form that
+offers none.
+
+The inventory counts it as not an API and in no area, so serving it moves no
+area's count. It is served because the editor calls it and breaks without it, as
+=choices= was.
+
+** The value set tables are read once, for both units**
+
+The engine settings' documentation page and the vocabulary both state a setting's
+allowed values, so the four-table read and the three catalogue readers moved to
+=ore_value_set_rows= rather than being copied a second time. The join of a JSON
+object's members moved to =record_routes= beside =array_of=, and the reporting
+part's =shape::object= delegates to it.
+
+** The vocabulary's collections are read one after another**
+
+The BFF read the fifteen collections concurrently. The gateway reads them one at
+a time, because each is a synchronous forward on one session. The answer is the
+same and the latency is the sum rather than the slowest; a screen that calls this
+route once per edit form is the case that would notice.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4749][#4749]] | [http] Serve the pricing engines' five reads |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The pricing engines' five reads are served at the BFF's paths, with its member
+names and status codes, and the family's three units that remained share one
+statement each rather than a copy:
+
+- The page states each configuration's party, its version, its variant, and how
+  many products and parameters its document holds.
+- One configuration states the document and the reports that bind it through its
+  reporting configuration.
+- Its timeline states the versions of the configuration, of every product and of
+  every parameter, newest first within each record, and names a parameter by its
+  product and its own name.
+- Its ORE document is answered as =application/xml= under the name the ORE
+  service stated, with the BFF's own header rule, and an export that names more
+  than one file is a 502.
+- The vocabulary answers the fifteen lookup collections the editor draws its
+  controls from, each entry carrying the guide's words and the value set that
+  states which values it accepts.
+
+The read of a record's versions and the read of a setting's allowed values each
+moved to one place, so =/api/history= and this screen's timeline, and the engine
+settings' documentation page and the vocabulary, cannot drift apart.
+
+The reporting part's suite passes 73 cases and 587 assertions, ten of them for
+these routes, and the inventory pairs 246 of the BFF's 328 routes, reporting 38 of
+44. The local gate passes 44 of 45 checks; the failure is =component-drift= on a
+refdata protocol header this branch does not touch.

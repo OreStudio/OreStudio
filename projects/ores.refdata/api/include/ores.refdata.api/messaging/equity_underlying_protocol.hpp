@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &equity_underlying_key::code},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &equity_underlying_write::code},
         utility::codec::field{"name", &equity_underlying_write::name},
         utility::codec::field{"description", &equity_underlying_write::description},
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &equity_underlying_change::write},
         utility::codec::field{"precondition", &equity_underlying_change::precondition},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_underlying_removal::key},
         utility::codec::field{"precondition", &equity_underlying_removal::precondition},
     };
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_underlying_lookup::key},
         utility::codec::field{"equity_underlying", &equity_underlying_lookup::equity_underlying},
     };
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlyings_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &equity_underlyings_filter::code_one_of},
     };
 }
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &equity_underlying_event::event_id},
         utility::codec::field{"key", &equity_underlying_event::key},
         utility::codec::field{"action", &equity_underlying_event::action},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"equity_underlying",
                               &equity_underlying_version_key::equity_underlying},
         utility::codec::field{"version", &equity_underlying_version_key::version},
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &equity_underlying_versions_filter::version},
         utility::codec::field{"from_version", &equity_underlying_versions_filter::from_version},
         utility::codec::field{"to_version", &equity_underlying_versions_filter::to_version},
@@ -515,7 +515,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_equity_underlyings_request::offset},
         utility::codec::field{"limit", &list_equity_underlyings_request::limit},
         utility::codec::field{"order", &list_equity_underlyings_request::order},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_underlyings_response::result},
         utility::codec::field{"equity_underlyings",
                               &list_equity_underlyings_response::equity_underlyings},
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_underlying_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_underlying_request::key},
     };
 }
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_underlying_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_underlying_response::result},
         utility::codec::field{"equity_underlying",
                               &get_equity_underlying_response::equity_underlying},
@@ -580,7 +580,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_equity_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_equity_underlyings_request::keys},
     };
 }
@@ -594,7 +594,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_equity_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_equity_underlyings_response::result},
         utility::codec::field{"entries", &get_many_equity_underlyings_response::entries},
     };
@@ -609,7 +609,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_underlying_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_equity_underlying_request::change},
         utility::codec::field{"intent", &put_equity_underlying_request::intent},
     };
@@ -624,7 +624,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_underlying_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_equity_underlying_response::result},
         utility::codec::field{"equity_underlying",
                               &put_equity_underlying_response::equity_underlying},
@@ -640,7 +640,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_equity_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_equity_underlyings_request::changes},
         utility::codec::field{"intent", &put_many_equity_underlyings_request::intent},
     };
@@ -655,7 +655,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_equity_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_equity_underlyings_response::result},
         utility::codec::field{"equity_underlyings",
                               &put_many_equity_underlyings_response::equity_underlyings},
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_underlying_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_equity_underlying_request::removal},
         utility::codec::field{"intent", &delete_equity_underlying_request::intent},
     };
@@ -686,7 +686,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_underlying_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_equity_underlying_response::result},
     };
 }
@@ -701,7 +701,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlying
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_equity_underlyings_request::removals},
         utility::codec::field{"intent", &delete_many_equity_underlyings_request::intent},
     };
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<delete_many_equity_underlyings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_equity_underlyings_response::result},
     };
 }
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_many_equity_underlyings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_underlying_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_equity_underlying_versions_request::key},
         utility::codec::field{"offset", &list_equity_underlying_versions_request::offset},
         utility::codec::field{"limit", &list_equity_underlying_versions_request::limit},
@@ -751,7 +751,7 @@ wire_fields(std::type_identity<list_equity_underlying_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_underlying_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_underlying_versions_response::result},
         utility::codec::field{"versions", &list_equity_underlying_versions_response::versions},
         utility::codec::field{"total", &list_equity_underlying_versions_response::total},
@@ -768,7 +768,7 @@ wire_fields(std::type_identity<list_equity_underlying_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_underlying_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_underlying_version_request::key},
     };
 }
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<get_equity_underlying_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_underlying_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_underlying_version_response::result},
         utility::codec::field{"version", &get_equity_underlying_version_response::version},
     };

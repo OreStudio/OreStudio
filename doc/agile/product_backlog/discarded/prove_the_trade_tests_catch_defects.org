@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 306FE2A6-F219-4CA5-9CCA-6C6CB899B84C
+:END:
+#+title: Prove the trade representation tests catch defects
+#+description: Two checks from the closed validation story were not carried: a property-based roundtrip (RapidCheck with Catch2) that writes and reads many generated instruments per type, and mutation testing (Mull) over the projection files to list every reader or writer line no test watches.
+#+type: capture
+#+level: cross
+#+filetags: :trading:ore:testing:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+*Folded into a task* on 2026-11-15: [[id:E1E6C776-190A-4D8F-AB98-1163E1F485A0][Prove the trade representation tests catch defects]], in [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which owns how every trade is represented. The task's acceptance carries what this capture asks.
+
+* What
+
+Two checks prove that the trade representation tests catch the defects they
+claim to catch. A property-based roundtrip (RapidCheck, which works with Catch2)
+generates many instruments of each trade type, writes them as ORE XML, reads them
+back and requires equality, so it reaches values neither the ORE samples nor the
+generator state. Mutation testing (Mull, built on clang) makes small changes to
+the projection readers and writers and lists each change no test notices. Mull
+runs outside the normal build, as an occasional job.
+
+* Why
+
+The validation story that proposed them closed into the coverage story, which
+owns how a trade is represented. These two improve test quality rather than
+coverage, and would be lost without a record.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]], suggestions 5 and 6.
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]

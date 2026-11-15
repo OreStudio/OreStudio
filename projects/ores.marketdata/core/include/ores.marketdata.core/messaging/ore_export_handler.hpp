@@ -53,11 +53,11 @@ using namespace ores::logging;
 class ORES_MARKETDATA_CORE_EXPORT ore_export_handler {
 public:
     ore_export_handler(ores::nats::service::client& nats,
-                       ores::database::context ctx,
+                       const ores::database::context& ctx,
                        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void write_all(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =

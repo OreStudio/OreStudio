@@ -64,7 +64,8 @@ begin
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a62d2b10-ece0-5bfa-aee5-ed4c4ba4d8c8', '135d59a9-075e-50d1-81f6-83f6b866c18a', 'DiscountingCurves', 'ois', 0),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '3223aa51-880e-5a19-9234-41749f99995c', '135d59a9-075e-50d1-81f6-83f6b866c18a', 'IndexForwardingCurves', 'default', 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '151a844e-796a-57fd-9da7-3ab8a01c620e', '135d59a9-075e-50d1-81f6-83f6b866c18a', 'FxSpots', 'default', 2);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '151a844e-796a-57fd-9da7-3ab8a01c620e', '135d59a9-075e-50d1-81f6-83f6b866c18a', 'FxSpots', 'default', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '6998a0ea-683b-5d2c-b1fb-77042c389ede', '135d59a9-075e-50d1-81f6-83f6b866c18a', 'FxVolatilities', 'default', 3);
 
     delete from ores_dq_todays_market_entries_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -92,7 +93,13 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '73453955-3a6c-5060-a788-24e539fdfa73', '135d59a9-075e-50d1-81f6-83f6b866c18a', '151a844e-796a-57fd-9da7-3ab8a01c620e', 'GBPUSD', null, 'FX/GBP/USD', null, 2),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'c421d7df-5078-5d60-884e-ad1490471e62', '135d59a9-075e-50d1-81f6-83f6b866c18a', '151a844e-796a-57fd-9da7-3ab8a01c620e', 'USDJPY', null, 'FX/USD/JPY', null, 3),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9c0320ce-caeb-5d07-a5e1-4a3cd6195e94', '135d59a9-075e-50d1-81f6-83f6b866c18a', '151a844e-796a-57fd-9da7-3ab8a01c620e', 'USDMXN', null, 'FX/USD/MXN', null, 4),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '64c9f807-7ed5-5928-a0e6-6def2b6bc316', '135d59a9-075e-50d1-81f6-83f6b866c18a', '151a844e-796a-57fd-9da7-3ab8a01c620e', 'USDBRL', null, 'FX/USD/BRL', null, 5);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '64c9f807-7ed5-5928-a0e6-6def2b6bc316', '135d59a9-075e-50d1-81f6-83f6b866c18a', '151a844e-796a-57fd-9da7-3ab8a01c620e', 'USDBRL', null, 'FX/USD/BRL', null, 5),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a734eb9f-ed92-5589-b9c9-cde36eac5b4b', '135d59a9-075e-50d1-81f6-83f6b866c18a', '6998a0ea-683b-5d2c-b1fb-77042c389ede', 'EURUSD', null, 'FXVolatility/EUR/USD/EURUSD', null, 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e0202174-efab-5c01-ada1-d87c61c45adc', '135d59a9-075e-50d1-81f6-83f6b866c18a', '6998a0ea-683b-5d2c-b1fb-77042c389ede', 'GBPUSD', null, 'FXVolatility/GBP/USD/GBPUSD', null, 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'baee2f9d-d328-5bf8-b51c-269b2fa87ec7', '135d59a9-075e-50d1-81f6-83f6b866c18a', '6998a0ea-683b-5d2c-b1fb-77042c389ede', 'USDJPY', null, 'FXVolatility/USD/JPY/USDJPY', null, 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9e2a6bd4-3231-5530-acc2-976aa89f4034', '135d59a9-075e-50d1-81f6-83f6b866c18a', '6998a0ea-683b-5d2c-b1fb-77042c389ede', 'USDCAD', null, 'FXVolatility/USD/CAD/USDCAD', null, 3),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b02d648e-14a4-59b2-a01b-f9e361120a5a', '135d59a9-075e-50d1-81f6-83f6b866c18a', '6998a0ea-683b-5d2c-b1fb-77042c389ede', 'EURGBP', null, 'FXVolatility/EUR/GBP/EURGBP', null, 4),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e83056fb-46ce-5c23-941a-bf06b8f76cb8', '135d59a9-075e-50d1-81f6-83f6b866c18a', '6998a0ea-683b-5d2c-b1fb-77042c389ede', 'EURJPY', null, 'FXVolatility/EUR/JPY/EURJPY', null, 5);
 
     delete from ores_dq_todays_market_configurations_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -112,5 +119,6 @@ begin
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8e948427-4336-5b88-a927-75dc44e91bc3', 'e7b294b0-8797-5bb3-99c4-fb2fd6c263e2', 'DiscountingCurves', 'ois', 0),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '4b5ff065-89a1-538b-896b-8f80791b8122', 'e7b294b0-8797-5bb3-99c4-fb2fd6c263e2', 'IndexForwardingCurves', 'default', 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '010404ce-f04e-58ef-a4e0-9f1812f2ea77', 'e7b294b0-8797-5bb3-99c4-fb2fd6c263e2', 'FxSpots', 'default', 2);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '010404ce-f04e-58ef-a4e0-9f1812f2ea77', 'e7b294b0-8797-5bb3-99c4-fb2fd6c263e2', 'FxSpots', 'default', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b400b101-e894-5037-9308-9236be28e11d', 'e7b294b0-8797-5bb3-99c4-fb2fd6c263e2', 'FxVolatilities', 'default', 3);
 end $$;

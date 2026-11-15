@@ -60,6 +60,7 @@ struct observation_lineage_write {
     int derivation_config_version{};
     std::optional<std::chrono::system_clock::time_point> source_as_of;
     std::string source_series_ids;
+    std::string source_weights;
 
     friend bool operator==(const observation_lineage_write&,
                            const observation_lineage_write&) = default;
@@ -378,7 +379,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &observation_lineage_key::id},
     };
 }
@@ -392,7 +393,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &observation_lineage_write::id},
         utility::codec::field{"party_id", &observation_lineage_write::party_id},
         utility::codec::field{"series_id", &observation_lineage_write::series_id},
@@ -406,6 +407,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
                               &observation_lineage_write::derivation_config_version},
         utility::codec::field{"source_as_of", &observation_lineage_write::source_as_of},
         utility::codec::field{"source_series_ids", &observation_lineage_write::source_series_ids},
+        utility::codec::field{"source_weights", &observation_lineage_write::source_weights},
     };
 }
 
@@ -418,7 +420,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &observation_lineage_change::write},
         utility::codec::field{"precondition", &observation_lineage_change::precondition},
     };
@@ -433,7 +435,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &observation_lineage_removal::key},
         utility::codec::field{"precondition", &observation_lineage_removal::precondition},
     };
@@ -448,7 +450,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &observation_lineage_lookup::key},
         utility::codec::field{"observation_lineage",
                               &observation_lineage_lookup::observation_lineage},
@@ -464,7 +466,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineages_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &observation_lineages_filter::id_one_of},
     };
 }
@@ -478,7 +480,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &observation_lineage_event::event_id},
         utility::codec::field{"key", &observation_lineage_event::key},
         utility::codec::field{"action", &observation_lineage_event::action},
@@ -497,7 +499,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"observation_lineage",
                               &observation_lineage_version_key::observation_lineage},
         utility::codec::field{"version", &observation_lineage_version_key::version},
@@ -513,7 +515,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &observation_lineage_versions_filter::version},
         utility::codec::field{"from_version", &observation_lineage_versions_filter::from_version},
         utility::codec::field{"to_version", &observation_lineage_versions_filter::to_version},
@@ -529,7 +531,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_observation_lineages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_observation_lineages_request::offset},
         utility::codec::field{"limit", &list_observation_lineages_request::limit},
         utility::codec::field{"order", &list_observation_lineages_request::order},
@@ -547,7 +549,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_observation_lineages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_observation_lineages_response::result},
         utility::codec::field{"observation_lineages",
                               &list_observation_lineages_response::observation_lineages},
@@ -564,7 +566,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_observation_lineage_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_observation_lineage_request::key},
     };
 }
@@ -578,7 +580,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_observation_lineage_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_observation_lineage_response::result},
         utility::codec::field{"observation_lineage",
                               &get_observation_lineage_response::observation_lineage},
@@ -595,7 +597,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_observation_lineages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_observation_lineages_request::keys},
     };
 }
@@ -610,7 +612,7 @@ wire_fields(std::type_identity<get_many_observation_lineages_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_observation_lineages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_observation_lineages_response::result},
         utility::codec::field{"entries", &get_many_observation_lineages_response::entries},
     };
@@ -625,7 +627,7 @@ wire_fields(std::type_identity<get_many_observation_lineages_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_observation_lineage_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_observation_lineage_request::change},
         utility::codec::field{"intent", &put_observation_lineage_request::intent},
     };
@@ -640,7 +642,7 @@ wire_fields(std::type_identity<get_many_observation_lineages_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_observation_lineage_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_observation_lineage_response::result},
         utility::codec::field{"observation_lineage",
                               &put_observation_lineage_response::observation_lineage},
@@ -657,7 +659,7 @@ wire_fields(std::type_identity<get_many_observation_lineages_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_observation_lineages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_observation_lineages_request::changes},
         utility::codec::field{"intent", &put_many_observation_lineages_request::intent},
     };
@@ -673,7 +675,7 @@ wire_fields(std::type_identity<put_many_observation_lineages_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_observation_lineages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_observation_lineages_response::result},
         utility::codec::field{"observation_lineages",
                               &put_many_observation_lineages_response::observation_lineages},
@@ -689,7 +691,7 @@ wire_fields(std::type_identity<put_many_observation_lineages_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_observation_lineage_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_observation_lineage_request::removal},
         utility::codec::field{"intent", &delete_observation_lineage_request::intent},
     };
@@ -704,7 +706,7 @@ wire_fields(std::type_identity<put_many_observation_lineages_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_observation_lineage_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_observation_lineage_response::result},
     };
 }
@@ -719,7 +721,7 @@ wire_fields(std::type_identity<put_many_observation_lineages_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_observation_lineages_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_observation_lineages_request::removals},
         utility::codec::field{"intent", &delete_many_observation_lineages_request::intent},
     };
@@ -735,7 +737,7 @@ wire_fields(std::type_identity<delete_many_observation_lineages_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_observation_lineages_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_observation_lineages_response::result},
     };
 }
@@ -750,7 +752,7 @@ wire_fields(std::type_identity<delete_many_observation_lineages_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_observation_lineage_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_observation_lineage_versions_request::key},
         utility::codec::field{"offset", &list_observation_lineage_versions_request::offset},
         utility::codec::field{"limit", &list_observation_lineage_versions_request::limit},
@@ -769,7 +771,7 @@ wire_fields(std::type_identity<list_observation_lineage_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_observation_lineage_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_observation_lineage_versions_response::result},
         utility::codec::field{"versions", &list_observation_lineage_versions_response::versions},
         utility::codec::field{"total", &list_observation_lineage_versions_response::total},
@@ -786,7 +788,7 @@ wire_fields(std::type_identity<list_observation_lineage_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_observation_lineage_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_observation_lineage_version_request::key},
     };
 }
@@ -801,7 +803,7 @@ wire_fields(std::type_identity<get_observation_lineage_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_observation_lineage_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_observation_lineage_version_response::result},
         utility::codec::field{"version", &get_observation_lineage_version_response::version},
     };

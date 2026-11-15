@@ -63,6 +63,8 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.nats.lib
         ores.diff.lib
+        # The mapping headers hand quant's types to their callers.
+        ores.analytics.quant.lib
     PRIVATE
         ores.dq.api.lib
         ores.history.core.lib
@@ -70,7 +72,6 @@ target_link_libraries(${lib_target_name}
         pugixml::pugixml
         ores.variability.api.lib
         ores.variability.core.lib
-        ores.analytics.quant.lib
         ores.platform.lib
         ores.utility.lib
         ores.security.lib

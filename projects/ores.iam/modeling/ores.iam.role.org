@@ -172,39 +172,6 @@ true
 :entity_plural_words:   roles
 :END:
 
-*** read_latest_by_name
-:PROPERTIES:
-:ID: 7D4E2A19-6B3C-4F80-9A21-5E8C1D7B4F63
-:END:
-
-Reads the latest active role with the given natural-key =name=, scoped to
-the caller's tenant. The generated CRUD set reads by primary key only and
-its by-column finder is named for a =code= column, so the natural-key
-read this entity's consumers already use stays a declared paste block
-rather than a second, differently-named method on the repository.
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::role> read_latest_by_name(context ctx, const std::string& name);
-#+end_src
-
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::role>
-role_repository::read_latest_by_name(context ctx, const std::string& name) {
-    static constexpr auto max = db_timestamp::max();
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                             "valid_to"_c == max);
-
-    return query_builder::execute_read_query<role_entity, domain::role>(
-        ctx,
-        query,
-        [](const auto& entities) { return role_mapper::map(entities); },
-        lg(),
-        "Reading latest role by name.");
-}
-#+end_src
-
 *** read_registration_default
 :PROPERTIES:
 :ID: 4B8D1F27-3C6A-4E90-B581-7D2F4A9C1E63
@@ -216,12 +183,12 @@ none. The registration path grants the role this read names rather than a
 role name it hard-codes.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::optional<domain::role> read_registration_default(context ctx);
+std::optional<domain::role> read_registration_default(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::role>
-role_repository::read_registration_default(context ctx) {
+role_repository::read_registration_default(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |

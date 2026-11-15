@@ -67,7 +67,7 @@ class ORES_REFDATA_CORE_EXPORT conventions_bundle_service {
 public:
     using context = ores::database::context;
 
-    explicit conventions_bundle_service(context ctx);
+    explicit conventions_bundle_service(const context& ctx);
 
     /**
      * @brief Applies every row the bundle carries.

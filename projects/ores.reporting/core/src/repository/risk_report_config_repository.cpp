@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -81,19 +85,75 @@ risk_report_config_list_order(const ores::utility::domain::order& order,
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool risk_report_config_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using risk_report_config_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::risk_report_config>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+risk_report_config_rows_by_key
+risk_report_config_current_rows(risk_report_config_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<domain::risk_report_config>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    risk_report_config_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::risk_report_config>&
+risk_report_config_rows_of(const risk_report_config_rows_by_key& current,
+                           const domain::risk_report_config& item) {
+    static const std::vector<domain::risk_report_config> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-risk_report_config_repository::replace_claim(context ctx, const domain::risk_report_config& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+risk_report_config_replace_claim(const std::vector<domain::risk_report_config>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::risk_report_config
-risk_report_config_repository::apply_claim(context ctx,
-                                           const domain::risk_report_config& v,
-                                           const ores::utility::domain::precondition& claim) {
+risk_report_config_apply_claim(const domain::risk_report_config& v,
+                               const ores::utility::domain::precondition& claim,
+                               const std::vector<domain::risk_report_config>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -105,57 +165,73 @@ risk_report_config_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void risk_report_config_repository::write(context ctx, const domain::risk_report_config& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void risk_report_config_repository::write(context ctx,
+void risk_report_config_repository::write(const context& ctx, const domain::risk_report_config& v) {
+    write(
+        ctx, v, risk_report_config_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void risk_report_config_repository::write(const context& ctx,
                                           const std::vector<domain::risk_report_config>& v) {
+    const auto current = risk_report_config_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            risk_report_config_replace_claim(risk_report_config_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void risk_report_config_repository::write(context ctx,
+void risk_report_config_repository::write(const context& ctx,
                                           const domain::risk_report_config& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing risk report config. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        risk_report_config_apply_claim(v,
+                                       claim,
+                                       risk_report_config_claim_reads_current(claim) ?
+                                           read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                           std::vector<domain::risk_report_config>{});
     query_builder::execute_write_query(
         ctx, risk_report_config_mapper::map(t), lg(), "Writing risk report config to database.");
 }
 
 void risk_report_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::risk_report_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing risk report configs. Count: " << v.size();
+    std::vector<domain::risk_report_config> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (risk_report_config_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = risk_report_config_current_rows(*this, ctx, to_read);
     std::vector<domain::risk_report_config> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(risk_report_config_apply_claim(
+            v[i], claims[i], risk_report_config_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        risk_report_config_mapper::map(batch),
                                        lg(),
                                        "Writing risk report configs to database.");
 }
 
-std::vector<domain::risk_report_config> risk_report_config_repository::read_latest(context ctx) {
+std::vector<domain::risk_report_config>
+risk_report_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
@@ -171,7 +247,7 @@ std::vector<domain::risk_report_config> risk_report_config_repository::read_late
 }
 
 std::vector<domain::risk_report_config>
-risk_report_config_repository::read_latest(context ctx, const std::string& id) {
+risk_report_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -189,7 +265,7 @@ risk_report_config_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::risk_report_config>
-risk_report_config_repository::read_all(context ctx, const std::string& id) {
+risk_report_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all risk report config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
@@ -205,7 +281,7 @@ risk_report_config_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::risk_report_config> risk_report_config_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading risk report config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -229,7 +305,7 @@ std::optional<domain::risk_report_config> risk_report_config_repository::read_at
 
 std::vector<domain::risk_report_config>
 risk_report_config_repository::read_latest_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -256,7 +332,7 @@ risk_report_config_repository::read_latest_by_configuration_id(
 }
 
 std::uint32_t risk_report_config_repository::get_total_config_count_by_configuration_id(
-    context ctx, const std::string& configuration_id) {
+    const context& ctx, const std::string& configuration_id) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active risk report configs count. configuration_id: "
         << configuration_id;
@@ -274,7 +350,7 @@ std::uint32_t risk_report_config_repository::get_total_config_count_by_configura
 
 
 risk_report_config_repository::remove_status risk_report_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing risk report config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -303,12 +379,12 @@ risk_report_config_repository::remove_status risk_report_config_repository::remo
     return remove_status::removed;
 }
 
-void risk_report_config_repository::remove(context ctx, const std::string& id) {
+void risk_report_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::risk_report_config>
-risk_report_config_repository::read_latest(context ctx,
+risk_report_config_repository::read_latest(const context& ctx,
                                            std::uint32_t offset,
                                            std::uint32_t limit,
                                            const ores::utility::domain::order& order,
@@ -332,7 +408,7 @@ risk_report_config_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-risk_report_config_repository::get_total_config_count(context ctx,
+risk_report_config_repository::get_total_config_count(const context& ctx,
                                                       const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active risk report config count";
 
@@ -349,9 +425,25 @@ risk_report_config_repository::get_total_config_count(context ctx,
 }
 
 std::vector<domain::risk_report_config>
-risk_report_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+risk_report_config_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::risk_report_config> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -367,7 +459,8 @@ risk_report_config_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void risk_report_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void risk_report_config_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -452,7 +545,7 @@ struct portfolio_scope_entity {
 }
 
 std::optional<domain::risk_report_config>
-risk_report_config_repository::find_by_definition_id(context ctx,
+risk_report_config_repository::find_by_definition_id(const context& ctx,
                                                      const std::string& definition_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finding risk_report_config by definition_id: " << definition_id;
@@ -494,7 +587,7 @@ risk_report_config_repository::find_by_definition_id(context ctx,
 }
 
 std::vector<std::string> risk_report_config_repository::resolve_book_ids(
-    context ctx, const std::string& config_id, const std::string& definition_id) {
+    const context& ctx, const std::string& config_id, const std::string& definition_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Resolving book IDs for config: " << config_id
                                << " definition: " << definition_id;
@@ -513,7 +606,7 @@ std::vector<std::string> risk_report_config_repository::resolve_book_ids(
 }
 
 std::optional<std::string>
-risk_report_config_repository::regulatory_book_type_of(context ctx,
+risk_report_config_repository::regulatory_book_type_of(const context& ctx,
                                                        const std::string& definition_id) {
     const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
@@ -527,7 +620,7 @@ risk_report_config_repository::regulatory_book_type_of(context ctx,
 }
 
 std::vector<std::string>
-risk_report_config_repository::get_book_scope(context ctx, const std::string& config_id) {
+risk_report_config_repository::get_book_scope(const context& ctx, const std::string& config_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Reading book scope for config: " << config_id;
 
@@ -551,7 +644,8 @@ risk_report_config_repository::get_book_scope(context ctx, const std::string& co
 }
 
 std::vector<std::string>
-risk_report_config_repository::get_portfolio_scope(context ctx, const std::string& config_id) {
+risk_report_config_repository::get_portfolio_scope(const context& ctx,
+                                                   const std::string& config_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Reading portfolio scope for config: " << config_id;
 

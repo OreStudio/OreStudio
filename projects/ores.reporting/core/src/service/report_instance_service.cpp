@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -59,13 +61,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-report_instance_service::report_instance_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+report_instance_service::report_instance_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -84,6 +87,42 @@ report_instance_read_one(repository::report_instance_repository& repo,
                          const ores::database::context& ctx,
                          const messaging::report_instance_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::report_instance>>
+report_instance_read_many(repository::report_instance_repository& repo,
+                          const ores::database::context& ctx,
+                          const std::vector<messaging::report_instance_key>& keys) {
+    std::vector<std::vector<domain::report_instance>> found(keys.size());
+    std::vector<std::string> name_keys;
+    name_keys.reserve(keys.size());
+    for (const auto& key : keys)
+        name_keys.push_back(key.name);
+    std::map<std::string, std::vector<domain::report_instance>> by_key;
+    for (auto& row : repo.read_latest_by_name(ctx, name_keys))
+        by_key[row.name].push_back(std::move(row));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key.name);
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -140,27 +179,30 @@ messaging::list_report_instances_response report_instance_service::list_report_i
                                  {.entity = "report instances", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->definition_id_one_of &&
-        request.filter->definition_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "definition_id_one_of", .limit = "1000"});
+        request.filter->definition_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "definition_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->kind_one_of &&
-        request.filter->kind_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "kind_one_of", .limit = "1000"});
+        request.filter->kind_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "kind_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->cut_id_one_of &&
-        request.filter->cut_id_one_of->size() > 1000) {
+        request.filter->cut_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "cut_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "cut_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A list narrows to kind unless the caller states one, so the default view is
@@ -202,16 +244,23 @@ messaging::get_report_instance_response report_instance_service::get_report_inst
 messaging::get_many_report_instances_response report_instance_service::get_many_report_instances(
     const messaging::get_many_report_instances_request& request) {
     messaging::get_many_report_instances_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = report_instance_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::report_instance_lookup entry;
-        entry.key = k;
-        auto found = report_instance_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.report_instance = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.report_instance = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -221,7 +270,9 @@ messaging::put_report_instance_response report_instance_service::put_report_inst
     const messaging::put_report_instance_request& request) {
     messaging::put_report_instance_response response;
     domain::report_instance value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = report_instance_read_one(
+        repo_, ctx_, report_instance_key_from(report_instance_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -234,11 +285,18 @@ messaging::put_report_instance_response report_instance_service::put_report_inst
 messaging::put_many_report_instances_response report_instance_service::put_many_report_instances(
     const messaging::put_many_report_instances_request& request) {
     messaging::put_many_report_instances_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::report_instance_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(report_instance_key_from(report_instance_to_domain(change.write)));
+    const auto current = report_instance_read_many(repo_, ctx_, keys);
     std::vector<domain::report_instance> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::report_instance value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -256,9 +314,11 @@ messaging::put_many_report_instances_response report_instance_service::put_many_
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.instances.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = report_instance_read_one(repo_, ctx_, report_instance_key_from(value));
-        response.instances.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = report_instance_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.instances.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -335,10 +395,13 @@ report_instance_service::delete_many_report_instances(
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::report_instance_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::report_instance> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = report_instance_read_one(repo_, ctx_, removal.key);
+    for (auto& named : report_instance_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -408,12 +471,12 @@ report_instance_service::get_report_instance_version(
 ores::utility::domain::result
 report_instance_service::prepare_change(const messaging::report_instance_change& change,
                                         const ores::utility::domain::change_intent& intent,
+                                        const std::vector<domain::report_instance>& current,
                                         domain::report_instance& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = report_instance_to_domain(change.write);
-    const auto current = report_instance_read_one(repo_, ctx_, report_instance_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -79,17 +79,16 @@ ores::nats::service::nats_client& auth_nats() {
     return instance;
 }
 
-// A scheduler that is never run: a test steps it, or only builds feeds against it.
-ores::analytics::quant::service::tick_scheduler& idle_scheduler() {
+/// A run with no blocks: its loop and its values, which is all a factory test needs.
+ores::analytics::quant::service::run_market& idle_market() {
     static ores::analytics::quant::service::manual_run_clock clock(
         std::chrono::system_clock::time_point{});
-    static ores::analytics::quant::service::tick_scheduler instance(clock, {}, 42);
+    static ores::analytics::quant::service::run_market instance(clock, {}, 42);
     return instance;
 }
 
 feed_build_context make_build_context() {
-    return feed_build_context{
-        .nats = nats(), .auth_nats = auth_nats(), .scheduler = idle_scheduler()};
+    return feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .market = idle_market()};
 }
 
 gmm_component make_component(double mean, double stdev, double weight) {
@@ -243,10 +242,12 @@ private:
 
 }
 
-TEST_CASE("make_default_feed_factory registers both kinds", "[feed_factory]") {
+TEST_CASE("make_default_feed_factory registers every kind", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
-    CHECK(factory.kinds() == std::vector<std::string>{std::string(fx_spot_feed_kind),
-                                                      std::string(ir_curve_feed_kind)});
+    CHECK(factory.kinds() ==
+          std::vector<std::string>{std::string(fx_spot_feed_kind),
+                                   std::string(ores::synthetic::feed::fx_vol_surface_feed_kind),
+                                   std::string(ir_curve_feed_kind)});
 }
 
 TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", "[feed_factory]") {
@@ -515,9 +516,9 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_f
     // stopping it takes the body out again.
     ores::analytics::quant::service::manual_run_clock clock(
         std::chrono::system_clock::time_point{});
-    ores::analytics::quant::service::tick_scheduler scheduler(clock, {}, 42);
+    ores::analytics::quant::service::run_market market(clock, {}, 42);
     const auto context =
-        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = scheduler};
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .market = market};
 
     const auto factory = make_default_feed_factory();
     auto fx = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
@@ -536,14 +537,14 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_f
 
     first->start();
     second->start();
-    CHECK(scheduler.size() == 2);
+    CHECK(market.loop().size() == 2);
 
     // The scheduler owns the order, so a step is one tick of one series.
-    CHECK(scheduler.step().has_value());
+    CHECK(market.loop().step().has_value());
 
     first->stop();
     second->stop();
-    CHECK(scheduler.size() == 0);
+    CHECK(market.loop().size() == 0);
 }
 
 TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_factory]") {
@@ -551,9 +552,9 @@ TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_fa
     // no longer runs, so it read zero however many ticks the scheduler made.
     ores::analytics::quant::service::manual_run_clock clock(
         std::chrono::system_clock::time_point{});
-    ores::analytics::quant::service::tick_scheduler scheduler(clock, {}, 42);
+    ores::analytics::quant::service::run_market market(clock, {}, 42);
     const auto context =
-        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = scheduler};
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .market = market};
 
     const auto factory = make_default_feed_factory();
     auto eur = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
@@ -572,7 +573,7 @@ TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_fa
 
     constexpr int ticks = 20;
     for (int i = 0; i < ticks; ++i)
-        REQUIRE(scheduler.step().has_value());
+        REQUIRE(market.loop().step().has_value());
 
     // One series ticks per step, so the two counts add up to the steps taken.
     CHECK(first->publish_count() + second->publish_count() == ticks);
@@ -612,4 +613,88 @@ TEST_CASE("the default market speed keeps a curve at one tick a minute stepping 
     CHECK(curve_step_years(1440.0, 240.0) == Catch::Approx(1.0 / 365.0 / 4.0).epsilon(1e-12));
     // The speed decides how fast its calendar runs: a tenth of the speed is a tenth of the step.
     CHECK(curve_step_years(144.0, 60.0) == Catch::Approx(1.0 / 3650.0).epsilon(1e-12));
+}
+
+TEST_CASE("a_curve_started_from_a_fixing_records_it_and_takes_its_rate", "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::ir_curve_start start;
+    start.source.from_fixing = true;
+    start.source.item = "oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR";
+    start.source.provider_code = "riksbank";
+    start.source.value = *ores::utility::decimal::decimal::from_string("-0.0005");
+    start.rate = -0.0005;
+
+    const auto feed = ores::synthetic::feed::make_ir_curve_feed(
+        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.market, {}, start);
+
+    const auto recorded = feed->start_source();
+    REQUIRE(recorded.has_value());
+    CHECK(recorded->from_fixing);
+    CHECK(recorded->provider_code == "riksbank");
+    CHECK(recorded->value.to_string() == "-0.0005");
+}
+
+TEST_CASE("a_curve_with_no_fixing_records_the_fixed_rate_it_kept_and_why", "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::ir_curve_start start;
+    start.source.note = "No series of the class policy publishes an overnight rate in CHF";
+
+    const auto feed = ores::synthetic::feed::make_ir_curve_feed(
+        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.market, {}, start);
+
+    const auto recorded = feed->start_source();
+    REQUIRE(recorded.has_value());
+    CHECK_FALSE(recorded->from_fixing);
+    CHECK(recorded->value.to_string() == "0.04");
+    CHECK(recorded->note.find("CHF") != std::string::npos);
+}
+
+TEST_CASE("a_curve_the_policy_refuses_to_start_without_a_fixing_does_not_start", "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::ir_curve_start start;
+    start.refused = true;
+    start.source.note = "No overnight rate has a fixing";
+
+    CHECK_THROWS_AS(ores::synthetic::feed::make_ir_curve_feed(ctx.nats,
+                                                              f.config,
+                                                              f.entries,
+                                                              f.values,
+                                                              f.definitions,
+                                                              f.refctx,
+                                                              ctx.market,
+                                                              {},
+                                                              start),
+                    std::runtime_error);
+}
+
+TEST_CASE("a_curve_whose_series_cannot_be_read_keeps_its_fixed_rate_and_says_why",
+          "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    const ores::synthetic::feed::calibration_policy policy;
+
+    const auto start =
+        ores::synthetic::feed::resolve_ir_start(ctx.auth_nats, f.config, policy, nullptr);
+
+    CHECK_FALSE(start.refused);
+    CHECK_FALSE(start.rate.has_value());
+    CHECK_FALSE(start.source.from_fixing);
+    CHECK(start.source.note.find("could not be read") != std::string::npos);
+}
+
+TEST_CASE("a_curve_the_policy_refuses_when_its_series_cannot_be_read_is_refused",
+          "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::calibration_policy policy;
+    policy.fallback_code = "refuse";
+
+    const auto start =
+        ores::synthetic::feed::resolve_ir_start(ctx.auth_nats, f.config, policy, nullptr);
+
+    CHECK(start.refused);
+    CHECK(start.source.note.find("refuses to start without a fixing") != std::string::npos);
 }

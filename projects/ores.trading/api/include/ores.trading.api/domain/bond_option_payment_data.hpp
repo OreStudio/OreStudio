@@ -69,7 +69,7 @@ struct bond_option_payment_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_option_payment_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"dates", &bond_option_payment_data::dates},
         utility::codec::field{"rules", &bond_option_payment_data::rules},
     };

@@ -44,10 +44,10 @@ static constexpr std::string_view ascot_queue_group = "ores.trading.service";
 
 std::vector<ores::nats::service::subscription>
 register_ascot_handlers(ores::nats::service::client& nats,
-                        ores::database::context ctx,
+                        const ores::database::context& ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<ascot_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<ascot_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_ascots_request::nats_subject, ascot_queue_group, [h](ores::nats::message msg) {
             h->list_ascots(std::move(msg));

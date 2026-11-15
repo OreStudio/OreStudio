@@ -20,7 +20,7 @@
 #ifndef ORES_DATABASE_REPOSITORY_DOCUMENT_OPERATIONS_HPP
 #define ORES_DATABASE_REPOSITORY_DOCUMENT_OPERATIONS_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -77,7 +77,7 @@ void state_amendment_reason(Row& row, std::string_view reason, std::string_view 
  * moved on is a conflict the store raises, never a silent overwrite.
  */
 template <typename Repository, typename Row>
-void write_amendment(database::context ctx,
+void write_amendment(const database::context& ctx,
                      Repository repository,
                      std::vector<Row> rows,
                      std::string_view reason,

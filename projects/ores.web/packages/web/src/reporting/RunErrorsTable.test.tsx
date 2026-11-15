@@ -25,7 +25,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import { TranslationProvider } from '../i18n/Provider.js';
 import type { ReportRunErrorView } from '@ores/wire-protocol/browser';
-import { ErrorSubject, RunErrors, runErrorsKey } from './RunErrorsTable.js';
+import { ErrorSubject, RunErrors, runErrorsKey, scopeCounts } from './RunErrorsTable.js';
 
 /**
  * The errors of a run, one row each. What is checked is what a reader follows:
@@ -45,6 +45,8 @@ const error = (over: Partial<ReportRunErrorView>): ReportRunErrorView => ({
     subject_id: TRADE,
     cause: null,
     time: '2026-10-25 09:51:53.527119Z',
+    location: null,
+    filename: 'log.txt',
     ...over,
 });
 
@@ -89,27 +91,63 @@ describe('the errors tab of a run', () => {
                 severity: 'warning',
                 scope: 'Report',
             }),
+            error({
+                id: 'e0000000-0000-4000-8000-000000000003',
+                severity: 'info',
+                scope: 'Engine',
+                about: '',
+                subject: null,
+                subject_id: null,
+                message: 'group = setup : nThreads = 1',
+                location: 'OREAnalytics/orea/app/parameters.cpp:144',
+                filename: 'engine.log',
+            }),
         ]);
         const html = renderToStaticMarkup(
             <QueryClientProvider client={client}>
                 <TranslationProvider>
-                    <MemoryRouter initialEntries={[`/reporting/runs/${run}?tab=errors`]}>
+                    <MemoryRouter initialEntries={[`/reporting/runs/${run}?tab=log`]}>
                         <RunErrors runId={run} />
                     </MemoryRouter>
                 </TranslationProvider>
             </QueryClientProvider>,
         );
 
+        // A notice is counted in a column of its own, so the errors and the
+        // warnings do not read as the whole of what the run recorded.
         for (const label of [
             'Overview',
             'List',
             'Errors',
             'Warnings',
+            'Info',
             'Total',
-            'problems by scope',
+            'rows by log',
+            'rows by scope',
+            'log.txt',
+            'engine.log',
+            'Last 5 errors',
+            'See every row',
         ]) {
             expect(html).toContain(label);
         }
         expect(html).not.toContain('reporting.run.');
+    });
+});
+
+describe('the parts of a run counted by scope', () => {
+    it('counts a notice apart from a warning and an error', () => {
+        const counts = scopeCounts([
+            error({ scope: 'Engine', severity: 'info' }),
+            error({ scope: 'Engine', severity: 'info' }),
+            error({ scope: 'Report', severity: 'warning' }),
+            error({ scope: 'Trade', severity: 'error' }),
+        ]);
+
+        expect(counts).toEqual([
+            { scope: 'Engine', errors: 0, warnings: 0, infos: 2 },
+            { scope: 'Report', errors: 0, warnings: 1, infos: 0 },
+            { scope: 'Trade', errors: 1, warnings: 0, infos: 0 },
+        ]);
     });
 });

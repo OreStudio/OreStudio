@@ -44,10 +44,10 @@ static constexpr std::string_view gmm_component_queue_group = "ores.synthetic.se
 
 std::vector<ores::nats::service::subscription>
 register_gmm_component_handlers(ores::nats::service::client& nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<gmm_component_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<gmm_component_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_gmm_components_request::nats_subject,
         gmm_component_queue_group,

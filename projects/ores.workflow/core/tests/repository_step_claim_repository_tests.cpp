@@ -28,6 +28,7 @@
 #include <future>
 #include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -214,4 +215,112 @@ TEST_CASE("a_released_claim_is_not_renewed", "[repository][step_claim]") {
 
     CHECK(!claims.renew(cleanup.system(), step, "first/1", seconds(300)));
     CHECK(!claims.holder(cleanup.system(), step).has_value());
+}
+
+namespace {
+
+using ores::workflow::repository::step_progress;
+
+/// Long enough that two statements read different times from the store's clock.
+void let_the_clock_move() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+}
+
+}
+
+TEST_CASE("a_claim_starts_with_no_progress_changed_at_its_claim", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+
+    step_claim_repository claims;
+    REQUIRE(
+        claims.claim(cleanup.system(), step, random_uuid(), "first/1", seconds(300)).has_value());
+    const auto activity = claims.activity(cleanup.system(), step);
+    REQUIRE(activity.has_value());
+    CHECK(!activity->progress.has_value());
+    CHECK(activity->progressed_at >= activity->claimed_at);
+}
+
+TEST_CASE("a_renewal_reporting_new_progress_moves_its_time", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+
+    step_claim_repository claims;
+    REQUIRE(
+        claims.claim(cleanup.system(), step, random_uuid(), "first/1", seconds(300)).has_value());
+    const auto before = claims.activity(cleanup.system(), step);
+    REQUIRE(before.has_value());
+    let_the_clock_move();
+
+    const step_progress progress{.phase = "trades", .done = 140, .total = 600};
+    REQUIRE(claims.renew(cleanup.system(), step, "first/1", seconds(300), progress));
+    const auto after = claims.activity(cleanup.system(), step);
+    REQUIRE(after.has_value());
+    CHECK(after->progress == std::optional(progress));
+    CHECK(after->progressed_at > before->progressed_at);
+}
+
+TEST_CASE("a_renewal_reporting_the_same_progress_leaves_its_time", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+
+    step_claim_repository claims;
+    REQUIRE(
+        claims.claim(cleanup.system(), step, random_uuid(), "first/1", seconds(300)).has_value());
+    const step_progress progress{.phase = "trades", .done = 140, .total = 600};
+    REQUIRE(claims.renew(cleanup.system(), step, "first/1", seconds(300), progress));
+    const auto moved = claims.activity(cleanup.system(), step);
+    REQUIRE(moved.has_value());
+    let_the_clock_move();
+
+    // A holder that renews without advancing is seen to stand still.
+    REQUIRE(claims.renew(cleanup.system(), step, "first/1", seconds(300), progress));
+    const auto still = claims.activity(cleanup.system(), step);
+    REQUIRE(still.has_value());
+    CHECK(still->progressed_at == moved->progressed_at);
+}
+
+TEST_CASE("a_renewal_without_a_report_keeps_the_stored_progress", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+
+    step_claim_repository claims;
+    REQUIRE(
+        claims.claim(cleanup.system(), step, random_uuid(), "first/1", seconds(300)).has_value());
+    const step_progress progress{.phase = "passwords", .done = 8, .total = std::nullopt};
+    REQUIRE(claims.renew(cleanup.system(), step, "first/1", seconds(300), progress));
+    const auto reported = claims.activity(cleanup.system(), step);
+    REQUIRE(reported.has_value());
+    let_the_clock_move();
+
+    REQUIRE(claims.renew(cleanup.system(), step, "first/1", seconds(300)));
+    const auto kept = claims.activity(cleanup.system(), step);
+    REQUIRE(kept.has_value());
+    CHECK(kept->progress == std::optional(progress));
+    CHECK(kept->progressed_at == reported->progressed_at);
+}
+
+TEST_CASE("a_takeover_starts_its_progress_afresh", "[repository][step_claim]") {
+    database_helper h;
+    claim_cleanup cleanup(h);
+    const auto step = cleanup.watch(random_uuid());
+    const auto work_tenant = random_uuid();
+
+    step_claim_repository claims;
+    REQUIRE(claims.claim(cleanup.system(), step, work_tenant, "first/1", seconds(0)).has_value());
+    REQUIRE(claims.renew(cleanup.system(),
+                         step,
+                         "first/1",
+                         seconds(0),
+                         step_progress{.phase = "trades", .done = 1, .total = 2}));
+    REQUIRE(
+        claims.claim(cleanup.system(), step, work_tenant, "second/2", seconds(300)).has_value());
+
+    const auto activity = claims.activity(cleanup.system(), step);
+    REQUIRE(activity.has_value());
+    CHECK(!activity->progress.has_value());
 }

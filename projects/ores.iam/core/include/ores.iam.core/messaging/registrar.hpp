@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_MESSAGING_REGISTRAR_HPP
 #define ORES_IAM_MESSAGING_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -40,7 +40,7 @@ public:
      */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       ores::security::jwt::jwt_authenticator signer);
 };
 

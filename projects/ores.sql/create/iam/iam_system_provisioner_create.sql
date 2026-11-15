@@ -37,6 +37,7 @@
 --
 -- Prerequisites:
 --   - Must be called in system tenant context
+--   - The system must be in bootstrap mode; the function checks it under a lock
 --   - SuperAdmin role must already be seeded (via iam_roles_populate.sql)
 --   - System party must already exist (via refdata_system_party_populate.sql)
 --   - system.bootstrap_mode system setting must exist (via variability_system_settings_populate.sql)
@@ -62,6 +63,7 @@ declare
     v_account_id uuid;
     v_super_admin_role_id uuid;
     v_system_party_id uuid;
+    v_bootstrap_mode text;
 begin
     v_actor := coalesce(nullif(p_actor, ''), ores_iam_current_actor_fn(), current_user);
     v_system_tenant_id := ores_utility_system_tenant_id_fn();
@@ -80,6 +82,21 @@ begin
     end if;
     if p_password_hash is null or p_password_hash = '' then
         raise exception 'Password hash cannot be empty' using errcode = '22023';
+    end if;
+
+    -- The create grants SuperAdmin with no session, so it runs only in bootstrap
+    -- mode. A check made before this call cannot close the window between two
+    -- creates. The lock makes the check and the create one step: a second create
+    -- waits here, then reads the flag this one clears below. That read sees the
+    -- first create's commit because each statement takes a fresh snapshot under
+    -- READ COMMITTED, the isolation every caller's transaction uses. A missing
+    -- flag refuses: the guard of an anonymous SuperAdmin grant fails closed.
+    perform pg_advisory_xact_lock(hashtextextended('ores_iam_create_initial_admin', 0));
+    select setting_value into v_bootstrap_mode
+    from ores_variability_get_system_settings_fn(v_system_tenant_id)
+    where setting_name = 'system.bootstrap_mode';
+    if coalesce(v_bootstrap_mode, 'false') not in ('true', '1') then
+        raise exception 'System is not in bootstrap mode' using errcode = '55000';
     end if;
 
     v_account_id := gen_random_uuid();

@@ -44,10 +44,10 @@ static constexpr std::string_view bond_forward_queue_group = "ores.trading.servi
 
 std::vector<ores::nats::service::subscription>
 register_bond_forward_handlers(ores::nats::service::client& nats,
-                               ores::database::context ctx,
+                               const ores::database::context& ctx,
                                std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<bond_forward_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<bond_forward_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_bond_forwards_request::nats_subject,
         bond_forward_queue_group,

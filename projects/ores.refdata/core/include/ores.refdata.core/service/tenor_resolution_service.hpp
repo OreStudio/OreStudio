@@ -54,7 +54,7 @@ public:
      * @param ctx The database context, carrying the tenant every read is
      * scoped to.
      */
-    explicit tenor_resolution_service(context ctx);
+    explicit tenor_resolution_service(const context& ctx);
 
     /**
      * @brief Resolves the request's tenor under its convention.

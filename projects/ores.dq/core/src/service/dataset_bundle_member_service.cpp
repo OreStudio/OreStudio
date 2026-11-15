@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-dataset_bundle_member_service::dataset_bundle_member_service(context ctx)
-    : ctx_(std::move(ctx))
+dataset_bundle_member_service::dataset_bundle_member_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

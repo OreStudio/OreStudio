@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_two_swap_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &tenor_basis_two_swap_convention_key::id},
     };
 }
@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &tenor_basis_two_swap_convention_write::id},
         utility::codec::field{"calendar", &tenor_basis_two_swap_convention_write::calendar},
         utility::codec::field{"long_fixed_frequency",
@@ -444,7 +444,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &tenor_basis_two_swap_convention_change::write},
         utility::codec::field{"precondition",
                               &tenor_basis_two_swap_convention_change::precondition},
@@ -461,7 +461,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_basis_two_swap_convention_removal::key},
         utility::codec::field{"precondition",
                               &tenor_basis_two_swap_convention_removal::precondition},
@@ -478,7 +478,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_basis_two_swap_convention_lookup::key},
         utility::codec::field{
             "tenor_basis_two_swap_convention",
@@ -496,7 +496,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_conventions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &tenor_basis_two_swap_conventions_filter::id_one_of},
     };
 }
@@ -511,7 +511,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_conventions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &tenor_basis_two_swap_convention_event::event_id},
         utility::codec::field{"key", &tenor_basis_two_swap_convention_event::key},
         utility::codec::field{"action", &tenor_basis_two_swap_convention_event::action},
@@ -532,7 +532,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "tenor_basis_two_swap_convention",
             &tenor_basis_two_swap_convention_version_key::tenor_basis_two_swap_convention},
@@ -550,7 +550,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_two_swap_convention_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &tenor_basis_two_swap_convention_versions_filter::version},
         utility::codec::field{"from_version",
                               &tenor_basis_two_swap_convention_versions_filter::from_version},
@@ -569,7 +569,7 @@ wire_fields(std::type_identity<tenor_basis_two_swap_convention_versions_filter>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_two_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_tenor_basis_two_swap_conventions_request::offset},
         utility::codec::field{"limit", &list_tenor_basis_two_swap_conventions_request::limit},
         utility::codec::field{"order", &list_tenor_basis_two_swap_conventions_request::order},
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<list_tenor_basis_two_swap_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_two_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_tenor_basis_two_swap_conventions_response::result},
         utility::codec::field{
             "tenor_basis_two_swap_conventions",
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<list_tenor_basis_two_swap_conventions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_basis_two_swap_convention_request::key},
     };
 }
@@ -622,7 +622,7 @@ wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_tenor_basis_two_swap_convention_response::result},
         utility::codec::field{
             "tenor_basis_two_swap_convention",
@@ -640,7 +640,7 @@ wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_tenor_basis_two_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_tenor_basis_two_swap_conventions_request::keys},
     };
 }
@@ -655,7 +655,7 @@ wire_fields(std::type_identity<get_many_tenor_basis_two_swap_conventions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_tenor_basis_two_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_tenor_basis_two_swap_conventions_response::result},
         utility::codec::field{"entries",
@@ -673,7 +673,7 @@ wire_fields(std::type_identity<get_many_tenor_basis_two_swap_conventions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_tenor_basis_two_swap_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_tenor_basis_two_swap_convention_request::change},
         utility::codec::field{"intent", &put_tenor_basis_two_swap_convention_request::intent},
     };
@@ -689,7 +689,7 @@ wire_fields(std::type_identity<put_tenor_basis_two_swap_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_tenor_basis_two_swap_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_tenor_basis_two_swap_convention_response::result},
         utility::codec::field{
             "tenor_basis_two_swap_convention",
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<put_tenor_basis_two_swap_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_tenor_basis_two_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_tenor_basis_two_swap_conventions_request::changes},
         utility::codec::field{"intent", &put_many_tenor_basis_two_swap_conventions_request::intent},
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<put_many_tenor_basis_two_swap_conventions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_tenor_basis_two_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_tenor_basis_two_swap_conventions_response::result},
         utility::codec::field{
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<put_many_tenor_basis_two_swap_conventions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_tenor_basis_two_swap_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_tenor_basis_two_swap_convention_request::removal},
         utility::codec::field{"intent", &delete_tenor_basis_two_swap_convention_request::intent},
     };
@@ -759,7 +759,7 @@ wire_fields(std::type_identity<delete_tenor_basis_two_swap_convention_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_tenor_basis_two_swap_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_tenor_basis_two_swap_convention_response::result},
     };
 }
@@ -774,7 +774,7 @@ wire_fields(std::type_identity<delete_tenor_basis_two_swap_convention_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_tenor_basis_two_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_tenor_basis_two_swap_conventions_request::removals},
         utility::codec::field{"intent",
@@ -792,7 +792,7 @@ wire_fields(std::type_identity<delete_many_tenor_basis_two_swap_conventions_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_tenor_basis_two_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_tenor_basis_two_swap_conventions_response::result},
     };
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<delete_many_tenor_basis_two_swap_conventions_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_two_swap_convention_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_tenor_basis_two_swap_convention_versions_request::key},
         utility::codec::field{"offset",
                               &list_tenor_basis_two_swap_convention_versions_request::offset},
@@ -831,7 +831,7 @@ wire_fields(std::type_identity<list_tenor_basis_two_swap_convention_versions_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_two_swap_convention_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_tenor_basis_two_swap_convention_versions_response::result},
         utility::codec::field{"versions",
@@ -851,7 +851,7 @@ wire_fields(std::type_identity<list_tenor_basis_two_swap_convention_versions_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_basis_two_swap_convention_version_request::key},
     };
 }
@@ -866,7 +866,7 @@ wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_version_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_two_swap_convention_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_tenor_basis_two_swap_convention_version_response::result},
         utility::codec::field{"version",

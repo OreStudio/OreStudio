@@ -26,10 +26,10 @@
 #include <map>
 #include <string>
 
-// The catalogue installs the vendor instruments of Bloomberg, LSEG and Demo, and the notations of
-// those providers read and write ids. This test puts the two side by side: every installed row
-// that has a notation must read, and must write back as itself. A row the notation refuses, or
-// writes as another id, is a row that the catalogue and the notation disagree on.
+// The catalogue installs the vendor instruments of Bloomberg, LSEG, ICE, Tradeweb and Demo, and
+// the notations of those providers read and write ids. This test puts the two side by side: every
+// installed row that has a notation must read, and must write back as itself. A row the notation
+// refuses, or writes as another id, is a row that the catalogue and the notation disagree on.
 
 namespace {
 
@@ -66,9 +66,12 @@ TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_no
     }
 
     // Each provider's catalogue is the set of ids its own feeds serve, so the providers differ:
-    // the seed installs 362 Bloomberg ids, 71 Demo ids and 14 LSEG crosses. Other suites share
-    // the database and may add rows of their own, so the count is a floor.
+    // the seed installs 362 Bloomberg ids, 71 Demo ids, 14 LSEG crosses and 35 pillars for each of
+    // ICE and Tradeweb. Other suites share the database and may add rows of their own, so the count
+    // is a floor.
     CHECK(checked["bloomberg"] >= 362);
     CHECK(checked["demo"] >= 71);
     CHECK(checked["lseg"] >= 14);
+    CHECK(checked["ice"] >= 35);
+    CHECK(checked["tradeweb"] >= 35);
 }

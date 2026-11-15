@@ -2,13 +2,13 @@
 :ID: BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29
 :END:
 #+title: Story: Build the IR curves of every supported currency from public data — the remaining work
-#+description: Each supported currency has an overnight-index curve bootstrapped from its synthetic quotes and published in the system tenant, and the synthetic IR feeds start from public rates; the curves are published since sprint 29, but every synthetic IR feed still starts from a fixed level because no public IR rate is stored.
+#+description: Each supported currency has an overnight-index curve bootstrapped from its synthetic quotes and published in the system tenant, and each synthetic IR feed with a public source starts from its currency's latest rate. The remaining work is the bootstrap cadence, the ceased-feed replacement, the test cleanup and the coverage screen.
 #+type: story
 #+level: s2
 #+filetags: :ir:curves:marketdata:synthetic:sprint_30:v0:
 #+created: 2026-11-08
 #+updated: 2026-11-09
-#+environment: festive-dijkstra
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started. Split from [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]], which closed in sprint 29 with its done tasks. |
-| Waiting on    | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]], which stores the public overnight rates that the calibration reads. |
-| Next          | Calibrate the synthetic IR feeds when the first public rates are stored. The bootstrap cadence, the replacement of ceased feeds and the test cleanup do not wait. |
-| Last touched  | 2026-11-09 |
+| Now           | The curves are built, the IBOR projections publish beside their funding curves, and a freshly provisioned environment publishes all thirty without a person acting. The last open task is the screens. |
+| Waiting on    | Nothing. |
+| Next          | [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]]: the pair view has shipped, the grouping of a currency's curves across the curves and coverage screens has not. |
+| Last touched  | 2026-11-14 |
 
 * Acceptance
 
@@ -39,12 +39,16 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E033D8BF-BB5A-4AC1-A41F-49A722395694][Bootstrap the curves again as their quotes move]] | BACKLOG | | | The scheduler bootstraps and publishes each curve again on a stated cadence, so the published curves follow the synthetic quotes rather than stay at the provisioning as-of. |
-| [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] | BACKLOG | | | The IR asset class gets a calibration policy, as FX has, so each synthetic overnight-index feed starts from its currency's latest public rate and its fit is reviewed like an FX fit. |
-| [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] | BACKLOG | | | The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published. |
+| [[id:E033D8BF-BB5A-4AC1-A41F-49A722395694][Bootstrap the curves again as their quotes move]] | DONE | 2026-11-12 | 2026-11-13 | The scheduler bootstraps and publishes each curve again on a stated cadence, so the published curves follow the synthetic quotes rather than stay at the provisioning as-of. |
+| [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] | DONE | 2026-11-12 | 2026-11-12 | The IR asset class gets a calibration policy, as FX has, so each synthetic overnight-index feed starts from its currency's latest public rate and its fit is reviewed like an FX fit. |
+| [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] | DONE | 2026-11-13 | 2026-11-13 | The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published. |
 | [[id:C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF][Read the public overnight rates through an adapter]] | ABANDONED | | | Moved to the story [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]], which has one specialised adapter for each publisher. |
-| [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | BACKLOG | | | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
-| [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | BACKLOG | | | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
+| [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | DONE | 2026-11-13 | 2026-11-13 | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
+| [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | DONE | 2026-11-13 | 2026-11-13 | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
+| [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]] | BACKLOG | | |
+| [[id:0A87FC5F-F15E-40D8-8CF6-572D24A203EE][Make the ICE and Tradeweb feeds tick]] | DONE | 2026-11-13 | 2026-11-13 | ICE and Tradeweb have no provider notation and no feed route, so their LIBOR and EURIBOR quotes are published as internal ticks and dropped before ingest. Implement both notations, seed their catalogue feeds, routes and subscriptions, and prove a LIBOR quote lands in a series. |
+ A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR. |
+| [[id:D37ED209-460F-458B-B84B-2D728C6E28AE][Bootstrap every IBOR curve]] | DONE | 2026-11-13 | 2026-11-14 | Every IBOR feed gets a bootstrap config, its quote series and its bootstrapped output series, with the currency's overnight curve as its discount curve, so an IBOR curve builds from IBOR quotes and publishes like an overnight curve. |
 
 * Decisions
 
@@ -54,6 +58,30 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 - Restructured on 2026-11-09. The adapter task was abandoned, and [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] now reads the public overnight rates, with one specialised adapter for each publisher. This story keeps the use of those rates: the calibration, the bootstrap cadence and the coverage screen.
 - The order of the work: the public rates are stored first, then the calibration reads them, then the coverage screen shows the result. The bootstrap cadence, the replacement of ceased or misnamed feeds and the test cleanup do not depend on the public rates.
 - A currency with no usable public source keeps its synthetic feed at a stated fixed level, with the reason recorded. On 2026-11-09 that is AUD and NZD (no route that a script can read), JPY (the Bank of Japan's permission) and CHF (a SIX Data License) among the eight currencies of the derived FX pairs.
+- Calibration, on 2026-11-12. The IR class has one policy, seeded with the thirteen publishers and a 90-day window. A feed of price source =fixing= starts from the newest overnight fixing of its currency in that order. A fixing older than the window is skipped, with its age in the record. A policy of =keep_fixed= keeps the stated level with the reason; a policy of =refuse= stops the curve by name.
+- The start record covers a fixed curve too. A curve that took no fixing records the level it kept, so a later edit of the config does not rewrite where an earlier run began.
+- A forward set reads its pair's calendars to lay out the ladder. A fresh provision therefore builds the calendars before the forwards; the two ran at once, and a pair whose calendar was still being materialised was refused.
+- The thirteen rates are already stored, so AUD, NZD and JPY now start from a public rate. CHF keeps a fixed level until the SIX Data License question is settled.
+
+- Corrected the ceased and misnamed feeds on 2026-11-13, and kept the IBOR feeds. ILS now
+  names SHIR, which replaced TELBOR on 2025-06-30, and HUF names HUFONIA, the overnight
+  average, where it named BUBOR's overnight quote. CNH keeps HIBOR and TWD keeps TAIBOR: the
+  O/N fixing of each family is the currency's overnight rate, and no other family exists for
+  either. PLN keeps POLONIA, the central bank's overnight rate; what is unsettled is the route
+  that would read it, so the feed keeps its fixed level with the reason.
+- The LIBOR feeds stay, as learning material: LIBOR is retired, and a simulated IBOR curve is
+  a case a person should be able to build and compare against the overnight curve. The ICE
+  dataset and the Tradeweb LIBOR tenors are seeded again, described as retired benchmarks. They
+  are term curves: the publisher gives every =libor= or =euribor= feed the role =projection=,
+  so no consumer takes an IBOR curve for a discount curve, and the automatic calibration never
+  starts one from a public overnight fixing because their price source is =fixed=.
+- No public rate is stored for SHIR or HUFONIA, so the two feeds keep their synthetic level,
+  as the calibration already does for a currency with no source. The conventions carry the
+  two indices; the ACME discount curves name them. The ORE sample artefacts (northwind,
+  acme_uk) keep their own index names, because they copy external ORE documents.
+- The next step for IBOR is the visual comparison: a bootstrap config for the IBOR curve of a
+  currency beside its overnight curve, so a person can open both, and the coverage screen
+  groups by currency and family rather than taking one row per currency.
 
 * Out of scope
 

@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_basket_constituent_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &equity_basket_constituent_key::trade_id},
         utility::codec::field{"sequence_number", &equity_basket_constituent_key::sequence_number},
     };
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_basket_constituent_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &equity_basket_constituent_write::trade_id},
         utility::codec::field{"sequence_number", &equity_basket_constituent_write::sequence_number},
         utility::codec::field{"trade_activity_id",
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_basket_constituent_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &equity_basket_constituent_change::write},
         utility::codec::field{"precondition", &equity_basket_constituent_change::precondition},
     };
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_basket_constituent_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_basket_constituent_removal::key},
         utility::codec::field{"precondition", &equity_basket_constituent_removal::precondition},
     };
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_basket_constituent_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_basket_constituent_lookup::key},
         utility::codec::field{"equity_basket_constituent",
                               &equity_basket_constituent_lookup::equity_basket_constituent},
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_basket_constituent_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &equity_basket_constituent_event::event_id},
         utility::codec::field{"key", &equity_basket_constituent_event::key},
         utility::codec::field{"action", &equity_basket_constituent_event::action},
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_basket_con
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<equity_basket_constituent_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"equity_basket_constituent",
                               &equity_basket_constituent_version_key::equity_basket_constituent},
         utility::codec::field{"version", &equity_basket_constituent_version_key::version},
@@ -491,7 +491,7 @@ wire_fields(std::type_identity<equity_basket_constituent_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<equity_basket_constituent_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &equity_basket_constituent_versions_filter::version},
         utility::codec::field{"from_version",
                               &equity_basket_constituent_versions_filter::from_version},
@@ -509,7 +509,7 @@ wire_fields(std::type_identity<equity_basket_constituent_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_basket_constituents_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_equity_basket_constituents_request::offset},
         utility::codec::field{"limit", &list_equity_basket_constituents_request::limit},
         utility::codec::field{"order", &list_equity_basket_constituents_request::order},
@@ -527,7 +527,7 @@ wire_fields(std::type_identity<list_equity_basket_constituents_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_basket_constituents_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_basket_constituents_response::result},
         utility::codec::field{
             "equity_basket_constituents",
@@ -546,7 +546,7 @@ wire_fields(std::type_identity<list_equity_basket_constituents_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_basket_constituent_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_basket_constituent_request::key},
     };
 }
@@ -561,7 +561,7 @@ wire_fields(std::type_identity<get_equity_basket_constituent_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_basket_constituent_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_basket_constituent_response::result},
         utility::codec::field{"equity_basket_constituent",
                               &get_equity_basket_constituent_response::equity_basket_constituent},
@@ -578,7 +578,7 @@ wire_fields(std::type_identity<get_equity_basket_constituent_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_equity_basket_constituents_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_equity_basket_constituents_request::keys},
     };
 }
@@ -593,7 +593,7 @@ wire_fields(std::type_identity<get_many_equity_basket_constituents_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_equity_basket_constituents_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_equity_basket_constituents_response::result},
         utility::codec::field{"entries", &get_many_equity_basket_constituents_response::entries},
     };
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<get_many_equity_basket_constituents_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_equity_basket_constituent_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_equity_basket_constituent_request::change},
         utility::codec::field{"intent", &put_equity_basket_constituent_request::intent},
     };
@@ -625,7 +625,7 @@ wire_fields(std::type_identity<put_equity_basket_constituent_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_equity_basket_constituent_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_equity_basket_constituent_response::result},
         utility::codec::field{"equity_basket_constituent",
                               &put_equity_basket_constituent_response::equity_basket_constituent},
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<put_equity_basket_constituent_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_equity_basket_constituents_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_equity_basket_constituents_request::changes},
         utility::codec::field{"intent", &put_many_equity_basket_constituents_request::intent},
     };
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<put_many_equity_basket_constituents_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_equity_basket_constituents_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_equity_basket_constituents_response::result},
         utility::codec::field{
             "equity_basket_constituents",
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<put_many_equity_basket_constituents_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_equity_basket_constituent_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_equity_basket_constituent_request::removal},
         utility::codec::field{"intent", &delete_equity_basket_constituent_request::intent},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<delete_equity_basket_constituent_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_equity_basket_constituent_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_equity_basket_constituent_response::result},
     };
 }
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<delete_equity_basket_constituent_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_basket_constituents_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_equity_basket_constituents_request::removals},
         utility::codec::field{"intent", &delete_many_equity_basket_constituents_request::intent},
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<delete_many_equity_basket_constituents_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_basket_constituents_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_equity_basket_constituents_response::result},
     };
 }
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<delete_many_equity_basket_constituents_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_basket_constituent_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_equity_basket_constituent_versions_request::key},
         utility::codec::field{"offset", &list_equity_basket_constituent_versions_request::offset},
         utility::codec::field{"limit", &list_equity_basket_constituent_versions_request::limit},
@@ -758,7 +758,7 @@ wire_fields(std::type_identity<list_equity_basket_constituent_versions_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_basket_constituent_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_basket_constituent_versions_response::result},
         utility::codec::field{"versions",
                               &list_equity_basket_constituent_versions_response::versions},
@@ -776,7 +776,7 @@ wire_fields(std::type_identity<list_equity_basket_constituent_versions_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_basket_constituent_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_basket_constituent_version_request::key},
     };
 }
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<get_equity_basket_constituent_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_basket_constituent_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_basket_constituent_version_response::result},
         utility::codec::field{"version", &get_equity_basket_constituent_version_response::version},
     };

@@ -50,6 +50,8 @@ response as an HTTP response.
 * Dependencies
 
 - =ores.http.api= — server infrastructure, router, JWT claims.
+- =ores.http.nats= — the forwarding step the history read sends through.
+- =ores.history.api= — the history request, whose subject names the owning component.
 - =ores.iam.api=, =ores.variability.api=, =ores.storage.api=
   — NATS protocol types for each domain service called.
 - =nats.c= — NATS client for forwarding requests.
@@ -79,5 +81,13 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.security.lib
         ores.database.lib
-        ores.dq.api.lib)
+        ores.dq.api.lib
+        ores.history.api.lib
+        ores.http.nats.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.history.api.lib)
 #+end_src

@@ -93,6 +93,8 @@ demo_notation::write(const quote_description& description) const {
     if (const auto* pillar = std::get_if<ir_curve_pillar>(&description)) {
         if (const auto ok = detail::check_pillar(*pillar); !ok)
             return std::unexpected(ok.error());
+        if (const auto ok = detail::check_no_index_tenor(*pillar, "Demo"); !ok)
+            return std::unexpected(ok.error());
         return messaging::vendor_id{.id_scheme = std::string(demo_notation_scheme),
                                     .external_id = pillar->currency + "/" + pillar->index_family +
                                                    "/" + pillar->instrument_code + "/" +

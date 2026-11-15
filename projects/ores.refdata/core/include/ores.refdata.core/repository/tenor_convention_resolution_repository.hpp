@@ -75,7 +75,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit tenor_convention_resolution_repository(context ctx);
+    explicit tenor_convention_resolution_repository(const context& ctx);
 
     std::string sql();
 

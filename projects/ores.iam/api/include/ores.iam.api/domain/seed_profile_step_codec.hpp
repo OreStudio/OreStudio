@@ -46,7 +46,7 @@ namespace ores::iam::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &seed_profile_step::version},
         utility::codec::field{"tenant_id", &seed_profile_step::tenant_id},
         utility::codec::field{"id", &seed_profile_step::id},

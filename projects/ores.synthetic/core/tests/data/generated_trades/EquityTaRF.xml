@@ -4,27 +4,42 @@
     <TradeType>EquityTaRF</TradeType>
     <EquityTaRFData>
       <Currency>USD</Currency>
-      <FixingAmount>3895254.25</FixingAmount>
-      <TargetAmount>7790508.5</TargetAmount>
+      <FixingAmount>832.45</FixingAmount>
+      <TargetAmount>389525.43</TargetAmount>
+      <Strike>4679.28</Strike>
       <Underlying>
         <Type>Equity</Type>
         <Name>.SPX</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate></StartDate>
-          <Tenor>1Y</Tenor>
-          <Convention>MF</Convention>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2036-01-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ScheduleData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <PayoffType>TargetExact</PayoffType>
       </OptionData>
+      <RangeBounds>
+        <RangeBound>
+          <RangeTo>4679.28</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
+          <RangeFrom>4679.28</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
+      </RangeBounds>
       <Barriers>
         <BarrierData>
-          <Type>FixingCap</Type>
+          <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>5147.21</Level>
+            <Level>389525.43</Level>
           </Levels>
         </BarrierData>
       </Barriers>
@@ -34,27 +49,42 @@
     <TradeType>EquityTaRF</TradeType>
     <EquityTaRFData>
       <Currency>USD</Currency>
-      <FixingAmount>4801709.49</FixingAmount>
-      <TargetAmount>9603418.98</TargetAmount>
+      <FixingAmount>1965.51</FixingAmount>
+      <TargetAmount>480170.95</TargetAmount>
+      <Strike>2442.99</Strike>
       <Underlying>
         <Type>Equity</Type>
         <Name>.SPX</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate></StartDate>
-          <Tenor>1Y</Tenor>
-          <Convention>MF</Convention>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2026-09-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ScheduleData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <PayoffType>TargetExact</PayoffType>
       </OptionData>
+      <RangeBounds>
+        <RangeBound>
+          <RangeTo>2442.99</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
+          <RangeFrom>2442.99</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
+      </RangeBounds>
       <Barriers>
         <BarrierData>
-          <Type>FixingCap</Type>
+          <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>2687.29</Level>
+            <Level>480170.95</Level>
           </Levels>
         </BarrierData>
       </Barriers>

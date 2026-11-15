@@ -44,10 +44,13 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
+find_package(magic_enum CONFIG REQUIRED)
+
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.refdata.service.lib
+        magic_enum::magic_enum
         ores.history.core.lib
         ores.iam.api.lib
         ores.iam.core.lib

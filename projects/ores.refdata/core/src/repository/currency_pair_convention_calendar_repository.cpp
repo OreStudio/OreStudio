@@ -53,8 +53,8 @@ std::string currency_pair_convention_calendar_repository::sql() {
 }
 
 currency_pair_convention_calendar_repository::currency_pair_convention_calendar_repository(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition currency_pair_convention_calendar_repository::replace_claim(
     const domain::currency_pair_convention_calendar& v) {

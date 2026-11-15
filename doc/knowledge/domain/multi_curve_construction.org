@@ -110,6 +110,15 @@ complication once Fed Funds Average Swaps enter the pillar set — see
 [[id:6FD5CD8D-16C3-401E-B0E4-97D9E298B03F][Fed Funds Average Swap
 Convexity]].
 
+** Build order in the running system
+
+The build order is not advice to a reader: the producer that publishes curves
+reads the edge each curve declares and builds the funding curve before the
+projection curves that name it. A projection curve whose funding curve has no
+live set is deferred, not failed, and the reason names the funding curve. The
+plan that orders the build, its three outcomes and the way every builder shares
+them are [[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]].
+
 ** Caveat: basis-linked Projection Curves can be cyclic
 
 The claim above — that Projection Curves are mutually independent once the

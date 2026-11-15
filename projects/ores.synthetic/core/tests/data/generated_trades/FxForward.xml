@@ -5,9 +5,9 @@
     <FxForwardData>
       <ValueDate>2036-01-02</ValueDate>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>877427.22</BoughtAmount>
+      <BoughtAmount>723174.17</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>723174.17</SoldAmount>
+      <SoldAmount>877427.22</SoldAmount>
       <Settlement>Cash</Settlement>
     </FxForwardData>
   </Trade>
@@ -16,9 +16,9 @@
     <FxForwardData>
       <ValueDate>2033-09-02</ValueDate>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>13422876.41</BoughtAmount>
+      <BoughtAmount>9466062.35</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>9466062.35</SoldAmount>
+      <SoldAmount>13422876.41</SoldAmount>
       <Settlement>Cash</Settlement>
     </FxForwardData>
   </Trade>

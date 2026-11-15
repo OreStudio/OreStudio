@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48
+:END:
+#+title: Task: Retire the legacy patterns and align the documentation
+#+description: The catalogued legacy patterns are retired and the documents state the live model once.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/retire-the-legacy-and-align-the-docs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No document describes removed code, and no legacy pattern is left uncatalogued.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- Every legacy pattern in =dq_artefacts.org= is retired or explicitly accepted.
+- One document states the live model; the others link to it.
+- No document names removed code, and the function counts match the file.
+- The superseded plan is marked as history.
+
+* Plan
+
+1. Work the =dq_artefacts.org= legacy table to zero entries.
+2. Rewrite =publication_pipeline.org= against the live model, or retire it.
+3. Fix =database_lifecycle.org= and the journey pages that name the Librarian.
+4. Correct the counts and mark the old plan as superseded.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Documents that describe removed code | 3+ | investigation, defect D8 | e050a2d239 |
+| Documented refdata function count vs actual | 47 vs 57 | `grep -c` | e050a2d239 |
+
+* Notes
+
+Defects D8 and D9, plus the legacy catalogue. Runs last because it documents what the others settle.
+
+See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

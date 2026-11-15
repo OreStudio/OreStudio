@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,6 +38,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -86,20 +89,83 @@ bond_issue_conversion_target_list_order(const ores::utility::domain::order& orde
 
 }
 
-ores::utility::domain::precondition bond_issue_conversion_target_repository::replace_claim(
-    context ctx, const domain::bond_issue_conversion_target& v) {
-    const auto current =
-        read_latest(ctx, boost::uuids::to_string(v.issue_id), std::to_string(v.sequence_number));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool bond_issue_conversion_target_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using bond_issue_conversion_target_rows_by_key =
+    std::map<std::tuple<std::string, std::string>,
+             std::vector<domain::bond_issue_conversion_target>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+bond_issue_conversion_target_rows_by_key bond_issue_conversion_target_current_rows(
+    bond_issue_conversion_target_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<domain::bond_issue_conversion_target>& of) {
+    std::vector<std::string> issue_ids;
+    issue_ids.reserve(of.size());
+    std::vector<std::string> sequence_numbers;
+    sequence_numbers.reserve(of.size());
+    for (const auto& row : of) {
+        issue_ids.push_back(boost::uuids::to_string(row.issue_id));
+        sequence_numbers.push_back(std::to_string(row.sequence_number));
+    }
+    bond_issue_conversion_target_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, issue_ids, sequence_numbers))
+        current[std::make_tuple(boost::uuids::to_string(item.issue_id),
+                                std::to_string(item.sequence_number))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::bond_issue_conversion_target>&
+bond_issue_conversion_target_rows_of(const bond_issue_conversion_target_rows_by_key& current,
+                                     const domain::bond_issue_conversion_target& item) {
+    static const std::vector<domain::bond_issue_conversion_target> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.issue_id),
+                                                    std::to_string(item.sequence_number)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition bond_issue_conversion_target_replace_claim(
+    const std::vector<domain::bond_issue_conversion_target>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::bond_issue_conversion_target bond_issue_conversion_target_repository::apply_claim(
-    context ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::bond_issue_conversion_target bond_issue_conversion_target_apply_claim(
     const domain::bond_issue_conversion_target& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::bond_issue_conversion_target>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -111,42 +177,52 @@ domain::bond_issue_conversion_target bond_issue_conversion_target_repository::ap
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(
-                ctx, boost::uuids::to_string(v.issue_id), std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void bond_issue_conversion_target_repository::write(context ctx,
+}
+
+void bond_issue_conversion_target_repository::write(const context& ctx,
                                                     const domain::bond_issue_conversion_target& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          bond_issue_conversion_target_replace_claim(read_latest(
+              ctx, boost::uuids::to_string(v.issue_id), std::to_string(v.sequence_number))));
 }
 
 void bond_issue_conversion_target_repository::write(
-    context ctx, const std::vector<domain::bond_issue_conversion_target>& v) {
+    const context& ctx, const std::vector<domain::bond_issue_conversion_target>& v) {
+    const auto current = bond_issue_conversion_target_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(bond_issue_conversion_target_replace_claim(
+            bond_issue_conversion_target_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
 void bond_issue_conversion_target_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::bond_issue_conversion_target& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue conversion target. "
                                << "issue_id: " << v.issue_id
                                << " sequence_number: " << v.sequence_number;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = bond_issue_conversion_target_apply_claim(
+        v,
+        claim,
+        bond_issue_conversion_target_claim_reads_current(claim) ?
+            read_latest(
+                ctx, boost::uuids::to_string(v.issue_id), std::to_string(v.sequence_number)) :
+            std::vector<domain::bond_issue_conversion_target>{});
     query_builder::execute_write_query(ctx,
                                        bond_issue_conversion_target_mapper::map(t),
                                        lg(),
@@ -154,14 +230,21 @@ void bond_issue_conversion_target_repository::write(
 }
 
 void bond_issue_conversion_target_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_issue_conversion_target>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue conversion targets. Count: " << v.size();
+    std::vector<domain::bond_issue_conversion_target> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (bond_issue_conversion_target_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = bond_issue_conversion_target_current_rows(*this, ctx, to_read);
     std::vector<domain::bond_issue_conversion_target> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(bond_issue_conversion_target_apply_claim(
+            v[i], claims[i], bond_issue_conversion_target_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        bond_issue_conversion_target_mapper::map(batch),
                                        lg(),
@@ -169,7 +252,7 @@ void bond_issue_conversion_target_repository::write(
 }
 
 std::vector<domain::bond_issue_conversion_target>
-bond_issue_conversion_target_repository::read_latest(context ctx) {
+bond_issue_conversion_target_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
@@ -186,7 +269,7 @@ bond_issue_conversion_target_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::bond_issue_conversion_target>
-bond_issue_conversion_target_repository::read_latest(context ctx,
+bond_issue_conversion_target_repository::read_latest(const context& ctx,
                                                      const std::string& issue_id,
                                                      const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue conversion target. "
@@ -210,7 +293,7 @@ bond_issue_conversion_target_repository::read_latest(context ctx,
 
 
 std::vector<domain::bond_issue_conversion_target> bond_issue_conversion_target_repository::read_all(
-    context ctx, const std::string& issue_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& issue_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bond issue conversion target versions. "
                                << "issue_id: " << issue_id
                                << " sequence_number: " << sequence_number;
@@ -230,7 +313,7 @@ std::vector<domain::bond_issue_conversion_target> bond_issue_conversion_target_r
 }
 
 std::optional<domain::bond_issue_conversion_target>
-bond_issue_conversion_target_repository::read_at_version(context ctx,
+bond_issue_conversion_target_repository::read_at_version(const context& ctx,
                                                          const std::string& issue_id,
                                                          const std::string& sequence_number,
                                                          std::uint32_t version) {
@@ -259,7 +342,7 @@ bond_issue_conversion_target_repository::read_at_version(context ctx,
 }
 
 bond_issue_conversion_target_repository::remove_status
-bond_issue_conversion_target_repository::remove(context ctx,
+bond_issue_conversion_target_repository::remove(const context& ctx,
                                                 const std::string& issue_id,
                                                 const std::string& sequence_number,
                                                 std::optional<std::uint32_t> version) {
@@ -294,14 +377,14 @@ bond_issue_conversion_target_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void bond_issue_conversion_target_repository::remove(context ctx,
+void bond_issue_conversion_target_repository::remove(const context& ctx,
                                                      const std::string& issue_id,
                                                      const std::string& sequence_number) {
     static_cast<void>(remove(ctx, issue_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::bond_issue_conversion_target>
-bond_issue_conversion_target_repository::read_latest(context ctx,
+bond_issue_conversion_target_repository::read_latest(const context& ctx,
                                                      std::uint32_t offset,
                                                      std::uint32_t limit,
                                                      const ores::utility::domain::order& order,
@@ -325,7 +408,7 @@ bond_issue_conversion_target_repository::read_latest(context ctx,
 }
 
 std::uint32_t bond_issue_conversion_target_repository::get_total_conversion_target_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue conversion target count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -342,11 +425,32 @@ std::uint32_t bond_issue_conversion_target_repository::get_total_conversion_targ
 
 std::vector<domain::bond_issue_conversion_target>
 bond_issue_conversion_target_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& issue_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (issue_ids.empty() || sequence_numbers.empty())
         return {};
+    if (sequence_numbers.size() != issue_ids.size())
+        throw std::invalid_argument("bond_issue_conversion_target_repository::read_latest: key "
+                                    "column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (issue_ids.size() > chunk_size) {
+        std::vector<domain::bond_issue_conversion_target> all;
+        for (std::size_t begin = 0; begin < issue_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, issue_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(issue_ids.begin() + begin, issue_ids.begin() + end),
+                std::vector<std::string>(sequence_numbers.begin() + begin,
+                                         sequence_numbers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -363,9 +467,6 @@ bond_issue_conversion_target_repository::read_latest(
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (sequence_numbers.size() != issue_ids.size())
-        throw std::invalid_argument("bond_issue_conversion_target_repository::read_latest: key "
-                                    "column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < issue_ids.size(); ++i)
         requested.emplace(issue_ids[i], sequence_numbers[i]);
@@ -380,7 +481,7 @@ bond_issue_conversion_target_repository::read_latest(
 }
 
 void bond_issue_conversion_target_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& issue_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_FIXING_READ_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_FIXING_READ_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -85,12 +85,12 @@ public:
      * only when it is not empty.
      */
     std::vector<fixing_series>
-    series_of(context ctx, const std::string& item, const std::string& provider_code);
+    series_of(const context& ctx, const std::string& item, const std::string& provider_code);
 
     /**
      * @brief The latest fixings of @p series_id on or before @p date, newest first.
      */
-    std::vector<stored_fixing> on_or_before(context ctx,
+    std::vector<stored_fixing> on_or_before(const context& ctx,
                                             const boost::uuids::uuid& series_id,
                                             std::chrono::year_month_day date,
                                             std::size_t limit);
@@ -98,7 +98,7 @@ public:
     /**
      * @brief The fixings of @p series_id from @p from to @p to, both included, oldest first.
      */
-    std::vector<stored_fixing> between(context ctx,
+    std::vector<stored_fixing> between(const context& ctx,
                                        const boost::uuids::uuid& series_id,
                                        std::chrono::year_month_day from,
                                        std::chrono::year_month_day to,
@@ -108,7 +108,7 @@ public:
      * @brief The vendor id that @p provider_code maps to @p item, if a mapping names it.
      */
     std::optional<vendor_key>
-    vendor_of(context ctx, const std::string& item, const std::string& provider_code);
+    vendor_of(const context& ctx, const std::string& item, const std::string& provider_code);
 };
 
 }

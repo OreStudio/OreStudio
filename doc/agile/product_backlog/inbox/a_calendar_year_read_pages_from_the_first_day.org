@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 8F6F0248-B10D-4BB6-A402-BF262F7589E8
+:END:
+#+title: A calendar year read pages from the calendar's first day
+#+description: GET /api/refdata/calendars/{code}/days reads one year by paging list_by_calendar_code from offset 0 and stops at the first page past the year, because calendar_dates_filter carries no date range. A year near the end of a calendar built from 1900 to 2200 takes about 100 round trips of 1000 days, and the read relies on the service answering in date order without stating it. Add a date range to the filter, or a year read on the refdata service, and read one year in one call.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:http:performance:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Read one calendar's business days for one year in one call. Today
+=GET /api/refdata/calendars/{code}/days= pages =list_by_calendar_code= from
+offset 0, a thousand days at a time, and stops at the first page past the year,
+because =calendar_dates_filter= names only the calendar. Add a date range to
+the filter, or a year read on the refdata service, and send the year to it.
+
+* Why
+
+A calendar built from 1900 to 2200 holds about 110,000 days, so a year near the
+end costs about 100 round trips. The read also depends on the service answering
+in date order, which nothing states: if the order changes, days go missing with
+no error. The BFF read the same way, and the C++ route kept its behaviour. The
+review of PR #4620 raised it.
+
+* References
+
+- [[https://github.com/OreStudio/OreStudio/pull/4620][PR #4620]] — the review that raised it.
+- =projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp= — the paging loop.
+
+* See also
+
+- [[id:FE482B7E-ED92-4C2D-B9F3-D2D093A2CD66][A calendar rebuild never rewrites a day it already built]]

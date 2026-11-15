@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/diary_entry_type_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -99,19 +103,75 @@ std::optional<query_builder::condition> diary_entry_type_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool diary_entry_type_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using diary_entry_type_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::diary_entry_type>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+diary_entry_type_rows_by_key
+diary_entry_type_current_rows(diary_entry_type_repository& repo,
+                              const ores::database::context& ctx,
+                              const std::vector<domain::diary_entry_type>& of) {
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
+    for (const auto& row : of) {
+        codes.push_back(row.code);
+    }
+    diary_entry_type_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, codes))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::diary_entry_type>&
+diary_entry_type_rows_of(const diary_entry_type_rows_by_key& current,
+                         const domain::diary_entry_type& item) {
+    static const std::vector<domain::diary_entry_type> none;
+    const auto found = current.find(std::make_tuple(item.code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-diary_entry_type_repository::replace_claim(context ctx, const domain::diary_entry_type& v) {
-    const auto current = read_latest(ctx, v.code);
+diary_entry_type_replace_claim(const std::vector<domain::diary_entry_type>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::diary_entry_type
-diary_entry_type_repository::apply_claim(context ctx,
-                                         const domain::diary_entry_type& v,
-                                         const ores::utility::domain::precondition& claim) {
+diary_entry_type_apply_claim(const domain::diary_entry_type& v,
+                             const ores::utility::domain::precondition& claim,
+                             const std::vector<domain::diary_entry_type>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -123,55 +183,67 @@ diary_entry_type_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void diary_entry_type_repository::write(context ctx, const domain::diary_entry_type& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void diary_entry_type_repository::write(context ctx,
+void diary_entry_type_repository::write(const context& ctx, const domain::diary_entry_type& v) {
+    write(ctx, v, diary_entry_type_replace_claim(read_latest(ctx, v.code)));
+}
+
+void diary_entry_type_repository::write(const context& ctx,
                                         const std::vector<domain::diary_entry_type>& v) {
+    const auto current = diary_entry_type_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(diary_entry_type_replace_claim(diary_entry_type_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void diary_entry_type_repository::write(context ctx,
+void diary_entry_type_repository::write(const context& ctx,
                                         const domain::diary_entry_type& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing diary entry type. " << "code: " << v.code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = diary_entry_type_apply_claim(v,
+                                                claim,
+                                                diary_entry_type_claim_reads_current(claim) ?
+                                                    read_latest(ctx, v.code) :
+                                                    std::vector<domain::diary_entry_type>{});
     query_builder::execute_write_query(
         ctx, diary_entry_type_mapper::map(t), lg(), "Writing diary entry type to database.");
 }
 
 void diary_entry_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::diary_entry_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing diary entry types. Count: " << v.size();
+    std::vector<domain::diary_entry_type> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (diary_entry_type_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = diary_entry_type_current_rows(*this, ctx, to_read);
     std::vector<domain::diary_entry_type> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            diary_entry_type_apply_claim(v[i], claims[i], diary_entry_type_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, diary_entry_type_mapper::map(batch), lg(), "Writing diary entry types to database.");
 }
 
-std::vector<domain::diary_entry_type> diary_entry_type_repository::read_latest(context ctx) {
+std::vector<domain::diary_entry_type> diary_entry_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<diary_entry_type_entity>> |
@@ -187,7 +259,7 @@ std::vector<domain::diary_entry_type> diary_entry_type_repository::read_latest(c
 }
 
 std::vector<domain::diary_entry_type>
-diary_entry_type_repository::read_latest(context ctx, const std::string& code) {
+diary_entry_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest diary entry type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -205,7 +277,7 @@ diary_entry_type_repository::read_latest(context ctx, const std::string& code) {
 
 
 std::vector<domain::diary_entry_type>
-diary_entry_type_repository::read_all(context ctx, const std::string& code) {
+diary_entry_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all diary entry type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<diary_entry_type_entity>> |
@@ -221,7 +293,7 @@ diary_entry_type_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::diary_entry_type> diary_entry_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading diary entry type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -244,7 +316,7 @@ std::optional<domain::diary_entry_type> diary_entry_type_repository::read_at_ver
 }
 
 diary_entry_type_repository::remove_status diary_entry_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing diary entry type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -273,12 +345,12 @@ diary_entry_type_repository::remove_status diary_entry_type_repository::remove(
     return remove_status::removed;
 }
 
-void diary_entry_type_repository::remove(context ctx, const std::string& code) {
+void diary_entry_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::diary_entry_type> diary_entry_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -304,7 +376,7 @@ std::vector<domain::diary_entry_type> diary_entry_type_repository::read_latest(
 }
 
 std::uint32_t diary_entry_type_repository::get_total_entry_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::diary_entry_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active diary entry type count";
@@ -323,9 +395,25 @@ std::uint32_t diary_entry_type_repository::get_total_entry_type_count(
 }
 
 std::vector<domain::diary_entry_type>
-diary_entry_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+diary_entry_type_repository::read_latest(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::diary_entry_type> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -341,7 +429,8 @@ diary_entry_type_repository::read_latest(context ctx, const std::vector<std::str
     return result;
 }
 
-void diary_entry_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void diary_entry_type_repository::remove(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -88,7 +88,7 @@ struct publish_todays_market_from_dq_request {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_pricing_engines_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -101,7 +101,7 @@ wire_fields(std::type_identity<publish_pricing_engines_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_todays_market_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 }

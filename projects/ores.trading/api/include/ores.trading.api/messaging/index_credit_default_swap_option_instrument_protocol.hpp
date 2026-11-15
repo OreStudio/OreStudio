@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &index_credit_default_swap_option_instrument_key::trade_id},
     };
@@ -426,7 +426,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_key>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &index_credit_default_swap_option_instrument_write::trade_id},
         utility::codec::field{
@@ -456,7 +456,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_write
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &index_credit_default_swap_option_instrument_change::write},
         utility::codec::field{"precondition",
                               &index_credit_default_swap_option_instrument_change::precondition},
@@ -473,7 +473,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_chang
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &index_credit_default_swap_option_instrument_removal::key},
         utility::codec::field{"precondition",
                               &index_credit_default_swap_option_instrument_removal::precondition},
@@ -490,7 +490,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_remov
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &index_credit_default_swap_option_instrument_lookup::key},
         utility::codec::field{"index_credit_default_swap_option_instrument",
                               &index_credit_default_swap_option_instrument_lookup::
@@ -508,7 +508,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_looku
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instruments_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "trade_id_one_of",
             &index_credit_default_swap_option_instruments_filter::trade_id_one_of},
@@ -525,7 +525,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instruments_filt
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id",
                               &index_credit_default_swap_option_instrument_event::event_id},
         utility::codec::field{"key", &index_credit_default_swap_option_instrument_event::key},
@@ -549,7 +549,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_event
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"index_credit_default_swap_option_instrument",
                               &index_credit_default_swap_option_instrument_version_key::
                                   index_credit_default_swap_option_instrument},
@@ -568,7 +568,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_versi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<index_credit_default_swap_option_instrument_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "version", &index_credit_default_swap_option_instrument_versions_filter::version},
         utility::codec::field{
@@ -589,7 +589,7 @@ wire_fields(std::type_identity<index_credit_default_swap_option_instrument_versi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_index_credit_default_swap_option_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset",
                               &list_index_credit_default_swap_option_instruments_request::offset},
         utility::codec::field{"limit",
@@ -613,7 +613,7 @@ wire_fields(std::type_identity<list_index_credit_default_swap_option_instruments
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_index_credit_default_swap_option_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_index_credit_default_swap_option_instruments_response::result},
         utility::codec::field{"index_cds_option_instruments",
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<list_index_credit_default_swap_option_instruments
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_index_credit_default_swap_option_instrument_request::key},
     };
 }
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_index_credit_default_swap_option_instrument_response::result},
         utility::codec::field{"index_credit_default_swap_option_instrument",
@@ -668,7 +668,7 @@ wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_index_credit_default_swap_option_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys",
                               &get_many_index_credit_default_swap_option_instruments_request::keys},
     };
@@ -684,7 +684,7 @@ wire_fields(std::type_identity<get_many_index_credit_default_swap_option_instrum
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_index_credit_default_swap_option_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &get_many_index_credit_default_swap_option_instruments_response::result},
         utility::codec::field{
@@ -702,7 +702,7 @@ wire_fields(std::type_identity<get_many_index_credit_default_swap_option_instrum
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_index_credit_default_swap_option_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change",
                               &put_index_credit_default_swap_option_instrument_request::change},
         utility::codec::field{"intent",
@@ -720,7 +720,7 @@ wire_fields(std::type_identity<put_index_credit_default_swap_option_instrument_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_index_credit_default_swap_option_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_index_credit_default_swap_option_instrument_response::result},
         utility::codec::field{"index_credit_default_swap_option_instrument",
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<put_index_credit_default_swap_option_instrument_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_index_credit_default_swap_option_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "changes", &put_many_index_credit_default_swap_option_instruments_request::changes},
         utility::codec::field{
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<put_many_index_credit_default_swap_option_instrum
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_index_credit_default_swap_option_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &put_many_index_credit_default_swap_option_instruments_response::result},
         utility::codec::field{"index_cds_option_instruments",
@@ -776,7 +776,7 @@ wire_fields(std::type_identity<put_many_index_credit_default_swap_option_instrum
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_index_credit_default_swap_option_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_index_credit_default_swap_option_instrument_request::removal},
         utility::codec::field{"intent",
@@ -794,7 +794,7 @@ wire_fields(std::type_identity<delete_index_credit_default_swap_option_instrumen
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_index_credit_default_swap_option_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_index_credit_default_swap_option_instrument_response::result},
     };
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<delete_index_credit_default_swap_option_instrumen
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_index_credit_default_swap_option_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "removals",
             &delete_many_index_credit_default_swap_option_instruments_request::removals},
@@ -829,7 +829,7 @@ wire_fields(std::type_identity<delete_many_index_credit_default_swap_option_inst
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_index_credit_default_swap_option_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &delete_many_index_credit_default_swap_option_instruments_response::result},
     };
@@ -845,7 +845,7 @@ wire_fields(std::type_identity<delete_many_index_credit_default_swap_option_inst
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_index_credit_default_swap_option_instrument_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "key", &list_index_credit_default_swap_option_instrument_versions_request::key},
         utility::codec::field{
@@ -869,7 +869,7 @@ wire_fields(std::type_identity<list_index_credit_default_swap_option_instrument_
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_index_credit_default_swap_option_instrument_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_index_credit_default_swap_option_instrument_versions_response::result},
         utility::codec::field{
@@ -890,7 +890,7 @@ wire_fields(std::type_identity<list_index_credit_default_swap_option_instrument_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "key", &get_index_credit_default_swap_option_instrument_version_request::key},
     };
@@ -906,7 +906,7 @@ wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_v
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_index_credit_default_swap_option_instrument_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &get_index_credit_default_swap_option_instrument_version_response::result},
         utility::codec::field{

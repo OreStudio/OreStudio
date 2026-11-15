@@ -47,10 +47,11 @@ struct wider_result {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<wider_result>) {
-    return std::tuple{ores::utility::codec::field{"outcome", &wider_result::outcome},
-                      ores::utility::codec::field{"code", &wider_result::code},
-                      ores::utility::codec::field{"message", &wider_result::message},
-                      ores::utility::codec::field{"fields", &wider_result::fields}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"outcome", &wider_result::outcome},
+        ores::utility::codec::field{"code", &wider_result::code},
+        ores::utility::codec::field{"message", &wider_result::message},
+        ores::utility::codec::field{"fields", &wider_result::fields}};
 }
 
 struct wider_reply {
@@ -59,8 +60,9 @@ struct wider_reply {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<wider_reply>) {
-    return std::tuple{ores::utility::codec::field{"run_id", &wider_reply::run_id},
-                      ores::utility::codec::field{"result", &wider_reply::result}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"run_id", &wider_reply::run_id},
+        ores::utility::codec::field{"result", &wider_reply::result}};
 }
 
 /**
@@ -85,6 +87,7 @@ using ores::utility::codec::object::read_json;
 TEST_CASE("the action payloads survive the wire", tags) {
     survives_the_wire(mq_payload_fields{"q1", "report.run", R"({"a": "b"})"});
     survives_the_wire(nats_publish_payload{"reporting.v1.ops.trigger", "r1", std::nullopt});
+    survives_the_wire(nats_request_payload{"marketdata.v1.ops.publish_due_curves"});
     survives_the_wire(
         nats_trigger_body{boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
                           boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
@@ -107,6 +110,9 @@ TEST_CASE("a job's action payload reads from the wire it", tags) {
     CHECK(nats.subject == "a.b");
     CHECK_FALSE(nats.report_definition_id.has_value());
     CHECK_FALSE(nats.tenant_id.has_value());
+
+    const auto request = read_json<nats_request_payload>(R"({"subject": "c.d"})");
+    CHECK(request.subject == "c.d");
 
     CHECK_THROWS_WITH(read_json<mq_payload_fields>(R"({"queue_id": "q1"})"),
                       Catch::Matchers::ContainsSubstring("Missing member"));

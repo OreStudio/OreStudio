@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"reference", &todays_market_configuration_binding_key::reference},
     };
 }
@@ -445,7 +445,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &todays_market_configuration_binding_write::id},
         utility::codec::field{
             "todays_market_configuration_id",
@@ -466,7 +466,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &todays_market_configuration_binding_change::write},
         utility::codec::field{"precondition",
                               &todays_market_configuration_binding_change::precondition},
@@ -483,7 +483,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &todays_market_configuration_binding_removal::key},
         utility::codec::field{"precondition",
                               &todays_market_configuration_binding_removal::precondition},
@@ -500,7 +500,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &todays_market_configuration_binding_lookup::key},
         utility::codec::field{
             "todays_market_configuration_binding",
@@ -518,7 +518,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_bindings_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "todays_market_configuration_id",
             &todays_market_configuration_bindings_filter::todays_market_configuration_id},
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<todays_market_configuration_bindings_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &todays_market_configuration_binding_event::event_id},
         utility::codec::field{"key", &todays_market_configuration_binding_event::key},
         utility::codec::field{"action", &todays_market_configuration_binding_event::action},
@@ -561,7 +561,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "todays_market_configuration_binding",
             &todays_market_configuration_binding_version_key::todays_market_configuration_binding},
@@ -579,7 +579,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_version_key>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_configuration_binding_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &todays_market_configuration_binding_versions_filter::version},
         utility::codec::field{"from_version",
@@ -599,7 +599,7 @@ wire_fields(std::type_identity<todays_market_configuration_binding_versions_filt
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_configuration_bindings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_todays_market_configuration_bindings_request::offset},
         utility::codec::field{"limit", &list_todays_market_configuration_bindings_request::limit},
         utility::codec::field{"order", &list_todays_market_configuration_bindings_request::order},
@@ -618,7 +618,7 @@ wire_fields(std::type_identity<list_todays_market_configuration_bindings_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_configuration_bindings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_todays_market_configuration_bindings_response::result},
         utility::codec::field{"bindings",
@@ -637,7 +637,7 @@ wire_fields(std::type_identity<list_todays_market_configuration_bindings_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_configuration_binding_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_todays_market_configuration_binding_request::key},
     };
 }
@@ -652,7 +652,7 @@ wire_fields(std::type_identity<get_todays_market_configuration_binding_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_configuration_binding_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_todays_market_configuration_binding_response::result},
         utility::codec::field{
             "todays_market_configuration_binding",
@@ -670,7 +670,7 @@ wire_fields(std::type_identity<get_todays_market_configuration_binding_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_todays_market_configuration_bindings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_todays_market_configuration_bindings_request::keys},
     };
 }
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<get_many_todays_market_configuration_bindings_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_todays_market_configuration_bindings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_todays_market_configuration_bindings_response::result},
         utility::codec::field{"entries",
@@ -703,7 +703,7 @@ wire_fields(std::type_identity<get_many_todays_market_configuration_bindings_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_todays_market_configuration_binding_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_todays_market_configuration_binding_request::change},
         utility::codec::field{"intent", &put_todays_market_configuration_binding_request::intent},
     };
@@ -719,7 +719,7 @@ wire_fields(std::type_identity<put_todays_market_configuration_binding_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_todays_market_configuration_binding_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_todays_market_configuration_binding_response::result},
         utility::codec::field{
             "todays_market_configuration_binding",
@@ -737,7 +737,7 @@ wire_fields(std::type_identity<put_todays_market_configuration_binding_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_todays_market_configuration_bindings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_todays_market_configuration_bindings_request::changes},
         utility::codec::field{"intent",
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<put_many_todays_market_configuration_bindings_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_todays_market_configuration_bindings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_todays_market_configuration_bindings_response::result},
         utility::codec::field{"bindings",
@@ -773,7 +773,7 @@ wire_fields(std::type_identity<put_many_todays_market_configuration_bindings_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_todays_market_configuration_binding_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_todays_market_configuration_binding_request::removal},
         utility::codec::field{"intent",
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<delete_todays_market_configuration_binding_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_todays_market_configuration_binding_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_todays_market_configuration_binding_response::result},
     };
@@ -807,7 +807,7 @@ wire_fields(std::type_identity<delete_todays_market_configuration_binding_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_todays_market_configuration_bindings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_todays_market_configuration_bindings_request::removals},
         utility::codec::field{"intent",
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<delete_many_todays_market_configuration_bindings_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_todays_market_configuration_bindings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_todays_market_configuration_bindings_response::result},
     };
@@ -843,7 +843,7 @@ wire_fields(std::type_identity<delete_many_todays_market_configuration_bindings_
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<
             list_by_todays_market_configuration_id_todays_market_configuration_bindings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "todays_market_configuration_id",
             &list_by_todays_market_configuration_id_todays_market_configuration_bindings_request::
@@ -883,7 +883,7 @@ wire_fields(std::type_identity<
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<
             list_by_todays_market_configuration_id_todays_market_configuration_bindings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &list_by_todays_market_configuration_id_todays_market_configuration_bindings_response::
@@ -909,7 +909,7 @@ wire_fields(std::type_identity<
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_configuration_binding_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_todays_market_configuration_binding_versions_request::key},
         utility::codec::field{"offset",
@@ -933,7 +933,7 @@ wire_fields(std::type_identity<list_todays_market_configuration_binding_versions
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_configuration_binding_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_todays_market_configuration_binding_versions_response::result},
         utility::codec::field{
@@ -953,7 +953,7 @@ wire_fields(std::type_identity<list_todays_market_configuration_binding_versions
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_configuration_binding_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_todays_market_configuration_binding_version_request::key},
     };
 }
@@ -968,7 +968,7 @@ wire_fields(std::type_identity<get_todays_market_configuration_binding_version_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_configuration_binding_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_todays_market_configuration_binding_version_response::result},
         utility::codec::field{"version",

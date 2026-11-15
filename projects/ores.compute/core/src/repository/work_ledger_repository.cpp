@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/work_ledger_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -55,7 +55,7 @@ boost::uuids::uuid uuid_of(const std::optional<std::string>& cell) {
 
 } // namespace
 
-void work_ledger_repository::enqueue(context ctx, const ledger_entry& entry) {
+void work_ledger_repository::enqueue(const context& ctx, const ledger_entry& entry) {
     BOOST_LOG_SEV(lg(), debug) << "Queueing result " << boost::uuids::to_string(entry.result_id);
     static const std::string sql = R"(
         INSERT INTO ores_compute_work_ledger_tbl
@@ -63,18 +63,19 @@ void work_ledger_repository::enqueue(context ctx, const ledger_entry& entry) {
         VALUES ($1::uuid, $2::uuid, $3::uuid, $4::text[], $5::int)
         ON CONFLICT (result_id) DO NOTHING
     )";
-    execute_parameterized_command(ctx,
-                                  sql,
-                                  {boost::uuids::to_string(entry.result_id),
-                                   boost::uuids::to_string(entry.work_tenant_id),
-                                   boost::uuids::to_string(entry.workunit_id),
-                                   array_literal(entry.platforms),
-                                   std::to_string(entry.priority)},
-                                  lg(),
-                                  "queueing a result");
+    ores::database::query_builder::execute_parameterized_command(
+        ctx,
+        sql,
+        {boost::uuids::to_string(entry.result_id),
+         boost::uuids::to_string(entry.work_tenant_id),
+         boost::uuids::to_string(entry.workunit_id),
+         array_literal(entry.platforms),
+         std::to_string(entry.priority)},
+        lg(),
+        "queueing a result");
 }
 
-std::optional<claimed_entry> work_ledger_repository::claim(context ctx,
+std::optional<claimed_entry> work_ledger_repository::claim(const context& ctx,
                                                            const boost::uuids::uuid& host_id,
                                                            const std::string& platform,
                                                            std::chrono::seconds lease) {
@@ -106,7 +107,7 @@ std::optional<claimed_entry> work_ledger_repository::claim(context ctx,
         WHERE w.result_id = pick.result_id
         RETURNING w.result_id, w.work_tenant_id, w.workunit_id, w.attempts
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {boost::uuids::to_string(host_id), platform, std::to_string(lease.count())},
@@ -121,25 +122,25 @@ std::optional<claimed_entry> work_ledger_repository::claim(context ctx,
                          .attempts = row[3] ? std::stoi(*row[3]) : 0};
 }
 
-void work_ledger_repository::release(context ctx, const boost::uuids::uuid& result_id) {
+void work_ledger_repository::release(const context& ctx, const boost::uuids::uuid& result_id) {
     static const std::string sql = R"(
         UPDATE ores_compute_work_ledger_tbl
         SET state = 'queued', host_id = NULL, claimed_at = NULL, lease_expires_at = NULL,
             attempts = greatest(attempts - 1, 0)
         WHERE result_id = $1::uuid AND state = 'claimed'
     )";
-    execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         ctx, sql, {boost::uuids::to_string(result_id)}, lg(), "releasing a claimed job");
 }
 
-void work_ledger_repository::remove(context ctx, const boost::uuids::uuid& result_id) {
+void work_ledger_repository::remove(const context& ctx, const boost::uuids::uuid& result_id) {
     static const std::string sql =
         "DELETE FROM ores_compute_work_ledger_tbl WHERE result_id = $1::uuid";
-    execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         ctx, sql, {boost::uuids::to_string(result_id)}, lg(), "removing a ledger entry");
 }
 
-bool work_ledger_repository::extend_lease(context ctx,
+bool work_ledger_repository::extend_lease(const context& ctx,
                                           const boost::uuids::uuid& host_id,
                                           const boost::uuids::uuid& result_id,
                                           std::chrono::seconds lease) {
@@ -152,18 +153,19 @@ bool work_ledger_repository::extend_lease(context ctx,
         )
         SELECT count(*) FROM extended
     )";
-    const auto rows = execute_parameterized_multi_column_query(ctx,
-                                                               sql,
-                                                               {boost::uuids::to_string(host_id),
-                                                                boost::uuids::to_string(result_id),
-                                                                std::to_string(lease.count())},
-                                                               lg(),
-                                                               "extending the lease of a job");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(host_id),
+         boost::uuids::to_string(result_id),
+         std::to_string(lease.count())},
+        lg(),
+        "extending the lease of a job");
     return !rows.empty() && !rows.front().empty() && rows.front().front() &&
            std::stoll(*rows.front().front()) > 0;
 }
 
-std::size_t work_ledger_repository::requeue_held(context ctx,
+std::size_t work_ledger_repository::requeue_held(const context& ctx,
                                                  const boost::uuids::uuid& host_id,
                                                  int max_attempts) {
     static const std::string sql = R"(
@@ -175,7 +177,7 @@ std::size_t work_ledger_repository::requeue_held(context ctx,
         )
         SELECT count(*) FROM returned
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {boost::uuids::to_string(host_id), std::to_string(max_attempts)},
@@ -186,7 +188,7 @@ std::size_t work_ledger_repository::requeue_held(context ctx,
     return static_cast<std::size_t>(std::stoll(*rows.front().front()));
 }
 
-std::size_t work_ledger_repository::requeue_expired(context ctx, int max_attempts) {
+std::size_t work_ledger_repository::requeue_expired(const context& ctx, int max_attempts) {
     static const std::string sql = R"(
         WITH returned AS (
             UPDATE ores_compute_work_ledger_tbl
@@ -196,7 +198,7 @@ std::size_t work_ledger_repository::requeue_expired(context ctx, int max_attempt
         )
         SELECT count(*) FROM returned
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {std::to_string(max_attempts)}, lg(), "returning expired leases to the queue");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return 0;
@@ -204,7 +206,7 @@ std::size_t work_ledger_repository::requeue_expired(context ctx, int max_attempt
 }
 
 std::vector<expired_entry>
-work_ledger_repository::exhausted(context ctx, int max_attempts, int limit) {
+work_ledger_repository::exhausted(const context& ctx, int max_attempts, int limit) {
     static const std::string sql = R"(
         SELECT result_id, work_tenant_id, host_id, attempts
         FROM ores_compute_work_ledger_tbl
@@ -212,7 +214,7 @@ work_ledger_repository::exhausted(context ctx, int max_attempts, int limit) {
         ORDER BY lease_expires_at
         LIMIT $2::int
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {std::to_string(max_attempts), std::to_string(limit)},
@@ -230,7 +232,8 @@ work_ledger_repository::exhausted(context ctx, int max_attempts, int limit) {
     return out;
 }
 
-bool work_ledger_repository::remove_expired(context ctx, const boost::uuids::uuid& result_id) {
+bool work_ledger_repository::remove_expired(const context& ctx,
+                                            const boost::uuids::uuid& result_id) {
     static const std::string sql = R"(
         WITH removed AS (
             DELETE FROM ores_compute_work_ledger_tbl
@@ -239,46 +242,46 @@ bool work_ledger_repository::remove_expired(context ctx, const boost::uuids::uui
         )
         SELECT count(*) FROM removed
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {boost::uuids::to_string(result_id)}, lg(), "removing an expired job");
     return !rows.empty() && !rows.front().empty() && rows.front().front() &&
            std::stoll(*rows.front().front()) > 0;
 }
 
-std::int64_t work_ledger_repository::waiting(context ctx,
+std::int64_t work_ledger_repository::waiting(const context& ctx,
                                              const boost::uuids::uuid& work_tenant_id) {
     static const std::string sql = R"(
         SELECT count(*) FROM ores_compute_work_ledger_tbl
         WHERE work_tenant_id = $1::uuid AND state = 'queued'
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx,
-                                                 sql,
-                                                 {boost::uuids::to_string(work_tenant_id)},
-                                                 lg(),
-                                                 "counting the jobs a tenant has waiting");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(work_tenant_id)},
+        lg(),
+        "counting the jobs a tenant has waiting");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return 0;
     return std::stoll(*rows.front().front());
 }
 
 std::optional<boost::uuids::uuid>
-work_ledger_repository::holder(context ctx, const boost::uuids::uuid& result_id) {
+work_ledger_repository::holder(const context& ctx, const boost::uuids::uuid& result_id) {
     static const std::string sql = R"(
         SELECT host_id FROM ores_compute_work_ledger_tbl
         WHERE result_id = $1::uuid AND state = 'claimed'
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {boost::uuids::to_string(result_id)}, lg(), "reading the holder of a job");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return std::nullopt;
     return uuid_of(rows.front().front());
 }
 
-std::int64_t work_ledger_repository::count(context ctx, const std::string& state) {
+std::int64_t work_ledger_repository::count(const context& ctx, const std::string& state) {
     static const std::string sql =
         "SELECT count(*) FROM ores_compute_work_ledger_tbl WHERE state = $1::text";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {state}, lg(), "counting ledger entries");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return 0;

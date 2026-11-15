@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: D639B3AB-7421-4A7C-A17A-02000709E22F
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.day_count_fraction_type
 #+description: Codegen entity model for the refdata day_count_fraction_type table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+web_classification: day-count-fraction-type
+#+web_classification_topic: products
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: day_count_fraction_type

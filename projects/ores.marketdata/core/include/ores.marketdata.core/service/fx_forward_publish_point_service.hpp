@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit fx_forward_publish_point_service(context ctx);
+    explicit fx_forward_publish_point_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

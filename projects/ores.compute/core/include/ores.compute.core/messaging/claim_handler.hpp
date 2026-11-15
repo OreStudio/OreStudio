@@ -75,11 +75,11 @@ public:
     static constexpr std::chrono::seconds lease{300};
 
     claim_handler(ores::nats::service::client& nats,
-                  ores::database::context ctx,
+                  const ores::database::context& ctx,
                   ores::nats::service::nats_client service_nats)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , service_nats_(std::move(service_nats))
+        , ctx_(ctx)
+        , service_nats_(service_nats)
         , minter_(ores::iam::client::make_storage_capability_minter(service_nats_)) {}
 
     void claim(ores::nats::message msg) {

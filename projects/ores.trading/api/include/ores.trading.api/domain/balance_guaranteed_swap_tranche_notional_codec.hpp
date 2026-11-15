@@ -47,7 +47,7 @@ namespace ores::trading::domain {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<balance_guaranteed_swap_tranche_notional>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &balance_guaranteed_swap_tranche_notional::version},
         utility::codec::field{"tenant_id", &balance_guaranteed_swap_tranche_notional::tenant_id},
         utility::codec::field{"trade_id", &balance_guaranteed_swap_tranche_notional::trade_id},

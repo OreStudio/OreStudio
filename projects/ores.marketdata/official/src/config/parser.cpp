@@ -45,6 +45,12 @@ const std::string boc_url_arg("boc-url");
 const std::string boj_url_arg("boj-url");
 const std::string norges_bank_url_arg("norges-bank-url");
 const std::string riksbank_url_arg("riksbank-url");
+const std::string rba_url_arg("rba-url");
+const std::string bcb_url_arg("bcb-url");
+const std::string banxico_url_arg("banxico-url");
+const std::string bcch_url_arg("bcch-url");
+const std::string cnb_url_arg("cnb-url");
+const std::string mas_url_arg("mas-url");
 const std::string source_arg("source");
 const std::string backfill_days_arg("backfill-days");
 const std::string poll_minutes_arg("poll-minutes");
@@ -92,6 +98,26 @@ options_description make_options_description() {
         riksbank_url_arg.c_str(),
         value<std::string>()->default_value("https://api.riksbank.se"),
         "Address of the Riksbank's API site, which serves its SWESTR API")(
+        rba_url_arg.c_str(),
+        value<std::string>()->default_value("https://www.rba.gov.au"),
+        "Address of the RBA's site, which serves its statistical tables")(
+        bcb_url_arg.c_str(),
+        value<std::string>()->default_value("https://api.bcb.gov.br"),
+        "Address of the Banco Central do Brasil's API site, which serves its SGS API")(
+        banxico_url_arg.c_str(),
+        value<std::string>()->default_value("https://www.banxico.org.mx"),
+        "Address of Banco de Mexico's site, which serves its SIE API")(
+        bcch_url_arg.c_str(),
+        value<std::string>()->default_value("https://si3.bcentral.cl"),
+        "Address of the Banco Central de Chile's statistical site, which serves its BDE web "
+        "service")(
+        cnb_url_arg.c_str(),
+        value<std::string>()->default_value("https://www.cnb.cz"),
+        "Address of the Czech National Bank's site, which serves its yearly CZEONIA files")(
+        mas_url_arg.c_str(),
+        value<std::string>()->default_value("https://eservices.mas.gov.sg"),
+        "Address of the Monetary Authority of Singapore's statistics site, which serves its "
+        "domestic interest rates")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
@@ -161,6 +187,12 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.boj_url = vm[boj_url_arg].as<std::string>();
     r.norges_bank_url = vm[norges_bank_url_arg].as<std::string>();
     r.riksbank_url = vm[riksbank_url_arg].as<std::string>();
+    r.rba_url = vm[rba_url_arg].as<std::string>();
+    r.bcb_url = vm[bcb_url_arg].as<std::string>();
+    r.banxico_url = vm[banxico_url_arg].as<std::string>();
+    r.bcch_url = vm[bcch_url_arg].as<std::string>();
+    r.cnb_url = vm[cnb_url_arg].as<std::string>();
+    r.mas_url = vm[mas_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
     if (r.backfill_days < 1 || r.backfill_days > 3650)
         BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));

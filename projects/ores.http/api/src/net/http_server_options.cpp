@@ -33,7 +33,14 @@ std::ostream& operator<<(std::ostream& s, const http_server_options& v) {
       << " enable_ssl: " << (v.enable_ssl ? "true" : "false")
       << " certificate_file: " << v.certificate_file
       << " enable_cors: " << (v.enable_cors ? "true" : "false")
-      << " server_identifier: " << v.server_identifier << " }";
+      << " server_identifier: " << v.server_identifier
+      << " rate_limit_enabled: " << (v.rate_limit_enabled ? "true" : "false")
+      << " open_requests_per_minute: " << v.open_requests_per_minute
+      << " authenticated_requests_per_minute: " << v.authenticated_requests_per_minute
+      << " credential_attempts_per_minute: " << v.credential_attempts_per_minute
+      << " registration_policy_reads_per_minute: " << v.registration_policy_reads_per_minute
+      << " rate_limit_max_keys: " << v.rate_limit_max_keys
+      << " trusted_proxies: " << v.trusted_proxies << " }";
     return s;
 }
 

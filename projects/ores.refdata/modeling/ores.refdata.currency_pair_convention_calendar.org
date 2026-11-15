@@ -8,6 +8,8 @@
 #+description: Codegen junction model for currency_pair_convention_calendars.
 #+type: ores.codegen.junction
 #+http_area: reference-data
+#+web_resource: pair-calendars
+#+web_list_by: pair_code
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: currency_pair_convention_calendars

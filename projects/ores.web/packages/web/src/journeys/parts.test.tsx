@@ -436,6 +436,9 @@ describe("a run's step", () => {
         completed_at: null,
         error: '',
         log: [],
+        progress: '',
+        progress_done: null,
+        progress_total: null,
     };
 
     it('states why a step finished with a warning, beside it', () => {
@@ -479,6 +482,61 @@ describe("a run's step", () => {
         const html = render(<RunStep step={step} words={(sentence) => `[${sentence}]`} />);
 
         expect(html).toContain('[Import the legal entities]');
+    });
+
+    it('states the progress a running step reports, and its counts', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'in_progress',
+                    progress: 'ACME: surfaces with their quotes',
+                    progress_done: 3,
+                    progress_total: 10,
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('ACME: surfaces with their quotes');
+        expect(html).toContain('3 of 10');
+    });
+
+    it('states no progress line for a step that reported none', () => {
+        // The same words are proved to render on a step that reported them, so
+        // their absence below is the step's silence and not the fixture's.
+        const reported = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'in_progress',
+                    progress: 'ACME: surfaces',
+                    progress_done: 1,
+                    progress_total: 2,
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+        const silent = render(
+            <RunStep step={{ ...step, status: 'in_progress' }} words={(sentence) => sentence} />,
+        );
+
+        expect(reported).toContain('ACME: surfaces');
+        expect(silent).not.toContain('ACME: surfaces');
+        expect(silent).not.toContain('1 of 2');
+    });
+
+    it('names the work a failed step could not finish, in the words it is handed', () => {
+        const failure =
+            'ACME: EUR/USD surface calibration failed after 3 attempts: NATS request timed out';
+        const html = render(
+            <RunStep
+                step={{ ...step, status: 'failed', error: failure }}
+                words={(sentence) => `[${sentence}]`}
+            />,
+        );
+
+        expect(html).toContain(`[${failure}]`);
     });
 
     it('states how long a finished step took', () => {

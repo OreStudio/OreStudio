@@ -277,7 +277,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &account_credential_key::id},
     };
 }
@@ -291,7 +291,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_credential_lookup::key},
         utility::codec::field{"account_credential", &account_credential_lookup::account_credential},
     };
@@ -306,7 +306,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credentials_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_credentials_filter::account_id},
         utility::codec::field{"id_one_of", &account_credentials_filter::id_one_of},
         utility::codec::field{"account_id_one_of", &account_credentials_filter::account_id_one_of},
@@ -322,7 +322,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &account_credential_event::event_id},
         utility::codec::field{"key", &account_credential_event::key},
         utility::codec::field{"action", &account_credential_event::action},
@@ -341,7 +341,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_credential",
                               &account_credential_version_key::account_credential},
         utility::codec::field{"version", &account_credential_version_key::version},
@@ -357,7 +357,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &account_credential_versions_filter::version},
         utility::codec::field{"from_version", &account_credential_versions_filter::from_version},
         utility::codec::field{"to_version", &account_credential_versions_filter::to_version},
@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_credentials_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_account_credentials_request::offset},
         utility::codec::field{"limit", &list_account_credentials_request::limit},
         utility::codec::field{"order", &list_account_credentials_request::order},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_credentials_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_credentials_response::result},
         utility::codec::field{"account_credentials",
                               &list_account_credentials_response::account_credentials},
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_credential_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_credential_request::key},
     };
 }
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_credential_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_credential_response::result},
         utility::codec::field{"account_credential",
                               &get_account_credential_response::account_credential},
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_credentials_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_account_credentials_request::keys},
     };
 }
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.d
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_account_credentials_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_account_credentials_response::result},
         utility::codec::field{"entries", &get_many_account_credentials_response::entries},
     };
@@ -469,7 +469,7 @@ wire_fields(std::type_identity<get_many_account_credentials_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_credentials_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id",
                               &list_by_account_id_account_credentials_request::account_id},
         utility::codec::field{"scope", &list_by_account_id_account_credentials_request::scope},
@@ -490,7 +490,7 @@ wire_fields(std::type_identity<list_by_account_id_account_credentials_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_credentials_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_account_id_account_credentials_response::result},
         utility::codec::field{
             "account_credentials",
@@ -509,7 +509,7 @@ wire_fields(std::type_identity<list_by_account_id_account_credentials_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_credential_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_account_credential_versions_request::key},
         utility::codec::field{"offset", &list_account_credential_versions_request::offset},
         utility::codec::field{"limit", &list_account_credential_versions_request::limit},
@@ -528,7 +528,7 @@ wire_fields(std::type_identity<list_account_credential_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_credential_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_credential_versions_response::result},
         utility::codec::field{"versions", &list_account_credential_versions_response::versions},
         utility::codec::field{"total", &list_account_credential_versions_response::total},
@@ -545,7 +545,7 @@ wire_fields(std::type_identity<list_account_credential_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_account_credential_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_credential_version_request::key},
     };
 }
@@ -560,7 +560,7 @@ wire_fields(std::type_identity<get_account_credential_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_account_credential_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_credential_version_response::result},
         utility::codec::field{"version", &get_account_credential_version_response::version},
     };

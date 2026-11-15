@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"driver", &rate_card_component_key::driver},
     };
 }
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &rate_card_component_write::id},
         utility::codec::field{"feed_id", &rate_card_component_write::feed_id},
         utility::codec::field{"driver", &rate_card_component_write::driver},
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &rate_card_component_change::write},
         utility::codec::field{"precondition", &rate_card_component_change::precondition},
     };
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &rate_card_component_removal::key},
         utility::codec::field{"precondition", &rate_card_component_removal::precondition},
     };
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &rate_card_component_lookup::key},
         utility::codec::field{"rate_card_component",
                               &rate_card_component_lookup::rate_card_component},
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_components_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"feed_id", &rate_card_components_filter::feed_id},
         utility::codec::field{"driver", &rate_card_components_filter::driver},
         utility::codec::field{"id_one_of", &rate_card_components_filter::id_one_of},
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &rate_card_component_event::event_id},
         utility::codec::field{"key", &rate_card_component_event::key},
         utility::codec::field{"action", &rate_card_component_event::action},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"rate_card_component",
                               &rate_card_component_version_key::rate_card_component},
         utility::codec::field{"version", &rate_card_component_version_key::version},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_card_component_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &rate_card_component_versions_filter::version},
         utility::codec::field{"from_version", &rate_card_component_versions_filter::from_version},
         utility::codec::field{"to_version", &rate_card_component_versions_filter::to_version},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_rate_card_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_rate_card_components_request::offset},
         utility::codec::field{"limit", &list_rate_card_components_request::limit},
         utility::codec::field{"order", &list_rate_card_components_request::order},
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_rate_card_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_rate_card_components_response::result},
         utility::codec::field{"rate_card_components",
                               &list_rate_card_components_response::rate_card_components},
@@ -565,7 +565,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_rate_card_component_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_rate_card_component_request::key},
     };
 }
@@ -579,7 +579,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_rate_card_component_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_rate_card_component_response::result},
         utility::codec::field{"rate_card_component",
                               &get_rate_card_component_response::rate_card_component},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.rate_card_comp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_rate_card_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_rate_card_components_request::keys},
     };
 }
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<get_many_rate_card_components_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_rate_card_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_rate_card_components_response::result},
         utility::codec::field{"entries", &get_many_rate_card_components_response::entries},
     };
@@ -626,7 +626,7 @@ wire_fields(std::type_identity<get_many_rate_card_components_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_rate_card_component_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_rate_card_component_request::change},
         utility::codec::field{"intent", &put_rate_card_component_request::intent},
     };
@@ -641,7 +641,7 @@ wire_fields(std::type_identity<get_many_rate_card_components_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_rate_card_component_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_rate_card_component_response::result},
         utility::codec::field{"rate_card_component",
                               &put_rate_card_component_response::rate_card_component},
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<get_many_rate_card_components_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_rate_card_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_rate_card_components_request::changes},
         utility::codec::field{"intent", &put_many_rate_card_components_request::intent},
     };
@@ -674,7 +674,7 @@ wire_fields(std::type_identity<put_many_rate_card_components_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_rate_card_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_rate_card_components_response::result},
         utility::codec::field{"rate_card_components",
                               &put_many_rate_card_components_response::rate_card_components},
@@ -690,7 +690,7 @@ wire_fields(std::type_identity<put_many_rate_card_components_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_rate_card_component_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_rate_card_component_request::removal},
         utility::codec::field{"intent", &delete_rate_card_component_request::intent},
     };
@@ -705,7 +705,7 @@ wire_fields(std::type_identity<put_many_rate_card_components_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_rate_card_component_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_rate_card_component_response::result},
     };
 }
@@ -720,7 +720,7 @@ wire_fields(std::type_identity<put_many_rate_card_components_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_rate_card_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_rate_card_components_request::removals},
         utility::codec::field{"intent", &delete_many_rate_card_components_request::intent},
     };
@@ -736,7 +736,7 @@ wire_fields(std::type_identity<delete_many_rate_card_components_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_rate_card_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_rate_card_components_response::result},
     };
 }
@@ -751,7 +751,7 @@ wire_fields(std::type_identity<delete_many_rate_card_components_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_rate_card_component_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_rate_card_component_versions_request::key},
         utility::codec::field{"offset", &list_rate_card_component_versions_request::offset},
         utility::codec::field{"limit", &list_rate_card_component_versions_request::limit},
@@ -770,7 +770,7 @@ wire_fields(std::type_identity<list_rate_card_component_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_rate_card_component_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_rate_card_component_versions_response::result},
         utility::codec::field{"versions", &list_rate_card_component_versions_response::versions},
         utility::codec::field{"total", &list_rate_card_component_versions_response::total},
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<list_rate_card_component_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_rate_card_component_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_rate_card_component_version_request::key},
     };
 }
@@ -802,7 +802,7 @@ wire_fields(std::type_identity<get_rate_card_component_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_rate_card_component_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_rate_card_component_version_response::result},
         utility::codec::field{"version", &get_rate_card_component_version_response::version},
     };

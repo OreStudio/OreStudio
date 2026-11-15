@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
@@ -53,12 +53,12 @@ public:
     /**
      * @brief Inserts a new job instance row with status='started' and returns the new id.
      */
-    std::int64_t write_started(context ctx, const domain::job_instance& inst);
+    std::int64_t write_started(const context& ctx, const domain::job_instance& inst);
 
     /**
      * @brief Updates completed_at, duration_ms, status and error_message for the given id.
      */
-    void write_completed(context ctx,
+    void write_completed(const context& ctx,
                          std::int64_t id,
                          const std::chrono::system_clock::time_point& triggered_at,
                          domain::job_status status,
@@ -67,19 +67,20 @@ public:
     /**
      * @brief Returns the most recent job instances for a given job_definition_id.
      */
-    std::vector<domain::job_instance>
-    read_latest(context ctx, const boost::uuids::uuid& job_definition_id, std::size_t limit = 100);
+    std::vector<domain::job_instance> read_latest(const context& ctx,
+                                                  const boost::uuids::uuid& job_definition_id,
+                                                  std::size_t limit = 100);
 
     /**
      * @brief Returns the most recent job instances across all job definitions, newest-first.
      */
-    std::vector<domain::job_instance> read_all_latest(context ctx, std::size_t limit = 100);
+    std::vector<domain::job_instance> read_all_latest(const context& ctx, std::size_t limit = 100);
 
     /**
      * @brief Returns the triggered_at of the most recent run for a job definition, if any.
      */
     std::optional<std::chrono::system_clock::time_point>
-    last_run_at(context ctx, const boost::uuids::uuid& job_definition_id);
+    last_run_at(const context& ctx, const boost::uuids::uuid& job_definition_id);
 };
 
 } // namespace ores::scheduler::repository

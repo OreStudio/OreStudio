@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_underlying_key::trade_id},
         utility::codec::field{"underlying_role", &instrument_underlying_key::underlying_role},
         utility::codec::field{"sequence_number", &instrument_underlying_key::sequence_number},
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_underlying_write::trade_id},
         utility::codec::field{"underlying_role", &instrument_underlying_write::underlying_role},
         utility::codec::field{"sequence_number", &instrument_underlying_write::sequence_number},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &instrument_underlying_change::write},
         utility::codec::field{"precondition", &instrument_underlying_change::precondition},
     };
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_underlying_removal::key},
         utility::codec::field{"precondition", &instrument_underlying_removal::precondition},
     };
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_underlying_lookup::key},
         utility::codec::field{"instrument_underlying",
                               &instrument_underlying_lookup::instrument_underlying},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlyings_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_underlyings_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &instrument_underlyings_filter::trade_id_one_of},
     };
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &instrument_underlying_event::event_id},
         utility::codec::field{"key", &instrument_underlying_event::key},
         utility::codec::field{"action", &instrument_underlying_event::action},
@@ -553,7 +553,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_underlying_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"instrument_underlying",
                               &instrument_underlying_version_key::instrument_underlying},
         utility::codec::field{"version", &instrument_underlying_version_key::version},
@@ -570,7 +570,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_underl
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_underlying_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &instrument_underlying_versions_filter::version},
         utility::codec::field{"from_version", &instrument_underlying_versions_filter::from_version},
         utility::codec::field{"to_version", &instrument_underlying_versions_filter::to_version},
@@ -586,7 +586,7 @@ wire_fields(std::type_identity<instrument_underlying_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_instrument_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_instrument_underlyings_request::offset},
         utility::codec::field{"limit", &list_instrument_underlyings_request::limit},
         utility::codec::field{"order", &list_instrument_underlyings_request::order},
@@ -604,7 +604,7 @@ wire_fields(std::type_identity<instrument_underlying_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_instrument_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_underlyings_response::result},
         utility::codec::field{"instrument_underlyings",
                               &list_instrument_underlyings_response::instrument_underlyings},
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<instrument_underlying_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_instrument_underlying_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_underlying_request::key},
     };
 }
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<instrument_underlying_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_instrument_underlying_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_underlying_response::result},
         utility::codec::field{"instrument_underlying",
                               &get_instrument_underlying_response::instrument_underlying},
@@ -652,7 +652,7 @@ wire_fields(std::type_identity<instrument_underlying_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_instrument_underlyings_request::keys},
     };
 }
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<get_many_instrument_underlyings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_instrument_underlyings_response::result},
         utility::codec::field{"entries", &get_many_instrument_underlyings_response::entries},
     };
@@ -682,7 +682,7 @@ wire_fields(std::type_identity<get_many_instrument_underlyings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_instrument_underlying_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_instrument_underlying_request::change},
         utility::codec::field{"intent", &put_instrument_underlying_request::intent},
     };
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<get_many_instrument_underlyings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_instrument_underlying_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_instrument_underlying_response::result},
         utility::codec::field{"instrument_underlying",
                               &put_instrument_underlying_response::instrument_underlying},
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<get_many_instrument_underlyings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_instrument_underlyings_request::changes},
         utility::codec::field{"intent", &put_many_instrument_underlyings_request::intent},
     };
@@ -730,7 +730,7 @@ wire_fields(std::type_identity<put_many_instrument_underlyings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_instrument_underlyings_response::result},
         utility::codec::field{"instrument_underlyings",
                               &put_many_instrument_underlyings_response::instrument_underlyings},
@@ -746,7 +746,7 @@ wire_fields(std::type_identity<put_many_instrument_underlyings_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_instrument_underlying_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_instrument_underlying_request::removal},
         utility::codec::field{"intent", &delete_instrument_underlying_request::intent},
     };
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<put_many_instrument_underlyings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_instrument_underlying_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_instrument_underlying_response::result},
     };
 }
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<delete_instrument_underlying_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_instrument_underlyings_request::removals},
         utility::codec::field{"intent", &delete_many_instrument_underlyings_request::intent},
     };
@@ -793,7 +793,7 @@ wire_fields(std::type_identity<delete_many_instrument_underlyings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_instrument_underlyings_response::result},
     };
 }
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<delete_many_instrument_underlyings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_underlyings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_instrument_underlyings_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_instrument_underlyings_request::scope},
@@ -829,7 +829,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_underlyings_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_underlyings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_instrument_underlyings_response::result},
         utility::codec::field{
             "instrument_underlyings",
@@ -848,7 +848,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_underlyings_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_underlying_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_instrument_underlying_versions_request::key},
         utility::codec::field{"offset", &list_instrument_underlying_versions_request::offset},
         utility::codec::field{"limit", &list_instrument_underlying_versions_request::limit},
@@ -867,7 +867,7 @@ wire_fields(std::type_identity<list_instrument_underlying_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_underlying_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_underlying_versions_response::result},
         utility::codec::field{"versions", &list_instrument_underlying_versions_response::versions},
         utility::codec::field{"total", &list_instrument_underlying_versions_response::total},
@@ -884,7 +884,7 @@ wire_fields(std::type_identity<list_instrument_underlying_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_underlying_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_underlying_version_request::key},
     };
 }
@@ -899,7 +899,7 @@ wire_fields(std::type_identity<get_instrument_underlying_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_underlying_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_underlying_version_response::result},
         utility::codec::field{"version", &get_instrument_underlying_version_response::version},
     };

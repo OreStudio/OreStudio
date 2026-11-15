@@ -1,0 +1,10 @@
+# Step 1: the tenant administrator turns the auto-approval off, so people decide.
+# A trader of ACCOUS then raises the publish of the EURUSD_SSVI calibration at
+# AS_OF, and tries to approve it, which the four-eyes rule refuses. Run with
+# BLUEPRINT and AS_OF set; the raise prints the request id.
+connect $ORES_NATS_URL
+approval_operations set-approvals-mode "People decide the surface publishes" --auto_approved false
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${AS_OF} --reason "The month-end EUR/USD surface"
+logout

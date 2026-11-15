@@ -27,7 +27,7 @@ salt
       --
       {#
         Code | Name | Artefact type | Catalogue
-        <b>ore.conventions</b> | ORE Instrument Conventions | conventions | ORE Analytics
+        <b>refdata.conventions</b> | ORE Instrument Conventions | conventions | ORE Analytics
         refdata.currency_pair_conventions | Standard Currency Pair Conventions | currency_pair_conventions | FX Market Conventions
         refdata.currency_pair_convention_calendars | Currency Pair Convention Calendars | ... | FX Market Conventions
       }
@@ -63,7 +63,7 @@ salt
       --
       {#
         Dataset | Bundle | Scope | Param
-        ore.conventions | <b>party_essentials</b> | once per <b>party</b> | {"party_id": "..."}
+        refdata.conventions | <b>party_essentials</b> | once per <b>party</b> | {"party_id": "..."}
         refdata.currency_pair_conventions | <b>base</b> | once per <b>tenant</b> | (none)
       }
       --
@@ -76,7 +76,7 @@ salt
       --
       {#
         The publish | inserted | updated | skipped | deleted
-        first party, ore.conventions | <b>2,188</b> | 0 | 0 | 0
+        first party, refdata.conventions | <b>2,188</b> | 0 | 0 | 0
         each later party | <b>2,155</b> | 0 | <b>33</b> | 0
         a re-publish of the same party | 0 | 0 | <b>2,188</b> | 0
         currency_pair, second publish | 0 | <b>179</b> | 0 | 0

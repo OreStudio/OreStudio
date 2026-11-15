@@ -85,7 +85,7 @@ public:
                                            const std::vector<std::string>& args);
 
     /**
-     * @brief schedule-report-definitions <ids>
+     * @brief schedule-report-definitions <ids> <schedule_expression>
      */
     static void process_schedule_report_definitions(std::ostream& out,
                                                     ores::nats::service::nats_client& session,

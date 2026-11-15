@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/rounding_type_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -99,17 +103,72 @@ rounding_type_filter_condition(const std::optional<messaging::rounding_types_fil
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool rounding_type_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using rounding_type_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::rounding_type>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+rounding_type_rows_by_key rounding_type_current_rows(rounding_type_repository& repo,
+                                                     const ores::database::context& ctx,
+                                                     const std::vector<domain::rounding_type>& of) {
+    std::vector<std::string> codes;
+    codes.reserve(of.size());
+    for (const auto& row : of) {
+        codes.push_back(row.code);
+    }
+    rounding_type_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, codes))
+        current[std::make_tuple(item.code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::rounding_type>&
+rounding_type_rows_of(const rounding_type_rows_by_key& current, const domain::rounding_type& item) {
+    static const std::vector<domain::rounding_type> none;
+    const auto found = current.find(std::make_tuple(item.code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-rounding_type_repository::replace_claim(context ctx, const domain::rounding_type& v) {
-    const auto current = read_latest(ctx, v.code);
+rounding_type_replace_claim(const std::vector<domain::rounding_type>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::rounding_type rounding_type_repository::apply_claim(
-    context ctx, const domain::rounding_type& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::rounding_type rounding_type_apply_claim(const domain::rounding_type& v,
+                                                const ores::utility::domain::precondition& claim,
+                                                const std::vector<domain::rounding_type>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -121,54 +180,67 @@ domain::rounding_type rounding_type_repository::apply_claim(
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void rounding_type_repository::write(context ctx, const domain::rounding_type& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void rounding_type_repository::write(context ctx, const std::vector<domain::rounding_type>& v) {
+void rounding_type_repository::write(const context& ctx, const domain::rounding_type& v) {
+    write(ctx, v, rounding_type_replace_claim(read_latest(ctx, v.code)));
+}
+
+void rounding_type_repository::write(const context& ctx,
+                                     const std::vector<domain::rounding_type>& v) {
+    const auto current = rounding_type_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(rounding_type_replace_claim(rounding_type_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void rounding_type_repository::write(context ctx,
+void rounding_type_repository::write(const context& ctx,
                                      const domain::rounding_type& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing rounding type. " << "code: " << v.code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = rounding_type_apply_claim(v,
+                                             claim,
+                                             rounding_type_claim_reads_current(claim) ?
+                                                 read_latest(ctx, v.code) :
+                                                 std::vector<domain::rounding_type>{});
     query_builder::execute_write_query(
         ctx, rounding_type_mapper::map(t), lg(), "Writing rounding type to database.");
 }
 
 void rounding_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::rounding_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing rounding types. Count: " << v.size();
+    std::vector<domain::rounding_type> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (rounding_type_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = rounding_type_current_rows(*this, ctx, to_read);
     std::vector<domain::rounding_type> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            rounding_type_apply_claim(v[i], claims[i], rounding_type_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, rounding_type_mapper::map(batch), lg(), "Writing rounding types to database.");
 }
 
-std::vector<domain::rounding_type> rounding_type_repository::read_latest(context ctx) {
+std::vector<domain::rounding_type> rounding_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<rounding_type_entity>> |
@@ -183,7 +255,7 @@ std::vector<domain::rounding_type> rounding_type_repository::read_latest(context
         "Reading latest rounding types");
 }
 
-std::vector<domain::rounding_type> rounding_type_repository::read_latest(context ctx,
+std::vector<domain::rounding_type> rounding_type_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest rounding type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +273,7 @@ std::vector<domain::rounding_type> rounding_type_repository::read_latest(context
 }
 
 
-std::vector<domain::rounding_type> rounding_type_repository::read_all(context ctx,
+std::vector<domain::rounding_type> rounding_type_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all rounding type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -218,7 +290,7 @@ std::vector<domain::rounding_type> rounding_type_repository::read_all(context ct
 }
 
 std::optional<domain::rounding_type> rounding_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading rounding type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -241,7 +313,7 @@ std::optional<domain::rounding_type> rounding_type_repository::read_at_version(
 }
 
 rounding_type_repository::remove_status rounding_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing rounding type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +341,12 @@ rounding_type_repository::remove_status rounding_type_repository::remove(
     return remove_status::removed;
 }
 
-void rounding_type_repository::remove(context ctx, const std::string& code) {
+void rounding_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::rounding_type>
-rounding_type_repository::read_latest(context ctx,
+rounding_type_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -299,7 +371,7 @@ rounding_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t rounding_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::rounding_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active rounding type count";
@@ -318,9 +390,24 @@ std::uint32_t rounding_type_repository::get_total_type_count(
 }
 
 std::vector<domain::rounding_type>
-rounding_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+rounding_type_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (codes.size() > chunk_size) {
+        std::vector<domain::rounding_type> all;
+        for (std::size_t begin = 0; begin < codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(codes.begin() + begin, codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -335,7 +422,7 @@ rounding_type_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void rounding_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void rounding_type_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

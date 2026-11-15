@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 465F0207-EAFD-46EC-851B-6912F86DC2D0
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.series_subclass_code
 #+description: Codegen entity model for the refdata series_subclass_code table: the fine-grained market series subclass taxonomy (spot, forward, volatility, yield, basis, fra, xccy, spread, index_credit, recovery, swap, capfloor, seasonality, price, correlation).
 #+type: ores.codegen.entity
+#+web_classification: series-subclass-code
+#+web_classification_topic: market-data
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: series_subclass_code

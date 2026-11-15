@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -39,10 +40,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -110,79 +114,148 @@ market_fixing_filter_condition(const std::optional<messaging::market_fixings_fil
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool market_fixing_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using market_fixing_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::market_fixing>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+market_fixing_rows_by_key market_fixing_current_rows(market_fixing_repository& repo,
+                                                     const ores::database::context& ctx,
+                                                     const std::vector<domain::market_fixing>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    market_fixing_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::market_fixing>&
+market_fixing_rows_of(const market_fixing_rows_by_key& current, const domain::market_fixing& item) {
+    static const std::vector<domain::market_fixing> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-market_fixing_repository::replace_claim(context ctx, const domain::market_fixing& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+market_fixing_replace_claim(const std::vector<domain::market_fixing>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::market_fixing market_fixing_repository::apply_claim(
-    context ctx, const domain::market_fixing& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::market_fixing market_fixing_apply_claim(const domain::market_fixing& v,
+                                                const ores::utility::domain::precondition& claim,
+                                                const std::vector<domain::market_fixing>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "market_fixing_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "market_fixing_repository::write: a current row already exists");
     return t;
 }
 
-void market_fixing_repository::write(context ctx, const domain::market_fixing& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_fixing_repository::insert(context ctx, const domain::market_fixing& v) {
+void market_fixing_repository::write(const context& ctx, const domain::market_fixing& v) {
+    write(ctx, v, market_fixing_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void market_fixing_repository::insert(const context& ctx, const domain::market_fixing& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market fixing. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixing into database.");
 }
 
-void market_fixing_repository::insert(context ctx, const std::vector<domain::market_fixing>& v) {
+void market_fixing_repository::insert(const context& ctx,
+                                      const std::vector<domain::market_fixing>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixings into database.");
 }
 
-void market_fixing_repository::write(context ctx, const std::vector<domain::market_fixing>& v) {
+void market_fixing_repository::write(const context& ctx,
+                                     const std::vector<domain::market_fixing>& v) {
+    const auto current = market_fixing_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(market_fixing_replace_claim(market_fixing_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void market_fixing_repository::write(context ctx,
+void market_fixing_repository::write(const context& ctx,
                                      const domain::market_fixing& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market fixing. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = market_fixing_apply_claim(v,
+                                             claim,
+                                             market_fixing_claim_reads_current(claim) ?
+                                                 read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                 std::vector<domain::market_fixing>{});
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(t), lg(), "Writing market fixing to database.");
 }
 
 void market_fixing_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_fixing>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market fixings. Count: " << v.size();
+    std::vector<domain::market_fixing> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (market_fixing_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = market_fixing_current_rows(*this, ctx, to_read);
     std::vector<domain::market_fixing> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            market_fixing_apply_claim(v[i], claims[i], market_fixing_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(batch), lg(), "Writing market fixings to database.");
 }
 
-std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx) {
+std::vector<domain::market_fixing> market_fixing_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -199,7 +272,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
         "Reading latest market fixings");
 }
 
-std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx,
+std::vector<domain::market_fixing> market_fixing_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixing. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -218,7 +291,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
 }
 
 
-std::vector<domain::market_fixing> market_fixing_repository::read_all(context ctx,
+std::vector<domain::market_fixing> market_fixing_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market fixing versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -238,7 +311,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_all(context ct
 
 
 market_fixing_repository::remove_status market_fixing_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -257,12 +330,12 @@ market_fixing_repository::remove_status market_fixing_repository::remove(
     return remove_status::removed;
 }
 
-void market_fixing_repository::remove(context ctx, const std::string& id) {
+void market_fixing_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest(context ctx,
+market_fixing_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -288,7 +361,7 @@ market_fixing_repository::read_latest(context ctx,
 }
 
 std::uint32_t market_fixing_repository::get_total_market_fixing_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_fixings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market fixing count";
@@ -308,9 +381,24 @@ std::uint32_t market_fixing_repository::get_total_market_fixing_count(
 }
 
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_fixing_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::market_fixing> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -326,7 +414,7 @@ market_fixing_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void market_fixing_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_fixing_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -345,7 +433,8 @@ void market_fixing_repository::remove(context ctx, const std::vector<std::string
 
 
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) {
+market_fixing_repository::read_latest_for_series(const context& ctx,
+                                                 const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

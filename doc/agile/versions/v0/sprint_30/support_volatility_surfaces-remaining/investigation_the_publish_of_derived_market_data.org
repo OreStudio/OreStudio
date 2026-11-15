@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 44E630B8-3CA4-42C5-BA94-75618F121327
+:END:
+#+title: Investigation: The publish of derived market data: curves, forward sets and surfaces
+#+description: Why curves, FX forward sets and FX volatility surfaces publish differently, what the architecture documents say they should do, the defects the differences hide, and the one lifecycle they converge on.
+#+type: investigation
+#+level: s1
+#+filetags: :marketdata:publish:approval:four_eyes:architecture:support_volatility_surfaces-remaining:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into Why curves, FX forward sets and FX volatility surfaces publish differently, what the architecture documents say they should do, the defects the differences hide, and the one lifecycle they converge on.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+On 2026-11-11 a trader of ACCOUS raised two publishes four seconds apart, with the tenant's approvals mode =auto_approved=. The EUR/USD forward set closed at once under the =tenant= rule. The EURUSD_SSVI surface publish waited for a person. Both kinds carry the same auto-approval code, =system_tenant=, and both raise through =approval_lifecycle=.
+
+That one difference led to a wider question. Curves, FX forward sets and FX volatility surfaces are each a candidate made authoritative by a four-eyes publish. Why do the three behave differently, what do the architecture documents say they should do, and what is the one target they converge on? Every difference needs a reason that is signed off and documented, or it goes.
+
+* Methodology
+
+- Read the three publish paths at origin/main 6a00a12470: =curve_publish_gate.cpp=, =approval_gated_curve_publish_handler.hpp=, =curve_republish_service.cpp= and =curve_withdrawal.cpp= for curves; =fx_forward_publish_service.cpp= for forwards; =fx_vol_surface_calibration_service.cpp= and =fx_vol_surface_publish_service.cpp= for surfaces (all in =ores.marketdata.service=); =approval_lifecycle.cpp= in =ores.inbox=; =context.hpp= in =ores.database=.
+- Read the architecture: [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]], [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]], [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]], [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]], [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]], [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction]], and the journeys [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]], [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]], [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
+- Observed the live Acme tenant on a recreated, provisioned database: the two requests (=ores_inbox_approval_requests_tbl=, rule =tenant= against none), the mode's history (=ores_variability_system_settings_tbl=: =auto_approved= since 08:53, owned by party =acme_corporation_system=) and the session that raised the surface (party ACCOUS).
+
+* Paths taken
+
+- *Suspected the kinds.* The seeded rows of =marketdata.fx_forward_publish= and =marketdata.fx_vol_surface_publish= are the same in every auto-approval column. Set aside.
+- *Suspected a mode change between the raises.* The setting's history shows one change, at 08:53, to =auto_approved=. Set aside.
+- *Compared the raise calls.* Both call =lifecycle.raise=. The forward builds the lifecycle on the request's context; the surface builds it on the context of a unit of work, because the raise and its subject record are one transaction (PR #4573). This is the difference that matters.
+- *Read =approvals_mode=.* It reads the setting through =ctx_.with_tenant(tenant, actor)=, which clears the parties on the copy but keeps the bound transaction, as its comment says. A transaction set its tenant and parties when it opened, so the read runs as ACCOUS, which cannot see the tenant's row. The fallback reads the installation's row, =enforced=.
+
+* Conclusions
+
+** What the documents say
+
+The three construction documents describe one lifecycle:
+
+1. A compute writes a candidate: the points as observations of the blueprint's output series at the as-of, each with lineage. It "exists, it is traceable, and it is not authoritative".
+2. Three acts make it authoritative: the maker raises a publish naming the subject and the as-of; a second person decides under four-eyes; the publish applies the approved request once, stamps the publisher and the instant, ends the set it replaces and sends the notice. The surface document uses "the three acts that make a curve authoritative". The forward document says a set is "approved as an IR curve is" and "can only be superseded".
+3. A published set is published, superseded or withdrawn, and only a published set reaches a report or a screen.
+
+The approval documents add rules for every kind: one open request per subject; the raise writes the request and its subject in one transaction; the checks run at raise and again at apply. The market data journeys decide that the apply is the publish operation, run by the trader, and not a workflow. The withdrawal journey leaves open whether a withdrawal applies on the decision or by the trader.
+
+The database documents say a transaction sets its tenant, party and visible parties once, when it opens, and =transact= is the only way in.
+
+** What the code does
+
+| Step | Curve | Forward set | Surface | Documents |
+|------+-------+-------------+---------+-----------|
+| Subject's party | the config's; the caller's is not checked | the session party | the session party, checked against the blueprint | the maker's |
+| Candidate | none before the raise; the apply bootstraps (=republish=) | computed inside the raise, written as the subject | a calibration, by its own operation, before the raise | computed before the raise |
+| What the decider sees | a subject with no numbers | the computed set | the calibration's checks | the candidate and its checks |
+| Raise and subject | two writes | two writes | one transaction | one transaction |
+| Auto-approval | read right | read right | read wrong | one rule |
+| One open request per subject | not enforced | not enforced | enforced | enforced for every kind |
+| Older than the live set | allowed, and it supersedes the newer | not checked | refused | not stated |
+| Candidate changed after the raise | the apply recomputes, so the approved and published numbers can differ | cannot change | refused by version | checks again at apply |
+| Supersede at apply | yes | no | yes | yes |
+| Notice | yes | no | yes | yes |
+| Withdrawal | yes, its own kind | no | no | yes |
+| Shape | handler class and free functions | service | service | not stated |
+
+Every difference traces to the order the three were built: the curve first, the forward copying part of it, the surface adding what the reviews of the first two asked for. No document or decision records any of them as intended.
+
+** Defects
+
+1. *Auto-approval is lost inside a transaction.* The surface raises inside a unit of work, as the four-eyes document asks. =approvals_mode= reads the tenant's row under the transaction's party, ACCOUS, which cannot see the row of =acme_corporation_system=, and falls back to the installation's =enforced=. =kind()= and =system_actor_account_id()= switch to the system tenant the same way and work only where a table's policy lets system rows through. The cause is general: on a context bound to a transaction, =with_tenant= and =with_party= change the object and not the session.
+2. *A curve's approval does not cover its numbers.* The apply bootstraps afresh, so the curve published is what the market holds at apply, not what was decided.
+3. *A forward set never ends.* Two published sets of one pair can both be live, and nothing tells a reader that a set changed.
+4. *Duplicate raises* for curves and forwards, against the rule for every kind.
+5. *A failed provisioning leaves the tenant auto-approving.* The [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][acme_demo profile]] turns the mode on at step 8 and off at step 9000. A run that fails between them, as every run fails today at =generate_trades=, never turns it off.
+
+** Documentation gaps
+
+- Auto-approval is barely documented. [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] mentions only that a kind may "decide on its own (auto-authorisation)". No document states the rule =auto_approval_of= applies, in its order: a request that names parts is never auto-approved; else the installation's or the tenant's mode, =auto_approved=, closes it under the rule =deployment= or =tenant=; else the kind's =every_request=; else =system_tenant= for a request of the system tenant. Nor does any say who the decider of an auto-approved request is, or how a screen shows the mode.
+- The forward document says a set "can only be superseded"; the code never supersedes it.
+- The curve document places the candidate before the raise; the code computes it at apply.
+- The surface document says the export writes =fx_volatility_config=, which the data model clean up story replaces.
+
+* Recommendations
+
+** The target: one lifecycle for every published market object
+
+One implementation in =ores.marketdata=, parameterised by the kind of object: curve, forward set, surface, and later others. A kind supplies only what differs in finance: how its candidate is computed, its checks, and the columns of its subject.
+
+1. *Compute.* An operation per kind computes the candidate for (subject, as-of) and stores it with its lineage and checks, as a version. The bootstrap, the forward compute and the calibration are this step. Nothing is computed at raise or at apply.
+2. *Raise.* One raise: the subject belongs to the session party; one open request per (subject, as-of); a candidate older than the live set is refused; the request and the subject record, naming the candidate's version, are one transaction.
+3. *Decide.* The inbox, unchanged. Auto-approval follows one rule for every kind, read correctly.
+4. *Apply.* One apply, run by the trader as the journeys decide: the request is of the kind, the subject matches, it is approved and not yet applied, and the candidate is the version approved; then, in one transaction, publish, supersede every live set of the series, and write the notice.
+5. *Withdraw.* One withdrawal for every kind, with its own approval kind and notice.
+6. *Read.* One rule: the newest published set at or before the as-of, with its state and its approval.
+
+** The database and inbox fix
+
+- A context bound to a transaction refuses =with_tenant= and =with_party=, so the trap cannot be set silently.
+- The inbox reads the approvals mode, the kinds and the system actor through a context that is not bound to the caller's transaction, so the raise can stay one transaction and still see the tenant's mode.
+
+** Decisions, signed off on 2026-11-11
+
+1. One lifecycle for every published market object, with the per-kind parts above.
+2. The candidate is computed and stored before the raise, for every kind, so the decider approves the numbers that publish. This changes the curve publish.
+3. The apply stays the trader's act, as the journeys decide, for publish and for withdrawal.
+4. A candidate older than the live set is refused, for every kind.
+5. A context bound to a transaction refuses =with_tenant= and =with_party=.
+6. Auto-approval is documented in [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]: the rule and its order, the decider an auto-approval records, and the screens that show the mode.
+7. A provisioning run that fails turns auto-approval off, or the mode states the run that holds it on.
+8. Any difference kept between kinds is recorded in the story's Decisions with its reason.
+
+** Follow-up
+
+The target is the [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] cluster, and the auto-approval rule is [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]. [[id:A171C0C0-634A-4ADF-8772-6EBBBDF94166][Publish every derived market object through one lifecycle]] brings the system to it.
+
+* See also
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]]
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]
+- [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context]]

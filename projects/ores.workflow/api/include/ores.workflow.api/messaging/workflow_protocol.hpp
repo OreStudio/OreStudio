@@ -383,6 +383,14 @@ struct workflow_step_summary {
     std::optional<std::string> completed_at;
     std::string error;
     std::vector<step_log_entry> log;
+    /**
+     * @brief The progress a running step last reported: what it is doing, and how
+     * far through it is out of how much when it counts. Empty when the step is not
+     * running or reported none.
+     */
+    std::string progress;
+    std::optional<std::int64_t> progress_done;
+    std::optional<std::int64_t> progress_total;
 
     friend bool operator==(const workflow_step_summary&, const workflow_step_summary&) = default;
 };
@@ -566,7 +574,7 @@ struct retry_workflow_instance_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<step_log_entry>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"level", &step_log_entry::level},
         ::ores::utility::codec::field{"message", &step_log_entry::message},
         ::ores::utility::codec::field{"context", &step_log_entry::context},
@@ -582,7 +590,7 @@ struct retry_workflow_instance_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<step_completed_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"workflow_instance_id",
                                       &step_completed_event::workflow_instance_id},
         ::ores::utility::codec::field{"step_id", &step_completed_event::step_id},
@@ -602,7 +610,7 @@ struct retry_workflow_instance_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_workflow_message>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"type", &start_workflow_message::type},
         ::ores::utility::codec::field{"tenant_id", &start_workflow_message::tenant_id},
         ::ores::utility::codec::field{"target_kind", &start_workflow_message::target_kind},
@@ -622,7 +630,7 @@ struct retry_workflow_instance_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_step_result_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"step_id", &get_step_result_request::step_id},
         ::ores::utility::codec::field{"tenant_id", &get_step_result_request::tenant_id},
     };
@@ -637,7 +645,7 @@ struct retry_workflow_instance_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_step_result_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"found", &get_step_result_response::found},
         ::ores::utility::codec::field{"outcome", &get_step_result_response::outcome},
         ::ores::utility::codec::field{"result_json", &get_step_result_response::result_json},
@@ -657,7 +665,7 @@ struct retry_workflow_instance_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &workflow_instance_summary::id},
         ::ores::utility::codec::field{"type", &workflow_instance_summary::type},
         ::ores::utility::codec::field{"status", &workflow_instance_summary::status},
@@ -683,7 +691,7 @@ struct retry_workflow_instance_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_workflow_instance_summaries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"limit", &list_workflow_instance_summaries_request::limit},
         ::ores::utility::codec::field{"status_filter",
                                       &list_workflow_instance_summaries_request::status_filter},
@@ -708,7 +716,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success",
                                       &list_workflow_instance_summaries_response::success},
         ::ores::utility::codec::field{"message",
@@ -727,7 +735,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_step_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &workflow_step_summary::id},
         ::ores::utility::codec::field{"name", &workflow_step_summary::name},
         ::ores::utility::codec::field{"label", &workflow_step_summary::label},
@@ -739,6 +747,9 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
         ::ores::utility::codec::field{"completed_at", &workflow_step_summary::completed_at},
         ::ores::utility::codec::field{"error", &workflow_step_summary::error},
         ::ores::utility::codec::field{"log", &workflow_step_summary::log},
+        ::ores::utility::codec::field{"progress", &workflow_step_summary::progress},
+        ::ores::utility::codec::field{"progress_done", &workflow_step_summary::progress_done},
+        ::ores::utility::codec::field{"progress_total", &workflow_step_summary::progress_total},
     };
 }
 
@@ -751,7 +762,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_steps_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"workflow_instance_id",
                                       &get_workflow_steps_request::workflow_instance_id},
     };
@@ -766,7 +777,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_steps_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_workflow_steps_response::success},
         ::ores::utility::codec::field{"message", &get_workflow_steps_response::message},
         ::ores::utility::codec::field{"status", &get_workflow_steps_response::status},
@@ -785,7 +796,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_step_definition_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"step_index", &workflow_step_definition_summary::step_index},
         ::ores::utility::codec::field{"name", &workflow_step_definition_summary::name},
         ::ores::utility::codec::field{"description",
@@ -806,7 +817,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_definition_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"type_name", &workflow_definition_summary::type_name},
         ::ores::utility::codec::field{"description", &workflow_definition_summary::description},
         ::ores::utility::codec::field{"step_count", &workflow_definition_summary::step_count},
@@ -823,7 +834,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workflow_definitions_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -835,7 +846,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workflow_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &list_workflow_definitions_response::success},
         ::ores::utility::codec::field{"message", &list_workflow_definitions_response::message},
         ::ores::utility::codec::field{"definitions",
@@ -852,7 +863,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_workflow_instance_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"workflow_instance_id",
                                       &retry_workflow_instance_request::workflow_instance_id},
         ::ores::utility::codec::field{"step_name", &retry_workflow_instance_request::step_name},
@@ -868,7 +879,7 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_workflow_instance_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &retry_workflow_instance_response::success},
         ::ores::utility::codec::field{"message", &retry_workflow_instance_response::message},
         ::ores::utility::codec::field{"workflow_instance_id",

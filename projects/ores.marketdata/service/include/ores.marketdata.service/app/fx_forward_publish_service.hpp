@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_PUBLISH_SERVICE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_PUBLISH_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <string_view>
@@ -42,11 +42,11 @@ inline constexpr std::string_view fx_forward_publish_kind_code = "marketdata.fx_
 class ORES_MARKETDATA_SERVICE_EXPORT fx_forward_publish_service final {
 public:
     [[nodiscard]] static ores::marketdata::messaging::publish_fx_forward_response
-    publish(ores::database::context ctx,
+    publish(const ores::database::context& ctx,
             const ores::marketdata::messaging::publish_fx_forward_request& request);
 
     [[nodiscard]] static ores::marketdata::messaging::get_published_fx_forward_response
-    read(ores::database::context ctx,
+    read(const ores::database::context& ctx,
          const ores::marketdata::messaging::get_published_fx_forward_request& request);
 };
 

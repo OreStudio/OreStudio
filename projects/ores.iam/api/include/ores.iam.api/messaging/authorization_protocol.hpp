@@ -549,7 +549,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<assign_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"account_id", &assign_role_request::account_id},
         ::ores::utility::codec::field{"role_id", &assign_role_request::role_id},
         ::ores::utility::codec::field{"change_reason_code",
@@ -567,7 +567,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<assign_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &assign_role_response::success},
         ::ores::utility::codec::field{"error_message", &assign_role_response::error_message},
     };
@@ -582,7 +582,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<assign_role_by_name_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &assign_role_by_name_response::success},
         ::ores::utility::codec::field{"error_message",
                                       &assign_role_by_name_response::error_message},
@@ -598,7 +598,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<assign_role_by_name_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"principal", &assign_role_by_name_request::principal},
         ::ores::utility::codec::field{"role_name", &assign_role_by_name_request::role_name},
     };
@@ -613,7 +613,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<revoke_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"account_id", &revoke_role_request::account_id},
         ::ores::utility::codec::field{"role_id", &revoke_role_request::role_id},
     };
@@ -628,7 +628,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<revoke_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &revoke_role_response::success},
         ::ores::utility::codec::field{"error_message", &revoke_role_response::error_message},
     };
@@ -643,7 +643,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<revoke_role_by_name_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &revoke_role_by_name_response::success},
         ::ores::utility::codec::field{"error_message",
                                       &revoke_role_by_name_response::error_message},
@@ -659,7 +659,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<revoke_role_by_name_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"principal", &revoke_role_by_name_request::principal},
         ::ores::utility::codec::field{"role_name", &revoke_role_by_name_request::role_name},
     };
@@ -674,7 +674,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"account_id", &get_account_roles_request::account_id},
     };
 }
@@ -688,7 +688,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_my_roles_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -700,7 +700,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_resource_row>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"component", &permission_resource_row::component},
         ::ores::utility::codec::field{"resource", &permission_resource_row::resource},
         ::ores::utility::codec::field{"actions", &permission_resource_row::actions},
@@ -718,7 +718,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_area_count>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"component", &permission_area_count::component},
         ::ores::utility::codec::field{"resources", &permission_area_count::resources},
     };
@@ -733,7 +733,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"account_id", &list_account_permissions_request::account_id},
         ::ores::utility::codec::field{"area", &list_account_permissions_request::area},
         ::ores::utility::codec::field{"search", &list_account_permissions_request::search},
@@ -751,7 +751,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"area", &list_my_permissions_request::area},
         ::ores::utility::codec::field{"search", &list_my_permissions_request::search},
         ::ores::utility::codec::field{"offset", &list_my_permissions_request::offset},
@@ -768,7 +768,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_page_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &permission_page_response::result},
         ::ores::utility::codec::field{"area", &permission_page_response::area},
         ::ores::utility::codec::field{"rows", &permission_page_response::rows},
@@ -788,7 +788,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_role_permissions_page_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role_id", &list_role_permissions_page_request::role_id},
         ::ores::utility::codec::field{"area", &list_role_permissions_page_request::area},
         ::ores::utility::codec::field{"search", &list_role_permissions_page_request::search},
@@ -808,7 +808,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_page_row>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &role_page_row::id},
         ::ores::utility::codec::field{"version", &role_page_row::version},
         ::ores::utility::codec::field{"name", &role_page_row::name},
@@ -830,7 +830,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_roles_page_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role_id", &list_roles_page_request::role_id},
         ::ores::utility::codec::field{"search", &list_roles_page_request::search},
         ::ores::utility::codec::field{"area", &list_roles_page_request::area},
@@ -849,7 +849,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_page_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &role_page_response::result},
         ::ores::utility::codec::field{"roles", &role_page_response::roles},
         ::ores::utility::codec::field{"total_count", &role_page_response::total_count},
@@ -867,7 +867,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_holder>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"account_id", &role_holder::account_id},
         ::ores::utility::codec::field{"username", &role_holder::username},
         ::ores::utility::codec::field{"full_name", &role_holder::full_name},
@@ -885,7 +885,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_role_holders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role_id", &list_role_holders_request::role_id},
         ::ores::utility::codec::field{"offset", &list_role_holders_request::offset},
         ::ores::utility::codec::field{"limit", &list_role_holders_request::limit},
@@ -901,7 +901,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_holders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &role_holders_response::result},
         ::ores::utility::codec::field{"holders", &role_holders_response::holders},
         ::ores::utility::codec::field{"total_count", &role_holders_response::total_count},
@@ -917,7 +917,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_access>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role", &account_role_access::role},
         ::ores::utility::codec::field{"permission_codes", &account_role_access::permission_codes},
         ::ores::utility::codec::field{"assigned_by", &account_role_access::assigned_by},
@@ -937,7 +937,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_account_roles_response::result},
         ::ores::utility::codec::field{"roles", &get_account_roles_response::roles},
     };
@@ -952,7 +952,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role_id", &get_role_permissions_request::role_id},
     };
 }
@@ -966,7 +966,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_role_permissions_response::result},
         ::ores::utility::codec::field{"permission_codes",
                                       &get_role_permissions_response::permission_codes},
@@ -982,7 +982,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role_id", &put_role_permissions_request::role_id},
         ::ores::utility::codec::field{"permission_codes",
                                       &put_role_permissions_request::permission_codes},
@@ -1002,7 +1002,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<suggest_role_commands_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"username", &suggest_role_commands_request::username},
         ::ores::utility::codec::field{"tenant_id", &suggest_role_commands_request::tenant_id},
         ::ores::utility::codec::field{"hostname", &suggest_role_commands_request::hostname},
@@ -1018,7 +1018,7 @@ struct suggest_role_commands_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<suggest_role_commands_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"commands", &suggest_role_commands_response::commands},
     };
 }

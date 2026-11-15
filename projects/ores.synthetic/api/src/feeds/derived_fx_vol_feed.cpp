@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include <algorithm>
 #include <chrono>
+#include <iterator>
 #include <ranges>
 #include <string>
 #include <utility>
@@ -27,6 +28,11 @@
 namespace ores::synthetic::feed {
 
 namespace {
+
+/// How many of the newest days a feed keeps derived beside the current one. A tail, not a
+/// history: the grid is one pass either way, but a fresh tenant needs the quotes it reads at its
+/// as-of and owes nobody a decade of them.
+constexpr std::size_t history_days = 5;
 
 auto& derived_fx_feed_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.api.derived_fx_vol_feed");
@@ -91,6 +97,14 @@ derived_fx_vol_feed::answer(const mm::adapter_demand_request& request) const {
     return response;
 }
 
+mm::adapter_demand_request coalesce_demands(mm::adapter_demand_request earlier,
+                                            mm::adapter_demand_request later) {
+    later.image.insert(later.image.end(),
+                       std::make_move_iterator(earlier.image.begin()),
+                       std::make_move_iterator(earlier.image.end()));
+    return later;
+}
+
 mm::adapter_demand_response derived_fx_vol_feed::demand(const mm::adapter_demand_request& request) {
     auto response = answer(request);
     demanded_.clear();
@@ -150,7 +164,7 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     for (const auto& e : derived_fx_expiries) {
         if (!owed_expiries.contains(std::string(e.label)))
             continue;
-        const auto at = quote_convention_at(*convention, e.years);
+        const auto at = convention_at(*convention, e.label);
         if (!at)
             return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
         expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});
@@ -161,12 +175,14 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     for (const auto& expiry : derivation->expiries)
         if (!expiry)
             failures_.push_back(key_of(pair) + " " + expiry.error());
-    auto ticks = derived_fx_ticks(pair, *derivation, day, sequence_);
+    auto ticks =
+        derived_fx_ticks(pair, *derivation, day, sequence_, std::chrono::system_clock::now());
     std::erase_if(ticks, [&](const mm::adapter_tick& t) { return !owed.contains(t.external_id); });
     return ticks;
 }
 
-std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
+std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
+                                         std::size_t pair_limit) {
     if (!store_)
         return 0;
     failures_.clear();
@@ -185,7 +201,10 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         << "Keeping the derived history of " << pairs.size() << " pair(s) up to " << today;
 
     std::size_t written = 0;
+    std::size_t pairs_written = 0;
     for (const auto& [key, pair] : pairs) {
+        if (pairs_written >= pair_limit)
+            break;
         auto kept = kept_.find(key);
         if (kept == kept_.end()) {
             auto started = std::chrono::steady_clock::now();
@@ -235,10 +254,14 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
             << "Derived history of " << key << ": " << returns->dates.size()
             << " daily return(s) from the fixings, read in " << seconds_since(started) << "s";
-        // A history already held whole needs no derivation: only a new day of fixings does.
+        // The tail a feed keeps is what it owes: a tail already held needs no derivation, and
+        // reading the pair's convention to discover that would cost a query per pair per pass.
         const auto first = static_cast<std::size_t>(std::max(settings_.minimum_window, 1)) - 1;
+        const auto tail_from = returns->dates.size() > history_days ?
+                                   std::max(first, returns->dates.size() - history_days) :
+                                   first;
         const bool whole = std::ranges::all_of(
-            std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(first)),
+            std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(tail_from)),
             [&](const std::chrono::year_month_day d) { return held.contains(d); });
         if (whole) {
             BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
@@ -251,8 +274,10 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
             continue;
         }
         started = std::chrono::steady_clock::now();
+        // A feed publishes the current day, so it asks for a short tail: the whole history is a
+        // vintage's business, and deriving it per tenant is what stalled a fresh one.
         const auto missing = derive_missing_days(
-            pair, *returns, *convention, held, settings_, settings_.minimum_window);
+            pair, *returns, *convention, held, settings_, settings_.minimum_window, history_days);
         if (!missing) {
             fail(key, missing.error());
             continue;
@@ -277,6 +302,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         for (const auto& d : missing->days)
             held.insert(d.day);
         written += missing->days.size();
+        ++pairs_written;
     }
     BOOST_LOG_SEV(derived_fx_feed_lg(), info)
         << "Kept the derived history of " << pairs.size() << " pair(s) in "

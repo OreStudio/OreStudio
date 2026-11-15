@@ -1,0 +1,281 @@
+:PROPERTIES:
+:ID: B9FDF453-1431-4145-A59B-7C68F6E03855
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
+:END:
+#+title: ores.synthetic.fx_vol_contributor
+#+description: Codegen entity model for the synthetic fx_vol_contributor table; a synthetic volatility contributor: the provider it publishes as and how its quotes differ from the clean ones.
+#+type: ores.codegen.entity
+#+web_resource: fx-vol-contributors
+#+web_writes: many
+#+web_system_owned: true
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_vol_contributor
+#+entity_plural: fx_vol_contributors
+#+entity_title: FX Volatility Contributor
+#+brief: A synthetic volatility contributor: the provider it publishes as and how its quotes differ from the clean ones.
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+A synthetic contributor, a provider of the simulator that quotes FX volatility
+as a broker does. Its noise profile is its own, whatever pair it quotes, so it
+is held once here and =fx_vol_surface_feed_contributor= says which pairs it
+quotes. A profile of zeros is the clean contributor, whose quotes are the truth.
+
+The noise of a point is =noise=, widened on the wings by
+=1 + wing_widening * (0.5 - delta)= and for long expiries by
+=1 + expiry_widening * (years - 1)= past one year.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party: the system party, which runs the installation's feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:natural_key: true
+:no_generator_suffix: true
+:END:
+
+The provider the contributor publishes as.
+
+#+begin_src cpp :name generator
+// no_generator_suffix: the column is validated against the provider catalogue, so the row cycles through providers it holds.
+[idx] {
+    static constexpr const char* providers[] = {
+        "bloomberg", "lseg", "ice", "tradeweb", "demo", "derived", "ore", "composite"};
+    return std::string(providers[idx % std::size(providers)]);
+}()
+#+end_src
+
+** noise
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The standard deviation of the noise at an ATM point of one year, in volatility.
+
+#+begin_src cpp :name generator
+0.002
+#+end_src
+
+** wing_widening
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+How much larger the noise is on a wing.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** expiry_widening
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+How much larger the noise is for each year past one.
+
+#+begin_src cpp :name generator
+0.5
+#+end_src
+
+** quote_step
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The step the contributor rounds its quotes to; zero for none.
+
+#+begin_src cpp :name generator
+0.0005
+#+end_src
+
+** missing_probability
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The chance a point is not published at a step.
+
+#+begin_src cpp :name generator
+0.02
+#+end_src
+
+** stale_probability
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The chance a point repeats the contributor's last value for it.
+
+#+begin_src cpp :name generator
+0.05
+#+end_src
+
+** outlier_probability
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The chance a point is off by the outlier size, in either direction.
+
+#+begin_src cpp :name generator
+0.001
+#+end_src
+
+** outlier_size
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+How far an outlier is off, in volatility.
+
+#+begin_src cpp :name generator
+0.01
+#+end_src
+
+** bias
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+A persistent offset of every point, in volatility.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_vol_contributors_tbl
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "noise" >= 0 and "noise" < 'Infinity' |
+| "wing_widening" >= 0 and "wing_widening" < 'Infinity' |
+| "expiry_widening" >= 0 and "expiry_widening" < 'Infinity' |
+| "quote_step" >= 0 and "quote_step" < 'Infinity' |
+| "missing_probability" between 0 and 1 |
+| "stale_probability" between 0 and 1 |
+| "outlier_probability" between 0 and 1 |
+| "outlier_size" >= 0 and "outlier_size" < 'Infinity' |
+| "bias" > '-Infinity' and "bias" < 'Infinity' |
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                 |
+|---------------+-------------------------------------|
+| provider_code | ores_marketdata_validate_provider_fn |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_vol_contributor
+:entity_plural_short:   fx_vol_contributors
+:entity_singular_words: FX volatility contributor
+:entity_plural_words:   FX volatility contributors
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column        | header   |
+|---------------+----------|
+| provider_code | Provider |
+| noise         | Noise    |
+| bias          | Bias     |
+| version       | Version  |
+
+* See also
+
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]

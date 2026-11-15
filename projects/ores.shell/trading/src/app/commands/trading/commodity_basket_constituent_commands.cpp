@@ -142,16 +142,16 @@ void commodity_basket_constituent_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <sequence_number> <trade_activity_id> <underlying_code> <weight> <reason> "
-        "<commentary>");
+        "add <trade_id> <sequence_number> <trade_activity_id> <underlying_code> <weight> "
+        "<initial_price> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <sequence_number> <trade_activity_id> <underlying_code> <weight> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <sequence_number> <trade_activity_id> <underlying_code> <weight> "
+        "<initial_price> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,7 @@ void commodity_basket_constituent_commands::register_commands(cli::Menu& root_me
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <sequence_number> <trade_activity_id> <underlying_code> "
-        "<weight> <reason> <commentary>");
+        "<weight> <initial_price> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -374,8 +374,8 @@ void commodity_basket_constituent_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -389,6 +389,8 @@ void commodity_basket_constituent_commands::process_add(std::ostream& out,
             req.change.write.underlying_code, parsed->positionals[next++], "underlying_code");
         commodity_basket_constituent_read_token(
             req.change.write.weight, parsed->positionals[next++], "weight");
+        commodity_basket_constituent_read_token(
+            req.change.write.initial_price, parsed->positionals[next++], "initial_price");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -433,8 +435,8 @@ void commodity_basket_constituent_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -448,6 +450,8 @@ void commodity_basket_constituent_commands::process_set(std::ostream& out,
             req.change.write.underlying_code, parsed->positionals[next++], "underlying_code");
         commodity_basket_constituent_read_token(
             req.change.write.weight, parsed->positionals[next++], "weight");
+        commodity_basket_constituent_read_token(
+            req.change.write.initial_price, parsed->positionals[next++], "initial_price");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -504,8 +508,8 @@ void commodity_basket_constituent_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -521,6 +525,8 @@ void commodity_basket_constituent_commands::process_put_many(std::ostream& out,
                 change.write.underlying_code, parsed->positionals[next++], "underlying_code");
             commodity_basket_constituent_read_token(
                 change.write.weight, parsed->positionals[next++], "weight");
+            commodity_basket_constituent_read_token(
+                change.write.initial_price, parsed->positionals[next++], "initial_price");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

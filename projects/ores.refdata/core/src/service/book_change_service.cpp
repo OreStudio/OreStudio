@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -53,13 +55,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-book_change_service::book_change_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+book_change_service::book_change_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -79,6 +82,46 @@ std::vector<domain::book_change> book_change_read_one(repository::book_change_re
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::book_change>>
+book_change_read_many(repository::book_change_repository& repo,
+                      const ores::database::context& ctx,
+                      const std::vector<messaging::book_change_key>& keys) {
+    std::vector<std::vector<domain::book_change>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> id_keys;
+    id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        id_keys.push_back(boost::uuids::to_string(key.id));
+    }
+    std::map<key_tuple, std::vector<domain::book_change>> by_key;
+    for (auto& row : repo.read_latest(ctx, id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
+}
+
 }
 
 messaging::list_book_changes_response
@@ -90,15 +133,17 @@ book_change_service::list_book_changes(const messaging::list_book_changes_reques
                                  {.entity = "book changes", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->request_id_one_of &&
-        request.filter->request_id_one_of->size() > 1000) {
+        request.filter->request_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "request_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "request_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -128,15 +173,17 @@ book_change_service::list_by_request_id_book_changes(
                                  {.entity = "book changes", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->request_id_one_of &&
-        request.filter->request_id_one_of->size() > 1000) {
+        request.filter->request_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "request_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "request_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -166,16 +213,23 @@ book_change_service::get_book_change(const messaging::get_book_change_request& r
 messaging::get_many_book_changes_response book_change_service::get_many_book_changes(
     const messaging::get_many_book_changes_request& request) {
     messaging::get_many_book_changes_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = book_change_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::book_change_lookup entry;
-        entry.key = k;
-        auto found = book_change_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.book_change = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.book_change = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

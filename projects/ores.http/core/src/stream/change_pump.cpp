@@ -19,6 +19,8 @@
  */
 #include "ores.http.core/stream/change_pump.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <format>
 
 namespace ores::http::stream {
 
@@ -45,21 +47,27 @@ std::string json_string(std::string_view value) {
 
 }
 
-std::string frame_text(const coalesced_frame& frame) {
-    auto text = std::string("event: ") + frame.component + '.' + frame.entity + "\n";
-    text += "data: {\"tenant\":" + json_string(frame.tenant);
-    text += ",\"party\":" + json_string(frame.party);
-    text += ",\"component\":" + json_string(frame.component);
+std::string instant_text(std::chrono::system_clock::time_point at) {
+    return std::format("{:%FT%T}Z", std::chrono::floor<std::chrono::milliseconds>(at));
+}
+
+std::string frame_text(const coalesced_frame& frame, std::string_view at) {
+    auto text = std::string("event: entity-changed\n");
+    text += "data: {\"component\":" + json_string(frame.component);
     text += ",\"entity\":" + json_string(frame.entity);
+    text += ",\"at\":" + json_string(std::string(at));
+    text += ",\"tenant\":" + json_string(frame.tenant);
+    text += ",\"party\":" + json_string(frame.party);
     text += "}\n\n";
     return text;
 }
 
 std::size_t change_pump::pump() {
     std::size_t published = 0;
+    const auto at = instant_text(std::chrono::system_clock::now());
     for (const auto& frame : coalescer_.drain()) {
         hub_.publish(
-            frame.tenant, frame.party, frame.component + '.' + frame.entity, frame_text(frame));
+            frame.tenant, frame.party, frame.component + '.' + frame.entity, frame_text(frame, at));
         ++published;
     }
     if (published > 0)

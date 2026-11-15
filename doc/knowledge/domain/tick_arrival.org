@@ -248,6 +248,11 @@ reads it.
 - [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] — the market-wide factor: a calm/active state, a
   shared intensity and one operational clock per run, so the whole market can speed up
   together.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] — how
+  series on this scheduler share correlated noise; it holds only while no arrival law
+  reads a price.
+- [[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]] — the
+  generator behind every =rng_stream=.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] — the value processes and the factory that builds them.

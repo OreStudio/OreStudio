@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MANUAL_POINT_GUARD_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MANUAL_POINT_GUARD_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <vector>
@@ -59,7 +59,7 @@ public:
      * logged once per batch at info, with the count.
      */
     static std::vector<domain::market_observation>
-    unshadowed(ores::database::context ctx,
+    unshadowed(const ores::database::context& ctx,
                const std::vector<domain::market_observation>& observations);
 };
 

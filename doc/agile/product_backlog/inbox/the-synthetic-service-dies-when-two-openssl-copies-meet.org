@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 1E81FEE4-2075-4CE7-820A-B87D03F4C5C8
+:END:
+#+title: The synthetic service dies when two OpenSSL copies meet
+#+description: Six of our shared libraries statically link OpenSSL and export its symbols, so one library tears an SSL object down through another's code: the postgres listener thread in libores.database calls SSL_free and lands in libores.nats and libores.security. The synthetic service restarts and dies every thirteen minutes, which is what stalls provisioning.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:database:build:crash:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The synthetic service dies under the fleet and systemd restarts it every thirteen minutes.
+A coredump says where: the postgres listener thread, tearing an SSL connection down.
+
+#+begin_src text
+#7  pgtls_close                        libores.database.so
+#6  SSL_free                          libores.nats.so
+#5  ossl_ssl_connection_free          libores.nats.so
+#4  RECORD_LAYER_clear                libores.nats.so
+#3  tls_free                          libores.nats.so
+#2  tls_int_free                      libores.nats.so
+#1  BIO_free                          libores.security.so
+#0  ??                                (crash)
+#+end_src
+
+Every frame after =pgtls_close= should live in one OpenSSL. They live in two, and the
+=BIO_free= that frees the last record layer is the security library's, freeing a structure
+the nats library's OpenSSL built. That is a symbol interposition, and this is the census
+behind it:
+
+#+begin_src text
+libores.database.so       defines SSL_free      needs BIO_free
+libores.nats.so           defines SSL_free      needs BIO_free
+libores.http.client.so    defines SSL_free      needs BIO_free
+libores.security.so       defines BIO_free
+libores.utility.so        defines BIO_free
+libores.compute.client.so defines BIO_free
+#+end_src
+
+Six libraries carry OpenSSL symbols, and three of them both define and need them, so the
+process runs several OpenSSL copies and the dynamic linker resolves each undefined reference
+to whichever copy it meets first. =libpq= is static inside =libores.database.so=, so its TLS
+calls go out by name and land in whichever copy wins.
+
+The consequence is what the fleet sees: the service dies, the tenant setup's =generate_trades=
+step times out against it, and retrying the provisioning is the only way through.
+
+* Why
+
+Two copies of a library whose structs cross a boundary is undefined behaviour, and it fails
+exactly where a pointer is freed: at teardown. It is not a race and not load-dependent -- it
+is decided by the link line.
+
+This is not this branch's cause: the three libraries have carried their own OpenSSL since
+they were first linked to cnats, libpq and the JWT library. It is recorded here because the
+fleet pays for it and because the report that led here blamed =system_generator_offers=
+instead, which the stack does not support: the offers block runs on another thread and none
+of the dumps has a frame in it.
+
+* What would fix it, and why it is not a one-liner
+
+1. *One copy, shared.* Build cnats, libpq and the JWT library against the shared OpenSSL, so
+   the process has the one =libssl.so.3= it already loads. Correct, and a vcpkg triplet and
+   port change that touches every component that links them.
+2. *Keep each copy private.* Link our libraries with
+   =-Wl,--exclude-libs=libssl.a,libcrypto.a=, so the symbols that come from the static
+   archives are not exported and each library resolves its own. This needs each library to
+   also link the shared OpenSSL so its remaining references resolve, because three of the six
+   currently satisfy half their OpenSSL from their own archive and half from a neighbour.
+3. *Hide the rest.* A version script per library, which is (2) with more control and more
+   ways to get the symbol list wrong.
+
+Whichever is taken, the proof is the same and cheap: =nm -D --defined-only= over every
+=publish/lib/*.so= shows no =SSL_*= or =BIO_*= symbol, and a fresh provisioning run keeps the
+synthetic service up for longer than thirteen minutes.
+
+* References
+
+- =projects/ores.nats/src/CMakeLists.txt=: links cnats, which brings =libssl.a= and
+  =libcrypto.a=.
+- =projects/ores.database/src/CMakeLists.txt=: links the static libpq, and with it a second
+  copy.
+- =../ores_dev_clever_dijkstra/= -- the worktree whose binary the coredumps are from; the
+  service there restarts every thirteen minutes.
+- The dump: =coredumpctl list= shows =ores.synthetic.service= from 03:56 onwards, then every
+  thirteen minutes; the crash thread is =postgres_listener_service::listen_loop=.
+
+* See also
+
+- [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][The portable-stop check is red on
+  main]] -- another red this fleet pays for, now fixed.

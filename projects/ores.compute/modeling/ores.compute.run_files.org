@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: 4B8E1C73-2A5D-4F90-B61E-8C3A7D52E914
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.compute.run_files
+#+description: Codegen operation model for the files one report run holds: the run's batch, its workunits and the packages each of them read and wrote.
+#+type: ores.codegen.operation
+#+component: compute
+#+subcomponent: api
+#+entity_singular: run_files
+#+namespace: ores::compute::messaging
+#+brief: The files of a compute batch.
+#+filetags: :model:operation:compute:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+A screen that shows a run's files asks a question whose answer is spread
+over four of this service's own rows: the batch, its workunits, each
+workunit's input package, and each workunit's accepted result with the
+package that result wrote. Every link but the first is a row here, and the
+batch states the run in its external reference, so the join belongs in this
+service and not in its callers.
+
+The read states what an archive *is*, not what it holds. The bytes of a
+package are the storage service's, and so is the walk through them, so each
+archive travels as its object path and its packed size. A caller that wants
+the files inside asks storage, in one call, for every key this reply names.
+
+There is no page: a run has as many workunits as a report has parts, and a
+listing that could stop in the middle would draw half a tree.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** run_file_archive
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One package a run read or wrote.
+ */
+#+end_src
+
+*** direction
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief "input" for a package the engine read, "output" for one it wrote.
+ */
+#+end_src
+
+*** workunit_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workunit whose package this is.
+ */
+#+end_src
+
+*** result_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The result that wrote an output package, empty for an input.
+ */
+#+end_src
+
+*** uri
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The object path the package is stored at.
+ *
+ * A path and not a bucket and a key, because that is what the workunit row
+ * states and what a caller hands back to storage without rebuilding it.
+ */
+#+end_src
+
+** list_run_files_request
+:PROPERTIES:
+:subject: compute.v1.ops.list_run_files
+:response: list_run_files_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the packages one report run read and wrote.
+ */
+#+end_src
+
+*** run_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run the caller is showing. It is the batch's external reference.
+ */
+#+end_src
+
+** list_run_files_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run's packages, in the order the workunits were dispatched.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+*** run_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The batch the run drove, empty when the run has none yet.
+ */
+#+end_src
+
+*** archives
+:PROPERTIES:
+:cpp_type: std::vector<run_file_archive>
+:END:
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

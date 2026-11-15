@@ -45,11 +45,11 @@ static constexpr std::string_view instrument_option_exercise_fee_queue_group =
 
 std::vector<ores::nats::service::subscription> register_instrument_option_exercise_fee_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<instrument_option_exercise_fee_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h =
+        std::make_shared<instrument_option_exercise_fee_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_instrument_option_exercise_fees_request::nats_subject,
         instrument_option_exercise_fee_queue_group,

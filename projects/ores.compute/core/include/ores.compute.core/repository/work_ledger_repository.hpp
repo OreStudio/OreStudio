@@ -21,7 +21,7 @@
 #define ORES_COMPUTE_REPOSITORY_WORK_LEDGER_REPOSITORY_HPP
 
 #include "ores.compute.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -95,7 +95,7 @@ public:
     /**
      * @brief Queue a result. A result that is already in the ledger is left as it is.
      */
-    void enqueue(context ctx, const ledger_entry& entry);
+    void enqueue(const context& ctx, const ledger_entry& entry);
 
     /**
      * @brief Take the next waiting entry that a node of a platform can run.
@@ -108,7 +108,7 @@ public:
      *
      * @return The entry, or nothing when none waits for the platform.
      */
-    std::optional<claimed_entry> claim(context ctx,
+    std::optional<claimed_entry> claim(const context& ctx,
                                        const boost::uuids::uuid& host_id,
                                        const std::string& platform,
                                        std::chrono::seconds lease);
@@ -121,12 +121,12 @@ public:
      * added is given back, because no node ran the job, so an outage of a
      * service the claim needs never counts against the job's attempts.
      */
-    void release(context ctx, const boost::uuids::uuid& result_id);
+    void release(const context& ctx, const boost::uuids::uuid& result_id);
 
     /**
      * @brief Remove an entry: its result is done, retired or ended.
      */
-    void remove(context ctx, const boost::uuids::uuid& result_id);
+    void remove(const context& ctx, const boost::uuids::uuid& result_id);
 
     /**
      * @brief Extend the lease of the one entry a host is working on.
@@ -138,7 +138,7 @@ public:
      *
      * @return True when the host holds the entry and it was extended.
      */
-    bool extend_lease(context ctx,
+    bool extend_lease(const context& ctx,
                       const boost::uuids::uuid& host_id,
                       const boost::uuids::uuid& result_id,
                       std::chrono::seconds lease);
@@ -152,7 +152,7 @@ public:
      *
      * @return The number of entries returned.
      */
-    std::size_t requeue_held(context ctx,
+    std::size_t requeue_held(const context& ctx,
                              const boost::uuids::uuid& host_id,
                              int max_attempts = max_claim_attempts);
 
@@ -164,7 +164,7 @@ public:
      *
      * @return The number of entries returned.
      */
-    std::size_t requeue_expired(context ctx, int max_attempts = max_claim_attempts);
+    std::size_t requeue_expired(const context& ctx, int max_attempts = max_claim_attempts);
 
     /**
      * @brief The claimed entries whose lease ended and that have no attempts left.
@@ -172,7 +172,7 @@ public:
      * Reads only. The reaper ends the result of each and then calls @c remove_expired.
      */
     std::vector<expired_entry>
-    exhausted(context ctx, int max_attempts = max_claim_attempts, int limit = 100);
+    exhausted(const context& ctx, int max_attempts = max_claim_attempts, int limit = 100);
 
     /**
      * @brief Remove an entry only if its lease has still ended.
@@ -181,12 +181,12 @@ public:
      *
      * @return True when the entry was removed.
      */
-    bool remove_expired(context ctx, const boost::uuids::uuid& result_id);
+    bool remove_expired(const context& ctx, const boost::uuids::uuid& result_id);
 
     /**
      * @brief The number of entries of a tenant that wait in the queue.
      */
-    std::int64_t waiting(context ctx, const boost::uuids::uuid& work_tenant_id);
+    std::int64_t waiting(const context& ctx, const boost::uuids::uuid& work_tenant_id);
 
     /**
      * @brief The host that holds the claim on a result, when one does.
@@ -194,12 +194,13 @@ public:
      * Nothing is returned for a result with no entry and for an entry that waits.
      * A result with no entry was handed out by the push queue.
      */
-    std::optional<boost::uuids::uuid> holder(context ctx, const boost::uuids::uuid& result_id);
+    std::optional<boost::uuids::uuid> holder(const context& ctx,
+                                             const boost::uuids::uuid& result_id);
 
     /**
      * @brief The number of entries in the ledger in a state, for a test and a screen.
      */
-    std::int64_t count(context ctx, const std::string& state);
+    std::int64_t count(const context& ctx, const std::string& state);
 };
 
 }

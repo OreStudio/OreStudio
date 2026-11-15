@@ -598,7 +598,7 @@ end note
 ' in full. Every generated repository carries the same contract: sql(), the
 ' write overloads under a claim, the read_latest family, read_all and
 ' read_at_version for a versioned table, a total-count read, and the three
-' remove forms. The claim is what makes a write safe: replace_claim states
+' remove forms. The claim is what makes a write safe: a replace's claim states
 ' the version the caller read (must_match_version), or that no row exists
 ' (must_not_exist), and the store decides in the write's own transaction. A
 ' row that moved on is a conflict, never a silent overwrite. remove(id,

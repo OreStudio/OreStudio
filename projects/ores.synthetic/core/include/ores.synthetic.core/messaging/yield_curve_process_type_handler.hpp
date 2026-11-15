@@ -26,6 +26,7 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_YIELD_CURVE_PROCESS_TYPE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,16 +58,17 @@ using namespace ores::logging;
  * @brief NATS message handler for yield curve process type operations.
  *
  * Yield Curve Process Types are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class yield_curve_process_type_handler {
 public:
     yield_curve_process_type_handler(ores::nats::service::client& nats,
-                                     ores::database::context ctx,
+                                     const ores::database::context& ctx,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves synthetic.v1.yield_curve_process_types.list.
@@ -247,6 +249,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_yield_curve_process_type_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process type"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_yield_curve_process_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), warn)
@@ -297,6 +307,14 @@ public:
             yield_curve_process_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "synthetic::yield_curve_process_types:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_yield_curve_process_types_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process type"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_yield_curve_process_types_request>(msg);
@@ -351,6 +369,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_yield_curve_process_type_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process type"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_yield_curve_process_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(yield_curve_process_type_handler_lg(), warn)
@@ -401,6 +427,14 @@ public:
             yield_curve_process_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "synthetic::yield_curve_process_types:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_yield_curve_process_types_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process type"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_yield_curve_process_types_request>(msg);

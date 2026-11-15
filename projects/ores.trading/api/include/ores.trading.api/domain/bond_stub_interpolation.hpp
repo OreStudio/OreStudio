@@ -78,7 +78,7 @@ struct bond_stub_interpolation {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_stub_interpolation>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"short_index", &bond_stub_interpolation::short_index},
         utility::codec::field{"long_index", &bond_stub_interpolation::long_index},
         utility::codec::field{"rounding_type", &bond_stub_interpolation::rounding_type},

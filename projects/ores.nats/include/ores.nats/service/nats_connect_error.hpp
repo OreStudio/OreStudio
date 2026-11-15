@@ -27,7 +27,7 @@
 namespace ores::nats::service {
 
 /**
- * @brief Categorises the cause of a failed NATS connection attempt.
+ * @brief Categorises the cause of a failed NATS connection or request.
  *
  * Allows callers to present a meaningful error to the user rather than
  * a raw NATS library status string.
@@ -43,16 +43,21 @@ enum class nats_error_kind {
     /// NATS connected successfully but no service is listening on the
     /// bootstrap subject (services not started or wrong namespace).
     services_unavailable,
+    /// A request was sent but no reply arrived before its deadline. Distinct
+    /// from @c connection_timeout, which names a connect that never completed:
+    /// here the connection is up and the responder was too slow.
+    request_timeout,
     /// Any other NATS error not covered by the above categories.
     other
 };
 
 /**
- * @brief Thrown when a NATS connection or initial service check fails.
+ * @brief Thrown when a NATS connection, service check or request fails.
  *
  * Carries a nats_error_kind so callers can distinguish "NATS is down",
- * "TLS is misconfigured", "services are not started", etc. and surface
- * a readable message in the login dialog.
+ * "TLS is misconfigured", "services are not started", "nobody answered in
+ * time", etc. and surface a readable message in the login dialog, or decide
+ * whether asking again could pass.
  */
 class ORES_NATS_EXPORT nats_connect_error : public std::runtime_error {
 public:

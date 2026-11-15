@@ -52,8 +52,8 @@ std::string badge_mapping_repository::sql() {
     return query_builder::insert_statement_sql<badge_mapping_entity>(lg());
 }
 
-badge_mapping_repository::badge_mapping_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+badge_mapping_repository::badge_mapping_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 badge_mapping_repository::replace_claim(const domain::badge_mapping& v) {

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/run_token_issue_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/run_token_issue.hpp"
@@ -37,6 +38,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -83,53 +86,124 @@ query_builder::order run_token_issue_list_order(const ores::utility::domain::ord
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool run_token_issue_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using run_token_issue_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::run_token_issue>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+run_token_issue_rows_by_key
+run_token_issue_current_rows(run_token_issue_repository& repo,
+                             const ores::database::context& ctx,
+                             const std::vector<domain::run_token_issue>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    std::vector<std::string> issued_ats;
+    issued_ats.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(row.id);
+        issued_ats.push_back(ores::platform::time::datetime::to_db_string(row.issued_at));
+    }
+    run_token_issue_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids, issued_ats))
+        current[std::make_tuple(item.id,
+                                ores::platform::time::datetime::to_db_string(item.issued_at))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::run_token_issue>&
+run_token_issue_rows_of(const run_token_issue_rows_by_key& current,
+                        const domain::run_token_issue& item) {
+    static const std::vector<domain::run_token_issue> none;
+    const auto found = current.find(
+        std::make_tuple(item.id, ores::platform::time::datetime::to_db_string(item.issued_at)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-run_token_issue_repository::replace_claim(context ctx, const domain::run_token_issue& v) {
-    const auto current =
-        read_latest(ctx, v.id, ores::platform::time::datetime::to_db_string(v.issued_at));
+run_token_issue_replace_claim(const std::vector<domain::run_token_issue>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::run_token_issue
-run_token_issue_repository::apply_claim(context ctx,
-                                        const domain::run_token_issue& v,
-                                        const ores::utility::domain::precondition& claim) {
+run_token_issue_apply_claim(const domain::run_token_issue& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::run_token_issue>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "run_token_issue_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, v.id, ores::platform::time::datetime::to_db_string(v.issued_at)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "run_token_issue_repository::write: a current row already exists");
     return t;
 }
 
-void run_token_issue_repository::write(context ctx, const domain::run_token_issue& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void run_token_issue_repository::write(context ctx, const std::vector<domain::run_token_issue>& v) {
+void run_token_issue_repository::write(const context& ctx, const domain::run_token_issue& v) {
+    write(ctx,
+          v,
+          run_token_issue_replace_claim(
+              read_latest(ctx, v.id, ores::platform::time::datetime::to_db_string(v.issued_at))));
+}
+
+void run_token_issue_repository::write(const context& ctx,
+                                       const std::vector<domain::run_token_issue>& v) {
+    const auto current = run_token_issue_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(run_token_issue_replace_claim(run_token_issue_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void run_token_issue_repository::write(context ctx,
+void run_token_issue_repository::write(const context& ctx,
                                        const domain::run_token_issue& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing issue. " << "id: " << v.id
                                << " issued_at: " << v.issued_at;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = run_token_issue_apply_claim(
+        v,
+        claim,
+        run_token_issue_claim_reads_current(claim) ?
+            read_latest(ctx, v.id, ores::platform::time::datetime::to_db_string(v.issued_at)) :
+            std::vector<domain::run_token_issue>{});
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(run_token_issue_mapper::map(t)),
@@ -138,14 +212,21 @@ void run_token_issue_repository::write(context ctx,
 }
 
 void run_token_issue_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::run_token_issue>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing run token issues. Count: " << v.size();
+    std::vector<domain::run_token_issue> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (run_token_issue_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = run_token_issue_current_rows(*this, ctx, to_read);
     std::vector<domain::run_token_issue> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            run_token_issue_apply_claim(v[i], claims[i], run_token_issue_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(run_token_issue_mapper::map(batch)),
@@ -153,7 +234,7 @@ void run_token_issue_repository::write(
         "Writing run token issues to database.");
 }
 
-std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(context ctx) {
+std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
                        query_builder::order_by("id"_c, "issued_at"_c);
 
@@ -166,7 +247,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(con
 }
 
 std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
-    context ctx, const std::string& id, const std::string& issued_at) {
+    const context& ctx, const std::string& id, const std::string& issued_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest issue. " << "id: " << id
                                << " issued_at: " << issued_at;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
@@ -182,7 +263,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
 
 
 std::vector<domain::run_token_issue> run_token_issue_repository::read_all(
-    context ctx, const std::string& id, const std::string& issued_at) {
+    const context& ctx, const std::string& id, const std::string& issued_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all issue versions. " << "id: " << id
                                << " issued_at: " << issued_at;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
@@ -199,7 +280,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_all(
 
 
 run_token_issue_repository::remove_status
-run_token_issue_repository::remove(context ctx,
+run_token_issue_repository::remove(const context& ctx,
                                    const std::string& id,
                                    const std::string& issued_at,
                                    std::optional<std::uint32_t> version) {
@@ -218,14 +299,14 @@ run_token_issue_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void run_token_issue_repository::remove(context ctx,
+void run_token_issue_repository::remove(const context& ctx,
                                         const std::string& id,
                                         const std::string& issued_at) {
     static_cast<void>(remove(ctx, id, issued_at, std::nullopt));
 }
 
 std::vector<domain::run_token_issue>
-run_token_issue_repository::read_latest(context ctx,
+run_token_issue_repository::read_latest(const context& ctx,
                                         std::uint32_t offset,
                                         std::uint32_t limit,
                                         const ores::utility::domain::order& order) {
@@ -245,7 +326,7 @@ run_token_issue_repository::read_latest(context ctx,
         "Reading latest run token issues with pagination.");
 }
 
-std::uint32_t run_token_issue_repository::get_total__count(context ctx) {
+std::uint32_t run_token_issue_repository::get_total__count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active issue count";
 
     const auto query = query_builder::read<std::vector<run_token_issue_entity>>;
@@ -254,10 +335,32 @@ std::uint32_t run_token_issue_repository::get_total__count(context ctx) {
         ctx, query, std::nullopt, lg(), "Counting run token issues");
 }
 
-std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& issued_ats) {
+std::vector<domain::run_token_issue>
+run_token_issue_repository::read_latest(const context& ctx,
+                                        const std::vector<std::string>& ids,
+                                        const std::vector<std::string>& issued_ats) {
     if (ids.empty() || issued_ats.empty())
         return {};
+    if (issued_ats.size() != ids.size())
+        throw std::invalid_argument(
+            "run_token_issue_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::run_token_issue> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(ids.begin() + begin, ids.begin() + end),
+                std::vector<std::string>(issued_ats.begin() + begin, issued_ats.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
                        query_builder::where("id"_c.in(ids) && "issued_at"_c.in(issued_ats));
     auto result =
@@ -270,9 +373,6 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (issued_ats.size() != ids.size())
-        throw std::invalid_argument(
-            "run_token_issue_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < ids.size(); ++i)
         requested.emplace(ids[i], issued_ats[i]);
@@ -286,7 +386,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
     return filtered;
 }
 
-void run_token_issue_repository::remove(context ctx,
+void run_token_issue_repository::remove(const context& ctx,
                                         const std::vector<std::string>& ids,
                                         const std::vector<std::string>& issued_ats) {
     // Compound key: a per-column .in() DELETE would be a cross-product

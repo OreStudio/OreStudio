@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -56,9 +56,9 @@ TEST_CASE("lookup returns the country code for a seeded range", "[service]") {
     const std::string seed_sql =
         "insert into ores_geo_ip2country_tbl (ip_range, tenant_id, country_code) values (" +
         std::string(seeded_range) + ", '" + tenant + "'::uuid, '" + seeded_country + "')";
-    ores::database::repository::execute_raw_command(
+    ores::database::query_builder::execute_raw_command(
         h.context(), clear_sql, lg, "Clearing the seeded ip2country range");
-    ores::database::repository::execute_raw_command(
+    ores::database::query_builder::execute_raw_command(
         h.context(), seed_sql, lg, "Seeding an ip2country range");
 
     geolocation_service sut(h.context());
@@ -67,7 +67,7 @@ TEST_CASE("lookup returns the country code for a seeded range", "[service]") {
     REQUIRE(result.has_value());
     REQUIRE(result->country_code == seeded_country);
 
-    ores::database::repository::execute_raw_command(
+    ores::database::query_builder::execute_raw_command(
         h.context(), clear_sql, lg, "Clearing the seeded ip2country range");
 }
 

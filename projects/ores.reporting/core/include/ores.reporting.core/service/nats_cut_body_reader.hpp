@@ -63,7 +63,7 @@ public:
      * @param nats The service's client.
      * @param authorization The caller's Authorization header, forwarded.
      */
-    nats_cut_body_reader(ores::database::context ctx,
+    nats_cut_body_reader(const ores::database::context& ctx,
                          ores::nats::service::client& nats,
                          std::string authorization);
 

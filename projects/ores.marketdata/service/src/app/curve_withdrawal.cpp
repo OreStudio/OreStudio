@@ -18,13 +18,14 @@
  *
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
@@ -64,7 +65,7 @@ messaging::withdraw_curve_response refuse(std::string why) {
  */
 bool request_already_ended_a_set(const ores::database::context& ctx,
                                  const std::string& request_id) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "select count(*)::text"
         " from ores_marketdata_curve_publishes_tbl"
@@ -149,7 +150,7 @@ withdraw_curve(const ores::database::context& ctx,
             boost::uuids::string_generator{}(request.approval_request_id);
     }
 
-    const auto actor = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+    const auto actor = ores::service::messaging::delegated_actor(ctx);
     record.withdrawn_at =
         std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     record.withdrawn_by = actor;

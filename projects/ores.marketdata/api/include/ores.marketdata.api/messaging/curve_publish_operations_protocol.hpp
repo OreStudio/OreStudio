@@ -94,6 +94,16 @@ struct publish_curve_response {
      */
     bool success = false;
     /**
+     * @brief What the call did, as one of published, raised, deferred, refused or
+     * failed.
+     *
+     * Published moved the set. Raised waits on a decision and moved nothing.
+     * Deferred did not run because an input the curve declares is not there yet --
+     * the set it published before is still the set in force, and the next firing
+     * tries again. Refused is the gate's no. Failed is an error.
+     */
+    std::string status;
+    /**
      * @brief Why the publish did not happen, or empty when it did.
      */
     std::string message;
@@ -132,7 +142,7 @@ struct publish_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_curve_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bootstrap_config_id",
                                       &publish_curve_request::bootstrap_config_id},
         ::ores::utility::codec::field{"as_of", &publish_curve_request::as_of},
@@ -151,8 +161,9 @@ struct publish_curve_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_curve_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &publish_curve_response::success},
+        ::ores::utility::codec::field{"status", &publish_curve_response::status},
         ::ores::utility::codec::field{"message", &publish_curve_response::message},
         ::ores::utility::codec::field{"approval_request_id",
                                       &publish_curve_response::approval_request_id},

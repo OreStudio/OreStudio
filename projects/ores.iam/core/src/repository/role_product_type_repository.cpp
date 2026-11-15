@@ -54,8 +54,8 @@ std::string role_product_type_repository::sql() {
     return query_builder::insert_statement_sql<role_product_type_entity>(lg());
 }
 
-role_product_type_repository::role_product_type_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+role_product_type_repository::role_product_type_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 role_product_type_repository::replace_claim(const domain::role_product_type& v) {

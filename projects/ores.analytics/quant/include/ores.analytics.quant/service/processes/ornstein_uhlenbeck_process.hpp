@@ -59,10 +59,15 @@ public:
 
     double next() override;
     double next(double elapsed_ticks) override;
+    double next_with_normal(double standard_normal) override;
+    bool supports_external_normal() const override;
     bool supports_variable_step() const override;
     double current() const override;
 
 private:
+    /// The step itself, from the normal it is built on.
+    double step(double standard_normal, double elapsed_ticks);
+
     double kappa_;
     double theta_;
     double sigma_;

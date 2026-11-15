@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -81,55 +85,121 @@ market_series_identity_list_order(const ores::utility::domain::order& order,
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool market_series_identity_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using market_series_identity_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::market_series_identity>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+market_series_identity_rows_by_key
+market_series_identity_current_rows(market_series_identity_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const std::vector<domain::market_series_identity>& of) {
+    std::vector<std::string> series_ids;
+    series_ids.reserve(of.size());
+    for (const auto& row : of) {
+        series_ids.push_back(boost::uuids::to_string(row.series_id));
+    }
+    market_series_identity_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, series_ids))
+        current[std::make_tuple(boost::uuids::to_string(item.series_id))].push_back(
+            std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::market_series_identity>&
+market_series_identity_rows_of(const market_series_identity_rows_by_key& current,
+                               const domain::market_series_identity& item) {
+    static const std::vector<domain::market_series_identity> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.series_id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-market_series_identity_repository::replace_claim(context ctx,
-                                                 const domain::market_series_identity& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.series_id));
+market_series_identity_replace_claim(const std::vector<domain::market_series_identity>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::market_series_identity
-market_series_identity_repository::apply_claim(context ctx,
-                                               const domain::market_series_identity& v,
-                                               const ores::utility::domain::precondition& claim) {
+market_series_identity_apply_claim(const domain::market_series_identity& v,
+                                   const ores::utility::domain::precondition& claim,
+                                   const std::vector<domain::market_series_identity>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "market_series_identity_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.series_id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument(
             "market_series_identity_repository::write: a current row already exists");
     return t;
 }
 
-void market_series_identity_repository::write(context ctx,
+}
+
+void market_series_identity_repository::write(const context& ctx,
                                               const domain::market_series_identity& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          market_series_identity_replace_claim(
+              read_latest(ctx, boost::uuids::to_string(v.series_id))));
 }
 
 void market_series_identity_repository::write(
-    context ctx, const std::vector<domain::market_series_identity>& v) {
+    const context& ctx, const std::vector<domain::market_series_identity>& v) {
+    const auto current = market_series_identity_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            market_series_identity_replace_claim(market_series_identity_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void market_series_identity_repository::write(context ctx,
+void market_series_identity_repository::write(const context& ctx,
                                               const domain::market_series_identity& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market series identity. "
                                << "series_id: " << v.series_id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = market_series_identity_apply_claim(
+        v,
+        claim,
+        market_series_identity_claim_reads_current(claim) ?
+            read_latest(ctx, boost::uuids::to_string(v.series_id)) :
+            std::vector<domain::market_series_identity>{});
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(market_series_identity_mapper::map(t)),
@@ -138,14 +208,21 @@ void market_series_identity_repository::write(context ctx,
 }
 
 void market_series_identity_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_series_identity>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market series identities. Count: " << v.size();
+    std::vector<domain::market_series_identity> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (market_series_identity_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = market_series_identity_current_rows(*this, ctx, to_read);
     std::vector<domain::market_series_identity> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(market_series_identity_apply_claim(
+            v[i], claims[i], market_series_identity_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(market_series_identity_mapper::map(batch)),
@@ -154,7 +231,7 @@ void market_series_identity_repository::write(
 }
 
 std::vector<domain::market_series_identity>
-market_series_identity_repository::read_latest(context ctx) {
+market_series_identity_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -170,7 +247,7 @@ market_series_identity_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::market_series_identity>
-market_series_identity_repository::read_latest(context ctx, const std::string& series_id) {
+market_series_identity_repository::read_latest(const context& ctx, const std::string& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market series identity. "
                                << "series_id: " << series_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -188,7 +265,7 @@ market_series_identity_repository::read_latest(context ctx, const std::string& s
 
 
 std::vector<domain::market_series_identity>
-market_series_identity_repository::read_all(context ctx, const std::string& series_id) {
+market_series_identity_repository::read_all(const context& ctx, const std::string& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market series identity versions. "
                                << "series_id: " << series_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -207,7 +284,7 @@ market_series_identity_repository::read_all(context ctx, const std::string& seri
 
 
 market_series_identity_repository::remove_status market_series_identity_repository::remove(
-    context ctx, const std::string& series_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& series_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market series identity. " << "series_id: " << series_id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -225,12 +302,12 @@ market_series_identity_repository::remove_status market_series_identity_reposito
     return remove_status::removed;
 }
 
-void market_series_identity_repository::remove(context ctx, const std::string& series_id) {
+void market_series_identity_repository::remove(const context& ctx, const std::string& series_id) {
     static_cast<void>(remove(ctx, series_id, std::nullopt));
 }
 
 std::vector<domain::market_series_identity>
-market_series_identity_repository::read_latest(context ctx,
+market_series_identity_repository::read_latest(const context& ctx,
                                                std::uint32_t offset,
                                                std::uint32_t limit,
                                                const ores::utility::domain::order& order) {
@@ -253,7 +330,7 @@ market_series_identity_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-market_series_identity_repository::get_total_market_series_identity_count(context ctx) {
+market_series_identity_repository::get_total_market_series_identity_count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market series identity count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -265,10 +342,26 @@ market_series_identity_repository::get_total_market_series_identity_count(contex
 }
 
 std::vector<domain::market_series_identity>
-market_series_identity_repository::read_latest(context ctx,
+market_series_identity_repository::read_latest(const context& ctx,
                                                const std::vector<std::string>& series_ids) {
     if (series_ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (series_ids.size() > chunk_size) {
+        std::vector<domain::market_series_identity> all;
+        for (std::size_t begin = 0; begin < series_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, series_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(series_ids.begin() + begin, series_ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
@@ -282,7 +375,7 @@ market_series_identity_repository::read_latest(context ctx,
     return result;
 }
 
-void market_series_identity_repository::remove(context ctx,
+void market_series_identity_repository::remove(const context& ctx,
                                                const std::vector<std::string>& series_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

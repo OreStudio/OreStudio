@@ -62,14 +62,14 @@ class trade_operations_handler {
 public:
     trade_operations_handler(ores::nats::service::client& nats,
                              const service::book_rules_port& books,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url = {})
         : nats_(nats)
         , books_(books)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
-        , http_base_url_(std::move(http_base_url)) {}
+        , ctx_(ctx)
+        , verifier_(verifier)
+        , http_base_url_(http_base_url) {}
 
     /**
      * @brief Serves trading.v1.ops.book_trade.

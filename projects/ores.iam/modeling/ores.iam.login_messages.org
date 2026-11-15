@@ -105,6 +105,7 @@ The login protocol messages.
 :auth: none
 :response: login_response
 :http_route: true
+:rate_policy: credential
 :END:
 
 *** principal

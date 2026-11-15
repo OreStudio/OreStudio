@@ -2,10 +2,16 @@
 :ID: 42D13718-A760-4D36-B02F-A54E0161E36C
 :ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_template_entry
 #+description: Codegen entity model for the synthetic ir_curve_template_entry table; one (tenor, instrument) entry of an IR Curve Template.
 #+type: ores.codegen.entity
+#+web_resource: ir-template-entries
+#+web_writes: many
+#+web_parent_filter: ir_curve_config_id
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: ir_curve_template_entry

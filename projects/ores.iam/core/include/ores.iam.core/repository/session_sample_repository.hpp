@@ -25,7 +25,7 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_SESSION_SAMPLE_REPOSITORY_HPP
 #define ORES_IAM_CORE_REPOSITORY_SESSION_SAMPLE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.api/domain/session_sample.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -69,8 +69,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::session_sample& v);
-    void write(context ctx, const std::vector<domain::session_sample>& v);
+    void write(const context& ctx, const domain::session_sample& v);
+    void write(const context& ctx, const std::vector<domain::session_sample>& v);
     /**@}*/
 
     /**
@@ -88,7 +88,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::session_sample& v,
                const ores::utility::domain::precondition& claim);
 
@@ -96,7 +96,7 @@ public:
      * @brief Writes a set of session samples, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::session_sample>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -104,10 +104,10 @@ public:
      * @brief Reads latest session samples, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::session_sample> read_latest(context ctx);
+    std::vector<domain::session_sample> read_latest(const context& ctx);
     std::vector<domain::session_sample>
-    read_latest(context ctx, const std::string& session_id, const std::string& sample_time);
-    std::vector<domain::session_sample> read_latest(context ctx,
+    read_latest(const context& ctx, const std::string& session_id, const std::string& sample_time);
+    std::vector<domain::session_sample> read_latest(const context& ctx,
                                                     const std::vector<std::string>& session_ids,
                                                     const std::vector<std::string>& sample_times);
     /**@}*/
@@ -120,7 +120,7 @@ public:
      * current row, not a version history.
      */
     std::vector<domain::session_sample>
-    read_all(context ctx, const std::string& session_id, const std::string& sample_time);
+    read_all(const context& ctx, const std::string& session_id, const std::string& sample_time);
 
 
     /**
@@ -139,7 +139,7 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::session_sample> read_latest(context ctx,
+    std::vector<domain::session_sample> read_latest(const context& ctx,
                                                     std::uint32_t offset,
                                                     std::uint32_t limit,
                                                     const ores::utility::domain::order& order = {});
@@ -149,7 +149,7 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active session samples
      */
-    std::uint32_t get_total__count(context ctx);
+    std::uint32_t get_total__count(const context& ctx);
 
     /**
      * @brief Deletes a sample permanently.
@@ -157,7 +157,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& session_id, const std::string& sample_time);
+    void remove(const context& ctx, const std::string& session_id, const std::string& sample_time);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -179,7 +179,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& session_id,
                          const std::string& sample_time,
                          std::optional<std::uint32_t> version);
@@ -187,26 +187,9 @@ public:
     /**
      * @brief Deletes session samples permanently.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& session_ids,
                 const std::vector<std::string>& sample_times);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::session_sample& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::session_sample apply_claim(context ctx,
-                                       const domain::session_sample& v,
-                                       const ores::utility::domain::precondition& claim);
 };
 
 }

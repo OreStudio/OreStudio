@@ -163,12 +163,12 @@ Reads the latest CRM enabled derived pairs across all tenants. Used by
 no single tenant context to scope the read to.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::crm_enabled_derived_pair> read_latest_all_tenants(context ctx);
+std::vector<domain::crm_enabled_derived_pair> read_latest_all_tenants(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::crm_enabled_derived_pair>
-crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
+crm_enabled_derived_pair_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<crm_enabled_derived_pair_entity>> |
                        query_builder::where("valid_to"_c == max) |

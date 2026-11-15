@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 2A720F12-FA8F-4625-A178-76E9E93444D2
+:END:
+#+title: Task: Declare the tenant bootstrap and retire the silent copy
+#+description: The provisioner stops copying tables nobody documented and runs a declared bootstrap instead.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/declare-the-tenant-bootstrap
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new tenant states what it is seeded with, from the bundle map, and nothing is copied implicitly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- A new tenant's seed rows are stated in one place, from the bundle map.
+- Nothing is copied into a tenant by a function nobody documents.
+- The tenant bootstrap is covered by a test.
+
+* Plan
+
+1. List what the provisioner copies today, table by table.
+2. Decide which of those are world data (published once) and which are the
+   tenant's own.
+3. Replace the copy with a declared bootstrap that names its source.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| System tables the provisioner copies into each tenant | ~36 | `iam_tenant_provisioner_create.sql:232-873` | e050a2d239 |
+
+* Notes
+
+Flow D, undocumented. Explains why a tenant has payment_frequencies at all. Defect D-tenant.
+
+See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

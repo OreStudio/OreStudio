@@ -214,8 +214,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
                 +read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) : vector<domain::market_fixing>
-                -replace_claim(context ctx, const domain::market_fixing& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::market_fixing& v, const ores::utility::domain::precondition& claim) : domain::market_fixing
             }
             class market_observation_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -260,8 +258,6 @@ namespace ores #F2F2F2 {
                 +read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) : vector<domain::market_observation>
                 +read_as_of(context ctx, const boost::uuids::uuid& series_id, const chrono::system_clock::time_point& as_of_datetime) : vector<domain::market_observation>
                 +read_as_of_buckets(context ctx, const boost::uuids::uuid& series_id, const chrono::system_clock::time_point& latest_boundary, const chrono::seconds& bucket_size, unsigned int bucket_count) : vector<vector<domain::market_observation>>
-                -replace_claim(context ctx, const domain::market_observation& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::market_observation& v, const ores::utility::domain::precondition& claim) : domain::market_observation
             }
             class market_series_asset_class_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -352,8 +348,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id) : void
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
-                -replace_claim(context ctx, const domain::market_series& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::market_series& v, const ores::utility::domain::precondition& claim) : domain::market_series
             }
             class observation_lineage_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -401,8 +395,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& ids) : void
                 +read_latest_by_observation(context ctx, const boost::uuids::uuid& series_id, chrono::system_clock::time_point observation_datetime, const string& oresmd_uri) : optional<domain::observation_lineage>
-                -replace_claim(context ctx, const domain::observation_lineage& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::observation_lineage& v, const ores::utility::domain::precondition& claim) : domain::observation_lineage
             }
             class series_classification_rule_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -446,8 +438,6 @@ namespace ores #F2F2F2 {
                 +remove(context ctx, const string& series_type, const string& metric) : void
                 +remove(context ctx, const string& series_type, const string& metric, optional<uint32_t> version) : remove_status
                 +remove(context ctx, const vector<string>& series_types, const vector<string>& metrics) : void
-                -replace_claim(context ctx, const domain::series_classification_rule& v) : ores::utility::domain::precondition
-                -apply_claim(context ctx, const domain::series_classification_rule& v, const ores::utility::domain::precondition& claim) : domain::series_classification_rule
             }
         }
         namespace service #F2F2F2 {

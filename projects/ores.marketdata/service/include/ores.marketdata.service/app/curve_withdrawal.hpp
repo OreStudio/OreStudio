@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_CURVE_WITHDRAWAL_HPP
 #define ORES_MARKETDATA_SERVICE_APP_CURVE_WITHDRAWAL_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <string_view>

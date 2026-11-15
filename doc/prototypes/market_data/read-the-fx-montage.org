@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 70B24238-1D4F-482B-9408-643D51EFA393
+:END:
+#+title: Read the FX montage prototype
+#+description: One base currency's crosses as rows, one column per provider, and the chosen pair's day - ported from hedgr's FX spot montage.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:fx:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:read-the-fx-montage/][the prototype]]         |
+| Journey       | [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Market data prototypes]]            |
+
+* Summary
+
+A montage is for a base currency, not for a pair: =AUD= brings =AUD/USD= and
+=GBP/AUD= together because both are AUD crosses, even though the second spells
+AUD on the quote side. The prototype argues that one wall of quotes plus one
+opened pair is the right amount of screen, and that the change, the day's high
+and low, and the instant they are measured from are the server's facts.
+
+It is ported from hedgr's =prototypes/fx_spot_montage.html=. hedgr's Forwards tab
+is not ported: ORE Studio reads a pair's forwards on its own page and journey,
+and a second forward view here would be a second definition.
+
+* Detail
+
+** The question
+
+Is a montage a wall of quotes, or a board of moves? A dealer checks a level per
+provider; a salesperson wants the move and the range. The variant decides.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name              | The structural argument |
+|---------+-------------------+-------------------------|
+| =a=     | Providers as columns | Each provider's spot, the consensus, the age and a sparkline. The full picture. |
+| =b=     | A board of moves  | One row per pair: last, change, low, high, age and the day's shape. No provider columns. |
+
+** The states
+
+- =?state=full= — six crosses, most quoted by two providers.
+- =?state=thin= — two pairs lose a provider and one keeps only a derived value.
+  The cell is a dash, and a consensus over one value is that value.
+- =?state=stale= — every quote is over the threshold.
+- =?state=none= — no provider quotes a cross of the base. The page says so and
+  does not carry yesterday's price.
+
+** What is fake
+
+Every price, age and move is mock, and the intraday series behind the sparkline
+and the chart is a made-up walk. The page computes the consensus and the change
+so its own numbers agree; the server will state them, with the window, because a
+client must not decide what "today" means.
+
+** Where the code lives
+
+=doc/prototypes/market_data/read-the-fx-montage/index.html=, self-contained.
+
+** The verdict
+
+Take it, minus the Forwards tab, plus the stated change window. The window is
+the point of the screen: hedgr showed high, low and change without saying what
+they were measured from, and a person reading "+0.09%" needs the instant it
+started at.
+
+** What changed from hedgr
+
+| Item | hedgr | Here | Why |
+|------+-------+------+-----|
+| Tabs | Spot, Forwards, Chart | Spot and the opened pair on one page | Forwards has its own page and journey; the chart is the row's detail |
+| Flags | Emoji flags | Emoji flags, kept | Nothing argued differently |
+| Change window | Implied | Stated as a fact under the table | A client must not decide what today means |
+| Chrome | A dialog | A page with a facts row | Prototypes read as the product |
+| Pair list | Six AUD crosses | The same six, including GBP/AUD | The base-on-the-quote-side case is the argument |
+
+* See also
+
+- [[file:index.org][Market data prototypes]] — the group page.
+- [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] — the journey.

@@ -218,7 +218,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<vendor_id>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id_scheme", &vendor_id::id_scheme},
         ::ores::utility::codec::field{"external_id", &vendor_id::external_id},
         ::ores::utility::codec::field{"field", &vendor_id::field},
@@ -234,7 +234,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rejected_id>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &rejected_id::id},
         ::ores::utility::codec::field{"reason", &rejected_id::reason},
     };
@@ -249,7 +249,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_announce_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"adapter_id", &adapter_announce_request::adapter_id},
         ::ores::utility::codec::field{"adapter_code", &adapter_announce_request::adapter_code},
         ::ores::utility::codec::field{"module_version", &adapter_announce_request::module_version},
@@ -267,7 +267,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_announce_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &adapter_announce_response::success},
         ::ores::utility::codec::field{"message", &adapter_announce_response::message},
         ::ores::utility::codec::field{"served_count", &adapter_announce_response::served_count},
@@ -284,7 +284,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_demand_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"ids", &adapter_demand_request::ids},
         ::ores::utility::codec::field{"image", &adapter_demand_request::image},
     };
@@ -299,7 +299,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_demand_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"accepted", &adapter_demand_response::accepted},
         ::ores::utility::codec::field{"rejected", &adapter_demand_response::rejected},
     };
@@ -314,7 +314,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_tick>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id_scheme", &adapter_tick::id_scheme},
         ::ores::utility::codec::field{"external_id", &adapter_tick::external_id},
         ::ores::utility::codec::field{"field", &adapter_tick::field},
@@ -333,7 +333,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_heartbeat>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"adapter_id", &adapter_heartbeat::adapter_id},
         ::ores::utility::codec::field{"counter", &adapter_heartbeat::counter},
     };
@@ -348,7 +348,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_status>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"adapter_id", &adapter_status::adapter_id},
         ::ores::utility::codec::field{"adapter_code", &adapter_status::adapter_code},
         ::ores::utility::codec::field{"module_version", &adapter_status::module_version},
@@ -376,7 +376,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_adapter_status_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -388,7 +388,7 @@ struct list_adapter_status_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_adapter_status_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"adapters", &list_adapter_status_response::adapters},
         ::ores::utility::codec::field{"success", &list_adapter_status_response::success},
         ::ores::utility::codec::field{"message", &list_adapter_status_response::message},

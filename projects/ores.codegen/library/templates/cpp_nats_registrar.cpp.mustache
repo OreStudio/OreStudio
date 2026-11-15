@@ -24,10 +24,10 @@ static constexpr std::string_view {{entity_singular}}{{^entity_singular}}{{name_
 
 std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<{{entity_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<{{entity_singular}}_handler>(nats, ctx, std::move(verifier));
 {{#operations}}
     subs.push_back(nats.queue_subscribe(
         {{request}}::nats_subject, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group,
@@ -62,10 +62,10 @@ static constexpr std::string_view {{entity_singular}}{{^entity_singular}}{{name_
 
 std::vector<ores::nats::service::subscription>
 register_{{name_singular}}_handlers(ores::nats::service::client& nats,
-                                     ores::database::context ctx,
+                                     const ores::database::context& ctx,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<{{name_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<{{name_singular}}_handler>(nats, ctx, std::move(verifier));
 {{! A read-only junction derives no write verb, so this one loop states none. }}
 {{#operations}}
     subs.push_back(nats.queue_subscribe(
@@ -100,10 +100,10 @@ static constexpr std::string_view {{entity_singular}}{{^entity_singular}}{{name_
 
 std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<{{entity_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<{{entity_singular}}_handler>(nats, ctx, std::move(verifier));
 {{#operations}}
     subs.push_back(nats.queue_subscribe(
         {{request}}::nats_subject, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group,

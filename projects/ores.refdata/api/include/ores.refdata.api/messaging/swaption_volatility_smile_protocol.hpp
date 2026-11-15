@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smile_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &swaption_volatility_smile_key::id},
     };
 }
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smile_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &swaption_volatility_smile_write::id},
         utility::codec::field{"swaption_volatility_config_id",
                               &swaption_volatility_smile_write::swaption_volatility_config_id},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smile_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &swaption_volatility_smile_change::write},
         utility::codec::field{"precondition", &swaption_volatility_smile_change::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smile_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &swaption_volatility_smile_removal::key},
         utility::codec::field{"precondition", &swaption_volatility_smile_removal::precondition},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smile_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &swaption_volatility_smile_lookup::key},
         utility::codec::field{"swaption_volatility_smile",
                               &swaption_volatility_smile_lookup::swaption_volatility_smile},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smiles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &swaption_volatility_smiles_filter::id_one_of},
     };
 }
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_volatility_smile_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &swaption_volatility_smile_event::event_id},
         utility::codec::field{"key", &swaption_volatility_smile_event::key},
         utility::codec::field{"action", &swaption_volatility_smile_event::action},
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.swaption_volatili
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<swaption_volatility_smile_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"swaption_volatility_smile",
                               &swaption_volatility_smile_version_key::swaption_volatility_smile},
         utility::codec::field{"version", &swaption_volatility_smile_version_key::version},
@@ -507,7 +507,7 @@ wire_fields(std::type_identity<swaption_volatility_smile_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<swaption_volatility_smile_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &swaption_volatility_smile_versions_filter::version},
         utility::codec::field{"from_version",
                               &swaption_volatility_smile_versions_filter::from_version},
@@ -525,7 +525,7 @@ wire_fields(std::type_identity<swaption_volatility_smile_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swaption_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_swaption_volatility_smiles_request::offset},
         utility::codec::field{"limit", &list_swaption_volatility_smiles_request::limit},
         utility::codec::field{"order", &list_swaption_volatility_smiles_request::order},
@@ -544,7 +544,7 @@ wire_fields(std::type_identity<list_swaption_volatility_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swaption_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_swaption_volatility_smiles_response::result},
         utility::codec::field{
             "swaption_volatility_smiles",
@@ -563,7 +563,7 @@ wire_fields(std::type_identity<list_swaption_volatility_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swaption_volatility_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_swaption_volatility_smile_request::key},
     };
 }
@@ -578,7 +578,7 @@ wire_fields(std::type_identity<get_swaption_volatility_smile_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swaption_volatility_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_swaption_volatility_smile_response::result},
         utility::codec::field{"swaption_volatility_smile",
                               &get_swaption_volatility_smile_response::swaption_volatility_smile},
@@ -595,7 +595,7 @@ wire_fields(std::type_identity<get_swaption_volatility_smile_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_swaption_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_swaption_volatility_smiles_request::keys},
     };
 }
@@ -610,7 +610,7 @@ wire_fields(std::type_identity<get_many_swaption_volatility_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_swaption_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_swaption_volatility_smiles_response::result},
         utility::codec::field{"entries", &get_many_swaption_volatility_smiles_response::entries},
     };
@@ -626,7 +626,7 @@ wire_fields(std::type_identity<get_many_swaption_volatility_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_swaption_volatility_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_swaption_volatility_smile_request::change},
         utility::codec::field{"intent", &put_swaption_volatility_smile_request::intent},
     };
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<put_swaption_volatility_smile_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_swaption_volatility_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_swaption_volatility_smile_response::result},
         utility::codec::field{"swaption_volatility_smile",
                               &put_swaption_volatility_smile_response::swaption_volatility_smile},
@@ -659,7 +659,7 @@ wire_fields(std::type_identity<put_swaption_volatility_smile_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_swaption_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_swaption_volatility_smiles_request::changes},
         utility::codec::field{"intent", &put_many_swaption_volatility_smiles_request::intent},
     };
@@ -675,7 +675,7 @@ wire_fields(std::type_identity<put_many_swaption_volatility_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_swaption_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_swaption_volatility_smiles_response::result},
         utility::codec::field{
             "swaption_volatility_smiles",
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<put_many_swaption_volatility_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_swaption_volatility_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_swaption_volatility_smile_request::removal},
         utility::codec::field{"intent", &delete_swaption_volatility_smile_request::intent},
     };
@@ -709,7 +709,7 @@ wire_fields(std::type_identity<delete_swaption_volatility_smile_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_swaption_volatility_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_swaption_volatility_smile_response::result},
     };
 }
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<delete_swaption_volatility_smile_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_swaption_volatility_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_swaption_volatility_smiles_request::removals},
         utility::codec::field{"intent", &delete_many_swaption_volatility_smiles_request::intent},
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<delete_many_swaption_volatility_smiles_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_swaption_volatility_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_swaption_volatility_smiles_response::result},
     };
 }
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<delete_many_swaption_volatility_smiles_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swaption_volatility_smile_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_swaption_volatility_smile_versions_request::key},
         utility::codec::field{"offset", &list_swaption_volatility_smile_versions_request::offset},
         utility::codec::field{"limit", &list_swaption_volatility_smile_versions_request::limit},
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<list_swaption_volatility_smile_versions_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swaption_volatility_smile_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_swaption_volatility_smile_versions_response::result},
         utility::codec::field{"versions",
                               &list_swaption_volatility_smile_versions_response::versions},
@@ -793,7 +793,7 @@ wire_fields(std::type_identity<list_swaption_volatility_smile_versions_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swaption_volatility_smile_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_swaption_volatility_smile_version_request::key},
     };
 }
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<get_swaption_volatility_smile_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swaption_volatility_smile_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_swaption_volatility_smile_version_response::result},
         utility::codec::field{"version", &get_swaption_volatility_smile_version_response::version},
     };

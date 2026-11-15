@@ -35,12 +35,12 @@ namespace validation = ores::security::validation;
 namespace reason = ores::dq::domain::change_reason_constants;
 
 signup_service::signup_service(
-    database::context ctx,
+    const database::context& ctx,
     std::shared_ptr<variability::service::system_settings_service> system_flags,
     std::shared_ptr<authorization_service> auth_service)
     : ctx_(ctx)
-    , system_flags_(std::move(system_flags))
-    , auth_service_(std::move(auth_service)) {}
+    , system_flags_(system_flags)
+    , auth_service_(auth_service) {}
 
 signup_result signup_service::register_user(const std::string& username,
                                             const std::string& email,

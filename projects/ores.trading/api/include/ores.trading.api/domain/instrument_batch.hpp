@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_codec.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional_codec.hpp"
+#include "ores.trading.api/domain/basket_swap_period_codec.hpp"
 #include "ores.trading.api/domain/bond_amortization_data.hpp"
 #include "ores.trading.api/domain/bond_fixed_leg_data.hpp"
 #include "ores.trading.api/domain/bond_float_data.hpp"
@@ -49,7 +50,11 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate_codec.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_codec.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_amortization_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_amount_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_codec.hpp"
 #include "ores.trading.api/domain/bond_leg_data.hpp"
+#include "ores.trading.api/domain/bond_leg_rate_codec.hpp"
 #include "ores.trading.api/domain/bond_leg_rate_data.hpp"
 #include "ores.trading.api/domain/bond_option_codec.hpp"
 #include "ores.trading.api/domain/bond_option_data.hpp"
@@ -87,7 +92,6 @@
 #include "ores.trading.api/domain/equity_position_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying_codec.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_codec.hpp"
-#include "ores.trading.api/domain/equity_swap_period_codec.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional_codec.hpp"
@@ -291,6 +295,22 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::bond_future> bond_futures;
     /**
+     * @brief The bond_leg rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg> bond_legs;
+    /**
+     * @brief The bond_leg_amortization rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg_amortization> bond_leg_amortizations;
+    /**
+     * @brief The bond_leg_amount rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg_amount> bond_leg_amounts;
+    /**
+     * @brief The bond_leg_rate rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg_rate> bond_leg_rates;
+    /**
      * @brief The bond_option rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::bond_option> bond_options;
@@ -352,9 +372,9 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::equity_basket_constituent> equity_basket_constituents;
     /**
-     * @brief The equity_swap_period rows, keyed by trade id.
+     * @brief The basket_swap_period rows, keyed by trade id.
      */
-    std::vector<ores::trading::domain::equity_swap_period> equity_swap_periods;
+    std::vector<ores::trading::domain::basket_swap_period> basket_swap_periods;
     /**
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
@@ -751,6 +771,34 @@ inline void append(instrument_batch& batch, bond_future v) {
 }
 
 /**
+ * @brief Adds one bond_leg to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg v) {
+    batch.bond_legs.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_leg_amortization to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg_amortization v) {
+    batch.bond_leg_amortizations.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_leg_amount to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg_amount v) {
+    batch.bond_leg_amounts.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_leg_rate to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg_rate v) {
+    batch.bond_leg_rates.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one bond_option to the array that holds its type.
  */
 inline void append(instrument_batch& batch, bond_option v) {
@@ -849,10 +897,10 @@ inline void append(instrument_batch& batch, equity_basket_constituent v) {
 }
 
 /**
- * @brief Adds one equity_swap_period to the array that holds its type.
+ * @brief Adds one basket_swap_period to the array that holds its type.
  */
-inline void append(instrument_batch& batch, equity_swap_period v) {
-    batch.equity_swap_periods.push_back(std::move(v));
+inline void append(instrument_batch& batch, basket_swap_period v) {
+    batch.basket_swap_periods.push_back(std::move(v));
 }
 
 /**
@@ -1107,7 +1155,7 @@ template <typename T>
  * the type declares them.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_batch>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bond_instruments", &instrument_batch::bond_instruments},
         ::ores::utility::codec::field{"commodity_instruments",
                                       &instrument_batch::commodity_instruments},
@@ -1168,6 +1216,11 @@ template <typename T>
         ::ores::utility::codec::field{"ascots", &instrument_batch::ascots},
         ::ores::utility::codec::field{"bond_forwards", &instrument_batch::bond_forwards},
         ::ores::utility::codec::field{"bond_futures", &instrument_batch::bond_futures},
+        ::ores::utility::codec::field{"bond_legs", &instrument_batch::bond_legs},
+        ::ores::utility::codec::field{"bond_leg_amortizations",
+                                      &instrument_batch::bond_leg_amortizations},
+        ::ores::utility::codec::field{"bond_leg_amounts", &instrument_batch::bond_leg_amounts},
+        ::ores::utility::codec::field{"bond_leg_rates", &instrument_batch::bond_leg_rates},
         ::ores::utility::codec::field{"bond_options", &instrument_batch::bond_options},
         ::ores::utility::codec::field{"bond_repos", &instrument_batch::bond_repos},
         ::ores::utility::codec::field{"bond_trs", &instrument_batch::bond_trs},
@@ -1193,8 +1246,8 @@ template <typename T>
                                       &instrument_batch::credit_linked_swap_instruments},
         ::ores::utility::codec::field{"equity_basket_constituents",
                                       &instrument_batch::equity_basket_constituents},
-        ::ores::utility::codec::field{"equity_swap_periods",
-                                      &instrument_batch::equity_swap_periods},
+        ::ores::utility::codec::field{"basket_swap_periods",
+                                      &instrument_batch::basket_swap_periods},
         ::ores::utility::codec::field{"equity_position_option_underlyings",
                                       &instrument_batch::equity_position_option_underlyings},
         ::ores::utility::codec::field{"flexi_swap_instruments",

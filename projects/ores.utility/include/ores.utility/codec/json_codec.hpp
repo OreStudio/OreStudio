@@ -48,25 +48,23 @@ struct json_codec;
  * This is where the recursion lives. A field's own value is whatever its
  * member's carrier gives it, so a member that is itself a type with a wire form
  * carries another object, a vector carries an array of them and an optional
- * carries one or nothing -- no carrier knows any of those types by name.
+ * carries one or null -- no carrier knows any of those types by name. An empty
+ * optional is written as null rather than left out, as the msgpack carrier
+ * writes nil, so a reader of either form sees every member; a reader still
+ * takes a member left out as empty.
  */
 namespace detail {
 
 template <typename T, typename... Members>
 yyjson_mut_val*
-write_object(yyjson_mut_doc* doc, const T& v, const std::tuple<field<T, Members>...>& fields) {
+write_object(yyjson_mut_doc* doc, const T& v, const field_list<field<T, Members>...>& fields) {
     auto* object = yyjson_mut_obj(doc);
     if (object == nullptr)
         throw std::runtime_error("Could not make a JSON object");
-    std::apply(
+    apply_fields(
         [&](const auto&... f) {
             (
                 [&] {
-                    using member_type = std::remove_cvref_t<decltype(v.*(f.member))>;
-                    if constexpr (is_optional_member<member_type>) {
-                        if (!(v.*(f.member)))
-                            return;
-                    }
                     // The key is copied into the document: the mutable API
                     // stores the pointer it is given, so a key held anywhere
                     // shorter-lived than the document would dangle between the
@@ -92,10 +90,10 @@ write_object(yyjson_mut_doc* doc, const T& v, const std::tuple<field<T, Members>
 inline thread_local bool missing_keeps_default = false;
 
 template <typename T, typename... Members>
-void read_object(yyjson_val* v, T& out, const std::tuple<field<T, Members>...>& fields) {
+void read_object(yyjson_val* v, T& out, const field_list<field<T, Members>...>& fields) {
     if (!yyjson_is_obj(v))
         throw std::invalid_argument("Not an object");
-    std::apply(
+    apply_fields(
         [&](const auto&... f) {
             (
                 [&] {

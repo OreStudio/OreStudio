@@ -20,7 +20,7 @@
 #ifndef ORES_REPORTING_CORE_TESTS_ENGINE_SETTINGS_PROPOSAL_FIXTURES_HPP
 #define ORES_REPORTING_CORE_TESTS_ENGINE_SETTINGS_PROPOSAL_FIXTURES_HPP
 
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"

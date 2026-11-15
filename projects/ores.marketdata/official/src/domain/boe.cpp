@@ -20,18 +20,12 @@
 #include "ores.marketdata.official/domain/boe.hpp"
 #include "ores.marketdata.official/domain/published_text.hpp"
 #include <algorithm>
-#include <array>
-#include <charconv>
 #include <format>
 #include <utility>
 
 namespace ores::marketdata::official::domain {
 
 namespace {
-
-// The database writes its months in English whatever the locale, so the table is fixed.
-constexpr std::array<std::string_view, 12> month_names{
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 std::string_view trim(std::string_view s) {
     while (!s.empty() && (s.back() == '\r' || s.back() == ' '))
@@ -41,35 +35,11 @@ std::string_view trim(std::string_view s) {
     return s;
 }
 
-/// A date of the database, such as =29 Oct 2026=.
-std::expected<std::chrono::year_month_day, std::string> boe_date_of(std::string_view text) {
-    const auto refused = [&] {
-        return std::unexpected("'" + std::string(text) + "' is not a date of the form 29 Oct 2026");
-    };
-    if (text.size() != 11 || text[2] != ' ' || text[6] != ' ')
-        return refused();
-    unsigned d = 0;
-    int y = 0;
-    if (std::from_chars(text.data(), text.data() + 2, d).ec != std::errc{} ||
-        std::from_chars(text.data() + 7, text.data() + 11, y).ec != std::errc{})
-        return refused();
-    const auto m = std::ranges::find(month_names, text.substr(3, 3));
-    if (m == month_names.end())
-        return refused();
-    const std::chrono::year_month_day date{
-        std::chrono::year{y},
-        std::chrono::month{static_cast<unsigned>(m - month_names.begin()) + 1},
-        std::chrono::day{d}};
-    if (!date.ok())
-        return refused();
-    return date;
-}
-
 /// A date as the database's query names it, such as =29/Oct/2026=.
 std::string boe_query_date(std::chrono::year_month_day date) {
     return std::format("{:02}/{}/{}",
                        static_cast<unsigned>(date.day()),
-                       month_names[static_cast<unsigned>(date.month()) - 1],
+                       month_name(date.month()),
                        static_cast<int>(date.year()));
 }
 
@@ -103,7 +73,7 @@ std::expected<std::vector<published_fixing>, std::string> parse_boe_csv(std::str
         const auto comma = lines[i].find(',');
         if (comma == std::string_view::npos)
             return std::unexpected("the row '" + std::string(lines[i]) + "' has no value");
-        auto date = boe_date_of(trim(lines[i].substr(0, comma)));
+        auto date = date_of_month_name(trim(lines[i].substr(0, comma)), ' ');
         if (!date)
             return std::unexpected(date.error());
         const auto text = trim(lines[i].substr(comma + 1));

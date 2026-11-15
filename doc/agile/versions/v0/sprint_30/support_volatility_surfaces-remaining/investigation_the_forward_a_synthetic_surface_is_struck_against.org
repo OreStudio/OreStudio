@@ -1,0 +1,321 @@
+:PROPERTIES:
+:ID: 4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0
+:END:
+#+title: Investigation: The forward a synthetic surface is struck against
+#+description: Where the forward a synthetic FX volatility surface solves its strikes against comes from, when the system tenant is the vendor and publishes raw quotes only. Reads the approach note's constraints, the joint-market investigation, the code's existing latent curve, and the frameworks of Kienitz and van den Berg; four paths with a recommendation.
+#+type: investigation
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the forward a synthetic volatility surface is struck against.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+A synthetic FX volatility surface publishes volatilities at delta labels --
+=ATM=, =25RR=, =25BF=, =10RR=, =10BF=. A delta is not a strike. To find the
+strike a quote belongs to, a reader solves for the strike at which the option
+has that delta, in the market of its expiry:
+
+  F(t, T) = S(t) * P_f(t, T) / P_d(t, T)
+
+The forward is the whole of the quoted surface's frame: the ATM strike is it,
+the wing strikes are placed around it, and the volatility at a delta is read
+there. A surface quoted against a forward that its pair does not have is not
+the pair's surface, however well its SSVI parameters behave.
+
+The surface feed merged in #4673 quotes against =spot = 1=, =P_f = P_d = 1=,
+so its forward is flat. That was deliberate and it is bounded: the emitter's
+tests prove the quoted volatilities do not move by more than =1e-12= when the
+spot level changes from 1.0 to 1.30, because a smile is read at a moneyness and
+a common scale cancels; and they prove they do move by =7.8e-05= -- about
+=0.008= volatility points -- when the ratio of the two discounts moves from one
+to =0.99/0.97= at a unit spot. So a unit market costs exactly the rate
+differential, and nothing else.
+
+That cost is small, and it is not the reason this investigation exists. The
+reason is that the surface is struck against one forward and read back against
+another. The calibration on the party side resolves each expiry's market from
+the party's published forward set, in =discounts_at= and =terms_at= of
+=fx_vol_surface_calibration_plan.cpp=: an exact tenor where the set has one,
+log-linear interpolation of both discount factors in days otherwise, base
+currency as the foreign side. So the generator solves a strike with a flat
+forward and the calibration reads that quote back with a real one. Every
+surface a blueprint calibrates from these quotes is fitted to volatilities
+observed at slightly wrong strikes, and nothing in the system reports it.
+
+The question this investigation answers is therefore not "how do we improve
+0.008 volatility points". It is: *where does the forward come from?* -- given
+that the tenant which runs the generator is the vendor, and a vendor does not
+publish discount curves.
+
+* Methodology
+
+Read, not run. The documents and the code read, and what each contributed:
+
+| Source | What it settles |
+|--------+-----------------|
+| [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] | the dependency order (IR curves, then spot, then derived forwards, then surfaces), constraint 1 (forwards are derived, never sampled), constraint 3 (the ATM strike is the forward at each maturity), and the measure split |
+| [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]] | the shared Brownian factors decision, and its last open question: the surface's forward "from published values (a desk's view) or from a market board the feeds publish to" |
+| [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] | the design as landed, including the sentence that a surface is struck "against the forward built from the spot and the two discount curves last published" |
+| [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] | the vendor/contributor split, and the statement that a clean quote set and its bootstrap give the true curve |
+| [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] | the party side: a calibration reads the forward to the expiry "from the published curves of the two currencies" |
+| [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]] | Kienitz's joint observation vector and its closed-form conditionals, including "given this yield curve, what vol surface is consistent?" |
+| [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] | van den Berg's mixture construction, whose no-arbitrage conditions are conditions on the terminal distribution and therefore on the forward it is struck against |
+| [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: fast, error-bounded option pricing with pretrained networks]] | van den Berg's surface as the terminal return density of a GJR-GARCH process, which has a drift and a discounting before it has a smile |
+| [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]] | the five short-rate engines an IR curve config may choose |
+
+Code read: =i_yield_curve_process= and =price_ir_curve_entry= (=ores.analytics.quant=,
+=ores.synthetic.api=); =ir_curve_feed=; =fx_vol_surface_feed=,
+=fx_vol_surface_emitter=, =feed_kind_registry=; the emitter's two market tests;
+=fx_vol_surface_calibration_plan.cpp=; =run_market=; =tick_scheduler=.
+
+Facts the code fixed, beyond the documents:
+
+- *The run already holds a latent curve per currency, and it is not new work.*
+  =i_yield_curve_process::discount_factor(ticks_ahead)= is documented as "the
+  latent curve a single process state implies at every maturity, not just the
+  next scalar tick", and =price_ir_curve_entry= prices every pillar of a curve
+  feed -- deposit, FRA, swap -- off that one state. So the vendor's IR quotes
+  are *observations of its own curve*, and the quote vector and the curve are
+  two views of one object. The IR feed is not a quote generator that lacks a
+  curve; it is a curve generator that publishes quotes.
+- *The system has no other curve to read.* There is no market board, no
+  published-curve read reachable from =ores.synthetic.service=, and no
+  system-tenant schedule that publishes discount factors. =get_published_fx_forward=
+  is scoped to the caller's party.
+- *The surface's market is fixed when the emitter is built.* =fx_vol_slice_market=
+  is passed to =fx_vol_surface_emitter::make= and never revised, so a curve that
+  moved after the feed started would not reach the surface's strikes.
+- *The two grids do not agree.* A curve feed steps a calendar day per tick and
+  counts its horizon in ticks; the market's simulated time is the speed times
+  operational time. Mapping a calendar tenor to the curve's own horizon is the
+  publisher's job, which is why a shared curve has to travel as dated discount
+  factors rather than as a process state.
+
+* Paths taken
+
+** What the documents and the literature require
+
+The approach note states the requirement twice, and neither statement is
+optional:
+
+- Constraint 1: =FXFWD(T) = FX_spot * DF_for(T) / DF_dom(T)=, enforced by
+  *derivation -- never sample FXFWD independently*, from steps 1 and 3 to step
+  4.
+- Constraint 3, "FX option ATMF anchor": the ATM strike of the surface is the
+  =FXFWD= at each maturity, *automatic*, because "the surface's strikes are
+  solved against the generated =FXFWD= from step 4".
+
+The roadmap orders the work the same way: the FX option surface is Phase 2,
+step 10, and step 4 -- the derived forward -- is a Phase 1 step. So the forward
+is not something the surface arc can decide to do without; it is a dependency
+the surface arc inherited and has not met.
+
+The three frameworks agree, and this is the part worth stating precisely
+because the surface arc has been built as if they did not.
+
+- *Kienitz (2024)* generates from a Gaussian mixture over an *observation
+  vector*: one joint distribution over the rates and, where it is conditioned,
+  the surface too. His conditionals are the point of the method --
+  "given this yield curve, what vol surface is consistent?". A surface generated
+  with no reference to the curve is not a conditional of that joint law. It is
+  an independent draw wearing the same parameterisation.
+- *Van den Berg (2026a)* constructs the surface as a mixture of densities over
+  the terminal underlying and enforces calendar-spread and butterfly
+  no-arbitrage as conditions on those densities. Those conditions are stated
+  against the forward: two expiries are compared at the same strike, and a
+  strike is meaningful only as a moneyness. An interpolation that is
+  arbitrage-free relative to one forward is not arbitrage-free relative to
+  another, so the forward is an input to the construction.
+- *Van den Berg (2026b)* is the sharpest case: the surface *is* the terminal
+  return density of the underlying process, so the drift and the discounting
+  come before the smile. There is no version of that object that does not know
+  what it is a return on.
+
+So the claim this investigation ends with is the owner's: *a latent volatility
+surface implies a latent yield curve*. Not as an extra deliverable, and not
+because a curve is a nice thing to have, but because the surface's parameters
+are expressed relative to a forward, and the forward is a functional of the
+rate state. In a system that generates the rate quotes itself, the rate state
+is the generator's own.
+
+Two caveats keep the claim honest. Neither paper says a *vendor* must publish a
+curve: Kienitz holds the curve as a coordinate of the observation vector,
+van den Berg takes the forward as given. And neither requires the curve to be
+bootstrapped from the same quotes: what they require is that the forward used
+is the one the quotes imply under covered interest parity, and that the surface
+is conditioned on it. Our system is in a stronger position than either: it does
+not have to infer the curve from the quotes, because it has the short-rate
+model the quotes came from.
+
+** Path A: keep the unit market**
+
+Rejected. It fails constraint 3 and it is internally inconsistent with the
+calibration, by the =7.8e-05= measured above. It is also the only path that
+costs nothing today, which is why it was taken; the cost lands on the party
+that calibrates.
+
+** Path B: the run shares its own latent curve (a market board)**
+
+The run caches, for each currency, the discount factors its own IR feed
+implies, and the surface reads them. Nothing is published as market data: the
+board is a cache of values the feeds already hold, on the scheduler's thread,
+which is the shape the joint-market investigation already named as an option
+("a market board the feeds publish to" versus "published values, a desk's
+view").
+
+It satisfies every requirement the documents set. The forward the surface is
+struck against is, by construction, the forward the vendor's own rate quotes
+imply, so constraint 1 and constraint 3 hold together and the surface is the
+conditional object Kienitz describes. The vendor publishes no derived data, so
+the ownership decision of 2026-11-09 stands: the system plays the vendor, and
+curves remain a party's. And the party's calibration is not left adrift: the
+clean quote set and its bootstrap give the true curve, which is what the
+latent-surface note already claims for curves, so a party bootstrapping this
+vendor's quotes recovers this curve to bootstrap tolerance -- the two forward
+sets differ by the bootstrap, not by design.
+
+** Path C: the system tenant publishes curves as derived market data**
+
+Rejected. It contradicts the ownership decision, gives the vendor a maker-checker
+lifecycle over its own internal state, and makes a party's curve and the
+vendor's curve two published objects that can disagree. It also breaks the
+vendor/contributor split the latent-surface note is built on: a vendor that
+publishes the curve behind its quotes has published the truth the contributor
+layer exists to hide.
+
+** Path D: the surface reads a party's published forward set**
+
+Rejected, and this is the path the current task text assumed. It inverts the
+dependency: the vendor would quote against a derivative of its own quotes,
+which means the vendor's prices depend on which tenant is provisioned, on that
+tenant's bootstrap settings, and on whether that tenant has published at all.
+It also does not compose: a run with no party, or with two, has no single
+forward. It would work only in the special case where every party's curve is
+identical to the vendor's, which is the case Path B states directly.
+
+** Path E: the surface bootstraps the two currencies' published quotes itself**
+
+Rejected as a variant of Path B with no benefit. It rebuilds, every tick, a
+curve the run already holds exactly, and it introduces a second bootstrap
+implementation to disagree with the calibration's.
+
+* Conclusions
+
+- The surface's forward is not a detail of the feed; it is the frame of the
+  published surface, and the documents make it a hard constraint rather than a
+  refinement. The current unit market is a known, measured defect.
+- The curve the surface needs already exists inside the run. Every IR curve
+  feed carries a short-rate model whose discount factors are analytic at any
+  horizon, and every pillar it publishes is priced off that one state. The work
+  is to *share* it, not to build it.
+- Therefore a latent volatility surface does imply a latent yield curve, in the
+  sense the frameworks use: the surface's parameters are relative to a forward,
+  and the forward is the curve. It does not imply a *published* curve, and it
+  does not imply the vendor becomes a source of derived market data.
+- The awkward consequence is that the surface's market stops being a constant.
+  Today =fx_vol_surface_emitter::make= takes one market per expiry for the life
+  of the feed; under any path but A the market moves when the curve ticks, and
+  the emitter has to take its markets per step. That is a change to the
+  emitter's step, not to its laws, and it is the part of this work that the
+  landed per-expiry markets make cheap.
+
+* Recommendations
+
+Choose Path B. The work, in order, each step ending in a test:
+
+1. *The board, in the run.* =run_market= grows a per-currency block: a currency
+   code and its dated discount factors, published by the IR feed when it ticks
+   and read on the scheduler's thread only. The values are dated so a reader
+   needs no tick arithmetic: the curve's own horizon mapping happens once, in
+   the feed that owns the model. A test pins that the board's factor at a date
+   equals =discount_factor= of the process that published it.
+2. *The surface reads it.* Each tick, the surface builds one market per expiry
+   from the pair's spot and the two currencies' boards, through
+   =pair_market_at= -- the block merged in this branch, which the calibration
+   already uses, so the two sides resolve a market by one rule. A pair whose
+   currencies the run does not both carry is refused at start, naming the
+   missing currency, rather than quoted against a flat forward.
+3. *The emitter takes its markets per step.* The markets move from =make= to
+   =step=. A test states that an unchanged curve and an unchanged SSVI state
+   emit identical quotes, so the board adds no drift of its own; and a test
+   states that a two-percent differential moves the 25-delta quote by the
+   amount the strike solve implies.
+4. *The round trip, stated honestly.* A test bootstraps a party's curve from the
+   clean pillar quotes and shows the surface calibrated from it lands on the same
+   strikes within the bootstrap's own tolerance. This replaces the acceptance
+   line that asked the feed and the calibration to resolve an identical market,
+   which holds only in the limit where the bootstrap is exact.
+5. *The spot, later.* The quoted volatilities do not need the spot at all, so
+   the board's spot is not on the critical path. It becomes necessary when the
+   surface publishes strikes, and when the spot's own drift is made
+   covered-interest-parity consistent, which is the parent of this question and
+   is not in this story's scope.
+
+Decisions for the owner before the work is raised:
+
+- *The board's members.* Curves only, or every derived quantity the run could
+  share -- equity forwards, commodity strips, the CAPFLOOR shift constraint 5
+  asks for? Curves only is the smallest thing that answers this question.
+- *What the board holds per currency.* The curve's own pillar dates, a fixed
+  grid, or both. Pillar dates are what a party's forward set holds and what
+  =pair_market_at= consumes, so they are the natural shape; a fixed grid to
+  thirty years keeps a surface whose expiries run past the last pillar from
+  being refused.
+- *When the surface re-solves its strikes.* Every tick, or only on its own vol
+  tick. Per tick is what a desk does and what the approach note's step 4 says;
+  it costs one strike solve per expiry per contributor per tick.
+- *Whether the IR feeds round-trip exactly.* A party's bootstrap uses ORE's
+  engine, not ours, so "the true curve" is recovered to the bootstrap's
+  tolerance and not to the last digit. If that is not good enough for the
+  round-trip test, the alternative is to state the tolerance the test may
+  assume, as the surface tests already do.
+
+* Outcome
+
+The analysis was carried into the design rather than left here. The durable
+statements now live on
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]], and the pages that own
+their subjects were corrected where they were ambiguous:
+
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the curve is named as the
+  generator's state with the quotes as its observations (interest rate curves);
+  a new subsection, "Where the forward comes from", states the interface and the
+  two measured facts (from state to quotes); and a new section, "How this compares
+  to the literature", places the design beside Kienitz and van den Berg's two
+  papers.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] --
+  "the two discount curves last published" named no publisher. It now names the
+  run's own board, and says why a party's published curves cannot be the source.
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] --
+  states that the vendor holds the curve every surface is struck against, and
+  that the contributor layer sits on top of it.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] -- "the
+  published curves of the two currencies" is now explicitly the party's own, with
+  the bootstrap difference stated.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the new page is item 4 of the synthetic
+  generation reading order.
+
+The owner accepted the path and its four choices on 2026-11-13. No code changed
+as a result of this investigation: the branch's code change is the shared market
+resolution, which stands on its own, and the build is
+[[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]].
+
+* See also
+
+- [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]] -- the task whose first
+  half this answers, and whose text still assumes Path D.
+- [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] -- the feed this
+  changes.
+- [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]] -- the open question this
+  closes.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- constraints 1 and 3, and
+  the roadmap order.
+- [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered interest parity]] -- the derivation behind the forward.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]] and
+  [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] --
+  the frameworks the surface is judged against.

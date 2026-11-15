@@ -39,7 +39,7 @@ class ORES_ANALYTICS_CORE_EXPORT pricing_engines_document_service {
 public:
     using context = ores::database::context;
 
-    explicit pricing_engines_document_service(context ctx);
+    explicit pricing_engines_document_service(const context& ctx);
 
     void save(messaging::pricing_engines_document v);
 

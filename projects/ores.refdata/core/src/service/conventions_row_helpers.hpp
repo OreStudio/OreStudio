@@ -19,7 +19,7 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_CONVENTIONS_ROW_HELPERS_HPP
 #define ORES_REFDATA_CORE_SERVICE_CONVENTIONS_ROW_HELPERS_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <map>
 #include <set>

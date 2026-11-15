@@ -37,6 +37,12 @@ namespace json = boost::json;
 
 constexpr std::string_view structured_marker = "StructuredMessage";
 
+/**
+ * @brief The scope an error or a warning carries when the engine named no
+ * group, so the line is still stored and still reads as the engine's own.
+ */
+constexpr std::string_view unstated_scope = "Engine";
+
 /** The text with its leading spaces and tabs removed. */
 std::string_view without_leading_space(std::string_view text) {
     const auto first = text.find_first_not_of(" \t");
@@ -399,6 +405,26 @@ bool is_memory_report(const engine_log_event& event) {
     return event.severity == "warning" && event.message.ends_with(engine_memory_report_suffix);
 }
 
+/**
+ * @brief Gives a line a scope when the engine stated no group.
+ *
+ * The engine states a group in its structured lines and states none in its
+ * plain ones, where a warning about a convention, a notice about a parameter or
+ * anything else it printed arrives with no group at all. A reader still needs to
+ * see it, so such a line is recorded as the engine's own: the scope says the
+ * engine spoke and named no part of itself, which is what the engine said.
+ */
+void assign_unstated_scope(engine_log_event& event) {
+    /*
+     * Every line the run keeps needs a scope, and the engine groups only its
+     * structured lines. A notice about a parameter is as much the engine's word
+     * as a warning about a convention, so a line with no group is the engine's
+     * own whatever its severity.
+     */
+    if (event.scope.empty())
+        event.scope = std::string(unstated_scope);
+}
+
 std::string store_level_of(const engine_log_event& event) {
     if (!event.states_line_fields)
         return {};
@@ -441,18 +467,20 @@ std::string canonical_log_csv(const std::vector<engine_log_event>& events) {
     };
 
     std::ostringstream out;
-    out << "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source\n";
+    out << "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,filename,"
+           "location\n";
     for (const auto& event : events) {
         out << event.ordinal << ',' << quoted(event.severity) << ',' << quoted(event.scope) << ','
             << quoted(event.message) << ',' << quoted(event.subject) << ','
             << quoted(event.subject_id) << ',' << quoted(event.cause) << ',' << quoted(event.detail)
-            << ',' << quoted(event.event_time) << ',' << quoted(event.source) << '\n';
+            << ',' << quoted(event.event_time) << ',' << quoted(event.filename) << ','
+            << quoted(event.location) << '\n';
     }
     return out.str();
 }
 
 std::vector<engine_log_event> parse_engine_log_text(std::string_view text,
-                                                    std::string_view source_file) {
+                                                    std::string_view file_name) {
     std::vector<engine_log_event> events;
     for_each_line(text, [&](std::string_view line, std::size_t ordinal) {
         const auto statement = statement_of(line);
@@ -462,7 +490,7 @@ std::vector<engine_log_event> parse_engine_log_text(std::string_view text,
         event.event_time = statement.time;
         event.occurred_at = time_as_value(statement.time);
         event.location = statement.location;
-        event.source = std::string(source_file);
+        event.filename = std::string(file_name);
         event.states_line_fields =
             statement.states_fields && is_engine_level(statement.level_word) && event.occurred_at;
 
@@ -474,18 +502,19 @@ std::vector<engine_log_event> parse_engine_log_text(std::string_view text,
             event.message = statement.message;
             event.message_stated = true;
         }
+        assign_unstated_scope(event);
         events.push_back(std::move(event));
     });
     return events;
 }
 
 std::vector<engine_log_event> parse_engine_log_json(std::string_view text,
-                                                    std::string_view source_file) {
+                                                    std::string_view file_name) {
     std::vector<engine_log_event> events;
     for_each_line(text, [&](std::string_view line, std::size_t ordinal) {
         engine_log_event event;
         event.ordinal = ordinal;
-        event.source = std::string(source_file);
+        event.filename = std::string(file_name);
         if (!apply_structured(line, event)) {
             event.severity = "notice";
             event.message = std::string(line);
@@ -493,8 +522,42 @@ std::vector<engine_log_event> parse_engine_log_json(std::string_view text,
         } else if (event.message.empty()) {
             event.message = std::string(line);
         }
+        assign_unstated_scope(event);
         events.push_back(std::move(event));
     });
+    return events;
+}
+
+std::vector<engine_log_event> run_log_events(std::string_view text_log,
+                                             std::string_view structured_log,
+                                             std::string_view engine_log,
+                                             bool engine_failed) {
+    std::vector<engine_log_event> events;
+    const auto append = [&events](std::vector<engine_log_event> more) {
+        for (auto& event : more)
+            events.push_back(std::move(event));
+    };
+
+    if (!text_log.empty())
+        append(parse_engine_log_text(text_log, "log.txt"));
+    if (!structured_log.empty())
+        append(parse_engine_log_json(structured_log, "log_structured.json"));
+    if (!engine_log.empty()) {
+        /*
+         * The stream is the engine's own printing, not its log: a line it
+         * formatted is read as the engine's line, and a line it did not states
+         * no severity at all. The stream is where a fatal failure states its
+         * reason, so those lines are kept as notices and the last one the engine
+         * printed is stated as the error that stopped the run.
+         */
+        auto printed = parse_engine_log_text(engine_log, "engine.log");
+        for (auto& event : printed)
+            if (event.severity.empty())
+                event.severity = "notice";
+        if (engine_failed && !printed.empty())
+            printed.back().severity = "error";
+        append(std::move(printed));
+    }
     return events;
 }
 

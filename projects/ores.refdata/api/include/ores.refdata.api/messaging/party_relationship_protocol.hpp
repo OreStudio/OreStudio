@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &party_relationship_key::code},
         utility::codec::field{"coding_scheme_code", &party_relationship_key::coding_scheme_code},
     };
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &party_relationship_write::code},
         utility::codec::field{"coding_scheme_code", &party_relationship_write::coding_scheme_code},
         utility::codec::field{"source", &party_relationship_write::source},
@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &party_relationship_change::write},
         utility::codec::field{"precondition", &party_relationship_change::precondition},
     };
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &party_relationship_removal::key},
         utility::codec::field{"precondition", &party_relationship_removal::precondition},
     };
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &party_relationship_lookup::key},
         utility::codec::field{"party_relationship", &party_relationship_lookup::party_relationship},
     };
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &party_relationship_event::event_id},
         utility::codec::field{"key", &party_relationship_event::key},
         utility::codec::field{"action", &party_relationship_event::action},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_relationship",
                               &party_relationship_version_key::party_relationship},
         utility::codec::field{"version", &party_relationship_version_key::version},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_relationship_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &party_relationship_versions_filter::version},
         utility::codec::field{"from_version", &party_relationship_versions_filter::from_version},
         utility::codec::field{"to_version", &party_relationship_versions_filter::to_version},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_party_relationships_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_party_relationships_request::offset},
         utility::codec::field{"limit", &list_party_relationships_request::limit},
         utility::codec::field{"order", &list_party_relationships_request::order},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_party_relationships_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_party_relationships_response::result},
         utility::codec::field{"relationships", &list_party_relationships_response::relationships},
         utility::codec::field{"total", &list_party_relationships_response::total},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_party_relationship_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_party_relationship_request::key},
     };
 }
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_party_relationship_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_party_relationship_response::result},
         utility::codec::field{"party_relationship",
                               &get_party_relationship_response::party_relationship},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_party_relationships_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_party_relationships_request::keys},
     };
 }
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.party_relationshi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_party_relationships_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_party_relationships_response::result},
         utility::codec::field{"entries", &get_many_party_relationships_response::entries},
     };
@@ -582,7 +582,7 @@ wire_fields(std::type_identity<get_many_party_relationships_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_party_relationship_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_party_relationship_request::change},
         utility::codec::field{"intent", &put_party_relationship_request::intent},
     };
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<get_many_party_relationships_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_party_relationship_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_party_relationship_response::result},
         utility::codec::field{"party_relationship",
                               &put_party_relationship_response::party_relationship},
@@ -613,7 +613,7 @@ wire_fields(std::type_identity<get_many_party_relationships_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_party_relationships_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_party_relationships_request::changes},
         utility::codec::field{"intent", &put_many_party_relationships_request::intent},
     };
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_many_party_relationships_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_party_relationships_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_party_relationships_response::result},
         utility::codec::field{"relationships",
                               &put_many_party_relationships_response::relationships},
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<put_many_party_relationships_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_party_relationship_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_party_relationship_request::removal},
         utility::codec::field{"intent", &delete_party_relationship_request::intent},
     };
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<put_many_party_relationships_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_party_relationship_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_party_relationship_response::result},
     };
 }
@@ -675,7 +675,7 @@ wire_fields(std::type_identity<put_many_party_relationships_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_party_relationships_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_party_relationships_request::removals},
         utility::codec::field{"intent", &delete_many_party_relationships_request::intent},
     };
@@ -691,7 +691,7 @@ wire_fields(std::type_identity<delete_many_party_relationships_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_party_relationships_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_party_relationships_response::result},
     };
 }
@@ -706,7 +706,7 @@ wire_fields(std::type_identity<delete_many_party_relationships_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_party_relationship_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_party_relationship_versions_request::key},
         utility::codec::field{"offset", &list_party_relationship_versions_request::offset},
         utility::codec::field{"limit", &list_party_relationship_versions_request::limit},
@@ -725,7 +725,7 @@ wire_fields(std::type_identity<list_party_relationship_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_party_relationship_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_party_relationship_versions_response::result},
         utility::codec::field{"versions", &list_party_relationship_versions_response::versions},
         utility::codec::field{"total", &list_party_relationship_versions_response::total},
@@ -742,7 +742,7 @@ wire_fields(std::type_identity<list_party_relationship_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_party_relationship_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_party_relationship_version_request::key},
     };
 }
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<get_party_relationship_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_party_relationship_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_party_relationship_version_response::result},
         utility::codec::field{"version", &get_party_relationship_version_response::version},
     };

@@ -179,6 +179,7 @@ struct schedule_report_definitions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> ids;
+    std::string schedule_expression;
 
     friend bool operator==(const schedule_report_definitions_request&,
                            const schedule_report_definitions_request&) = default;
@@ -942,7 +943,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trigger_report_instance_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &trigger_report_instance_request::report_definition_id},
         ::ores::utility::codec::field{"tenant_id", &trigger_report_instance_request::tenant_id},
@@ -966,7 +967,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trigger_report_instance_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &trigger_report_instance_response::result},
         ::ores::utility::codec::field{"report_instance_id",
                                       &trigger_report_instance_response::report_instance_id},
@@ -982,7 +983,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_health_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &get_run_health_request::report_instance_id},
     };
@@ -997,7 +998,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_health_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_run_health_response::result},
         ::ores::utility::codec::field{"state_name", &get_run_health_response::state_name},
         ::ores::utility::codec::field{"health", &get_run_health_response::health},
@@ -1013,7 +1014,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<record_run_pricing_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &record_run_pricing_request::report_instance_id},
         ::ores::utility::codec::field{"priced_at", &record_run_pricing_request::priced_at},
@@ -1030,7 +1031,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<record_run_pricing_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &record_run_pricing_response::result},
     };
 }
@@ -1044,8 +1045,10 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<schedule_report_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"ids", &schedule_report_definitions_request::ids},
+        ::ores::utility::codec::field{"schedule_expression",
+                                      &schedule_report_definitions_request::schedule_expression},
     };
 }
 
@@ -1058,7 +1061,7 @@ struct take_cut_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<schedule_report_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &schedule_report_definitions_response::success},
         ::ores::utility::codec::field{"message", &schedule_report_definitions_response::message},
         ::ores::utility::codec::field{"scheduled_count",
@@ -1078,7 +1081,7 @@ struct take_cut_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<unschedule_report_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"ids", &unschedule_report_definitions_request::ids},
     };
 }
@@ -1093,7 +1096,7 @@ wire_fields(std::type_identity<unschedule_report_definitions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<unschedule_report_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &unschedule_report_definitions_response::success},
         ::ores::utility::codec::field{"message", &unschedule_report_definitions_response::message},
         ::ores::utility::codec::field{"unscheduled_count",
@@ -1113,7 +1116,7 @@ wire_fields(std::type_identity<unschedule_report_definitions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_report_definitions_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1126,7 +1129,7 @@ wire_fields(std::type_identity<publish_report_definitions_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_risk_report_configs_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1139,7 +1142,7 @@ wire_fields(std::type_identity<publish_risk_report_configs_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_engine_settings_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1152,7 +1155,7 @@ wire_fields(std::type_identity<publish_engine_settings_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_ore_parameter_value_domains_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1165,7 +1168,7 @@ wire_fields(std::type_identity<publish_ore_parameter_value_domains_from_dq_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1177,7 +1180,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gather_trades_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &gather_trades_request::report_instance_id},
         ::ores::utility::codec::field{"definition_id", &gather_trades_request::definition_id},
@@ -1195,7 +1198,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gather_trades_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &gather_trades_result::success},
         ::ores::utility::codec::field{"message", &gather_trades_result::message},
         ::ores::utility::codec::field{"trade_count", &gather_trades_result::trade_count},
@@ -1213,7 +1216,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gather_market_data_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &gather_market_data_request::report_instance_id},
         ::ores::utility::codec::field{"definition_id", &gather_market_data_request::definition_id},
@@ -1232,7 +1235,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gather_market_data_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &gather_market_data_result::success},
         ::ores::utility::codec::field{"message", &gather_market_data_result::message},
         ::ores::utility::codec::field{"series_count", &gather_market_data_result::series_count},
@@ -1251,7 +1254,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<assemble_bundle_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &assemble_bundle_request::report_instance_id},
         ::ores::utility::codec::field{"definition_id", &assemble_bundle_request::definition_id},
@@ -1278,7 +1281,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<assemble_bundle_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &assemble_bundle_result::success},
         ::ores::utility::codec::field{"message", &assemble_bundle_result::message},
         ::ores::utility::codec::field{"bundle_id", &assemble_bundle_result::bundle_id},
@@ -1294,7 +1297,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<prepare_ore_package_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &prepare_ore_package_request::report_instance_id},
         ::ores::utility::codec::field{"definition_id", &prepare_ore_package_request::definition_id},
@@ -1322,7 +1325,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<prepare_ore_package_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &prepare_ore_package_result::success},
         ::ores::utility::codec::field{"message", &prepare_ore_package_result::message},
         ::ores::utility::codec::field{"tarball_uris", &prepare_ore_package_result::tarball_uris},
@@ -1338,7 +1341,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<submit_compute_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &submit_compute_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &submit_compute_request::tenant_id},
@@ -1358,7 +1361,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<submit_compute_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &submit_compute_result::success},
         ::ores::utility::codec::field{"message", &submit_compute_result::message},
         ::ores::utility::codec::field{"batch_id", &submit_compute_result::batch_id},
@@ -1374,7 +1377,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<collect_compute_results_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &collect_compute_results_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &collect_compute_results_request::tenant_id},
@@ -1393,7 +1396,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<collect_compute_results_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &collect_compute_results_result::success},
         ::ores::utility::codec::field{"message", &collect_compute_results_result::message},
     };
@@ -1408,7 +1411,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<post_process_results_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &post_process_results_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &post_process_results_request::tenant_id},
@@ -1429,7 +1432,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<post_process_results_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &post_process_results_result::success},
         ::ores::utility::codec::field{"message", &post_process_results_result::message},
         ::ores::utility::codec::field{"rows_loaded", &post_process_results_result::rows_loaded},
@@ -1445,7 +1448,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<finalise_report_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &finalise_report_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &finalise_report_request::tenant_id},
@@ -1462,7 +1465,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<finalise_report_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &finalise_report_result::success},
         ::ores::utility::codec::field{"message", &finalise_report_result::message},
     };
@@ -1477,7 +1480,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fail_report_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &fail_report_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &fail_report_request::tenant_id},
@@ -1495,7 +1498,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fail_report_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &fail_report_result::success},
         ::ores::utility::codec::field{"message", &fail_report_result::message},
     };
@@ -1510,7 +1513,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_execution_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &report_execution_request::report_instance_id},
         ::ores::utility::codec::field{"definition_id", &report_execution_request::definition_id},
@@ -1538,7 +1541,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_prepared_input_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &resolve_prepared_input_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &resolve_prepared_input_request::tenant_id},
@@ -1558,7 +1561,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ignore_compute_results_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_instance_id",
                                       &ignore_compute_results_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &ignore_compute_results_request::tenant_id},
@@ -1577,7 +1580,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<definition_next_fire>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"definition_id", &definition_next_fire::definition_id},
         ::ores::utility::codec::field{"next_fire_at", &definition_next_fire::next_fire_at},
     };
@@ -1592,7 +1595,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_next_fire_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"definition_ids", &get_next_fire_request::definition_ids},
     };
 }
@@ -1606,7 +1609,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_next_fire_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_next_fire_response::result},
         ::ores::utility::codec::field{"schedules", &get_next_fire_response::schedules},
     };
@@ -1621,7 +1624,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_cut_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &resolve_cut_request::report_definition_id},
         ::ores::utility::codec::field{"covered_date", &resolve_cut_request::covered_date},
@@ -1649,7 +1652,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_cut_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &resolve_cut_response::result},
         ::ores::utility::codec::field{"cut_id", &resolve_cut_response::cut_id},
         ::ores::utility::codec::field{"cut_label", &resolve_cut_response::cut_label},
@@ -1671,7 +1674,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_rows_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind_code", &list_cut_rows_request::kind_code},
         ::ores::utility::codec::field{"month", &list_cut_rows_request::month},
         ::ores::utility::codec::field{"search", &list_cut_rows_request::search},
@@ -1690,7 +1693,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_row>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"cut_id", &cut_row::cut_id},
         ::ores::utility::codec::field{"label", &cut_row::label},
         ::ores::utility::codec::field{"state", &cut_row::state},
@@ -1722,7 +1725,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_rows_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &list_cut_rows_response::result},
         ::ores::utility::codec::field{"rows", &list_cut_rows_response::rows},
         ::ores::utility::codec::field{"total", &list_cut_rows_response::total},
@@ -1738,7 +1741,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_record_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"cut_id", &get_cut_record_request::cut_id},
     };
 }
@@ -1752,7 +1755,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_record_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_cut_record_response::result},
         ::ores::utility::codec::field{"cut", &get_cut_record_response::cut},
         ::ores::utility::codec::field{"kind", &get_cut_record_response::kind},
@@ -1775,7 +1778,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<take_cut_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind_code", &take_cut_request::kind_code},
         ::ores::utility::codec::field{"scope_code", &take_cut_request::scope_code},
         ::ores::utility::codec::field{"business_centre_code",
@@ -1797,7 +1800,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_body_part>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"part_code", &cut_body_part::part_code},
         ::ores::utility::codec::field{"state", &cut_body_part::state},
         ::ores::utility::codec::field{"summary", &cut_body_part::summary},
@@ -1818,7 +1821,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_authorisation_subject>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &cut_authorisation_subject::request_id},
         ::ores::utility::codec::field{"cut_id", &cut_authorisation_subject::cut_id},
         ::ores::utility::codec::field{"label", &cut_authorisation_subject::label},
@@ -1850,7 +1853,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cut_authorisation_subjects_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_ids",
                                       &list_cut_authorisation_subjects_request::request_ids},
     };
@@ -1866,7 +1869,7 @@ wire_fields(std::type_identity<list_cut_authorisation_subjects_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cut_authorisation_subjects_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &list_cut_authorisation_subjects_response::result},
         ::ores::utility::codec::field{"subjects",
                                       &list_cut_authorisation_subjects_response::subjects},
@@ -1882,7 +1885,7 @@ wire_fields(std::type_identity<list_cut_authorisation_subjects_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<take_cut_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &take_cut_response::result},
         ::ores::utility::codec::field{"cut_id", &take_cut_response::cut_id},
         ::ores::utility::codec::field{"cut_label", &take_cut_response::cut_label},

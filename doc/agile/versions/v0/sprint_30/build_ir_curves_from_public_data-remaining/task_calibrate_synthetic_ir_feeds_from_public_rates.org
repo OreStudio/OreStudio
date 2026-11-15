@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/calibrate-synthetic-ir-feeds-from-public-rates
+#+pr: 4661
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-10
-#+environment: prime_origin
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A synthetic IR curve feed with a public source starts from that source's latest 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing: SOFR, €STR, SONIA and CORRA are stored as fixings of their index items. |
-| Next         | Start with USD, EUR, GBP and CAD; the other currencies wait on [[id:E5A66CAD-EABC-4916-B8BC-5EF2A5DD4BDA][Find a route to the overnight rate of each remaining currency]]. |
-| Last touched | 2026-11-10 |
+| Next         | Nothing. |
+| Last touched | 2026-11-12 |
 
 * Acceptance
 
@@ -46,6 +46,25 @@ A synthetic IR curve feed with a public source starts from that source's latest 
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Thirteen overnight rates are now stored, so every currency with a publisher
+can start its curve from a real rate.
+
+1. Add =overnight_currency_of= and =derive_overnight_items= beside the FX
+   derivation: an overnight index names no tenor, and the policy's provider
+   order ranks the publishers of a currency.
+2. Add =resolve_ir_start=: list the series, take the first overnight fixing
+   of the curve's currency on or before the clock, and accept a negative
+   rate. With none, keep the fixed initial rate and say why in the record.
+3. Let =make_ir_curve_feed= take the resolved start: replace the
+   =initial_rate= value for the run, record the start, and refuse a curve
+   the policy will not start. The factory resolves when the price source is
+   "fixing"; the registry passes the class policy.
+4. Seed the IR class policy with the thirteen publishers, and start the
+   Bloomberg curves from a fixing, except CHF, which keeps a fixed level
+   until a SIX Data License is decided.
+5. Prove it: unit tests, and a fresh provisioning whose curves log the rate
+   they started from.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -58,7 +77,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curves that started from a public fixing on a fresh provision | 13 of the 28 Bloomberg IR curves, one for each currency with a publisher; the other 15 kept a fixed level with the reason logged | =grep 'Curve synthetic.bloomberg' build/output/linux-clang-release-ninja/publish/log/ores.synthetic.service.0.log=; raw lines in =evidence/curve_starts_fresh_provision_2026-11-12.log= | ed10da749c |
+| Synthetic suites after the review fix | 3 suites, 1082 cases, 0 failed | =./compass.sh test run -- -R 'ores\.synthetic'= | ed10da749c |
+| IAM suites after the calendar dependency | 4 suites, 1269 cases, 0 failed | =./compass.sh test run -- -R 'ores\.iam'= | ed10da749c |
+| Local check gate, ctest | 98 suites, 33659 cases, 0 failed | =./compass.sh check= | ed10da749c |
+| Local check gate, pgTAP | 91 files, 873 tests, pass | =./compass.sh check --only pgtap= on a freshly recreated database | ed10da749c |
+| Fresh provisioning | 17 of 17 steps completed, run exit 0 | the Acme holding-group provisioning script through =compass shell -f= | ed10da749c |
 
 * Notes
 
@@ -77,12 +101,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4661][#4661]] | [synthetic] Start each IR curve from the newest public overnight rate |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =window_days= is seeded but not enforced for IR starts, so a curve can start from a stale rate | =ir_curve_feed.cpp= | accepted | A fixing older than the policy's window is skipped with its age and the next publisher is tried (b93a7487bc). |
+| 2 | The resolver's refuse path has no test | =feed_factory_tests.cpp= | accepted | The read-failure path keeps the fixed rate or refuses, and both are tested (97a66b1d14). The no-fixing path is proven by the fresh provision, where every currency without a publisher kept its level with the reason in the log. |
+| 3 | The unit scale of a stored fixing is assumed | =ir_curve_feed.cpp= | accepted | Every adapter stores the decimal of a published percent and all 13 live starts are decimals; a start above one in size now logs a likely percent (b93a7487bc). |
+| 4 | The day of the market clock and the wall clock may disagree | =derived_fx_vol_feed.cpp= | deferred | Captured as [[id:656DFA67-E42E-4FCC-BBCB-6502F37CF32B][Roll the market day at the close]] (ea39428490); a market clock that runs ahead is a question for the roll. |
+| 5 | The =derived_fx_ticks= default hides a caller's choice | =derived_fx_vol.hpp= | accepted | =sent_at= is required, so every caller states how a quote of today is dated (b93a7487bc). |
+| 6 | =start_source()= is always engaged, even for a fixed curve | =ir_curve_feed.hpp= | declined | Consumers check =from_fixing=, as they do for the FX feeds. |
+| 7 | Check the widened =price_source= constraint reaches an existing database | =synthetic_ir_curve_generation_configs_create.sql= | noted | Environments are recreated, not upgraded, and the recreate in this task reached the widened check. The two config create scripts are the only places that constrain the column. |
 
 * Result
+
+Shipped. A synthetic IR curve of price source =fixing= now starts from the newest overnight fixing of its currency, read under an IR class calibration policy. The policy seeds the thirteen publishers and a 90-day window. A fixing older than the window is skipped with its age. A rate above one in size is logged as a likely percent. A curve whose policy says =refuse= does not start when it finds no usable fixing.
+
+The record of a run states where it began. A curve that took a fixing names the item, the publisher and the rate. A curve that kept its fixed level states the rate and the reason. The CHF curve keeps a fixed level, because SIX counts a curve built from SARON as derived data.
+
+Acceptance:
+
+- The IR class has a calibration policy with the provider order and window for each currency with a source. Met: the seed inserts the policy and the thirteen providers.
+- Each sourced feed's start record names the public rate it started from. Met: the 13 curves whose currency has a publisher started from a fixing on a fresh provision.
+- A feed with no source keeps a stated fixed level, and the reason is recorded. Met: every such currency logs "No series of the class policy publishes an overnight rate in <CCY>".
+- The CHF feed is not calibrated from SARON. Met: it starts from its fixed level.
+
+The branch also carries three changes the verification exposed:
+
+- A derived FX volatility quote of today is dated at its send or at the end of the day, whichever is earlier, so =publish_party_surfaces= no longer refuses a quote dated after its send.
+- A party's forwards now wait for the calendars, because a ladder lays its business days out on them. Without the dependency, a fresh provision refused a pair whose calendar was still being materialised, and the surface that reads it failed.
+- The missing market-day roll is captured in the product backlog.
+
+Limitations:
+
+- The fresh provision held back the four =AUDUSD_SSVI= surfaces, because one pillar is beyond the calibration tolerance. The provisioning run completed; the surfaces wait for a person.
+- The IR feeds read their fixings once, when they start. A feed on a fresh environment starts before the fixings are stored and keeps its fixed level until the synthetic service restarts. The captured roll addresses that.
+- The local check gate reported two =spot_rate= and =forward_rate= money columns that the FX forward publish added to trunk. This branch records them in the money debt baseline; the fix belongs to marketdata.

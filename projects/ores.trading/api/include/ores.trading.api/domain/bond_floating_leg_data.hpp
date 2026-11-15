@@ -179,7 +179,7 @@ struct bond_floating_leg_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_floating_leg_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"index", &bond_floating_leg_data::index},
         utility::codec::field{"is_in_arrears", &bond_floating_leg_data::is_in_arrears},
         utility::codec::field{"last_recent_period", &bond_floating_leg_data::last_recent_period},

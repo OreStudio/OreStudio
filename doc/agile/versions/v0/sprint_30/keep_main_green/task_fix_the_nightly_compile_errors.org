@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: AC551901-58D0-4F99-8C4E-AABC7BF70858
+:END:
+#+title: Task: Fix the nightly compile errors
+#+description: Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean.
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: feature/fix-the-nightly-compile-errors
+#+pr: 4659
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The nightly builds on gcc, macOS and Windows compile main and run its tests,
+so CDash shows their results. The continuous build compiles with Linux clang
+only, so an error that only these compilers see reaches main unchecked.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Fixes for the four compile errors raised as a PR. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the three nightlies on main after merge and fix what they find. |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- The gcc, macOS and Windows nightlies get past the compile and submit test
+  results to CDash.
+
+* Plan
+
+The nightly run 43163241266 (Linux), 43190100783 (macOS) and 43178285478
+(Windows) on 2026-11-12 stopped at these errors:
+
+1. gcc, =-Wsubobject-linkage=: the generated web record routes keep a
+   =key_of= lambda in the =handle_delete= coroutine frame. The template now
+   emits a =<unit>_key_of= function in the anonymous namespace; 16 route files
+   are regenerated.
+2. macOS: =step_workers::run= takes =std::move_only_function=, which Apple's
+   libc++ does not have. =run= is now a template over the step.
+3. MSVC C4459: in =calendar_screen_routes.cpp= the local =last= hides
+   =std::chrono::last=. The locals are now =year_start= and =year_end=.
+4. clang-cl: =std::getenv= is deprecated. =application.cpp= now reads the
+   site environment through =ores::platform::environment=.
+
+Each job stops at its first failing file, so more errors can follow. The new
+=ORES_WARNINGS_AS_ERRORS= option sets =-Werror= and =/WX=. It is off on every
+build until all platforms build clean of warnings; then it goes back on.
+A CTest script can still set it with =warnings_as_errors=1=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Second round, 2026-11-12, from every failed run on main:
+
+- Codegen drift: =ores.platform.lib= was added to the generated server
+  =CMakeLists.txt= by hand; it now comes from the component model.
+- Agent component and CPU evaluation: 157 of 305 backend contract sources had
+  changed, many through the flat field list. The codec probe passed 23
+  operations and 45 cases. The export change below touched ten of the
+  sources again, so the evidence is recorded at the branch head
+  =2629842861=.
+- Unity batch measurement (run 43216466419): smaller batches and the
+  non-unity build found two missing includes, in
+  =dataset_dependency_json_io.cpp= and the =role_product_type= junction model.
+  The duplicate =seed_person= in =curve_publish_fixture.hpp= was already
+  inline on main. Batch 16 hit the workflow's 30 min step limit.
+- Nightly Linux debug: the coverage link failed in the CI image, which has no
+  =libclang_rt.profile=. =install_llvm.sh= now installs
+  =libclang-rt-19-dev=, and image =...-320bbcb1308a= is published.
+- Nightly Windows clang: =windows.h= defines =near= as an empty macro, which
+  broke a test helper of that name.
+- Nightly macOS: three suites fail because an exception thrown in one library
+  is not caught as its type in another. The import macro was empty outside
+  Windows, so each library held a hidden =type_info=, and libc++ compares
+  them by address. The export template now imports with
+  =BOOST_SYMBOL_VISIBLE=. Not yet run on macOS.
+- CDash: the fork alexhock/OreStudio runs the scheduled workflows on three-day
+  old code and submitted rows with 16 failed shell suites. The CTest scripts
+  now submit only from =OreStudio/OreStudio=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4659][#4659]] | [build] Fix the failing checks on main |
+| [[https://github.com/OreStudio/OreStudio/pull/4653][#4653]] | [build] Leave warnings as warnings on every build |
+| [[https://github.com/OreStudio/OreStudio/pull/4651][#4651]] | [build] Fix the nightly compile errors on gcc, macOS and Windows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

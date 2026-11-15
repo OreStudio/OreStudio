@@ -52,9 +52,9 @@ constexpr std::int64_t tenant_queue_limit = 3600;
 }
 
 workunit_dispatcher::workunit_dispatcher(ores::nats::service::client& nats,
-                                         ores::database::context ctx)
+                                         const ores::database::context& ctx)
     : nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(ctx) {}
 
 void workunit_dispatcher::dispatch(const ores::eventing::domain::entity_change_event& evt) {
     if (evt.entity_ids.empty())

@@ -307,8 +307,7 @@ TEST_CASE("a_scoped_feed_is_asked_only_for_the_items_of_its_scope", "[app][deman
     CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
 }
 
-TEST_CASE("a_party_that_newly_needs_an_id_puts_it_in_the_image_once",
-          "[app][demand_calculator]") {
+TEST_CASE("a_party_that_newly_needs_an_id_puts_it_in_the_image_once", "[app][demand_calculator]") {
     using ores::marketdata::service::app::image_of;
     app_demand_calculator_world w;
     w.party_routed_to(w.sim);

@@ -1,0 +1,96 @@
+Convention Curation Methodology
+===============================
+
+The refdata.conventions dataset is the one set of conventions every tenant
+reads: how an index fixes, and how a swap, a deposit, a future or an option on
+it is built. Trade builders, curve bootstraps and ORE runs resolve an index or
+an instrument by these rows. The system tenant publishes the dataset to its
+own party and to every party of every tenant, and a party may then change its
+own copy.
+
+1. SOURCE OF TRUTH
+
+   conventions.tsv, beside this file, is the dataset. It holds one row per
+   (kind, id). A row states its terms in ORE's own notation, in the signature
+   column, and the source the terms are taken from, in the source column. The
+   populate script is generated from the table by generate_sql.py and is never
+   edited by hand.
+
+2. SOURCES
+
+   A row names one of four sources:
+
+   - ORE examples: the conventions the examples of the ORE release in
+     external/ore/examples state, extracted by tools/ore_conventions/extract.py
+     with the curation in tools/ore_conventions/decisions.tsv. The source names
+     the example file the row was taken from.
+   - ORE engine: the index conventions ORE defines in code
+     (OREData/ored/utilities/indexparser.cpp), mined from the engine by
+     tools/ore_conventions/extract_builtin_indices.py and
+     tools/ore_conventions/mine_builtin_conventions.py. The mining also asks
+     the engine about each Ibor index a convention names that no convention
+     defines: ORE builds a generic index, such as AOA-GENERIC, for any
+     currency it knows, and the BMA index USD-SIFMA by a parser of its own.
+   - Administrator publication: the terms the administrator of the index
+     publishes, where they differ from an ORE example. The source cites the
+     publication or the class that follows it.
+   - OreStudio: a convention ORE does not hold, which OreStudio needs, such as
+     the id a curve config names. The source cites the class or publication
+     its terms follow.
+
+3. INITIAL SET
+
+   The set was formed on 2026-11-11 from the ore.conventions dataset (the ORE
+   examples), the built-in index conventions (the ORE engine) and the overnight
+   index conventions OreStudio seeded by hand. Where two sources stated one
+   (kind, id), one row was kept:
+
+   - BRL-CDI, HKD-HONIA, SGD-SORA and THB-THOR: the ORE example's row. The
+     engine states the same day count and settlement, in another calendar
+     spelling.
+   - DKK-DESTR and ZAR-ZARONIA: the administrator's terms, ACT/360 for DESTR
+     and ACT/365 (Fixed) for ZARONIA, over the ORE example's ACT/365 (Fixed)
+     and ACT/360.
+   - CZK-CZEONIA, HUF-BUBORON, ILS-TELBORON and TRY-TLREF: the ORE example's
+     row, which states the same terms as the hand-seeded one.
+
+   The ORE examples hold 72 deposit, swap and cross currency basis
+   conventions on the generic index of a currency ORE does not know, such as
+   AMD-GENERIC-3M-SWAP: ORE refuses the index, so no run can use them. They
+   are left out, and propose_decisions.tsv names each.
+
+   EUR-ESTR and JPY-TONA are OreStudio ids of the indices ORE names EUR-ESTER
+   and JPY-TONAR. The curve configs name them, and they state the same terms,
+   so the convention lookup reads each pair as one index.
+
+4. CHANGING A ROW
+
+   Edit conventions.tsv, state the source of the new terms in the source
+   column, and run:
+
+       python3 projects/ores.seeder/datasets/conventions/generate_sql.py
+
+   A change to a row that came from an ORE source moves the row to the source
+   its new terms follow.
+
+5. AN ORE UPGRADE
+
+   After a new ORE release is vendored, extract its examples and mine its
+   engine, then compare them with the dataset:
+
+       ./projects/ores.codegen/venv/bin/python tools/ore_conventions/extract.py
+       python3 projects/ores.seeder/datasets/conventions/propose.py
+
+   The report names each convention ORE holds that the dataset lacks, and each
+   whose terms differ. A curator adds or changes the row, or records in
+   propose_decisions.tsv why the dataset keeps its own row.
+
+6. CHECKS
+
+   - The populate script is what generate_sql.py writes from the table.
+   - Every convention of the ORE examples and the ORE engine is in the dataset
+     with the same terms, or propose_decisions.tsv states why not.
+   - Every row names its source.
+   - Each (kind, id) is one row.
+   - Every Ibor or overnight index a convention names is defined by an index
+     convention of the dataset, matched by its address without the tenor.

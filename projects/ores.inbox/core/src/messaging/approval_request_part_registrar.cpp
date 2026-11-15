@@ -44,11 +44,10 @@ static constexpr std::string_view approval_request_part_queue_group = "ores.inbo
 
 std::vector<ores::nats::service::subscription> register_approval_request_part_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<approval_request_part_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<approval_request_part_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_approval_request_parts_request::nats_subject,
         approval_request_part_queue_group,

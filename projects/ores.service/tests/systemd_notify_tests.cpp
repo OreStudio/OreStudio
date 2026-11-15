@@ -23,8 +23,9 @@
 #include <string>
 
 // The notification travels over an AF_UNIX datagram socket, which boost::asio
-// exposes only where BOOST_ASIO_HAS_LOCAL_SOCKETS is defined. On the platforms
-// that lack it, notify_systemd_ready() is the documented no-op overload.
+// exposes where BOOST_ASIO_HAS_LOCAL_SOCKETS is defined. The test fixtures also
+// require POSIX paths and getpid(), so Windows cannot run them even when Boost
+// exposes local sockets there.
 //
 // The include above is deliberately outside the guard, and deliberately first:
 // the macro is defined by boost/asio's own configuration header, so a guard
@@ -35,7 +36,7 @@
 // case below is declared unconditionally and skips at run time, so a platform
 // without local sockets reports three skipped cases where it used to report
 // nothing at all.
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS) && !defined(_WIN32)
 #    include <boost/asio/buffer.hpp>
 #    include <boost/asio/error.hpp>
 #    include <boost/asio/io_context.hpp>
@@ -45,7 +46,7 @@
 
 namespace {
 
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS) && !defined(_WIN32)
 const std::string ready_message("READY=1");
 
 using datagram_socket = boost::asio::local::datagram_protocol::socket;
@@ -67,7 +68,7 @@ datagram_socket bind_receiver(boost::asio::io_context& io, const std::string& na
 // The socket name carries the process id so a leftover socket from an
 // interrupted run cannot make the bind fail.
 TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", "[systemd_notify]") {
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS) && !defined(_WIN32)
     const std::string path("/tmp/ores.service.notify." + std::to_string(::getpid()) + ".sock");
     std::remove(path.c_str());
 
@@ -86,7 +87,7 @@ TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", "
     REQUIRE(received == ready_message.size());
     REQUIRE(std::string(buffer, received) == ready_message);
 #else
-    SKIP("boost::asio local sockets are unavailable on this platform");
+    SKIP("POSIX local socket fixtures are unavailable on this platform");
 #endif
 }
 
@@ -95,8 +96,8 @@ TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", "
 // "@...".
 TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading at",
           "[systemd_notify]") {
-#if !defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-    SKIP("boost::asio local sockets are unavailable on this platform");
+#if !defined(BOOST_ASIO_HAS_LOCAL_SOCKETS) || defined(_WIN32)
+    SKIP("POSIX local socket fixtures are unavailable on this platform");
 #elif !defined(__linux__)
     // The abstract namespace is a Linux extension. macOS and the BSDs have
     // AF_UNIX pathname sockets only, and bind refuses a leading NUL, which is
@@ -125,7 +126,7 @@ TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading
 }
 
 TEST_CASE("notify_systemd_ready stops sending once NOTIFY_SOCKET is unset", "[systemd_notify]") {
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS) && !defined(_WIN32)
     const std::string path("/tmp/ores.service.notify.none." + std::to_string(::getpid()) + ".sock");
     std::remove(path.c_str());
 
@@ -153,6 +154,6 @@ TEST_CASE("notify_systemd_ready stops sending once NOTIFY_SOCKET is unset", "[sy
     // No second notification was sent, so this receive would have blocked.
     REQUIRE(ec == boost::asio::error::would_block);
 #else
-    SKIP("boost::asio local sockets are unavailable on this platform");
+    SKIP("POSIX local socket fixtures are unavailable on this platform");
 #endif
 }

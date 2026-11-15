@@ -19,7 +19,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_RESOLUTION_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_RESOLUTION_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/fixing_read_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -40,7 +40,7 @@ namespace ores::marketdata::service {
  * what the item is, as a fixing item, in a refusal.
  */
 ORES_MARKETDATA_CORE_EXPORT std::variant<repository::fixing_series, utility::domain::result>
-resolve_series(ores::database::context ctx,
+resolve_series(const ores::database::context& ctx,
                const std::string& item,
                const std::string& provider_code,
                const std::string& party_id,

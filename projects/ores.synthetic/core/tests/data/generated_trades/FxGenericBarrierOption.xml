@@ -4,23 +4,33 @@
     <TradeType>FxGenericBarrierOption</TradeType>
     <FxGenericBarrierOptionData>
       <PayCurrency>EUR</PayCurrency>
-      <Name>EUR/USD</Name>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
           <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
+      <Quantity>7675517.41</Quantity>
+      <Strike>1.0068000002100184</Strike>
       <Barriers>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
+            <Tenor>1D</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
         <BarrierData>
-          <Type>KnockOut</Type>
-          <Levels>
-            <Level>0.9061</Level>
-          </Levels>
-        </BarrierData>
-        <BarrierData>
-          <Type>KnockOut</Type>
+          <Type>UpAndOut</Type>
           <Levels>
             <Level>1.1075</Level>
           </Levels>
@@ -32,23 +42,33 @@
     <TradeType>FxGenericBarrierOption</TradeType>
     <FxGenericBarrierOptionData>
       <PayCurrency>EUR</PayCurrency>
-      <Name>EUR/USD</Name>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
           <ExerciseDate>2035-01-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
+      <Quantity>5632565.12</Quantity>
+      <Strike>0.5399000003039468</Strike>
       <Barriers>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2035-01-02</EndDate>
+            <Tenor>1D</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
         <BarrierData>
-          <Type>KnockOut</Type>
-          <Levels>
-            <Level>0.4859</Level>
-          </Levels>
-        </BarrierData>
-        <BarrierData>
-          <Type>KnockOut</Type>
+          <Type>UpAndOut</Type>
           <Levels>
             <Level>0.5939</Level>
           </Levels>

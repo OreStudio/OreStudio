@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 97379470-2D88-4540-97DD-1F56C7B45B49
+:END:
+#+title: Task: Prove a step survives a slow responder
+#+description: Nothing tests a step against a responder that answers late or refuses, so the retry, the classification and the failure message rest on the code alone. Drive a step with a fake client that answers late and one that refuses.
+#+type: task
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bound-the-work-of-a-request-task
+#+pr: 4674
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A test drives a provisioning step against a responder that answers after the first deadline and against one that refuses, and proves that the step retries the first, fails at once on the second, reports progress, and names the work in its failure.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- A responder that misses the first deadline and answers the second time lets the step complete.
+- A responder that refuses fails the step at once, with the server's reason.
+- The test sees the progress lines the step published.
+- The test fails if the retry repeats work that already happened.
+
+* Plan
+
+- Prove the request path at the helper, where the step's four behaviours live:
+  a responder that misses the first deadline and answers the second, a
+  refusal, the attempt notes, and a repeat that takes what an earlier attempt
+  did.
+- Prove the step path with a live run: =compass smoke ticks --leave-running=
+  provisions =acme_corporation= with the =acme_demo= profile, follows the
+  child run, and prints each step and its progress.
+- Read the live output for the three lines this story promised: the progress
+  line, the attempt line, and the failure line.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Request-retry cases | 9, all passing | =compass test run -- -R "ores.iam.core.tests"= | this branch |
+| Live run, first attempt | 15 of 15 planned; failed in =generate_trades= with =std::bad_alloc= | =compass smoke ticks --leave-running= | this branch |
+| Live run, retry | 17 of 17 steps completed | =compass shell -l tmp/retry_generate_trades.ores= | this branch |
+| Live run, progress lines | printed, e.g. =progress: ACME ACCOUS rates (12 of 16): trades 38 of 140= | the shell output | this branch |
+| Live run, data written | 6,541 trades, 37 bond issues, 80 surface publishes | =select count(*) from ores_trading_trades_tbl= and its siblings | this branch |
+| =publish_party_surfaces= | completed, 40 surfaces | the shell output | this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4674][#4674]] | [iam,nats,web] Bound, retry and report a provisioning request |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Proven, and by the live run rather than only by the helper's cases.
+
+The request path is covered by nine cases: a responder that misses the first
+deadline and answers the second, a refusal thrown at once, the attempt note that
+reaches the run's record, and a repeat that takes what an earlier attempt
+produced and does the work once.
+
+The step path is covered by the live run. On a freshly recreated database,
+`compass smoke ticks --leave-running` provisioned Acme and printed the
+heartbeat's progress while it worked:
+
+#+begin_src text
+  [13/15] publish_party_surfaces: in_progress
+      progress: Acme Corporation Plc: curves with their quotes 3 of 20
+      progress: Acme Corporation Plc: surface blueprints with their quotes 9 of 10
+#+end_src
+
+The first attempt failed in `generate_trades` with `std::bad_alloc`; the retry
+of that step completed the run:
+
+#+begin_src text
+  [13/15] publish_party_surfaces: completed
+  [15/17] generate_trades: completed
+  [17/17] complete_provisioning: completed
+  ✓ All 17 step(s) completed.
+#+end_src
+
+The retry wrote 6,541 trades, 37 bond issues and 80 surface publishes, and
+`publish_party_surfaces` published 40 surfaces. The `bad_alloc` is not memory
+exhaustion: the trading service's cgroup peaked at 276 MiB of an 8 GiB limit
+across both runs. It is data-dependent, and it is captured for triage as
+[[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]].
+
+The recovery shows the design working as intended: the helper treats
+`std::bad_alloc` as permanent, the step fails with the work named, and the
+step-level retry — which is safe because the step repeats nothing — completes.
+
+The review round added four cases to the request path: an attempt waits no
+longer than the budget left to it, an attempt knows which time round it is and
+what is left, the first attempt does not read back, and a repeat whose read
+back answers does not do the work again. They close the two gaps the review
+found: an attempt could wait a full patience past the deadline, and the read
+back ran on the first attempt where nothing of its own was there to find.
+
+What is not covered, and the review says so plainly: the cases drive the retry
+helper and not a whole step, and the failure message is checked by the case
+that names a party, an item and the attempts, not by a step that gives up. A
+step-level harness is the check that would close both.
+

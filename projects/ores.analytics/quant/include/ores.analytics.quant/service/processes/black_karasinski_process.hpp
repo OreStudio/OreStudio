@@ -154,6 +154,8 @@ public:
                                       double dt = 1.0);
 
     double next() override;
+    double next_with_normal(double standard_normal) override;
+    bool supports_external_normal() const override;
 
     /**
      * @brief The largest step this scheme can take: a week of a year.

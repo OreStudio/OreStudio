@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-fx-trades-through-builders
+#+pr: 4570
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Every FX trade type the generator books is built by its trade builder, and the O
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -43,9 +43,15 @@ Every FX trade type the generator books is built by its trade builder, and the O
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- One builder per booked FX type. The four single and double barrier products
+  share a template, as do the four digital and touch products; the generic
+  barrier has its own builder, as it observes an underlying on a schedule.
+- A trade names its pair by an oresmd FX index, built from the fixing source
+  and the two currencies. The ORE projection's mappers write it as ORE spells
+  an index or an underlying, and read it back the same way. No builder or
+  planner spells an ORE name. The user asked for this on 2026-11-11.
+- A test reads every recorded generated trade back and writes it again, so a
+  name spelled outside the mappers fails it.
 
 * Measurements
 
@@ -78,12 +84,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4570][#4570]] | [trading] Generate FX trades through their builders |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generic barrier strike falls silently to zero | fx_builders.cpp | Accept | A conversion that fails is refused naming the strike. decimal has no division, so the rate stays a double ratio. |
+| 2 | Hard-coded settlement, position and schedule terms | fx_builders.hpp | Accept in part | The header states what the builders fix. The terms grow when a caller needs another choice. |
+| 3 | Duplicated range bounds and schedule rows | fx_builders.cpp | Accept | strike_leverage_bounds and one add_schedule with a role and tenor. |
+| 4 | KIKO barrier columns follow the first barrier | fx_builders.cpp | Decline | The barrier rows are what the projection writes; the columns are a summary. |
+| 5 | Touch products copy a strike | fx_builders.cpp | Accept | A touch refuses a strike, with a test. |
+| 6 | Payoff currency is a hidden choice | fx_builders.cpp | Accept | Comment states it follows ORE's samples. |
+| 7 | Fixing source needs a TODO | trade_population_planner.cpp | Decline | The code comment and the task Result name the market data task; the repo keeps no TODOs. |
+| 8 | Round-trip list could go stale | generated_trade_export_tests.cpp | No change | check_known fails on a listed difference that no longer occurs. |
+| 9 | Nightly ORE engine job | CI | Decline | Out of scope; no CI job has ORE. |
 
 * Result
+
+Every booked FX type has a builder in =fx_builders.hpp=. The builders state
+the option style, the barriers, the underlyings, the observation schedules
+and the range bounds as the shared rows ORE's samples need. The planner draws
+the pair's FX index as an oresmd index with the source TR20H, which ORE's
+samples use; the market data task gives the source a home. The FX
+constructors and the plan's =fx_terms= are deleted.
+
+ORE now reads and builds every booked FX type; the 13 FX lines leave the known
+errors and 25 entries leave the known missing paths.
+
+The TaRF went around the mappers: its reader read the underlying name as an
+index and its writer wrote the index name where ORE wants an underlying name.
+Both now use the underlying mappers, and a projection test that pinned the old
+behaviour now expects an address. The new round-trip test found that the
+variance swap reader dropped LongShort; it now reads it. The round-trip test
+holds a known list of the equity and commodity differences, which their family
+tasks remove.

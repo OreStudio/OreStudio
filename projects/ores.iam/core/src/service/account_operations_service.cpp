@@ -28,6 +28,7 @@
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <queue>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -60,7 +61,7 @@ void account_operations_service::throw_if_empty(const std::string& name, const s
     }
 }
 
-account_operations_service::account_operations_service(database::context ctx)
+account_operations_service::account_operations_service(const database::context& ctx)
     : ctx_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();

@@ -1,0 +1,327 @@
+:PROPERTIES:
+:ID: 8D5466B2-74B5-4C0D-B6DC-528CD466A47F
+:END:
+#+title: Investigation: How the synthetic market is generated jointly
+#+description: The joint market decision (OD-1): how the synthetic feeds share one correlated market across asset classes and use cases, on the scheduler's clock and with the regime and Hawkes arrivals, with the options, their costs and a recommendation.
+#+type: investigation
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into how the synthetic feeds share one correlated market: open decision OD-1.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+Every synthetic feed draws its price noise alone. An FX spot feed steps its own
+Gaussian mixture with its own GJR-GARCH variance, an IR curve feed steps its own
+short-rate process, and each process owns a random stream keyed by the run seed
+and the feed's source name. So the correlation between any two prices is zero by
+construction. The approach note says so for its own building block: "If asset
+classes are generated with independent GMMs, all pairwise correlations are zero
+by construction and must be injected separately." It lists the choice as open
+decision OD-1, "Joint GMM architecture", with three options and none chosen, and
+places it in Phase 5 of its roadmap
+([[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]).
+
+The synthetic FX volatility surface is the first feed that cannot work without
+it ([[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]]).
+Its acceptance asks that the surface move with spot by a configured correlation,
+so the risk reversal leans the way spot moves, and its strikes are solved against
+the FX forward, which is spot and two discount curves at one instant. The
+engine merged in #4650 takes spot's shock as an input and correlates its own
+factors with it; what is missing is where that shock comes from. Reaching into
+the spot feed for it was rejected: it couples two runtimes with different
+clocks and arrival laws, breaks the adapter seam a real vendor plugs into, and
+leaves the forward and the curves unsolved.
+
+This investigation decides how the synthetic market is generated jointly, as a
+facility every asset class and use case can use, and how it composes with what
+the scheduler already shares: the regime, the heat, the Hawkes arrivals and the
+market's speed.
+
+* Methodology
+
+Read, not run. The documents and code read, and what each contributed:
+
+| Source | What it settles |
+|--------+-----------------|
+| [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] | OD-1 and its three options; the joint GMM as a P-measure building block; daily snapshots from change vectors; derivations (forwards from spot and curves) re-derived each step; Phase 5; the limit of descriptive regimes |
+| [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] | the market factor already shared: an exogenous calm/active state =S(t)= and an endogenous heat =C(t)=, made rank one so the cost stays linear; one clock per run |
+| [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] | the factor's planned reach into prices: one simulated speed =v= for the run, business time, a volatility loading with exponent gamma, a variance-preserving tail tilt, the composition with daily GARCH, and the bivariate Hawkes left out of scope |
+| [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps from its arrival law]] | one loop owns the market and a heap of series; a series ticks when operational time tau reaches its mark; a tick body is told its elapsed wall and simulated time and the tail tilt; how elapsed time reaches a process |
+| [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] | per-series self-excitation, branching ratio and stability |
+| [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]], [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] | the process interfaces, the mixture and its GARCH variance, how a process owns its randomness |
+| [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] | the latent-market and observer split already chosen for surfaces |
+| [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]] | the joint GMM's regimes as mixture components, and its closed-form conditionals |
+
+Code read: =tick_scheduler= and =operational_clock= (=ores.analytics.quant=), the
+=rng_stream= and its =stream_key= (run seed, series, purpose), =fx_spot_feed= and
+=ir_curve_feed= tick bodies, the =fx_vol_surface_generator= engine.
+
+Facts the code fixed, beyond the documents:
+
+- Every tick body runs on the scheduler's one loop thread, with the lock released
+  around the body. A state touched only from tick bodies and loop commands needs
+  no lock.
+- The run's randomness is already split by purpose: =draw_purpose::price= per
+  series (=feed_factory=), =arrival= per series and =market= for the regime chain
+  (=tick_scheduler=). =rng_stream= is counter-based (Philox), so a draw can be
+  addressed by a key and an index rather than read in order.
+- A tick context carries =elapsed_seconds=, =simulated_seconds= (speed times the
+  market time since the series last ticked) and =tail_tilt=. Spot passes the
+  simulated time to =next(elapsed)=; a curve steps a fixed simulated step.
+- The arrival regime note designs the shared factor for tens of thousands of feeds
+  read without a lock. That bound is the target here too; the number of feeds a run
+  holds today was not counted.
+
+* Paths taken
+
+** The requirements an answer must meet
+
+| # | Requirement | Why |
+|---+-------------+-----|
+| R1 | Any two series correlate by a stated amount, signed | the surface's skew against spot; rates against FX; anything Phase 5 prices |
+| R2 | Exact under irregular sampling | series tick at their own times, by Poisson or Hawkes, at their own rates |
+| R3 | Composes with the regime, the heat, the speed and the volatility channel | they already exist and a person drives them from the Market regime tab |
+| R4 | A series' path does not depend on which other series exist or when they tick | adding a feed, or a Hawkes burst on another feed, must not move this feed's prices; a test pins a seed |
+| R5 | Cost linear in the series, not quadratic | the tens-of-thousands bound; the rank-one result already set this standard |
+| R6 | A feed stays a feed | a real vendor replaces a publisher by a change of route; derived quantities stay derivations |
+| R7 | Generic | equity spot and vol, commodities, credit against rates, inflation, swaption cubes, scenarios and stress, not only FX vol |
+| R8 | Measurable | a test states a correlation and measures it, as the arrival work measures count correlation |
+
+** Path A: a feed reads another feed's shocks
+
+Rejected before this investigation; recorded for completeness. It fails R2, R4 and
+R6: two feeds with different clocks have no shared "this step", a burst on one
+moves the other, and a vendor-fed spot has no shocks to read.
+
+** Path B: a feed reacts to another feed's published prices
+
+The surface would standardise each observed spot return into its own shock. It
+meets R6 and costs nothing, and it is the right way for a /derived/ publisher to
+read its inputs: a forward is built from the spot and curves last published, as
+a desk builds it. As a generator it fails R1 and R2: the correlation becomes an
+estimate the follower makes after the fact, at the follower's sampling times, and
+is lost entirely when the leader is quiet. It also cannot serve a correlation
+between two series of which neither is the leader.
+
+** Path C: one joint draw for every series each step (OD-1 option a)
+
+One correlated vector per step, a component draw then a multivariate normal, as
+the approach note's daily snapshot does. It meets R1 exactly on a common grid and
+is the right shape for a daily batch of snapshots. In the live simulator it fails
+R2 and R5: the series do not share a grid, a Hawkes burst on one series would
+force a draw for all, and a full covariance is quadratic in the series. It also
+fails R4: the set of series is the dimension of the draw.
+
+** Path D: correlate through the regime only (OD-1 option b)
+
+Every series reads the shared state =S(t)= and heat =C(t)=, and the volatility
+channel scales each series' volatility by it. This exists for arrivals and is
+designed for volatility. It gives co-movement of /magnitude/ (busy together,
+volatile together) and meets R2 to R6. It does not give /signed/ correlation: it
+cannot say that the skew falls when spot rises, or that a currency weakens when
+its rates fall. It fails R1. It is a necessary part of the answer, not the answer.
+
+** Path E: a copula over the series' own shocks (OD-1 option c)
+
+Each series keeps its marginal, and a copula couples the uniforms of their
+shocks. It meets R1 for shocks drawn at one instant. Under irregular sampling the
+shocks to be coupled are increments over different intervals, so a copula over
+them has no meaning without a common time base, which is Path F. A Gaussian
+copula on Brownian increments over a common time base is exactly Path F.
+
+** Path F: shared Brownian factors in the market's time
+
+The market holds a small number =K= of *common factors* =F_k(t)=, each a Brownian
+motion in the run's simulated time. Every series =i= has a driver
+
+  W_i(t) = sum_k b_ik F_k(t) + d_i E_i(t),   with  sum_k b_ik^2 + d_i^2 = 1
+
+where =E_i= is the series' own Brownian motion, =b_i= its loadings, and every =F_k=
+and every =E_i= are independent of each other. When the
+series ticks at time =T= after its last tick at =t_i=, its process is stepped with
+the increment =W_i(T) - W_i(t_i)=, already scaled to the interval, in place of the
+normal it draws today. The process keeps its law: the mixture still picks its
+component, GARCH still sets the day's variance, the tail tilt still shapes it;
+only the Gaussian it scales is shared.
+
+How it meets each requirement:
+
+- *R1.* The correlation of two drivers' increments over any common interval is
+  =b_i . b_j=, signed. A block of series that must correlate exactly beyond what
+  the common factors carry, such as a pair's spot and its surface, shares a
+  /local/ factor: the factor model is hierarchical (global factors, then a block's
+  own), still low rank.
+- *R2.* Brownian increments over disjoint intervals are independent and over a
+  common interval correlate as above, whatever the sampling times. A Poisson or a
+  Hawkes feed reads exact increments; nothing is approximated by the clock.
+- *R3.* The factors run in simulated time, which is the speed times operational
+  time tau, so the regime's pace and the heat already reach them. The volatility
+  channel's loading becomes business time for the noise: a factor's variance over
+  an interval is the integral of the loading over it, the subordination reading
+  the volatility channel note already adopts (gamma one half). A regime can carry
+  its own loadings, a calm set and an active set, which is the continuous-time
+  form of the joint GMM's components (OD-1 option b inside option a): correlations
+  that rise in a panic are a regime's loadings, and a pinned panic pins them.
+- *R4.* A factor's path must be a function of the seed and time, not of who
+  asked. Advancing it lazily from the last query would make every series depend on
+  every other's tick times. =rng_stream= is counter-based, so each factor's path is
+  defined on a fixed grid of cells in simulated time, each cell's increment drawn
+  from a key of (run seed, factor, cell), and a time inside a cell is reached by a
+  Brownian bridge refined dyadically from keyed nodes to a fixed depth. Any query
+  at any time returns the same value; adding a feed changes nothing for others.
+  A series' own =E_i= depends only on its own ticks, which is already true of its
+  noise today.
+- *R5.* A tick costs =O(K)= plus the bridge depth; memory is the loadings, =O(NK)=.
+  This is the rank-one result of the arrival regime extended to =K= factors.
+- *R6.* A feed still owns its process and publishes its quotes. The latent market
+  holds no prices; it is a noise source. A vendor that replaces a publisher simply
+  stops reading it.
+- *R7.* Nothing in it is FX-specific. A process that can take an external
+  Gaussian takes it; a surface takes one per state variable; a curve one per
+  factor; equity, commodity, credit and inflation feeds join with loadings. A
+  scenario sets loadings or pins a regime; a stress injects a factor jump at a
+  time, which the cell grid holds.
+- *R8.* The correlation the loadings state is =b_i . b_j=; a test samples two
+  feeds at irregular times and measures it, and a test adds a third feed and shows
+  the first two unchanged to the last digit.
+
+** What Path F does not do
+
+- It does not price consistency across time under one measure: spot and curves
+  are P-measure, the surface's SSVI state Q-measure, as the approach note already
+  accepts. Dynamic arbitrage between a day's surface and the next is not excluded.
+- It does not make the forward a derivation by itself. A surface reads the spot
+  and curve state last published, through the same read a derived publisher uses
+  (Path B's correct use), or the feeds publish their state to a market board the
+  scheduler's thread holds. The board is a cache of published values, not a model.
+- It does not model the mechanism of a stress (the descriptive-regime limit the
+  approach note records): it carries the correlations a regime is given.
+- Named pair-to-pair contagion and activity exciting volatility (the bivariate
+  Hawkes) stay out of scope, as the arrival and volatility notes leave them.
+
+** What Path F must state before it is built
+
+Five points the design has to fix, because the requirements above hold only to
+the extent they are settled:
+
+- *Resolution of the bridge (R2, R4).* A factor's path is exact at its keyed nodes:
+  the cell boundaries and the dyadic points of a bridge refined to a fixed depth
+  =D= inside each cell. A query between two finest nodes is interpolated linearly,
+  which has the right mean and a variance short by at most a quarter of the finest
+  step. So an increment is exact to that resolution, not below it. With a cell of
+  one simulated hour and =D = 30=, the finest step is about 3.4 microseconds of
+  simulated time. At the default speed one millisecond of wall time is 1.44
+  simulated seconds, so no tick, burst or not, falls below the resolution. The
+  depth is a parameter with that bound beside it, and the first step's tests include
+  two ticks inside one finest step, to pin the stated behaviour.
+- *Business time and the heat (R3, R4).* If the volatility loading reaches the
+  noise, a factor's cell increment is scaled by the loading integrated over the
+  cell, so the path is a function of the seed and the /regime's/ path. The
+  calm/active chain is exogenous and seeded by the market stream, so with it alone
+  the noise stays independent of who ticks. The heat is endogenous: every event of
+  every series feeds it. A loading that includes the heat makes the noise depend
+  on all events, so adding a series changes another's prices. That is contagion
+  doing what it is for, and it bounds R4: the determinism holds for the noise and
+  for the exogenous regime, and a run with the heat in the loading is reproducible
+  by seed but not invariant to adding a feed. A test states which it checks.
+- *Loadings at a regime change (R3).* With per-regime loadings, a driver is the
+  integral of its loadings in force against the factors: an increment over an
+  interval that spans a switch is the sum of the increments of its pieces, each
+  under the loadings of its regime. The switch times are the chain's, which the
+  scheduler already holds, so this is exact, and loadings apply per piece, not per
+  tick.
+- *The identity of a series with no loadings (step 2).* "Bit-identical to today"
+  holds only if the series' own increment =E_i= is drawn from the series' existing
+  price stream, in the same order and the same number as the process draws today.
+  So the driven step does not draw for the process: it receives the Gaussian the
+  process would have drawn, and the latent market draws it from the series' own
+  stream. That fixes the step's API: one standard normal in, scaled by the process
+  as before.
+- *How a block's correlations become loadings (R1).* A block member loads on its
+  anchor's whole driver: a surface factor's driver is =rho W_spot + sqrt(1 - rho^2)
+  G=, with =G= the block's own noise. Its correlation with spot is then exactly
+  =rho=, whatever spot's global loadings are, and the block's internal
+  correlations, such as neighbouring forward variances, are the Cholesky factor of
+  the block's own matrix. A set of numbers that is not a correlation is refused,
+  as the surface engine already refuses a matrix that is not positive definite. It
+  is never projected, since a projected value is not the one a person stated.
+
+* Conclusions
+
+- OD-1's three options are not alternatives in the live simulator. Option a's
+  joint draw is the right shape only for a daily batch; option b's shared regime
+  exists and is necessary but carries magnitude, not sign; option c's copula has
+  no meaning without a common time base.
+- The common time base exists already: the scheduler's operational time and the
+  run's speed put every feed in one simulated world. What is missing is a shared
+  /noise/ in that world.
+- Shared Brownian factors in simulated time (Path F) meet every requirement. They
+  generalise the rank-one design the arrival regime already chose, compose with the
+  regime, the heat, the speed, the volatility channel and the tail tilt, and keep a
+  feed a feed. A regime that carries its own loadings is the joint GMM's components
+  in continuous time, which answers OD-1 as option b inside option a, and the joint GMM's
+  fitting (Phase 5) becomes calibrating the loadings.
+- Determinism under any sampling (R4) is the one property that needs care, and the
+  counter-based stream already in the library gives it.
+- The FX volatility surface needs only a small part of this: one local block (the
+  pair's spot and its surface factors), and the spot on a driver. Its three
+  correlation numbers keep their meaning as the block's own correlations.
+
+* Recommendations
+
+Choose Path F. If chosen, a story of its own carries it, in this order, each step
+ending in a test:
+
+1. *The latent market in =ores.analytics.quant=.* A =latent_market= beside the
+   =operational_clock=, owned by the scheduler and touched only on its thread:
+   named factors, a hierarchy of global and block factors, per-series loadings, a
+   deterministic factor path on keyed cells with a Brownian bridge, and =driver(i,
+   t_from, t_to)= returning a series' increments. Tests: the stated correlation
+   measured under irregular sampling; a series' path unchanged when another series
+   is added or bursts; reproducible by seed. Nothing yet reads it.
+2. *A driven step for the processes.* =i_stochastic_process= gains a step that
+   takes the Gaussian it would draw. The mixture, its GARCH variance, the
+   Ornstein-Uhlenbeck and the short-rate processes that can take it do; the others
+   refuse, and a feed with loadings refuses such a process. Test: a series with all
+   loadings zero is bit-identical to today's path for the same seed, which proves
+   the migration changes nothing until loadings are set.
+3. *The tick context carries the market.* A tick body reads its drivers from the
+   context, as it reads the tail tilt today. FX spot moves onto its driver first,
+   then the IR curves.
+4. *The configuration.* Typed tables, as the surface feed's were: the factors (one
+   row each, global or block), and the loadings (one row per series and factor);
+   per-regime loadings when the regime carries them. The Market regime tab shows
+   the factors and a feed's loadings; the shell sets them.
+5. *The FX volatility surface.* Its feed declares its block with its spot, its
+   three correlations becoming the block's loadings, and reads its strikes'
+   forward from the published spot and curves. This resumes the generator task's
+   runtime PR.
+6. *Calibration and derived correlation.* Loadings fitted from public fixings
+   (principal components of daily changes, per regime), and =CORRELATION/RATE=
+   quotes derived from =b_i . b_j=, which is Phase 5 of the approach note.
+
+Decisions for the owner before the story is written:
+
+- Path F as the answer to OD-1.
+- The first global factors and their names, or none at first (block factors only,
+  which is all the surface needs).
+- Regime-dependent loadings now, or after the first factors are in.
+- The surface's forward from published values (a desk's view) or from a market
+  board the feeds publish to.
+
+The approach note's OD-1 row, its Correlation section and Phase 5 move to the
+chosen design once it is decided, since the knowledge pages state the target.
+
+* See also
+
+- [[id:0DAFFD2F-0052-4A10-B6CD-92F14420A591][Investigate how the synthetic market is generated jointly]] -- the task this answers.
+- [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] -- the first feed that needs it.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+- [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]]
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]]
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps from its arrival law]]

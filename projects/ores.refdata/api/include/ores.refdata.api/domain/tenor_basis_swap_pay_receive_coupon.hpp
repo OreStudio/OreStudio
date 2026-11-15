@@ -79,7 +79,7 @@ struct tenor_basis_swap_pay_receive_coupon {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_coupon>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"spread_on_rec", &tenor_basis_swap_pay_receive_coupon::spread_on_rec},
         utility::codec::field{"include_spread",
                               &tenor_basis_swap_pay_receive_coupon::include_spread},

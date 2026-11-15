@@ -23,6 +23,7 @@
 #include "ores.http.core/export.hpp"
 #include "ores.http.core/stream/change_coalescer.hpp"
 #include "ores.http.core/stream/change_hub.hpp"
+#include <chrono>
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -30,14 +31,19 @@
 namespace ores::http::stream {
 
 /**
+ * @brief An instant as the browser's clock writes it: UTC to the millisecond.
+ */
+ORES_HTTP_CORE_EXPORT std::string instant_text(std::chrono::system_clock::time_point at);
+
+/**
  * @brief One coalesced frame as an event-stream message.
  *
- * The event name is the component and the collection, so a client can listen for the
- * one collection it draws and read nothing else. The payload is JSON with the tenant,
- * the party and the same two names, written here rather than by a codec because it is
- * the envelope the stream states and not a domain object.
+ * The event is =entity-changed= and the payload names the component, the
+ * collection and the instant it was published, the contract ores.web reads, with
+ * the tenant and the party beside them. It is written here rather than by a codec
+ * because it is the envelope the stream states and not a domain object.
  */
-ORES_HTTP_CORE_EXPORT std::string frame_text(const coalesced_frame& frame);
+ORES_HTTP_CORE_EXPORT std::string frame_text(const coalesced_frame& frame, std::string_view at);
 
 /**
  * @brief Takes what a window gathered and gives it to every open stream.

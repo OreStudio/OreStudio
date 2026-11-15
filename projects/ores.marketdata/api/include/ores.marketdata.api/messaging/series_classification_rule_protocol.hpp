@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_classification_rule_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"instrument", &series_classification_rule_key::instrument},
         utility::codec::field{"quote", &series_classification_rule_key::quote},
         utility::codec::field{"key_kind", &series_classification_rule_key::key_kind},
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_classification_rule_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"instrument", &series_classification_rule_write::instrument},
         utility::codec::field{"quote", &series_classification_rule_write::quote},
         utility::codec::field{"key_kind", &series_classification_rule_write::key_kind},
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_classification_rule_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &series_classification_rule_change::write},
         utility::codec::field{"precondition", &series_classification_rule_change::precondition},
     };
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_classification_rule_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &series_classification_rule_removal::key},
         utility::codec::field{"precondition", &series_classification_rule_removal::precondition},
     };
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_classification_rule_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &series_classification_rule_lookup::key},
         utility::codec::field{"series_classification_rule",
                               &series_classification_rule_lookup::series_classification_rule},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_classification_rule_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &series_classification_rule_event::event_id},
         utility::codec::field{"key", &series_classification_rule_event::key},
         utility::codec::field{"action", &series_classification_rule_event::action},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<series_classification_rule_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"series_classification_rule",
                               &series_classification_rule_version_key::series_classification_rule},
         utility::codec::field{"version", &series_classification_rule_version_key::version},
@@ -500,7 +500,7 @@ wire_fields(std::type_identity<series_classification_rule_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<series_classification_rule_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &series_classification_rule_versions_filter::version},
         utility::codec::field{"from_version",
                               &series_classification_rule_versions_filter::from_version},
@@ -519,7 +519,7 @@ wire_fields(std::type_identity<series_classification_rule_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_series_classification_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_series_classification_rules_request::offset},
         utility::codec::field{"limit", &list_series_classification_rules_request::limit},
         utility::codec::field{"order", &list_series_classification_rules_request::order},
@@ -537,7 +537,7 @@ wire_fields(std::type_identity<list_series_classification_rules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_series_classification_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_series_classification_rules_response::result},
         utility::codec::field{"rules", &list_series_classification_rules_response::rules},
         utility::codec::field{"total", &list_series_classification_rules_response::total},
@@ -554,7 +554,7 @@ wire_fields(std::type_identity<list_series_classification_rules_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_series_classification_rule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_series_classification_rule_request::key},
     };
 }
@@ -569,7 +569,7 @@ wire_fields(std::type_identity<get_series_classification_rule_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_series_classification_rule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_series_classification_rule_response::result},
         utility::codec::field{"series_classification_rule",
                               &get_series_classification_rule_response::series_classification_rule},
@@ -586,7 +586,7 @@ wire_fields(std::type_identity<get_series_classification_rule_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_series_classification_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_series_classification_rules_request::keys},
     };
 }
@@ -601,7 +601,7 @@ wire_fields(std::type_identity<get_many_series_classification_rules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_series_classification_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_series_classification_rules_response::result},
         utility::codec::field{"entries", &get_many_series_classification_rules_response::entries},
     };
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<get_many_series_classification_rules_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_series_classification_rule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_series_classification_rule_request::change},
         utility::codec::field{"intent", &put_series_classification_rule_request::intent},
     };
@@ -633,7 +633,7 @@ wire_fields(std::type_identity<put_series_classification_rule_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_series_classification_rule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_series_classification_rule_response::result},
         utility::codec::field{"series_classification_rule",
                               &put_series_classification_rule_response::series_classification_rule},
@@ -650,7 +650,7 @@ wire_fields(std::type_identity<put_series_classification_rule_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_series_classification_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_series_classification_rules_request::changes},
         utility::codec::field{"intent", &put_many_series_classification_rules_request::intent},
     };
@@ -666,7 +666,7 @@ wire_fields(std::type_identity<put_many_series_classification_rules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_series_classification_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_series_classification_rules_response::result},
         utility::codec::field{"rules", &put_many_series_classification_rules_response::rules},
     };
@@ -682,7 +682,7 @@ wire_fields(std::type_identity<put_many_series_classification_rules_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_series_classification_rule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_series_classification_rule_request::removal},
         utility::codec::field{"intent", &delete_series_classification_rule_request::intent},
     };
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<delete_series_classification_rule_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_series_classification_rule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_series_classification_rule_response::result},
     };
 }
@@ -713,7 +713,7 @@ wire_fields(std::type_identity<delete_series_classification_rule_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_series_classification_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_series_classification_rules_request::removals},
         utility::codec::field{"intent", &delete_many_series_classification_rules_request::intent},
@@ -730,7 +730,7 @@ wire_fields(std::type_identity<delete_many_series_classification_rules_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_series_classification_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_series_classification_rules_response::result},
     };
 }
@@ -745,7 +745,7 @@ wire_fields(std::type_identity<delete_many_series_classification_rules_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_series_classification_rule_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_series_classification_rule_versions_request::key},
         utility::codec::field{"offset", &list_series_classification_rule_versions_request::offset},
         utility::codec::field{"limit", &list_series_classification_rule_versions_request::limit},
@@ -764,7 +764,7 @@ wire_fields(std::type_identity<list_series_classification_rule_versions_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_series_classification_rule_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_series_classification_rule_versions_response::result},
         utility::codec::field{"versions",
                               &list_series_classification_rule_versions_response::versions},
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<list_series_classification_rule_versions_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_series_classification_rule_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_series_classification_rule_version_request::key},
     };
 }
@@ -797,7 +797,7 @@ wire_fields(std::type_identity<get_series_classification_rule_version_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_series_classification_rule_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_series_classification_rule_version_response::result},
         utility::codec::field{"version", &get_series_classification_rule_version_response::version},
     };

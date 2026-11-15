@@ -499,7 +499,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feed_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"config_id", &start_feed_request::config_id},
     };
 }
@@ -513,7 +513,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feed_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &start_feed_response::success},
         ::ores::utility::codec::field{"message", &start_feed_response::message},
     };
@@ -528,7 +528,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feed_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"config_id", &stop_feed_request::config_id},
         ::ores::utility::codec::field{"source_name", &stop_feed_request::source_name},
     };
@@ -543,7 +543,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feed_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &stop_feed_response::success},
         ::ores::utility::codec::field{"message", &stop_feed_response::message},
     };
@@ -558,7 +558,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_dispersion>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"provider_code", &provider_dispersion::provider_code},
         ::ores::utility::codec::field{"item", &provider_dispersion::item},
         ::ores::utility::codec::field{"basis_points", &provider_dispersion::basis_points},
@@ -574,7 +574,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_start>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"model", &variance_start::model},
         ::ores::utility::codec::field{"calibration_id", &variance_start::calibration_id},
         ::ores::utility::codec::field{"calibration_version", &variance_start::calibration_version},
@@ -598,7 +598,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_start>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"from_fixing", &feed_start::from_fixing},
         ::ores::utility::codec::field{"item", &feed_start::item},
         ::ores::utility::codec::field{"provider_code", &feed_start::provider_code},
@@ -631,7 +631,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<running_feed>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_name", &running_feed::source_name},
         ::ores::utility::codec::field{"start", &running_feed::start},
     };
@@ -646,7 +646,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feeds_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -658,7 +658,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feeds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &list_feeds_response::success},
         ::ores::utility::codec::field{"running_feeds", &list_feeds_response::running_feeds},
     };
@@ -673,7 +673,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_policy_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"from_policy_row",
                                       &calibration_policy_summary::from_policy_row},
         ::ores::utility::codec::field{"window_days", &calibration_policy_summary::window_days},
@@ -707,7 +707,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<candidate_outcome>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"item", &candidate_outcome::item},
         ::ores::utility::codec::field{"provider_code", &candidate_outcome::provider_code},
         ::ores::utility::codec::field{"inverted", &candidate_outcome::inverted},
@@ -726,7 +726,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"input_id", &variance_calibration_summary::input_id},
         ::ores::utility::codec::field{"calibration_id",
                                       &variance_calibration_summary::calibration_id},
@@ -762,7 +762,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrated_feed>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"config_id", &calibrated_feed::config_id},
         ::ores::utility::codec::field{"source_name", &calibrated_feed::source_name},
         ::ores::utility::codec::field{"base_currency_code", &calibrated_feed::base_currency_code},
@@ -790,7 +790,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrate_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"asset_class_code", &calibrate_request::asset_class_code},
         ::ores::utility::codec::field{"config_id", &calibrate_request::config_id},
         ::ores::utility::codec::field{"apply", &calibrate_request::apply},
@@ -806,7 +806,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrate_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &calibrate_response::success},
         ::ores::utility::codec::field{"message", &calibrate_response::message},
         ::ores::utility::codec::field{"policy", &calibrate_response::policy},
@@ -823,7 +823,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<review_variance_calibration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"calibration_id",
                                       &review_variance_calibration_request::calibration_id},
         ::ores::utility::codec::field{"decision", &review_variance_calibration_request::decision},
@@ -840,7 +840,7 @@ struct review_variance_calibration_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<review_variance_calibration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &review_variance_calibration_response::success},
         ::ores::utility::codec::field{"message", &review_variance_calibration_response::message},
         ::ores::utility::codec::field{"refusal", &review_variance_calibration_response::refusal},

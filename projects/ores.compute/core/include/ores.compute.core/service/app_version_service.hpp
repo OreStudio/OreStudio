@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit app_version_service(context ctx);
+    explicit app_version_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.
@@ -207,14 +207,19 @@ private:
      * decision made in one place. A batch that made the decision per element
      * would eventually make it differently from the single write.
      *
+     * The caller reads the current row, so a batch reads every row it names
+     * in one query rather than one query per change.
+     *
      * @param change The change as the caller stated it.
      * @param intent The reason and commentary the caller gave.
+     * @param current The row the change names as it is now, or empty.
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
     prepare_change(const ::ores::compute::messaging::app_version_change& change,
                    const ores::utility::domain::change_intent& intent,
+                   const std::vector<domain::app_version>& current,
                    domain::app_version& out);
 };
 

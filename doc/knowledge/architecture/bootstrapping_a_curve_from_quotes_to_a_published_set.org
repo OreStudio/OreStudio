@@ -155,12 +155,14 @@ state is what makes a set authoritative, and the next section is that act.
 
 * The hand-off to publication
 
-The candidate becomes authoritative in three acts. The maker raises a publish
-naming the blueprint and the as-of; a second person decides under the kind's maker
-and checker permissions and the record's four-eyes rule; the publish applies the
-approved request once, stamps the publisher and the instant, ends the set it
-replaces and sends the notice. The record is the publish record, and the set's
-state is published, superseded or withdrawn.
+The candidate becomes authoritative through the lifecycle every derived market
+object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]). The maker raises a publish naming the subject, the as-of and
+the candidate's version; a second person decides under the kind's maker and
+checker permissions and the record's four-eyes rule, or a stated rule closes the
+request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]); the trader applies the approved request once, which stamps the
+publisher and the instant, ends the set it replaces and sends the notice ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
+The record is the publish record, and the set's state is published, superseded
+or withdrawn.
 
 The published set is what the rest of the system consumes. The report references
 it through its market binding, as
@@ -243,4 +245,5 @@ object the rest of the system consumes.
 
 * See also
 
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — completes: the lifecycle that makes the candidate authoritative.
 - [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — completes: a consumer of the published set.

@@ -24,6 +24,7 @@
 #include "ores.synthetic.core/service/trade_population_writer.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -67,12 +68,17 @@ public:
     /**
      * @brief Runs the generator for one configuration.
      *
+     * @param on_progress Told the trades done and planned after each trade,
+     *        so a caller can report the run's progress as it goes.
+     *
      * @throws trade_population_error when the configuration cannot state a
      * population.
      * @throws trade_population_write_error when a reference does not resolve
      * or the store refuses a write.
      */
-    [[nodiscard]] trade_population_run run(const boost::uuids::uuid& config_id);
+    [[nodiscard]] trade_population_run
+    run(const boost::uuids::uuid& config_id,
+        const std::function<void(std::uint32_t done, std::uint32_t planned)>& on_progress = {});
 
 private:
     trade_population_writer& writer_;

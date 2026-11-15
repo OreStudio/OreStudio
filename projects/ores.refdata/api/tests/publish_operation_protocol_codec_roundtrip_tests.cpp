@@ -163,6 +163,12 @@ TEST_CASE("ores::refdata::messaging::publish_curve_configuration_from_dq_request
         ores::refdata::messaging::publish_curve_configuration_from_dq_request>();
 }
 
+TEST_CASE("ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request>();
+}
+
 TEST_CASE("ores::refdata::messaging::publish_currency_groups_from_dq_request",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<

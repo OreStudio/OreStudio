@@ -4,20 +4,27 @@
     <TradeType>CrossCurrencySwap</TradeType>
     <CrossCurrencySwapData>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-12-02">3070177.38</Notional>
+          <Notional>3070177.38</Notional>
+          <Exchanges>
+            <NotionalInitialExchange>true</NotionalInitialExchange>
+            <NotionalFinalExchange>true</NotionalFinalExchange>
+          </Exchanges>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-12-02</StartDate>
             <EndDate>2030-12-02</EndDate>
             <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FixedLegData>
@@ -27,26 +34,35 @@
         </FixedLegData>
       </LegData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Floating</LegType>
         <Currency>USD</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-12-02">3070177.38</Notional>
+          <Notional>3070177.38</Notional>
+          <Exchanges>
+            <NotionalInitialExchange>true</NotionalInitialExchange>
+            <NotionalFinalExchange>true</NotionalFinalExchange>
+          </Exchanges>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-12-02</StartDate>
             <EndDate>2030-12-02</EndDate>
-            <Tenor>6M</Tenor>
+            <Tenor>3M</Tenor>
+            <Calendar>US,UK</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>USD-SOFR</Index>
+          <Index>USD-LIBOR-3M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-12-02">0.0046</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -59,17 +75,24 @@
         <Payer>true</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-09-02">1036903.28</Notional>
+          <Notional>1036903.28</Notional>
+          <Exchanges>
+            <NotionalInitialExchange>true</NotionalInitialExchange>
+            <NotionalFinalExchange>true</NotionalFinalExchange>
+          </Exchanges>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-09-02</StartDate>
             <EndDate>2029-09-02</EndDate>
             <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FixedLegData>
@@ -82,23 +105,32 @@
         <Payer>false</Payer>
         <LegType>Floating</LegType>
         <Currency>USD</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-09-02">1036903.28</Notional>
+          <Notional>1036903.28</Notional>
+          <Exchanges>
+            <NotionalInitialExchange>true</NotionalInitialExchange>
+            <NotionalFinalExchange>true</NotionalFinalExchange>
+          </Exchanges>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-09-02</StartDate>
             <EndDate>2029-09-02</EndDate>
-            <Tenor>6M</Tenor>
+            <Tenor>3M</Tenor>
+            <Calendar>US,UK</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>USD-SOFR</Index>
+          <Index>USD-LIBOR-3M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-09-02">0.0025</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

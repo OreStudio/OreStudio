@@ -661,7 +661,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_approval_request_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind_code", &raise_approval_request_request::kind_code},
         ::ores::utility::codec::field{"reason", &raise_approval_request_request::reason},
         ::ores::utility::codec::field{"part_codes", &raise_approval_request_request::part_codes},
@@ -677,7 +677,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_approval_request_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &raise_approval_request_response::result},
         ::ores::utility::codec::field{"request", &raise_approval_request_response::request},
     };
@@ -692,7 +692,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_approval_request_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &withdraw_approval_request_request::request_id},
         ::ores::utility::codec::field{"version", &withdraw_approval_request_request::version},
         ::ores::utility::codec::field{"comment", &withdraw_approval_request_request::comment},
@@ -708,7 +708,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_approval_request_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &withdraw_approval_request_response::result},
         ::ores::utility::codec::field{"request", &withdraw_approval_request_response::request},
     };
@@ -723,7 +723,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<decide_approval_request_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &decide_approval_request_request::request_id},
         ::ores::utility::codec::field{"version", &decide_approval_request_request::version},
         ::ores::utility::codec::field{"decision_code",
@@ -744,7 +744,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<decide_approval_request_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &decide_approval_request_response::result},
         ::ores::utility::codec::field{"request", &decide_approval_request_response::request},
     };
@@ -759,7 +759,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_queue_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"offset", &list_approval_queue_request::offset},
         ::ores::utility::codec::field{"limit", &list_approval_queue_request::limit},
     };
@@ -774,7 +774,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_queue_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &list_approval_queue_response::result},
         ::ores::utility::codec::field{"requests", &list_approval_queue_response::requests},
         ::ores::utility::codec::field{"total", &list_approval_queue_response::total},
@@ -791,7 +791,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_approval_requests_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"offset", &list_my_approval_requests_request::offset},
         ::ores::utility::codec::field{"limit", &list_my_approval_requests_request::limit},
     };
@@ -806,7 +806,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_approval_requests_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &list_my_approval_requests_response::result},
         ::ores::utility::codec::field{"requests", &list_my_approval_requests_response::requests},
         ::ores::utility::codec::field{"total", &list_my_approval_requests_response::total},
@@ -822,7 +822,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approvals_mode_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -834,7 +834,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approvals_mode_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_approvals_mode_response::result},
         ::ores::utility::codec::field{"mode", &get_approvals_mode_response::mode},
         ::ores::utility::codec::field{"scope", &get_approvals_mode_response::scope},
@@ -854,7 +854,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<set_approvals_mode_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"auto_approved", &set_approvals_mode_request::auto_approved},
         ::ores::utility::codec::field{"reason", &set_approvals_mode_request::reason},
     };
@@ -869,7 +869,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<set_approvals_mode_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &set_approvals_mode_response::result},
     };
 }
@@ -883,7 +883,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &get_approval_request::request_id},
     };
 }
@@ -897,7 +897,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_approval_response::result},
         ::ores::utility::codec::field{"request", &get_approval_response::request},
     };
@@ -912,7 +912,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<expire_overdue_approvals_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -924,7 +924,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<expire_overdue_approvals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &expire_overdue_approvals_response::result},
         ::ores::utility::codec::field{"expired", &expire_overdue_approvals_response::expired},
     };
@@ -939,7 +939,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<remind_expiring_approvals_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -951,7 +951,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<remind_expiring_approvals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &remind_expiring_approvals_response::result},
         ::ores::utility::codec::field{"reminded", &remind_expiring_approvals_response::reminded},
     };
@@ -966,7 +966,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_stalled_applies_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -978,7 +978,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_stalled_applies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &retry_stalled_applies_response::result},
         ::ores::utility::codec::field{"resumed", &retry_stalled_applies_response::resumed},
         ::ores::utility::codec::field{"gave_up", &retry_stalled_applies_response::gave_up},
@@ -994,7 +994,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_field>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &approval_request_field::name},
         ::ores::utility::codec::field{"value", &approval_request_field::value},
     };
@@ -1009,7 +1009,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_version>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"version", &approval_request_version::version},
         ::ores::utility::codec::field{"modified_by", &approval_request_version::modified_by},
         ::ores::utility::codec::field{"performed_by", &approval_request_version::performed_by},
@@ -1031,7 +1031,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_history_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &get_approval_history_request::request_id},
     };
 }
@@ -1045,7 +1045,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_history_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_approval_history_response::result},
         ::ores::utility::codec::field{"versions", &get_approval_history_response::versions},
     };
@@ -1060,7 +1060,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_progress>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"code", &approval_part_progress::code},
         ::ores::utility::codec::field{"name", &approval_part_progress::name},
         ::ores::utility::codec::field{"answer_order", &approval_part_progress::answer_order},
@@ -1080,7 +1080,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &get_approval_parts_request::request_id},
     };
 }
@@ -1094,7 +1094,7 @@ struct get_approval_parts_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_approval_parts_response::result},
         ::ores::utility::codec::field{"parts", &get_approval_parts_response::parts},
     };

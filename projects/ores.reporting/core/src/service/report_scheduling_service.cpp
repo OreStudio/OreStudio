@@ -19,7 +19,7 @@
  */
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
@@ -67,9 +67,10 @@ struct report_trigger_action_payload {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_trigger_action_payload>) {
     using p = report_trigger_action_payload;
-    return std::tuple{ores::utility::codec::field{"subject", &p::subject},
-                      ores::utility::codec::field{"report_definition_id", &p::report_definition_id},
-                      ores::utility::codec::field{"tenant_id", &p::tenant_id}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"subject", &p::subject},
+        ores::utility::codec::field{"report_definition_id", &p::report_definition_id},
+        ores::utility::codec::field{"tenant_id", &p::tenant_id}};
 }
 static_assert(ores::utility::codec::names_every_member<report_trigger_action_payload>());
 
@@ -111,15 +112,6 @@ inline constexpr std::string_view no_responders_code = "services_unavailable";
 inline constexpr std::string_view request_timeout_code = "request_timeout";
 
 /**
- * @brief What ores.nats states when a request ran its deadline out.
- *
- * The transport raises it as a plain runtime error and gives it no kind of its
- * own, so these words are all that tells it from a fault this service cannot
- * name.
- */
-inline constexpr std::string_view request_timeout_message = "NATS request timed out";
-
-/**
  * @brief The code for a fault of this service or of its transport.
  */
 std::string internal_error_code() {
@@ -141,17 +133,18 @@ call(ores::nats::service::nats_client& nats, const Request& request) {
             return std::unexpected(call_failure{.outcome = outcome::unavailable,
                                                 .code = std::string(no_responders_code),
                                                 .message = e.what()});
-        return std::unexpected(call_failure{
-            .outcome = outcome::failed, .code = internal_error_code(), .message = e.what()});
-    } catch (const std::exception& e) {
-        // Someone is there and is slow, or the transport broke in a way it does
-        // not name. Only the first is a dependency the caller may retry.
-        if (std::string_view(e.what()) == request_timeout_message)
+        // Someone is there and is slow. That is a dependency the caller may
+        // retry, unlike a fault this service cannot name.
+        if (e.kind() == ores::nats::service::nats_error_kind::request_timeout)
             return std::unexpected(call_failure{.outcome = outcome::unavailable,
                                                 .code = std::string(request_timeout_code),
                                                 .message = subject +
                                                            " did not answer within the request "
                                                            "deadline."});
+        return std::unexpected(call_failure{
+            .outcome = outcome::failed, .code = internal_error_code(), .message = e.what()});
+    } catch (const std::exception& e) {
+        // The transport broke in a way it does not name.
         return std::unexpected(
             call_failure{.outcome = outcome::failed,
                          .code = internal_error_code(),
@@ -187,9 +180,8 @@ std::optional<boost::uuids::uuid> find_fsm_state_id(const ores::database::contex
                                                     logging::logger_t& log,
                                                     const std::string& state_name,
                                                     const std::string& fn_name) {
-    using ores::database::repository::execute_parameterized_string_query;
     const auto sql = "SELECT " + fn_name + "()::text";
-    const auto rows = execute_parameterized_string_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx, sql, {}, log, "Looking up report_definition_lifecycle " + state_name + " state");
     if (rows.empty() || rows.front().empty()) {
         BOOST_LOG_SEV(log, warn) << "report_definition_lifecycle " << state_name
@@ -202,12 +194,12 @@ std::optional<boost::uuids::uuid> find_fsm_state_id(const ores::database::contex
 } // anonymous namespace
 
 report_scheduling_service::report_scheduling_service(
-    context ctx,
+    const context& ctx,
     ores::nats::service::nats_client svc_nats,
     std::optional<ores::nats::service::nats_client> person_nats)
-    : ctx_(std::move(ctx))
-    , svc_nats_(std::move(svc_nats))
-    , person_nats_(std::move(person_nats)) {}
+    : ctx_(ctx)
+    , svc_nats_(svc_nats)
+    , person_nats_(person_nats) {}
 
 std::optional<ores::scheduler::messaging::job_definition_change>
 report_scheduling_service::build_job_change(const domain::report_definition& def,

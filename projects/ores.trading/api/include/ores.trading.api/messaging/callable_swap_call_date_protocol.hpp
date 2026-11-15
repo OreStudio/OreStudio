@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &callable_swap_call_date_key::trade_id},
         utility::codec::field{"sequence_number", &callable_swap_call_date_key::sequence_number},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &callable_swap_call_date_write::trade_id},
         utility::codec::field{"sequence_number", &callable_swap_call_date_write::sequence_number},
         utility::codec::field{"trade_activity_id",
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &callable_swap_call_date_change::write},
         utility::codec::field{"precondition", &callable_swap_call_date_change::precondition},
     };
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &callable_swap_call_date_removal::key},
         utility::codec::field{"precondition", &callable_swap_call_date_removal::precondition},
     };
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &callable_swap_call_date_lookup::key},
         utility::codec::field{"callable_swap_call_date",
                               &callable_swap_call_date_lookup::callable_swap_call_date},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_dates_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &callable_swap_call_dates_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &callable_swap_call_dates_filter::trade_id_one_of},
     };
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &callable_swap_call_date_event::event_id},
         utility::codec::field{"key", &callable_swap_call_date_event::key},
         utility::codec::field{"action", &callable_swap_call_date_event::action},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<callable_swap_call_date_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"callable_swap_call_date",
                               &callable_swap_call_date_version_key::callable_swap_call_date},
         utility::codec::field{"version", &callable_swap_call_date_version_key::version},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.callable_swap_cal
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<callable_swap_call_date_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &callable_swap_call_date_versions_filter::version},
         utility::codec::field{"from_version",
                               &callable_swap_call_date_versions_filter::from_version},
@@ -553,7 +553,7 @@ wire_fields(std::type_identity<callable_swap_call_date_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_callable_swap_call_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_callable_swap_call_dates_request::offset},
         utility::codec::field{"limit", &list_callable_swap_call_dates_request::limit},
         utility::codec::field{"order", &list_callable_swap_call_dates_request::order},
@@ -572,7 +572,7 @@ wire_fields(std::type_identity<list_callable_swap_call_dates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_callable_swap_call_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_callable_swap_call_dates_response::result},
         utility::codec::field{"callable_swap_call_dates",
                               &list_callable_swap_call_dates_response::callable_swap_call_dates},
@@ -589,7 +589,7 @@ wire_fields(std::type_identity<list_callable_swap_call_dates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_callable_swap_call_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_callable_swap_call_date_request::key},
     };
 }
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<list_callable_swap_call_dates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_callable_swap_call_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_callable_swap_call_date_response::result},
         utility::codec::field{"callable_swap_call_date",
                               &get_callable_swap_call_date_response::callable_swap_call_date},
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<list_callable_swap_call_dates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_callable_swap_call_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_callable_swap_call_dates_request::keys},
     };
 }
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_many_callable_swap_call_dates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_callable_swap_call_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_callable_swap_call_dates_response::result},
         utility::codec::field{"entries", &get_many_callable_swap_call_dates_response::entries},
     };
@@ -650,7 +650,7 @@ wire_fields(std::type_identity<get_many_callable_swap_call_dates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_callable_swap_call_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_callable_swap_call_date_request::change},
         utility::codec::field{"intent", &put_callable_swap_call_date_request::intent},
     };
@@ -665,7 +665,7 @@ wire_fields(std::type_identity<get_many_callable_swap_call_dates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_callable_swap_call_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_callable_swap_call_date_response::result},
         utility::codec::field{"callable_swap_call_date",
                               &put_callable_swap_call_date_response::callable_swap_call_date},
@@ -682,7 +682,7 @@ wire_fields(std::type_identity<get_many_callable_swap_call_dates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_callable_swap_call_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_callable_swap_call_dates_request::changes},
         utility::codec::field{"intent", &put_many_callable_swap_call_dates_request::intent},
     };
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<put_many_callable_swap_call_dates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_callable_swap_call_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_callable_swap_call_dates_response::result},
         utility::codec::field{
             "callable_swap_call_dates",
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<put_many_callable_swap_call_dates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_callable_swap_call_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_callable_swap_call_date_request::removal},
         utility::codec::field{"intent", &delete_callable_swap_call_date_request::intent},
     };
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_callable_swap_call_date_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_callable_swap_call_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_callable_swap_call_date_response::result},
     };
 }
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_callable_swap_call_date_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_callable_swap_call_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_callable_swap_call_dates_request::removals},
         utility::codec::field{"intent", &delete_many_callable_swap_call_dates_request::intent},
     };
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<delete_many_callable_swap_call_dates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_callable_swap_call_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_callable_swap_call_dates_response::result},
     };
 }
@@ -778,7 +778,7 @@ wire_fields(std::type_identity<delete_many_callable_swap_call_dates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_callable_swap_call_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_callable_swap_call_dates_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_callable_swap_call_dates_request::scope},
@@ -799,7 +799,7 @@ wire_fields(std::type_identity<list_by_trade_id_callable_swap_call_dates_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_callable_swap_call_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_trade_id_callable_swap_call_dates_response::result},
         utility::codec::field{
@@ -819,7 +819,7 @@ wire_fields(std::type_identity<list_by_trade_id_callable_swap_call_dates_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_callable_swap_call_date_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_callable_swap_call_date_versions_request::key},
         utility::codec::field{"offset", &list_callable_swap_call_date_versions_request::offset},
         utility::codec::field{"limit", &list_callable_swap_call_date_versions_request::limit},
@@ -838,7 +838,7 @@ wire_fields(std::type_identity<list_callable_swap_call_date_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_callable_swap_call_date_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_callable_swap_call_date_versions_response::result},
         utility::codec::field{"versions",
                               &list_callable_swap_call_date_versions_response::versions},
@@ -856,7 +856,7 @@ wire_fields(std::type_identity<list_callable_swap_call_date_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_callable_swap_call_date_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_callable_swap_call_date_version_request::key},
     };
 }
@@ -871,7 +871,7 @@ wire_fields(std::type_identity<get_callable_swap_call_date_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_callable_swap_call_date_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_callable_swap_call_date_version_response::result},
         utility::codec::field{"version", &get_callable_swap_call_date_version_response::version},
     };

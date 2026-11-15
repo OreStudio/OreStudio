@@ -377,7 +377,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_leg_schedule_date_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"issue_id", &bond_issue_leg_schedule_date_key::issue_id},
         utility::codec::field{"leg_number", &bond_issue_leg_schedule_date_key::leg_number},
         utility::codec::field{"schedule_role", &bond_issue_leg_schedule_date_key::schedule_role},
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_leg_schedule_date_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"issue_id", &bond_issue_leg_schedule_date_write::issue_id},
         utility::codec::field{"leg_number", &bond_issue_leg_schedule_date_write::leg_number},
         utility::codec::field{"schedule_role", &bond_issue_leg_schedule_date_write::schedule_role},
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_leg_schedule_date_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &bond_issue_leg_schedule_date_change::write},
         utility::codec::field{"precondition", &bond_issue_leg_schedule_date_change::precondition},
     };
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_leg_schedule_date_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_issue_leg_schedule_date_removal::key},
         utility::codec::field{"precondition", &bond_issue_leg_schedule_date_removal::precondition},
     };
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_leg_schedule_date_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_issue_leg_schedule_date_lookup::key},
         utility::codec::field{"bond_issue_leg_schedule_date",
                               &bond_issue_leg_schedule_date_lookup::bond_issue_leg_schedule_date},
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_issue_leg_schedule_date_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &bond_issue_leg_schedule_date_event::event_id},
         utility::codec::field{"key", &bond_issue_leg_schedule_date_event::key},
         utility::codec::field{"action", &bond_issue_leg_schedule_date_event::action},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<bond_issue_leg_schedule_date_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "bond_issue_leg_schedule_date",
             &bond_issue_leg_schedule_date_version_key::bond_issue_leg_schedule_date},
@@ -503,7 +503,7 @@ wire_fields(std::type_identity<bond_issue_leg_schedule_date_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<bond_issue_leg_schedule_date_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &bond_issue_leg_schedule_date_versions_filter::version},
         utility::codec::field{"from_version",
                               &bond_issue_leg_schedule_date_versions_filter::from_version},
@@ -522,7 +522,7 @@ wire_fields(std::type_identity<bond_issue_leg_schedule_date_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_issue_leg_schedule_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_bond_issue_leg_schedule_dates_request::offset},
         utility::codec::field{"limit", &list_bond_issue_leg_schedule_dates_request::limit},
         utility::codec::field{"order", &list_bond_issue_leg_schedule_dates_request::order},
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<list_bond_issue_leg_schedule_dates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_issue_leg_schedule_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_issue_leg_schedule_dates_response::result},
         utility::codec::field{
             "bond_issue_leg_schedule_dates",
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<list_bond_issue_leg_schedule_dates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_issue_leg_schedule_date_request::key},
     };
 }
@@ -574,7 +574,7 @@ wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_issue_leg_schedule_date_response::result},
         utility::codec::field{
             "bond_issue_leg_schedule_date",
@@ -592,7 +592,7 @@ wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_bond_issue_leg_schedule_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_bond_issue_leg_schedule_dates_request::keys},
     };
 }
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<get_many_bond_issue_leg_schedule_dates_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_bond_issue_leg_schedule_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_bond_issue_leg_schedule_dates_response::result},
         utility::codec::field{"entries", &get_many_bond_issue_leg_schedule_dates_response::entries},
     };
@@ -623,7 +623,7 @@ wire_fields(std::type_identity<get_many_bond_issue_leg_schedule_dates_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_bond_issue_leg_schedule_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_bond_issue_leg_schedule_date_request::change},
         utility::codec::field{"intent", &put_bond_issue_leg_schedule_date_request::intent},
     };
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<put_bond_issue_leg_schedule_date_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_bond_issue_leg_schedule_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_bond_issue_leg_schedule_date_response::result},
         utility::codec::field{
             "bond_issue_leg_schedule_date",
@@ -657,7 +657,7 @@ wire_fields(std::type_identity<put_bond_issue_leg_schedule_date_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_bond_issue_leg_schedule_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_bond_issue_leg_schedule_dates_request::changes},
         utility::codec::field{"intent", &put_many_bond_issue_leg_schedule_dates_request::intent},
     };
@@ -673,7 +673,7 @@ wire_fields(std::type_identity<put_many_bond_issue_leg_schedule_dates_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_bond_issue_leg_schedule_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_bond_issue_leg_schedule_dates_response::result},
         utility::codec::field{
             "bond_issue_leg_schedule_dates",
@@ -691,7 +691,7 @@ wire_fields(std::type_identity<put_many_bond_issue_leg_schedule_dates_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_bond_issue_leg_schedule_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_bond_issue_leg_schedule_date_request::removal},
         utility::codec::field{"intent", &delete_bond_issue_leg_schedule_date_request::intent},
     };
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<delete_bond_issue_leg_schedule_date_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_bond_issue_leg_schedule_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_bond_issue_leg_schedule_date_response::result},
     };
 }
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<delete_bond_issue_leg_schedule_date_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_bond_issue_leg_schedule_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_bond_issue_leg_schedule_dates_request::removals},
         utility::codec::field{"intent", &delete_many_bond_issue_leg_schedule_dates_request::intent},
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<delete_many_bond_issue_leg_schedule_dates_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_bond_issue_leg_schedule_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_bond_issue_leg_schedule_dates_response::result},
     };
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<delete_many_bond_issue_leg_schedule_dates_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_issue_leg_schedule_date_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_bond_issue_leg_schedule_date_versions_request::key},
         utility::codec::field{"offset",
                               &list_bond_issue_leg_schedule_date_versions_request::offset},
@@ -776,7 +776,7 @@ wire_fields(std::type_identity<list_bond_issue_leg_schedule_date_versions_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_issue_leg_schedule_date_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_bond_issue_leg_schedule_date_versions_response::result},
         utility::codec::field{"versions",
@@ -795,7 +795,7 @@ wire_fields(std::type_identity<list_bond_issue_leg_schedule_date_versions_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_issue_leg_schedule_date_version_request::key},
     };
 }
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_version_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_issue_leg_schedule_date_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_issue_leg_schedule_date_version_response::result},
         utility::codec::field{"version",
                               &get_bond_issue_leg_schedule_date_version_response::version},

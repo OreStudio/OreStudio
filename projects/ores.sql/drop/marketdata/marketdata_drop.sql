@@ -57,6 +57,10 @@
 \ir ./marketdata_adapters_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql
 \ir ./marketdata_market_fixings_drop.sql
+\ir ./marketdata_fx_vol_surface_publishes_notify_trigger_drop.sql
+\ir ./marketdata_fx_vol_surface_publishes_drop.sql
+\ir ./marketdata_fx_vol_surface_calibrations_notify_trigger_drop.sql
+\ir ./marketdata_fx_vol_surface_calibrations_drop.sql
 \ir ./marketdata_fx_forward_publish_spots_notify_trigger_drop.sql
 \ir ./marketdata_fx_forward_publish_spots_drop.sql
 \ir ./marketdata_fx_forward_publish_points_notify_trigger_drop.sql
@@ -85,5 +89,6 @@
 \ir ./marketdata_market_series_drop.sql
 \ir ./marketdata_validate_curve_series_fn_drop.sql
 \ir ./marketdata_curve_series_drop.sql
+\ir ./marketdata_surface_series_drop.sql
 \ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
 \ir ./marketdata_series_classification_rules_drop.sql

@@ -44,8 +44,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-calendar_date_service::calendar_date_service(context ctx)
-    : ctx_(std::move(ctx))
+calendar_date_service::calendar_date_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

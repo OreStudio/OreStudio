@@ -20,7 +20,7 @@
 #ifndef ORES_EVENTING_CORE_SERVICE_POSTGRES_EVENT_SOURCE_HPP
 #define ORES_EVENTING_CORE_SERVICE_POSTGRES_EVENT_SOURCE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
@@ -86,7 +86,7 @@ public:
      * @param ctx Database context for the listener connection.
      * @param bus Reference to the event bus for publishing events.
      */
-    postgres_event_source(database::context ctx, event_bus& bus);
+    postgres_event_source(const database::context& ctx, event_bus& bus);
 
     ~postgres_event_source();
 

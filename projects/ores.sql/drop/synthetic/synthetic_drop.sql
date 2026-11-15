@@ -39,6 +39,14 @@
 \ir ./synthetic_ir_curve_generation_configs_drop.sql
 \ir ./synthetic_variance_calibrations_notify_trigger_drop.sql
 \ir ./synthetic_variance_calibrations_drop.sql
+\ir ./synthetic_fx_vol_surface_feed_contributors_notify_trigger_drop.sql
+\ir ./synthetic_fx_vol_surface_feed_contributors_drop.sql
+\ir ./synthetic_fx_vol_surface_feed_expiries_notify_trigger_drop.sql
+\ir ./synthetic_fx_vol_surface_feed_expiries_drop.sql
+\ir ./synthetic_fx_vol_surface_feeds_notify_trigger_drop.sql
+\ir ./synthetic_fx_vol_surface_feeds_drop.sql
+\ir ./synthetic_fx_vol_contributors_notify_trigger_drop.sql
+\ir ./synthetic_fx_vol_contributors_drop.sql
 \ir ./synthetic_variance_calibration_input_points_notify_trigger_drop.sql
 \ir ./synthetic_variance_calibration_input_points_drop.sql
 \ir ./synthetic_variance_calibration_inputs_notify_trigger_drop.sql

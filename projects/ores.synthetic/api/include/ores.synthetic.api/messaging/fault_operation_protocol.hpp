@@ -78,7 +78,7 @@ struct set_faults_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<set_faults_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"connection_lost", &set_faults_request::connection_lost},
         ::ores::utility::codec::field{"tick_delay_ms", &set_faults_request::tick_delay_ms},
         ::ores::utility::codec::field{"repeat_ticks", &set_faults_request::repeat_ticks},
@@ -96,7 +96,7 @@ struct set_faults_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<set_faults_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &set_faults_response::success},
         ::ores::utility::codec::field{"message", &set_faults_response::message},
     };

@@ -353,7 +353,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &folder_key::id},
     };
 }
@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &folder_write::id},
         utility::codec::field{"parent_id", &folder_write::parent_id},
         utility::codec::field{"name", &folder_write::name},
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &folder_change::write},
         utility::codec::field{"precondition", &folder_change::precondition},
     };
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &folder_removal::key},
         utility::codec::field{"precondition", &folder_removal::precondition},
     };
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &folder_lookup::key},
         utility::codec::field{"folder", &folder_lookup::folder},
     };
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folders_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &folders_filter::id_one_of},
     };
 }
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &folder_event::event_id},
         utility::codec::field{"key", &folder_event::key},
         utility::codec::field{"action", &folder_event::action},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"folder", &folder_version_key::folder},
         utility::codec::field{"version", &folder_version_key::version},
     };
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &folder_versions_filter::version},
         utility::codec::field{"from_version", &folder_versions_filter::from_version},
         utility::codec::field{"to_version", &folder_versions_filter::to_version},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_folders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_folders_request::offset},
         utility::codec::field{"limit", &list_folders_request::limit},
         utility::codec::field{"order", &list_folders_request::order},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_folders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_folders_response::result},
         utility::codec::field{"folders", &list_folders_response::folders},
         utility::codec::field{"total", &list_folders_response::total},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_folder_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_folder_request::key},
     };
 }
@@ -542,7 +542,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_folder_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_folder_response::result},
         utility::codec::field{"folder", &get_folder_response::folder},
     };
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_folders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_folders_request::keys},
     };
 }
@@ -571,7 +571,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_folders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_folders_response::result},
         utility::codec::field{"entries", &get_many_folders_response::entries},
     };
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_folder_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_folder_request::change},
         utility::codec::field{"intent", &put_folder_request::intent},
     };
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_folder_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_folder_response::result},
         utility::codec::field{"folder", &put_folder_response::folder},
     };
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_folders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_folders_request::changes},
         utility::codec::field{"intent", &put_many_folders_request::intent},
     };
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_folders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_folders_response::result},
         utility::codec::field{"folders", &put_many_folders_response::folders},
     };
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_folder_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_folder_request::removal},
         utility::codec::field{"intent", &delete_folder_request::intent},
     };
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_folder_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_folder_response::result},
     };
 }
@@ -675,7 +675,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_folders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_folders_request::removals},
         utility::codec::field{"intent", &delete_many_folders_request::intent},
     };
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_folders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_folders_response::result},
     };
 }
@@ -704,7 +704,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_folder_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_folder_versions_request::key},
         utility::codec::field{"offset", &list_folder_versions_request::offset},
         utility::codec::field{"limit", &list_folder_versions_request::limit},
@@ -722,7 +722,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_folder_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_folder_versions_response::result},
         utility::codec::field{"versions", &list_folder_versions_response::versions},
         utility::codec::field{"total", &list_folder_versions_response::total},
@@ -738,7 +738,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_folder_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_folder_version_request::key},
     };
 }
@@ -752,7 +752,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.folders.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_folder_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_folder_version_response::result},
         utility::codec::field{"version", &get_folder_version_response::version},
     };

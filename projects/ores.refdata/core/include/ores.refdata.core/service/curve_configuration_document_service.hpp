@@ -40,7 +40,7 @@ class ORES_REFDATA_CORE_EXPORT curve_configuration_document_service {
 public:
     using context = ores::database::context;
 
-    explicit curve_configuration_document_service(context ctx);
+    explicit curve_configuration_document_service(const context& ctx);
 
     /**
      * @brief Stores the rows of @p v, each as the version it states.

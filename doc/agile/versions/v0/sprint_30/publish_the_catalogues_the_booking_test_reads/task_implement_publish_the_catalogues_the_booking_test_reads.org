@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 9F37AF41-A824-45A3-A074-BC4F7A7EB665
+:END:
+#+title: Task: Implement Hotfix: Publish the catalogues the booking test reads
+#+description: Initial task for: Hotfix: Publish the catalogues the booking test reads
+#+type: task
+#+level: s1
+#+filetags: :publish_the_catalogues_the_booking_test_reads:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:07B94320-9844-4292-A266-3F63639B2CB6][Hotfix: Publish the catalogues the booking test reads]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Publish the refdata catalogues the booking test's basket constituents are
+resolved against, before it books.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:07B94320-9844-4292-A266-3F63639B2CB6][Hotfix: Publish the catalogues the booking test reads]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The test publishes equity underlyings, currency pairs and commodities.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Failing suites at main | 1 (=ores.synthetic.core.tests=) | CDash build 4539142 | cab661cc8c |
+| Publish functions the test calls | 3 | reading the test | c7ff81b31d |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The refusal comes from the basket resolver, which reads the published
+catalogue. The seed writes the DQ artefact table, and nothing publishes it in a
+recreated database, so the catalogue the resolver reads was empty.

@@ -69,7 +69,7 @@ namespace ores::{{component}}::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{entity_singular}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#domain_groups}}        utility::codec::field{"{{member}}", &{{entity_singular}}::{{member}}},
 {{/domain_groups}}    };
 }
@@ -84,7 +84,7 @@ namespace ores::{{component}}::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{entity_singular}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#has_identity_group}}        utility::codec::field{"identity", &{{entity_singular}}::identity},
 {{/has_identity_group}}
 {{^has_identity_group}}
@@ -182,7 +182,7 @@ namespace ores::{{component}}::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name_singular}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
     utility::codec::field{"version", &{{name_singular}}::version},
 {{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{name_singular}}::tenant_id},
 {{/has_tenant_id}}

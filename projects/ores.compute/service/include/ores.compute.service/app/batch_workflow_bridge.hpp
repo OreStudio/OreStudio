@@ -56,7 +56,7 @@ private:
 public:
     batch_workflow_bridge(std::uint32_t interval_seconds,
                           ores::nats::service::client& nats,
-                          ores::database::context ctx);
+                          const ores::database::context& ctx);
 
     boost::asio::awaitable<void> run();
 

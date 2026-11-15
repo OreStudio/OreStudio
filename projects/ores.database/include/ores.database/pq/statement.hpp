@@ -20,6 +20,7 @@
 #define ORES_DATABASE_PQ_STATEMENT_HPP
 
 #include "ores.database/pq/codec.hpp"
+#include "ores.database/pq/result.hpp"
 #include <array>
 #include <atomic>
 #include <cstdint>

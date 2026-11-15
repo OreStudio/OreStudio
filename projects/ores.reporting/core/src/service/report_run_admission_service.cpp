@@ -55,8 +55,8 @@ bool is_scheduled(const std::string& trigger_type) {
 
 }
 
-report_run_admission_service::report_run_admission_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+report_run_admission_service::report_run_admission_service(const context& ctx)
+    : ctx_(ctx) {}
 
 report_run_admission_service::receipt report_run_admission_service::admit(const plan& p) {
     // The instance's foreign key carries the tenant as well as the id, so the

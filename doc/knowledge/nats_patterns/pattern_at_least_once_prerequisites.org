@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:nats:subscription:
 #+created: 2026-10-15
-#+updated: 2026-10-15
+#+updated: 2026-11-11
 #+pattern_group: subscription
 
 This page defines the NATS pattern *At Least Once Prerequisites* in the
@@ -145,8 +145,8 @@ step. No other security consequence.
 Every service that serves workflow step commands uses this pattern through
 `projects/ores.service/include/ores.service/messaging/step_command_stream.hpp`.
 The declaration is a `step_routes` table, `serve_step_commands` derives the
-stream, the consumer and the dispatch from it, and the handler answers its own
-delivery with `ores::nats::ack_guard`. The streams and their consumers are
+stream, the consumer and the dispatch from it, and the handler settles the
+`ores::nats::delivery` it is given. The streams and their consumers are
 catalogued in [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and
 durable consumers]].
 

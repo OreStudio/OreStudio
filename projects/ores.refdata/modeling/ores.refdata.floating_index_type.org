@@ -1,10 +1,16 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.floating_index_type
 #+description: Codegen entity model for the refdata floating_index_type table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+web_classification: floating-index-type
+#+web_classification_topic: products
+#+web_classification_read_only: true
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: ORE floating rate index code (e.g. EUR-EURIBOR-6M, USD-SOFR, GBP-SONIA).

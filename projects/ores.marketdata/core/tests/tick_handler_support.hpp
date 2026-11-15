@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_TESTS_TICK_HANDLER_SUPPORT_HPP
 #define ORES_MARKETDATA_CORE_TESTS_TICK_HANDLER_SUPPORT_HPP
 
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
@@ -46,7 +46,7 @@ inline const std::string test_audience("ores.marketdata.service");
 inline boost::uuids::uuid
 system_party_of_the_test_tenant(ores::testing::scoped_database_helper& h) {
     auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         h.context(),
         "SELECT id::text FROM ores_refdata_parties_tbl "
         "WHERE party_category = 'System' AND valid_to = ores_utility_infinity_timestamp_fn() "

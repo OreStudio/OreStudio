@@ -64,7 +64,7 @@ messaging::get_series_evolution_response refuse(std::string why) {
 }
 
 messaging::get_series_evolution_response
-series_evolution_reader::read(ores::database::context ctx,
+series_evolution_reader::read(const ores::database::context& ctx,
                               const messaging::get_series_evolution_request& request) {
     using ores::marketdata::datum::name_of;
 

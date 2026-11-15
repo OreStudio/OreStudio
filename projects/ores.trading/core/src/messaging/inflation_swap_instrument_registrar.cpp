@@ -44,11 +44,10 @@ static constexpr std::string_view inflation_swap_instrument_queue_group = "ores.
 
 std::vector<ores::nats::service::subscription> register_inflation_swap_instrument_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<inflation_swap_instrument_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<inflation_swap_instrument_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_inflation_swap_instruments_request::nats_subject,
         inflation_swap_instrument_queue_group,

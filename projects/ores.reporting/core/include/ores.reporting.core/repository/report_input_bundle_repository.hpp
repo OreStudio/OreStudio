@@ -20,7 +20,7 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_REPOSITORY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
@@ -51,14 +51,14 @@ public:
     /**
      * @brief Persists a new bundle record.
      */
-    void create(context ctx, const report_input_bundle_entity& bundle);
+    void create(const context& ctx, const report_input_bundle_entity& bundle);
 
     /**
      * @brief Finds the bundle for a given report instance.
      *
      * @return The bundle if found, nullopt otherwise.
      */
-    std::optional<report_input_bundle_entity> find_by_instance_id(context ctx,
+    std::optional<report_input_bundle_entity> find_by_instance_id(const context& ctx,
                                                                   const std::string& instance_id);
 };
 

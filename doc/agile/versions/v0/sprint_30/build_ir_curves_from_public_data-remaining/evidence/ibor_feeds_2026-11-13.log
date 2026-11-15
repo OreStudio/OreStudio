@@ -1,0 +1,9 @@
+After publishing the ICE and Tradeweb datasets on 2026-11-13:
+
+ index_family |    role    | count
+--------------+------------+-------
+ euribor      | projection |     2
+ libor        | projection |     8
+
+The LIBOR feeds are the five ICE rows (USD 1M/6M, GBP 3M, CHF 3M, JPY 3M) and the three
+Tradeweb rows (GBP 1M, CHF 6M, JPY 1M); the two EURIBOR rows are Tradeweb's.

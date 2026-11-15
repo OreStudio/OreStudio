@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_value_set_value_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &ore_parameter_value_set_value_key::code},
     };
 }
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_value_set_value_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &ore_parameter_value_set_value_write::code},
         utility::codec::field{"value_set_code",
                               &ore_parameter_value_set_value_write::value_set_code},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_value_set_value_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &ore_parameter_value_set_value_change::write},
         utility::codec::field{"precondition", &ore_parameter_value_set_value_change::precondition},
     };
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_value_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &ore_parameter_value_set_value_removal::key},
         utility::codec::field{"precondition", &ore_parameter_value_set_value_removal::precondition},
     };
@@ -456,7 +456,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_value_removal>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_value_set_value_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &ore_parameter_value_set_value_lookup::key},
         utility::codec::field{"ore_parameter_value_set_value",
                               &ore_parameter_value_set_value_lookup::ore_parameter_value_set_value},
@@ -473,7 +473,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_value_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_values_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &ore_parameter_value_set_values_filter::code_one_of},
     };
 }
@@ -487,7 +487,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_values_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_value_set_value_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &ore_parameter_value_set_value_event::event_id},
         utility::codec::field{"key", &ore_parameter_value_set_value_event::key},
         utility::codec::field{"action", &ore_parameter_value_set_value_event::action},
@@ -508,7 +508,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_values_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_value_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "ore_parameter_value_set_value",
             &ore_parameter_value_set_value_version_key::ore_parameter_value_set_value},
@@ -526,7 +526,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_value_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ore_parameter_value_set_value_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &ore_parameter_value_set_value_versions_filter::version},
         utility::codec::field{"from_version",
                               &ore_parameter_value_set_value_versions_filter::from_version},
@@ -545,7 +545,7 @@ wire_fields(std::type_identity<ore_parameter_value_set_value_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_ore_parameter_value_set_values_request::offset},
         utility::codec::field{"limit", &list_ore_parameter_value_set_values_request::limit},
         utility::codec::field{"order", &list_ore_parameter_value_set_values_request::order},
@@ -564,7 +564,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_values_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_ore_parameter_value_set_values_response::result},
         utility::codec::field{"values", &list_ore_parameter_value_set_values_response::values},
         utility::codec::field{"total", &list_ore_parameter_value_set_values_response::total},
@@ -581,7 +581,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_values_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_value_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_ore_parameter_value_set_value_request::key},
     };
 }
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<get_ore_parameter_value_set_value_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_value_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_ore_parameter_value_set_value_response::result},
         utility::codec::field{
             "ore_parameter_value_set_value",
@@ -614,7 +614,7 @@ wire_fields(std::type_identity<get_ore_parameter_value_set_value_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_ore_parameter_value_set_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_ore_parameter_value_set_values_request::keys},
     };
 }
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_many_ore_parameter_value_set_values_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_ore_parameter_value_set_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_ore_parameter_value_set_values_response::result},
         utility::codec::field{"entries",
                               &get_many_ore_parameter_value_set_values_response::entries},
@@ -646,7 +646,7 @@ wire_fields(std::type_identity<get_many_ore_parameter_value_set_values_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_ore_parameter_value_set_value_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_ore_parameter_value_set_value_request::change},
         utility::codec::field{"intent", &put_ore_parameter_value_set_value_request::intent},
     };
@@ -662,7 +662,7 @@ wire_fields(std::type_identity<put_ore_parameter_value_set_value_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_ore_parameter_value_set_value_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_ore_parameter_value_set_value_response::result},
         utility::codec::field{
             "ore_parameter_value_set_value",
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<put_ore_parameter_value_set_value_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_ore_parameter_value_set_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_ore_parameter_value_set_values_request::changes},
         utility::codec::field{"intent", &put_many_ore_parameter_value_set_values_request::intent},
     };
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<put_many_ore_parameter_value_set_values_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_ore_parameter_value_set_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_ore_parameter_value_set_values_response::result},
         utility::codec::field{"values", &put_many_ore_parameter_value_set_values_response::values},
     };
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<put_many_ore_parameter_value_set_values_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_ore_parameter_value_set_value_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_ore_parameter_value_set_value_request::removal},
         utility::codec::field{"intent", &delete_ore_parameter_value_set_value_request::intent},
     };
@@ -728,7 +728,7 @@ wire_fields(std::type_identity<delete_ore_parameter_value_set_value_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_ore_parameter_value_set_value_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_ore_parameter_value_set_value_response::result},
     };
 }
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<delete_ore_parameter_value_set_value_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_ore_parameter_value_set_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_ore_parameter_value_set_values_request::removals},
         utility::codec::field{"intent",
@@ -761,7 +761,7 @@ wire_fields(std::type_identity<delete_many_ore_parameter_value_set_values_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_ore_parameter_value_set_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_ore_parameter_value_set_values_response::result},
     };
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<delete_many_ore_parameter_value_set_values_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_value_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_ore_parameter_value_set_value_versions_request::key},
         utility::codec::field{"offset",
                               &list_ore_parameter_value_set_value_versions_request::offset},
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_value_versions_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ore_parameter_value_set_value_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_ore_parameter_value_set_value_versions_response::result},
         utility::codec::field{"versions",
@@ -818,7 +818,7 @@ wire_fields(std::type_identity<list_ore_parameter_value_set_value_versions_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_value_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_ore_parameter_value_set_value_version_request::key},
     };
 }
@@ -833,7 +833,7 @@ wire_fields(std::type_identity<get_ore_parameter_value_set_value_version_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ore_parameter_value_set_value_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_ore_parameter_value_set_value_version_response::result},
         utility::codec::field{"version",

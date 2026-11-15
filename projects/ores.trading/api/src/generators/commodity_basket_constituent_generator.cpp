@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/commodity_basket_constituent_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -48,6 +49,9 @@ generate_synthetic_commodity_basket_constituent(utility::generation::generation_
     r.sequence_number = 0;
     r.trade_activity_id = ctx.generate_uuid();
     r.underlying_code = std::string(faker::word::noun());
+    r.initial_price = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

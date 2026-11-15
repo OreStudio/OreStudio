@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_TICK_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_TICK_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -75,7 +75,7 @@ public:
      *
      * @param coordinates The coordinate URIs to read, or empty for every coordinate.
      */
-    std::vector<tick> read_range(context ctx,
+    std::vector<tick> read_range(const context& ctx,
                                  const boost::uuids::uuid& stream_id,
                                  std::chrono::system_clock::time_point from,
                                  std::chrono::system_clock::time_point to,

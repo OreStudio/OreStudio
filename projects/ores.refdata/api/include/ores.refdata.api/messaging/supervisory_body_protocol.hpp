@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &supervisory_body_key::code},
         utility::codec::field{"coding_scheme_code", &supervisory_body_key::coding_scheme_code},
     };
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &supervisory_body_write::code},
         utility::codec::field{"coding_scheme_code", &supervisory_body_write::coding_scheme_code},
         utility::codec::field{"source", &supervisory_body_write::source},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &supervisory_body_change::write},
         utility::codec::field{"precondition", &supervisory_body_change::precondition},
     };
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &supervisory_body_removal::key},
         utility::codec::field{"precondition", &supervisory_body_removal::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &supervisory_body_lookup::key},
         utility::codec::field{"supervisory_body", &supervisory_body_lookup::supervisory_body},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &supervisory_body_event::event_id},
         utility::codec::field{"key", &supervisory_body_event::key},
         utility::codec::field{"action", &supervisory_body_event::action},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"supervisory_body", &supervisory_body_version_key::supervisory_body},
         utility::codec::field{"version", &supervisory_body_version_key::version},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &supervisory_body_versions_filter::version},
         utility::codec::field{"from_version", &supervisory_body_versions_filter::from_version},
         utility::codec::field{"to_version", &supervisory_body_versions_filter::to_version},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_supervisory_bodies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_supervisory_bodies_request::offset},
         utility::codec::field{"limit", &list_supervisory_bodies_request::limit},
         utility::codec::field{"order", &list_supervisory_bodies_request::order},
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_supervisory_bodies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_supervisory_bodies_response::result},
         utility::codec::field{"bodies", &list_supervisory_bodies_response::bodies},
         utility::codec::field{"total", &list_supervisory_bodies_response::total},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_supervisory_body_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_supervisory_body_request::key},
     };
 }
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_supervisory_body_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_supervisory_body_response::result},
         utility::codec::field{"supervisory_body", &get_supervisory_body_response::supervisory_body},
     };
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_supervisory_bodies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_supervisory_bodies_request::keys},
     };
 }
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_supervisory_bodies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_supervisory_bodies_response::result},
         utility::codec::field{"entries", &get_many_supervisory_bodies_response::entries},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_supervisory_body_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_supervisory_body_request::change},
         utility::codec::field{"intent", &put_supervisory_body_request::intent},
     };
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_supervisory_body_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_supervisory_body_response::result},
         utility::codec::field{"supervisory_body", &put_supervisory_body_response::supervisory_body},
     };
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_supervisory_bodies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_supervisory_bodies_request::changes},
         utility::codec::field{"intent", &put_many_supervisory_bodies_request::intent},
     };
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_supervisory_bodies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_supervisory_bodies_response::result},
         utility::codec::field{"bodies", &put_many_supervisory_bodies_response::bodies},
     };
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_supervisory_body_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_supervisory_body_request::removal},
         utility::codec::field{"intent", &delete_supervisory_body_request::intent},
     };
@@ -652,7 +652,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_supervisory_body_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_supervisory_body_response::result},
     };
 }
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodie
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_supervisory_bodies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_supervisory_bodies_request::removals},
         utility::codec::field{"intent", &delete_many_supervisory_bodies_request::intent},
     };
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<delete_many_supervisory_bodies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_supervisory_bodies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_supervisory_bodies_response::result},
     };
 }
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<delete_many_supervisory_bodies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_supervisory_body_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_supervisory_body_versions_request::key},
         utility::codec::field{"offset", &list_supervisory_body_versions_request::offset},
         utility::codec::field{"limit", &list_supervisory_body_versions_request::limit},
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<list_supervisory_body_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_supervisory_body_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_supervisory_body_versions_response::result},
         utility::codec::field{"versions", &list_supervisory_body_versions_response::versions},
         utility::codec::field{"total", &list_supervisory_body_versions_response::total},
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<list_supervisory_body_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_supervisory_body_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_supervisory_body_version_request::key},
     };
 }
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<list_supervisory_body_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_supervisory_body_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_supervisory_body_version_response::result},
         utility::codec::field{"version", &get_supervisory_body_version_response::version},
     };

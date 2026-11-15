@@ -54,8 +54,8 @@ std::string book_product_type_repository::sql() {
     return query_builder::insert_statement_sql<book_product_type_entity>(lg());
 }
 
-book_product_type_repository::book_product_type_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+book_product_type_repository::book_product_type_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 book_product_type_repository::replace_claim(const domain::book_product_type& v) {

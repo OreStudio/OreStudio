@@ -48,6 +48,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -537,7 +538,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
                     std::make_unique<flat_process>(),
                     ores::analytics::quant::domain::arrival_spec{.mode = "periodic",
                                                                  .ticks_per_hour = 36000000.0},
-                    run.scheduler,
+                    run.market_,
                     1.0,
                     ores::synthetic::feed::adapter_target{
                         .id = target,
@@ -754,7 +755,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     ores::analytics::quant::service::running_scheduler run;
     const ores::synthetic::feed::feed_build_context build{
-        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
+        .nats = nats, .auth_nats = auth_nats, .market = run.market_};
 
     const auto offers =
         svc::system_generator_offers(registry, ctx, build, "bloomberg-a", "bloomberg");
@@ -860,7 +861,7 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
                     .subject = domain::adapter_ingress_subject(adapter_id, fra_id.external_id)}}};
 
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
-    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    ores::analytics::quant::service::run_market idle(clock, {}, 42);
     ores::synthetic::feed::ir_curve_feed feed(
         nats,
         "test.usd.sofr",
@@ -905,7 +906,7 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
         nats, domain::adapter_ingress_subject(adapter_id, id.external_id));
 
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
-    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    ores::analytics::quant::service::run_market idle(clock, {}, 42);
     ores::synthetic::feed::ir_curve_feed feed(
         nats,
         "test.usd.sofr",
@@ -973,7 +974,7 @@ TEST_CASE("a curve is offered once for each of its pillars, all under the curve'
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     ores::analytics::quant::service::running_scheduler run;
     const ores::synthetic::feed::feed_build_context build{
-        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
+        .nats = nats, .auth_nats = auth_nats, .market = run.market_};
 
     const auto offers = svc::system_generator_offers(registry, ctx, build, "demo-a", "demo");
 
@@ -1047,7 +1048,7 @@ TEST_CASE("a curve that is not enabled is offered nothing", "[simulator_adapter]
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     ores::analytics::quant::service::running_scheduler run;
     const ores::synthetic::feed::feed_build_context build{
-        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
+        .nats = nats, .auth_nats = auth_nats, .market = run.market_};
 
     CHECK(svc::system_generator_offers(registry, ctx, build, "demo-a", "demo").empty());
 }
@@ -1061,7 +1062,7 @@ TEST_CASE("a curve publishes only where the ingest listens",
     const auto id = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
 
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
-    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    ores::analytics::quant::service::run_market idle(clock, {}, 42);
     const auto make = [&](std::vector<ores::synthetic::feed::ir_pillar_quote_target> targets) {
         return ores::synthetic::feed::ir_curve_feed(
             nats,
@@ -1111,8 +1112,27 @@ TEST_CASE("a_feed_quotes_the_id_its_provider_writes", "[simulator_adapter][adapt
     CHECK(target->subject == domain::adapter_ingress_subject("demo-a", "USD/sofr/DEPO/SPOT/3M"));
     CHECK(domain::ingest_consumes(target->subject));
 
+    // The simulated ICE and Tradeweb curves take their ids from the same place, and each names
+    // the tenor of its own index, so the two USD ICE curves do not share an id.
+    for (const auto& c : {std::pair{"ice-a", "ice"}, std::pair{"tradeweb-a", "tradeweb"}}) {
+        const auto one = ores::synthetic::service::adapter_target_of(
+            c.first, c.second, vendor::ir_curve_pillar{"USD", "libor", "DEPO", "SPOT", "3M", "3M"});
+        REQUIRE(one.has_value());
+        CHECK(one->id.id_scheme == std::string(c.second) + "_ticker");
+        CHECK(one->id.external_id == "USDLIBOR3M.DEPO.SPOT.3M=");
+        CHECK(domain::ingest_consumes(one->subject));
+    }
+    const auto ice_1m = ores::synthetic::service::adapter_target_of(
+        "ice-a", "ice", vendor::ir_curve_pillar{"USD", "libor", "DEPO", "SPOT", "3M", "1M"});
+    const auto ice_6m = ores::synthetic::service::adapter_target_of(
+        "ice-a", "ice", vendor::ir_curve_pillar{"USD", "libor", "DEPO", "SPOT", "3M", "6M"});
+    REQUIRE(ice_1m.has_value());
+    REQUIRE(ice_6m.has_value());
+    CHECK(ice_1m->id.external_id != ice_6m->id.external_id);
+
     // A provider with no notation writes no id, so a feed of it has nothing to quote.
-    CHECK_FALSE(ores::synthetic::service::adapter_target_of(
-                    "ice-a", "ice", vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"})
-                    .has_value());
+    CHECK_FALSE(
+        ores::synthetic::service::adapter_target_of(
+            "ore-import", "ore", vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"})
+            .has_value());
 }

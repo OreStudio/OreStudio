@@ -7,6 +7,7 @@
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2029-01-02</ExerciseDate>
         </ExerciseDates>
@@ -20,16 +21,17 @@
       <Name>.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>2818.19</Strike>
-      <Quantity>3051825.57</Quantity>
+      <Quantity>1082.9</Quantity>
     </EquityEuropeanBarrierOptionData>
   </Trade>
   <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
     <TradeType>EquityEuropeanBarrierOption</TradeType>
     <EquityEuropeanBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2034-09-02</ExerciseDate>
         </ExerciseDates>
@@ -43,7 +45,7 @@
       <Name>.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>1298.67</Strike>
-      <Quantity>6208184.38</Quantity>
+      <Quantity>4780.42</Quantity>
     </EquityEuropeanBarrierOptionData>
   </Trade>
 </Portfolio>

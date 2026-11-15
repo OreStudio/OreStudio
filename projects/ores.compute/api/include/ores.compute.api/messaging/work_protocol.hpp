@@ -400,7 +400,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<work_assignment_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenant_id", &work_assignment_event::tenant_id},
         ::ores::utility::codec::field{"result_id", &work_assignment_event::result_id},
         ::ores::utility::codec::field{"workunit_id", &work_assignment_event::workunit_id},
@@ -425,7 +425,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<heartbeat_message>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"host_id", &heartbeat_message::host_id},
         ::ores::utility::codec::field{"cpu_count", &heartbeat_message::cpu_count},
         ::ores::utility::codec::field{"ram_mb", &heartbeat_message::ram_mb},
@@ -442,7 +442,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reap_work_message>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -454,7 +454,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_work_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"host_id", &claim_work_request::host_id},
         ::ores::utility::codec::field{"platform", &claim_work_request::platform},
     };
@@ -469,7 +469,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_work_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &claim_work_response::success},
         ::ores::utility::codec::field{"has_work", &claim_work_response::has_work},
         ::ores::utility::codec::field{"message", &claim_work_response::message},
@@ -498,7 +498,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<work_available_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"queued", &work_available_event::queued},
     };
 }
@@ -512,7 +512,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<submit_result_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenant_id", &submit_result_request::tenant_id},
         ::ores::utility::codec::field{"result_id", &submit_result_request::result_id},
         ::ores::utility::codec::field{"host_id", &submit_result_request::host_id},
@@ -532,7 +532,7 @@ struct submit_result_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<submit_result_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &submit_result_response::success},
         ::ores::utility::codec::field{"message", &submit_result_response::message},
     };

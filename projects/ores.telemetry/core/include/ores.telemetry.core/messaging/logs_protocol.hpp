@@ -270,7 +270,7 @@ struct publish_log_entries_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_log_entry>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &telemetry_log_entry::id},
         ::ores::utility::codec::field{"timestamp", &telemetry_log_entry::timestamp},
         ::ores::utility::codec::field{"source", &telemetry_log_entry::source},
@@ -294,7 +294,7 @@ struct publish_log_entries_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_query>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"start_time", &telemetry_query::start_time},
         ::ores::utility::codec::field{"end_time", &telemetry_query::end_time},
         ::ores::utility::codec::field{"source", &telemetry_query::source},
@@ -320,7 +320,7 @@ struct publish_log_entries_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_telemetry_logs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"query", &get_telemetry_logs_request::query},
     };
 }
@@ -334,7 +334,7 @@ struct publish_log_entries_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_telemetry_logs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_telemetry_logs_response::success},
         ::ores::utility::codec::field{"message", &get_telemetry_logs_response::message},
         ::ores::utility::codec::field{"entries", &get_telemetry_logs_response::entries},
@@ -351,7 +351,7 @@ struct publish_log_entries_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_log_entry_item>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"level", &publish_log_entry_item::level},
         ::ores::utility::codec::field{"timestamp_ms", &publish_log_entry_item::timestamp_ms},
         ::ores::utility::codec::field{"component", &publish_log_entry_item::component},
@@ -368,7 +368,7 @@ struct publish_log_entries_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_log_entries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_name", &publish_log_entries_request::source_name},
         ::ores::utility::codec::field{"tag", &publish_log_entries_request::tag},
         ::ores::utility::codec::field{"entries", &publish_log_entries_request::entries},

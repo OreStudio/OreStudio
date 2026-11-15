@@ -105,7 +105,8 @@ CONFIGURATION_DOCUMENTS = [
       "todays_market_configurations", "todays_market_configuration_bindings"]),
     ("curve_configuration", "Curve Configuration",
      ["curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
-      "curve_segment_conventions", "curve_quotes", "inflation_curve_configs"]),
+      "curve_segment_conventions", "curve_quotes", "inflation_curve_configs",
+      "fx_volatility_configs", "fx_volatility_smiles"]),
     ("risk_report_configs", "Risk Report Configurations",
      ["risk_report_configs", "configuration_analytics", "configuration_analytic_parameters",
       "configuration_market_bindings"]),
@@ -117,6 +118,11 @@ CONFIGURATION_DOCUMENTS = [
 NETTING_COMPANIES = ["acme_group"] + COMPANIES
 
 NETTING_METHODOLOGY = "ACME Counterparty Netting Methodology"
+
+# The methodology of the documents that say which market an entity marks its trades on:
+# its curves, its FX volatility surfaces and its today's market.
+MARKET_CONFIGURATION_METHODOLOGY = "ACME Market Configuration Methodology"
+MARKET_CONFIGURATION_DOCUMENTS = ["todays_market", "curve_configuration"]
 
 COMPANY_LABEL = {
     "acme_group": "Group",
@@ -204,6 +210,21 @@ def netting_methodology_upsert():
 """
 
 
+def market_configuration_methodology_upsert():
+    def q(v):
+        return v.replace("'", "''")
+
+    with open(os.path.join(SCRIPT_DIR, "market_configuration_methodology.txt")) as f:
+        steps = f.read().rstrip("\n")
+    return f"""    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{q(MARKET_CONFIGURATION_METHODOLOGY)}',
+        'The market each ACME legal entity marks its trades on: its overnight discount curves, its inflation curves, its FX volatility surfaces and the today''s market that names them, with the source of each choice',
+        'https://github.com/OreStudio/OreStudio/tree/main/projects/ores.seeder/datasets/acme_corporation',
+        '{q(steps)}'
+    );
+"""
+
+
 def generate_catalog_populate():
     content = LICENSE_HEADER + f"""
 -- =============================================================================
@@ -233,7 +254,7 @@ END $$;
 
 
 def generate_dataset_populate(companies):
-    body = [netting_methodology_upsert()]
+    body = [netting_methodology_upsert(), market_configuration_methodology_upsert()]
     body.append(dataset_upsert(
         "acme.lei_entities", "Parties", "ACME Corporation LEI Entities",
         "ACME Corporation's four legal entities, checksum-valid synthetic LEIs on the 9695 test prefix.",
@@ -385,7 +406,9 @@ def generate_dataset_populate(companies):
                 f"ACME Corporation {label} {title}",
                 f"The {title.lower()} document of ACME Corporation {label}, crafted for the "
                 "reports the entity runs and published to the party a publish names.",
-                family))
+                family,
+                **({"methodology": MARKET_CONFIGURATION_METHODOLOGY}
+                   if family in MARKET_CONFIGURATION_DOCUMENTS else {})))
 
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**

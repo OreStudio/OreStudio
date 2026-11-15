@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"oresmd_uri", &delivery_count_key::oresmd_uri},
     };
 }
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &delivery_count_write::id},
         utility::codec::field{"party_id", &delivery_count_write::party_id},
         utility::codec::field{"provider_code", &delivery_count_write::provider_code},
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &delivery_count_change::write},
         utility::codec::field{"precondition", &delivery_count_change::precondition},
     };
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &delivery_count_removal::key},
         utility::codec::field{"precondition", &delivery_count_removal::precondition},
     };
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &delivery_count_lookup::key},
         utility::codec::field{"delivery_count", &delivery_count_lookup::delivery_count},
     };
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_counts_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id", &delivery_counts_filter::party_id},
         utility::codec::field{"provider_code", &delivery_counts_filter::provider_code},
         utility::codec::field{"feed_id", &delivery_counts_filter::feed_id},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &delivery_count_event::event_id},
         utility::codec::field{"key", &delivery_count_event::key},
         utility::codec::field{"action", &delivery_count_event::action},
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"delivery_count", &delivery_count_version_key::delivery_count},
         utility::codec::field{"version", &delivery_count_version_key::version},
     };
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &delivery_count_versions_filter::version},
         utility::codec::field{"from_version", &delivery_count_versions_filter::from_version},
         utility::codec::field{"to_version", &delivery_count_versions_filter::to_version},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_delivery_counts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_delivery_counts_request::offset},
         utility::codec::field{"limit", &list_delivery_counts_request::limit},
         utility::codec::field{"order", &list_delivery_counts_request::order},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_delivery_counts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_delivery_counts_response::result},
         utility::codec::field{"delivery_counts", &list_delivery_counts_response::delivery_counts},
         utility::codec::field{"total", &list_delivery_counts_response::total},
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_count_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_delivery_count_request::key},
     };
 }
@@ -571,7 +571,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_count_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_delivery_count_response::result},
         utility::codec::field{"delivery_count", &get_delivery_count_response::delivery_count},
     };
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_delivery_counts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_delivery_counts_request::keys},
     };
 }
@@ -600,7 +600,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_delivery_counts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_delivery_counts_response::result},
         utility::codec::field{"entries", &get_many_delivery_counts_response::entries},
     };
@@ -615,7 +615,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_delivery_count_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_delivery_count_request::change},
         utility::codec::field{"intent", &put_delivery_count_request::intent},
     };
@@ -630,7 +630,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_delivery_count_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_delivery_count_response::result},
         utility::codec::field{"delivery_count", &put_delivery_count_response::delivery_count},
     };
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_delivery_counts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_delivery_counts_request::changes},
         utility::codec::field{"intent", &put_many_delivery_counts_request::intent},
     };
@@ -660,7 +660,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_delivery_counts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_delivery_counts_response::result},
         utility::codec::field{"delivery_counts",
                               &put_many_delivery_counts_response::delivery_counts},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_delivery_count_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_delivery_count_request::removal},
         utility::codec::field{"intent", &delete_delivery_count_request::intent},
     };
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_delivery_count_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_delivery_count_response::result},
     };
 }
@@ -705,7 +705,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_delivery_counts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_delivery_counts_request::removals},
         utility::codec::field{"intent", &delete_many_delivery_counts_request::intent},
     };
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_delivery_counts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_delivery_counts_response::result},
     };
 }
@@ -734,7 +734,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_delivery_count_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_delivery_count_versions_request::key},
         utility::codec::field{"offset", &list_delivery_count_versions_request::offset},
         utility::codec::field{"limit", &list_delivery_count_versions_request::limit},
@@ -753,7 +753,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_delivery_count_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_delivery_count_versions_response::result},
         utility::codec::field{"versions", &list_delivery_count_versions_response::versions},
         utility::codec::field{"total", &list_delivery_count_versions_response::total},
@@ -769,7 +769,7 @@ wire_fields(std::type_identity<list_delivery_count_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_count_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_delivery_count_version_request::key},
     };
 }
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<list_delivery_count_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_count_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_delivery_count_version_response::result},
         utility::codec::field{"version", &get_delivery_count_version_response::version},
     };

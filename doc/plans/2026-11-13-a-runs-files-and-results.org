@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 6C1F0B2E-58A4-41D9-9E52-3B2F7A1D4C88
+:END:
+#+title: A run's files and results: where the work belongs
+#+description: The four BFF routes that draw a report run's files and results compose a tree across three services and fetch every object whole over HTTP. This states the problem and the options before any of it is ported.
+#+type: plan
+#+status: BUILT
+#+created: 2026-11-13
+#+updated: 2026-11-14
+#+filetags: :plan:http:reporting:
+
+* Why this note exists
+
+Four routes remain of the reporting area's fifty: =GET
+/api/reporting/runs/:id/files=, =.../files/:file=, =.../files/:file/info= and
+=.../results=. They look like reads and are not: the BFF answers them by
+walking three services and fetching whole objects over HTTP, then unpacking
+gzip and tar in its own process. Porting them as they stand would move that
+cost into the gateway and make it the place that parses archives. This note
+states what the BFF does today, what a port would cost, and the three
+end-states worth choosing between.
+
+* What the BFF does today
+
+** The tree, per run
+
+=filesOfRun= (in =report-run-files.ts=) reads, in this order:
+
+| Step | Read | Calls |
+|------+------+-------|
+| 1 | the run, by id | 1 NATS |
+| 2 | the batch whose external reference is the run id | 1 NATS |
+| 3 | the batch's workunits, up to 100 | 1 NATS |
+| 4 | each workunit's input package | 1 HTTP fetch, whole object |
+| 5 | each workunit's result | 1 NATS |
+| 6 | each result's manifest | 1 HTTP fetch, whole object |
+| 7 | each result's output package | 1 HTTP fetch, whole object |
+
+So a run with fifty workunits costs about 150 round trips and 150 whole-object
+fetches to draw a file list, and the list of entries inside each package comes
+from unpacking the package in the BFF.
+
+** The bytes, per file
+
+=fetchStored= (in =grid-downloads.ts=) does an HTTP GET against the
+deployment's file service, with the caller's token, and buffers the **entire**
+object in memory. The route then, for a file inside a package, unpacks gzip,
+walks the tar, slices the entry out, and sends it with =Content-Type=,
+=Content-Disposition= and =Cache-Control: private, no-store=. For a 40 MB
+output package that is 40 MB read into the gateway and a second copy of the
+unpacked bytes to serve one 2 KB result file.
+
+* Where the cost lands
+
+- **The gateway.** It buffers whole objects, unpacks archives, and walks a
+  three-service tree per request. Its memory is the deployment's memory, shared
+  with every other route, and a report output is the largest object the
+  estate moves.
+- **The services.** The composition is the reporting domain's: which workunits
+  a run has, which result each produced, which files a result holds. Today the
+  gateway re-states that model, and every screen that wants it pays the same
+  walk.
+- **The file service.** It already owns the objects and can stream and range
+  them, but the BFF asks it for whole objects and does the slicing itself.
+
+* The decisions
+
+** Who owns the join: compute, and the gateway stitches
+
+The tree is run -> batch -> workunit -> result -> archive. Every link but the
+first is compute's own row, and the batch states the run in its external
+reference. Reporting owns the run and its state and nothing below it, so it
+should not learn the storage keys of results it does not own, and the gateway
+should not find a batch by searching for the run id.
+
+So =ores.compute= answers one read, =list_run_files=, keyed by the run's id: the
+tree it already holds, each archive node stating the object key and the packed
+size. It is one call, it replaces the search and the per-workunit reads, and it
+puts the join in the service whose rows make it.
+
+The gateway then asks =ores.storage= for the entries of those archives in one
+batched call, and stitches the two answers into the screen's tree. The gateway
+composes; it holds no model and no bytes.
+
+** Storage does storage
+
+=ores.storage= answers two things it should have answered all along:
+
+- =list_archive_entries=: for each object key asked for, the entries of the
+  tarball it holds -- name, size and offset -- unpacking in the service that
+  holds the object, not in its callers. One call for every archive of a run.
+- a file fetch that names an entry and honours =Range=: =GET
+  /files/<key>?entry=<name>= answers the entry's bytes, and a range answers the
+  part asked for, so a caller streams and never buffers a package to read one
+  file out of it.
+
+** The gateway streams, and states what it cannot reach
+
+A file route streams the file service's bytes through with the headers it
+already sets -- =Content-Type=, =Content-Disposition=, =Cache-Control: private,
+no-store= -- and a file service that does not answer is =502
+upstream-unavailable= with its own words in the journal, as the BFF answered
+it. No object is read into the gateway whole.
+
+* What a screen costs now
+
+| Step | Today | Agreed |
+|------+-------+--------|
+| Find the run's batch | one search over the batch collection | part of compute's one read |
+| The tree | 1 run + 1 batch + 1 workunits page + 1 result read and 2 object fetches per workunit | 1 =list_run_files= |
+| The entries | one gzip unpack and tar walk per archive, in the BFF | 1 =list_archive_entries= for every archive |
+| One file's bytes | whole package fetched and unpacked, then sliced | 1 ranged fetch, streamed |
+
+A run with fifty workunits goes from roughly 150 round trips and 150
+whole-object fetches to three calls and one ranged fetch per file opened.
+
+* The work, and who does it
+
+| Work | Owner |
+|------+-------|
+| =list_run_files= in =ores.compute=: the tree of a run with each archive's key and size | compute |
+| =list_archive_entries= in =ores.storage=: tarball entries per key, unpacked in the service | storage |
+| =?entry== and =Range= on the storage file service | storage |
+| The four gateway routes: stitch the tree, stream a file, state a file's info and the results | this task |
+
+The gateway routes land after the two service reads exist; until then the four
+routes stay unpaired and this note is the record of why. The =report-run-files=
+and =grid-downloads= modules of the BFF are retired with them, and the tar walk
+they keep leaves the estate entirely once storage answers entries.
+
+* What was built, and where it departed from this note
+
+The family is served, and two decisions changed while it was built.
+
+** The output files come from each result's manifest
+
+A result writes two things: its output package, a tarball of the engine's
+output directory, and its output files as one gzipped object each beside a
+manifest that names them with their sizes and digests. This note treated the
+two like the input packages and expected the archive read to list them.
+
+It should not, and the manifest is why. The tarball states a name and a size.
+The manifest states the family the catalogue assigns each file and the digest
+of its bytes, and the screen draws both. A listing of the tarball would lose
+them.
+
+So =list_archive_entries= answers the run's input packages, which are what a
+tarball is, and each accepted result's manifest names its own files. The
+manifest is an object under the same storage root the file service serves, so
+the gateway reads it where it lies: no service learns the engine's own format,
+and no file is copied to learn its name.
+
+** The archive read is an operation, not an entity verb
+
+=storage.v1.objects.list_archive_entries= broke the subject protocol, whose
+verbs are a closed set of eight. Reading inside an object is an operation, so
+the subject is =storage.v1.ops.list_archive_entries=, beside the compute
+grid's own computed reads.
+
+** Where each piece landed
+
+| Piece | Where |
+|-------+-------|
+| Reading and streaming one file out of a package, and its byte range | =ores.storage.core=, =archive_reader= |
+| =list_archive_entries=, its handler and its subject | =ores.storage= |
+| =?entry== and =Range= on the object read, with 206 and 416 | the file service in =ores.http.core= |
+| =list_run_files= | =ores.compute= |
+| The four routes | =ores.http.reporting=, in =run_file_routes= and =result_routes= |
+| The roll-up by book, counterparty and portfolio, and the comparison | =ores.http.reporting=, =result_rollup=, which holds no I/O and is tested on its own |
+
+* What this does not change
+
+A run's results stay rows of the compute service and files stay objects of the
+storage service. Nothing is copied, no manifest grows a second source of truth,
+and the gateway keeps no cache: a file is fetched when a person opens it and
+the headers say so.

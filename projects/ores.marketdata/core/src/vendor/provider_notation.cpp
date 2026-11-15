@@ -20,16 +20,22 @@
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/bloomberg_notation.hpp"
 #include "ores.marketdata.core/vendor/demo_notation.hpp"
+#include "ores.marketdata.core/vendor/ice_notation.hpp"
 #include "ores.marketdata.core/vendor/lseg_notation.hpp"
+#include "ores.marketdata.core/vendor/tradeweb_notation.hpp"
 
 namespace ores::marketdata::vendor {
 
 const provider_notation* notation_of(std::string_view provider) {
     static const bloomberg_notation bloomberg;
     static const lseg_notation lseg;
+    static const ice_notation ice;
+    static const tradeweb_notation tradeweb;
     static const demo_notation demo;
     for (const provider_notation* candidate : {static_cast<const provider_notation*>(&bloomberg),
                                                static_cast<const provider_notation*>(&lseg),
+                                               static_cast<const provider_notation*>(&ice),
+                                               static_cast<const provider_notation*>(&tradeweb),
                                                static_cast<const provider_notation*>(&demo)})
         if (candidate->provider() == provider)
             return candidate;

@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-market_series_asset_class_service::market_series_asset_class_service(context ctx)
-    : ctx_(std::move(ctx))
+market_series_asset_class_service::market_series_asset_class_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

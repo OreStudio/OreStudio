@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit app_version_platform_service(context ctx);
+    explicit app_version_platform_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

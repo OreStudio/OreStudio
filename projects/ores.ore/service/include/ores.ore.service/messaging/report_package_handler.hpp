@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -67,11 +68,11 @@ public:
      *                       user who started the workflow.
      */
     report_package_handler(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::string http_base_url,
                            ores::nats::service::nats_client service_nats);
 
-    void prepare_package(ores::nats::message msg);
+    void prepare_package(ores::nats::delivery delivery);
 
 private:
     ores::nats::service::client& nats_;

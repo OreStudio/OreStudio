@@ -24,15 +24,17 @@
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.refdata.core/repository/calendar_date_repository.hpp"
-#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
+#include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -69,7 +71,7 @@ std::chrono::year_month_day date_of(time_point t) {
 }
 
 /// The latest spot of a pair at or before the as-of, or nothing when no series holds one.
-std::optional<spot_reading> find_spot(context ctx,
+std::optional<spot_reading> find_spot(const context& ctx,
                                       const fx_pair_codes& pair,
                                       time_point as_of,
                                       const std::optional<boost::uuids::uuid>& party_id) {
@@ -93,7 +95,7 @@ std::optional<spot_reading> find_spot(context ctx,
                         boost::uuids::to_string(latest->series_id)};
 }
 
-spot_reading read_spot(context ctx,
+spot_reading read_spot(const context& ctx,
                        const fx_pair_codes& pair,
                        time_point as_of,
                        const std::optional<boost::uuids::uuid>& party_id) {
@@ -106,7 +108,7 @@ spot_reading read_spot(context ctx,
 
 /// A currency's spot against USD, in whichever direction the market quotes it. The market quotes
 /// one direction per currency, so CCY/USD is tried first and USD/CCY only when it is absent.
-std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
+std::pair<usd_leg, spot_reading> read_usd_leg(const context& ctx,
                                               const std::string& currency,
                                               time_point as_of,
                                               const std::optional<boost::uuids::uuid>& party_id) {
@@ -114,20 +116,29 @@ std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
         return {usd_leg{.currency = currency, .value = spot->value, .usd_is_base = false}, *spot};
     if (auto spot = find_spot(ctx, {"USD", currency}, as_of, party_id))
         return {usd_leg{.currency = currency, .value = spot->value, .usd_is_base = true}, *spot};
-    throw refused("No spot of " + currency + " against USD was observed at or before the as-of, "
-                  "so the cross has no USD leg for " + currency + ".");
+    throw refused("No spot of " + currency +
+                  " against USD was observed at or before the as-of, "
+                  "so the cross has no USD leg for " +
+                  currency + ".");
 }
 
-funding_curve read_funding_curve(context ctx,
+funding_curve read_funding_curve(const context& ctx,
                                  const std::string& currency,
                                  const std::string& party_id,
                                  time_point as_of) {
     refdata_repo::ir_curve_bootstrap_config_repository config_repo;
-    std::vector<ores::refdata::domain::ir_curve_bootstrap_config> configs;
-    for (auto& config : config_repo.read_latest(ctx))
-        if (config.currency_code == currency && config.curve_family_role == "FUNDING" &&
-            (party_id.empty() || boost::uuids::to_string(config.party_id) == party_id))
-            configs.push_back(std::move(config));
+    // The currency's funding curves, read through the filter the store applies.
+    // The party is narrowed after the read, because the store keeps no filter
+    // for it and a currency has one or two funding curves.
+    ores::refdata::messaging::ir_curve_bootstrap_configs_filter funding;
+    funding.currency_code = currency;
+    funding.curve_family_role = "FUNDING";
+    auto configs = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return config_repo.read_latest(ctx, offset, limit, {}, funding);
+    });
+    std::erase_if(configs, [&](const auto& config) {
+        return !party_id.empty() && boost::uuids::to_string(config.party_id) != party_id;
+    });
     if (configs.empty())
         throw refused("No funding curve is configured for " + currency + ".");
     if (configs.size() > 1)
@@ -147,20 +158,20 @@ funding_curve read_funding_curve(context ctx,
     out.points = anchor_curve(read_discount_curve(ctx, config.output_series_id, set->as_of, refctx),
                               reference);
     out.interpolation =
-        quant::service::parse_interpolation_method_code(config.interpolation_method);
+        ores::refdata::mapping::parse_interpolation_method_code(config.interpolation_method);
     out.source = {.currency = currency,
                   .curve_name = config.name,
                   .output_series_id = boost::uuids::to_string(config.output_series_id),
                   .publish_id = boost::uuids::to_string(set->id),
                   .as_of = set->as_of,
                   .published_by = set->published_by,
-                  .state_code = set->withdrawn_at    ? "withdrawn"
-                                : set->superseded_at ? "superseded"
-                                                     : "published"};
+                  .state_code = set->withdrawn_at  ? "withdrawn" :
+                                set->superseded_at ? "superseded" :
+                                                     "published"};
     return out;
 }
 
-int read_spot_days(context ctx, const fx_pair_codes& pair) {
+int read_spot_days(const context& ctx, const fx_pair_codes& pair) {
     refdata_repo::currency_repository repo;
     int days = 0;
     for (const auto& code : {pair.base, pair.quote}) {
@@ -174,25 +185,7 @@ int read_spot_days(context ctx, const fx_pair_codes& pair) {
     return days;
 }
 
-quant::domain::business_day_calendar_set
-read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
-    refdata_repo::currency_pair_convention_calendar_repository links{ctx};
-    refdata_repo::calendar_date_repository dates{ctx};
-    std::vector<std::vector<ores::refdata::domain::calendar_date>> calendars;
-    for (const auto& link : links.read_latest_by_pair(pair_code)) {
-        codes += (codes.empty() ? "" : ",") + link.calendar_code;
-        calendars.push_back(dates.read_latest_by_calendar(link.calendar_code));
-        if (calendars.back().empty())
-            throw refused("Calendar " + link.calendar_code + " of " + pair_code +
-                          " has no materialised dates.");
-    }
-    if (calendars.empty())
-        throw refused("The convention of " + pair_code + " names no calendar.");
-    return joint_calendar(calendars);
-}
-
-computed_fx_forward_set
-answer(context ctx, const fx_forward_inputs& request) {
+computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& request) {
     const auto pair = parse_pair(request.pair_code);
     if (!pair)
         throw refused(pair.error());
@@ -202,10 +195,16 @@ answer(context ctx, const fx_forward_inputs& request) {
     if (conventions.empty())
         throw refused("No convention is published for " + request.pair_code + ".");
     const auto& convention = conventions.front();
+    // The dates the ladder publishes are the pair's rule's, read once: the same rule a surface
+    // dates its expiries with, so the ladder and the surface cannot disagree about a tenor.
+    const auto expiry_rule =
+        ores::refdata::service::read_pair_expiry_date_rule(ctx, request.pair_code);
+    if (!expiry_rule)
+        throw refused(expiry_rule.error());
 
     computed_fx_forward_set computed;
     computed.convention_version = convention.version;
-    const auto calendar = read_calendar(ctx, request.pair_code, computed.calendar_codes);
+    computed.calendar_codes = expiry_rule->calendar_codes;
     const int spot_days = read_spot_days(ctx, *pair);
     std::optional<boost::uuids::uuid> party;
     if (!request.party_id.empty())
@@ -245,10 +244,7 @@ answer(context ctx, const fx_forward_inputs& request) {
         throw refused("The funding curves of " + request.pair_code +
                       " use different interpolation methods.");
 
-    const auto roll = quant::domain::parse_business_day_convention_code(
-        convention.business_day_convention.value_or("ModifiedFollowing"));
-    auto dates = build_ladder_dates(
-        date_of(request.as_of), spot_days, roll, convention.end_of_month.value_or(false), calendar);
+    auto dates = build_ladder_dates(date_of(request.as_of), spot_days, expiry_rule->rule);
 
     const auto spot_date = dates.spot_date;
     const auto rows = quant::service::calculate_fx_forwards({.base_currency = pair->base,
@@ -289,8 +285,8 @@ answer(context ctx, const fx_forward_inputs& request) {
 
 }
 
-computed_fx_forward_set fx_forward_ladder_service::compute(context ctx,
-                                                          const fx_forward_inputs& inputs) {
+computed_fx_forward_set fx_forward_ladder_service::compute(const context& ctx,
+                                                           const fx_forward_inputs& inputs) {
     return answer(ctx, inputs);
 }
 

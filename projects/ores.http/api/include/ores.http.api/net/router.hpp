@@ -29,6 +29,8 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::http::net {
@@ -72,6 +74,13 @@ public:
      * Zero, the default, means the server's default applies.
      */
     route_builder& max_body(std::uint64_t bytes);
+
+    /**
+     * @brief Runs this route under a named rate policy rather than the default
+     * for its authentication position. The server refuses to start when no
+     * policy has the name.
+     */
+    route_builder& rate_limit(std::string_view policy);
 
     /**
      * @brief Makes the body a stream, and says where it goes.
@@ -190,6 +199,7 @@ private:
     std::vector<std::string> tags_;
     std::vector<domain::query_param> query_params_;
     std::uint64_t max_body_size_ = 0;
+    std::string rate_policy_;
     std::function<std::unique_ptr<domain::body_sink>(const domain::http_request&)> sink_;
     std::optional<domain::request_body_schema> body_schema_;
     std::optional<domain::response_schema> success_response_schema_;
@@ -246,6 +256,9 @@ public:
 
     /**
      * @brief Attempts to match a request and returns the matching route.
+     *
+     * When several patterns match, a literal segment beats a parameter at the
+     * first segment where they differ, whatever order they were added in.
      */
     std::optional<domain::route>
     match(domain::http_method method,
@@ -269,6 +282,9 @@ private:
     }
 
     std::vector<domain::route> routes_;
+
+    /// Each route's specificity, at the same index as the route, worked out once when added.
+    std::vector<std::vector<int>> ranks_;
 };
 
 }

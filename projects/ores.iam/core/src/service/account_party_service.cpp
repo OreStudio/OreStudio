@@ -25,7 +25,7 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-account_party_service::account_party_service(context ctx)
+account_party_service::account_party_service(const context& ctx)
     : repo_(ctx) {}
 
 std::vector<domain::account_party> account_party_service::list_account_parties() {

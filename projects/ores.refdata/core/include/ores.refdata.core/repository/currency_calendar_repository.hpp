@@ -75,7 +75,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit currency_calendar_repository(context ctx);
+    explicit currency_calendar_repository(const context& ctx);
 
     std::string sql();
 

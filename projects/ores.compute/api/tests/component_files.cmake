@@ -48,6 +48,7 @@ set(files
     "platform_protocol_codec_roundtrip_tests.cpp"
     "result_codec_roundtrip_tests.cpp"
     "result_protocol_codec_roundtrip_tests.cpp"
+    "run_files_protocol_codec_roundtrip_tests.cpp"
     "telemetry_protocol_codec_roundtrip_tests.cpp"
     "work_protocol_codec_roundtrip_tests.cpp"
     "workflow_batch_link_codec_roundtrip_tests.cpp"

@@ -44,10 +44,10 @@ static constexpr std::string_view badge_mapping_queue_group = "ores.dq.service";
 
 std::vector<ores::nats::service::subscription>
 register_badge_mapping_handlers(ores::nats::service::client& nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<badge_mapping_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<badge_mapping_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_badge_mappings_request::nats_subject,
         badge_mapping_queue_group,

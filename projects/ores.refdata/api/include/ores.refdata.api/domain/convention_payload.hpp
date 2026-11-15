@@ -73,7 +73,7 @@ struct convention_payload {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convention_payload>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &convention_payload::name},
         utility::codec::field{"oresmd_uri", &convention_payload::oresmd_uri},
     };

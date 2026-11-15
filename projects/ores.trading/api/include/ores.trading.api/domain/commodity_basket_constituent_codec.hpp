@@ -46,7 +46,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_basket_constituent>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &commodity_basket_constituent::version},
         utility::codec::field{"tenant_id", &commodity_basket_constituent::tenant_id},
         utility::codec::field{"trade_id", &commodity_basket_constituent::trade_id},
@@ -55,6 +55,7 @@ namespace ores::trading::domain {
                               &commodity_basket_constituent::trade_activity_id},
         utility::codec::field{"underlying_code", &commodity_basket_constituent::underlying_code},
         utility::codec::field{"weight", &commodity_basket_constituent::weight},
+        utility::codec::field{"initial_price", &commodity_basket_constituent::initial_price},
         utility::codec::field{"modified_by", &commodity_basket_constituent::modified_by},
         utility::codec::field{"performed_by", &commodity_basket_constituent::performed_by},
         utility::codec::field{"change_reason_code",

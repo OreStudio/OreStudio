@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_vol_surface_pillar_key::id},
     };
 }
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_vol_surface_pillar_write::id},
         utility::codec::field{"party_id", &fx_vol_surface_pillar_write::party_id},
         utility::codec::field{"blueprint_id", &fx_vol_surface_pillar_write::blueprint_id},
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &fx_vol_surface_pillar_change::write},
         utility::codec::field{"precondition", &fx_vol_surface_pillar_change::precondition},
     };
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_vol_surface_pillar_removal::key},
         utility::codec::field{"precondition", &fx_vol_surface_pillar_removal::precondition},
     };
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_vol_surface_pillar_lookup::key},
         utility::codec::field{"fx_vol_surface_pillar",
                               &fx_vol_surface_pillar_lookup::fx_vol_surface_pillar},
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillars_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"blueprint_id", &fx_vol_surface_pillars_filter::blueprint_id},
         utility::codec::field{"id_one_of", &fx_vol_surface_pillars_filter::id_one_of},
         utility::codec::field{"blueprint_id_one_of",
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_vol_surface_pillar_event::event_id},
         utility::codec::field{"key", &fx_vol_surface_pillar_event::key},
         utility::codec::field{"action", &fx_vol_surface_pillar_event::action},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_pillar_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_vol_surface_pillar",
                               &fx_vol_surface_pillar_version_key::fx_vol_surface_pillar},
         utility::codec::field{"version", &fx_vol_surface_pillar_version_key::version},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_pi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_vol_surface_pillar_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_vol_surface_pillar_versions_filter::version},
         utility::codec::field{"from_version", &fx_vol_surface_pillar_versions_filter::from_version},
         utility::codec::field{"to_version", &fx_vol_surface_pillar_versions_filter::to_version},
@@ -522,7 +522,7 @@ wire_fields(std::type_identity<fx_vol_surface_pillar_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fx_vol_surface_pillars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_vol_surface_pillars_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_pillars_request::limit},
         utility::codec::field{"order", &list_fx_vol_surface_pillars_request::order},
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<fx_vol_surface_pillar_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fx_vol_surface_pillars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_vol_surface_pillars_response::result},
         utility::codec::field{"pillars", &list_fx_vol_surface_pillars_response::pillars},
         utility::codec::field{"total", &list_fx_vol_surface_pillars_response::total},
@@ -556,7 +556,7 @@ wire_fields(std::type_identity<fx_vol_surface_pillar_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_vol_surface_pillar_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_vol_surface_pillar_request::key},
     };
 }
@@ -570,7 +570,7 @@ wire_fields(std::type_identity<fx_vol_surface_pillar_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_vol_surface_pillar_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_vol_surface_pillar_response::result},
         utility::codec::field{"fx_vol_surface_pillar",
                               &get_fx_vol_surface_pillar_response::fx_vol_surface_pillar},
@@ -587,7 +587,7 @@ wire_fields(std::type_identity<fx_vol_surface_pillar_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_vol_surface_pillars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_vol_surface_pillars_request::keys},
     };
 }
@@ -602,7 +602,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_pillars_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_vol_surface_pillars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_vol_surface_pillars_response::result},
         utility::codec::field{"entries", &get_many_fx_vol_surface_pillars_response::entries},
     };
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_pillars_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_vol_surface_pillar_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_fx_vol_surface_pillar_request::change},
         utility::codec::field{"intent", &put_fx_vol_surface_pillar_request::intent},
     };
@@ -632,7 +632,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_pillars_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_vol_surface_pillar_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_fx_vol_surface_pillar_response::result},
         utility::codec::field{"fx_vol_surface_pillar",
                               &put_fx_vol_surface_pillar_response::fx_vol_surface_pillar},
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_pillars_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_fx_vol_surface_pillars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_fx_vol_surface_pillars_request::changes},
         utility::codec::field{"intent", &put_many_fx_vol_surface_pillars_request::intent},
     };
@@ -665,7 +665,7 @@ wire_fields(std::type_identity<put_many_fx_vol_surface_pillars_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_fx_vol_surface_pillars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_fx_vol_surface_pillars_response::result},
         utility::codec::field{"pillars", &put_many_fx_vol_surface_pillars_response::pillars},
     };
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<put_many_fx_vol_surface_pillars_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_fx_vol_surface_pillar_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_fx_vol_surface_pillar_request::removal},
         utility::codec::field{"intent", &delete_fx_vol_surface_pillar_request::intent},
     };
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<put_many_fx_vol_surface_pillars_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_fx_vol_surface_pillar_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_fx_vol_surface_pillar_response::result},
     };
 }
@@ -711,7 +711,7 @@ wire_fields(std::type_identity<delete_fx_vol_surface_pillar_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_fx_vol_surface_pillars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_fx_vol_surface_pillars_request::removals},
         utility::codec::field{"intent", &delete_many_fx_vol_surface_pillars_request::intent},
     };
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<delete_many_fx_vol_surface_pillars_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_fx_vol_surface_pillars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_fx_vol_surface_pillars_response::result},
     };
 }
@@ -742,7 +742,7 @@ wire_fields(std::type_identity<delete_many_fx_vol_surface_pillars_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_pillar_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_vol_surface_pillar_versions_request::key},
         utility::codec::field{"offset", &list_fx_vol_surface_pillar_versions_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_pillar_versions_request::limit},
@@ -761,7 +761,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_pillar_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_pillar_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_vol_surface_pillar_versions_response::result},
         utility::codec::field{"versions", &list_fx_vol_surface_pillar_versions_response::versions},
         utility::codec::field{"total", &list_fx_vol_surface_pillar_versions_response::total},
@@ -778,7 +778,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_pillar_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_pillar_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_vol_surface_pillar_version_request::key},
     };
 }
@@ -793,7 +793,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_pillar_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_pillar_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_vol_surface_pillar_version_response::result},
         utility::codec::field{"version", &get_fx_vol_surface_pillar_version_response::version},
     };

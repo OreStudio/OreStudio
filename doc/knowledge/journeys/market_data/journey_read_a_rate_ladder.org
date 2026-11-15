@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: F95E55E2-C87F-48D9-925B-177D6D6E17C6
+:END:
+#+title: User Journey: Read a rate ladder
+#+description: A trader reads one currency's rate ladder at an as-of - every maturity as a row, every provider as a column, the consensus and the distance between them, with the curve the same quotes draw.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:marketdata:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader reads one currency's rate ladder at an as-of - every maturity as a row, every provider as a column, the consensus and the distance between them, with the curve the same quotes draw.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this currency's swap ladder at this as-of: every rung with its maturity,
+each provider's quote beside it, and how far apart they are. Then I want the same
+numbers as a curve." The journey is done when the person has read the ladder and
+can name the provider that moved and the rung where the market is thin.
+
+* Actor and trigger
+
+The actor is the trader or the quant. The trigger is a price to check against a
+curve, a basis to explain, a rung a provider has gone quiet on, or a curve that
+moved and a wish to see which rungs moved. The journey starts at *Market data /
+Rate ladder*, reached from the instrument search or the area's menu, and ends
+when the person leaves the page.
+
+The journey reads and changes nothing. Every number is an observation the
+deployment holds; a ladder is a read over those observations, not a record.
+
+* Steps
+
+1. *Open the ladder.* The person opens *Market data / Rate ladder*. The system
+   opens the currency, the instrument and the forward start the address states,
+   or the last view the person read.
+2. *Choose the currency and the instrument.* The person picks =AUD= and
+   =IR_SWAP=. The system answers the party's ladder for that currency,
+   instrument and forward start at the as-of.
+3. *Read what the numbers mean.* The system states the instrument, the forward
+   start, the day count, the quote type, the rung count, the source count and
+   the as-of, so no number is read without its facts.
+4. *Read a rung.* One row per maturity: the tenor code, the maturity date and
+   year fraction the server computed, and one column per provider that quotes
+   it. A provider that does not quote a rung is absent, shown as a gap, never
+   as a zero.
+5. *Read the consensus and the distance.* The system states the value it
+   derives across the quoting providers, the method it used, how many providers
+   it rested on, and the distance from the best quote. A consensus over one
+   value says so.
+6. *Read the spread.* The system states the 30Y − 2Y spread per provider and
+   across the consensus, which is what a ladder is read for.
+7. *Read where the market is thin.* The system lists the rungs a provider is
+   missing, so a gap is looked at rather than inferred from a dash.
+8. *Read the curve.* The person switches to the curve the same quotes draw. No
+   new read is taken; the shape and the ladder are one answer.
+9. *Meet a stale verdict.* A quote older than the instrument kind's threshold
+   is marked stale by the server. The person may sort by age; the person does
+   not decide what stale means.
+10. *Leave.* The address holds the currency, the instrument, the forward start,
+    the as-of and the provider set.
+
+* Screens and wireframes
+
+One read-only page: the facts row, the controls, the ladder table, the curve and
+the thin-market list, so a person never reads a number without its facts.
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| Open the ladder | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Choose the currency | Two pickers and one as-of | A view no rule draws yet: a derived read, not a list of records |
+| Read what the numbers mean | Labelled values in one row | The standard draws it, RS-PAGE-05 |
+| Read a rung | Table, rungs as rows, providers as columns | A view no rule draws yet: no pager, no sort by column header |
+| Read the consensus | One column and one distance column | A view no rule draws yet |
+| Read the spread | A total row under the ladder | A view no rule draws yet |
+| Read where the market is thin | A second table, one row per incomplete rung | A view no rule draws yet |
+| Read the curve | Segmented control over a chart | A view no rule draws yet; the client draws, the server states the order |
+
+The prototype is the visual record:
+[[file:../../prototypes/market_data/read-a-rate-ladder/index.html][Read a rate ladder]].
+
+* Prototype
+
+- Source :: =doc/prototypes/market_data/read-a-rate-ladder/index.html=
+- Note :: =doc/prototypes/market_data/read-a-rate-ladder.org=
+- Variants :: a every provider as a column; b the consensus with the distance; c one provider at a time
+- States :: =full=, =gap=, =stale=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| market series identity | the series each rung of each provider is | [[id:6C7FBF9C-21F4-44FE-8E12-5731BCE14399][Market series identity]] |
+| market observation | the quote at the as-of | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][Market observation]] |
+| provider | the column and its kind | [[id:5604CFFC-EDD8-4291-BF56-AB7EEE0007E7][Provider]] |
+| series axis | the rung values and their order | [[id:D8551E84-3E2F-4A12-92A6-03714EBEFCE9][Series axis]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the currency | the instrument catalogue, to name the ladder | =marketdata.v1.ops.list_instruments= | missing |
+| Read a rung | the ladder: rungs, maturities, quotes, consensus | =marketdata.v1.ops.get_rate_ladder= | missing |
+| Read a rung's history | the ticks behind one cell | =marketdata.v1.ops.get_series_ticks= | exists |
+| Read the curve | the shape over the rungs | =marketdata.v1.ops.get_rate_ladder= | missing |
+
+=marketdata.v1.ops.get_series_ticks= is per series, so a client that draws this
+ladder from it must join several series, order the rungs itself and compute the
+maturity dates, the consensus and the spread. That is the work the operation
+removes.
+
+* What is missing
+
+- =marketdata.v1.ops.get_rate_ladder= — rungs with maturity date, year fraction,
+  one quote per provider and the consensus, ordered by maturity. The maturity
+  date needs the calendar and the day count, which are server facts; until the
+  operation exists the screen cannot show a date it is allowed to trust.
+- The rung order. A rung quoted with a convention (=ON=, =TN=, =SN=) sorts
+  before =1W= and carries its own maturity date; the server decides the order
+  and the client may re-sort only within it.
+- The consensus method. The prototype shows one; the server must state which
+  (=median=, =mean=, =first=) so two clients do not disagree, and must state how
+  many providers it rested on.
+- The staleness verdict, per quote and per instrument kind. Today the threshold
+  would be a client constant.
+
+* Related journeys
+
+- [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] — where the ladder is opened from.
+- [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] — the curve the ladder is bootstrapped into.
+- [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]] — the same reading for FX.
+
+* Related knowledge
+
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — what a ladder is, as a display surface.
+- [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]] — the spot base a rung is quoted off.
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ownership and the ticking guarantee]] — who owns an observation.
+
+* See also
+
+- [[file:market_data.org][Market data journeys]] — the group this journey belongs to.
+- [[file:../../prototypes/market_data/read-a-rate-ladder.org][Read a rate ladder prototype]] — the design note.

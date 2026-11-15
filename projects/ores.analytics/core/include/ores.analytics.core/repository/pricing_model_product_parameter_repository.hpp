@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::pricing_model_product_parameter& v);
-    void write(context ctx, const std::vector<domain::pricing_model_product_parameter>& v);
+    void write(const context& ctx, const domain::pricing_model_product_parameter& v);
+    void write(const context& ctx, const std::vector<domain::pricing_model_product_parameter>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::pricing_model_product_parameter& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of pricing model product parameters, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::pricing_model_product_parameter>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,29 @@ public:
      * @brief Reads latest pricing model product parameters, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::pricing_model_product_parameter> read_latest(context ctx);
-    std::vector<domain::pricing_model_product_parameter> read_latest(context ctx,
+    std::vector<domain::pricing_model_product_parameter> read_latest(const context& ctx);
+    std::vector<domain::pricing_model_product_parameter> read_latest(const context& ctx,
                                                                      const std::string& id);
     std::vector<domain::pricing_model_product_parameter>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest pricing model product parameters filtered by parameter_name.
      */
     std::vector<domain::pricing_model_product_parameter>
-    read_latest_by_parameter_name(context ctx, const std::string& parameter_name);
+    read_latest_by_parameter_name(const context& ctx, const std::string& parameter_name);
+
+    /**
+     * @brief Reads latest pricing model product parameters filtered by a set of parameter_name
+     * values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::pricing_model_product_parameter>
+    read_latest_by_parameter_name(const context& ctx,
+                                  const std::vector<std::string>& parameter_names);
 
     /**
      * @brief Reads the newest pricing model product parameters filtered by parameter_name, current
@@ -129,13 +140,13 @@ public:
      * party.
      */
     std::vector<domain::pricing_model_product_parameter>
-    read_any_by_parameter_name(context ctx, const std::string& parameter_name);
+    read_any_by_parameter_name(const context& ctx, const std::string& parameter_name);
 
 
     /**
      * @brief Reads all pricing model product parameters, possibly filtered by primary key.
      */
-    std::vector<domain::pricing_model_product_parameter> read_all(context ctx,
+    std::vector<domain::pricing_model_product_parameter> read_all(const context& ctx,
                                                                   const std::string& id);
 
     /**
@@ -148,7 +159,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::pricing_model_product_parameter>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Whether a list of pricing model product parameters can be ordered by a field.
@@ -167,7 +178,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::pricing_model_product_parameter>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -181,7 +192,7 @@ public:
      * @return Total number of active pricing model product parameters
      */
     std::uint32_t get_total_parameter_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::pricing_model_product_parameters_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -189,7 +200,7 @@ public:
     /**
      * @brief Deletes a pricing model product parameter by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -211,31 +222,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes pricing model product parameters by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::pricing_model_product_parameter& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::pricing_model_product_parameter
-    apply_claim(context ctx,
-                const domain::pricing_model_product_parameter& v,
-                const ores::utility::domain::precondition& claim);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 };
 
 }

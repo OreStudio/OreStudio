@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 
+#include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
@@ -179,6 +180,11 @@ struct trade_generation_scope final {
     std::vector<std::string> inflation_index_codes;
     /// The LEIs the credit family draws its reference entities from.
     std::vector<std::string> credit_reference_entities;
+    /**
+     * @brief The tenant's conventions, which a trade builder reads the terms
+     * it does not draw from.
+     */
+    ores::marketdata::conventions::convention_set conventions;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -232,95 +238,6 @@ struct trade_generation_scope final {
  * Keeping them here rather than on the slot is what lets a slot describe a
  * family that has no security at all.
  */
-/**
- * @brief One constituent of a worst-of basket.
- *
- * The kind travels with the code because the store refuses a code the kind's
- * catalogue does not hold, and the price is what the constituent opened at.
- */
-struct equity_basket_member final {
-    std::string name;
-    std::string kind;
-    std::optional<double> weight;
-    std::optional<double> initial_price;
-};
-
-/**
- * @brief One determination period of a worst-of basket.
- *
- * The document states its two level lists one entry per date, so a period
- * carries both levels and the ordinal that pairs them with the schedule.
- */
-struct equity_basket_period final {
-    std::optional<std::chrono::year_month_day> period_date;
-    std::optional<double> knock_out_level;
-    std::optional<double> fixed_trigger_level;
-};
-
-/**
- * @brief One range an accumulator pays inside, and the leverage it pays at.
- */
-struct equity_range_bound final {
-    std::optional<double> range_from;
-    std::optional<double> range_to;
-    std::optional<double> leverage;
-};
-
-/**
- * @brief The facts an inflation trade states.
- *
- * An inflation swap is a fixed rate against a published index. The index is the
- * tenant's own curve name, so a trade resolves to the curve the seed published;
- * the base is the index level the trade is struck from, and the rate and the
- * notional are the swap's own.
- */
-struct inflation_terms final {
-    std::string currency;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    double notional = 0.0;
-    double fixed_rate = 0.0;
-    std::string inflation_index_code;
-    double base_cpi = 0.0;
-};
-
-/**
- * @brief The facts a credit trade states.
- *
- * The reference is typed, so a plan states whether it names a legal entity or
- * an identifier of the system's own data.
- */
-struct credit_terms final {
-    std::string reference_entity_id_type;
-    std::string reference_entity_id;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-};
-
-/**
- * @brief The facts a bond trade states.
- */
-struct bond_terms final {
-    std::string security_id;
-    boost::uuids::uuid issue_id;
-    /**
-     * @brief The counterparty that issued the security. It is a fact of the
-     * security and not of the trade, so it need not be the trade's own.
-     */
-    boost::uuids::uuid issuer_id;
-    std::chrono::year_month_day issue_date;
-    std::chrono::year_month_day maturity_date;
-    /// The security's original term in years, not the trade's remaining life.
-    std::uint32_t tenor_years = 1;
-    std::string calendar = "TARGET";
-    /**
-     * @brief The curve this trade's bond is discounted on, as the oresmd URI of
-     * the market series that curve is, or empty when the population states
-     * none.
-     */
-    std::string reference_curve_id;
-};
-
 /**
  * @brief The facts the commodity planner draws, before it states its rows.
  *
@@ -376,220 +293,12 @@ struct commodity_terms final {
 };
 
 /**
- * @brief The facts the rate planner draws, before it states its rows.
- *
- * The family states rows in the plan, so this is the drawing's own shape and
- * never a slot's bag.
- *
- * An interest rate trade reduces to one fixed leg against one floating leg,
- * whatever its trade type: the type decides the exercise and payment features
- * the specialised tables would hold, and this states the legs every routed
- * type has. Every code here is the reference data's own, so the generator
- * invents no vocabulary of its own.
- */
-struct rate_terms final {
-    /// The currency both legs are denominated in.
-    std::string currency;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    /// The notional both legs state, in the currency above.
-    double notional = 0.0;
-    /// What the fixed leg pays, as a decimal: 0.05 is five per cent, which is
-    /// the unit the store holds the rate in.
-    double fixed_rate = 0.0;
-    std::string fixed_day_count_fraction_code;
-    std::string fixed_business_day_convention_code;
-    std::string fixed_payment_frequency_code;
-    /**
-     * @brief The index the floating leg resets on, as the floating index
-     * catalogue spells it, such as =USD-SOFR= or =GBP-SONIA=.
-     */
-    std::string floating_index_code;
-    /// What the floating leg pays over that index, as a decimal.
-    double spread = 0.0;
-    std::string floating_day_count_fraction_code;
-    std::string floating_business_day_convention_code;
-    std::string floating_payment_frequency_code;
-
-    /**
-     * @brief The currency the floating leg is denominated in, when it differs
-     * from the fixed leg's. Empty for a trade in one currency, which is most
-     * of them: only a cross currency swap states two.
-     */
-    std::string floating_currency;
-    /// The strike a cap, a floor or a swaption states, as a decimal.
-    std::optional<double> strike;
-    /**
-     * @brief The date a swaption may be exercised.
-     *
-     * It belongs to the trade and not to the maturity, and it falls after the
-     * as-of date: an option that expired before the population was written
-     * exercises nothing.
-     */
-    std::optional<std::chrono::year_month_day> expiry_date;
-};
-
-/**
  * @brief The terms of one slot, in the shape its asset class states them.
  *
  * The slot carries the keys every family shares and this carries the rest, so
  * a reader of a bond slot sees bond facts and a reader of another family never
  * has to ask what a security is.
  */
-
-/**
- * @brief The facts the fx planner draws, before it states its rows.
- *
- * The family states rows in the plan, so this is the drawing's own shape and
- * never a slot's bag.
- *
- * The sixteen routed types reach seven tables, and the tables state three
- * idioms: a bought currency against a sold one, a digital payoff struck against
- * a foreign and a domestic currency, and an index with a reference notional.
- * One payload states all three with the fields a type does not use left empty,
- * which is the shape @c commodity_terms already takes for its eight.
- */
-struct fx_terms final {
-    /// The currency bought, and how much of it.
-    std::string bought_currency;
-    double bought_amount = 0.0;
-    /// The currency sold, and how much of it.
-    std::string sold_currency;
-    double sold_amount = 0.0;
-    /// The date a forward settles on.
-    std::chrono::year_month_day value_date;
-    /// How the trade settles: =Cash= or =Physical=.
-    std::string settlement;
-
-    /// The side an option or a one-directional trade takes.
-    std::string option_type;
-    /// =European=, =American= or =Bermudan=.
-    std::string exercise_style;
-    /// The date an option expires or a term starts.
-    std::chrono::year_month_day expiry_date;
-    /// =Long= or =Short=.
-    std::string long_short;
-    /// The strike an option, a variance swap or an accumulator states.
-    std::optional<double> strike;
-
-    /// The barrier a knock-out or a knock-in trade states.
-    std::string barrier_type;
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
-
-    /// The currencies a digital states, and the payoff it makes.
-    std::string foreign_currency;
-    std::string domestic_currency;
-    std::string payoff_currency;
-    std::optional<double> payoff_amount;
-
-    /// The index and notional an average forward, a variance swap or an
-    /// accumulator is written on.
-    std::string underlying_code;
-    std::string fx_index;
-    std::string reference_currency;
-    double reference_notional = 0.0;
-    std::string settlement_currency;
-    double settlement_notional = 0.0;
-    /// The currencies and amounts an accumulator fixes against.
-    std::string currency;
-    double fixing_amount = 0.0;
-    std::optional<double> target_amount;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day end_date;
-    std::optional<std::chrono::year_month_day> payment_date;
-    std::optional<double> knock_out_barrier;
-    /// =Variance= or =Volatility=, the moment a variance swap states.
-    std::string moment_type;
-};
-
-/**
- * @brief What the equity family's nine tables state.
- *
- * The union of the family rather than a struct per product, because the
- * planner makes one payload and the writer reads from it the fields the routed
- * table states. A member a product does not state keeps its default and the
- * writer never reads it.
- *
- * A basket is rows and not a string: the constituents carry their kind and the
- * price each opened at, and the periods carry the levels the determination
- * dates state, so a worst-of basket of two names over four dates states two
- * constituents and four periods.
- */
-struct equity_terms final {
-    /// The underlying a single-name product states.
-    std::string underlying_name;
-    /// The kind the underlying belongs to: =Equity=, =FX= or =Commodity=.
-    std::string underlying_kind;
-    std::string currency;
-    /// The notional a swap or an option states, or the quantity of a forward
-    /// or a position.
-    double notional = 0.0;
-    double quantity = 0.0;
-    /// The price a forward, a position or an option states.
-    std::optional<double> fixed_price;
-    std::optional<double> strike;
-
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    std::chrono::year_month_day expiry_date;
-    std::optional<std::chrono::year_month_day> averaging_start_date;
-    std::optional<std::chrono::year_month_day> averaging_end_date;
-
-    /// =Call= or =Put=, and =European=, =American= or =Bermudan=.
-    std::string option_type;
-    std::string exercise_type;
-    /// =Cash= or =Physical=.
-    std::string settlement_type;
-    /// =Long= or =Short=.
-    std::string long_short;
-
-    /// The barriers a barrier or a digital product states.
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
-    std::string lower_barrier_type;
-    std::string upper_barrier_type;
-    std::optional<double> barrier_level;
-    std::string barrier_type;
-    std::optional<double> rebate;
-    std::optional<double> payout_amount;
-
-    /// How a swap returns, and how often it pays.
-    std::string return_type;
-    std::string payment_frequency_code;
-    /// How an Asian averages, and how often a cliquet observes.
-    std::string average_type;
-    std::string cliquet_frequency;
-    /// =Variance= or =Volatility=, the moment a variance swap states.
-    std::string moment_type;
-    std::optional<double> variance_strike;
-
-    /// The accumulator's own terms.
-    std::string fixing_frequency;
-    std::optional<double> knock_out_level;
-    std::optional<double> target_amount;
-    std::string target_type;
-    std::string payoff_type;
-    /// The TaRF's points and the cliquet's caps.
-    std::optional<double> target_points;
-    std::optional<double> moneyness;
-    std::optional<double> local_cap;
-    std::optional<double> local_floor;
-    std::optional<double> global_cap;
-    std::optional<double> global_floor;
-    std::uint32_t settlement_days = 0;
-    std::optional<double> premium;
-    std::string premium_currency;
-    std::optional<std::chrono::year_month_day> premium_payment_date;
-
-    /// The constituents of a worst-of basket, in the document's order.
-    std::vector<equity_basket_member> basket;
-    /// The periods a worst-of basket observes, in the document's order.
-    std::vector<equity_basket_period> periods;
-    /// The ranges an accumulator pays inside.
-    std::vector<equity_range_bound> range_bounds;
-};
-
 
 /**
  * @brief One trade the population states, with every reference already

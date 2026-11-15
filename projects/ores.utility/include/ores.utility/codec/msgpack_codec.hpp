@@ -53,10 +53,10 @@ struct msgpack_codec;
 namespace detail {
 
 template <typename T, typename... Members>
-void write_object(msgpack_packer* pk, const T& v, const std::tuple<field<T, Members>...>& fields) {
+void write_object(msgpack_packer* pk, const T& v, const field_list<field<T, Members>...>& fields) {
     if (msgpack_pack_map(pk, sizeof...(Members)) != 0)
         throw std::runtime_error("Could not pack an object");
-    std::apply(
+    apply_fields(
         [&](const auto&... f) {
             (
                 [&] {
@@ -72,10 +72,10 @@ void write_object(msgpack_packer* pk, const T& v, const std::tuple<field<T, Memb
 }
 
 template <typename T, typename... Members>
-void read_object(const msgpack_object& v, T& out, const std::tuple<field<T, Members>...>& fields) {
+void read_object(const msgpack_object& v, T& out, const field_list<field<T, Members>...>& fields) {
     if (v.type != MSGPACK_OBJECT_MAP)
         throw std::invalid_argument("Not an object");
-    std::apply(
+    apply_fields(
         [&](const auto&... f) {
             (
                 [&] {

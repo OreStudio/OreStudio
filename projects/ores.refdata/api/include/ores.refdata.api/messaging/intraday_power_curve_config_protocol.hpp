@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &intraday_power_curve_config_key::id},
     };
 }
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &intraday_power_curve_config_write::id},
         utility::codec::field{"curve_definition_id",
                               &intraday_power_curve_config_write::curve_definition_id},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &intraday_power_curve_config_change::write},
         utility::codec::field{"precondition", &intraday_power_curve_config_change::precondition},
     };
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &intraday_power_curve_config_removal::key},
         utility::codec::field{"precondition", &intraday_power_curve_config_removal::precondition},
     };
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &intraday_power_curve_config_lookup::key},
         utility::codec::field{"intraday_power_curve_config",
                               &intraday_power_curve_config_lookup::intraday_power_curve_config},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &intraday_power_curve_configs_filter::id_one_of},
     };
 }
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intraday_power_curve_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &intraday_power_curve_config_event::event_id},
         utility::codec::field{"key", &intraday_power_curve_config_event::key},
         utility::codec::field{"action", &intraday_power_curve_config_event::action},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<intraday_power_curve_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "intraday_power_curve_config",
             &intraday_power_curve_config_version_key::intraday_power_curve_config},
@@ -514,7 +514,7 @@ wire_fields(std::type_identity<intraday_power_curve_config_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<intraday_power_curve_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &intraday_power_curve_config_versions_filter::version},
         utility::codec::field{"from_version",
                               &intraday_power_curve_config_versions_filter::from_version},
@@ -533,7 +533,7 @@ wire_fields(std::type_identity<intraday_power_curve_config_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_intraday_power_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_intraday_power_curve_configs_request::offset},
         utility::codec::field{"limit", &list_intraday_power_curve_configs_request::limit},
         utility::codec::field{"order", &list_intraday_power_curve_configs_request::order},
@@ -552,7 +552,7 @@ wire_fields(std::type_identity<list_intraday_power_curve_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_intraday_power_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_intraday_power_curve_configs_response::result},
         utility::codec::field{
             "intraday_power_curve_configs",
@@ -571,7 +571,7 @@ wire_fields(std::type_identity<list_intraday_power_curve_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_intraday_power_curve_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_intraday_power_curve_config_request::key},
     };
 }
@@ -586,7 +586,7 @@ wire_fields(std::type_identity<get_intraday_power_curve_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_intraday_power_curve_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_intraday_power_curve_config_response::result},
         utility::codec::field{
             "intraday_power_curve_config",
@@ -604,7 +604,7 @@ wire_fields(std::type_identity<get_intraday_power_curve_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_intraday_power_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_intraday_power_curve_configs_request::keys},
     };
 }
@@ -619,7 +619,7 @@ wire_fields(std::type_identity<get_many_intraday_power_curve_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_intraday_power_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_intraday_power_curve_configs_response::result},
         utility::codec::field{"entries", &get_many_intraday_power_curve_configs_response::entries},
     };
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_many_intraday_power_curve_configs_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_intraday_power_curve_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_intraday_power_curve_config_request::change},
         utility::codec::field{"intent", &put_intraday_power_curve_config_request::intent},
     };
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<put_intraday_power_curve_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_intraday_power_curve_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_intraday_power_curve_config_response::result},
         utility::codec::field{
             "intraday_power_curve_config",
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<put_intraday_power_curve_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_intraday_power_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_intraday_power_curve_configs_request::changes},
         utility::codec::field{"intent", &put_many_intraday_power_curve_configs_request::intent},
     };
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<put_many_intraday_power_curve_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_intraday_power_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_intraday_power_curve_configs_response::result},
         utility::codec::field{
             "intraday_power_curve_configs",
@@ -703,7 +703,7 @@ wire_fields(std::type_identity<put_many_intraday_power_curve_configs_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_intraday_power_curve_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_intraday_power_curve_config_request::removal},
         utility::codec::field{"intent", &delete_intraday_power_curve_config_request::intent},
     };
@@ -719,7 +719,7 @@ wire_fields(std::type_identity<delete_intraday_power_curve_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_intraday_power_curve_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_intraday_power_curve_config_response::result},
     };
 }
@@ -734,7 +734,7 @@ wire_fields(std::type_identity<delete_intraday_power_curve_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_intraday_power_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_intraday_power_curve_configs_request::removals},
         utility::codec::field{"intent", &delete_many_intraday_power_curve_configs_request::intent},
@@ -751,7 +751,7 @@ wire_fields(std::type_identity<delete_many_intraday_power_curve_configs_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_intraday_power_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_intraday_power_curve_configs_response::result},
     };
 }
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<delete_many_intraday_power_curve_configs_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_intraday_power_curve_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_intraday_power_curve_config_versions_request::key},
         utility::codec::field{"offset", &list_intraday_power_curve_config_versions_request::offset},
         utility::codec::field{"limit", &list_intraday_power_curve_config_versions_request::limit},
@@ -785,7 +785,7 @@ wire_fields(std::type_identity<list_intraday_power_curve_config_versions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_intraday_power_curve_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_intraday_power_curve_config_versions_response::result},
         utility::codec::field{"versions",
@@ -804,7 +804,7 @@ wire_fields(std::type_identity<list_intraday_power_curve_config_versions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_intraday_power_curve_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_intraday_power_curve_config_version_request::key},
     };
 }
@@ -819,7 +819,7 @@ wire_fields(std::type_identity<get_intraday_power_curve_config_version_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_intraday_power_curve_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_intraday_power_curve_config_version_response::result},
         utility::codec::field{"version",
                               &get_intraday_power_curve_config_version_response::version},

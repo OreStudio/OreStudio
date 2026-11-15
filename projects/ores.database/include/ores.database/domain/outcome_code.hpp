@@ -77,6 +77,7 @@ enum class outcome_code {
     approval_required,
     party_required,
     not_subscribed,
+    system_tenant_required,
     range_inverted,
     range_too_large,
     series_ambiguous,
@@ -128,6 +129,8 @@ enum class outcome_code {
             return "party_required";
         case outcome_code::not_subscribed:
             return "not_subscribed";
+        case outcome_code::system_tenant_required:
+            return "system_tenant_required";
         case outcome_code::range_inverted:
             return "range_inverted";
         case outcome_code::range_too_large:
@@ -185,6 +188,8 @@ enum class outcome_code {
         case outcome_code::party_required:
             return ores::utility::domain::outcome::denied;
         case outcome_code::not_subscribed:
+            return ores::utility::domain::outcome::denied;
+        case outcome_code::system_tenant_required:
             return ores::utility::domain::outcome::denied;
         case outcome_code::range_inverted:
             return ores::utility::domain::outcome::invalid;
@@ -296,6 +301,9 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
                 "This read of the {entity} needs a subscription to the {field} {value} that holds "
                 "display or non-display, and this party holds none that does.",
                 a);
+        case outcome_code::system_tenant_required:
+            return detail::fill(
+                "Only the system tenant changes the {entity} rows, which every tenant shares.", a);
         case outcome_code::range_inverted:
             return detail::fill("The range of the {entity} ends before it starts.", a);
         case outcome_code::range_too_large:

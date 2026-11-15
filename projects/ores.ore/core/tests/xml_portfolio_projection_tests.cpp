@@ -39,11 +39,10 @@
 
 namespace {
 
-/// The script's row a scripted instrument carries, or nothing for another family.
-const ores::trading::domain::scripted_instrument*
-scripted_of(const ores::trading::domain::trade_instrument& instrument) {
-    const auto* data = std::get_if<ores::trading::domain::scripted_instrument_data>(&instrument);
-    return data == nullptr ? nullptr : &data->instrument;
+/// The carrier a scripted instrument travels in, with the rows beside its own.
+const ores::trading::domain::scripted_instrument_data*
+scripted_data_of(const ores::trading::domain::trade_instrument& instrument) {
+    return std::get_if<ores::trading::domain::scripted_instrument_data>(&instrument);
 }
 
 using namespace ores::logging;
@@ -1257,12 +1256,23 @@ TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes",
     CHECK(items[0].envelope->additional_fields->at(0).name == "Trader");
     CHECK(items[0].envelope->additional_fields->at(0).value == "marco");
 
-    const auto* instrument = scripted_of(items[0].instrument);
-    REQUIRE(instrument != nullptr);
-    CHECK(instrument->script_name == "heston");
-    CHECK(instrument->script_body == "Payoff = 1;");
-    CHECK(instrument->parameters_json == "{\"NPV\":\"Option\",\"PutCall\":\"1\"}");
-    CHECK(instrument->underlyings_json == "[\"SPX\"]");
+    const auto* scripted = scripted_data_of(items[0].instrument);
+    REQUIRE(scripted != nullptr);
+    CHECK(scripted->instrument.script_name == "heston");
+    CHECK(scripted->instrument.script_body == "Payoff = 1;");
+    CHECK(scripted->instrument.script_npv == "Option");
+
+    // The script's variables are rows, and its result is the column beside the
+    // body rather than one of them.
+    REQUIRE(scripted->parameters.size() == 2);
+    CHECK(scripted->parameters[0].name == "PutCall");
+    CHECK(scripted->parameters[0].declared_type == "Number");
+    CHECK(scripted->parameters[0].shape == "scalar");
+    CHECK(scripted->parameters[0].value == std::optional<std::string>("1"));
+    CHECK(scripted->parameters[1].name == "Underlying_0");
+    CHECK(scripted->parameters[1].declared_type == "Index");
+    CHECK(scripted->parameters[1].value == std::optional<std::string>("SPX"));
+    CHECK(scripted->parameter_values.empty());
 }
 
 TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
@@ -1282,10 +1292,9 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     item.envelope = items[0].envelope;
 
     ores::trading::domain::instrument_batch batch;
-    auto instrument =
-        std::get<ores::trading::domain::scripted_instrument_data>(items[0].instrument).instrument;
-    instrument.identity.trade_id = trade_id;
-    batch.scripted_instruments.push_back(std::move(instrument));
+    auto instrument = items[0].instrument;
+    ores::trading::domain::stamp_ids(instrument, trade_id);
+    ores::trading::domain::append_instrument(batch, instrument);
 
     const auto built = portfolio_projection::reverse({item}, batch);
     REQUIRE(built.trade.size() == 1);
@@ -1299,12 +1308,16 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     REQUIRE(back[0].envelope->additional_fields.has_value());
     CHECK(back[0].envelope->additional_fields->at(0).value == "marco");
 
-    const auto* round = scripted_of(back[0].instrument);
+    const auto* round = scripted_data_of(back[0].instrument);
     REQUIRE(round != nullptr);
-    CHECK(round->script_name == "heston");
-    CHECK(round->script_body == "Payoff = 1;");
-    CHECK(round->parameters_json == "{\"NPV\":\"Option\",\"PutCall\":\"1\"}");
-    CHECK(round->underlyings_json == "[\"SPX\"]");
+    CHECK(round->instrument.script_name == "heston");
+    CHECK(round->instrument.script_body == "Payoff = 1;");
+    CHECK(round->instrument.script_npv == "Option");
+    REQUIRE(round->parameters.size() == 2);
+    CHECK(round->parameters[0].name == "PutCall");
+    CHECK(round->parameters[0].value == std::optional<std::string>("1"));
+    CHECK(round->parameters[1].name == "Underlying_0");
+    CHECK(round->parameters[1].value == std::optional<std::string>("SPX"));
 }
 
 TEST_CASE("a_portfolio_document_projects_an_fx_forward_and_an_fx_swap",
@@ -3246,29 +3259,60 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
         CHECK(again.front().anchor.trade_type == item.anchor.trade_type);
     }
 
-    // The scripted row states no parameter of its own, so the data element the
+    // The scripted row states no variable of its own, so the data element the
     // schema requires carries the script's own result and nothing else.
-    const auto* scripted = scripted_of(items[0].instrument);
+    const auto* scripted = scripted_data_of(items[0].instrument);
     REQUIRE(scripted != nullptr);
-    CHECK(scripted->script_name == "heston");
-    CHECK(scripted->parameters_json == R"({"NPV":"Option"})");
-    CHECK(scripted->underlyings_json.empty());
+    CHECK(scripted->instrument.script_name == "heston");
+    CHECK(scripted->instrument.script_npv == "Option");
+    CHECK(scripted->parameters.empty());
+    CHECK(scripted->parameter_values.empty());
 
-    // The flat table has no column for an underlying's type, so the type rides
-    // in the parameters and comes back out of the document it is written to.
-    const auto* double_digital = scripted_of(items[1].instrument);
+    // A product ORE reads through a class of its own states its terms as
+    // parameters, and its underlyings as rows carrying the type the flat table
+    // has no parameter for.
+    const auto* double_digital = scripted_data_of(items[1].instrument);
     REQUIRE(double_digital != nullptr);
-    CHECK(
-        double_digital->underlyings_json ==
-        R"(["oresmd://fx/EUR?type=fixing&index=fx&source=TR20H&ccy=USD","oresmd://commodity/NYMEX:CL?type=fixing&index=commodity"])");
-    CHECK(double_digital->parameters_json.find(R"("Underlying2Type":"Commodity")") !=
-          std::string::npos);
+    REQUIRE(double_digital->instrument_underlyings.size() == 2);
+    const auto& first_underlying = double_digital->instrument_underlyings[0];
+    const auto& second_underlying = double_digital->instrument_underlyings[1];
+    CHECK(first_underlying.underlying_role == "underlying1");
+    CHECK(first_underlying.underlying_type == "FX");
+    CHECK(first_underlying.name == "oresmd://fx/EUR?type=fixing&index=fx&source=TR20H&ccy=USD");
+    CHECK(second_underlying.underlying_role == "underlying2");
+    CHECK(second_underlying.underlying_type == "Commodity");
+    CHECK(second_underlying.name == "oresmd://commodity/NYMEX:CL?type=fixing&index=commodity");
+
+    const auto parameter_named = [](const ores::trading::domain::scripted_instrument_data& data,
+                                    std::string_view name) {
+        const auto found = std::ranges::find_if(
+            data.parameters, [&](const auto& parameter) { return parameter.name == name; });
+        return found == data.parameters.end() ? nullptr : &*found;
+    };
+    const auto* position = parameter_named(*double_digital, "Position");
+    REQUIRE(position != nullptr);
+    CHECK(position->declared_type == "enumeration");
+    CHECK(position->value == std::optional<std::string>("Long"));
+    const auto* payout = parameter_named(*double_digital, "BinaryPayout");
+    REQUIRE(payout != nullptr);
+    CHECK(payout->declared_type == "decimal");
+    CHECK(payout->value == std::optional<std::string>("1000000"));
 
     const auto double_digital_round = rebuild(items[1]);
-    const auto* double_digital_again = scripted_of(double_digital_round.instrument);
+    const auto* double_digital_again = scripted_data_of(double_digital_round.instrument);
     REQUIRE(double_digital_again != nullptr);
-    CHECK(double_digital_again->underlyings_json == double_digital->underlyings_json);
-    CHECK(double_digital_again->parameters_json == double_digital->parameters_json);
+    CHECK(double_digital_again->parameters.size() == double_digital->parameters.size());
+    for (std::size_t i = 0; i < double_digital->parameters.size(); ++i) {
+        CHECK(double_digital_again->parameters[i].name == double_digital->parameters[i].name);
+        CHECK(double_digital_again->parameters[i].value == double_digital->parameters[i].value);
+    }
+    REQUIRE(double_digital_again->instrument_underlyings.size() == 2);
+    for (std::size_t i = 0; i < 2; ++i) {
+        CHECK(double_digital_again->instrument_underlyings[i].name ==
+              double_digital->instrument_underlyings[i].name);
+        CHECK(double_digital_again->instrument_underlyings[i].underlying_type ==
+              double_digital->instrument_underlyings[i].underlying_type);
+    }
 
     // The cliquet row keeps no frequency, so the schedule element the schema
     // requires is stated without a rule rather than dropped.
@@ -3508,53 +3552,233 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     auto lg(make_logger(test_suite));
 
     /*
-     * The population states a script, the underlyings it observes and the
-     * parameters the script reads. The export writes those into the document's
-     * own members and the import reads them back into the same keys, so a
-     * scripted trade survives the round trip rather than exporting as a name
-     * with nothing behind it.
+     * The population states the script's variables as rows and its underlyings
+     * as rows of their own. The export writes them into the document's element
+     * and the import reads them back into the same rows, so a scripted trade
+     * survives the round trip rather than exporting as a name with nothing
+     * behind it.
      */
-    const auto scripted_item =
-        [](std::string trade_type, std::string script_name, std::string parameters) {
-            ores::ore::xml::trade_import_item item;
-            item.ore_id = "Scripted-1";
-            item.anchor.trade_type = trade_type;
-            ores::trading::domain::scripted_instrument row;
-            row.identity.trade_type_code = trade_type;
-            row.script_name = std::move(script_name);
-            row.underlyings_json = R"(["GB0005405286","US0378331005"])";
-            row.parameters_json = std::move(parameters);
-            item.instrument = ores::trading::domain::scripted_instrument_data{std::move(row)};
-            return item;
-        };
+    const auto scripted_data = [](std::string trade_type, std::string script_name) {
+        ores::trading::domain::scripted_instrument row;
+        row.identity.trade_type_code = trade_type;
+        row.script_name = std::move(script_name);
+        return ores::trading::domain::scripted_instrument_data{std::move(row)};
+    };
+    const auto add_parameter = [](ores::trading::domain::scripted_instrument_data& data,
+                                  std::string name,
+                                  std::string declared_type,
+                                  std::string value) {
+        ores::trading::domain::scripted_parameter parameter;
+        parameter.sequence_number = static_cast<int>(data.parameters.size()) + 1;
+        parameter.name = std::move(name);
+        parameter.declared_type = std::move(declared_type);
+        parameter.shape = "scalar";
+        parameter.value = std::move(value);
+        data.parameters.push_back(std::move(parameter));
+    };
+    const auto add_list = [](ores::trading::domain::scripted_instrument_data& data,
+                             std::string name,
+                             std::string declared_type,
+                             const std::vector<std::string>& values) {
+        ores::trading::domain::scripted_parameter parameter;
+        parameter.sequence_number = static_cast<int>(data.parameters.size()) + 1;
+        parameter.name = std::move(name);
+        parameter.declared_type = std::move(declared_type);
+        parameter.shape = "vector";
+        const auto parameter_sequence_number = parameter.sequence_number;
+        data.parameters.push_back(std::move(parameter));
 
-    const auto generic =
-        rebuild(scripted_item("ScriptedTrade",
-                              "AsianBasketOption",
-                              R"({"Notional":"1000000.00","PutCall":"Call","Strike":"1.0500"})"));
-    const auto* generic_row = scripted_of(generic.instrument);
-    REQUIRE(generic_row != nullptr);
-    CHECK(generic_row->script_name == "AsianBasketOption");
-    CHECK(generic_row->underlyings_json == R"(["GB0005405286","US0378331005"])");
-    CHECK(generic_row->parameters_json.find("Notional") != std::string::npos);
+        int sequence_number = 0;
+        for (const auto& value : values) {
+            ores::trading::domain::scripted_parameter_value member;
+            member.parameter_sequence_number = parameter_sequence_number;
+            member.sequence_number = ++sequence_number;
+            member.value = value;
+            data.parameter_values.push_back(std::move(member));
+        }
+    };
+    const auto add_underlying = [](ores::trading::domain::scripted_instrument_data& data,
+                                   std::string role,
+                                   std::string underlying_type,
+                                   std::string address) {
+        ores::trading::domain::instrument_underlying underlying;
+        underlying.underlying_role = std::move(role);
+        int sequence_number = 0;
+        for (const auto& row : data.instrument_underlyings)
+            if (row.underlying_role == underlying.underlying_role)
+                ++sequence_number;
+        underlying.sequence_number = ++sequence_number;
+        underlying.underlying_type = std::move(underlying_type);
+        underlying.name = std::move(address);
+        data.instrument_underlyings.push_back(std::move(underlying));
+    };
 
-    const auto digital = rebuild(scripted_item(
-        "DoubleDigitalOption",
-        "DoubleDigitalOption",
-        R"({"Type1":"Equity","Type2":"Equity","Expiry":"2029-10-31","Settlement":"2029-12-31","Position":"Long","PayCcy":"GBP","BinaryPayout":"1000000.00","BinaryLevel1":"1.0500","BinaryLevel2":"1.2000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
-    const auto* digital_row = scripted_of(digital.instrument);
-    REQUIRE(digital_row != nullptr);
-    CHECK(digital_row->script_name == "DoubleDigitalOption");
-    CHECK(digital_row->parameters_json.find("BinaryPayout") != std::string::npos);
+    const auto rebuilt_data = [&](ores::trading::domain::scripted_instrument_data data) {
+        ores::ore::xml::trade_import_item item;
+        item.ore_id = "Scripted-1";
+        item.anchor.trade_type = data.instrument.identity.trade_type_code;
+        item.instrument = std::move(data);
+        const auto round = rebuild(item);
+        const auto* carrier =
+            std::get_if<ores::trading::domain::scripted_instrument_data>(&round.instrument);
+        REQUIRE(carrier != nullptr);
+        return *carrier;
+    };
 
-    const auto performance = rebuild(scripted_item(
-        "PerformanceOption_01",
-        "PerformanceOption_01",
-        R"({"NotionalAmount":"1000000.00","ParticipationRate":"1.0","Strike":"0.9000","ValuationDate":"2029-10-31","SettlementDate":"2029-12-31","Position":"Long","PayCcy":"GBP","StrikePrices":"0.9000,1.0000,1.1000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
-    const auto* performance_row = scripted_of(performance.instrument);
-    REQUIRE(performance_row != nullptr);
-    CHECK(performance_row->script_name == "PerformanceOption_01");
-    CHECK(performance_row->parameters_json.find("StrikePrices") != std::string::npos);
+    auto generic = scripted_data("ScriptedTrade", "AsianBasketOption");
+    add_parameter(generic, "Notional", "Number", "1000000.00");
+    add_parameter(generic, "PutCall", "Number", "Call");
+    add_parameter(generic, "Underlying", "Index", equity_address_of("GB0005405286"));
+    const auto generic_again = rebuilt_data(std::move(generic));
+    CHECK(generic_again.instrument.script_name == "AsianBasketOption");
+    REQUIRE(generic_again.parameters.size() == 3);
+    CHECK(generic_again.parameters[0].name == "Notional");
+    CHECK(generic_again.parameters[0].value == std::optional<std::string>("1000000.00"));
+    CHECK(generic_again.parameters[1].name == "PutCall");
+    CHECK(generic_again.parameters[1].value == std::optional<std::string>("Call"));
+    CHECK(generic_again.parameters[2].name == "Underlying");
+    CHECK(generic_again.parameters[2].value ==
+          std::optional<std::string>(equity_address_of("GB0005405286")));
+
+    // A body without the variable its result lands in is still the body the row
+    // read, so the export states it rather than losing it.
+    auto body_only = scripted_data("ScriptedTrade", "heston");
+    body_only.instrument.script_body = "Payoff = 1;";
+    const auto body_only_again = rebuilt_data(std::move(body_only));
+    CHECK(body_only_again.instrument.script_body == "Payoff = 1;");
+    CHECK(body_only_again.instrument.script_npv.empty());
+
+    auto digital = scripted_data("DoubleDigitalOption", "DoubleDigitalOption");
+    add_parameter(digital, "Expiry", "text", "2029-10-31");
+    add_parameter(digital, "Settlement", "text", "2029-12-31");
+    add_parameter(digital, "BinaryPayout", "decimal", "1000000");
+    add_parameter(digital, "BinaryLevel1", "decimal", "1.05");
+    add_parameter(digital, "BinaryLevel2", "decimal", "1.2");
+    add_parameter(digital, "Type1", "text", "Equity");
+    add_parameter(digital, "Type2", "text", "Equity");
+    add_parameter(digital, "Position", "enumeration", "Long");
+    add_parameter(digital, "PayCcy", "enumeration", "GBP");
+    add_underlying(digital, "underlying1", "Equity", equity_address_of("GB0005405286"));
+    add_underlying(digital, "underlying2", "Equity", equity_address_of("US0378331005"));
+    const auto digital_again = rebuilt_data(std::move(digital));
+    CHECK(digital_again.instrument.script_name == "DoubleDigitalOption");
+    REQUIRE(digital_again.parameters.size() == 9);
+    CHECK(digital_again.parameters[4].name == "BinaryLevel2");
+    CHECK(digital_again.parameters[4].value == std::optional<std::string>("1.2"));
+    CHECK(digital_again.parameters[7].name == "Position");
+    CHECK(digital_again.parameters[7].value == std::optional<std::string>("Long"));
+    REQUIRE(digital_again.instrument_underlyings.size() == 2);
+    CHECK(digital_again.instrument_underlyings[0].underlying_role == "underlying1");
+    CHECK(digital_again.instrument_underlyings[1].name == equity_address_of("US0378331005"));
+
+    auto performance = scripted_data("PerformanceOption_01", "PerformanceOption_01");
+    add_parameter(performance, "NotionalAmount", "decimal", "1000000");
+    add_parameter(performance, "ParticipationRate", "decimal", "1.0");
+    add_parameter(performance, "ValuationDate", "text", "2029-10-31");
+    add_parameter(performance, "SettlementDate", "text", "2029-12-31");
+    add_list(performance, "StrikePrices", "decimal", {"0.9", "1.0", "1.1"});
+    add_parameter(performance, "Strike", "decimal", "0.9");
+    add_parameter(performance, "Position", "enumeration", "Long");
+    add_parameter(performance, "PayCcy", "enumeration", "GBP");
+    add_underlying(performance, "underlying", "Commodity", commodity_address_of("NYMEX:CL"));
+    add_underlying(performance, "underlying", "Commodity", commodity_address_of("ICE:B"));
+    const auto performance_again = rebuilt_data(std::move(performance));
+    CHECK(performance_again.instrument.script_name == "PerformanceOption_01");
+    const auto prices =
+        std::ranges::find_if(performance_again.parameters, [](const auto& parameter) {
+            return parameter.name == "StrikePrices";
+        });
+    REQUIRE(prices != performance_again.parameters.end());
+    CHECK(prices->shape == "vector");
+    REQUIRE(performance_again.parameter_values.size() == 3);
+    CHECK(performance_again.parameter_values[2].value == "1.1");
+    REQUIRE(performance_again.instrument_underlyings.size() == 2);
+    CHECK(performance_again.instrument_underlyings[1].underlying_role == "underlying");
+    CHECK(performance_again.instrument_underlyings[1].sequence_number == 2);
+}
+
+TEST_CASE("a_named_product_names_its_index_variable_by_address",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    // The generic form capitalises its kinds and a named product states the type
+    // attribute its schema gives the variable, so the same index kind is spelled
+    // two ways. Both name market data, and inside the store that is an address.
+    const std::string text = R"(<Portfolio>
+  <Trade id="basket-1">
+    <TradeType>ScriptedTrade</TradeType>
+    <AsianBasketOptionData>
+      <Expiry type="event">2025-08-31</Expiry>
+      <Settlement type="event">2025-09-05</Settlement>
+      <ObservationDates type="event">
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-08-22</StartDate>
+            <EndDate>2025-08-22</EndDate>
+            <Tenor>1D</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </ObservationDates>
+      <PutCall type="optionType">Call</PutCall>
+      <LongShort type="longShort">Long</LongShort>
+      <Notional type="number">1000000</Notional>
+      <Strike type="number">5000</Strike>
+      <Underlyings type="index">
+        <Value>EQ-RIC:.SPX</Value>
+        <Value>EQ-RIC:.STOXX50E</Value>
+      </Underlyings>
+      <Weights type="number"><Value>1.0</Value><Value>1.0</Value></Weights>
+      <PayCcy type="currency">USD</PayCcy>
+    </AsianBasketOptionData>
+  </Trade>
+</Portfolio>)";
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(items.size() == 1);
+    const auto* basket = scripted_data_of(items[0].instrument);
+    REQUIRE(basket != nullptr);
+    CHECK(basket->instrument.script_name == "AsianBasketOption");
+    CHECK(basket->instrument.data_element == std::optional<std::string>("AsianBasketOptionData"));
+
+    const auto parameter_named = [](const ores::trading::domain::scripted_instrument_data& data,
+                                    std::string_view name) {
+        const auto found = std::ranges::find_if(
+            data.parameters, [&](const auto& parameter) { return parameter.name == name; });
+        return found == data.parameters.end() ? nullptr : &*found;
+    };
+    const auto* underlyings = parameter_named(*basket, "Underlyings");
+    REQUIRE(underlyings != nullptr);
+    CHECK(underlyings->declared_type == "index");
+    CHECK(underlyings->shape == "vector");
+
+    const auto values_of = [&](const ores::trading::domain::scripted_instrument_data& data,
+                               int parameter_sequence_number) {
+        std::vector<std::string> values;
+        for (const auto& row : data.parameter_values)
+            if (row.parameter_sequence_number == parameter_sequence_number)
+                values.push_back(row.value);
+        return values;
+    };
+    const auto addresses = values_of(*basket, underlyings->sequence_number);
+    REQUIRE(addresses.size() == 2);
+    for (const auto& address : addresses) {
+        INFO("value " << address);
+        CHECK(address.starts_with("oresmd://equity/"));
+    }
+    CHECK(addresses[0].find("RIC:.SPX") != std::string::npos);
+
+    // The address is the store's spelling; the document keeps ORE's.
+    const auto written = portfolio_projection::write(exported(items[0]));
+    CHECK(written.find("<Value>EQ-RIC:.SPX</Value>") != std::string::npos);
+    const auto basket_round = rebuild(items[0]);
+    const auto* again = scripted_data_of(basket_round.instrument);
+    REQUIRE(again != nullptr);
+    const auto* again_underlyings = parameter_named(*again, "Underlyings");
+    REQUIRE(again_underlyings != nullptr);
+    CHECK(values_of(*again, again_underlyings->sequence_number) == addresses);
 }
 
 TEST_CASE("a_cms_spread_leg_holds_both_indices_as_addresses_and_writes_them_back",
@@ -3693,14 +3917,11 @@ TEST_CASE("every_converted_index_column_of_ores_product_portfolio_holds_an_addre
         if (row.declared_type == "Index")
             hold("scripted_parameter.index", row.value);
 
-    // The sample writes this FX index without its FX- prefix, so an address could not spell it.
-    const std::vector<std::string> kept_as_written = {"TR20H-EUR-USD"};
+    // A TaRF names its pair as an underlying, without the FX- prefix, and the
+    // underlying mapper reads that into an address too.
     for (const auto& [column, result] : columns) {
         INFO(column);
-        if (column == "fx_asian_forward.fx_index")
-            CHECK(result.second == kept_as_written);
-        else
-            CHECK(result.second.empty());
+        CHECK(result.second.empty());
     }
     for (const auto* column : {"swap_leg.fx_index",
                                "swap_leg.fx_reset_fx_index",

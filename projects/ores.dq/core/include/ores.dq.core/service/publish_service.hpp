@@ -92,7 +92,7 @@ public:
      *
      * @param ctx The database context for executing queries.
      */
-    explicit publish_service(context ctx);
+    explicit publish_service(const context& ctx);
 
     /**
      * @brief Publishes one or more datasets to production tables.

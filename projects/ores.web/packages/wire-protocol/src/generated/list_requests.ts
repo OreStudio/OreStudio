@@ -476,6 +476,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'compute.v1.ops.list_run_files': {
+        asOf: false,
+        filter: [],
+        rows: ['archives'],
+    },
     'compute.v1.platforms.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -1409,6 +1414,98 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.fx_forward_publish_points.list': {
+        asOf: true,
+        filter: ['publish_id', 'id_one_of', 'publish_id_one_of'],
+        rows: ['points'],
+    },
+    'marketdata.v1.fx_forward_publish_points_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_forward_publish_spots.list': {
+        asOf: true,
+        filter: ['publish_id', 'id_one_of', 'publish_id_one_of'],
+        rows: ['spots'],
+    },
+    'marketdata.v1.fx_forward_publish_spots_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_forward_publishes.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'party_id',
+            'pair_code',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'pair_code_one_of',
+        ],
+        rows: ['publishes'],
+    },
+    'marketdata.v1.fx_forward_publishes.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'party_id',
+            'pair_code',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'pair_code_one_of',
+        ],
+        rows: [],
+    },
+    'marketdata.v1.fx_forward_publishes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_vol_surface_calibrations.list': {
+        asOf: true,
+        filter: ['party_id', 'id_one_of', 'party_id_one_of'],
+        rows: ['calibrations'],
+    },
+    'marketdata.v1.fx_vol_surface_calibrations_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_vol_surface_publishes.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'party_id',
+            'blueprint_id',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'blueprint_id_one_of',
+        ],
+        rows: ['publishes'],
+    },
+    'marketdata.v1.fx_vol_surface_publishes.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'party_id',
+            'blueprint_id',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'blueprint_id_one_of',
+        ],
+        rows: [],
+    },
+    'marketdata.v1.fx_vol_surface_publishes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.market_calibration_values.list': {
         asOf: true,
         filter: [
@@ -1553,6 +1650,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [],
         rows: ['adapters'],
+    },
+    'marketdata.v1.ops.list_instruments': {
+        asOf: false,
+        filter: [],
+        rows: ['instruments'],
     },
     'marketdata.v1.ops.list_published_curves': {
         asOf: false,
@@ -5075,6 +5177,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['objects'],
     },
+    'storage.v1.ops.list_archive_entries': {
+        asOf: false,
+        filter: [],
+        rows: ['archives'],
+    },
     'synthetic.v1.calibration_fallbacks.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -5142,6 +5249,52 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['fx_spot_generation_configs'],
     },
     'synthetic.v1.fx_spot_generation_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_contributors.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['fx_vol_contributors'],
+    },
+    'synthetic.v1.fx_vol_contributors_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_contributors.list': {
+        asOf: true,
+        filter: [
+            'feed_id',
+            'contributor_id',
+            'id_one_of',
+            'feed_id_one_of',
+            'contributor_id_one_of',
+        ],
+        rows: ['fx_vol_surface_feed_contributors'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_contributors_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_expiries.list': {
+        asOf: true,
+        filter: ['feed_id', 'id_one_of', 'feed_id_one_of'],
+        rows: ['fx_vol_surface_feed_expiries'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_expiries_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_surface_feeds.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['fx_vol_surface_feeds'],
+    },
+    'synthetic.v1.fx_vol_surface_feeds_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -5427,6 +5580,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['barrier_types'],
     },
     'trading.v1.barrier_types_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.basket_swap_periods.list': {
+        asOf: true,
+        filter: [],
+        rows: ['basket_swap_periods'],
+    },
+    'trading.v1.basket_swap_periods_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -5927,16 +6090,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_swap_instruments'],
     },
     'trading.v1.equity_swap_instruments_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'trading.v1.equity_swap_periods.list': {
-        asOf: true,
-        filter: [],
-        rows: ['equity_swap_periods'],
-    },
-    'trading.v1.equity_swap_periods_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

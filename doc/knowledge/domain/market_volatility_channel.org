@@ -550,6 +550,9 @@ important as the platform's output is used for something other than display.
   — the tick modes this note extends.
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]]
   — completes: the daily variance whose day this channel spreads.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]]
+  — completes: the shared noise runs in this channel's business time, so a busy
+  market scales the correlated shocks of every series together.
 - Hansen, P. R., Huang, Z. and Shek, H. H. (2012). "Realized GARCH: a joint
   model for returns and realized measures of volatility." /Journal of Applied
   Econometrics/, 27(6), 877-906. [[https://doi.org/10.1002/jae.1234][doi:10.1002/jae.1234]].

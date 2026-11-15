@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 055A4F1A-AB2E-4B45-913E-E79DF5641D95
+:END:
+#+title: The Acme pricing engine outputs are stale against the pricing vocabulary
+#+description: Regenerating the Acme data rewrites the pricing engine JSON and populate scripts, because pricing_vocabulary.json on main is newer than the committed outputs.
+#+type: capture
+#+level: cross
+#+filetags: :acme:seeder:pricing_engines:drift:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerate the Acme pricing engine outputs and commit them, so a run of =generate_configuration_data.py= changes only what its author meant to change.
+
+On 2026-11-11 the run for PR #4600 rewrote =pricing_model_product_parameters.json= and the four =acme_*_pricing_engines_artefact_populate.sql= scripts (812 insertions, 224 deletions), adding settings such as =FxCalibration Bootstrap=. Those settings come from =../ore_pricing_engines/pricing_vocabulary.json=, which is newer on main than the committed outputs. The PR left those files out.
+
+* Why
+
+Every later change to the Acme configuration generator meets the same unrelated diff, and must either carry it unreviewed or restore it by hand. The live Acme pricing engines also lack the settings the vocabulary now says ORE needs.
+
+* References
+
+- =projects/ores.seeder/datasets/acme_corporation/generate_configuration_data.py=, =required_settings=.
+- =projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json=.
+- PR #4600.
+
+* See also
+
+- The ORE pricing engines vocabulary generator, =generate_vocabulary_sql.py=.

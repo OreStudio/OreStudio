@@ -370,7 +370,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &dataset_key::code},
     };
 }
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &dataset_write::id},
         utility::codec::field{"code", &dataset_write::code},
         utility::codec::field{"catalog_name", &dataset_write::catalog_name},
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &dataset_change::write},
         utility::codec::field{"precondition", &dataset_change::precondition},
     };
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &dataset_removal::key},
         utility::codec::field{"precondition", &dataset_removal::precondition},
     };
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &dataset_lookup::key},
         utility::codec::field{"dataset", &dataset_lookup::dataset},
     };
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<datasets_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &datasets_filter::id_one_of},
     };
 }
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &dataset_event::event_id},
         utility::codec::field{"key", &dataset_event::key},
         utility::codec::field{"action", &dataset_event::action},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"dataset", &dataset_version_key::dataset},
         utility::codec::field{"version", &dataset_version_key::version},
     };
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &dataset_versions_filter::version},
         utility::codec::field{"from_version", &dataset_versions_filter::from_version},
         utility::codec::field{"to_version", &dataset_versions_filter::to_version},
@@ -526,7 +526,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_datasets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_datasets_request::offset},
         utility::codec::field{"limit", &list_datasets_request::limit},
         utility::codec::field{"order", &list_datasets_request::order},
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_datasets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_datasets_response::result},
         utility::codec::field{"datasets", &list_datasets_response::datasets},
         utility::codec::field{"total", &list_datasets_response::total},
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_dataset_request::key},
     };
 }
@@ -574,7 +574,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_dataset_response::result},
         utility::codec::field{"dataset", &get_dataset_response::dataset},
     };
@@ -589,7 +589,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_datasets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_datasets_request::keys},
     };
 }
@@ -603,7 +603,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_datasets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_datasets_response::result},
         utility::codec::field{"entries", &get_many_datasets_response::entries},
     };
@@ -618,7 +618,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_dataset_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_dataset_request::change},
         utility::codec::field{"intent", &put_dataset_request::intent},
     };
@@ -633,7 +633,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_dataset_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_dataset_response::result},
         utility::codec::field{"dataset", &put_dataset_response::dataset},
     };
@@ -648,7 +648,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_datasets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_datasets_request::changes},
         utility::codec::field{"intent", &put_many_datasets_request::intent},
     };
@@ -663,7 +663,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_datasets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_datasets_response::result},
         utility::codec::field{"datasets", &put_many_datasets_response::datasets},
     };
@@ -678,7 +678,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_dataset_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_dataset_request::removal},
         utility::codec::field{"intent", &delete_dataset_request::intent},
     };
@@ -693,7 +693,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_dataset_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_dataset_response::result},
     };
 }
@@ -707,7 +707,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_datasets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_datasets_request::removals},
         utility::codec::field{"intent", &delete_many_datasets_request::intent},
     };
@@ -722,7 +722,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_datasets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_datasets_response::result},
     };
 }
@@ -736,7 +736,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_dataset_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_dataset_versions_request::key},
         utility::codec::field{"offset", &list_dataset_versions_request::offset},
         utility::codec::field{"limit", &list_dataset_versions_request::limit},
@@ -754,7 +754,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_dataset_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_dataset_versions_response::result},
         utility::codec::field{"versions", &list_dataset_versions_response::versions},
         utility::codec::field{"total", &list_dataset_versions_response::total},
@@ -770,7 +770,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_dataset_version_request::key},
     };
 }
@@ -784,7 +784,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_dataset_version_response::result},
         utility::codec::field{"version", &get_dataset_version_response::version},
     };

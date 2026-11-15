@@ -109,8 +109,8 @@ std::vector<Row> decode_family(const conventions_bundle& bundle,
 
 }
 
-conventions_bundle_service::conventions_bundle_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+conventions_bundle_service::conventions_bundle_service(const context& ctx)
+    : ctx_(ctx) {}
 
 conventions_bundle conventions_bundle_service::read() {
     conventions_bundle bundle;

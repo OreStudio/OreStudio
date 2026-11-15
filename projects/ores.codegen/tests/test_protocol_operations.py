@@ -232,3 +232,23 @@ def test_a_derived_protocol_is_not_assumed_where_an_operation_model_owns_it():
     assert _protocol_owned_by_operation(
         IAM_MODELING / "ores.iam.tenant_type.org",
         {"component": "iam", "entity_singular": "tenant_type"}) is False
+
+
+def test_a_derived_message_with_an_unknown_verb_is_refused():
+    """A verb neither read nor write would leave its handler unguarded."""
+    import pytest
+
+    messages = entity_protocol_messages(_entity())
+    first = next(i for i, m in enumerate(messages) if m.get("subject"))
+    messages[first] = {**messages[first], "verb": "revert"}
+    with pytest.raises(ValueError, match="'revert'"):
+        protocol_operations(messages)
+
+
+def test_every_derived_operation_states_a_known_verb():
+    """The derivation's own verbs are each a read or a write."""
+    verbs = {op["verb"] for op in _operations()}
+    assert verbs <= {"list", "list_scoped", "get", "get_many", "get_version",
+                     "list_versions", "put", "put_many", "delete",
+                     "delete_many"}
+    assert {"put", "delete"} <= verbs

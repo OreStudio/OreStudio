@@ -248,6 +248,17 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.surface_calibration',
+        'A calibration fitted an FX volatility surface blueprint to its quotes and wrote the candidate, its grid and its lineage',
+        'system',
+        true,   -- applies to new
+        true,   -- applies to amend (a rerun at the same as-of is a new version)
+        false,  -- not for delete
+        false,  -- no commentary required
+        67      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.curve_withdrawn',
         'A published curve was taken out of use: the record stamps the account, the instant and the reason',
         'system',
@@ -267,6 +278,28 @@ BEGIN
         false,  -- not for delete
         false,  -- no commentary required
         69      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.surface_published',
+        'A surface publish applied the approved calibration: the record stamps who published it and when',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the stamp is a new version of the subject row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        70      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.surface_superseded',
+        'A later published surface replaced a published one: the record links the successor request and its as-of',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the link is a new version of the superseded row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        71      -- display order
     );
 
     -- =============================================================================

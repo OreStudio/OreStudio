@@ -235,7 +235,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_curve_source>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"currency", &fx_forward_curve_source::currency},
         ::ores::utility::codec::field{"curve_name", &fx_forward_curve_source::curve_name},
         ::ores::utility::codec::field{"output_series_id",
@@ -256,7 +256,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_ladder_row>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenor", &fx_forward_ladder_row::tenor},
         ::ores::utility::codec::field{"near_date", &fx_forward_ladder_row::near_date},
         ::ores::utility::codec::field{"value_date", &fx_forward_ladder_row::value_date},
@@ -277,7 +277,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_spot_source>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"leg_code", &fx_forward_spot_source::leg_code},
         ::ores::utility::codec::field{"pair_code", &fx_forward_spot_source::pair_code},
         ::ores::utility::codec::field{"series_id", &fx_forward_spot_source::series_id},
@@ -295,7 +295,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_fx_forward_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"pair_code", &publish_fx_forward_request::pair_code},
         ::ores::utility::codec::field{"as_of", &publish_fx_forward_request::as_of},
         ::ores::utility::codec::field{"approval_request_id",
@@ -313,7 +313,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_fx_forward_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &publish_fx_forward_response::success},
         ::ores::utility::codec::field{"message", &publish_fx_forward_response::message},
         ::ores::utility::codec::field{"approval_request_id",
@@ -333,7 +333,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_fx_forward_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"pair_code", &get_published_fx_forward_request::pair_code},
         ::ores::utility::codec::field{"as_of", &get_published_fx_forward_request::as_of},
     };
@@ -348,7 +348,7 @@ struct get_published_fx_forward_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_fx_forward_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_published_fx_forward_response::success},
         ::ores::utility::codec::field{"message", &get_published_fx_forward_response::message},
         ::ores::utility::codec::field{"publish_id", &get_published_fx_forward_response::publish_id},

@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &long_short_type_key::code},
     };
 }
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &long_short_type_write::code},
         utility::codec::field{"description", &long_short_type_write::description},
     };
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &long_short_type_change::write},
         utility::codec::field{"precondition", &long_short_type_change::precondition},
     };
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &long_short_type_removal::key},
         utility::codec::field{"precondition", &long_short_type_removal::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &long_short_type_lookup::key},
         utility::codec::field{"long_short_type", &long_short_type_lookup::long_short_type},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &long_short_types_filter::code_one_of},
     };
 }
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &long_short_type_event::event_id},
         utility::codec::field{"key", &long_short_type_event::key},
         utility::codec::field{"action", &long_short_type_event::action},
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"long_short_type", &long_short_type_version_key::long_short_type},
         utility::codec::field{"version", &long_short_type_version_key::version},
     };
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<long_short_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &long_short_type_versions_filter::version},
         utility::codec::field{"from_version", &long_short_type_versions_filter::from_version},
         utility::codec::field{"to_version", &long_short_type_versions_filter::to_version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_long_short_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_long_short_types_request::offset},
         utility::codec::field{"limit", &list_long_short_types_request::limit},
         utility::codec::field{"order", &list_long_short_types_request::order},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_long_short_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_long_short_types_response::result},
         utility::codec::field{"long_short_types",
                               &list_long_short_types_response::long_short_types},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_long_short_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_long_short_type_request::key},
     };
 }
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_long_short_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_long_short_type_response::result},
         utility::codec::field{"long_short_type", &get_long_short_type_response::long_short_type},
     };
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_long_short_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_long_short_types_request::keys},
     };
 }
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_long_short_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_long_short_types_response::result},
         utility::codec::field{"entries", &get_many_long_short_types_response::entries},
     };
@@ -593,7 +593,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_long_short_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_long_short_type_request::change},
         utility::codec::field{"intent", &put_long_short_type_request::intent},
     };
@@ -608,7 +608,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_long_short_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_long_short_type_response::result},
         utility::codec::field{"long_short_type", &put_long_short_type_response::long_short_type},
     };
@@ -623,7 +623,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_long_short_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_long_short_types_request::changes},
         utility::codec::field{"intent", &put_many_long_short_types_request::intent},
     };
@@ -638,7 +638,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_long_short_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_long_short_types_response::result},
         utility::codec::field{"long_short_types",
                               &put_many_long_short_types_response::long_short_types},
@@ -654,7 +654,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_long_short_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_long_short_type_request::removal},
         utility::codec::field{"intent", &delete_long_short_type_request::intent},
     };
@@ -669,7 +669,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_long_short_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_long_short_type_response::result},
     };
 }
@@ -683,7 +683,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_long_short_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_long_short_types_request::removals},
         utility::codec::field{"intent", &delete_many_long_short_types_request::intent},
     };
@@ -699,7 +699,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.long_short_types.
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_long_short_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_long_short_types_response::result},
     };
 }
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<delete_many_long_short_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_long_short_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_long_short_type_versions_request::key},
         utility::codec::field{"offset", &list_long_short_type_versions_request::offset},
         utility::codec::field{"limit", &list_long_short_type_versions_request::limit},
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<list_long_short_type_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_long_short_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_long_short_type_versions_response::result},
         utility::codec::field{"versions", &list_long_short_type_versions_response::versions},
         utility::codec::field{"total", &list_long_short_type_versions_response::total},
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<list_long_short_type_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_long_short_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_long_short_type_version_request::key},
     };
 }
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<list_long_short_type_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_long_short_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_long_short_type_version_response::result},
         utility::codec::field{"version", &get_long_short_type_version_response::version},
     };

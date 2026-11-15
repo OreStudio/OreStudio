@@ -63,7 +63,8 @@ select is(
            'default_curve_transition_matrices', 'default_curve_yield_reinterpretations',
            'inflation_seasonalities', 'inflation_seasonality_factors',
            'curve_security_configs',
-           'intraday_power_curve_configs', 'fx_volatility_configs', 'base_correlation_configs',
+           'intraday_power_curve_configs', 'fx_volatility_configs', 'fx_volatility_smiles',
+           'base_correlation_configs',
            'curve_correlation_configs', 'curve_report_configurations', 'cds_volatility_configs',
            'cds_volatility_terms', 'curve_volatility_configs',
            'inflation_cap_floor_volatility_configs', 'swaption_volatility_configs',
@@ -82,7 +83,7 @@ select is(
            'configuration_analytics', 'configuration_analytic_parameters',
            'configuration_market_bindings']) t)),
     'commodity_price_segment_id configuration_analytic_id curve_configuration_id curve_definition_id curve_segment_id '
-    'default_curve_configuration_id pricing_model_config_id pricing_model_product_id '
+    'default_curve_configuration_id fx_volatility_config_id pricing_model_config_id pricing_model_product_id '
     'swaption_volatility_config_id todays_market_collection_id todays_market_config_id todays_market_configuration_id',
     'every uuid key column of a document refers to a row of the same document');
 

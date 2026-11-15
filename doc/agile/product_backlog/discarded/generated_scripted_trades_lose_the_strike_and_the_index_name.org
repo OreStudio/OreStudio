@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: DD3D3A81-50FE-4F80-978C-5C60DA169EAD
+:END:
+#+title: Generated scripted trades lose the Strike and write the index as an address
+#+description: Since cf010d9c18 (scripted variables as rows) the synthetic generated-trade export test fails for ScriptedTrade: the Index value is written as the oresmd address (EQ-.SPX) rather than the ORE name (.SPX), and the Number variable Strike is missing, for two trades. The recorded trades were not re-recorded, and the output contradicts the commit's own statement that the export writes the ORE name an index resolves to.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:trading:ore:defect:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+*Folded into a task* on 2026-11-15: [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]], in [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which owns how every trade is represented. The task's acceptance carries what this capture asks.
+
+* What
+
+The synthetic generated scripted trades export their index by its ORE name and keep every Number variable, and =the generated trades are the ones recorded= passes again on main.
+
+* Why
+
+=ores.synthetic.core.tests= fails on main at =generated_trade_export_tests.cpp:505= for ScriptedTrade:
+
+- trade 39b359af: Index '.SPX' became 'EQ-.SPX', and Number[3] Strike (1.0853) is lost.
+- trade 1af56dfc: Index 'GB0005405286' became 'EQ-GB0005405286', and Number[3] Strike (0.813) is lost.
+
+The test runs in memory, with no database. It passed on 735c13adfe and fails after cf010d9c18 merged in #4734, whose message says the export writes the ORE name an index address resolves to. Re-recording would accept the loss of the strike, so the cause comes first: the planner's rows, or the export's resolution without a market data context. Found while testing the batch-read story.
+
+* References
+
+-
+
+* See also
+
+-

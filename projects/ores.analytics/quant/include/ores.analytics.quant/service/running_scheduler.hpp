@@ -20,6 +20,7 @@
 #define ORES_ANALYTICS_QUANT_SERVICE_RUNNING_SCHEDULER_HPP
 
 #include "ores.analytics.quant/service/run_clock.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include <cstdint>
 #include <thread>
@@ -27,23 +28,25 @@
 namespace ores::analytics::quant::service {
 
 /**
- * @brief A scheduler on the steady clock with its loop running, for as long as
- * this object lives.
+ * @brief A run's market on the steady clock, with its loop running, for as long as this
+ * object lives.
  *
- * Declare it before anything that adds series to it, so it outlives them.
+ * The market owns the loop, so a test that starts feeds against it gets a scheduler with
+ * a driver hook and values as well as one that ticks. Declare it before anything that adds
+ * series to it, so it outlives them.
  */
 class running_scheduler final {
 public:
     explicit running_scheduler(const domain::market_config& market = {},
                                std::uint64_t run_seed = 42)
-        : scheduler(clock_, market, run_seed)
-        , loop_([this] { scheduler.run(); }) {}
+        : market_(clock_, market, run_seed)
+        , loop_([this] { market_.loop().run(); }) {}
 
     running_scheduler(const running_scheduler&) = delete;
     running_scheduler& operator=(const running_scheduler&) = delete;
 
     ~running_scheduler() {
-        scheduler.stop();
+        market_.loop().stop();
         loop_.join();
     }
 
@@ -51,7 +54,7 @@ private:
     steady_run_clock clock_;
 
 public:
-    tick_scheduler scheduler;
+    run_market market_;
 
 private:
     std::thread loop_;

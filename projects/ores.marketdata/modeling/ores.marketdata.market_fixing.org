@@ -167,7 +167,7 @@ Reads every current fixing of one series, in fixing date order. The ORE export
 walks a tenant's fixing series and writes each one's fixings.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_fixing> read_latest_for_series(context ctx,
+std::vector<domain::market_fixing> read_latest_for_series(const context& ctx,
                                                           const boost::uuids::uuid& series_id);
 #+end_src
 
@@ -178,7 +178,7 @@ std::vector<domain::market_fixing> read_latest_for_series(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest_for_series(context ctx,
+market_fixing_repository::read_latest_for_series(const context& ctx,
                                                  const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
     static constexpr auto max = db_timestamp::max();

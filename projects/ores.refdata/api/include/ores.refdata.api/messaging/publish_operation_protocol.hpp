@@ -532,6 +532,28 @@ struct publish_curve_configuration_from_dq_request {
 };
 
 /**
+ * @brief The workflow step that publishes the DQ-cleared FX volatility surface blueprints.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn.
+ */
+struct publish_fx_vol_surface_blueprints_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_fx_vol_surface_blueprints_from_dq_request&,
+                           const publish_fx_vol_surface_blueprints_from_dq_request&) = default;
+};
+
+/**
  * @brief The workflow step that publishes the DQ-cleared currency groups.
  *
  * A trigger rather than a request: the DQ publisher sends it and reads no
@@ -1153,7 +1175,7 @@ struct publish_tenor_schedules_from_dq_request {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_trading_account_types_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1166,7 +1188,7 @@ wire_fields(std::type_identity<publish_trading_account_types_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_asset_classes_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1179,7 +1201,7 @@ wire_fields(std::type_identity<publish_asset_classes_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_asset_measures_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1192,7 +1214,7 @@ wire_fields(std::type_identity<publish_asset_measures_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_benchmark_rates_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1204,7 +1226,7 @@ wire_fields(std::type_identity<publish_benchmark_rates_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_books_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1217,7 +1239,7 @@ wire_fields(std::type_identity<publish_benchmark_rates_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_business_centres_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1230,7 +1252,7 @@ wire_fields(std::type_identity<publish_business_centres_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_business_processes_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1243,7 +1265,7 @@ wire_fields(std::type_identity<publish_business_processes_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_business_units_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1256,7 +1278,7 @@ wire_fields(std::type_identity<publish_business_units_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_calendar_events_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1269,7 +1291,7 @@ wire_fields(std::type_identity<publish_calendar_events_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_calendar_exceptions_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1282,7 +1304,7 @@ wire_fields(std::type_identity<publish_calendar_exceptions_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_calendar_types_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1294,7 +1316,7 @@ wire_fields(std::type_identity<publish_calendar_types_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_calendars_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1307,7 +1329,7 @@ wire_fields(std::type_identity<publish_calendar_types_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_cashflow_types_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1319,7 +1341,7 @@ wire_fields(std::type_identity<publish_cashflow_types_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_commodities_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1332,7 +1354,7 @@ wire_fields(std::type_identity<publish_cashflow_types_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_legal_entities_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1345,7 +1367,7 @@ wire_fields(std::type_identity<publish_legal_entities_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_equity_underlyings_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1357,7 +1379,7 @@ wire_fields(std::type_identity<publish_equity_underlyings_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_conventions_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1370,7 +1392,7 @@ wire_fields(std::type_identity<publish_equity_underlyings_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_counterparty_aliases_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1382,7 +1404,7 @@ wire_fields(std::type_identity<publish_counterparty_aliases_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_countries_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1395,7 +1417,7 @@ wire_fields(std::type_identity<publish_counterparty_aliases_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_crm_topology_bundles_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1407,7 +1429,7 @@ wire_fields(std::type_identity<publish_crm_topology_bundles_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_csas_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1419,7 +1441,7 @@ wire_fields(std::type_identity<publish_crm_topology_bundles_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_currencies_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1432,7 +1454,20 @@ wire_fields(std::type_identity<publish_crm_topology_bundles_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_curve_configuration_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
+}
+
+/**
+ * @brief The members of publish_fx_vol_surface_blueprints_from_dq_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<publish_fx_vol_surface_blueprints_from_dq_request>) {
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1445,7 +1480,7 @@ wire_fields(std::type_identity<publish_curve_configuration_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_groups_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1458,7 +1493,7 @@ wire_fields(std::type_identity<publish_currency_groups_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_currency_groups_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1471,7 +1506,7 @@ wire_fields(std::type_identity<publish_currency_currency_groups_from_dq_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_pairs_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1484,7 +1519,7 @@ wire_fields(std::type_identity<publish_currency_pairs_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_pair_conventions_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1497,7 +1532,7 @@ wire_fields(std::type_identity<publish_currency_pair_conventions_from_dq_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_calendars_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1510,7 +1545,7 @@ wire_fields(std::type_identity<publish_currency_calendars_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_countries_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1523,7 +1558,7 @@ wire_fields(std::type_identity<publish_currency_countries_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_currency_pair_convention_calendars_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1536,7 +1571,7 @@ wire_fields(std::type_identity<publish_currency_pair_convention_calendars_from_d
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_entity_classifications_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1549,7 +1584,7 @@ wire_fields(std::type_identity<publish_entity_classifications_from_dq_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_lei_counterparties_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1561,7 +1596,7 @@ wire_fields(std::type_identity<publish_lei_counterparties_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_lei_parties_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1574,7 +1609,7 @@ wire_fields(std::type_identity<publish_lei_counterparties_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_local_jurisdictions_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1587,7 +1622,7 @@ wire_fields(std::type_identity<publish_local_jurisdictions_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_sandbox_portfolios_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1600,7 +1635,7 @@ wire_fields(std::type_identity<publish_sandbox_portfolios_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_netting_agreements_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1613,7 +1648,7 @@ wire_fields(std::type_identity<publish_netting_agreements_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_netting_set_aliases_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1625,7 +1660,7 @@ wire_fields(std::type_identity<publish_netting_set_aliases_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_netting_sets_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1638,7 +1673,7 @@ wire_fields(std::type_identity<publish_netting_set_aliases_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_party_contact_informations_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1651,7 +1686,7 @@ wire_fields(std::type_identity<publish_party_contact_informations_from_dq_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_party_counterparties_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1664,7 +1699,7 @@ wire_fields(std::type_identity<publish_party_counterparties_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_party_countries_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1677,7 +1712,7 @@ wire_fields(std::type_identity<publish_party_countries_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_party_currencies_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1690,7 +1725,7 @@ wire_fields(std::type_identity<publish_party_currencies_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_party_relationships_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1702,7 +1737,7 @@ wire_fields(std::type_identity<publish_party_relationships_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_party_roles_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1715,7 +1750,7 @@ wire_fields(std::type_identity<publish_party_relationships_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_payment_frequencies_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1727,7 +1762,7 @@ wire_fields(std::type_identity<publish_payment_frequencies_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_person_roles_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1739,7 +1774,7 @@ wire_fields(std::type_identity<publish_payment_frequencies_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_portfolios_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1752,7 +1787,7 @@ wire_fields(std::type_identity<publish_payment_frequencies_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_regulatory_corporate_sectors_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1765,7 +1800,7 @@ wire_fields(std::type_identity<publish_regulatory_corporate_sectors_from_dq_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_reporting_regimes_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1778,7 +1813,7 @@ wire_fields(std::type_identity<publish_reporting_regimes_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_supervisory_bodies_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1791,7 +1826,7 @@ wire_fields(std::type_identity<publish_supervisory_bodies_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_tenor_schedules_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 }
@@ -2112,6 +2147,20 @@ struct ORES_REFDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::refdata::messaging::publish_curve_configuration_from_dq_request& v);
     static ores::refdata::messaging::publish_curve_configuration_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request& v);
+    static ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request& v);
+    static ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

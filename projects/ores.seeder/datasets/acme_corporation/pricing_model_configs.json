@@ -45,7 +45,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "Pre-Trade Quick Price",
-    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and leaves out credit default swaps.",
+    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and a failed calibration does not stop it.",
     "config_variant": "",
     "configuration_id": "1596efba-c872-5111-8ff5-c5dc4ea861db"
   },
@@ -85,7 +85,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "Regulatory SIMM",
-    "description": "The prices behind the initial margin of uncleared derivatives. Bonds are not margined, so they are left out.",
+    "description": "The prices behind the initial margin of uncleared derivatives. The sensitivities are analytic and a failed calibration stops the run.",
     "config_variant": "",
     "configuration_id": "7b627ce7-ef52-5b63-a4a4-1039aa4b9333"
   },
@@ -135,7 +135,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "Pre-Trade Quick Price",
-    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and leaves out credit default swaps.",
+    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and a failed calibration does not stop it.",
     "config_variant": "",
     "configuration_id": "07d57059-7d84-5b1f-adb9-a198a4bdace0"
   },
@@ -195,7 +195,7 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "name": "Pre-Trade Quick Price",
-    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and leaves out credit default swaps.",
+    "description": "The price a trader sees while a trade is built. It answers at once, so it uses a coarse bond grid and a failed calibration does not stop it.",
     "config_variant": "",
     "configuration_id": "d7f5ab5e-75cb-5cb0-bb80-fa9a0132c690"
   },

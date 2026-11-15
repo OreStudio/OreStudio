@@ -1,10 +1,17 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 4A02B9BB-B4B5-45DE-9036-C81EAEE3E921
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.refdata.instrument_code
 #+description: Codegen entity model for the refdata instrument_code table: the full product/trade-type catalogue, keyed by a short idiomatic code and cross-referenced to ORE's oreTradeType where one exists.
 #+type: ores.codegen.entity
+#+web_resource: instrument-codes
+#+web_writes: many
+#+web_area: synthetic
+#+web_read_only_because: These are reference data of the refdata service. A synthetic screen offers their codes and does not write them.
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: instrument_code

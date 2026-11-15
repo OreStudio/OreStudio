@@ -88,7 +88,7 @@ struct bond_amortization_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_amortization_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"type", &bond_amortization_data::type},
         utility::codec::field{"value", &bond_amortization_data::value},
         utility::codec::field{"start_date", &bond_amortization_data::start_date},

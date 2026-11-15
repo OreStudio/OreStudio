@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: F0162D2F-B6AA-4A6F-941D-661501280BED
+:END:
+#+title: Task: Carry a browser session's token to the services
+#+description: A request signed in with the session cookie reaches its route with the session's claims but no token, so every forward delegates an empty token. The server must hand the session's token to the forward step.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/carry-a-browser-sessions-token-to-the-services
+#+pr: 4599
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A route answering a cookie-session request forwards the session's own token, as it does for a bearer request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- A cookie-session request reaches its handler with the session's token as its bearer token.
+- A test proves it through the session path.
+- The local gate is green.
+
+* Plan
+
+Found on 2026-11-11 while reading the session path for the bootstrap read.
+=auth_session_routes= keeps the token a sign-in returns in the session record,
+and the session path in =http_session= took the claims from that record and
+nothing else. Every route forwards the token =get_bearer_token= reads from the
+=Authorization= header, so a browser request forwarded an empty token, and every
+route ported in this story would have failed for ores.web, which signs in with
+the cookie.
+
+The session path now sets the request's =Authorization= header from the token
+the session keeps, once the cookie proves the session. The header is set on
+the request only and never on the answer.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4599][#4599]] | [http] Carry a browser session's token to the services |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the token now lives on the request inside the server. | =http_session.cpp= | Accepted | It is the session's own token, which the server already holds; the answer never carries it, and a test of the answer already proves that. |
+| 2 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 3 | PR review: the lowercase header key relies on the map's rule. | =http_session.cpp= | Declined | =http_request= stores every header key in lowercase by its own rule, and =get_header= lowercases each lookup. |
+| 4 | PR review: an empty token would become a bare =Bearer=. | =http_session.cpp= | Accepted | A session with no token sets no header. |
+| 5 | PR review: optional-auth routes still forward no token. | =http_session.cpp= | Accepted | The bootstrap task handles it, as the PR states. |
+| 6 | PR review: the comment is long. | =http_session.cpp= | Accepted | Two lines now. |
+
+* Result
+
+A request signed in with the session cookie now reaches its route with the
+session's token as its bearer token, so every route forwards it to the
+services as it does a bearer request. A test sends a cookie-session request and
+proves the handler receives the token.

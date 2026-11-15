@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &inflation_seasonality_key::id},
     };
 }
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &inflation_seasonality_write::id},
         utility::codec::field{"curve_definition_id",
                               &inflation_seasonality_write::curve_definition_id},
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &inflation_seasonality_change::write},
         utility::codec::field{"precondition", &inflation_seasonality_change::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &inflation_seasonality_removal::key},
         utility::codec::field{"precondition", &inflation_seasonality_removal::precondition},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &inflation_seasonality_lookup::key},
         utility::codec::field{"inflation_seasonality",
                               &inflation_seasonality_lookup::inflation_seasonality},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonalities_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &inflation_seasonalities_filter::id_one_of},
     };
 }
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &inflation_seasonality_event::event_id},
         utility::codec::field{"key", &inflation_seasonality_event::key},
         utility::codec::field{"action", &inflation_seasonality_event::action},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_seasonality_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"inflation_seasonality",
                               &inflation_seasonality_version_key::inflation_seasonality},
         utility::codec::field{"version", &inflation_seasonality_version_key::version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_seasona
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_seasonality_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &inflation_seasonality_versions_filter::version},
         utility::codec::field{"from_version", &inflation_seasonality_versions_filter::from_version},
         utility::codec::field{"to_version", &inflation_seasonality_versions_filter::to_version},
@@ -516,7 +516,7 @@ wire_fields(std::type_identity<inflation_seasonality_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_inflation_seasonalities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_inflation_seasonalities_request::offset},
         utility::codec::field{"limit", &list_inflation_seasonalities_request::limit},
         utility::codec::field{"order", &list_inflation_seasonalities_request::order},
@@ -535,7 +535,7 @@ wire_fields(std::type_identity<inflation_seasonality_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_seasonalities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_inflation_seasonalities_response::result},
         utility::codec::field{"inflation_seasonalities",
                               &list_inflation_seasonalities_response::inflation_seasonalities},
@@ -552,7 +552,7 @@ wire_fields(std::type_identity<list_inflation_seasonalities_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_inflation_seasonality_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_inflation_seasonality_request::key},
     };
 }
@@ -566,7 +566,7 @@ wire_fields(std::type_identity<list_inflation_seasonalities_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_inflation_seasonality_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_inflation_seasonality_response::result},
         utility::codec::field{"inflation_seasonality",
                               &get_inflation_seasonality_response::inflation_seasonality},
@@ -583,7 +583,7 @@ wire_fields(std::type_identity<list_inflation_seasonalities_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_inflation_seasonalities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_inflation_seasonalities_request::keys},
     };
 }
@@ -598,7 +598,7 @@ wire_fields(std::type_identity<get_many_inflation_seasonalities_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_inflation_seasonalities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_inflation_seasonalities_response::result},
         utility::codec::field{"entries", &get_many_inflation_seasonalities_response::entries},
     };
@@ -613,7 +613,7 @@ wire_fields(std::type_identity<get_many_inflation_seasonalities_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_inflation_seasonality_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_inflation_seasonality_request::change},
         utility::codec::field{"intent", &put_inflation_seasonality_request::intent},
     };
@@ -628,7 +628,7 @@ wire_fields(std::type_identity<get_many_inflation_seasonalities_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_inflation_seasonality_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_inflation_seasonality_response::result},
         utility::codec::field{"inflation_seasonality",
                               &put_inflation_seasonality_response::inflation_seasonality},
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<get_many_inflation_seasonalities_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_inflation_seasonalities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_inflation_seasonalities_request::changes},
         utility::codec::field{"intent", &put_many_inflation_seasonalities_request::intent},
     };
@@ -661,7 +661,7 @@ wire_fields(std::type_identity<put_many_inflation_seasonalities_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_inflation_seasonalities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_inflation_seasonalities_response::result},
         utility::codec::field{"inflation_seasonalities",
                               &put_many_inflation_seasonalities_response::inflation_seasonalities},
@@ -677,7 +677,7 @@ wire_fields(std::type_identity<put_many_inflation_seasonalities_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_inflation_seasonality_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_inflation_seasonality_request::removal},
         utility::codec::field{"intent", &delete_inflation_seasonality_request::intent},
     };
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<put_many_inflation_seasonalities_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_inflation_seasonality_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_inflation_seasonality_response::result},
     };
 }
@@ -708,7 +708,7 @@ wire_fields(std::type_identity<delete_inflation_seasonality_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_inflation_seasonalities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_inflation_seasonalities_request::removals},
         utility::codec::field{"intent", &delete_many_inflation_seasonalities_request::intent},
     };
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<delete_many_inflation_seasonalities_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_inflation_seasonalities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_inflation_seasonalities_response::result},
     };
 }
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<delete_many_inflation_seasonalities_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_seasonality_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_inflation_seasonality_versions_request::key},
         utility::codec::field{"offset", &list_inflation_seasonality_versions_request::offset},
         utility::codec::field{"limit", &list_inflation_seasonality_versions_request::limit},
@@ -758,7 +758,7 @@ wire_fields(std::type_identity<list_inflation_seasonality_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_seasonality_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_inflation_seasonality_versions_response::result},
         utility::codec::field{"versions", &list_inflation_seasonality_versions_response::versions},
         utility::codec::field{"total", &list_inflation_seasonality_versions_response::total},
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<list_inflation_seasonality_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_seasonality_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_inflation_seasonality_version_request::key},
     };
 }
@@ -790,7 +790,7 @@ wire_fields(std::type_identity<get_inflation_seasonality_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_seasonality_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_inflation_seasonality_version_response::result},
         utility::codec::field{"version", &get_inflation_seasonality_version_response::version},
     };

@@ -52,7 +52,7 @@ std::chrono::microseconds key_of(std::chrono::system_clock::time_point instant) 
 }
 
 std::vector<domain::market_observation>
-manual_point_guard::unshadowed(ores::database::context ctx,
+manual_point_guard::unshadowed(const ores::database::context& ctx,
                                const std::vector<domain::market_observation>& observations) {
     if (observations.empty())
         return observations;

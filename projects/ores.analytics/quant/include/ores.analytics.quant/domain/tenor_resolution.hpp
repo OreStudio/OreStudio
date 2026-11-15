@@ -214,34 +214,6 @@ struct tenor_resolution_result final {
                            const tenor_resolution_result&) = default;
 };
 
-/// Parses an @c ores_refdata_tenors_tbl.kind code.
-///
-/// @throws std::invalid_argument if @p code names no kind.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT tenor_kind parse_tenor_kind_code(std::string_view code);
-
-/// The persisted code a kind was parsed from.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view to_tenor_kind_code(tenor_kind kind);
-
-/// Parses an @c ores_refdata_tenor_anchors_tbl.code.
-///
-/// @throws std::invalid_argument if @p code names no anchor.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT tenor_anchor
-parse_tenor_anchor_code(std::string_view code);
-
-/// The persisted code an anchor was parsed from.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view
-to_tenor_anchor_code(tenor_anchor anchor);
-
-/// Parses an @c ores_refdata_tenor_resolution_algorithms_tbl.code.
-///
-/// @throws std::invalid_argument if @p code names no algorithm.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT resolution_algorithm
-parse_resolution_algorithm_code(std::string_view code);
-
-/// The persisted code an algorithm was parsed from.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view
-to_resolution_algorithm_code(resolution_algorithm algorithm);
-
 } // namespace ores::analytics::quant::domain
 
 #endif

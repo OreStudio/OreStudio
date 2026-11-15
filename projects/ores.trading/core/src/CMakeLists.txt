@@ -69,13 +69,13 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.diff.lib
         ores.refdata.api.lib
+        ores.inbox.core.lib
     PRIVATE
         ores.service.lib
         ores.storage.core.lib
         ores.database.lib
         ores.dq.api.lib
         ores.inbox.api.lib
-        ores.inbox.core.lib
         ores.history.core.lib
         ores.diff.lib
         ores.utility.lib

@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &flexi_swap_lower_notional_key::trade_id},
         utility::codec::field{"sequence_number", &flexi_swap_lower_notional_key::sequence_number},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &flexi_swap_lower_notional_write::trade_id},
         utility::codec::field{"sequence_number", &flexi_swap_lower_notional_write::sequence_number},
         utility::codec::field{"trade_activity_id",
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &flexi_swap_lower_notional_change::write},
         utility::codec::field{"precondition", &flexi_swap_lower_notional_change::precondition},
     };
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &flexi_swap_lower_notional_removal::key},
         utility::codec::field{"precondition", &flexi_swap_lower_notional_removal::precondition},
     };
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &flexi_swap_lower_notional_lookup::key},
         utility::codec::field{"flexi_swap_lower_notional",
                               &flexi_swap_lower_notional_lookup::flexi_swap_lower_notional},
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notionals_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &flexi_swap_lower_notionals_filter::trade_id},
         utility::codec::field{"trade_id_one_of",
                               &flexi_swap_lower_notionals_filter::trade_id_one_of},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<flexi_swap_lower_notional_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &flexi_swap_lower_notional_event::event_id},
         utility::codec::field{"key", &flexi_swap_lower_notional_event::key},
         utility::codec::field{"action", &flexi_swap_lower_notional_event::action},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.flexi_swap_lower_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<flexi_swap_lower_notional_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"flexi_swap_lower_notional",
                               &flexi_swap_lower_notional_version_key::flexi_swap_lower_notional},
         utility::codec::field{"version", &flexi_swap_lower_notional_version_key::version},
@@ -545,7 +545,7 @@ wire_fields(std::type_identity<flexi_swap_lower_notional_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<flexi_swap_lower_notional_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &flexi_swap_lower_notional_versions_filter::version},
         utility::codec::field{"from_version",
                               &flexi_swap_lower_notional_versions_filter::from_version},
@@ -563,7 +563,7 @@ wire_fields(std::type_identity<flexi_swap_lower_notional_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_flexi_swap_lower_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_flexi_swap_lower_notionals_request::offset},
         utility::codec::field{"limit", &list_flexi_swap_lower_notionals_request::limit},
         utility::codec::field{"order", &list_flexi_swap_lower_notionals_request::order},
@@ -582,7 +582,7 @@ wire_fields(std::type_identity<list_flexi_swap_lower_notionals_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_flexi_swap_lower_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_flexi_swap_lower_notionals_response::result},
         utility::codec::field{
             "flexi_swap_lower_notionals",
@@ -601,7 +601,7 @@ wire_fields(std::type_identity<list_flexi_swap_lower_notionals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_flexi_swap_lower_notional_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_flexi_swap_lower_notional_request::key},
     };
 }
@@ -616,7 +616,7 @@ wire_fields(std::type_identity<get_flexi_swap_lower_notional_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_flexi_swap_lower_notional_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_flexi_swap_lower_notional_response::result},
         utility::codec::field{"flexi_swap_lower_notional",
                               &get_flexi_swap_lower_notional_response::flexi_swap_lower_notional},
@@ -633,7 +633,7 @@ wire_fields(std::type_identity<get_flexi_swap_lower_notional_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_flexi_swap_lower_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_flexi_swap_lower_notionals_request::keys},
     };
 }
@@ -648,7 +648,7 @@ wire_fields(std::type_identity<get_many_flexi_swap_lower_notionals_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_flexi_swap_lower_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_flexi_swap_lower_notionals_response::result},
         utility::codec::field{"entries", &get_many_flexi_swap_lower_notionals_response::entries},
     };
@@ -664,7 +664,7 @@ wire_fields(std::type_identity<get_many_flexi_swap_lower_notionals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_flexi_swap_lower_notional_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_flexi_swap_lower_notional_request::change},
         utility::codec::field{"intent", &put_flexi_swap_lower_notional_request::intent},
     };
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<put_flexi_swap_lower_notional_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_flexi_swap_lower_notional_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_flexi_swap_lower_notional_response::result},
         utility::codec::field{"flexi_swap_lower_notional",
                               &put_flexi_swap_lower_notional_response::flexi_swap_lower_notional},
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<put_flexi_swap_lower_notional_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_flexi_swap_lower_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_flexi_swap_lower_notionals_request::changes},
         utility::codec::field{"intent", &put_many_flexi_swap_lower_notionals_request::intent},
     };
@@ -713,7 +713,7 @@ wire_fields(std::type_identity<put_many_flexi_swap_lower_notionals_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_flexi_swap_lower_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_flexi_swap_lower_notionals_response::result},
         utility::codec::field{
             "flexi_swap_lower_notionals",
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<put_many_flexi_swap_lower_notionals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_flexi_swap_lower_notional_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_flexi_swap_lower_notional_request::removal},
         utility::codec::field{"intent", &delete_flexi_swap_lower_notional_request::intent},
     };
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_flexi_swap_lower_notional_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_flexi_swap_lower_notional_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_flexi_swap_lower_notional_response::result},
     };
 }
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<delete_flexi_swap_lower_notional_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_flexi_swap_lower_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_flexi_swap_lower_notionals_request::removals},
         utility::codec::field{"intent", &delete_many_flexi_swap_lower_notionals_request::intent},
@@ -779,7 +779,7 @@ wire_fields(std::type_identity<delete_many_flexi_swap_lower_notionals_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_flexi_swap_lower_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_flexi_swap_lower_notionals_response::result},
     };
 }
@@ -794,7 +794,7 @@ wire_fields(std::type_identity<delete_many_flexi_swap_lower_notionals_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_flexi_swap_lower_notionals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_flexi_swap_lower_notionals_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_flexi_swap_lower_notionals_request::scope},
@@ -817,7 +817,7 @@ wire_fields(std::type_identity<list_by_trade_id_flexi_swap_lower_notionals_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_flexi_swap_lower_notionals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_trade_id_flexi_swap_lower_notionals_response::result},
         utility::codec::field{
@@ -838,7 +838,7 @@ wire_fields(std::type_identity<list_by_trade_id_flexi_swap_lower_notionals_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_flexi_swap_lower_notional_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_flexi_swap_lower_notional_versions_request::key},
         utility::codec::field{"offset", &list_flexi_swap_lower_notional_versions_request::offset},
         utility::codec::field{"limit", &list_flexi_swap_lower_notional_versions_request::limit},
@@ -857,7 +857,7 @@ wire_fields(std::type_identity<list_flexi_swap_lower_notional_versions_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_flexi_swap_lower_notional_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_flexi_swap_lower_notional_versions_response::result},
         utility::codec::field{"versions",
                               &list_flexi_swap_lower_notional_versions_response::versions},
@@ -875,7 +875,7 @@ wire_fields(std::type_identity<list_flexi_swap_lower_notional_versions_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_flexi_swap_lower_notional_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_flexi_swap_lower_notional_version_request::key},
     };
 }
@@ -890,7 +890,7 @@ wire_fields(std::type_identity<get_flexi_swap_lower_notional_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_flexi_swap_lower_notional_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_flexi_swap_lower_notional_version_response::result},
         utility::codec::field{"version", &get_flexi_swap_lower_notional_version_response::version},
     };

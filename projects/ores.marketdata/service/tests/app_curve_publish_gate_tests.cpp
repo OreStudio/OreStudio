@@ -71,55 +71,29 @@ namespace {
 
 using ores::inbox::service::approval_lifecycle;
 
-/**
- * @brief The seeded curve publish kind, approving every raise for one test.
- *
- * A kind states through its =auto_approval_code= which raises close without a
- * person, so the test states a version of the kind's own row and not a new kind:
- * the publish operation names the code =marketdata.curve_publish=, and only that
- * code publishes a curve. The row is put back as it was read when the test ends,
- * even when the test fails, because the suites that read the kind expect the
- * seeded value.
- */
-class zero_approval_kind {
-public:
-    explicit zero_approval_kind(ores::testing::scoped_database_helper& h)
-        : ctx_(h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user())) {
-        approval_lifecycle lifecycle(ctx_);
-        const auto found = lifecycle.kind(std::string(curve_publish_kind_code));
-        if (!found)
-            throw std::runtime_error("The curve publish kind is not seeded.");
-        was_ = *found;
-        auto zeroed = *found;
-        // The policy is how a kind says that nobody decides it; a count of zero
-        // would only write a request no person could ever answer.
-        zeroed.auto_approval_code = "every_request";
-        zeroed.change_reason_code = "system.test";
-        zeroed.change_commentary = "Every raise approved, for the zero-approval test";
-        ores::inbox::repository::approval_kind_repository repo;
-        repo.write(ctx_, zeroed);
-    }
 
-    ~zero_approval_kind() {
-        try {
-            ores::inbox::repository::approval_kind_repository repo;
-            was_.change_reason_code = "system.test";
-            was_.change_commentary = "Restored after the zero-approval test";
-            repo.write(ctx_, was_);
-        } catch (...) {
-            // The count is the seeded one; a failure here must not fail a suite
-            // that has already asserted what it came for.
-        }
-    }
+}
 
-    zero_approval_kind(const zero_approval_kind&) = delete;
-    zero_approval_kind& operator=(const zero_approval_kind&) = delete;
 
-private:
-    ores::database::context ctx_;
-    ores::inbox::domain::approval_kind was_;
-};
+TEST_CASE("a_zero_rule_a_run_left_open_is_restored_before_the_next_test", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+    approval_lifecycle lifecycle(ctx);
+    const auto found = lifecycle.kind(std::string(curve_publish_kind_code));
+    REQUIRE(found);
+    auto leaked = *found;
+    leaked.auto_approval_code = "every_request";
+    leaked.change_reason_code = "system.test";
+    leaked.change_commentary = "Left open by a run that aborted";
+    ores::inbox::repository::approval_kind_repository repo;
+    repo.write(ctx, leaked);
 
+    { zero_approval_kind zeroed(h); }
+
+    const auto after = lifecycle.kind(std::string(curve_publish_kind_code));
+    REQUIRE(after);
+    CHECK(after->auto_approval_code == "system_tenant");
+    CHECK(after->change_reason_code == "system.initial_load");
 }
 
 TEST_CASE("a_publish_that_names_no_request_is_refused_and_states_the_kind",
@@ -231,8 +205,9 @@ TEST_CASE("an_approved_subject_publishes_exactly_that_and_records_the_publisher"
     REQUIRE(verdict.record.has_value());
 
     // The gate publishes the subject it checked, and only then records the act.
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     CHECK(f.output_point_count() == 2);
 
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
@@ -386,8 +361,9 @@ TEST_CASE("the_read_that_serves_the_curve_states_the_publisher_and_the_time", ta
 
     const auto verdict = verdict_on_publish(maker.ctx, id, subject);
     REQUIRE(verdict.approved);
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
 
     const auto snapshot = f.snapshot();
@@ -453,8 +429,9 @@ TEST_CASE("a_kind_that_needs_no_approval_publishes_on_the_raise_itself", tags) {
     CHECK(verdict.state_code == "approved");
     REQUIRE(verdict.record.has_value());
 
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
     CHECK(published.published_by == maker.account.username);
     REQUIRE(published.published_at.has_value());

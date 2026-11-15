@@ -74,7 +74,7 @@ struct get_password_policy_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_password_policy_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -86,7 +86,7 @@ struct get_password_policy_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_password_policy_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_password_policy_response::success},
         ::ores::utility::codec::field{"message", &get_password_policy_response::message},
         ::ores::utility::codec::field{"min_length", &get_password_policy_response::min_length},

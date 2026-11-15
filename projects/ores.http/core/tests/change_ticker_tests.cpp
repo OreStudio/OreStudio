@@ -56,7 +56,7 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
     REQUIRE(stream->size() == 1);
     const auto frame = stream->try_pop();
     REQUIRE(frame.has_value());
-    REQUIRE(frame->find("event: iam.book") != std::string::npos);
+    REQUIRE(frame->find("\"component\":\"iam\",\"entity\":\"book\"") != std::string::npos);
     REQUIRE(frame->find("\"tenant\":\"acme\"") != std::string::npos);
 }
 
@@ -124,7 +124,8 @@ TEST_CASE("a_change_inside_the_window_does_not_extend_it", "[change_ticker]") {
 
     // A window pushed back by the second change would still be open at 700 ms.
     REQUIRE(stream->size() == 1);
-    REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
+    REQUIRE(stream->try_pop()->find("\"component\":\"iam\",\"entity\":\"book\"") !=
+            std::string::npos);
 }
 
 TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
@@ -148,8 +149,10 @@ TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
     io.run();
 
     REQUIRE(stream->size() == 2);
-    REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
-    REQUIRE(stream->try_pop()->find("event: iam.trade") != std::string::npos);
+    REQUIRE(stream->try_pop()->find("\"component\":\"iam\",\"entity\":\"book\"") !=
+            std::string::npos);
+    REQUIRE(stream->try_pop()->find("\"component\":\"iam\",\"entity\":\"trade\"") !=
+            std::string::npos);
 }
 
 TEST_CASE("a_ticker_stopped_before_it_ran_returns_at_once", "[change_ticker]") {

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.core/repository/workflow_plan_dependency_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -110,20 +114,76 @@ std::optional<query_builder::condition> workflow_plan_dependency_filter_conditio
 
 }
 
-ores::utility::domain::precondition
-workflow_plan_dependency_repository::replace_claim(context ctx,
-                                                   const domain::workflow_plan_dependency& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool workflow_plan_dependency_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using workflow_plan_dependency_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::workflow_plan_dependency>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+workflow_plan_dependency_rows_by_key
+workflow_plan_dependency_current_rows(workflow_plan_dependency_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const std::vector<domain::workflow_plan_dependency>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    workflow_plan_dependency_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::workflow_plan_dependency>&
+workflow_plan_dependency_rows_of(const workflow_plan_dependency_rows_by_key& current,
+                                 const domain::workflow_plan_dependency& item) {
+    static const std::vector<domain::workflow_plan_dependency> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition workflow_plan_dependency_replace_claim(
+    const std::vector<domain::workflow_plan_dependency>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::workflow_plan_dependency
-workflow_plan_dependency_repository::apply_claim(context ctx,
-                                                 const domain::workflow_plan_dependency& v,
-                                                 const ores::utility::domain::precondition& claim) {
+workflow_plan_dependency_apply_claim(const domain::workflow_plan_dependency& v,
+                                     const ores::utility::domain::precondition& claim,
+                                     const std::vector<domain::workflow_plan_dependency>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,38 +195,47 @@ workflow_plan_dependency_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void workflow_plan_dependency_repository::write(context ctx,
+}
+
+void workflow_plan_dependency_repository::write(const context& ctx,
                                                 const domain::workflow_plan_dependency& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          workflow_plan_dependency_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void workflow_plan_dependency_repository::write(
-    context ctx, const std::vector<domain::workflow_plan_dependency>& v) {
+    const context& ctx, const std::vector<domain::workflow_plan_dependency>& v) {
+    const auto current = workflow_plan_dependency_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(workflow_plan_dependency_replace_claim(
+            workflow_plan_dependency_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void workflow_plan_dependency_repository::write(context ctx,
+void workflow_plan_dependency_repository::write(const context& ctx,
                                                 const domain::workflow_plan_dependency& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan dependency. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        workflow_plan_dependency_apply_claim(v,
+                                             claim,
+                                             workflow_plan_dependency_claim_reads_current(claim) ?
+                                                 read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                 std::vector<domain::workflow_plan_dependency>{});
     query_builder::execute_write_query(ctx,
                                        workflow_plan_dependency_mapper::map(t),
                                        lg(),
@@ -174,14 +243,21 @@ void workflow_plan_dependency_repository::write(context ctx,
 }
 
 void workflow_plan_dependency_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::workflow_plan_dependency>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan dependencies. Count: " << v.size();
+    std::vector<domain::workflow_plan_dependency> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (workflow_plan_dependency_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = workflow_plan_dependency_current_rows(*this, ctx, to_read);
     std::vector<domain::workflow_plan_dependency> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(workflow_plan_dependency_apply_claim(
+            v[i], claims[i], workflow_plan_dependency_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        workflow_plan_dependency_mapper::map(batch),
                                        lg(),
@@ -189,7 +265,7 @@ void workflow_plan_dependency_repository::write(
 }
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_latest(context ctx) {
+workflow_plan_dependency_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
@@ -204,7 +280,7 @@ workflow_plan_dependency_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_latest(context ctx, const std::string& id) {
+workflow_plan_dependency_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow plan dependency. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
@@ -221,7 +297,7 @@ workflow_plan_dependency_repository::read_latest(context ctx, const std::string&
 
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_all(context ctx, const std::string& id) {
+workflow_plan_dependency_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workflow plan dependency versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
                        query_builder::where("id"_c == id) |
@@ -237,7 +313,7 @@ workflow_plan_dependency_repository::read_all(context ctx, const std::string& id
 }
 
 std::optional<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_at_version(context ctx,
+workflow_plan_dependency_repository::read_at_version(const context& ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow plan dependency at version. " << "id: " << id
@@ -261,7 +337,7 @@ workflow_plan_dependency_repository::read_at_version(context ctx,
 
 std::vector<domain::workflow_plan_dependency>
 workflow_plan_dependency_repository::read_latest_by_workflow_id(
-    context ctx,
+    const context& ctx,
     const std::string& workflow_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -286,7 +362,7 @@ workflow_plan_dependency_repository::read_latest_by_workflow_id(
 }
 
 std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_count_by_workflow_id(
-    context ctx,
+    const context& ctx,
     const std::string& workflow_id,
     const std::optional<messaging::workflow_plan_dependencies_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -306,7 +382,7 @@ std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_cou
 
 
 workflow_plan_dependency_repository::remove_status workflow_plan_dependency_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workflow plan dependency. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -335,12 +411,12 @@ workflow_plan_dependency_repository::remove_status workflow_plan_dependency_repo
     return remove_status::removed;
 }
 
-void workflow_plan_dependency_repository::remove(context ctx, const std::string& id) {
+void workflow_plan_dependency_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::workflow_plan_dependency> workflow_plan_dependency_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -364,7 +440,7 @@ std::vector<domain::workflow_plan_dependency> workflow_plan_dependency_repositor
 }
 
 std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::workflow_plan_dependencies_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow plan dependency count";
@@ -381,9 +457,25 @@ std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_cou
 }
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+workflow_plan_dependency_repository::read_latest(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::workflow_plan_dependency> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
                        query_builder::where("id"_c.in(ids) && "valid_to"_c == max);
@@ -397,7 +489,8 @@ workflow_plan_dependency_repository::read_latest(context ctx, const std::vector<
     return result;
 }
 
-void workflow_plan_dependency_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void workflow_plan_dependency_repository::remove(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

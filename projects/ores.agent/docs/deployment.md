@@ -138,7 +138,7 @@ See [validation](validation.md) for Windows evidence and the open Linux GPU chec
 
 ## NATS and access
 
-Checked contract: `f19210e781dd508c1019f499a74ecd40d59912e3`. This is test evidence, not a server version lock.
+Checked contract: `26f6bef7c08332aa13452616f5de4ea07bb769b2`. This is test evidence, not a server version lock.
 `src/backend.ts` defines the independent operation allowlist. It uses MessagePack,
 mTLS, user Bearer token, `Nats-Session-Id` and correlation IDs. Reads have an
 eight-second deadline without retry. Cancellation discards pending results.
@@ -191,7 +191,7 @@ loader path. Set `backendContractRevision` to the checked SHA. Record refuses
 a stale probe or failed wire tests. The record includes normalized source
 hashes; Windows CRLF checkout does not change them.
 
-The probe checks 23 operations and 45 contract cases. Its separate fixture
+The probe checks 37 operations and 45 contract cases. Its separate fixture
 view uses valid booking-nature values and a typed empty instrument batch.
 Frozen eval files and scores stay unchanged. These are wire tests, not live
 business acceptance. Before deployment, also test the candidate running server

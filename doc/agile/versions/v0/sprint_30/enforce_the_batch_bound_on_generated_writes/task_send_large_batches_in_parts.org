@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 36A50342-6DFB-4132-90AC-04813470CBCF
+:END:
+#+title: Task: Send every batch write of more than 1,000 elements in parts
+#+description: Name the protocol's 1,000-element bound once, and make the callers that can exceed it send their put-many and delete-many in parts of at most 1,000.
+#+type: task
+#+level: s1
+#+filetags: :enforce_the_batch_bound_on_generated_writes:sprint_30:v0:
+#+owner: marco
+#+branch: feature/enforce-the-batch-bound-on-generated-writes
+#+pr: 4747
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every hand-written caller that can send a put-many or delete-many of more than 1,000 elements sends it in parts of at most 1,000, sized from one named constant, so the refusal the next task adds breaks no caller.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:104BAAF1-595B-465A-AC9A-4F0D3141653E][Enforce the protocol's 1,000-element bound on generated put-many and delete-many]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The bound is one named constant, and the get-many refusal in the service template reads it.
+- The variance calibration points, the synthetic counterparty and trade-type scope, the iam provisioning plans and the ORE import rollback send their batches in parts of at most 1,000.
+- A test proves the split: each part holds at most 1,000 elements, the parts keep the order, and together they hold every element.
+
+* Plan
+
+1. Name the bound once. =ores::utility::domain::max_batch_size= in
+   =protocol.hpp= holds 1,000, and =batches_of= splits a vector into spans of at
+   most that size, in order. The service template's three get-many and one-of
+   refusals read the constant instead of the literal.
+2. Find the callers. A scan of every hand-written file that names a
+   =put_many_*_request= or =delete_many_*_request= found six C++ files and five
+   web files. Generated handlers only decode and dispatch, and the shell and
+   HTTP surfaces pass a caller's request through.
+3. Split each caller that can exceed the bound. Each split caller sends
+   changes or removals that are safe to repeat: they claim =any=, or claim
+   absence over rows the step skips once recorded.
+4. Leave the callers that cannot exceed the bound. The web screens send a
+   screen's rows, the GMM components are a mixture's few components, and the
+   derived source already writes 1,000 at a time.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Largest batch per party or input in the provisioned Acme environment (ir pillars, ir configs, fx vol blueprints, pillars, pillar sources, counterparties, variance input points) | 140, 20, 10, 350, 350, 453, 1 | =compass sql -u ddl -- -f sizes.sql= (counts of distinct ids grouped by party or input) | 1997fc3c12 |
+| Variance window of a calibration policy by default | 1,826 days, about 1,260 fixings | =ores.sql/create/synthetic/synthetic_calibration_policies_create.sql:44= | 1997fc3c12 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4747][#4747]] | [services] Send batch writes of more than 1,000 elements in parts |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Generated lines exceed 100 columns; confirm template and output agree | ores.cpp.service.service_impl.org | Declined | Codegen formats its output; check --only format passed, so regeneration does not churn. |
+| 2 | Note that the request is left holding the last part | protocol.hpp | Declined | batches_of never sees a request; no caller reads it after the loop. |
+| 3 | Share one move, split and assign helper across callers | three callers | Declined | Each caller handles failure differently (throw, reply, string); a callback helper adds a layer to save three lines. |
+| 4 | Test batches_of at 0, 1, 999, 1000, 1001, 2000, 2001 | domain_protocol_tests.cpp | Declined | Already covered: 0, 1,000 and 2,001 with per-part sizes and order. |
+| 5 | Name the part index in a partial failure | tenant_provisioning_handler.hpp | Declined | Parts are safe to repeat, so the operator reruns regardless. |
+| 6 | Confirm the other rollback deletes are guarded when empty | ore_import_execute_handler.cpp | Confirmed | All four are guarded by !empty(). |
+
+* Result
+
+=ores::utility::domain::max_batch_size= names the protocol's 1,000-element
+bound, and =batches_of= splits a vector into spans of at most that size, in
+order. The rvalue overload is deleted, so a part cannot view a set that is gone.
+Four tests prove the split: each part is bounded, the parts keep the order and
+together hold every element, an exact-size set is one part, and an empty set has
+none.
+
+The service template's get-many and one-of refusals read the constant, and
+every generated service is regenerated.
+
+These callers now send in parts: the variance calibration input points, the
+synthetic trade-type and counterparty scope, the seven iam provisioning curve
+and surface plan writes, and the ORE import rollback's four delete-many calls.
+The derived FX volatility source sizes its writes from the constant.
+
+Verification: the whole tree builds. The utility protocol tests pass (4 of 4).
+The iam core (305), ORE service (10), marketdata core (413) and dq core (126)
+suites pass. The synthetic service suite passes 78 of 79. The one failure is an
+adapter test that expects no answer to its announce, and this environment's
+marketdata service answers it. With that service stopped, the 20 adapter tests
+pass. The light local checks pass, 46 of 46.

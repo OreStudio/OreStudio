@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -53,13 +55,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::trading::service {
 
 using namespace ores::logging;
 
-equity_swap_instrument_service::equity_swap_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+equity_swap_instrument_service::equity_swap_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -78,6 +81,46 @@ equity_swap_instrument_read_one(repository::equity_swap_instrument_repository& r
                                 const ores::database::context& ctx,
                                 const messaging::equity_swap_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::equity_swap_instrument>>
+equity_swap_instrument_read_many(repository::equity_swap_instrument_repository& repo,
+                                 const ores::database::context& ctx,
+                                 const std::vector<messaging::equity_swap_instrument_key>& keys) {
+    std::vector<std::vector<domain::equity_swap_instrument>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        trade_id_keys.push_back(boost::uuids::to_string(key.trade_id));
+    }
+    std::map<key_tuple, std::vector<domain::equity_swap_instrument>> by_key;
+    for (auto& row : repo.read_latest(ctx, trade_id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.identity.trade_id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.trade_id)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -142,9 +185,10 @@ equity_swap_instrument_service::list_equity_swap_instruments(
         return response;
     }
     if (request.filter && request.filter->trade_id_one_of &&
-        request.filter->trade_id_one_of->size() > 1000) {
+        request.filter->trade_id_one_of->size() > max_batch_size) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large,
+                   {.field = "trade_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -181,16 +225,23 @@ messaging::get_many_equity_swap_instruments_response
 equity_swap_instrument_service::get_many_equity_swap_instruments(
     const messaging::get_many_equity_swap_instruments_request& request) {
     messaging::get_many_equity_swap_instruments_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = equity_swap_instrument_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::equity_swap_instrument_lookup entry;
-        entry.key = k;
-        auto found = equity_swap_instrument_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.equity_swap_instrument = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.equity_swap_instrument = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -201,7 +252,11 @@ equity_swap_instrument_service::put_equity_swap_instrument(
     const messaging::put_equity_swap_instrument_request& request) {
     messaging::put_equity_swap_instrument_response response;
     domain::equity_swap_instrument value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = equity_swap_instrument_read_one(
+        repo_,
+        ctx_,
+        equity_swap_instrument_key_from(equity_swap_instrument_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -216,11 +271,19 @@ messaging::put_many_equity_swap_instruments_response
 equity_swap_instrument_service::put_many_equity_swap_instruments(
     const messaging::put_many_equity_swap_instruments_request& request) {
     messaging::put_many_equity_swap_instruments_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::equity_swap_instrument_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            equity_swap_instrument_key_from(equity_swap_instrument_to_domain(change.write)));
+    const auto current = equity_swap_instrument_read_many(repo_, ctx_, keys);
     std::vector<domain::equity_swap_instrument> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::equity_swap_instrument value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -238,11 +301,12 @@ equity_swap_instrument_service::put_many_equity_swap_instruments(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.equity_swap_instruments.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(value));
-        response.equity_swap_instruments.push_back(written.empty() ? value :
-                                                                     std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = equity_swap_instrument_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.equity_swap_instruments.push_back(
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -364,13 +428,12 @@ equity_swap_instrument_service::get_equity_swap_instrument_version(
 ores::utility::domain::result equity_swap_instrument_service::prepare_change(
     const messaging::equity_swap_instrument_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::equity_swap_instrument>& current,
     domain::equity_swap_instrument& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = equity_swap_instrument_to_domain(change.write);
-    const auto current =
-        equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

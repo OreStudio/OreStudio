@@ -141,6 +141,17 @@ export function useSwitchParty(): ((partyId: string) => Promise<void>) | undefin
     return value?.state.status === 'authenticated' ? value.switchParty : undefined;
 }
 
+/**
+ * The session when there is one, and nothing outside a provider.
+ *
+ * A component that states something about the session only when it has one, such
+ * as the party a read is made for, asks here rather than refusing to render: the
+ * screen is still true outside the shell, and a test renders it that way.
+ */
+export function useOptionalSession(): SessionContextValue | undefined {
+    return use(SessionContext);
+}
+
 export function useSession(): SessionContextValue {
     const value = use(SessionContext);
     if (value === undefined) {

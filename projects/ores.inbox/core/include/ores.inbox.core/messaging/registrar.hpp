@@ -20,7 +20,7 @@
 #ifndef ORES_INBOX_CORE_MESSAGING_REGISTRAR_HPP
 #define ORES_INBOX_CORE_MESSAGING_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/service/approval_apply_retry.hpp"
 #include "ores.nats/service/client.hpp"
@@ -46,7 +46,7 @@ public:
      */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
                       std::chrono::seconds answered_window,
                       std::chrono::seconds reminder_window,

@@ -271,7 +271,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_parameter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &run_parameter::name},
         ::ores::utility::codec::field{"value", &run_parameter::value},
         ::ores::utility::codec::field{"position", &run_parameter::position},
@@ -287,7 +287,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_analytic>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"analytic", &run_analytic::analytic},
         ::ores::utility::codec::field{"parameters", &run_analytic::parameters},
     };
@@ -302,7 +302,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_file>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"parameter", &run_file::parameter},
         ::ores::utility::codec::field{"name", &run_file::name},
     };
@@ -317,7 +317,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_engine_settings>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"settings", &run_engine_settings::settings},
         ::ores::utility::codec::field{"fixings", &run_engine_settings::fixings},
         ::ores::utility::codec::field{"building", &run_engine_settings::building},
@@ -334,7 +334,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_document>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"settings", &run_document::settings},
         ::ores::utility::codec::field{"engine_settings", &run_document::engine_settings},
         ::ores::utility::codec::field{"files", &run_document::files},
@@ -352,7 +352,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<save_run_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &save_run_document_request::report_definition_id},
         ::ores::utility::codec::field{"document", &save_run_document_request::document},
@@ -368,7 +368,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<save_run_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &save_run_document_response::success},
         ::ores::utility::codec::field{"message", &save_run_document_response::message},
     };
@@ -383,7 +383,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bind_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &bind_configuration_request::report_definition_id},
         ::ores::utility::codec::field{"configuration_type_code",
@@ -401,7 +401,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bind_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &bind_configuration_response::success},
         ::ores::utility::codec::field{"message", &bind_configuration_response::message},
         ::ores::utility::codec::field{"configuration_id",
@@ -418,7 +418,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &get_run_document_request::report_definition_id},
     };
@@ -433,7 +433,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_run_document_response::success},
         ::ores::utility::codec::field{"message", &get_run_document_response::message},
         ::ores::utility::codec::field{"document", &get_run_document_response::document},
@@ -451,7 +451,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_run_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"report_definition_id",
                                       &delete_run_document_request::report_definition_id},
     };
@@ -466,7 +466,7 @@ struct delete_run_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_run_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &delete_run_document_response::success},
         ::ores::utility::codec::field{"message", &delete_run_document_response::message},
     };

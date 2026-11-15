@@ -20,8 +20,8 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -38,11 +38,14 @@ const std::string provisioned_tenant_id("44444444-4444-4444-8444-444444444444");
 const std::string admin_account_id("22222222-2222-4222-8222-222222222222");
 const std::string correlation_id("33333333-3333-4333-8333-333333333333");
 
+using ores::iam::workflow::build_calendars_step_kind;
 using ores::iam::workflow::complete_provisioning_step_kind;
 using ores::iam::workflow::detail::unique_step_name;
+using ores::iam::workflow::generate_trades_step_kind;
 using ores::iam::workflow::is_declared_step_kind;
 using ores::iam::workflow::is_executed_step_kind;
 using ores::iam::workflow::is_system_scoped_step_kind;
+using ores::iam::workflow::marketdata_provision_tenant_step_subject;
 using ores::iam::workflow::provision_executed_step_kinds;
 using ores::iam::workflow::provision_party_step_kind;
 using ores::iam::workflow::provision_party_workflow_type;
@@ -50,6 +53,8 @@ using ores::iam::workflow::provision_step_kinds;
 using ores::iam::workflow::provision_tenant_step;
 using ores::iam::workflow::provision_tenant_step_command;
 using ores::iam::workflow::publish_system_curves_step_kind;
+using ores::iam::workflow::refdata_provision_tenant_step_subject;
+using ores::iam::workflow::synthetic_provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_workflow_request;
 using ores::iam::workflow::provision_tenant_workflow_type;
@@ -57,7 +62,10 @@ using ores::iam::workflow::register_provision_party_workflow;
 using ores::iam::workflow::register_provision_tenant_workflow;
 using ores::iam::workflow::register_tenant_setup_workflow;
 using ores::iam::workflow::schedule_reports_step_kind;
+using ores::iam::workflow::step_subject_for_kind;
 using ores::iam::workflow::start_tenant_setup_step_kind;
+using ores::iam::workflow::subscribe_market_data_step_kind;
+using ores::iam::workflow::load_staff_step_kind;
 using ores::iam::workflow::system_provision_step_kind;
 using ores::iam::workflow::tenant_setup_workflow_type;
 using ores::workflow::service::workflow_definition;
@@ -226,6 +234,39 @@ TEST_CASE("the setup run's kinds become steps in order, with the completing step
     }
 }
 
+TEST_CASE("a step is dispatched to the service that owns the work it does", "[workflow]") {
+    // The calendars are refdata's data, so the step that materialises them is
+    // served there and reaches the store directly.
+    CHECK(step_subject_for_kind(build_calendars_step_kind) ==
+          refdata_provision_tenant_step_subject);
+    // The trade population is synthetic's work, so the step that writes it is
+    // served there through the service's own tenant-scoped session.
+    CHECK(step_subject_for_kind(generate_trades_step_kind) ==
+          synthetic_provision_tenant_step_subject);
+    // The subscriptions and routes are marketdata's work, so the step that
+    // writes them is served there through the service's own tenant-scoped and
+    // party-scoped sessions.
+    CHECK(step_subject_for_kind(subscribe_market_data_step_kind) ==
+          marketdata_provision_tenant_step_subject);
+    // The identity steps stay in ores.iam, which owns the run and the people.
+    CHECK(step_subject_for_kind(load_staff_step_kind) == provision_tenant_step_subject);
+    CHECK(step_subject_for_kind(system_provision_step_kind) == provision_tenant_step_subject);
+    // A kind this build does not know is sent to ores.iam, which refuses it:
+    // a step must fail where a person can read it, not wait for no service.
+    CHECK(step_subject_for_kind("a_kind_no_service_serves") == provision_tenant_step_subject);
+
+    // The definition states the owner on the step the engine persists.
+    const auto def = setup_definition();
+    const auto steps =
+        def.build_steps(request_json({declared("build_calendars"), declared("load_staff")}),
+                        tenant_id,
+                        correlation_id);
+    REQUIRE(steps.size() == 3);
+    CHECK(steps[0].command_subject == refdata_provision_tenant_step_subject);
+    CHECK(steps[1].command_subject == provision_tenant_step_subject);
+    CHECK(steps[2].command_subject == provision_tenant_step_subject);
+}
+
 TEST_CASE("the setup run's steps declare which steps must answer first", "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(
@@ -278,6 +319,57 @@ TEST_CASE("a party's curves wait for the subscriptions that deliver their quotes
         if (step.name == "publish_party_curves")
             CHECK(step.consumes == std::vector<std::string>{"subscribe_market_data"});
     CHECK(steps[steps.size() - 2].name == "publish_party_curves");
+}
+
+TEST_CASE("a party's forwards wait for the curves they read", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(request_json({declared("provision_party"),
+                                                     declared("subscribe_market_data"),
+                                                     declared("publish_party_curves"),
+                                                     declared("publish_party_forwards")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    const auto forwards = std::ranges::find_if(
+        steps, [](const auto& step) { return step.name == "publish_party_forwards"; });
+    REQUIRE(forwards != steps.end());
+    CHECK(forwards->consumes == std::vector<std::string>{"publish_party_curves"});
+}
+
+TEST_CASE("a party's forwards wait for the calendars that lay out their ladder", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(request_json({declared("publish_bundle"),
+                                                     declared("build_calendars"),
+                                                     declared("provision_party"),
+                                                     declared("subscribe_market_data"),
+                                                     declared("publish_party_curves"),
+                                                     declared("publish_party_forwards")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    const auto forwards = std::ranges::find_if(
+        steps, [](const auto& step) { return step.name == "publish_party_forwards"; });
+    REQUIRE(forwards != steps.end());
+    CHECK(forwards->consumes ==
+          (std::vector<std::string>{"publish_party_curves", "build_calendars"}));
+}
+
+TEST_CASE("a party's surfaces wait for its forwards and its blueprints", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(request_json({declared("provision_party"),
+                                                     declared("subscribe_market_data"),
+                                                     declared("publish_party_curves"),
+                                                     declared("give_party_surface_blueprints"),
+                                                     declared("publish_party_forwards"),
+                                                     declared("publish_party_surfaces")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    const auto surfaces = std::ranges::find_if(
+        steps, [](const auto& step) { return step.name == "publish_party_surfaces"; });
+    REQUIRE(surfaces != steps.end());
+    CHECK(surfaces->consumes ==
+          std::vector<std::string>{"publish_party_forwards", "give_party_surface_blueprints"});
 }
 
 TEST_CASE("the trade generation waits for the books, the staff and the feeds", "[workflow]") {
@@ -502,13 +594,13 @@ TEST_CASE("the schedule step is a kind of the catalogue this build executes", "[
 
 TEST_CASE("auto-approval brackets every other step of a run", "[workflow]") {
     const auto def = setup_definition();
-    const auto steps = def.build_steps(
-        request_json({declared("start_auto_approval"),
-                      declared("publish_bundle", R"({"bundles":["base"]})"),
-                      declared("build_calendars"),
-                      declared("end_auto_approval")}),
-        tenant_id,
-        correlation_id);
+    const auto steps =
+        def.build_steps(request_json({declared("start_auto_approval"),
+                                      declared("publish_bundle", R"({"bundles":["base"]})"),
+                                      declared("build_calendars"),
+                                      declared("end_auto_approval")}),
+                        tenant_id,
+                        correlation_id);
 
     const auto reads = [&](const std::string& reader, const std::string& name) {
         for (const auto& step : steps)

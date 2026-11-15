@@ -55,8 +55,8 @@ std::string app_version_platform_repository::sql() {
     return query_builder::insert_statement_sql<app_version_platform_entity>(lg());
 }
 
-app_version_platform_repository::app_version_platform_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+app_version_platform_repository::app_version_platform_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 app_version_platform_repository::replace_claim(const domain::app_version_platform& v) {

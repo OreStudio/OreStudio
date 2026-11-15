@@ -109,6 +109,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:suspend', 'Suspend tenants');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:terminate', 'Terminate tenants');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:impersonate', 'Access other tenants');
+    -- A service account enters a tenant it serves, so the work it does there
+    -- names that tenant and the tenant's party rather than its own.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:enter_as_service', 'Serve a tenant as a service account');
 
     -- Party provisioning: the party stage a tenant administrator runs inside the
     -- tenant they already work in, which is a narrower act than creating one.
@@ -1713,9 +1716,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:read',                     'View trade identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:write',                    'Create and modify trade identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:delete',                   'Delete trade identifiers');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_swap_periods:read',                      'View equity swap periods');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_swap_periods:write',                     'Create and modify equity swap periods');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_swap_periods:delete',                    'Delete equity swap periods');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::basket_swap_periods:read',                      'View basket swap periods');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::basket_swap_periods:write',                     'Create and modify basket swap periods');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::basket_swap_periods:delete',                    'Delete basket swap periods');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_identifiers:read',                   'View structure identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_identifiers:write',                  'Create and modify structure identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_identifiers:delete',                 'Delete structure identifiers');
@@ -1826,6 +1829,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:read',   'View variance calibration input points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:write',  'Create and modify variance calibration input points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:delete', 'Delete variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:read',   'View FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:write',  'Create and modify FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:delete', 'Delete FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:read',   'View FX volatility surface feeds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:write',  'Create and modify FX volatility surface feeds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:delete', 'Delete FX volatility surface feeds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:read',   'View FX volatility surface feed expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:write',  'Create and modify FX volatility surface feed expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:delete', 'Delete FX volatility surface feed expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:read',   'View FX volatility surface feed contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:write',  'Create and modify FX volatility surface feed contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:delete', 'Delete FX volatility surface feed contributors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:read',   'View variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:write',  'Create and modify variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:delete', 'Delete variance calibrations');
@@ -1931,6 +1946,13 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:republish',          'Bootstrap a curve and store its output series');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:publish',            'Ask for a curve publish, and publish an approved one');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_publishes:read',                'View the subject a curve publish request names, and the record of its publication');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publishes:read',           'View the subject an FX forward publish request names, and the record of its publication');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publish_points:read',      'View the tenors of a published FX forward set: dates, discount factors, forwards and points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publish_spots:read',       'View the spot observations a published FX forward set read');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_vol_surface:calibrate',           'Calibrate an FX volatility surface blueprint and store its candidate');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_vol_surface:publish',             'Ask for a calibrated FX volatility surface to be published, and publish an approved one');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_vol_surface_publishes:read',       'View the subject an FX volatility surface publish request names, and the record of its publication');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_vol_surface_calibrations:read',     'View the candidate an FX volatility surface calibration wrote and its checks');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
 
     -- =============================================================================

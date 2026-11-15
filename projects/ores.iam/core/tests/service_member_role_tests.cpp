@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -37,7 +37,7 @@ auto& service_member_role_lg() {
 std::vector<std::string> query(ores::testing::scoped_database_helper& h,
                                const std::string& sql,
                                const std::vector<std::string>& params) {
-    return ores::database::repository::execute_parameterized_string_query(
+    return ores::database::query_builder::execute_parameterized_string_query(
         acting(h), sql, params, service_member_role_lg(), sql);
 }
 

@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 2B6612F6-D9F8-4DFF-8952-61716D22C2CF
+:END:
+#+title: Story: Break the large compilation dependencies
+#+description: Find the headers that most of the build depends on, forward-declare the types that are only passed along, and pass the database context by reference, so a change to one header rebuilds only the code that uses it.
+#+type: story
+#+level: s2
+#+filetags: :build:compilation:headers:database:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-14
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A change to one header rebuilds only the code that uses what the header defines. Today a few headers sit under most of the build, so a small change to one of them recompiles most of the tree. The database context is the case that started this story: =ores.database/domain/context.hpp= is included by most repositories and services, and through it every one of them parses =libpq-fe.h=, the pool, =<mutex>= and =<condition_variable>=, although most of them only pass a context along and never look inside it.
+
+The story first analyses the include graph to find which headers couple the build and what to do with each type in them. It then fixes the database context, the known case, and applies the analysis to the other headers it names.
+
+A developer sees the result as shorter rebuilds after a change to a shared header. The next engineer inherits headers that state what they need, with forward declarations where a type is only named, and a check that keeps it so.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The header analysis is written.        |
+| Waiting on    | Nothing.                               |
+| Next          | Start the codec headers.               |
+| Last touched  | 2026-11-12                               |
+
+* Acceptance
+
+- An analysis of the include graph names the headers that most of the build depends on, and, for each type in them, records one decision: forward-declare, move to a smaller header, split, or keep. The analysis and its method are kept with the story, so it reruns.
+- The database context is passed as =const context&= wherever it is only read or passed along, is forward-declared in every header that only names it, and =context.hpp= no longer includes libpq or the pool.
+- Every other header the analysis names is changed per its decision.
+- Each change states its measured effect: the objects that depend on the header, and the rebuild time after the header is touched, before and after, at named commits.
+- The codegen templates emit the new form, so regenerated code keeps it.
+- A check stops a header that only names a forward-declarable type from including its full definition again.
+- No behaviour changes. Every test suite passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] | DONE | 2026-11-13 | | Analyse the include graph to find the headers most of the build depends on, and decide for each which types to forward-declare, which to move, and which to split. |
+| [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] | DONE | 2026-11-13 | | Pass the database context as a const reference, forward-declare it in every header that only passes it along, and keep libpq and the pool out of context.hpp. |
+| [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]] | DONE | 2026-11-14 | | Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect. |
+| [[id:291FE4D0-4B05-48BF-97A4-E39FD458DBA6][Split the context into its connection and request parts]] | BACKLOG | | | Give the 1305 services the per-request identity part only, so their headers stop parsing the connection part, and decide what a service stores. |
+| [[id:93457275-4215-44DE-B8B5-555A2F2E6909][Move the codec text forms out of line]] | BACKLOG | | | End the inline text forms the codec chain parses: text_form.hpp moves its definitions to a .cpp, and protocol_codec.hpp and json_codec.hpp stop reaching it. |
+| [[id:AE2E77E7-5E09-436A-817E-66FB7064BA28][Delete the unused includes the analysis found]] | DONE | 2026-11-14 | 2026-11-14 | Remove the dead includes and the two inline functions that force them: the string generator in tenant_id.hpp, and the two magic_enum users in error_code.hpp. |
+| [[id:F185ECD2-FFD9-416E-9179-10E96BE8F634][Stop the pool and statement headers reaching the connection header]] | STARTED | 2026-11-14 | | Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers. |
+| [[id:9C9D7D89-1114-4111-9A0B-DAFDF59E19F2][Split the unit of work header]] | BACKLOG | | | Separate pq::transaction from pq::session_context so unit_of_work.hpp takes the declaration and the forward-declaration check reaches zero. |
+| [[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] | BACKLOG | | | Hold the logger behind a small handle so the typedef does not pull Boost.Log's sources into 565 objects. |
+
+* Decisions
+
+- The include graph, the cost of each header and the decision for each type are
+  in [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]]. Its two
+  instruments live beside it in =evidence/=, and both rerun on any commit.
+- The cost is carried by three shapes: the codec chain rooted in =text_form.hpp=
+  and =decimal.hpp=, the clock habit of =<chrono>= that =datetime.hpp= and
+  =boost/uuid/uuid.hpp= carry into most objects, and the logging chain opened by
+  =make_logger.hpp=. The work goes in that order, not in order of the database
+  context.
+- Rebuild radius and parse cost are separate measures, and this story is about
+  the first. Forward declarations reach only the types held by pointer or
+  reference.
+- A header family is not uniform, and only a compile says so. The repository
+  archetype emits two headers, and the junction one carries a =context ctx_=
+  member in 29 generated files, so it keeps the definition while its 539
+  siblings take the declaration. The check that guards the rule can see a header
+  that includes too much and cannot see one that includes too little.
+- The copies are real and come from codegen: 21874 by-value =context=
+  parameters, 11141 of them emitted by the =repository= and =service=
+  archetypes. Changing them to =const&= is worth doing for run time and for the
+  one synchronous reference capture in =feed_kind_registry.cpp:492=, but it does
+  not shorten rebuilds.
+- =context.hpp='s radius is structural: cutting the include from all 1738
+  repository headers saves one object, and cutting every header in the tree
+  still leaves 179 of 365 objects reading it. The only lever on the radius is
+  splitting the type, which needs its own task.
+- The rebuild saving is inside =context.hpp=, not in its users. Four files
+  include =pq/pool.hpp= and 365 objects rebuild when it changes, because
+  =context.hpp= is the door. Cutting that edge takes 147 objects off
+  =pq/pool.hpp= and =pq/transaction.hpp= each. =pq/connection.hpp= moves only
+  with =pq/pool.hpp= and =pq/statement.hpp=, because each of those reaches it.
+- =libpq-fe.h= costs 0.04 s to parse and still sits under 375 objects. It is a
+  blast-radius problem, not a parse-time problem.
+- The rest of the header cost is parse time, in three shapes: the codec chain,
+  =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
+
+* Out of scope
+
+-

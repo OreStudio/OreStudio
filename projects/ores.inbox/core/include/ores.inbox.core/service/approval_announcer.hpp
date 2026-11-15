@@ -45,7 +45,7 @@ private:
     }
 
 public:
-    explicit approval_announcer(ores::database::context ctx);
+    explicit approval_announcer(const ores::database::context& ctx);
 
     /**
      * @brief Tells the deciders whose turn it is.

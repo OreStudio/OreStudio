@@ -228,8 +228,8 @@ key_from_swap_terms(const domain::cross_currency_basis_swap_terms& v) {
 
 }
 
-cross_currency_basis_convention_service::cross_currency_basis_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cross_currency_basis_convention_service::cross_currency_basis_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::get_cross_currency_basis_convention_response
 cross_currency_basis_convention_service::get_cross_currency_basis_convention(

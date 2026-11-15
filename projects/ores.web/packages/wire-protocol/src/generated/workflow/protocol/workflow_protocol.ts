@@ -308,6 +308,14 @@ export interface WorkflowStepSummary {
     completed_at: string | null;
     error: string;
     log: StepLogEntry[];
+    /**
+     * @brief The progress a running step last reported: what it is doing, and how
+     * far through it is out of how much when it counts. Empty when the step is not
+     * running or reported none.
+     */
+    progress: string;
+    progress_done: number | null;
+    progress_total: number | null;
 }
 
 /**

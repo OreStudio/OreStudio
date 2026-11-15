@@ -21,7 +21,7 @@
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/statement.hpp"
 #include "ores.database/pq/transaction.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -171,7 +171,7 @@ void validate(const ores::database::context& ctx,
     const std::string sql = "select found::text, value_set_code, source_kind, is_in_set::text"
                             " from ores_reporting_setting_value_verdict_fn($1, $2)";
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {"Setup:" + setting.ore_name, value},
@@ -587,8 +587,9 @@ void lock_request(const ores::database::context& ctx, const std::string& request
 
 }
 
-engine_settings_proposal_service::engine_settings_proposal_service(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+engine_settings_proposal_service::engine_settings_proposal_service(
+    const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<settings_group> engine_settings_proposal_service::groups() {
     // The groups and their settings are system-owned lookups, so they are read
@@ -677,6 +678,14 @@ engine_settings_proposal_service::raise(
         return response;
     }
 
+    // The kind and the raise's policy are read with the parts, before the unit
+    // of work opens, for the same reason.
+    ores::inbox::service::approval_lifecycle outside(ctx_);
+    const auto kind = outside.kind(std::string(kind_code));
+    if (!kind)
+        throw std::runtime_error("No such kind of request: " + std::string(kind_code));
+    const auto policy = outside.policy_for(*kind, !parts.empty());
+
     boost::uuids::uuid request_id{};
     {
         // One unit of work reads the configuration, the values in force and the
@@ -754,14 +763,11 @@ engine_settings_proposal_service::raise(
         }
 
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
-        const auto kind = lifecycle.kind(std::string(kind_code));
-        if (!kind)
-            throw std::runtime_error("No such kind of request: " + std::string(kind_code));
         const auto me = lifecycle.actor_account_id();
         if (!me)
             throw std::runtime_error("The signed-in account was not found.");
 
-        const auto raised = lifecycle.raise(*kind, request.reason, *me, parts);
+        const auto raised = lifecycle.raise_under(policy, *kind, request.reason, *me, parts);
         request_id = raised.id;
 
         std::vector<domain::engine_settings_change> rows;
@@ -791,11 +797,9 @@ engine_settings_proposal_service::raise(
 
     // The request stands whether or not anybody is told, so the telling happens
     // after the commit and a failure there is only logged.
-    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
-    const auto kind = lifecycle.kind(std::string(kind_code));
-    const auto raised = lifecycle.request(boost::uuids::to_string(request_id));
-    if (kind && raised)
-        ores::inbox::service::approval_announcer(ctx_).tell_open_parts(lifecycle, *kind, *raised);
+    const auto raised = outside.request(boost::uuids::to_string(request_id));
+    if (raised)
+        ores::inbox::service::approval_announcer(ctx_).tell_open_parts(outside, *kind, *raised);
 
     response.request_id = boost::uuids::to_string(request_id);
     response.result = refusal_of(outcome::ok, {});

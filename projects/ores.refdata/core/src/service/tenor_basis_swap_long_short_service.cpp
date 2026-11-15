@@ -33,9 +33,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -54,13 +56,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-tenor_basis_swap_long_short_service::tenor_basis_swap_long_short_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenor_basis_swap_long_short_service::tenor_basis_swap_long_short_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -79,6 +82,46 @@ tenor_basis_swap_long_short_read_one(repository::tenor_basis_swap_long_short_rep
                                      const ores::database::context& ctx,
                                      const messaging::tenor_basis_swap_long_short_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::tenor_basis_swap_long_short>> tenor_basis_swap_long_short_read_many(
+    repository::tenor_basis_swap_long_short_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<messaging::tenor_basis_swap_long_short_key>& keys) {
+    std::vector<std::vector<domain::tenor_basis_swap_long_short>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> id_keys;
+    id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        id_keys.push_back(boost::uuids::to_string(key.id));
+    }
+    std::map<key_tuple, std::vector<domain::tenor_basis_swap_long_short>> by_key;
+    for (auto& row : repo.read_latest(ctx, id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.identity.id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -130,15 +173,17 @@ tenor_basis_swap_long_short_service::list_tenor_basis_swap_long_shorts(
                    {.entity = "tenor basis swap long shorts", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->convention_id_one_of &&
-        request.filter->convention_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "convention_id_one_of", .limit = "1000"});
+        request.filter->convention_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "convention_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -169,15 +214,17 @@ tenor_basis_swap_long_short_service::list_by_convention_id_tenor_basis_swap_long
                    {.entity = "tenor basis swap long shorts", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->convention_id_one_of &&
-        request.filter->convention_id_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "convention_id_one_of", .limit = "1000"});
+        request.filter->convention_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "convention_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -211,16 +258,23 @@ messaging::get_many_tenor_basis_swap_long_shorts_response
 tenor_basis_swap_long_short_service::get_many_tenor_basis_swap_long_shorts(
     const messaging::get_many_tenor_basis_swap_long_shorts_request& request) {
     messaging::get_many_tenor_basis_swap_long_shorts_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = tenor_basis_swap_long_short_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::tenor_basis_swap_long_short_lookup entry;
-        entry.key = k;
-        auto found = tenor_basis_swap_long_short_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.tenor_basis_swap_long_short = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.tenor_basis_swap_long_short = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -231,7 +285,12 @@ tenor_basis_swap_long_short_service::put_tenor_basis_swap_long_short(
     const messaging::put_tenor_basis_swap_long_short_request& request) {
     messaging::put_tenor_basis_swap_long_short_response response;
     domain::tenor_basis_swap_long_short value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = tenor_basis_swap_long_short_read_one(
+        repo_,
+        ctx_,
+        tenor_basis_swap_long_short_key_from(
+            tenor_basis_swap_long_short_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -246,11 +305,19 @@ messaging::put_many_tenor_basis_swap_long_shorts_response
 tenor_basis_swap_long_short_service::put_many_tenor_basis_swap_long_shorts(
     const messaging::put_many_tenor_basis_swap_long_shorts_request& request) {
     messaging::put_many_tenor_basis_swap_long_shorts_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::tenor_basis_swap_long_short_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(tenor_basis_swap_long_short_key_from(
+            tenor_basis_swap_long_short_to_domain(change.write)));
+    const auto current = tenor_basis_swap_long_short_read_many(repo_, ctx_, keys);
     std::vector<domain::tenor_basis_swap_long_short> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::tenor_basis_swap_long_short value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -268,11 +335,12 @@ tenor_basis_swap_long_short_service::put_many_tenor_basis_swap_long_shorts(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.tenor_basis_swap_long_shorts.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = tenor_basis_swap_long_short_read_one(
-            repo_, ctx_, tenor_basis_swap_long_short_key_from(value));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = tenor_basis_swap_long_short_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
         response.tenor_basis_swap_long_shorts.push_back(
-            written.empty() ? value : std::move(written.front()));
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -397,13 +465,12 @@ tenor_basis_swap_long_short_service::get_tenor_basis_swap_long_short_version(
 ores::utility::domain::result tenor_basis_swap_long_short_service::prepare_change(
     const messaging::tenor_basis_swap_long_short_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::tenor_basis_swap_long_short>& current,
     domain::tenor_basis_swap_long_short& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = tenor_basis_swap_long_short_to_domain(change.write);
-    const auto current = tenor_basis_swap_long_short_read_one(
-        repo_, ctx_, tenor_basis_swap_long_short_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

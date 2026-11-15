@@ -29,12 +29,6 @@
 #include "ores.marketdata.core/messaging/composite_registrar.hpp"
 #include "ores.marketdata.core/messaging/curve_publish_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/curve_publish_registrar.hpp"
-#include "ores.marketdata.core/messaging/fx_forward_publish_history_provider_registrar.hpp"
-#include "ores.marketdata.core/messaging/fx_forward_publish_registrar.hpp"
-#include "ores.marketdata.core/messaging/fx_forward_publish_point_history_provider_registrar.hpp"
-#include "ores.marketdata.core/messaging/fx_forward_publish_point_registrar.hpp"
-#include "ores.marketdata.core/messaging/fx_forward_publish_spot_history_provider_registrar.hpp"
-#include "ores.marketdata.core/messaging/fx_forward_publish_spot_registrar.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
 #include "ores.marketdata.core/messaging/delivery_count_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/delivery_count_registrar.hpp"
@@ -45,6 +39,16 @@
 #include "ores.marketdata.core/messaging/feed_scope_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_scope_registrar.hpp"
 #include "ores.marketdata.core/messaging/fixing_read_handler.hpp"
+#include "ores.marketdata.core/messaging/fx_forward_publish_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_forward_publish_point_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_forward_publish_point_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_forward_publish_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_forward_publish_spot_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_forward_publish_spot_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_vol_surface_calibration_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_vol_surface_calibration_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_vol_surface_publish_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_vol_surface_publish_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
 #include "ores.marketdata.core/messaging/market_calibration_value_registrar.hpp"
@@ -108,7 +112,7 @@ ores::history::service::dispatch_registry& history_registry() {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              ores::nats::service::nats_client& auth_nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url) {
@@ -155,6 +159,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_fx_forward_publish_handlers(nats, ctx, verifier));
     fold(register_fx_forward_publish_point_handlers(nats, ctx, verifier));
     fold(register_fx_forward_publish_spot_handlers(nats, ctx, verifier));
+    fold(register_fx_vol_surface_calibration_handlers(nats, ctx, verifier));
+    fold(register_fx_vol_surface_publish_handlers(nats, ctx, verifier));
 
     // The acceptance of a provider's terms, whose one writer is this handler.
     subs.push_back(nats.queue_subscribe(std::string(accept_provider_terms_request::nats_subject),
@@ -341,11 +347,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         ores::service::messaging::step_routes routes;
         routes.on(publish_market_data_observations_from_dq_request::nats_subject,
-                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         routes.on(publish_adapters_from_dq_request::nats_subject,
-                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         routes.on(publish_suppliers_from_dq_request::nats_subject,
-                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue, routes));
     }
 
@@ -366,6 +372,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_fx_forward_publish_history_provider(hist_registry);
         register_fx_forward_publish_point_history_provider(hist_registry);
         register_fx_forward_publish_spot_history_provider(hist_registry);
+        register_fx_vol_surface_calibration_history_provider(hist_registry);
+        register_fx_vol_surface_publish_history_provider(hist_registry);
         register_provider_history_provider(hist_registry);
         register_feed_history_provider(hist_registry);
         register_feed_scope_history_provider(hist_registry);

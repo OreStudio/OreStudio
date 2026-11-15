@@ -305,7 +305,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"app_version_id", &app_version_platform_key::app_version_id},
         utility::codec::field{"platform_id", &app_version_platform_key::platform_id},
     };
@@ -320,7 +320,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"app_version_id", &app_version_platform_write::app_version_id},
         utility::codec::field{"platform_id", &app_version_platform_write::platform_id},
         utility::codec::field{"package_uri", &app_version_platform_write::package_uri},
@@ -337,7 +337,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &app_version_platform_change::write},
         utility::codec::field{"precondition", &app_version_platform_change::precondition},
     };
@@ -352,7 +352,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &app_version_platform_removal::key},
         utility::codec::field{"precondition", &app_version_platform_removal::precondition},
     };
@@ -367,7 +367,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platform_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &app_version_platform_lookup::key},
         utility::codec::field{"app_version_platform",
                               &app_version_platform_lookup::app_version_platform},
@@ -383,7 +383,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<app_version_platforms_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"app_version_id", &app_version_platforms_filter::app_version_id},
         utility::codec::field{"app_version_id_one_of",
                               &app_version_platforms_filter::app_version_id_one_of},
@@ -399,7 +399,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_version_platforms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_app_version_platforms_request::offset},
         utility::codec::field{"limit", &list_app_version_platforms_request::limit},
         utility::codec::field{"order", &list_app_version_platforms_request::order},
@@ -416,7 +416,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_app_version_platforms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_app_version_platforms_response::result},
         utility::codec::field{"app_version_platforms",
                               &list_app_version_platforms_response::app_version_platforms},
@@ -433,7 +433,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_platform_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_app_version_platform_request::key},
     };
 }
@@ -447,7 +447,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_app_version_platform_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_app_version_platform_response::result},
         utility::codec::field{"app_version_platform",
                               &get_app_version_platform_response::app_version_platform},
@@ -464,7 +464,7 @@ struct list_by_app_version_id_app_version_platforms_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_app_version_platforms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_app_version_platforms_request::keys},
     };
 }
@@ -479,7 +479,7 @@ wire_fields(std::type_identity<get_many_app_version_platforms_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_app_version_platforms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_app_version_platforms_response::result},
         utility::codec::field{"entries", &get_many_app_version_platforms_response::entries},
     };
@@ -494,7 +494,7 @@ wire_fields(std::type_identity<get_many_app_version_platforms_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_app_version_platform_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_app_version_platform_request::change},
         utility::codec::field{"intent", &put_app_version_platform_request::intent},
     };
@@ -509,7 +509,7 @@ wire_fields(std::type_identity<get_many_app_version_platforms_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_app_version_platform_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_app_version_platform_response::result},
         utility::codec::field{"app_version_platform",
                               &put_app_version_platform_response::app_version_platform},
@@ -526,7 +526,7 @@ wire_fields(std::type_identity<get_many_app_version_platforms_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_app_version_platforms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_app_version_platforms_request::changes},
         utility::codec::field{"intent", &put_many_app_version_platforms_request::intent},
     };
@@ -542,7 +542,7 @@ wire_fields(std::type_identity<put_many_app_version_platforms_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_app_version_platforms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_app_version_platforms_response::result},
         utility::codec::field{"app_version_platforms",
                               &put_many_app_version_platforms_response::app_version_platforms},
@@ -558,7 +558,7 @@ wire_fields(std::type_identity<put_many_app_version_platforms_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_app_version_platform_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_app_version_platform_request::removal},
         utility::codec::field{"intent", &delete_app_version_platform_request::intent},
     };
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<put_many_app_version_platforms_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_app_version_platform_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_app_version_platform_response::result},
     };
 }
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<put_many_app_version_platforms_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_app_version_platforms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_app_version_platforms_request::removals},
         utility::codec::field{"intent", &delete_many_app_version_platforms_request::intent},
     };
@@ -604,7 +604,7 @@ wire_fields(std::type_identity<delete_many_app_version_platforms_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_app_version_platforms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_app_version_platforms_response::result},
     };
 }
@@ -619,7 +619,7 @@ wire_fields(std::type_identity<delete_many_app_version_platforms_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_app_version_id_app_version_platforms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "app_version_id",
             &list_by_app_version_id_app_version_platforms_request::app_version_id},
@@ -646,7 +646,7 @@ wire_fields(std::type_identity<list_by_app_version_id_app_version_platforms_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_app_version_id_app_version_platforms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_app_version_id_app_version_platforms_response::result},
         utility::codec::field{

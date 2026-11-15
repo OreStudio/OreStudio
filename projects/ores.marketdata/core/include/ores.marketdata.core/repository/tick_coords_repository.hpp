@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_TICK_COORDINATE_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_TICK_COORDINATE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -71,13 +71,14 @@ public:
      *
      * @throws std::runtime_error if a number can be neither assigned nor read.
      */
-    std::vector<std::int16_t> resolve_all(context ctx, const std::vector<tick_datum>& wanted);
+    std::vector<std::int16_t> resolve_all(const context& ctx,
+                                          const std::vector<tick_datum>& wanted);
 
     /**
      * @brief The number of one datum within its stream, assigned when the datum has none.
      */
     std::int16_t
-    resolve(context ctx, const boost::uuids::uuid& stream_id, const std::string& oresmd_uri);
+    resolve(const context& ctx, const boost::uuids::uuid& stream_id, const std::string& oresmd_uri);
 };
 
 }

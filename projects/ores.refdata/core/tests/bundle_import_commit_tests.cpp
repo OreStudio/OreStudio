@@ -36,14 +36,14 @@
 
 namespace {
 
-boost::uuids::uuid begin_import(ores::database::context ctx, boost::uuids::uuid id) {
+boost::uuids::uuid begin_import(const ores::database::context& ctx, boost::uuids::uuid id) {
     ores::refdata::service::bundle_import_operations_service imports(ctx);
     const auto begun = imports.begin({.id = id});
     REQUIRE(begun.success);
     return id;
 }
 
-void stage(ores::database::context ctx,
+void stage(const ores::database::context& ctx,
            const boost::uuids::uuid& import_id,
            const std::string& family,
            int sequence,

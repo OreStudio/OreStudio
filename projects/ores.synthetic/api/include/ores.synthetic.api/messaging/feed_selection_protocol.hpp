@@ -172,7 +172,7 @@ struct stop_selected_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_selected_feeds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"folder_id", &start_selected_feeds_request::folder_id},
         ::ores::utility::codec::field{"provider_code",
                                       &start_selected_feeds_request::provider_code},
@@ -194,7 +194,7 @@ struct stop_selected_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_selected_feeds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &start_selected_feeds_response::success},
         ::ores::utility::codec::field{"message", &start_selected_feeds_response::message},
         ::ores::utility::codec::field{"started", &start_selected_feeds_response::started},
@@ -214,7 +214,7 @@ struct stop_selected_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_selected_feeds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"folder_id", &stop_selected_feeds_request::folder_id},
         ::ores::utility::codec::field{"provider_code", &stop_selected_feeds_request::provider_code},
         ::ores::utility::codec::field{"should_run", &stop_selected_feeds_request::should_run},
@@ -235,7 +235,7 @@ struct stop_selected_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_selected_feeds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &stop_selected_feeds_response::success},
         ::ores::utility::codec::field{"message", &stop_selected_feeds_response::message},
         ::ores::utility::codec::field{"started", &stop_selected_feeds_response::started},

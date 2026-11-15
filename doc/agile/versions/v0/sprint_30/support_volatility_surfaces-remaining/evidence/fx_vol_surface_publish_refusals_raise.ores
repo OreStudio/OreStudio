@@ -1,0 +1,13 @@
+# The refusals of a surface publish, step 1. The trader raises the publish of the
+# OLD calibration, older than the live surface. The trader then calibrates at NEW,
+# raises its publish, raises it again (refused: one raise at a time), and runs the
+# calibration at NEW again after the raise. Run with BLUEPRINT, OLD and NEW set.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${OLD} --reason "An older surface"
+fx_vol_surface_operation calibrate-fx-vol-surface ${BLUEPRINT} ${NEW}
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${NEW} --reason "The next surface"
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${NEW} --reason "The next surface, again"
+fx_vol_surface_operation calibrate-fx-vol-surface ${BLUEPRINT} ${NEW}
+logout

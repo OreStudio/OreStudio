@@ -79,3 +79,95 @@
 {"key":"USD-SOFR-3M","accepted":"true","class":"QuantExt::SofrTerm","name":"USD-SOFRTerm3M Actual/360","familyName":"USD-SOFRTerm","tenor":"3M","currency":"USD","settlementDays":"2","fixingCalendar":"SOFR fixing calendar","dayCounter":"Actual/360","convention":"ModifiedFollowing","endOfMonth":"false"}
 {"key":"USD-SOFR","accepted":"true","class":"QuantLib::OvernightIndex","name":"SOFRON Actual/360","overnight":"true","familyName":"SOFR","tenor":"1D","currency":"USD","settlementDays":"0","fixingCalendar":"SOFR fixing calendar","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
 {"key":"ZAR-JIBAR-3M","accepted":"true","class":"QuantLib::Jibar","name":"Jibar3M Actual/365 (Fixed)","familyName":"Jibar","tenor":"3M","currency":"ZAR","settlementDays":"0","fixingCalendar":"South Africa","dayCounter":"Actual/365 (Fixed)","convention":"ModifiedFollowing","endOfMonth":"false"}
+{"key":"AOA-GENERIC","accepted":"false","error":"parseIndex \"AOA-GENERIC\" not recognized"}
+{"key":"AOA-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"AOA-GENERIC3M Actual/360","familyName":"AOA-GENERIC","tenor":"3M","currency":"AOA","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"ARS-GENERIC","accepted":"false","error":"parseIndex \"ARS-GENERIC\" not recognized"}
+{"key":"ARS-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"ARS-GENERIC3M Actual/360","familyName":"ARS-GENERIC","tenor":"3M","currency":"ARS","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"BGN-GENERIC","accepted":"false","error":"parseIndex \"BGN-GENERIC\" not recognized"}
+{"key":"BGN-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"BGN-GENERIC3M Actual/360","familyName":"BGN-GENERIC","tenor":"3M","currency":"BGN","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"BHD-GENERIC","accepted":"false","error":"parseIndex \"BHD-GENERIC\" not recognized"}
+{"key":"BHD-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"BHD-GENERIC3M Actual/360","familyName":"BHD-GENERIC","tenor":"3M","currency":"BHD","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"BRL-GENERIC","accepted":"false","error":"parseIndex \"BRL-GENERIC\" not recognized"}
+{"key":"BRL-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"BRL-GENERIC3M Actual/360","familyName":"BRL-GENERIC","tenor":"3M","currency":"BRL","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"BWP-GENERIC","accepted":"false","error":"parseIndex \"BWP-GENERIC\" not recognized"}
+{"key":"BWP-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"BWP-GENERIC3M Actual/360","familyName":"BWP-GENERIC","tenor":"3M","currency":"BWP","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"CLF-GENERIC","accepted":"false","error":"parseIndex \"CLF-GENERIC\" not recognized"}
+{"key":"CLF-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"CLF-GENERIC3M Actual/360","familyName":"CLF-GENERIC","tenor":"3M","currency":"CLF","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"CLP-GENERIC","accepted":"false","error":"parseIndex \"CLP-GENERIC\" not recognized"}
+{"key":"CLP-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"CLP-GENERIC3M Actual/360","familyName":"CLP-GENERIC","tenor":"3M","currency":"CLP","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"CNH-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"CNH-GENERIC3M Actual/360","familyName":"CNH-GENERIC","tenor":"3M","currency":"CNH","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"CNY-GENERIC","accepted":"false","error":"parseIndex \"CNY-GENERIC\" not recognized"}
+{"key":"CNY-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"CNY-GENERIC3M Actual/360","familyName":"CNY-GENERIC","tenor":"3M","currency":"CNY","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"COP-GENERIC","accepted":"false","error":"parseIndex \"COP-GENERIC\" not recognized"}
+{"key":"COP-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"COP-GENERIC3M Actual/360","familyName":"COP-GENERIC","tenor":"3M","currency":"COP","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"EGP-GENERIC","accepted":"false","error":"parseIndex \"EGP-GENERIC\" not recognized"}
+{"key":"EGP-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"EGP-GENERIC3M Actual/360","familyName":"EGP-GENERIC","tenor":"3M","currency":"EGP","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"ETB-GENERIC","accepted":"false","error":"parseIndex \"ETB-GENERIC\" not recognized"}
+{"key":"ETB-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"ETB-GENERIC3M Actual/360","familyName":"ETB-GENERIC","tenor":"3M","currency":"ETB","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"GEL-GENERIC","accepted":"false","error":"parseIndex \"GEL-GENERIC\" not recognized"}
+{"key":"GEL-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"GEL-GENERIC3M Actual/360","familyName":"GEL-GENERIC","tenor":"3M","currency":"GEL","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"GHS-GENERIC","accepted":"false","error":"parseIndex \"GHS-GENERIC\" not recognized"}
+{"key":"GHS-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"GHS-GENERIC3M Actual/360","familyName":"GHS-GENERIC","tenor":"3M","currency":"GHS","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"HRK-GENERIC","accepted":"false","error":"parseIndex \"HRK-GENERIC\" not recognized"}
+{"key":"HRK-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"HRK-GENERIC3M Actual/360","familyName":"HRK-GENERIC","tenor":"3M","currency":"HRK","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"IDR-GENERIC","accepted":"false","error":"parseIndex \"IDR-GENERIC\" not recognized"}
+{"key":"IDR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"IDR-GENERIC3M Actual/360","familyName":"IDR-GENERIC","tenor":"3M","currency":"IDR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"INR-GENERIC","accepted":"false","error":"parseIndex \"INR-GENERIC\" not recognized"}
+{"key":"INR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"INR-GENERIC3M Actual/360","familyName":"INR-GENERIC","tenor":"3M","currency":"INR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"ISK-GENERIC","accepted":"false","error":"parseIndex \"ISK-GENERIC\" not recognized"}
+{"key":"ISK-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"ISK-GENERIC3M Actual/360","familyName":"ISK-GENERIC","tenor":"3M","currency":"ISK","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"JOD-GENERIC","accepted":"false","error":"parseIndex \"JOD-GENERIC\" not recognized"}
+{"key":"JOD-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"JOD-GENERIC3M Actual/360","familyName":"JOD-GENERIC","tenor":"3M","currency":"JOD","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"KES-GENERIC","accepted":"false","error":"parseIndex \"KES-GENERIC\" not recognized"}
+{"key":"KES-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"KES-GENERIC3M Actual/360","familyName":"KES-GENERIC","tenor":"3M","currency":"KES","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"KRW-GENERIC","accepted":"false","error":"parseIndex \"KRW-GENERIC\" not recognized"}
+{"key":"KRW-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"KRW-GENERIC3M Actual/360","familyName":"KRW-GENERIC","tenor":"3M","currency":"KRW","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"KWD-GENERIC","accepted":"false","error":"parseIndex \"KWD-GENERIC\" not recognized"}
+{"key":"KWD-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"KWD-GENERIC3M Actual/360","familyName":"KWD-GENERIC","tenor":"3M","currency":"KWD","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"KZT-GENERIC","accepted":"false","error":"parseIndex \"KZT-GENERIC\" not recognized"}
+{"key":"KZT-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"KZT-GENERIC3M Actual/360","familyName":"KZT-GENERIC","tenor":"3M","currency":"KZT","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"LKR-GENERIC","accepted":"false","error":"parseIndex \"LKR-GENERIC\" not recognized"}
+{"key":"LKR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"LKR-GENERIC3M Actual/360","familyName":"LKR-GENERIC","tenor":"3M","currency":"LKR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"MAD-GENERIC","accepted":"false","error":"parseIndex \"MAD-GENERIC\" not recognized"}
+{"key":"MAD-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"MAD-GENERIC3M Actual/360","familyName":"MAD-GENERIC","tenor":"3M","currency":"MAD","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"MUR-GENERIC","accepted":"false","error":"parseIndex \"MUR-GENERIC\" not recognized"}
+{"key":"MUR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"MUR-GENERIC3M Actual/360","familyName":"MUR-GENERIC","tenor":"3M","currency":"MUR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"MXV-GENERIC","accepted":"false","error":"parseIndex \"MXV-GENERIC\" not recognized"}
+{"key":"MXV-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"MXV-GENERIC3M Actual/360","familyName":"MXV-GENERIC","tenor":"3M","currency":"MXV","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"MYR-GENERIC","accepted":"false","error":"parseIndex \"MYR-GENERIC\" not recognized"}
+{"key":"MYR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"MYR-GENERIC3M Actual/360","familyName":"MYR-GENERIC","tenor":"3M","currency":"MYR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"NGN-GENERIC","accepted":"false","error":"parseIndex \"NGN-GENERIC\" not recognized"}
+{"key":"NGN-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"NGN-GENERIC3M Actual/360","familyName":"NGN-GENERIC","tenor":"3M","currency":"NGN","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"OMR-GENERIC","accepted":"false","error":"parseIndex \"OMR-GENERIC\" not recognized"}
+{"key":"OMR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"OMR-GENERIC3M Actual/360","familyName":"OMR-GENERIC","tenor":"3M","currency":"OMR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"PEN-GENERIC","accepted":"false","error":"parseIndex \"PEN-GENERIC\" not recognized"}
+{"key":"PEN-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"PEN-GENERIC3M Actual/360","familyName":"PEN-GENERIC","tenor":"3M","currency":"PEN","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"PHP-GENERIC","accepted":"false","error":"parseIndex \"PHP-GENERIC\" not recognized"}
+{"key":"PHP-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"PHP-GENERIC3M Actual/360","familyName":"PHP-GENERIC","tenor":"3M","currency":"PHP","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"PKR-GENERIC","accepted":"false","error":"parseIndex \"PKR-GENERIC\" not recognized"}
+{"key":"PKR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"PKR-GENERIC3M Actual/360","familyName":"PKR-GENERIC","tenor":"3M","currency":"PKR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"QAR-GENERIC","accepted":"false","error":"parseIndex \"QAR-GENERIC\" not recognized"}
+{"key":"QAR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"QAR-GENERIC3M Actual/360","familyName":"QAR-GENERIC","tenor":"3M","currency":"QAR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"RON-GENERIC","accepted":"false","error":"parseIndex \"RON-GENERIC\" not recognized"}
+{"key":"RON-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"RON-GENERIC3M Actual/360","familyName":"RON-GENERIC","tenor":"3M","currency":"RON","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"RSD-GENERIC","accepted":"false","error":"parseIndex \"RSD-GENERIC\" not recognized"}
+{"key":"RSD-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"RSD-GENERIC3M Actual/360","familyName":"RSD-GENERIC","tenor":"3M","currency":"RSD","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"SAR-GENERIC","accepted":"false","error":"parseIndex \"SAR-GENERIC\" not recognized"}
+{"key":"SAR-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"SAR-GENERIC3M Actual/360","familyName":"SAR-GENERIC","tenor":"3M","currency":"SAR","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"TND-GENERIC","accepted":"false","error":"parseIndex \"TND-GENERIC\" not recognized"}
+{"key":"TND-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"TND-GENERIC3M Actual/360","familyName":"TND-GENERIC","tenor":"3M","currency":"TND","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"TWD-GENERIC","accepted":"false","error":"parseIndex \"TWD-GENERIC\" not recognized"}
+{"key":"TWD-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"TWD-GENERIC3M Actual/360","familyName":"TWD-GENERIC","tenor":"3M","currency":"TWD","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"UAH-GENERIC","accepted":"false","error":"parseIndex \"UAH-GENERIC\" not recognized"}
+{"key":"UAH-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"UAH-GENERIC3M Actual/360","familyName":"UAH-GENERIC","tenor":"3M","currency":"UAH","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"UGX-GENERIC","accepted":"false","error":"parseIndex \"UGX-GENERIC\" not recognized"}
+{"key":"UGX-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"UGX-GENERIC3M Actual/360","familyName":"UGX-GENERIC","tenor":"3M","currency":"UGX","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"USD-SIFMA","accepted":"true","class":"QuantExt::BMAIndexWrapper","name":"BMA1W Actual/Actual (ISDA)","familyName":"BMA1W Actual/Actual (ISDA)","tenor":"1W","currency":"USD","settlementDays":"1","fixingCalendar":"US government bond market","dayCounter":"Actual/Actual (ISDA)","convention":"ModifiedFollowing","endOfMonth":"false"}
+{"key":"UYU-GENERIC","accepted":"false","error":"parseIndex \"UYU-GENERIC\" not recognized"}
+{"key":"UYU-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"UYU-GENERIC3M Actual/360","familyName":"UYU-GENERIC","tenor":"3M","currency":"UYU","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"VND-GENERIC","accepted":"false","error":"parseIndex \"VND-GENERIC\" not recognized"}
+{"key":"VND-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"VND-GENERIC3M Actual/360","familyName":"VND-GENERIC","tenor":"3M","currency":"VND","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"XOF-GENERIC","accepted":"false","error":"parseIndex \"XOF-GENERIC\" not recognized"}
+{"key":"XOF-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"XOF-GENERIC3M Actual/360","familyName":"XOF-GENERIC","tenor":"3M","currency":"XOF","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}
+{"key":"ZMW-GENERIC","accepted":"false","error":"parseIndex \"ZMW-GENERIC\" not recognized"}
+{"key":"ZMW-GENERIC-3M","accepted":"true","class":"QuantExt::GenericIborIndex","name":"ZMW-GENERIC3M Actual/360","familyName":"ZMW-GENERIC","tenor":"3M","currency":"ZMW","settlementDays":"2","fixingCalendar":"TARGET","dayCounter":"Actual/360","convention":"Following","endOfMonth":"false"}

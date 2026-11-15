@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -108,20 +111,83 @@ std::optional<query_builder::condition> commodity_basket_constituent_filter_cond
 
 }
 
-ores::utility::domain::precondition commodity_basket_constituent_repository::replace_claim(
-    context ctx, const domain::commodity_basket_constituent& v) {
-    const auto current =
-        read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool commodity_basket_constituent_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using commodity_basket_constituent_rows_by_key =
+    std::map<std::tuple<std::string, std::string>,
+             std::vector<domain::commodity_basket_constituent>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+commodity_basket_constituent_rows_by_key commodity_basket_constituent_current_rows(
+    commodity_basket_constituent_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<domain::commodity_basket_constituent>& of) {
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(of.size());
+    std::vector<std::string> sequence_numbers;
+    sequence_numbers.reserve(of.size());
+    for (const auto& row : of) {
+        trade_ids.push_back(boost::uuids::to_string(row.trade_id));
+        sequence_numbers.push_back(std::to_string(row.sequence_number));
+    }
+    commodity_basket_constituent_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, trade_ids, sequence_numbers))
+        current[std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                std::to_string(item.sequence_number))]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::commodity_basket_constituent>&
+commodity_basket_constituent_rows_of(const commodity_basket_constituent_rows_by_key& current,
+                                     const domain::commodity_basket_constituent& item) {
+    static const std::vector<domain::commodity_basket_constituent> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                                    std::to_string(item.sequence_number)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition commodity_basket_constituent_replace_claim(
+    const std::vector<domain::commodity_basket_constituent>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::commodity_basket_constituent commodity_basket_constituent_repository::apply_claim(
-    context ctx,
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::commodity_basket_constituent commodity_basket_constituent_apply_claim(
     const domain::commodity_basket_constituent& v,
-    const ores::utility::domain::precondition& claim) {
+    const ores::utility::domain::precondition& claim,
+    const std::vector<domain::commodity_basket_constituent>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -133,42 +199,52 @@ domain::commodity_basket_constituent commodity_basket_constituent_repository::ap
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(
-                ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void commodity_basket_constituent_repository::write(context ctx,
+}
+
+void commodity_basket_constituent_repository::write(const context& ctx,
                                                     const domain::commodity_basket_constituent& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          commodity_basket_constituent_replace_claim(read_latest(
+              ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number))));
 }
 
 void commodity_basket_constituent_repository::write(
-    context ctx, const std::vector<domain::commodity_basket_constituent>& v) {
+    const context& ctx, const std::vector<domain::commodity_basket_constituent>& v) {
+    const auto current = commodity_basket_constituent_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(commodity_basket_constituent_replace_claim(
+            commodity_basket_constituent_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
 void commodity_basket_constituent_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::commodity_basket_constituent& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity basket constituent. "
                                << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = commodity_basket_constituent_apply_claim(
+        v,
+        claim,
+        commodity_basket_constituent_claim_reads_current(claim) ?
+            read_latest(
+                ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number)) :
+            std::vector<domain::commodity_basket_constituent>{});
     query_builder::execute_write_query(ctx,
                                        commodity_basket_constituent_mapper::map(t),
                                        lg(),
@@ -176,14 +252,21 @@ void commodity_basket_constituent_repository::write(
 }
 
 void commodity_basket_constituent_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::commodity_basket_constituent>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity basket constituents. Count: " << v.size();
+    std::vector<domain::commodity_basket_constituent> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (commodity_basket_constituent_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = commodity_basket_constituent_current_rows(*this, ctx, to_read);
     std::vector<domain::commodity_basket_constituent> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(commodity_basket_constituent_apply_claim(
+            v[i], claims[i], commodity_basket_constituent_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        commodity_basket_constituent_mapper::map(batch),
                                        lg(),
@@ -191,7 +274,7 @@ void commodity_basket_constituent_repository::write(
 }
 
 std::vector<domain::commodity_basket_constituent>
-commodity_basket_constituent_repository::read_latest(context ctx) {
+commodity_basket_constituent_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<commodity_basket_constituent_entity>> |
@@ -208,7 +291,7 @@ commodity_basket_constituent_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::commodity_basket_constituent>
-commodity_basket_constituent_repository::read_latest(context ctx,
+commodity_basket_constituent_repository::read_latest(const context& ctx,
                                                      const std::string& trade_id,
                                                      const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity basket constituent. "
@@ -232,7 +315,7 @@ commodity_basket_constituent_repository::read_latest(context ctx,
 
 
 std::vector<domain::commodity_basket_constituent> commodity_basket_constituent_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all commodity basket constituent versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -252,7 +335,7 @@ std::vector<domain::commodity_basket_constituent> commodity_basket_constituent_r
 }
 
 std::optional<domain::commodity_basket_constituent>
-commodity_basket_constituent_repository::read_at_version(context ctx,
+commodity_basket_constituent_repository::read_at_version(const context& ctx,
                                                          const std::string& trade_id,
                                                          const std::string& sequence_number,
                                                          std::uint32_t version) {
@@ -282,7 +365,7 @@ commodity_basket_constituent_repository::read_at_version(context ctx,
 
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -310,7 +393,7 @@ commodity_basket_constituent_repository::read_latest_by_trade_id(
 
 std::uint32_t
 commodity_basket_constituent_repository::get_total_commodity_basket_constituent_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::commodity_basket_constituents_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -332,7 +415,7 @@ commodity_basket_constituent_repository::get_total_commodity_basket_constituent_
 
 
 commodity_basket_constituent_repository::remove_status
-commodity_basket_constituent_repository::remove(context ctx,
+commodity_basket_constituent_repository::remove(const context& ctx,
                                                 const std::string& trade_id,
                                                 const std::string& sequence_number,
                                                 std::optional<std::uint32_t> version) {
@@ -367,7 +450,7 @@ commodity_basket_constituent_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void commodity_basket_constituent_repository::remove(context ctx,
+void commodity_basket_constituent_repository::remove(const context& ctx,
                                                      const std::string& trade_id,
                                                      const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
@@ -375,7 +458,7 @@ void commodity_basket_constituent_repository::remove(context ctx,
 
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -401,7 +484,7 @@ commodity_basket_constituent_repository::read_latest(
 }
 
 std::uint32_t commodity_basket_constituent_repository::get_total_commodity_basket_constituent_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::commodity_basket_constituents_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active commodity basket constituent count";
@@ -421,11 +504,32 @@ std::uint32_t commodity_basket_constituent_repository::get_total_commodity_baske
 
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
         return {};
+    if (sequence_numbers.size() != trade_ids.size())
+        throw std::invalid_argument("commodity_basket_constituent_repository::read_latest: key "
+                                    "column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (trade_ids.size() > chunk_size) {
+        std::vector<domain::commodity_basket_constituent> all;
+        for (std::size_t begin = 0; begin < trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, trade_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(trade_ids.begin() + begin, trade_ids.begin() + end),
+                std::vector<std::string>(sequence_numbers.begin() + begin,
+                                         sequence_numbers.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -442,9 +546,6 @@ commodity_basket_constituent_repository::read_latest(
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (sequence_numbers.size() != trade_ids.size())
-        throw std::invalid_argument("commodity_basket_constituent_repository::read_latest: key "
-                                    "column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < trade_ids.size(); ++i)
         requested.emplace(trade_ids[i], sequence_numbers[i]);
@@ -459,7 +560,7 @@ commodity_basket_constituent_repository::read_latest(
 }
 
 void commodity_basket_constituent_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -475,7 +576,7 @@ void commodity_basket_constituent_repository::remove(
 
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

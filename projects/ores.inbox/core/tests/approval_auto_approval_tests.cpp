@@ -18,7 +18,8 @@
  *
  */
 #include "approval_fixture.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -102,7 +103,7 @@ public:
 
     ~test_kind() {
         try {
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx_,
                 "delete from ores_inbox_approval_kinds_tbl where code = $1",
                 {code_},
@@ -123,7 +124,7 @@ public:
 
 private:
     void seed_permission() {
-        const auto rows = ores::database::repository::execute_parameterized_string_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_string_query(
             ctx_,
             "select code from ores_iam_permissions_tbl"
             " where tenant_id = ores_utility_system_tenant_id_fn()"
@@ -158,7 +159,7 @@ public:
 
     ~approvals_mode() {
         try {
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx_,
                 "delete from ores_variability_system_settings_tbl"
                 " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
@@ -179,14 +180,14 @@ private:
         // A tenant provisioned by the harness already holds the installation's
         // copy of the setting, so the test states its own over it rather than
         // writing a second row.
-        ores::database::repository::execute_parameterized_command(
+        ores::database::query_builder::execute_parameterized_command(
             ctx_,
             "delete from ores_variability_system_settings_tbl"
             " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
             {ctx_.tenant_id().to_string()},
             test_lg(),
             "Clearing the approvals mode for a test");
-        ores::database::repository::execute_parameterized_command(
+        ores::database::query_builder::execute_parameterized_command(
             ctx_,
             "insert into ores_variability_system_settings_tbl ("
             "  id, tenant_id, party_id, name, value, data_type, description,"
@@ -210,7 +211,7 @@ private:
 /// The decisions on one request, as the record holds them.
 std::vector<std::vector<std::optional<std::string>>>
 decisions_on(ores::testing::scoped_database_helper& h, const std::string& request_id) {
-    return ores::database::repository::execute_parameterized_multi_column_query(
+    return ores::database::query_builder::execute_parameterized_multi_column_query(
         acting(h),
         "select decision_code, decided_by::text, comment"
         " from ores_inbox_approval_decisions_tbl"
@@ -321,6 +322,48 @@ TEST_CASE("a_person_in_another_party_is_bound_by_the_tenants_mode", "[approval][
 
     CHECK(raised.state_code == "approved");
     CHECK(raised.auto_approval_code == "tenant");
+}
+
+TEST_CASE("a_raise_inside_a_unit_of_work_by_a_party_is_bound_by_the_tenants_mode",
+          "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approvals_mode mode(h, "auto_approved");
+    const auto base = acting(h);
+    const auto party = boost::uuids::random_generator{}();
+    const auto as_party = base.with_party(base.tenant_id(), party, {party}, base.actor());
+
+    // The raise and its subject are one transaction. The policy is read before
+    // it opens, under the party's view, and still finds the tenant's mode; the
+    // raise inside it only writes.
+    approval_lifecycle reader(as_party);
+    const auto seeded = reader.kind("iam.role_grant");
+    REQUIRE(seeded);
+    const auto policy = reader.policy_for(*seeded, false);
+    ores::database::repository::unit_of_work uow(as_party);
+    const auto raised = approval_lifecycle(uow.ctx()).raise_under(
+        policy, *seeded, "Raised with its subject", asker.id);
+    uow.commit();
+
+    CHECK(raised.state_code == "approved");
+    CHECK(raised.auto_approval_code == "tenant");
+}
+
+TEST_CASE("a_raise_inside_a_unit_of_work_that_reads_its_own_policy_is_refused",
+          "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approvals_mode mode(h, "auto_approved");
+    approval_lifecycle reader(acting(h));
+    const auto seeded = reader.kind("iam.role_grant");
+    REQUIRE(seeded);
+
+    // The policy is the tenant's and the system tenant's to read, which a
+    // transaction fixed to one tenant and party cannot do, so the read fails
+    // where it is made rather than answering for the wrong tenant.
+    ores::database::repository::unit_of_work uow(acting(h));
+    CHECK_THROWS_AS(approval_lifecycle(uow.ctx()).raise(*seeded, "Reads inside", asker.id),
+                    std::logic_error);
 }
 
 TEST_CASE("turning_the_mode_off_makes_the_next_raise_wait", "[approval][auto]") {

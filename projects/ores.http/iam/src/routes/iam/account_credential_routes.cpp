@@ -23,16 +23,15 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.http/routes/iam/account_credential_routes.hpp"
+#include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_credential_protocol.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/service/timeouts.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -40,12 +39,14 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace ores::http::routes::iam {
 
 using namespace logging;
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
+using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 namespace messaging = ores::iam::messaging;
 
@@ -89,60 +90,6 @@ T account_credential_read_param(const std::string& raw, const std::string& name)
     }
 }
 
-/**
- * @brief The HTTP response a service error names.
- *
- * The service answers a refused caller with a status in its reply header
- * rather than a body, so the gateway reads that status and maps it. An error
- * it does not know is the caller's to see as unauthorised, which is what the
- * service means by any code it does not spell out here.
- */
-http_response account_credential_error_response(const std::string& error) {
-    if (error == "forbidden") {
-        return http_response::forbidden(error);
-    }
-    if (error == "bad_request") {
-        return http_response::bad_request(error);
-    }
-    return http_response::unauthorized(error);
-}
-
-/**
- * @brief Forward one canonical request and map the reply to a response.
- *
- * The caller's own bearer token is taken from the HTTP request and delegated
- * on the NATS call, so the service validates that caller and its own
- * permission check governs. The gateway authorises nobody and decides
- * nothing; it states the subject the request already carries.
- */
-template <typename Request>
-boost::asio::awaitable<http_response>
-account_credential_forward(const http_request& req, nats_client& session, const Request& msg) {
-    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
-    try {
-        const auto reply =
-            delegated.authenticated_request(msg.nats_subject,
-                                            ores::nats::default_wire_codec().encode(msg),
-                                            ores::nats::service::default_request_timeout);
-        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
-            it != reply.headers.end()) {
-            co_return account_credential_error_response(it->second);
-        }
-        const auto decoded =
-            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
-        if (!decoded) {
-            co_return http_response::internal_error(std::string("Failed to decode response: ") +
-                                                    decoded.error().what());
-        }
-        co_return http_response::json(
-            ores::utility::codec::wire_traits<typename Request::response_type>::write_json(
-                *decoded));
-    } catch (const ores::nats::service::session_expired_error& e) {
-        co_return http_response::unauthorized(e.what());
-    } catch (const std::exception& e) {
-        co_return http_response::internal_error(e.what());
-    }
-}
 
 /**
  * @brief Apply the page and the order a caller stated.
@@ -159,10 +106,50 @@ void account_credential_apply_page(Request& msg, const http_request& req) {
     if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
         msg.limit = account_credential_read_param<std::uint32_t>(raw, "limit");
     }
-    if (const auto raw = req.get_query_param("order"); !raw.empty()) {
+    if (const auto raw = req.get_query_param("sort"); !raw.empty()) {
         msg.order.field = raw;
     }
-    msg.order.descending = req.get_query_param("desc") == "true";
+    msg.order.descending = req.get_query_param("descending") == "true";
+}
+
+/**
+ * @brief Read a comma-separated parameter as a list of the member's own type.
+ *
+ * An empty item is refused, because it would otherwise match the empty value.
+ */
+template <typename T>
+std::vector<T> account_credential_read_list(const std::string& raw, const std::string& name) {
+    std::vector<T> values;
+    std::string::size_type begin = 0;
+    while (true) {
+        const auto end = raw.find(',', begin);
+        const auto item = raw.substr(begin, end == std::string::npos ? end : end - begin);
+        if (item.empty()) {
+            throw std::runtime_error("Invalid value for " + name + ": " + raw);
+        }
+        values.push_back(account_credential_read_param<T>(item, name));
+        if (end == std::string::npos) {
+            return values;
+        }
+        begin = end + 1;
+    }
+}
+
+/**
+ * @brief Refuse a filter this route does not declare.
+ *
+ * A filter that narrowed nothing would read as an answer, so the route names it
+ * rather than ignoring it.
+ */
+[[maybe_unused]] void
+account_credential_refuse_undeclared_filters(const http_request& req,
+                                             std::initializer_list<std::string_view> declared) {
+    for (const auto& [name, value] : req.query_params) {
+        if (name.starts_with("f.") &&
+            std::find(declared.begin(), declared.end(), name) == declared.end()) {
+            throw std::runtime_error("This list cannot be filtered by " + name.substr(2) + ".");
+        }
+    }
 }
 
 }
@@ -172,6 +159,12 @@ account_credential_routes::handle_list(const http_request& req, nats_client& ses
     using request_type = messaging::list_account_credentials_request;
     try {
         request_type msg;
+        account_credential_refuse_undeclared_filters(req,
+                                                     {
+                                                         "f.account_id",
+                                                         "f.id_one_of",
+                                                         "f.account_id_one_of",
+                                                     });
         account_credential_apply_page(msg, req);
         if (const auto raw = req.get_query_param("f.account_id"); !raw.empty()) {
             if (!msg.filter)
@@ -179,9 +172,21 @@ account_credential_routes::handle_list(const http_request& req, nats_client& ses
             msg.filter->account_id =
                 account_credential_read_param<boost::uuids::uuid>(raw, "f.account_id");
         }
-        co_return co_await account_credential_forward(req, session, msg);
+        if (const auto raw = req.get_query_param("f.id_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::account_credentials_filter{};
+            msg.filter->id_one_of =
+                account_credential_read_list<boost::uuids::uuid>(raw, "f.id_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.account_id_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::account_credentials_filter{};
+            msg.filter->account_id_one_of =
+                account_credential_read_list<boost::uuids::uuid>(raw, "f.account_id_one_of");
+        }
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -192,9 +197,9 @@ boost::asio::awaitable<http_response> account_credential_routes::handle_get(cons
         request_type msg;
         msg.key.id =
             account_credential_read_param<boost::uuids::uuid>(req.get_path_param("id"), "id");
-        co_return co_await account_credential_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -204,11 +209,12 @@ account_credential_routes::handle_get_many(const http_request& req, nats_client&
     try {
         const auto parsed = account_credential_read_body<request_type>(req.body);
         if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
         }
-        co_return co_await account_credential_forward(req, session, *parsed);
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -224,9 +230,9 @@ account_credential_routes::handle_by_account_id(const http_request& req, nats_cl
                                            ores::utility::domain::scope::direct;
         }
         account_credential_apply_page(msg, req);
-        co_return co_await account_credential_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -238,9 +244,9 @@ account_credential_routes::handle_versions(const http_request& req, nats_client&
         msg.key.id =
             account_credential_read_param<boost::uuids::uuid>(req.get_path_param("id"), "id");
         account_credential_apply_page(msg, req);
-        co_return co_await account_credential_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -253,9 +259,9 @@ account_credential_routes::handle_version(const http_request& req, nats_client& 
             account_credential_read_param<boost::uuids::uuid>(req.get_path_param("id"), "id");
         msg.key.version =
             account_credential_read_param<std::uint32_t>(req.get_path_param("version"), "version");
-        co_return co_await account_credential_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -273,9 +279,19 @@ void account_credential_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .query_param("f.account_id", "string", "", false, "Rows whose account_id is this value")
+            .query_param("f.id_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose id is one of these comma-separated values")
+            .query_param("f.account_id_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose account_id is one of these comma-separated values")
             .response<messaging::list_account_credentials_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -315,8 +331,8 @@ void account_credential_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_account_id_account_credentials_response>()
             .handler(
@@ -333,8 +349,8 @@ void account_credential_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .response<messaging::list_account_credential_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();

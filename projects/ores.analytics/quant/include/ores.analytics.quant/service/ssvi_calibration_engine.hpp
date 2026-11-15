@@ -26,6 +26,7 @@
 #include <cmath>
 #include <expected>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ores::analytics::quant::service {
@@ -60,12 +61,31 @@ struct ssvi_expiry_quotes final {
 struct ssvi_grid_expiry final {
     std::string expiry_id;
     double years = 0.0;
+    /// The market and convention an ATM or a delta strike is resolved in. A grid of fixed
+    /// log-moneyness strikes needs neither.
+    math::fx_market market{};
+    math::fx_quote_convention convention{};
+};
+
+/// A grid strike at a fixed log(K / F).
+struct ssvi_log_moneyness_strike final {
+    double value = 0.0;
+};
+
+/// The at-the-money strike of the grid expiry, in its convention.
+struct ssvi_atm_strike final {};
+
+/// The strike whose delta, at the surface's volatility there, is the stated delta.
+struct ssvi_delta_strike final {
+    math::fx_delta_type type = math::fx_delta_type::spot;
+    math::option_side side = math::option_side::call;
+    /// The size of the delta, such as 0.25.
+    double delta = 0.0;
 };
 
 struct ssvi_grid_strike final {
     std::string strike_id;
-    /// log(K / F) at the expiry the strike is sampled at.
-    double log_moneyness = 0.0;
+    std::variant<ssvi_log_moneyness_strike, ssvi_atm_strike, ssvi_delta_strike> at;
 };
 
 struct ssvi_request final {
@@ -107,6 +127,8 @@ struct ssvi_pillar_fit final {
 struct ssvi_grid_point final {
     std::string expiry_id;
     std::string strike_id;
+    /// log(K / F) the strike resolved to at the expiry.
+    double log_moneyness = 0.0;
     double total_variance = 0.0;
     double volatility = 0.0;
 };
@@ -159,9 +181,12 @@ ssvi_violations(const ssvi_parameters& parameters);
  * violations of the result. The violations cover the quoted expiries. A grid expiry takes its
  * theta linearly between them, so it is calendar-free whenever they are.
  *
+ * An ATM or a delta grid strike is solved on the fitted smile of its grid expiry, in that
+ * expiry's market and convention.
+ *
  * Refuses an expiry with neither an ATM and a risk reversal and butterfly at one delta, nor
- * three strike pillars, naming the expiry and what it lacks, and a grid expiry outside the quoted
- * expiries.
+ * three strike pillars, naming the expiry and what it lacks, a grid expiry outside the quoted
+ * expiries, and an ATM or a delta grid strike at a grid expiry with no market.
  */
 ORES_ANALYTICS_QUANT_EXPORT std::expected<ssvi_calibration, std::string>
 calibrate_ssvi(const ssvi_request& request);

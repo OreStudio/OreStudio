@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.tenor_anchor
 #+description: Codegen entity model for the refdata tenor_anchor table; the reference point (spot, today, tomorrow, near leg, IMM roll) a tenor convention resolves its tenors from.
 #+type: ores.codegen.entity
+#+web_classification: tenor-anchor
+#+web_classification_topic: tenors
 #+component: refdata
 #+filetags: :model:entity:refdata:tenor:
 #+entity_singular: tenor_anchor

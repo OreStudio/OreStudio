@@ -19,6 +19,7 @@
  */
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -206,6 +207,23 @@ std::string describe_seconds(std::chrono::seconds value) {
 }
 
 /**
+ * @brief The progress a claimed step last reported, as a clause a log line
+ * appends, and nothing when it reported none.
+ */
+std::string progress_text(const std::optional<repository::step_claim_activity>& activity) {
+    if (!activity || !activity->progress)
+        return {};
+    const auto& progress = *activity->progress;
+    std::string text = "; it last reported: " + progress.phase;
+    if (progress.done && progress.total)
+        text +=
+            " (" + std::to_string(*progress.done) + " of " + std::to_string(*progress.total) + ")";
+    else if (progress.done)
+        text += " (" + std::to_string(*progress.done) + ")";
+    return text;
+}
+
+/**
  * @brief The component a command subject belongs to.
  *
  * Subjects are @c <component>.v1.<resource>.<verb> throughout, and a service
@@ -254,17 +272,17 @@ std::string state_name(const fsm_state_map& states, const boost::uuids::uuid& st
 using namespace ores::logging;
 
 workflow_engine::workflow_engine(ores::nats::service::client& nats,
-                                 ores::database::context ctx,
+                                 const ores::database::context& ctx,
                                  std::shared_ptr<const workflow_registry> registry,
                                  fsm_state_map instance_states,
                                  fsm_state_map step_states,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , registry_(std::move(registry))
-    , instance_states_(std::move(instance_states))
-    , step_states_(std::move(step_states))
-    , verifier_(std::move(verifier)) {}
+    , ctx_(ctx)
+    , registry_(registry)
+    , instance_states_(instance_states)
+    , step_states_(step_states)
+    , verifier_(verifier) {}
 
 void workflow_engine::publish_command(const domain::workflow_step& step,
                                       const boost::uuids::uuid& instance_id,
@@ -846,18 +864,15 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 
-void workflow_engine::on_step_completed(ores::nats::message msg) {
+void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
     const std::lock_guard<std::mutex> lock(mutex_);
-    // Delivered durably, so it must be answered. Every path below answers
-    // explicitly; the guard retries anything that does not, and the transport
-    // retries if a call throws before the answer.
-    ores::nats::ack_guard ack(msg);
     auto event_result =
         ores::nats::default_wire_codec().decode<messaging::step_completed_event>(msg.data);
     if (!event_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode step_completed_event: "
                                   << event_result.error().what();
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
     const auto& event = *event_result;
@@ -877,7 +892,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         // The payload decoded, so the identity is not a parse race but a
         // malformed event; it will not read better on a second delivery.
         BOOST_LOG_SEV(lg(), error) << "Invalid step_id: " << event.step_id;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -889,7 +904,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         // an immediate NAK spends every attempt in a burst and the window
         // collapses to seconds.
         BOOST_LOG_SEV(lg(), warn) << "Step not found: " << event.step_id;
-        ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
+        std::move(delivery).rollback_after(ores::workflow::messaging::step_claim_hold_off);
         return;
     }
     // A copy rather than a reference: the step's state is written below, and
@@ -924,7 +939,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
                                       << " (state is not in_progress); ignoring.";
         // Already accounted for, so the delivery is done with; retrying would
         // only reach this same line again.
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
@@ -964,14 +979,14 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     } catch (...) {
         BOOST_LOG_SEV(lg(), error)
             << "Invalid workflow_instance_id: " << event.workflow_instance_id;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
     auto found_instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
     if (found_instances.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow instance not found: " << event.workflow_instance_id;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
     auto* instance = &found_instances.front();
@@ -1006,22 +1021,19 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     // The outcome is recorded and the run is advanced, so the delivery is
     // complete. A throw above leaves this unreached, and the message is
     // redelivered to finish the work.
-    ack.accept();
+    std::move(delivery).commit();
 }
 
-void workflow_engine::on_start_workflow(ores::nats::message msg) {
+void workflow_engine::on_start_workflow(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
     const std::lock_guard<std::mutex> lock(mutex_);
-    // Delivered durably, so it must be answered. Every path below answers
-    // explicitly; the guard retries anything that does not, and the transport
-    // retries if a call throws before the answer.
-    ores::nats::ack_guard ack(msg);
 
     auto msg_result =
         ores::nats::default_wire_codec().decode<messaging::start_workflow_message>(msg.data);
     if (!msg_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode start_workflow_message: "
                                   << msg_result.error().what();
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
     const auto& req = *msg_result;
@@ -1035,7 +1047,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     if (!def) {
         // No definition will appear on a second delivery in this deployment.
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << req.type;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -1045,7 +1057,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         tenant_id = boost::lexical_cast<boost::uuids::uuid>(req.tenant_id);
     } catch (...) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant_id: " << req.tenant_id;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -1057,21 +1069,21 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         if (req.target_kind.empty()) {
             BOOST_LOG_SEV(lg(), error)
                 << "A target_id was given with no target_kind: " << req.target_id;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
         try {
             target_id = boost::lexical_cast<boost::uuids::uuid>(req.target_id);
         } catch (...) {
             BOOST_LOG_SEV(lg(), error) << "Invalid target_id: " << req.target_id;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
     }
     if (!req.target_kind.empty() && req.target_id.empty()) {
         BOOST_LOG_SEV(lg(), error)
             << "A target_kind was given with no target_id: " << req.target_kind;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -1085,25 +1097,25 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         if (const auto undeclared = undeclared_deadline(steps)) {
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot run workflow type " << req.type << ": " << *undeclared;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
         const auto graph = workflow_graph(nodes_of(steps));
         if (const auto& incoherent = graph.incoherent()) {
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot run workflow type " << req.type << ": " << *incoherent;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Cannot build the step list for workflow type " << req.type << ": " << e.what();
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
     if (steps.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow definition has no steps: " << req.type;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -1114,7 +1126,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
             instance_id = boost::lexical_cast<boost::uuids::uuid>(req.instance_id);
         } catch (...) {
             BOOST_LOG_SEV(lg(), error) << "Invalid instance_id: " << req.instance_id;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
     } else {
@@ -1134,7 +1146,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
                 << " workflow=" << boost::uuids::to_string(instance_id);
             // The run the caller asked for exists, which is what the repeat
             // means; retrying would reach this same line again.
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
     } catch (const std::exception& e) {
@@ -1213,7 +1225,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     }
     // Either the run started, or the failure is recorded against it; both are
     // terminal, and a redelivery would only record the failure again.
-    ack.accept();
+    std::move(delivery).commit();
 }
 
 void workflow_engine::recover_in_progress() {
@@ -1310,21 +1322,24 @@ workflow_engine::last_seen_of(const std::string& subject) {
     return last_seen;
 }
 
-std::string workflow_engine::deadline_failure_text(const domain::workflow_step& step,
-                                                   std::chrono::seconds budget,
-                                                   std::chrono::seconds silent_for,
-                                                   bool claimed) {
-    std::string reason = "The step did not answer within " + describe_seconds(budget) +
-                         " of its command being published (subject " + step.command_subject +
-                         "); it has been silent for " + describe_seconds(silent_for) + ".";
+std::string workflow_engine::deadline_failure_text(
+    const domain::workflow_step& step,
+    std::chrono::seconds budget,
+    std::chrono::seconds silent_for,
+    const std::optional<repository::step_claim_activity>& activity) {
+    if (!activity)
+        return "The step did not answer within " + describe_seconds(budget) +
+               " of its command being published (subject " + step.command_subject +
+               "); it has been silent for " + describe_seconds(silent_for) +
+               ". No worker ever claimed it, so it waited in the " +
+               component_of_subject(step.command_subject) +
+               " service's queue for its whole budget and longer; the command may have had no "
+               "consumer bound to it.";
 
-    if (!claimed) {
-        reason += " No worker ever claimed it, so it waited in the " +
-                  component_of_subject(step.command_subject) +
-                  " service's queue for its whole budget and longer; the command may have had "
-                  "no consumer bound to it.";
-        return reason;
-    }
+    // A worker took the step, and its progress has not moved for the budget.
+    std::string reason = "The step's progress stood still for " + describe_seconds(silent_for) +
+                         ", past its budget of " + describe_seconds(budget) + " (subject " +
+                         step.command_subject + ")" + progress_text(activity) + ".";
 
     // What the engine knows about the service that owes this step an answer.
     // It states the evidence and stops there: a service that is running but
@@ -1431,7 +1446,8 @@ std::size_t workflow_engine::expire_overdue_steps() {
              * reporting, because then nothing is coming back for it: the
              * engine must not wait for a handler that is not there.
              */
-            const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
+            const auto activity = claim_repo_.activity(ctx_, step.id);
+            const auto claimed_at = activity ? std::optional(activity->claimed_at) : std::nullopt;
             /*
              * A step that runs long is not yet a failure, but a reader of the log must be able to
              * see it running: which step, of which run, for how long, and whether a worker holds
@@ -1452,7 +1468,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
                                 std::to_string(std::chrono::duration_cast<std::chrono::seconds>(
                                                    now - *claimed_at)
                                                    .count()) +
-                                "s ago" :
+                                "s ago" + progress_text(activity) :
                             std::string("not yet claimed: its command waits in the "
                                         "service's queue"));
             }
@@ -1467,21 +1483,24 @@ std::size_t workflow_engine::expire_overdue_steps() {
                 }
             }
             /*
-             * Silence is measured from the later of the dispatch and the claim:
-             * a worker taking the step is the first moment the work could go
-             * silent, so a command that waited in a queue still gets the whole
-             * budget once someone takes it.
+             * Silence is measured from the later of the dispatch and the last
+             * time the work moved. A worker taking the step is the first moment
+             * it could go silent, so a command that waited in a queue still gets
+             * the whole budget once someone takes it; after that, every change
+             * in the progress the step reports starts the budget again. A step
+             * is therefore failed for standing still, never for taking long, and
+             * a step that reports nothing is measured from its claim as before.
              */
-            const auto since = claimed_at && *claimed_at > *step.command_published_at ?
-                                   *claimed_at :
+            const auto moved_at = activity ? std::optional(activity->progressed_at) : std::nullopt;
+            const auto since = moved_at && *moved_at > *step.command_published_at ?
+                                   *moved_at :
                                    *step.command_published_at;
             const auto silent_for = std::chrono::duration_cast<std::chrono::seconds>(now - since);
             if (silent_for < waiting.budget) {
                 ++it;
                 continue;
             }
-            const auto reason =
-                deadline_failure_text(step, waiting.budget, silent_for, claimed_at.has_value());
+            const auto reason = deadline_failure_text(step, waiting.budget, silent_for, activity);
             BOOST_LOG_SEV(lg(), error) << "Step outlived its deadline:" << " workflow="
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;

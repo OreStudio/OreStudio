@@ -17,8 +17,49 @@
  *
  */
 #include "ores.database/domain/context.hpp"
+#include "ores.database/pq/pool.hpp"
+#include "ores.database/pq/transaction.hpp"
+#include <mutex>
 
 namespace ores::database {
+
+struct context::pq_slot {
+    std::mutex mutex;
+    std::unique_ptr<pq::pool> pool;
+    std::size_t size = 2;
+};
+
+context::context(pq::connection_options options,
+                 utility::uuid::tenant_id tenant_id,
+                 std::string actor,
+                 std::string service_account,
+                 pq::open_policy policy)
+    : options_(std::move(options))
+    , policy_(std::move(policy))
+    , tenant_id_(std::move(tenant_id))
+    , actor_(std::move(actor))
+    , service_account_(std::move(service_account))
+    , pq_(std::make_shared<pq_slot>()) {}
+
+context::context(pq::connection_options options,
+                 utility::uuid::tenant_id tenant_id,
+                 boost::uuids::uuid party_id,
+                 std::vector<boost::uuids::uuid> visible_party_ids,
+                 std::string actor,
+                 std::string service_account,
+                 pq::open_policy policy)
+    : options_(std::move(options))
+    , policy_(std::move(policy))
+    , tenant_id_(std::move(tenant_id))
+    , party_id_(party_id)
+    , visible_party_ids_(std::move(visible_party_ids))
+    , actor_(std::move(actor))
+    , service_account_(std::move(service_account))
+    , pq_(std::make_shared<pq_slot>()) {}
+
+void context::set_pq_pool_size(std::size_t size) {
+    pq_->size = size;
+}
 
 pq::pool& context::pq_pool() const {
     std::scoped_lock lock(pq_->mutex);

@@ -32,9 +32,22 @@ struct error_message final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<error_message>) {
-    return std::tuple{ores::utility::codec::field{"error", &error_message::error}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"error", &error_message::error}};
 }
 static_assert(ores::utility::codec::names_every_member<error_message>());
+
+struct api_error_body final {
+    std::string code;
+    std::string message;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<api_error_body>) {
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"code", &api_error_body::code},
+        ores::utility::codec::field{"message", &api_error_body::message}};
+}
+static_assert(ores::utility::codec::names_every_member<api_error_body>());
 
 }
 
@@ -50,8 +63,24 @@ http_response http_response::error(http_status status, const std::string& messag
     return json(ores::utility::codec::json::write(error_message{message}), status);
 }
 
+http_response
+http_response::api_error(http_status status, const std::string& code, const std::string& message) {
+    return json(ores::utility::codec::json::write(api_error_body{code, message}), status);
+}
+
 http_response http_response::not_found(const std::string& message) {
     return error(http_status::not_found, message);
+}
+
+http_response http_response::range_not_satisfiable(std::uint64_t total) {
+    auto resp =
+        error(http_status::range_not_satisfiable, "The range starts past the end of the object.");
+    /*
+     * The caller cannot act on a refusal that does not say how much there was,
+     * so the length travels in the header the standard names for it.
+     */
+    resp.headers["Content-Range"] = "bytes */" + std::to_string(total);
+    return resp;
 }
 
 http_response http_response::unauthorized(const std::string& message) {

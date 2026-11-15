@@ -18,10 +18,14 @@
  *
  */
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/iam/access_read_routes.hpp"
 #include "ores.http/routes/iam/account_contact_information_routes.hpp"
 #include "ores.http/routes/iam/account_credential_routes.hpp"
+#include "ores.http/routes/iam/account_door_routes.hpp"
 #include "ores.http/routes/iam/account_operations_routes.hpp"
 #include "ores.http/routes/iam/account_routes.hpp"
+#include "ores.http/routes/iam/account_screen_routes.hpp"
+#include "ores.http/routes/iam/audit_routes.hpp"
 #include "ores.http/routes/iam/auth_event_operations_routes.hpp"
 #include "ores.http/routes/iam/authorization_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_routes.hpp"
@@ -29,12 +33,19 @@
 #include "ores.http/routes/iam/login_info_routes.hpp"
 #include "ores.http/routes/iam/login_routes.hpp"
 #include "ores.http/routes/iam/permission_routes.hpp"
+#include "ores.http/routes/iam/profile_routes.hpp"
+#include "ores.http/routes/iam/provisioning_routes.hpp"
 #include "ores.http/routes/iam/role_routes.hpp"
+#include "ores.http/routes/iam/role_write_routes.hpp"
 #include "ores.http/routes/iam/seed_profile_routes.hpp"
 #include "ores.http/routes/iam/session_operations_routes.hpp"
 #include "ores.http/routes/iam/session_routes.hpp"
 #include "ores.http/routes/iam/session_statistics_operations_routes.hpp"
+#include "ores.http/routes/iam/sign_in_routes.hpp"
 #include "ores.http/routes/iam/signup_routes.hpp"
+#include "ores.http/routes/iam/tenancy_catalogue_routes.hpp"
+#include "ores.http/routes/iam/tenant_inside_routes.hpp"
+#include "ores.http/routes/iam/tenant_roster_routes.hpp"
 #include "ores.http/routes/iam/tenant_routes.hpp"
 #include "ores.http/routes/iam/tenant_status_routes.hpp"
 #include "ores.http/routes/iam/tenant_type_routes.hpp"
@@ -44,6 +55,17 @@ void iam_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                                  std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                  ores::nats::service::nats_client& session) {
     account_routes::register_routes(router, registry, session);
+    access_read_routes::register_routes(router, registry, session);
+    account_screen_routes::register_routes(router, registry, session);
+    role_write_routes::register_routes(router, registry, session);
+    profile_routes::register_routes(router, registry, session);
+    audit_routes::register_routes(router, registry, session);
+    sign_in_routes::register_routes(router, registry, session);
+    tenancy_catalogue_routes::register_routes(router, registry, session);
+    provisioning_routes::register_routes(router, registry, session);
+    tenant_roster_routes::register_routes(router, registry, session);
+    tenant_inside_routes::register_routes(router, registry, session);
+    account_door_routes::register_routes(router, registry, session);
     account_credential_routes::register_routes(router, registry, session);
     account_contact_information_routes::register_routes(router, registry, session);
     account_operations_routes::register_routes(router, registry, session);

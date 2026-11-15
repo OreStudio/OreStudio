@@ -44,10 +44,10 @@ static constexpr std::string_view app_version_queue_group = "ores.compute.servic
 
 std::vector<ores::nats::service::subscription>
 register_app_version_handlers(ores::nats::service::client& nats,
-                              ores::database::context ctx,
+                              const ores::database::context& ctx,
                               std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<app_version_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<app_version_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_app_versions_request::nats_subject,
         app_version_queue_group,

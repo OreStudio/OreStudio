@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: A329F86E-9B22-42DC-8B4A-E0F4875A8767
+:END:
+#+title: Task: Scaffold the tasks of the last family
+#+description: The last family is twenty-four routes across two parts and eight units. Scaffold one task per unit so each PR has its own record, and record the split on the task that stood the part up.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/scaffold-the-last-familys-tasks
+#+pr: 4706
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The last family of the reporting area is twenty-four routes, and they are not
+one unit of work. Scaffold one task per unit, so each PR has its own record,
+its own branch and its own measurements. Record the split on
+[[id:504FD469-B1A1-4480-9694-34724AD2F2A5][the task that stood the part up]],
+which delivered the first half of the area.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The story has one task per unit of the last family.
+- Each task states its routes, the branch it takes and the task it waits on.
+- The task that stood the part up names the eight tasks as the rest of its work.
+- The local gate is green.
+
+* Plan
+
+The split follows what can be proved on its own, not the BFF's file layout. The
+design note splits the family four ways; two of those four are too large to
+review as one diff, so the engine settings and the pricing engines each split
+into their reads and their writes. The import stands alone, because it is the
+only write in the area that acts on a document a person did not build through a
+screen.
+
+| # | Task | Routes |
+|---+------+--------|
+| 1 | [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]] | 1 |
+| 2 | [[id:F321B6FD-AA33-4B71-84F2-A000578F02F5][Serve the engine settings' reads]] | 3 |
+| 3 | [[id:AA8CAD80-1892-4323-85FD-BBA153B99DF4][Serve the engine settings' writes]] | 4 |
+| 4 | [[id:C1830F26-2A60-49CE-AC82-6B784F34F79E][Serve the pricing engines' reads]] | 5 |
+| 5 | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] | 3 |
+| 6 | [[id:408B68E8-AFC7-46C3-9C04-ED9C181A308B][Serve the ORE import and its preview]] | 2 |
+| 7 | [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | 1 |
+| 8 | [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | 5 |
+
+Twenty-four routes, of which twenty-three are in the fifty the area counts and
+one, the pricing engines' vocabulary, is a route the screen calls that the
+inventory states as not an API.
+
+Two facts about the split a reader of the design note should know.
+
+**The value set reader does not live in the reporting part.** The design note
+says it does. The five routes the story's Acceptance moves here are reference
+data area routes, and the reference data part already answers
+=/api/conventions/{family}=. The reporting part already links
+=ores.refdata.api=, so a reference data part that read value sets through the
+reporting part would close a cycle between two part libraries. The reader goes
+in =ores.http.core=, beside the history and change route helpers, and the
+reference data part links that.
+
+**The pricing engines' vocabulary is a route the screen calls.** The inventory
+states it as not an API, in no area, and it is not in the fifty. The editor
+requests it at =packages/web/src/api/pricingEngines.ts=, so the screen breaks
+without it when the BFF goes. This is the shape of =choices=, which this story
+served and paired as a not-an-API route for the same reason.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The reporting area's routes still answered only by the BFF | 18 of 44 rows | =python3 build/scripts/route_inventory.py --check= | the scaffold commit |
+| The reference data routes still answered only by the BFF, of the five moved here | 5 | =python3 build/scripts/route_inventory.py --check= | the scaffold commit |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4706][#4706]] | [agile] Split the last family into eight tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story holds one task per unit of the last family, and the task that stood the
+reporting part up names them as the rest of its work.
+
+- Eight task documents. Each names its routes, its branch, its acceptance and
+  the task it waits on.
+- The split was counted from the inventory, not claimed: eighteen of the
+  reporting area's forty-four rows have no =ores.http= equivalent, and five
+  reference data rows have none. That is twenty-three routes, and the pricing
+  engines' vocabulary makes twenty-four.
+- The value set reader lives in =ores.http.core=. The reporting part already
+  links =ores.refdata.api=, so a reader in the reporting part would close a cycle
+  between the two part libraries, and the reference data part reads value sets
+  too.
+- The pricing engines' vocabulary is served, because the editor calls it, though
+  the inventory states it as not an API and in no area. It is the shape of
+  =choices=.
+- The design note's engine settings count is eight, not seven, and the note now
+  states where the reader lives and why the vocabulary is served.
+- The gate is 9 of 9 documentation checks. No code changed in this task.

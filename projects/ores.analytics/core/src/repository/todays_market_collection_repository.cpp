@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/todays_market_collection_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_collection_entity.hpp"
 #include "ores.analytics.core/repository/todays_market_collection_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -111,20 +115,76 @@ std::optional<query_builder::condition> todays_market_collection_filter_conditio
 
 }
 
-ores::utility::domain::precondition
-todays_market_collection_repository::replace_claim(context ctx,
-                                                   const domain::todays_market_collection& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool todays_market_collection_claim_reads_current(
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using todays_market_collection_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::todays_market_collection>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+todays_market_collection_rows_by_key
+todays_market_collection_current_rows(todays_market_collection_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const std::vector<domain::todays_market_collection>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    todays_market_collection_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::todays_market_collection>&
+todays_market_collection_rows_of(const todays_market_collection_rows_by_key& current,
+                                 const domain::todays_market_collection& item) {
+    static const std::vector<domain::todays_market_collection> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition todays_market_collection_replace_claim(
+    const std::vector<domain::todays_market_collection>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::todays_market_collection
-todays_market_collection_repository::apply_claim(context ctx,
-                                                 const domain::todays_market_collection& v,
-                                                 const ores::utility::domain::precondition& claim) {
+todays_market_collection_apply_claim(const domain::todays_market_collection& v,
+                                     const ores::utility::domain::precondition& claim,
+                                     const std::vector<domain::todays_market_collection>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -136,38 +196,47 @@ todays_market_collection_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void todays_market_collection_repository::write(context ctx,
+}
+
+void todays_market_collection_repository::write(const context& ctx,
                                                 const domain::todays_market_collection& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          todays_market_collection_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void todays_market_collection_repository::write(
-    context ctx, const std::vector<domain::todays_market_collection>& v) {
+    const context& ctx, const std::vector<domain::todays_market_collection>& v) {
+    const auto current = todays_market_collection_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(todays_market_collection_replace_claim(
+            todays_market_collection_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void todays_market_collection_repository::write(context ctx,
+void todays_market_collection_repository::write(const context& ctx,
                                                 const domain::todays_market_collection& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        todays_market_collection_apply_claim(v,
+                                             claim,
+                                             todays_market_collection_claim_reads_current(claim) ?
+                                                 read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                 std::vector<domain::todays_market_collection>{});
     query_builder::execute_write_query(ctx,
                                        todays_market_collection_mapper::map(t),
                                        lg(),
@@ -175,14 +244,21 @@ void todays_market_collection_repository::write(context ctx,
 }
 
 void todays_market_collection_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::todays_market_collection>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market collections. Count: " << v.size();
+    std::vector<domain::todays_market_collection> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (todays_market_collection_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = todays_market_collection_current_rows(*this, ctx, to_read);
     std::vector<domain::todays_market_collection> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(todays_market_collection_apply_claim(
+            v[i], claims[i], todays_market_collection_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        todays_market_collection_mapper::map(batch),
                                        lg(),
@@ -190,7 +266,7 @@ void todays_market_collection_repository::write(
 }
 
 std::vector<domain::todays_market_collection>
-todays_market_collection_repository::read_latest(context ctx) {
+todays_market_collection_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
@@ -207,7 +283,7 @@ todays_market_collection_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::todays_market_collection>
-todays_market_collection_repository::read_latest(context ctx, const std::string& id) {
+todays_market_collection_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collection. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -225,7 +301,7 @@ todays_market_collection_repository::read_latest(context ctx, const std::string&
 }
 
 std::vector<domain::todays_market_collection>
-todays_market_collection_repository::read_latest_by_collection(context ctx,
+todays_market_collection_repository::read_latest_by_collection(const context& ctx,
                                                                const std::string& collection) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collection by collection: "
                                << collection;
@@ -251,7 +327,48 @@ todays_market_collection_repository::read_latest_by_collection(context ctx,
 }
 
 std::vector<domain::todays_market_collection>
-todays_market_collection_repository::read_any_by_collection(context ctx,
+todays_market_collection_repository::read_latest_by_collection(
+    const context& ctx, const std::vector<std::string>& collections) {
+    if (collections.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (collections.size() > chunk_size) {
+        std::vector<domain::todays_market_collection> all;
+        for (std::size_t begin = 0; begin < collections.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, collections.size());
+            auto part = read_latest_by_collection(
+                ctx,
+                std::vector<std::string>(collections.begin() + begin, collections.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collections by collection. Count: "
+                               << collections.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "collection"_c.in(collections) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<todays_market_collection_entity,
+                                                   domain::todays_market_collection>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market collections by collection.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::todays_market_collection>
+todays_market_collection_repository::read_any_by_collection(const context& ctx,
                                                             const std::string& collection) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any today's market collection by collection: "
                                << collection;
@@ -281,7 +398,7 @@ todays_market_collection_repository::read_any_by_collection(context ctx,
 
 
 std::vector<domain::todays_market_collection>
-todays_market_collection_repository::read_all(context ctx, const std::string& id) {
+todays_market_collection_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all today's market collection versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -299,7 +416,7 @@ todays_market_collection_repository::read_all(context ctx, const std::string& id
 }
 
 std::optional<domain::todays_market_collection>
-todays_market_collection_repository::read_at_version(context ctx,
+todays_market_collection_repository::read_at_version(const context& ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading today's market collection at version. " << "id: " << id
@@ -326,7 +443,7 @@ todays_market_collection_repository::read_at_version(context ctx,
 
 std::vector<domain::todays_market_collection>
 todays_market_collection_repository::read_latest_by_todays_market_config_id(
-    context ctx,
+    const context& ctx,
     const std::string& todays_market_config_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -357,7 +474,7 @@ todays_market_collection_repository::read_latest_by_todays_market_config_id(
 
 std::uint32_t
 todays_market_collection_repository::get_total_collection_count_by_todays_market_config_id(
-    context ctx,
+    const context& ctx,
     const std::string& todays_market_config_id,
     const std::optional<messaging::todays_market_collections_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -382,7 +499,7 @@ todays_market_collection_repository::get_total_collection_count_by_todays_market
 
 
 todays_market_collection_repository::remove_status todays_market_collection_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -411,12 +528,12 @@ todays_market_collection_repository::remove_status todays_market_collection_repo
     return remove_status::removed;
 }
 
-void todays_market_collection_repository::remove(context ctx, const std::string& id) {
+void todays_market_collection_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::todays_market_collection> todays_market_collection_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -442,7 +559,7 @@ std::vector<domain::todays_market_collection> todays_market_collection_repositor
 }
 
 std::uint32_t todays_market_collection_repository::get_total_collection_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::todays_market_collections_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active today's market collection count";
@@ -461,9 +578,25 @@ std::uint32_t todays_market_collection_repository::get_total_collection_count(
 }
 
 std::vector<domain::todays_market_collection>
-todays_market_collection_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+todays_market_collection_repository::read_latest(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::todays_market_collection> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -479,7 +612,8 @@ todays_market_collection_repository::read_latest(context ctx, const std::vector<
     return result;
 }
 
-void todays_market_collection_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void todays_market_collection_repository::remove(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

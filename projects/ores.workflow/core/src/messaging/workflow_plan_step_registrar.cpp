@@ -44,11 +44,10 @@ static constexpr std::string_view workflow_plan_step_queue_group = "ores.workflo
 
 std::vector<ores::nats::service::subscription> register_workflow_plan_step_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<workflow_plan_step_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<workflow_plan_step_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_workflow_plan_steps_request::nats_subject,
         workflow_plan_step_queue_group,

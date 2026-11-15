@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/lexical_cast.hpp>
@@ -41,7 +41,8 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-std::vector<domain::node_sample> compute_telemetry_repository::latest_node_samples(context ctx) {
+std::vector<domain::node_sample>
+compute_telemetry_repository::latest_node_samples(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute node samples";
 
     // DISTINCT ON (host_id) returns exactly one row per host, the most recent,
@@ -58,8 +59,8 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
         ORDER BY host_id, sampled_at DESC
     )";
 
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading latest node samples");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "reading latest node samples");
 
     std::vector<domain::node_sample> result;
     result.reserve(rows.size());
@@ -86,14 +87,14 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
 }
 
 domain::grid_sample compute_telemetry_repository::compute_grid_stats(
-    context ctx, std::optional<boost::uuids::uuid> party, bool fleet) {
+    const context& ctx, std::optional<boost::uuids::uuid> party, bool fleet) {
     BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
     const auto tid = ctx.tenant_id().to_string();
 
     static const std::string sql = "SELECT * FROM ores_compute_grid_stats_fn($1::uuid, "
                                    "nullif($2::text, '')::uuid, $3::boolean)";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {tid, party ? boost::uuids::to_string(*party) : std::string{}, fleet ? "true" : "false"},
@@ -171,7 +172,7 @@ std::chrono::system_clock::time_point from_epoch_seconds(long long seconds) {
 } // namespace
 
 std::vector<std::optional<boost::uuids::uuid>>
-compute_telemetry_repository::parties_with_work(context ctx) {
+compute_telemetry_repository::parties_with_work(const context& ctx) {
     // Each table is read as the session sees it, so the policies decide which parties
     // are listed. A party whose work is all gone is no longer listed and gets no more rows,
     // so its counts leave the sums from then on, as they would at zero. The empty party is always
@@ -190,7 +191,7 @@ compute_telemetry_repository::parties_with_work(context ctx) {
         ) p
         WHERE party_id IS NOT NULL
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {}, lg(), "listing the parties with work");
     std::vector<std::optional<boost::uuids::uuid>> parties;
     parties.emplace_back(std::nullopt);
@@ -202,7 +203,7 @@ compute_telemetry_repository::parties_with_work(context ctx) {
 }
 
 grid_series
-compute_telemetry_repository::grid_series_in_range(context ctx,
+compute_telemetry_repository::grid_series_in_range(const context& ctx,
                                                    std::chrono::system_clock::time_point start,
                                                    std::chrono::system_clock::time_point end,
                                                    int bucket_seconds) {
@@ -286,7 +287,7 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
         FROM job_buckets j FULL JOIN fleet_buckets f ON f.b = j.b
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {std::to_string(axis.first_s), std::to_string(axis.end_s), std::to_string(bucket_seconds)},
@@ -329,7 +330,7 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
     return series;
 }
 
-grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
+grid_usage compute_telemetry_repository::grid_usage_by_scope(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the grid usage by party";
 
     // The policies decide the rows: the session's own tenant, and the parties it
@@ -378,8 +379,8 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
         ORDER BY sum(results) DESC, k
     )";
 
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading the grid usage");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "reading the grid usage");
 
     grid_usage usage;
     usage.group_kind = "party";
@@ -404,7 +405,7 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
 }
 
 node_series
-compute_telemetry_repository::node_series_in_range(context ctx,
+compute_telemetry_repository::node_series_in_range(const context& ctx,
                                                    std::chrono::system_clock::time_point start,
                                                    std::chrono::system_clock::time_point end,
                                                    int bucket_seconds) {
@@ -435,7 +436,7 @@ compute_telemetry_repository::node_series_in_range(context ctx,
         GROUP BY 1, 2
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {std::to_string(axis.first_s), std::to_string(axis.end_s), std::to_string(bucket_seconds)},

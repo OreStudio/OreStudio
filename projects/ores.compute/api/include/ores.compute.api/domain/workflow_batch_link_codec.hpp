@@ -46,7 +46,7 @@ namespace ores::compute::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_batch_link>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenant_id", &workflow_batch_link::tenant_id},
         utility::codec::field{"batch_id", &workflow_batch_link::batch_id},
         utility::codec::field{"workflow_step_id", &workflow_batch_link::workflow_step_id},

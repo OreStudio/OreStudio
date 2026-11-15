@@ -58,9 +58,7 @@ struct scripted_instrument_entity {
     boost::uuids::uuid trade_activity_id;
     std::string script_name;
     std::optional<std::string> script_body;
-    std::optional<std::string> events_json;
-    std::optional<std::string> underlyings_json;
-    std::optional<std::string> parameters_json;
+    std::optional<std::string> script_npv;
     std::optional<std::string> description;
     std::optional<std::string> data_element;
     std::string modified_by;
@@ -84,9 +82,7 @@ struct scripted_instrument_entity {
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
                query_builder::bind("script_name", &e::script_name) |
                query_builder::bind("script_body", &e::script_body) |
-               query_builder::bind("events_json", &e::events_json) |
-               query_builder::bind("underlyings_json", &e::underlyings_json) |
-               query_builder::bind("parameters_json", &e::parameters_json) |
+               query_builder::bind("script_npv", &e::script_npv) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("data_element", &e::data_element) |
                query_builder::bind("modified_by", &e::modified_by) |

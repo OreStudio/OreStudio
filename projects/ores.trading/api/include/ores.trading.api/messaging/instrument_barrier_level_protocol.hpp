@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_barrier_level_key::trade_id},
         utility::codec::field{"barrier_role", &instrument_barrier_level_key::barrier_role},
         utility::codec::field{"barrier_sequence_number",
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_barrier_level_write::trade_id},
         utility::codec::field{"barrier_role", &instrument_barrier_level_write::barrier_role},
         utility::codec::field{"barrier_sequence_number",
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &instrument_barrier_level_change::write},
         utility::codec::field{"precondition", &instrument_barrier_level_change::precondition},
     };
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_barrier_level_removal::key},
         utility::codec::field{"precondition", &instrument_barrier_level_removal::precondition},
     };
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_barrier_level_lookup::key},
         utility::codec::field{"instrument_barrier_level",
                               &instrument_barrier_level_lookup::instrument_barrier_level},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_levels_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_barrier_levels_filter::trade_id},
         utility::codec::field{"trade_id_one_of",
                               &instrument_barrier_levels_filter::trade_id_one_of},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &instrument_barrier_level_event::event_id},
         utility::codec::field{"key", &instrument_barrier_level_event::key},
         utility::codec::field{"action", &instrument_barrier_level_event::action},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_barrier_level_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"instrument_barrier_level",
                               &instrument_barrier_level_version_key::instrument_barrier_level},
         utility::codec::field{"version", &instrument_barrier_level_version_key::version},
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_barrie
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_barrier_level_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &instrument_barrier_level_versions_filter::version},
         utility::codec::field{"from_version",
                               &instrument_barrier_level_versions_filter::from_version},
@@ -566,7 +566,7 @@ wire_fields(std::type_identity<instrument_barrier_level_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_barrier_levels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_instrument_barrier_levels_request::offset},
         utility::codec::field{"limit", &list_instrument_barrier_levels_request::limit},
         utility::codec::field{"order", &list_instrument_barrier_levels_request::order},
@@ -585,7 +585,7 @@ wire_fields(std::type_identity<list_instrument_barrier_levels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_barrier_levels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_barrier_levels_response::result},
         utility::codec::field{"instrument_barrier_levels",
                               &list_instrument_barrier_levels_response::instrument_barrier_levels},
@@ -602,7 +602,7 @@ wire_fields(std::type_identity<list_instrument_barrier_levels_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_instrument_barrier_level_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_barrier_level_request::key},
     };
 }
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<list_instrument_barrier_levels_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_barrier_level_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_barrier_level_response::result},
         utility::codec::field{"instrument_barrier_level",
                               &get_instrument_barrier_level_response::instrument_barrier_level},
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<get_instrument_barrier_level_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_barrier_levels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_instrument_barrier_levels_request::keys},
     };
 }
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_many_instrument_barrier_levels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_barrier_levels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_instrument_barrier_levels_response::result},
         utility::codec::field{"entries", &get_many_instrument_barrier_levels_response::entries},
     };
@@ -664,7 +664,7 @@ wire_fields(std::type_identity<get_many_instrument_barrier_levels_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_instrument_barrier_level_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_instrument_barrier_level_request::change},
         utility::codec::field{"intent", &put_instrument_barrier_level_request::intent},
     };
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<get_many_instrument_barrier_levels_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_instrument_barrier_level_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_instrument_barrier_level_response::result},
         utility::codec::field{"instrument_barrier_level",
                               &put_instrument_barrier_level_response::instrument_barrier_level},
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<put_instrument_barrier_level_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_barrier_levels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_instrument_barrier_levels_request::changes},
         utility::codec::field{"intent", &put_many_instrument_barrier_levels_request::intent},
     };
@@ -713,7 +713,7 @@ wire_fields(std::type_identity<put_many_instrument_barrier_levels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_barrier_levels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_instrument_barrier_levels_response::result},
         utility::codec::field{
             "instrument_barrier_levels",
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<put_many_instrument_barrier_levels_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_instrument_barrier_level_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_instrument_barrier_level_request::removal},
         utility::codec::field{"intent", &delete_instrument_barrier_level_request::intent},
     };
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_instrument_barrier_level_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_instrument_barrier_level_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_instrument_barrier_level_response::result},
     };
 }
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<delete_instrument_barrier_level_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_barrier_levels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_instrument_barrier_levels_request::removals},
         utility::codec::field{"intent", &delete_many_instrument_barrier_levels_request::intent},
     };
@@ -778,7 +778,7 @@ wire_fields(std::type_identity<delete_many_instrument_barrier_levels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_barrier_levels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_instrument_barrier_levels_response::result},
     };
 }
@@ -793,7 +793,7 @@ wire_fields(std::type_identity<delete_many_instrument_barrier_levels_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_barrier_levels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_instrument_barrier_levels_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_instrument_barrier_levels_request::scope},
@@ -816,7 +816,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_barrier_levels_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_barrier_levels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_trade_id_instrument_barrier_levels_response::result},
         utility::codec::field{
@@ -836,7 +836,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_barrier_levels_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_barrier_level_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_instrument_barrier_level_versions_request::key},
         utility::codec::field{"offset", &list_instrument_barrier_level_versions_request::offset},
         utility::codec::field{"limit", &list_instrument_barrier_level_versions_request::limit},
@@ -855,7 +855,7 @@ wire_fields(std::type_identity<list_instrument_barrier_level_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_barrier_level_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_barrier_level_versions_response::result},
         utility::codec::field{"versions",
                               &list_instrument_barrier_level_versions_response::versions},
@@ -873,7 +873,7 @@ wire_fields(std::type_identity<list_instrument_barrier_level_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_barrier_level_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_barrier_level_version_request::key},
     };
 }
@@ -888,7 +888,7 @@ wire_fields(std::type_identity<get_instrument_barrier_level_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_barrier_level_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_barrier_level_version_response::result},
         utility::codec::field{"version", &get_instrument_barrier_level_version_response::version},
     };

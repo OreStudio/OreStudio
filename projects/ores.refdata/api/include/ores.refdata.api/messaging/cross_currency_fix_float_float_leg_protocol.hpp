@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &cross_currency_fix_float_float_leg_key::id},
     };
 }
@@ -449,7 +449,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &cross_currency_fix_float_float_leg_write::id},
         utility::codec::field{"convention_id",
                               &cross_currency_fix_float_float_leg_write::convention_id},
@@ -480,7 +480,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &cross_currency_fix_float_float_leg_change::write},
         utility::codec::field{"precondition",
                               &cross_currency_fix_float_float_leg_change::precondition},
@@ -497,7 +497,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &cross_currency_fix_float_float_leg_removal::key},
         utility::codec::field{"precondition",
                               &cross_currency_fix_float_float_leg_removal::precondition},
@@ -514,7 +514,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &cross_currency_fix_float_float_leg_lookup::key},
         utility::codec::field{
             "cross_currency_fix_float_float_leg",
@@ -532,7 +532,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_legs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_id",
                               &cross_currency_fix_float_float_legs_filter::convention_id},
         utility::codec::field{"id_one_of", &cross_currency_fix_float_float_legs_filter::id_one_of},
@@ -551,7 +551,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_legs_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &cross_currency_fix_float_float_leg_event::event_id},
         utility::codec::field{"key", &cross_currency_fix_float_float_leg_event::key},
         utility::codec::field{"action", &cross_currency_fix_float_float_leg_event::action},
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "cross_currency_fix_float_float_leg",
             &cross_currency_fix_float_float_leg_version_key::cross_currency_fix_float_float_leg},
@@ -591,7 +591,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_version_key>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<cross_currency_fix_float_float_leg_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &cross_currency_fix_float_float_leg_versions_filter::version},
         utility::codec::field{"from_version",
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<cross_currency_fix_float_float_leg_versions_filte
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cross_currency_fix_float_float_legs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_cross_currency_fix_float_float_legs_request::offset},
         utility::codec::field{"limit", &list_cross_currency_fix_float_float_legs_request::limit},
         utility::codec::field{"order", &list_cross_currency_fix_float_float_legs_request::order},
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<list_cross_currency_fix_float_float_legs_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cross_currency_fix_float_float_legs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_cross_currency_fix_float_float_legs_response::result},
         utility::codec::field{"cross_currency_fix_float_float_legs",
                               &list_cross_currency_fix_float_float_legs_response::
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<list_cross_currency_fix_float_float_legs_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_cross_currency_fix_float_float_leg_request::key},
     };
 }
@@ -664,7 +664,7 @@ wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_cross_currency_fix_float_float_leg_response::result},
         utility::codec::field{
             "cross_currency_fix_float_float_leg",
@@ -682,7 +682,7 @@ wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_cross_currency_fix_float_float_legs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_cross_currency_fix_float_float_legs_request::keys},
     };
 }
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<get_many_cross_currency_fix_float_float_legs_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_cross_currency_fix_float_float_legs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_cross_currency_fix_float_float_legs_response::result},
         utility::codec::field{"entries",
@@ -715,7 +715,7 @@ wire_fields(std::type_identity<get_many_cross_currency_fix_float_float_legs_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_cross_currency_fix_float_float_leg_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_cross_currency_fix_float_float_leg_request::change},
         utility::codec::field{"intent", &put_cross_currency_fix_float_float_leg_request::intent},
     };
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<put_cross_currency_fix_float_float_leg_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_cross_currency_fix_float_float_leg_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_cross_currency_fix_float_float_leg_response::result},
         utility::codec::field{
             "cross_currency_fix_float_float_leg",
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<put_cross_currency_fix_float_float_leg_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_cross_currency_fix_float_float_legs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_cross_currency_fix_float_float_legs_request::changes},
         utility::codec::field{"intent",
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<put_many_cross_currency_fix_float_float_legs_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_cross_currency_fix_float_float_legs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_cross_currency_fix_float_float_legs_response::result},
         utility::codec::field{"cross_currency_fix_float_float_legs",
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<put_many_cross_currency_fix_float_float_legs_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_cross_currency_fix_float_float_leg_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_cross_currency_fix_float_float_leg_request::removal},
         utility::codec::field{"intent", &delete_cross_currency_fix_float_float_leg_request::intent},
@@ -803,7 +803,7 @@ wire_fields(std::type_identity<delete_cross_currency_fix_float_float_leg_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_cross_currency_fix_float_float_leg_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_cross_currency_fix_float_float_leg_response::result},
     };
@@ -819,7 +819,7 @@ wire_fields(std::type_identity<delete_cross_currency_fix_float_float_leg_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_cross_currency_fix_float_float_legs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_cross_currency_fix_float_float_legs_request::removals},
         utility::codec::field{"intent",
@@ -837,7 +837,7 @@ wire_fields(std::type_identity<delete_many_cross_currency_fix_float_float_legs_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_cross_currency_fix_float_float_legs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_cross_currency_fix_float_float_legs_response::result},
     };
@@ -853,7 +853,7 @@ wire_fields(std::type_identity<delete_many_cross_currency_fix_float_float_legs_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_id_cross_currency_fix_float_float_legs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "convention_id",
             &list_by_convention_id_cross_currency_fix_float_float_legs_request::convention_id},
@@ -880,7 +880,7 @@ wire_fields(std::type_identity<list_by_convention_id_cross_currency_fix_float_fl
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_by_convention_id_cross_currency_fix_float_float_legs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_convention_id_cross_currency_fix_float_float_legs_response::result},
         utility::codec::field{"cross_currency_fix_float_float_legs",
@@ -901,7 +901,7 @@ wire_fields(std::type_identity<list_by_convention_id_cross_currency_fix_float_fl
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cross_currency_fix_float_float_leg_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_cross_currency_fix_float_float_leg_versions_request::key},
         utility::codec::field{"offset",
@@ -925,7 +925,7 @@ wire_fields(std::type_identity<list_cross_currency_fix_float_float_leg_versions_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cross_currency_fix_float_float_leg_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_cross_currency_fix_float_float_leg_versions_response::result},
         utility::codec::field{"versions",
@@ -945,7 +945,7 @@ wire_fields(std::type_identity<list_cross_currency_fix_float_float_leg_versions_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_cross_currency_fix_float_float_leg_version_request::key},
     };
 }
@@ -960,7 +960,7 @@ wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_version_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_cross_currency_fix_float_float_leg_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_cross_currency_fix_float_float_leg_version_response::result},
         utility::codec::field{"version",

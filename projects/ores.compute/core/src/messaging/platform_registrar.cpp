@@ -44,10 +44,10 @@ static constexpr std::string_view platform_queue_group = "ores.compute.service";
 
 std::vector<ores::nats::service::subscription>
 register_platform_handlers(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<platform_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<platform_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_platforms_request::nats_subject, platform_queue_group, [h](ores::nats::message msg) {
             h->list_platforms(std::move(msg));

@@ -24,6 +24,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/test_files.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <fstream>
 #include <set>
 #include <sstream>

@@ -21,6 +21,7 @@
 #define ORES_NATS_SERVICE_CLIENT_HPP
 
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/export.hpp"
 #include "ores.nats/service/buffered_subscription.hpp"
@@ -211,11 +212,11 @@ public:
      *        on this stream. The call also reconciles a stored consumer whose
      *        filter, ack policy, delivery bound, delivery subject or delivery
      *        group differs from the ones asked for.
+     * @param handler Takes each message as a @c delivery, which its holder
+     *        settles once. A delivery dropped without a settlement is
+     *        delivered again.
      * @param max_deliver How many times a message may be delivered before the
-     *        server stops. Every delivery is explicit, so the handler must
-     *        answer it -- with @c ack_guard, or by answering the message's own
-     *        handle -- and the transport asks for a retry when it does not.
-     *        The bound is what keeps a message that always fails from being
+     *        server stops. The bound is what keeps a message that always fails from being
      *        redelivered forever; it is required, and there is no unlimited
      *        setting.
      * @param ack_wait How long the server waits for an answer before it counts
@@ -227,7 +228,7 @@ public:
     [[nodiscard]] subscription js_queue_subscribe(std::string_view subject,
                                                   std::string_view durable_name,
                                                   std::string_view queue_group,
-                                                  message_handler handler,
+                                                  delivery_handler handler,
                                                   std::string_view stream_name,
                                                   int max_deliver,
                                                   std::chrono::milliseconds ack_wait);
@@ -261,7 +262,7 @@ public:
     [[nodiscard]] subscription js_queue_subscribe_multi(std::span<const std::string_view> subjects,
                                                         std::string_view durable_name,
                                                         std::string_view queue_group,
-                                                        message_handler handler,
+                                                        delivery_handler handler,
                                                         std::string_view stream_name,
                                                         int max_deliver,
                                                         std::chrono::milliseconds ack_wait);

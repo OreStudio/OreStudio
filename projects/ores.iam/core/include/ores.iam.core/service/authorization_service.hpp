@@ -147,7 +147,7 @@ public:
      * @param ctx The database context.
      * @param event_bus Optional event bus for publishing permission change events.
      */
-    explicit authorization_service(context ctx, event_bus* event_bus = nullptr);
+    explicit authorization_service(const context& ctx, event_bus* event_bus = nullptr);
 
     // ========================================================================
     // Permission Management

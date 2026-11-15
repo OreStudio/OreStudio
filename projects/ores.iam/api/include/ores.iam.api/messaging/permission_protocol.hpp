@@ -289,7 +289,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &permission_key::code},
     };
 }
@@ -303,7 +303,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &permission_write::id},
         utility::codec::field{"code", &permission_write::code},
         utility::codec::field{"description", &permission_write::description},
@@ -319,7 +319,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &permission_change::write},
         utility::codec::field{"precondition", &permission_change::precondition},
     };
@@ -334,7 +334,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &permission_removal::key},
         utility::codec::field{"precondition", &permission_removal::precondition},
     };
@@ -349,7 +349,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &permission_lookup::key},
         utility::codec::field{"permission", &permission_lookup::permission},
     };
@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permissions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &permissions_filter::id_one_of},
     };
 }
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &permission_event::event_id},
         utility::codec::field{"key", &permission_event::key},
         utility::codec::field{"action", &permission_event::action},
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_permissions_request::offset},
         utility::codec::field{"limit", &list_permissions_request::limit},
         utility::codec::field{"order", &list_permissions_request::order},
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_permissions_response::result},
         utility::codec::field{"permissions", &list_permissions_response::permissions},
         utility::codec::field{"total", &list_permissions_response::total},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_permission_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_permission_request::key},
     };
 }
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_permission_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_permission_response::result},
         utility::codec::field{"permission", &get_permission_response::permission},
     };
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_permissions_request::keys},
     };
 }
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_permissions_response::result},
         utility::codec::field{"entries", &get_many_permissions_response::entries},
     };
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_permission_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_permission_request::change},
         utility::codec::field{"intent", &put_permission_request::intent},
     };
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_permission_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_permission_response::result},
         utility::codec::field{"permission", &put_permission_response::permission},
     };
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_permissions_request::changes},
         utility::codec::field{"intent", &put_many_permissions_request::intent},
     };
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_permissions_response::result},
         utility::codec::field{"permissions", &put_many_permissions_response::permissions},
     };
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_permission_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_permission_request::removal},
         utility::codec::field{"intent", &delete_permission_request::intent},
     };
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_permission_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_permission_response::result},
     };
 }
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_permissions_request::removals},
         utility::codec::field{"intent", &delete_many_permissions_request::intent},
     };
@@ -593,7 +593,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.permissions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_permissions_response::result},
     };
 }

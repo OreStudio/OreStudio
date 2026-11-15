@@ -19,9 +19,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.generate import resolve_targets  # noqa: E402
-from codegen.org_loader import entity_http_route_plan  # noqa: E402
+from codegen.org_loader import entity_http_route_plan, entity_web_records_plan  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
+FORWARDING = (Path(__file__).resolve().parents[3]
+              / "projects/ores.http/nats/src/forwarding.cpp")
+
 TEMPLATES = CODEGEN_BASE / "library" / "templates"
 ASSETS_MODELING = REPO_ROOT / "projects" / "ores.assets" / "modeling"
 IMAGE_MODEL = ASSETS_MODELING / "ores.assets.image.org"
@@ -309,8 +312,12 @@ class TestTheSecurityRule:
         # The service validates the caller, so the gateway takes the caller's
         # token from the HTTP request and delegates it on the NATS call.
         text = _rendered_impl(_entity())
-        assert "get_bearer_token()" in text
-        assert "with_delegation(" in text
+        # The unit hands the caller's own request to the gateway's one
+        # forwarding step and sends nothing on NATS itself.
+        assert "ores::http::forwarding::respond(req, session," in text
+        assert "authenticated_request" not in text
+        shared = FORWARDING.read_text()
+        assert "with_delegation(req.get_bearer_token()" in shared
 
 
 class TestTheFacetResolves:
@@ -403,8 +410,11 @@ class TestTheFilterParameters:
             {"member": "name", "column": "name", "is_equals": True,
              "cpp_type": "std::optional<std::string>",
              "read_type": "std::string", "is_nullable": True},
-            {"member": "kind", "column": "kind", "is_one_of": True,
-             "cpp_type": "std::vector<std::string>", "is_nullable": False},
+            {"member": "kind_one_of", "column": "kind", "is_one_of": True,
+             "cpp_type": "std::vector<std::string>", "read_type": "std::string",
+             "is_nullable": False},
+            {"member": "created_from", "column": "created", "is_range": True,
+             "is_from": True, "cpp_type": "std::string"},
         ]
         return entity
 
@@ -423,12 +433,313 @@ class TestTheFilterParameters:
         text = _rendered_impl(self._filtered())
         assert '.query_param("f.type", "string"' in text
 
-    def test_a_one_of_member_is_not_a_single_valued_parameter(self):
-        # One-of and range members take lists and bounds; a single query value
-        # cannot state them, so the route states nothing rather than guessing.
+    def test_a_one_of_member_reads_a_list_under_its_member_name(self):
         text = _rendered_impl(self._filtered())
-        assert 'get_query_param("f.kind")' not in text
+        assert 'get_query_param("f.kind_one_of")' in text
+        assert ('msg.filter->kind_one_of = widget_read_list<std::string>'
+                '(raw, "f.kind_one_of");') in text
+        assert '.query_param("f.kind_one_of", "string"' in text
+
+    def test_a_range_member_reads_its_bound_as_text(self):
+        text = _rendered_impl(self._filtered())
+        assert 'get_query_param("f.created_from")' in text
+        assert "msg.filter->created_from = raw;" in text
+        assert '.query_param("f.created_from", "string"' in text
+
+    def test_every_declared_member_is_allowed_and_no_other(self):
+        # The BFF refuses a filter a resource does not declare, because a filter
+        # that narrowed nothing would read as an answer.
+        text = _rendered_impl(self._filtered())
+        assert ('widget_refuse_undeclared_filters(req, { "f.type", "f.name", '
+                '"f.kind_one_of", "f.created_from", });') in text
+
+    def test_a_list_with_no_filter_record_refuses_every_filter(self):
+        text = _rendered_impl(_entity())
+        assert "widget_refuse_undeclared_filters(req, { });" in text
+
+    def test_the_order_uses_the_parameters_the_browser_sends(self):
+        text = _rendered_impl(self._filtered())
+        assert 'get_query_param("sort")' in text
+        assert 'get_query_param("descending")' in text
+        assert '.query_param("sort", "string"' in text
+        assert '.query_param("descending", "boolean"' in text
+        assert 'get_query_param("order")' not in text
+        assert 'get_query_param("desc")' not in text
 
     def test_a_list_with_no_filter_record_reads_no_filter(self):
         text = _rendered_impl(_entity())
         assert 'get_query_param("f.' not in text
+
+
+def _rendered_tests(entity):
+    """The test file the tests template renders for one entity shape."""
+    entity = dict(entity)
+    entity["http_route"] = entity_http_route_plan(entity)
+    template = (TEMPLATES / "cpp_http_route_tests.cpp.mustache").read_text()
+    return pystache.render(template, {"cpp_license": "", "domain_entity": entity})
+
+
+class TestTheListHandlerTests:
+    """A paged list route's test file runs the handler, not only the router."""
+
+    def test_a_page_and_an_order_are_accepted(self):
+        text = _rendered_tests(TestTheFilterParameters._filtered())
+        assert 'TEST_CASE("widget_routes_list_accepts_a_page_and_an_order"' in text
+        assert '{"sort", "version"}, {"descending", "true"}' in text
+
+    def test_every_declared_filter_is_tried_under_the_name_its_reader_reads(self):
+        # An equals member is read under its column; the others under the member.
+        text = _rendered_tests(TestTheFilterParameters._filtered())
+        assert ('names{ "f.type", "f.name", "f.kind_one_of", "f.created_from", };'
+                in text)
+
+    def test_an_undeclared_filter_is_tried_and_must_be_refused(self):
+        text = _rendered_tests(TestTheFilterParameters._filtered())
+        assert '{ {"f.no_such_column", "x"} }' in text
+        assert "http_status::bad_request" in text
+
+    def test_each_one_of_member_is_tried_with_an_empty_item(self):
+        text = _rendered_tests(TestTheFilterParameters._filtered())
+        assert ('TEST_CASE("widget_routes_list_refuses_an_empty_item_in_f_kind_one_of"'
+                in text)
+        assert '{ {"f.kind_one_of", ","} }' in text
+        assert "refuses_an_empty_item_in_f_type" not in text
+
+    def test_a_list_with_no_filter_record_tries_no_declared_filter(self):
+        text = _rendered_tests(_entity())
+        assert "names{ };" in text
+        assert "refuses_an_empty_item" not in text
+
+    def test_a_unit_with_no_paged_list_runs_no_handler(self):
+        get_only = [op for op in ALL_VERBS if op.get("verb") == "get"]
+        text = _rendered_tests(_entity(operations=get_only))
+        assert "handle_list" not in text
+        assert "refuses_an_undeclared_filter" not in text
+
+
+def _web(entity=None, **declared):
+    """An entity in the screens' registry, as the loader hands it over."""
+    entity = dict(entity or _entity())
+    entity["web_resource"] = "widgets"
+    entity.update(declared)
+    return entity
+
+
+def _rendered_web(entity, template="cpp_http_route_web_records.cpp.mustache"):
+    entity = dict(entity)
+    entity["web_records"] = entity_web_records_plan(entity)
+    text = (TEMPLATES / template).read_text()
+    return pystache.render(text, {"cpp_license": "", "domain_entity": entity})
+
+
+class TestTheWebRecordRoutes:
+    """A model that names a screen resource gets the BFF's record routes."""
+
+    def test_a_model_that_names_no_resource_has_no_record_routes(self):
+        assert entity_web_records_plan(_entity()) is None
+        assert _rendered_web(_entity()).strip() == ""
+
+    def test_the_resource_is_addressed_under_its_component_by_its_key(self):
+        plan = entity_web_records_plan(_web())
+        assert plan["base"] == "/api/demo/widgets"
+        assert plan["unit"] == "widget_web"
+        assert plan["write_permission"] == "demo::widgets:write"
+        assert plan["rows_member"] == "widgets"
+
+    def test_a_one_field_key_is_read_through_the_key_one_of_filter(self):
+        text = _rendered_web(_web())
+        assert 'router->get("/api/demo/widgets/key/{key}")' in text
+        assert "msg.filter->type_one_of = std::vector<std::string>" in text
+
+    def test_the_routes_keep_the_bff_shapes(self):
+        text = _rendered_web(_web())
+        assert '"{\\"rows\\":" + widget_web_rows(rows) + "}"' in text
+        assert '",\\"total\\":" + std::to_string(reply.total)' in text
+        assert '"{\\"row\\":" + widget_web_row(' in text
+
+    def test_a_read_only_resource_refuses_every_write(self):
+        text = _rendered_web(_web(web_read_only=True))
+        assert 'return std::string("");' in text
+        assert text.count("widget_web_require_writable(req);") == 2
+
+    def test_a_reason_is_the_sentence_a_read_only_resource_gives(self):
+        text = _rendered_web(_web(web_read_only_because='Kept "as read".'))
+        assert 'return std::string("Kept \\"as read\\".");' in text
+
+    def test_a_writable_resource_is_refused_by_nothing_of_its_own(self):
+        text = _rendered_web(_web())
+        assert "return std::nullopt;" in text
+        assert 'return std::string("' not in text
+
+    def test_a_shared_catalogue_is_written_from_the_system_tenant_alone(self):
+        text = _rendered_web(_web(web_system_owned=True))
+        assert "*user->tenant_id != rr::system_tenant_id" in text
+
+    def test_a_row_without_versions_carries_version_zero(self):
+        # The screens read a version on every row, and a junction keeps none.
+        junction = _web(current_state=True)
+        assert '"\\"version\\":0,"' in _rendered_web(junction)
+        assert '"\\"version\\":0,"' not in _rendered_web(_web())
+
+    def test_a_resource_with_no_parent_relation_has_no_by_route(self):
+        assert "/by/{parent}" not in _rendered_web(_web())
+
+    def test_a_named_parent_the_entity_is_not_listed_by_is_refused(self):
+        import pytest
+        with pytest.raises(ValueError, match="web_list_by"):
+            entity_web_records_plan(_web(web_list_by="nothing"))
+
+    def test_the_tests_try_a_refused_and_an_accepted_page(self):
+        text = _rendered_web(_web(), "cpp_http_route_web_records_tests.cpp.mustache")
+        assert 'TEST_CASE("widget_web_routes_refuses_a_page_it_cannot_read"' in text
+        assert "http_status::bad_gateway" in text
+
+    def test_a_model_without_a_resource_skips_the_record_archetype(self):
+        # The generator skips an archetype whose output does not resolve, which is
+        # how only the registry's models get a record unit.
+        import pytest
+        from codegen.core import resolve_output_path
+        pattern = "projects/ores.http/{component}/src/routes/{component}/{web_entity}_routes.cpp"
+        with pytest.raises(KeyError):
+            resolve_output_path(pattern, {"domain_entity": _entity()}, "domain_entity")
+        resolved = resolve_output_path(pattern, {"domain_entity": _web()}, "domain_entity")
+        assert resolved == "projects/ores.http/demo/src/routes/demo/widget_web_routes.cpp"
+
+    def test_the_catalogue_entry_is_json_naming_the_resource(self):
+        import json
+        import re
+        text = _rendered_web(_web())
+        pieces = re.findall(r'R"json\((.*?)\)json"', text)
+        parsed = json.loads(pieces[0] + "true" + pieces[1])
+        assert parsed["key"] == "widgets"
+        assert parsed["keyFields"] == ["type"]
+        assert parsed["writePermission"] == "demo::widgets:write"
+
+    def test_a_put_subject_that_names_no_resource_is_refused(self):
+        import pytest
+        entity = _web()
+        entity["operations"] = [dict(op, subject="widgets.put") if op["verb"] == "put" else op
+                                for op in entity["operations"]]
+        with pytest.raises(ValueError, match="does not name its resource"):
+            entity_web_records_plan(entity)
+
+    def test_a_batch_resource_writes_through_the_many_subjects(self):
+        text = _rendered_web(_web(web_writes="many"))
+        assert "messaging::put_many_widgets_request msg;" in text
+        assert "messaging::delete_many_widgets_request msg;" in text
+        assert '"keyField":"type"' in text
+        assert '"readPermission":"demo::widgets:read"' in text
+
+    def test_a_one_row_resource_states_no_batch(self):
+        text = _rendered_web(_web())
+        assert "put_many_widgets_request" not in text
+
+    def test_an_area_moves_the_address_and_the_part(self):
+        plan = entity_web_records_plan(_web(web_area="synthetic"))
+        assert plan["base"] == "/api/synthetic/widgets"
+        assert plan["write_permission"] == "demo::widgets:write"
+
+    def test_a_hand_written_key_read_has_no_generated_key_route(self):
+        text = _rendered_web(_web(web_key_read="hand-written"))
+        assert "/key/{key}" not in text
+        assert "handle_key" not in text
+
+    def test_a_parent_filter_must_be_an_equals_member(self):
+        import pytest
+        with pytest.raises(ValueError, match="web_parent_filter"):
+            entity_web_records_plan(_web(web_parent_filter="nothing"))
+
+    def test_a_write_takes_the_model_default_for_a_member_it_leaves_out(self):
+        entity = _web()
+        entity["columns"] = [{"name": "kind", "cpp_type": "std::string", "type": "text",
+                              "default_value": "'fx'"},
+                             {"name": "decay", "cpp_type": "double", "default_value": "1.0"},
+                             {"name": "note", "cpp_type": "std::optional<std::string>",
+                              "default_value": "'x'"}]
+        defaults = entity_web_records_plan(entity)["write_defaults"]
+        assert {"name": "kind", "json": '"fx"'} in defaults
+        assert {"name": "decay", "json": "1.0"} in defaults
+        assert all(d["name"] != "note" for d in defaults)
+
+    def test_a_filtered_page_names_the_filter_record_it_fills(self):
+        # A junction carries no filter_type, and an unnamed brace reset the
+        # optional before the member was written through it.
+        entity = _web()
+        entity.pop("filter_type", None)
+        text = _rendered_web(entity)
+        assert "msg.filter = {};" not in text
+        assert "msg.filter = messaging::widgets_filter{};" in text
+
+    def test_an_area_moves_the_address_but_not_the_unit(self):
+        from codegen.core import resolve_output_path
+        entity = _web(web_area="synthetic")
+        pattern = "projects/ores.http/{component}/src/routes/{component}/{web_entity}_routes.cpp"
+        assert (resolve_output_path(pattern, {"domain_entity": entity}, "domain_entity")
+                == "projects/ores.http/demo/src/routes/demo/widget_web_routes.cpp")
+
+    def test_a_default_of_the_wrong_type_is_refused_when_the_model_is_built(self):
+        import pytest
+        entity = _web()
+        entity["columns"] = [{"name": "enabled", "cpp_type": "bool", "default_value": "0"}]
+        with pytest.raises(ValueError, match="not a bool"):
+            entity_web_records_plan(entity)
+
+    def test_a_shared_catalogue_tests_that_it_is_read_only_outside_the_system_tenant(self):
+        text = _rendered_web(_web(web_system_owned=True),
+                             "cpp_http_route_web_records_tests.cpp.mustache")
+        assert 'entry.find("\\"writable\\":false")' in text
+
+
+from codegen.org_loader import entity_web_classification_plan  # noqa: E402
+
+
+def _columns(*names):
+    """Columns as the loader hands them over, each with its C++ type."""
+    types = {"display_order": "int"}
+    return [{"name": n, "cpp_type": types.get(n, "std::string")} for n in names]
+
+
+def _list(**declared):
+    """A code list in the classification screen's registry."""
+    entity = _entity()
+    entity["primary_key"] = {"column": "code", "columns": [_key("code")]}
+    entity["columns"] = _columns("name", "description", "display_order")
+    entity["web_classification"] = "widget-kinds"
+    entity["web_classification_topic"] = "widgets"
+    entity.update(declared)
+    return entity
+
+
+class TestTheClassificationRoutes:
+    """A model that names a classification list gets the screen's list routes."""
+
+    def test_a_model_that_names_no_list_has_no_classification_routes(self):
+        assert entity_web_classification_plan(_entity()) is None
+
+    def test_the_shape_follows_the_write_record(self):
+        assert entity_web_classification_plan(_list())["shape"] == "named"
+        ordered = _list(columns=_columns("description", "display_order"))
+        assert entity_web_classification_plan(ordered)["shape"] == "ordered"
+        plain = _list(columns=_columns("description"))
+        assert entity_web_classification_plan(plain)["shape"] == "plain"
+
+    def test_a_list_is_addressed_by_its_key_and_labelled_in_its_domain(self):
+        plan = entity_web_classification_plan(_list())
+        assert plan["base"] == "/api/classifications/widget-kinds"
+        assert plan["code_domain"] == "widget"
+        assert plan["editable"] is True
+
+    def test_a_list_of_ore_spellings_is_read_only(self):
+        plan = entity_web_classification_plan(_list(web_classification_read_only=True))
+        assert plan["editable"] is False
+
+    def test_a_list_without_a_topic_is_refused(self):
+        import pytest
+        with pytest.raises(ValueError, match="topic"):
+            entity_web_classification_plan(_list(web_classification_topic=""))
+
+    def test_a_list_keyed_by_anything_but_its_code_is_refused(self):
+        import pytest
+        entity = _list(primary_key={"column": "type", "columns": [_key("type")]})
+        with pytest.raises(ValueError, match="code alone"):
+            entity_web_classification_plan(entity)

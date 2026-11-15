@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_FEED_FACTORY_HPP
 
 #include "fx_spot_feed.hpp"
+#include "fx_vol_surface_feed.hpp"
 #include "ir_curve_feed.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -70,8 +71,9 @@ struct feed_build_context final {
     /// The clock every feed asks for the date it starts from, so no two feeds start from two days.
     std::shared_ptr<const ores::marketdata::domain::market_clock> clock =
         std::make_shared<ores::marketdata::domain::system_market_clock>();
-    /// The run's one loop: it owns the market and decides when every feed ticks.
-    ores::analytics::quant::service::tick_scheduler& scheduler;
+    /// The run's one market: its loop decides when every feed ticks, and its values are
+    /// what the feeds publish for each other.
+    ores::analytics::quant::service::run_market& market;
 };
 
 /**
@@ -108,6 +110,8 @@ ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::fx_spot_generation_config& config);
 ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::ir_curve_generation_config& config);
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::fx_vol_surface_feed& config);
 
 struct fx_spot_feed_build_input final {
     ores::synthetic::domain::fx_spot_generation_config config;
@@ -142,12 +146,15 @@ struct ir_curve_feed_build_input final {
      * generator is built, since a pillar with no id has nowhere to publish.
      */
     std::vector<ir_pillar_quote_target> adapter_targets;
+    /// The IR class policy a curve of price source "fixing" starts under.
+    feed::calibration_policy policy;
 };
 
 /**
  * @brief One of the per-kind build inputs, discriminated by the kind string passed to make().
  */
-using feed_build_input = std::variant<fx_spot_feed_build_input, ir_curve_feed_build_input>;
+using feed_build_input = std::
+    variant<fx_spot_feed_build_input, ir_curve_feed_build_input, fx_vol_surface_feed_build_input>;
 
 /**
  * @brief Maps a feed kind to the producer builder that constructs that kind from its persisted

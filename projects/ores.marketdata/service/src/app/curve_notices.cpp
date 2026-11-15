@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -133,7 +133,7 @@ std::vector<std::string> readers_of(const ores::database::context& ctx,
     std::set<std::string> readers;
 
     if (!party_id.is_nil()) {
-        const auto rows = ores::database::repository::execute_parameterized_string_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select distinct a.id::text"
             " from ores_iam_account_parties_tbl ap"
@@ -249,6 +249,27 @@ void announce_withdrawal(const ores::database::context& ctx,
                   {.name = "withdrawn_by", .value = withdrawn.withdrawn_by},
                   {.name = "reason", .value = withdrawn.withdrawn_reason_code}},
                  curve_link);
+}
+
+void announce_surface_publish(const ores::database::context& ctx,
+                              const domain::fx_vol_surface_publish& published,
+                              std::optional<std::chrono::system_clock::time_point> previous_as_of) {
+    repository::market_series_repository repo;
+    const auto series = repo.read_latest(ctx, boost::uuids::to_string(published.output_series_id));
+    const auto surface = series.empty() ?
+                             "series " + boost::uuids::to_string(published.output_series_id) :
+                             series.front().oresmd_uri;
+    raise_notice(ctx,
+                 surface_published_kind_code,
+                 published.party_id,
+                 {{.name = "surface", .value = surface},
+                  {.name = "party", .value = party_name_of(ctx, published.party_id)},
+                  {.name = "as_of", .value = instant_of(published.as_of)},
+                  {.name = "published_at", .value = instant_of(published.published_at)},
+                  {.name = "publisher", .value = published.published_by},
+                  {.name = "request", .value = boost::uuids::to_string(published.request_id)},
+                  {.name = "previous_as_of", .value = instant_of(previous_as_of)}},
+                 "market-data/published-surfaces/" + escape_path(surface));
 }
 
 }

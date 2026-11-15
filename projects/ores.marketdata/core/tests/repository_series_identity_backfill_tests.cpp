@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
@@ -43,12 +43,12 @@ using ores::testing::database_helper;
 
 /// Inserts a series the way the data quality publish does: in SQL, which cannot run the
 /// codec, so the series has no identity row. Returns its id.
-std::string insert_without_identity(ores::database::context ctx,
+std::string insert_without_identity(const ores::database::context& ctx,
                                     const boost::uuids::uuid& party,
                                     const std::string& uri) {
     const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());
     auto lg(make_logger(test_suite));
-    ores::database::repository::execute_parameterized_multi_column_query(
+    ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "insert into ores_marketdata_market_series_tbl ("
         "    tenant_id, id, version, party_id, oresmd_uri, series_subclass,"

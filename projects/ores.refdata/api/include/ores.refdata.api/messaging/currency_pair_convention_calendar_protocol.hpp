@@ -332,7 +332,7 @@ struct list_by_pair_code_currency_pair_convention_calendars_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendar_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"pair_code", &currency_pair_convention_calendar_key::pair_code},
         utility::codec::field{"calendar_code",
                               &currency_pair_convention_calendar_key::calendar_code},
@@ -349,7 +349,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendar_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendar_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"pair_code", &currency_pair_convention_calendar_write::pair_code},
         utility::codec::field{"calendar_code",
                               &currency_pair_convention_calendar_write::calendar_code},
@@ -366,7 +366,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendar_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendar_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &currency_pair_convention_calendar_change::write},
         utility::codec::field{"precondition",
                               &currency_pair_convention_calendar_change::precondition},
@@ -383,7 +383,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendar_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendar_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_pair_convention_calendar_removal::key},
         utility::codec::field{"precondition",
                               &currency_pair_convention_calendar_removal::precondition},
@@ -400,7 +400,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendar_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendar_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_pair_convention_calendar_lookup::key},
         utility::codec::field{
             "currency_pair_convention_calendar",
@@ -418,7 +418,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendar_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendars_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"pair_code", &currency_pair_convention_calendars_filter::pair_code},
         utility::codec::field{"pair_code_one_of",
                               &currency_pair_convention_calendars_filter::pair_code_one_of},
@@ -435,7 +435,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendars_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_convention_calendar_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &currency_pair_convention_calendar_event::event_id},
         utility::codec::field{"key", &currency_pair_convention_calendar_event::key},
         utility::codec::field{"action", &currency_pair_convention_calendar_event::action},
@@ -456,7 +456,7 @@ wire_fields(std::type_identity<currency_pair_convention_calendar_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_pair_convention_calendars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_currency_pair_convention_calendars_request::offset},
         utility::codec::field{"limit", &list_currency_pair_convention_calendars_request::limit},
         utility::codec::field{"order", &list_currency_pair_convention_calendars_request::order},
@@ -474,7 +474,7 @@ wire_fields(std::type_identity<list_currency_pair_convention_calendars_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_pair_convention_calendars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_currency_pair_convention_calendars_response::result},
         utility::codec::field{
             "currency_pair_convention_calendars",
@@ -493,7 +493,7 @@ wire_fields(std::type_identity<list_currency_pair_convention_calendars_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_pair_convention_calendar_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_currency_pair_convention_calendar_request::key},
     };
 }
@@ -508,7 +508,7 @@ wire_fields(std::type_identity<get_currency_pair_convention_calendar_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_pair_convention_calendar_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_currency_pair_convention_calendar_response::result},
         utility::codec::field{
             "currency_pair_convention_calendar",
@@ -526,7 +526,7 @@ wire_fields(std::type_identity<get_currency_pair_convention_calendar_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_currency_pair_convention_calendars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_currency_pair_convention_calendars_request::keys},
     };
 }
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<get_many_currency_pair_convention_calendars_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_currency_pair_convention_calendars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_currency_pair_convention_calendars_response::result},
         utility::codec::field{"entries",
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<get_many_currency_pair_convention_calendars_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_currency_pair_convention_calendar_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_currency_pair_convention_calendar_request::change},
         utility::codec::field{"intent", &put_currency_pair_convention_calendar_request::intent},
     };
@@ -575,7 +575,7 @@ wire_fields(std::type_identity<put_currency_pair_convention_calendar_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_currency_pair_convention_calendar_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_currency_pair_convention_calendar_response::result},
         utility::codec::field{
             "currency_pair_convention_calendar",
@@ -593,7 +593,7 @@ wire_fields(std::type_identity<put_currency_pair_convention_calendar_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_currency_pair_convention_calendars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_currency_pair_convention_calendars_request::changes},
         utility::codec::field{"intent",
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<put_many_currency_pair_convention_calendars_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_currency_pair_convention_calendars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_currency_pair_convention_calendars_response::result},
         utility::codec::field{"currency_pair_convention_calendars",
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<put_many_currency_pair_convention_calendars_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_currency_pair_convention_calendar_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_currency_pair_convention_calendar_request::removal},
         utility::codec::field{"intent", &delete_currency_pair_convention_calendar_request::intent},
@@ -647,7 +647,7 @@ wire_fields(std::type_identity<delete_currency_pair_convention_calendar_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_currency_pair_convention_calendar_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_currency_pair_convention_calendar_response::result},
     };
 }
@@ -662,7 +662,7 @@ wire_fields(std::type_identity<delete_currency_pair_convention_calendar_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_pair_convention_calendars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_currency_pair_convention_calendars_request::removals},
         utility::codec::field{"intent",
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<delete_many_currency_pair_convention_calendars_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_pair_convention_calendars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_currency_pair_convention_calendars_response::result},
     };
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<delete_many_currency_pair_convention_calendars_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_pair_code_currency_pair_convention_calendars_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "pair_code", &list_by_pair_code_currency_pair_convention_calendars_request::pair_code},
         utility::codec::field{"scope",
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<list_by_pair_code_currency_pair_convention_calend
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_pair_code_currency_pair_convention_calendars_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_pair_code_currency_pair_convention_calendars_response::result},
         utility::codec::field{"currency_pair_convention_calendars",

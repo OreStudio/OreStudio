@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: EE3F60A3-2823-42FC-9C93-FF558B905B66
+:END:
+#+title: Task: State staleness on the server
+#+description: Make the staleness threshold configuration and state age_seconds and stale on every value block, so no client keeps its own threshold.
+#+type: task
+#+level: s1
+#+filetags: :port_the_market_data_screens:sprint_30:v0:
+#+owner: marco
+#+branch: feature/port-the-market-data-screens
+#+pr: 4728
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the staleness threshold configuration and state age_seconds and stale
+on every value block, so no client keeps its own threshold.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- The threshold is configuration per instrument kind, with hedgr's fx and ir
+  values as the starting point.
+- Every value block carries as_of, age_seconds and stale.
+- age_seconds is max(0, server_now - as_of) in whole seconds.
+- stale is the server's verdict and no client recomputes it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The call-site half is in: the catalogue, the ladder, the montage and the
+  surface all ask =staleness_policy=, and no read carries a literal hour.
+- The threshold is still one number for the whole service. It cannot move into
+  the options struct as it stands: =run_host_async= parses the configuration and
+  constructs the service in one call, so an option would be inert. The variable
+  is the honest interim.
+- A publication with no instant is stale: the read asks =is_stale= with no
+  instant, which the policy answers with stale.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4728][#4728]] | [agile] Close the staleness task and the port |
+| [[https://github.com/OreStudio/OreStudio/pull/4724][#4724]] | [marketdata] State the staleness threshold for each instrument kind |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Closed with #4724 (merge commit 5b0fd75da0). The policy states a threshold for each
+instrument kind; the service states them in its options, taken from the component's
+model so the parser binds them; every read asks for its own kind, and the catalogue
+for each source's asset class. Zero removes a kind's value, so the deployment's one
+number answers for it.
+
+The two numbers are the deployment's and are empty by default: the mechanism is
+in place, and the story's recorded cadence rule is per source, not per kind, so it
+was not copied across.
+
+* Notes added at review
+
+- The two values are the deployment's: =stale_seconds_ir= and =stale_seconds_fx=,
+  empty by default, answered by the deployment's one number until they are stated.
+  The story records a cadence rule per *source* (5 seconds while a live source
+  publishes, 5 days for an end-of-day one), which is a different axis from the
+  instrument kind, so it was not copied across as if it were the answer.
+- The published surface still states =as_of= and =stale= but no =age_seconds=.
+  Adding it is a contract change on that response, and was left for its own task.

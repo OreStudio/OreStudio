@@ -25,6 +25,7 @@ import {
     type CalibratedFeed,
     type Calibration,
     type CalibrationCandidate,
+    type IrCurveCoverageRow,
 } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
@@ -77,8 +78,10 @@ import {
 import {
     CALIBRATED_CLASSES,
     FILTERS,
+    IR_CALIBRATED_CLASS,
     calibrationEntries,
     filterOf,
+    irCoverageState,
     moveProvider,
     outcomeOf,
     overrides,
@@ -210,6 +213,97 @@ function Loading({
     );
 }
 
+/**
+ * The class's IR curve coverage: one row per currency, with the source it reads, the bootstrap
+ * config that builds its curve and the latest curve published, or the first gap that stops it
+ * and the reason the system recorded for that gap.
+ */
+function IrCoverage({ rows }: { readonly rows: readonly IrCurveCoverageRow[] }): ReactNode {
+    const { t, language } = useTranslation();
+    return (
+        <section className="space-y-3" data-ir-coverage>
+            <div>
+                <h2 className="font-medium">{t('marketdata.calibration.ir.title')}</h2>
+                <p className="text-sm text-ink-muted">{t('marketdata.calibration.ir.lead')}</p>
+            </div>
+            <table className="w-full text-sm">
+                <thead className="text-left text-xs text-ink-faint">
+                    <tr>
+                        <th className="py-2">{t('marketdata.calibration.ir.currency')}</th>
+                        <th className="py-2">{t('marketdata.calibration.ir.source')}</th>
+                        <th className="py-2 text-right">{t('marketdata.calibration.ir.window')}</th>
+                        <th className="py-2">{t('marketdata.calibration.ir.bootstrap')}</th>
+                        <th className="py-2">{t('marketdata.calibration.ir.published')}</th>
+                        <th className="py-2">{t('marketdata.calibration.ir.stateHeader')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.length === 0 ? (
+                        <tr>
+                            <td colSpan={6} className="py-3 text-ink-muted">
+                                {t('marketdata.calibration.ir.empty')}
+                            </td>
+                        </tr>
+                    ) : (
+                        rows.map((row) => {
+                            const state = irCoverageState(row);
+                            return (
+                                <tr
+                                    key={row.currency_code}
+                                    data-ir-currency={row.currency_code}
+                                    className="border-t border-line-subtle align-top"
+                                >
+                                    <td className="py-2 font-mono tabular-nums">
+                                        {row.currency_code}
+                                    </td>
+                                    <td className="py-2">
+                                        {row.source_name === '' ? (
+                                            '—'
+                                        ) : (
+                                            <>
+                                                <div>{row.source_name}</div>
+                                                <div className="font-mono text-xs text-ink-faint">
+                                                    {row.provider_code}
+                                                </div>
+                                            </>
+                                        )}
+                                    </td>
+                                    <td className="py-2 text-right font-mono tabular-nums">
+                                        {row.window_days}
+                                    </td>
+                                    <td className="py-2 font-mono text-xs">
+                                        {row.bootstrap_config_name === ''
+                                            ? '—'
+                                            : row.bootstrap_config_name}
+                                    </td>
+                                    <td
+                                        className="whitespace-nowrap py-2 font-mono text-xs text-ink-muted"
+                                        title={row.published_as_of}
+                                    >
+                                        {row.published_as_of === ''
+                                            ? '—'
+                                            : formatDateTime(row.published_as_of, language)}
+                                    </td>
+                                    <td className="py-2">
+                                        <Tag tone={state.tone}>
+                                            {t(`marketdata.calibration.ir.state.${state.word}`)}
+                                        </Tag>
+                                        {row.gap_reason !== '' && (
+                                            <div className="text-xs text-ink-muted">
+                                                {row.gap_reason}
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    )}
+                </tbody>
+            </table>
+        </section>
+    );
+}
+
 /** Every feed of one asset class, with how it starts. Rows open the feed's record. */
 export function CalibrationPage(): ReactNode {
     const { t } = useTranslation();
@@ -309,7 +403,10 @@ export function CalibrationPage(): ReactNode {
                 ) : (
                     <CalibrationRun assetClass={assetClass} steps={run.steps} active={run.active} />
                 ))}
-            {tab === 'feeds' && (
+            {tab === 'feeds' && assetClass === IR_CALIBRATED_CLASS && (
+                <IrCoverage rows={data.ir_curves} />
+            )}
+            {tab === 'feeds' && assetClass !== IR_CALIBRATED_CLASS && (
                 <>
                     <Coverage calibration={data} />
                     <div className="flex flex-wrap items-center justify-between gap-3">

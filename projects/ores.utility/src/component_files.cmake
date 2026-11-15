@@ -34,6 +34,7 @@ set(files
     "program_options/common_configuration.cpp"
     "program_options/environment_mapper_factory.cpp"
     "program_options/shared_domain_registry.cpp"
+    "serialization/error_code.cpp"
     "string/short_code_generator.cpp"
     "uuid/tenant_id.cpp"
     "uuid/uuid_v7_generator.cpp"

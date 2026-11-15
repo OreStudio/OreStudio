@@ -1,0 +1,45 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A derived market object: the states of a set
+
+[*] --> Candidate : compute
+Candidate --> Candidate : compute with changed\ninputs (a new version)
+Candidate --> Raised : raise a publish\n(names the version;\nno blocking check failed)
+Raised --> Published : a stated rule closes it\n(applied in the raise's\ntransaction)
+Raised --> Approved : a person approves
+Raised --> Closed : refused, withdrawn\nor expired
+Approved --> Published : the trader applies\nwithin the apply window
+Approved --> Closed : the apply window passes,\nor the apply is refused
+Published --> Superseded : a set at the same or a\nnewer as-of is applied
+Published --> Withdrawn : a withdrawal is\napproved and applied
+Superseded --> Withdrawn : a withdrawal is\napproved and applied
+Superseded --> [*]
+Withdrawn --> [*]
+Closed --> [*]
+
+Candidate : stored, versioned, traceable
+Candidate : not consumable
+Raised : one open request\nper subject and as-of
+Published : read by as-of under\nthe read rule
+Superseded : still read for an as-of\nbefore its successor's,\nand after its successor\nis withdrawn
+Withdrawn : no read by as-of takes it;\na binding still names it
+Closed : nothing was published
+
+@enduml

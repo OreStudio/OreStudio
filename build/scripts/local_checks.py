@@ -323,6 +323,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "modeling", "codegen", "sql", "cpp", "services", "web", "plugins", "tooling", "ci"),
     ),
     Check(
+        id="no-committed-credentials",
+        title="No file git would commit holds a public source secret of .env",
+        argv=("python3", "build/scripts/check_no_committed_credentials.py"),
+        classes=("docs", "modeling", "codegen", "sql", "cpp", "services", "web", "plugins", "tooling", "ci"),
+        fix="Take the value out of the file. A provider names its key as env:NAME,"
+            " and the key itself lives only in .env.",
+    ),
+    Check(
         id="no-pr-triggers",
         title="No workflow triggers on a pull request",
         argv=("python3", "build/scripts/check_no_pr_triggers.py"),
@@ -399,6 +407,19 @@ CATALOGUE: tuple[Check, ...] = (
         argv=("python3", "build/scripts/check_pattern_uses.py"),
         classes=("docs", "tooling"),
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
+    ),
+    Check(
+        id="trade-type-coverage",
+        title="The trade type coverage page matches its sources",
+        argv=("python3", "build/scripts/generate_trade_type_coverage.py", "--check"),
+        classes=("docs", "modeling", "tooling", "cpp"),
+        paths=("doc/knowledge/domain/ore_trade_type_coverage.org",
+               "doc/agile/versions/v0/sprint_30/hold_every_product_type_the_engine_supports/*",
+               "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org",
+               "projects/ores.synthetic/core/tests/data/generated_trades/*",
+               "external/ore/catalogue/*",
+               "build/scripts/generate_trade_type_coverage.py"),
+        fix="Run python3 build/scripts/generate_trade_type_coverage.py --write and commit the page.",
     ),
     # The generated tables are the only copy of the schema's shape we keep, so
     # a hand edit or a schema change that the tables did not follow is the same
@@ -1106,6 +1127,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("cpp",),
     ),
     Check(
+        id="forward-declarable-includes",
+        title="No header includes the definition of a type it only names",
+        argv=("python3", "build/scripts/check_forward_declarable_includes.py"),
+        classes=("cpp", "codegen"),
+        fix="Take the type's declaration as forward_declarable_types.list names"
+            " it, or record the line in forward_declarable_includes.baseline.",
+    ),
+    Check(
         id="format",
         title="The changed C++ files are clang-formatted",
         argv=(
@@ -1161,24 +1190,49 @@ CATALOGUE: tuple[Check, ...] = (
             " commit the result.",
     ),
     Check(
-        id="index-conventions-seed",
-        title="The built-in index conventions match the mined table",
+        id="conventions-dataset",
+        title="The conventions dataset's populate script is what its table generates",
         argv=(
             "bash",
             "-c",
-            "./tools/ore_conventions/generate_builtin_index_conventions.py"
+            "projects/ores.codegen/venv/bin/python"
+            " projects/ores.seeder/datasets/conventions/generate_sql.py"
             " && git diff --exit-code --"
-            " projects/ores.sql/populate/refdata/"
-            "refdata_builtin_index_conventions_populate.sql",
+            " projects/ores.sql/populate/refdata/refdata_conventions_artefact_populate.sql",
+        ),
+        classes=("sql", "tooling"),
+        paths=(
+            "projects/ores.seeder/datasets/conventions/*",
+            "projects/ores.sql/populate/refdata/refdata_conventions_artefact_populate.sql",
+        ),
+        fix="Edit projects/ores.seeder/datasets/conventions/conventions.tsv, run its "
+            "generate_sql.py, and commit both.",
+    ),
+    Check(
+        id="conventions-coverage",
+        title="The conventions dataset holds every convention ORE holds, or says why not",
+        argv=(
+            "bash",
+            "-c",
+            "projects/ores.codegen/venv/bin/python tools/ore_conventions/extract.py"
+            " && python3 projects/ores.seeder/datasets/conventions/propose.py --check",
         ),
         classes=("sql", "tooling"),
         paths=(
             "tools/ore_conventions/*",
-            "external/ore/catalogue/index_builtins.jsonl",
-            "projects/ores.sql/populate/refdata/refdata_builtin_index_conventions_populate.sql",
+            "external/ore/examples/*",
+            "projects/ores.seeder/datasets/conventions/*",
         ),
-        fix="Run tools/ore_conventions/generate_builtin_index_conventions.py and "
-            "commit the result.",
+        fix="Add or change the row in conventions.tsv, or record why the dataset keeps "
+            "its own row in propose_decisions.tsv; see methodology.txt.",
+    ),
+    Check(
+        id="conventions-generator-tests",
+        title="The conventions dataset generator's tests pass",
+        argv=("projects/ores.codegen/venv/bin/python",
+              "projects/ores.seeder/datasets/conventions/test_generate_sql.py"),
+        classes=("sql", "tooling"),
+        paths=("projects/ores.seeder/datasets/conventions/*",),
     ),
     Check(
         id="ore-output-catalogue",

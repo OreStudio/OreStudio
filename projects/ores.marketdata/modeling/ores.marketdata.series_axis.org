@@ -104,13 +104,13 @@ has. This read filters by the series alone, so a caller that checks a batch of
 points reads the shapes of those points' series and nothing else.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::series_axis> read_latest_for_series(context ctx,
+std::vector<domain::series_axis> read_latest_for_series(const context& ctx,
     const std::vector<std::string>& series_ids);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::series_axis>
-series_axis_repository::read_latest_for_series(context ctx,
+series_axis_repository::read_latest_for_series(const context& ctx,
                                                const std::vector<std::string>& series_ids) {
     if (series_ids.empty())
         return {};

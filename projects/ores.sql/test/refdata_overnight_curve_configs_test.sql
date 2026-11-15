@@ -24,6 +24,10 @@
  * engine's code, ladders the seven pillars every curve shares, reads one ladder
  * series of the synthetic Bloomberg feed, and writes its own output series.
  *
+ * The seeded set holds the currency's projection curves too -- one per IBOR
+ * index, each naming the overnight curve it discounts off -- so the assertions
+ * below select the fundings, which is the set they are about.
+ *
  * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/refdata_overnight_curve_configs_test.sql
  */
 
@@ -38,6 +42,7 @@ select c.id, c.name, c.currency_code, c.day_count_convention, c.output_series_id
 from ores_refdata_ir_curve_bootstrap_configs_tbl c
 where c.tenant_id = ores_utility_system_tenant_id_fn()
   and c.change_reason_code = 'system.initial_load'
+  and c.curve_family_role = 'FUNDING'
   and c.valid_to = ores_utility_infinity_timestamp_fn();
 
 select is(
@@ -60,10 +65,12 @@ select is(
     (select count(*)::int from t_configs t
      where t.name <> 'USD-SOFR-FOMC'
        and not exists (
-           select 1 from ores_refdata_overnight_index_conventions_tbl o
+           select 1 from ores_dq_overnight_index_conventions_artefact_tbl o
+           join ores_dq_datasets_tbl d
+             on d.id = o.dataset_id
+            and d.code = 'refdata.conventions'
+            and d.valid_to = ores_utility_infinity_timestamp_fn()
            where o.id = t.name
-             and o.tenant_id = ores_utility_system_tenant_id_fn()
-             and o.valid_to = ores_utility_infinity_timestamp_fn()
              and ((t.day_count_convention = 'A360' and o.day_count_fraction = 'ACT/360')
                or (t.day_count_convention = 'A365F' and o.day_count_fraction = 'ACT/365.FIXED')))),
     0,

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-commodity-trades-through-builders
+#+pr: 4612
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,26 +26,62 @@ Every commodity trade type the generator books is built by its trade builder, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- convention_lookup answers what each commodity builder asks.
-- The commodity planner draws values and calls the builders; its construct_* functions and *_terms structs are deleted.
-- The commodity entries leave the recorded trades' known lists, and the recorded files change in the same commit.
-- The ORE engine test reads and builds every booked commodity type.
-- The roundtrip tests read every ORE sample trade of each booked commodity type and write back every element ORE needs.
+- The eight commodity types the projection writes, forward, option, average
+  price option, option strip, swap, swaption, variance swap and basket option,
+  are built by their builders in =commodity_builders.hpp=, and the planner
+  calls them.
+- Their entries leave the recorded trades' known lists, and the recorded files
+  change in the same commit.
+- The ORE engine test builds each of the eight types.
+- The other commodity types move to
+  [[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the remaining commodity products]],
+  which also deletes the old constructors.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Steps 1 and 2 are this task. Steps 3 to 5 moved to
+[[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the remaining commodity products]],
+because each of those types needs a projection writer and reader before a
+builder can help it, and one PR for all of it would be too large to review.
+
+The commodity family differs from equity in one way that sets the order of
+work. The projection writes only eight of the twenty-five booked types:
+forward, option, swap, swaption, variance swap, average price option, option
+strip and basket option. The other types never get their product element, so
+ORE stops at "data node not found". Each step below ends in a test run.
+
+1. Builders in =commodity_builders.hpp=, following the equity builders. A
+   builder fills =commodity_instrument_data= with the product's row and the
+   shared option, schedule, barrier, underlying and strike rows. A commodity
+   is an oresmd commodity address; no builder or planner spells an ORE name.
+2. The eight projected types first. The planner calls their builders, and
+   the trade errors ORE reports go: the forward's settlement currency, the
+   option and swaption's settlement type, the strip's schedule end date, the
+   swap's legs and the basket option's payoff type.
+3. The scripted products ORE builds from the equity and FX classes with a
+   commodity underlying: accumulator, TaRF, worst-of basket swap, rainbow,
+   best entry, generic and window barrier, strike resettable, basket variance
+   swap, Asian, digital and digital average price options, the forward
+   volatility agreement, the position and the spread option. Each gets a
+   writer and a reader in the projection, built on the shared blocks the
+   equity projection uses. The carrier gains range bounds and basket periods
+   where a product needs them.
+4. =CommodityPairwiseVarianceSwap= leaves the generator: ORE has no builder
+   for it. The reason is recorded beside the type list, as for
+   =EquityOutperformanceOption=.
+5. The =construct_commodity_*= functions, their terms and the plan's
+   =commodity_terms= are deleted. The trades are recorded again, and the
+   known lists lose the commodity lines the builders settle. Errors left are
+   market data, which belongs to the market data task.
 
 * Measurements
 
@@ -78,12 +114,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4612][#4612]] | [trading] Build the projected commodity types through builders |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Hard-coded payment lag and calendar | commodity_builders.cpp | Accept | A comment states that every ORE commodity example uses them, and that another exchange needs them as terms. |
+| 2 | Hard-coded schedule calendar | commodity_builders.cpp | Decline | Unadjusted periods rolled back from the end are what ORE's commodity examples state. |
+| 3 | One unit for a whole basket | commodity_builders.cpp | Accept | A basket option states no unit, because its members may count different ones; tested. |
+| 4 | Basket checks run in another order | commodity_builders.cpp | Accept | Currency, amount and strike are checked first, as in every other builder. |
+| 5 | Swaption expiring on the swap start | commodity_builders.cpp | Decline | ORE requires the expiry no later than the start, so the same day is valid. |
+| 6 | Option strip leg direction | commodity_builders.cpp | Accept | ORE sets the leg as a receiver and reads direction from the strikes; a test pins this. |
+| 7 | Strike side mapped inline | commodity_builders.cpp | Accept | A helper maps the option kind to the strike side. |
+| 8 | Quantity stored as a double | commodity_builders.cpp | Decline | The schema column is a double, and the decimal is checked positive first. |
 
 * Result
+
+The eight commodity types the ORE projection writes are built by their
+builders in =commodity_builders.hpp=: forward, option, average price option,
+option strip, swap, swaption, variance swap and basket option. The planner
+calls them, and ORE builds each one with no error.
+
+The trade errors this task fixed:
+
+- Every commodity trade is in its commodity's quotation currency, so the
+  forward is no longer a quanto cash flow ORE refuses.
+- The option and swaption settle in cash.
+- The option strip and the swap state their legs and schedules as the shared
+  leg rows, so each schedule has an end date.
+- The basket option pays a vanilla payoff.
+
+A commodity is an oresmd address in every built row, and the row keeps the
+catalogue unit its quantity counts. The other seventeen commodity types keep
+their constructors. They move to
+[[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the remaining commodity products]].

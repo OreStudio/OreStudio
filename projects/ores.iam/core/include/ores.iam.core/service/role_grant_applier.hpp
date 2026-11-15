@@ -46,7 +46,8 @@ private:
     }
 
 public:
-    role_grant_applier(ores::database::context ctx, ores::eventing::service::event_bus* event_bus);
+    role_grant_applier(const ores::database::context& ctx,
+                       ores::eventing::service::event_bus* event_bus);
 
     /**
      * @brief Grants every approved role not yet held; answers how many.

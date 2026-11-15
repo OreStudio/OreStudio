@@ -125,10 +125,13 @@ struct report_error_event final {
     std::string scope_code = "Report";
 
     /**
-     * @brief How bad the error is: error or warning. The engine states this per message as its
+     * @brief How bad the row is: error, warning or info. The engine states this per message as its
      * category, and an ALERT the engine wrote is an error here. A warning is an error the engine
      * chose to continue past, which is why it is the same table: the repair is the reader's to
-     * judge, and hiding it would be the mistake that produced this task.
+     * judge, and hiding it would be the mistake that produced this task. An info row is a notice
+     * the engine wrote: the run keeps every line it is given, so the account of what the engine was
+     * handed is on the run rather than only in a log file, and the engine's five levels become the
+     * screen's four.
      *
      * A synthetic row is a warning rather than an error: the severity is a closed set the store
      * checks, and a fixture that drew one at random would be refused.
@@ -182,6 +185,26 @@ struct report_error_event final {
      * they are kept rather than dropped.
      */
     std::string detail;
+
+    /**
+     * @brief Where the engine said it, as its own line states it: the source file and line, such as
+     * OREAnalytics/orea/app/parameters.cpp:144. It is the engine's own account of which part of
+     * itself spoke, so a reader can tell a parameter notice from a market-data failure at a glance
+     * instead of reading the message for a path. A row that reached no engine line, such as the
+     * run's own failure, states none.
+     */
+    std::string location;
+
+    /**
+     * @brief The log the row came from, as the node named it: log.txt, the engine's own log;
+     * log_structured.json, the same account with each message's record named; engine.log, the
+     * stream the engine printed and the node captured, which is where a run states why it stopped
+     * before it could log; or the run's package, whose rows say a trade was left out of the run. A
+     * run leaves more than one log and each says something the others do not, so the run keeps them
+     * all and this column is what tells them apart: one fact stated in two files is not two
+     * failures, and a reader who cannot see the file cannot tell the difference.
+     */
+    std::string filename;
 
     /**
      * @brief When the errors were collected from the run's output. There is no engine instant to

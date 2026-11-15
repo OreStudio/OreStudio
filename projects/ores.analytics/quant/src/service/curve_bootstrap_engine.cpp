@@ -43,23 +43,6 @@ double interpolation_time_metric(std::chrono::year_month_day a, std::chrono::yea
 
 }
 
-bootstrap_curve_role_code parse_bootstrap_curve_role_code(const std::string& code) {
-    const auto parsed = magic_enum::enum_cast<bootstrap_curve_role_code>(code);
-    if (!parsed)
-        throw std::invalid_argument("parse_bootstrap_curve_role_code: unsupported curve_role '" +
-                                    code + "' -- expected DEPOSIT, FRA, or SWAP");
-    return *parsed;
-}
-
-interpolation_method_code parse_interpolation_method_code(const std::string& code) {
-    const auto parsed = magic_enum::enum_cast<interpolation_method_code>(code);
-    if (!parsed)
-        throw std::invalid_argument(
-            "parse_interpolation_method_code: unsupported interpolation_method '" + code +
-            "' -- expected LOG_LINEAR_DISCOUNT, FLAT_FORWARD_THEN_LOG_LINEAR, or CUBIC_SPLINE");
-    return *parsed;
-}
-
 double curve_bootstrap_engine::interpolate_discount_factor(
     const std::vector<bootstrapped_point>& points,
     std::chrono::year_month_day query_date,

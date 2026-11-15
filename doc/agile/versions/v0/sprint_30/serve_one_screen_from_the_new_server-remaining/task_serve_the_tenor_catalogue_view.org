@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-tenor-catalogue-view
+#+pr: 4647
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve these composed views from ores.refdata: the tenor catalogue. Each view sta
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -42,9 +42,27 @@ Serve these composed views from ores.refdata: the tenor catalogue. Each view sta
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serve =GET /api/tenors/catalogue= from ores.http, as the synthetic and IAM views
+were served.
+
+| View | Computation | Cache policy |
+|------+-------------+--------------|
+| The tenor catalogue | three whole list reads: tenors, conventions, schedules | =ETag=, revalidated at each read |
+
+Decisions:
+
+- *Owner and place.* The view lives in =tenor_screen_routes=, beside the tenors
+  screen's operations in =ores.http.refdata=, because that screen calls it.
+- *Schema.* =tenor_catalogue= is a model of the three domain lists, published
+  as the route's response and written by the codec. The rows are the domain
+  rows the BFF passed on from the service.
+- *Order.* The service will not order a tenor list by its sort order, so the
+  view sorts the tenors by it, stable, as the BFF did: O/N before T/N before 1M.
+- *Cache policy.* The inventory stated "stale after 5 min". The tenors screen
+  writes tenors and conventions and reads the catalogue again, and the web
+  client fetches with the browser's cache, so a =max-age= would show the
+  catalogue from before that write. It is revalidated at each read instead,
+  as the IAM views and the folder tree are.
 
 * Measurements
 
@@ -77,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4647][#4647]] | [http] Serve the tenor catalogue composed view |
 
 * Review
 
@@ -86,3 +104,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tenor catalogue is served by ores.http at the BFF's address, a published
+model of the three lists with the tenors in their own order and a revalidated
+=ETag=. Tests prove the order, the answer's member names and that the route
+reaches the service.
+
+Proved live on a freshly provisioned Acme deployment: the catalogue answers
+200 with 46 tenors in their own order, 4 conventions and 2 schedules, with
+=private, no-cache=, the =Vary= and the =ETag=; the same tag answers 304 with
+no body; no session answers 401. Against the BFF's answer it is equal member
+for member once nulls are set aside: the BFF writes null for an empty optional,
+as the msgpack wire does, where the JSON codec leaves the member out. That
+difference holds for every C++ answer, not this view alone, and the tenors
+screen reads a missing multiplier as the text undefined, so it is raised as its
+own decision rather than worked around here.
+
+Component audit: the task touched ores.http (the refdata part). The view lives
+in the tenors screen's unit; =validate_docs.sh= is run before the pull request.
+

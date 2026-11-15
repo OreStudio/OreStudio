@@ -289,3 +289,4 @@ The table below uses the ORE quote-key taxonomy from
 - [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — the natural arbitrage-removal companion to GMM generation.
 - [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — fast surrogate pricer for equity/FX option surfaces.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] — completes: the joint mixture in continuous time, its components as regime states and its covariances as factor loadings, for feeds that share no grid. It also cites Kienitz's later work on surfaces and heavy tails (2026).

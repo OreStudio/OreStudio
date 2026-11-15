@@ -16,17 +16,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ore_example_conventions.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/xml/value_differ.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -34,8 +40,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <cstdlib>
 #include <filesystem>
+#include <format>
 #include <map>
 #include <set>
 #include <sstream>
@@ -63,6 +69,7 @@ namespace fs = std::filesystem;
 using namespace ores::logging;
 using namespace ores::synthetic;
 using namespace ores::synthetic::service;
+using namespace ores::synthetic::tests;
 using ores::ore::xml::document;
 using ores::platform::filesystem::file;
 
@@ -82,46 +89,29 @@ const boost::uuids::uuid export_trader_account =
 /// How many trades of each type a recorded portfolio holds.
 constexpr std::uint32_t trades_per_type = 2;
 
-const std::vector<std::string> asset_classes = {
-    "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"};
+/// The classes a planner draws, as the strings the scope and the planners take.
+const std::vector<std::string> asset_classes = [] {
+    std::vector<std::string> codes;
+    for (const auto code : planned_asset_classes())
+        codes.emplace_back(code);
+    return codes;
+}();
 
 /*
  * A scope of the class on one book. A planner draws its codes by the slot's
  * position, so a book of twice its code count states each code twice.
  */
 domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
-    domain::trade_generation_scope scope;
+    auto scope = trade_generation_scope_recipe();
     scope.config_id = export_config_id;
     scope.party_id = export_party_id;
     scope.asset_class_code = asset_class_code;
-    scope.min_tenor_code = "1Y";
-    scope.max_tenor_code = "10Y";
-    scope.min_notional = 100000.0;
-    scope.max_notional = 10000000.0;
-    scope.as_of_date = std::chrono::year{2026} / 1 / 2;
-    scope.seed = 7;
     scope.trades_per_book =
         trades_per_type * static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {book};
     scope.counterparty_ids = {export_bank, export_second_bank};
     scope.issuer_ids = {export_bank, export_second_bank};
     scope.traders = {domain::trade_population_trader{export_trader_account, "trader.one"}};
-    scope.currency_code = "EUR";
-    scope.equity_underlyings = {
-        domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
-        domain::equity_underlying_reference{.code = "MSFT.O", .kind = "share", .currency = "USD"},
-        domain::equity_underlying_reference{
-            .code = ".STOXX50E", .kind = "index", .currency = "EUR"},
-        domain::equity_underlying_reference{
-            .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
-    scope.commodities = {
-        domain::commodity_reference{.code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
-        domain::commodity_reference{
-            .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
-    scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
-    scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
-    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
-    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     return scope;
 }
 
@@ -135,7 +125,7 @@ void state_keys(ores::trading::domain::instrument_batch& batch,
                 const std::string& trade_type) {
     const ores::trading::service::instrument_keys keys{
         trade_id, trade_type, boost::uuids::nil_uuid()};
-    std::apply(
+    ores::utility::codec::apply_fields(
         [&](const auto&... fields) {
             (
                 [&] {
@@ -149,7 +139,7 @@ void state_keys(ores::trading::domain::instrument_batch& batch,
 
 void append(ores::trading::domain::instrument_batch& into,
             const ores::trading::domain::instrument_batch& from) {
-    std::apply(
+    ores::utility::codec::apply_fields(
         [&](const auto&... fields) {
             ((into.*(fields.member))
                  .insert((into.*(fields.member)).end(),
@@ -180,14 +170,44 @@ const std::map<std::string, recorded_type>& generated() {
             for (const auto& slot : planner_for(asset_class).plan(scope).slots) {
                 auto request = trading_trade_population_writer::book_request_for(slot, scope);
                 /*
-                 * A bond's security is written before its trade and joined back
-                 * by the export reader, so the slot carries it beside the batch.
+                 * A bond's security is written before its trade, and the export
+                 * reader joins it and the trade's own rows back through
+                 * assemble_bond. The slot carries the security beside the
+                 * batch, and the batch holds only this trade's rows.
                  */
                 for (auto& bond : request.instruments.bond_instruments) {
                     if (slot.bond_issue)
                         bond.issue = *slot.bond_issue;
                     bond.call_dates = slot.bond_issue_call_dates;
                     bond.conversion_targets = slot.bond_issue_conversion_targets;
+                    const auto& batch = request.instruments;
+                    const auto first = [](const auto& rows) {
+                        using row = std::decay_t<decltype(rows.front())>;
+                        return rows.empty() ? std::optional<row>{} :
+                                              std::optional<row>{rows.front()};
+                    };
+                    ores::trading::service::bond_trade_rows trade;
+                    trade.legs = batch.bond_legs;
+                    trade.amounts = batch.bond_leg_amounts;
+                    trade.rates = batch.bond_leg_rates;
+                    trade.schedules = batch.instrument_schedules;
+                    trade.schedule_dates = batch.instrument_schedule_dates;
+                    trade.option = first(batch.instrument_options);
+                    trade.strike = first(batch.instrument_strikes);
+                    trade.forward = first(batch.bond_forwards);
+                    trade.bond_option = first(batch.bond_options);
+                    trade.trs = first(batch.bond_trs);
+                    trade.repo = first(batch.bond_repos);
+                    trade.future = first(batch.bond_futures);
+                    trade.ascot = first(batch.ascots);
+                    trade.underlyings = batch.instrument_underlyings;
+                    ores::trading::service::assemble_bond(
+                        bond,
+                        trade,
+                        {.legs = slot.bond_issue_legs,
+                         .amounts = slot.bond_issue_leg_amounts,
+                         .rates = slot.bond_issue_leg_rates,
+                         .schedules = slot.bond_issue_leg_schedules});
                 }
                 state_keys(request.instruments, slot.trade_id, slot.trade_type_code);
                 auto& trades = by_type[slot.trade_type_code];
@@ -258,8 +278,8 @@ fs::path refused_file(const std::string& type) {
 }
 
 bool updating() {
-    const auto* flag = std::getenv("ORES_UPDATE_GENERATED_TRADES");
-    return flag != nullptr && std::string_view(flag) == "1";
+    return ores::platform::environment::environment::get_value("ORES_UPDATE_GENERATED_TRADES") ==
+           "1";
 }
 
 /// The file's content, or empty when there is no file.
@@ -425,48 +445,22 @@ void check_known(const std::set<std::string>& found, const std::set<std::string>
 
 /// The generated trade types the writer refuses. Asserted exactly.
 const std::set<std::string>& known_refusals() {
-    static const std::set<std::string> known = {
-        "BalanceGuaranteedSwap",
-        "EquityOptionPosition",
-        /*
-         * The planner states these products' terms as rows of their own, which
-         * the export reader joins to the bond from the database. The batch the
-         * test exports from has no such join, so the three are refused here
-         * whatever the reports do; the database leg of the story judges them.
-         */
-        "BondFuture",
-        "BondTRS",
-        "ForwardBond",
-    };
+    /*
+     * Empty: every generated type now states what the schema requires of it, so
+     * the writer refuses none of them.
+     */
+    static const std::set<std::string> known;
     return known;
 }
 
 /// The generated trade types written with no product data. Asserted exactly.
 const std::set<std::string>& known_passthroughs() {
-    static const std::set<std::string> known = {
-        "CommodityAccumulator",
-        "CommodityAsianOption",
-        "CommodityBasketVarianceSwap",
-        "CommodityBestEntryOption",
-        "CommodityDigitalAveragePriceOption",
-        "CommodityDigitalOption",
-        "CommodityForwardVolatilityAgreement",
-        "CommodityGenericBarrierOption",
-        "CommodityPairwiseVarianceSwap",
-        "CommodityPosition",
-        "CommodityRainbowOption",
-        "CommoditySpreadOption",
-        "CommodityStrikeResettableOption",
-        "CommodityTaRF",
-        "CommodityWindowBarrierOption",
-        "CommodityWorstOfBasketSwap",
-        "CreditDefaultSwap",
-        "CreditLinkedSwap",
-        "IndexCreditDefaultSwap",
-        "IndexCreditDefaultSwapOption",
-        "IntradayPowerForward",
-        "RiskParticipationAgreement",
-    };
+    /*
+     * Empty: every type the generator books now writes a product. A type ORE
+     * cannot carry has left the generator, so nothing is booked as a name with
+     * no terms behind it.
+     */
+    static const std::set<std::string> known;
     return known;
 }
 
@@ -475,15 +469,20 @@ const std::set<std::string>& known_passthroughs() {
  * that its recorded trades leave out, one a line. Asserted exactly; a fix
  * removes its line.
  */
-std::set<std::string> known_missing_paths() {
-    const auto path = ores::testing::project_root::resolve(
-        "projects/ores.synthetic/core/tests/data/generated_trades_known_missing_paths.txt");
+/// The lines of a known list in the test data, less comments.
+std::set<std::string> known_lines(const std::string& name) {
+    const auto path =
+        ores::testing::project_root::resolve("projects/ores.synthetic/core/tests/data/" + name);
     std::set<std::string> known;
     std::istringstream lines(file::read_content(path));
     for (std::string line; std::getline(lines, line);)
-        if (!line.empty())
+        if (!line.empty() && !line.starts_with("#"))
             known.insert(line);
     return known;
+}
+
+std::set<std::string> known_missing_paths() {
+    return known_lines("generated_trades_known_missing_paths.txt");
 }
 
 }
@@ -576,4 +575,66 @@ TEST_CASE("a recorded trade states every path the ORE examples of its type state
     }
     INFO("Recorded types ORE has no example of:" << listed(no_example));
     check_known(found, known_missing_paths());
+}
+
+/*
+ * A generated trade holds oresmd addresses, and the projection writes each as
+ * ORE names it. The importer reads those names back into addresses through the
+ * same mappers, so a recorded trade read and written again states the same
+ * values. A name one side spells by hand, outside the mappers, breaks this.
+ *
+ * The families not yet built through builders still differ, each in its own
+ * projection; their differences are known by type and path, and a family's
+ * builder task removes its lines.
+ */
+TEST_CASE("every recorded trade reads back and writes the same values",
+          "[synthetic][ore][generated]") {
+    namespace xml = ores::ore::xml;
+    std::size_t trades = 0;
+    std::set<std::string> differences;
+    for (const auto& entry : fs::directory_iterator(recorded_directory())) {
+        if (entry.path().extension() != ".xml")
+            continue;
+        const auto items = xml::importer::import_portfolio_with_context(entry.path());
+        std::vector<ores::trading::messaging::trade_export_item> exports;
+        ores::trading::domain::instrument_batch batch;
+        for (const auto& item : items) {
+            const auto id = boost::uuids::string_generator()(
+                std::format("00000000-0000-0000-0000-{:012}", ++trades));
+            auto instrument = item.instrument;
+            ores::trading::domain::stamp_ids(instrument, id);
+            ores::trading::messaging::trade_export_item exported;
+            exported.anchor = item.anchor;
+            exported.anchor.id = id;
+            exported.ore_id = item.ore_id;
+            exported.envelope = item.envelope;
+            exports.push_back(std::move(exported));
+            ores::trading::domain::append_instrument(batch, instrument);
+        }
+        const auto recorded = document::read(file::read_content(entry.path()));
+        const auto written = document::read(xml::exporter::export_portfolio(exports, batch));
+        REQUIRE(recorded.has_value());
+        REQUIRE(written.has_value());
+        const auto before = xml::value_fingerprints_of(*recorded, "Trade", "id");
+        const auto after = xml::value_fingerprints_of(*written, "Trade", "id");
+        REQUIRE(before.size() == after.size());
+        for (std::size_t i = 0; i < before.size(); ++i)
+            for (const auto& difference : xml::diff_values(before[i].values, after[i].values)) {
+                // The type and the path, without the values or the positions.
+                const auto described = xml::describe(difference);
+                std::string shape;
+                bool in_index = false;
+                for (const char c : described.substr(0, described.find(": '"))) {
+                    if (c == '[')
+                        in_index = true;
+                    else if (c == ']')
+                        in_index = false;
+                    else if (!in_index)
+                        shape += c;
+                }
+                differences.insert(entry.path().stem().string() + " " + shape);
+            }
+    }
+    CHECK(trades > 100);
+    check_known(differences, known_lines("generated_trades_known_roundtrip_differences.txt"));
 }

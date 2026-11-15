@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 93E0CD68-7A37-49FB-ADE8-7725C2B7DF1D
+:END:
+#+title: Read a rate ladder prototype
+#+description: One row per maturity, one column per provider, the consensus and the spread, and the same quotes drawn as a curve - ported from hedgr's rates ladder.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:rates:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:read-a-rate-ladder/][the prototype]]         |
+| Journey       | [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Market data prototypes]]            |
+
+* Summary
+
+A rate ladder is the market, read sideways: maturities as rows, providers as
+columns, and one consensus so a person can see agreement and disagreement at
+once. The prototype argues that a gap is shown as a gap and never as a zero,
+that the maturity dates belong to the server because the calendar does, and that
+the curve below the table is the same answer and not a second read.
+
+It is ported from hedgr's =prototypes/rates_ladder_providers.html=. The table,
+the spread row and the curve survive; hedgr's History tab does not, because no
+read stands behind it yet.
+
+* Detail
+
+** The question
+
+How much of the market does one ladder show before it stops being readable? The
+answer decides the variant: every provider, the consensus with a distance, or
+one provider at a time.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name             | The structural argument |
+|---------+------------------+-------------------------|
+| =a=     | Providers as columns | Every provider's quote, the consensus beside it, and the spread below. The full picture, and the widest table. |
+| =b=     | Consensus only   | One value per rung, how many providers it rested on, the best quote and the distance from it. A board, not a wall. |
+| =c=     | One provider     | The column a person prices from, with nothing to compare. |
+
+** The states
+
+- =?state=full= — every rung quoted by most providers.
+- =?state=gap= — several providers are absent from the middle rungs and one
+  short rung loses its longest-standing source. The page lists the thin rungs,
+  because a dash is what a person otherwise reads as zero.
+- =?state=stale= — every quote is over the threshold. The verdict is the
+  server's.
+
+** What is fake
+
+Every number, date and age is mock. The consensus is computed in the page as a
+median so the mock cannot contradict its own caption; the server will state it,
+with its method, because two clients must not disagree.
+
+** Where the code lives
+
+=doc/prototypes/market_data/read-a-rate-ladder/index.html=, self-contained: one
+file with its styles and its script.
+
+** The verdict
+
+Take it, with one deletion and one addition. Delete the History tab until a read
+supports it. Add the thin-market list, which hedgr did not have: the prototype
+showed gaps but did not name them, and a gap on a ladder is what a person
+explains to a desk.
+
+** What changed from hedgr
+
+| Item | hedgr | Here | Why |
+|------+-------+------+-----|
+| Tabs | Ladder, Curve, History | Ladder and Curve as sections of one page | History has no read; the two that remain are one answer |
+| Consensus | A printed number | A computed median with the count it rested on | A consensus must state its method and its sample |
+| Gaps | Dashes | Dashes, plus a list of the rungs that are thin | A person acts on a thin rung, not on a dash |
+| Chrome | A dialog with a footer party badge | A page with a facts row | Prototypes read as the product |
+| Maturities | Printed | Printed, and stated as the server's | The calendar is a server fact |
+
+* See also
+
+- [[file:index.org][Market data prototypes]] — the group page.
+- [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] — the journey.

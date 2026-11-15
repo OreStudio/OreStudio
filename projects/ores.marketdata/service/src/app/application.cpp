@@ -35,6 +35,7 @@
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "ores.marketdata.service/app/usage_recorder.hpp"
 #include "ores.marketdata.service/messaging/adapter_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
@@ -43,6 +44,7 @@
 #include "ores.marketdata.service/messaging/composite_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
+#include "ores.marketdata.service/messaging/curve_analytics_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_publish_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
@@ -53,14 +55,20 @@
 #include "ores.marketdata.service/messaging/fx_forward_publish_operations_handler.hpp"
 #include "ores.marketdata.service/messaging/fx_forward_publish_point_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/fx_forward_publish_spot_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/fx_montage_handler.hpp"
+#include "ores.marketdata.service/messaging/fx_vol_surface_operations_handler.hpp"
+#include "ores.marketdata.service/messaging/instrument_catalogue_handler.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/provisioning_step_registrar.hpp"
+#include "ores.marketdata.service/messaging/publish_due_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/published_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/rate_card_component_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/rate_ladder_handler.hpp"
 #include "ores.marketdata.service/messaging/route_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/session_event_registrar.hpp"
@@ -111,6 +119,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.marketdata.service", 0, 1);
 
+    // One threshold per instrument kind, when the deployment states one. A read
+    // asks for its kind, so a curve and a surface can age differently.
+    if (cfg.stale_seconds_ir > 0)
+        app::staleness_policy::configure("ir", cfg.stale_seconds_ir);
+    if (cfg.stale_seconds_fx > 0)
+        app::staleness_policy::configure("fx", cfg.stale_seconds_fx);
+
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
@@ -128,14 +143,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    // Authenticated client for service-to-service calls. Currently used
-    // only by import_handler, to fetch ores.refdata's currency_pair
-    // reference data for FX quote convention checking during import. The
-    // token provider authenticates with the service's own database
-    // account credentials.
-    ores::nats::service::nats_client svc_nats(nats,
-                                              ores::iam::client::make_service_token_provider(
-                                                  nats, cfg.database.user, cfg.database.password));
+    // Authenticated client for service-to-service calls: import_handler reads
+    // ores.refdata's currency_pair reference data through it for FX quote
+    // convention checking during import. The token provider authenticates with
+    // the service's own database account credentials, and is kept beside the
+    // client because a provisioning step enters a tenant with it.
+    auto service_token = ores::iam::client::make_service_token_provider(
+        nats, cfg.database.user, cfg.database.password);
+    ores::nats::service::nats_client svc_nats(nats, service_token);
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
     std::shared_ptr<tick_writer> ticks;
@@ -289,9 +304,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg, ingest, supervisor, &svc_nats, crm_bridge](auto& n, auto c, auto v) {
+        [&cfg, ingest, supervisor, &svc_nats, service_token, crm_bridge](auto& n, auto c, auto v) {
             auto subs = ores::marketdata::messaging::registrar::register_handlers(
                 n, c, svc_nats, v, cfg.http_base_url);
+
+            // The provisioning steps the service owns, on their own stream and
+            // consumer: the engine sends them, and each one holds a session
+            // inside the tenant its command names.
+            auto provisioning = ores::marketdata::service::messaging::provisioning_step_registrar::
+                register_handlers(n, service_token);
+            for (auto& sub : provisioning)
+                subs.push_back(std::move(sub));
 
             namespace mm = ores::marketdata::messaging;
             constexpr auto queue = "ores.marketdata.service";
@@ -335,6 +358,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                  h.compute(std::move(msg));
                                              }));
             subs.push_back(
+                n.queue_subscribe(std::string(mm::publish_due_curves_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::publish_due_curves_handler h(n, c, v);
+                                      h.publish_due(std::move(msg));
+                                  }));
+            subs.push_back(
                 n.queue_subscribe(std::string(mm::publish_fx_forward_request::nats_subject),
                                   queue,
                                   [&n, c, v](ores::nats::message msg) mutable {
@@ -348,6 +378,34 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       mm::fx_forward_publish_operations_handler h(n, c, v);
                                       h.read(std::move(msg));
                                   }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::calibrate_fx_vol_surface_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_vol_surface_operations_handler h(n, c, v);
+                                      h.calibrate(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::publish_fx_vol_surface_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_vol_surface_operations_handler h(n, c, v);
+                                      h.publish(std::move(msg));
+                                  }));
+            subs.push_back(n.queue_subscribe(
+                std::string(mm::get_fx_vol_surface_publish_subject_request::nats_subject),
+                queue,
+                [&n, c, v](ores::nats::message msg) mutable {
+                    mm::fx_vol_surface_operations_handler h(n, c, v);
+                    h.read_publish(std::move(msg));
+                }));
+            subs.push_back(n.queue_subscribe(
+                std::string(mm::get_published_fx_vol_surface_request::nats_subject),
+                queue,
+                [&n, c, v](ores::nats::message msg) mutable {
+                    mm::fx_vol_surface_operations_handler h(n, c, v);
+                    h.read_published(std::move(msg));
+                }));
             subs.push_back(n.queue_subscribe(std::string(mm::publish_curve_request::nats_subject),
                                              queue,
                                              [&n, c, v](ores::nats::message msg) mutable {
@@ -375,6 +433,32 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                  mm::published_curves_handler h(n, c, v);
                                                  h.withdraw(std::move(msg));
                                              }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::list_instruments_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::instrument_catalogue_handler h(n, c, v);
+                                      h.list(std::move(msg));
+                                  }));
+            subs.push_back(n.queue_subscribe(std::string(mm::get_rate_ladder_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::rate_ladder_handler h(n, c, v);
+                                                 h.read(std::move(msg));
+                                             }));
+            subs.push_back(n.queue_subscribe(std::string(mm::get_fx_montage_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::fx_montage_handler h(n, c, v);
+                                                 h.read(std::move(msg));
+                                             }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_curve_analytics_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::curve_analytics_handler h(n, c, v);
+                                      h.read(std::move(msg));
+                                  }));
             return subs;
         },
         [&nats, ingest, supervisor, usage](boost::asio::io_context& ioc) {

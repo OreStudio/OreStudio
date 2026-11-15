@@ -46,7 +46,7 @@ namespace ores::dq::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenant_id", &lei_bic::tenant_id},
         utility::codec::field{"lei", &lei_bic::lei},
         utility::codec::field{"bic", &lei_bic::bic},

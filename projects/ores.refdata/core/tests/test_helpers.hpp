@@ -27,7 +27,7 @@
 using ores::refdata::repository::party_repository;
 
 inline boost::uuids::uuid find_system_party_id(party_repository& repo,
-                                               ores::database::context ctx,
+                                               const ores::database::context& ctx,
                                                const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest(ctx);
     for (const auto& p : parties)

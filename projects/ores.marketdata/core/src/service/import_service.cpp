@@ -186,12 +186,12 @@ std::expected<named_key, std::string> name_key(const std::string& key,
 
 }
 
-import_service::import_service(context ctx,
+import_service::import_service(const context& ctx,
                                ores::nats::service::nats_client& auth_nats,
                                known_pairs_provider known_pairs)
-    : ctx_(std::move(ctx))
+    : ctx_(ctx)
     , auth_nats_(auth_nats)
-    , known_pairs_(std::move(known_pairs)) {}
+    , known_pairs_(known_pairs) {}
 
 messaging::import_market_data_response
 import_service::import(const messaging::import_market_data_request& req) {

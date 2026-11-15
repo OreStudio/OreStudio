@@ -7,7 +7,9 @@ The documents are Acme's own, crafted for the reports each entity runs. They are
 inspired by the ORE examples under external/ore/examples and are not ORE import
 data. Which engine prices a product is a choice of the group, and the choice here
 follows the desks an entity runs (rule D15 of the sprint 27 investigation "Which
-reports each ACME party runs").
+reports each ACME party runs"). Every document prices every product type the ORE
+guide documents an engine for, because a report binds one document and its book
+holds every product type, whichever desk the trade sits on.
 
 Each entity holds several documents, one for each job its reports do, and a report
 binds exactly one of them. Each document is a header, its products and their parameters, staged in three
@@ -19,11 +21,26 @@ regeneration reproduces them.
 Usage:
     python3 generate_configuration_data.py
 """
+import importlib.util
 import json
 import os
 import uuid
 
 import generate_party_data as parties
+
+
+def load_surfaces():
+    """The FX volatility surface blueprint generator, loaded by its path under its own
+    name, because its file name is the same as this directory's generate_sql.py."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "fx_vol_surfaces",
+                        "generate_sql.py")
+    spec = importlib.util.spec_from_file_location("fx_vol_surfaces_generate_sql", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+surfaces = load_surfaces()
 
 NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -77,18 +94,6 @@ def required_settings(product_type, model, engine):
     return found["model"], found["engine"]
 
 
-# What each entity prices. The holding company holds intercompany loans and the
-# hedges of its subsidiaries' currencies, so it prices linear products only. A
-# trading entity prices the products its desks trade. London alone holds option
-# books (design rule D8), so it alone prices options.
-ENTITY_PRODUCTS = {
-    "acme_group": ["Swap", "FxForward", "Bond"],
-    "acme_uk": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond",
-                "FxOption", "CapFloor", "EuropeanSwaption"],
-    "acme_us": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond"],
-    "acme_hk": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond"],
-}
-
 # The engine settings of the American Monte Carlo engine, as the ORE example
 # AmericanMonteCarlo/Input/pricingengine_amc.xml sets them for a swap and for a
 # cross currency swap: a training run on a fixed seed, then pricing on the
@@ -118,7 +123,11 @@ SENSITIVITIES = {"SensitivityTemplate": "IR_Analytical"}
 # The cycle (end of day or intraday), the risk question and the rule a regulator
 # sets all change the model, the engine or its settings.
 #
-# - skip: product types the configuration does not price.
+# Every configuration prices every product type ORE documents an engine for, each on
+# its usual pair. A configuration says how a product is priced, and which trades
+# arrive is the report's scope, not the configuration's: one configuration serves
+# several reports, and the book holds every product type whichever desk it sits on.
+#
 # - bond_step: the step of the default probability grid of a bond. A finer step
 #   costs more and is for the numbers that are booked or filed.
 # - calibration_stops: whether a failed calibration stops the run. An official
@@ -131,7 +140,6 @@ CONFIGURATIONS = {
         "description": "The numbers that are booked. Every product type ORE prices, each on its "
                        "usual pair, a fine grid for bonds and a stop on any calibration that "
                        "fails.",
-        "all_products": True,
         "bond_step": "6M",
         "calibration_stops": True,
     },
@@ -144,8 +152,7 @@ CONFIGURATIONS = {
     },
     "Pre-Trade Quick Price": {
         "description": "The price a trader sees while a trade is built. It answers at once, so "
-                       "it uses a coarse bond grid and leaves out credit default swaps.",
-        "skip": ["CreditDefaultSwap"],
+                       "it uses a coarse bond grid and a failed calibration does not stop it.",
         "bond_step": "1Y",
         "calibration_stops": False,
     },
@@ -174,9 +181,9 @@ CONFIGURATIONS = {
         "settings": {"Swap": SENSITIVITIES},
     },
     "Regulatory SIMM": {
-        "description": "The prices behind the initial margin of uncleared derivatives. Bonds are "
-                       "not margined, so they are left out.",
-        "skip": ["Bond"],
+        "description": "The prices behind the initial margin of uncleared derivatives. The "
+                       "sensitivities are analytic and a failed calibration stops the run.",
+        "bond_step": "3M",
         "calibration_stops": True,
         "settings": {"Swap": SENSITIVITIES},
     },
@@ -199,9 +206,8 @@ CONFIGURATIONS = {
 # Which configurations each entity holds. The holding company has no desk, so it
 # holds the official numbers and the overnight exposure run. A trading entity
 # holds what its desks and its regulator need. London alone holds the
-# sensitivities, the margin prices and the sandbox: it has the option books and
-# the quants (design rule D8), and the other entities take their sensitivities
-# from the official numbers.
+# sensitivities, the margin prices and the sandbox: it has the quants (design rule
+# D8), and the other entities take their sensitivities from the official numbers.
 ENTITY_CONFIGURATIONS = {
     "acme_group": ["EOD Official", "XVA Overnight"],
     "acme_uk": list(CONFIGURATIONS),
@@ -305,8 +311,8 @@ OVERNIGHT = {
     "ZAR": ("ZAR-ZARONIA", "ZAR-ZARONIA-OIS"),
     "PLN": ("PLN-POLONIA", "PLN-OIS"),
     "CZK": ("CZK-CZEONIA", "CZK-OIS"),
-    "HUF": ("HUF-BUBORON", "HUF-OIS"),
-    "ILS": ("ILS-TELBORON", "ILS-OIS"),
+    "HUF": ("HUF-HUFONIA", "HUF-OIS"),
+    "ILS": ("ILS-SHIR", "ILS-OIS"),
     "TRY": ("TRY-TLREF", "TRY-OIS"),
     "BRL": ("BRL-CDI", "BRL-OIS"),
     "MXN": ("MXN-FTIIE", "MXN-OIS"),
@@ -385,15 +391,12 @@ def pricing_engines():
                 "config_variant": "",
                 "configuration_id": new_uuid(f"configuration:{key}"),
             })
-            wanted = [t for t in ENTITY_PRODUCTS[company] if t not in spec.get("skip", [])]
-            if spec.get("all_products"):
-                wanted += sorted(t for t in VOCABULARY if t not in wanted and usual_pair(t))
-            for position, product_type in enumerate(wanted):
+            for position, product_type in enumerate(sorted(VOCABULARY)):
                 if product_type in spec.get("replace", {}) or product_type in PRODUCTS:
                     model, model_parameters, engine, engine_parameters = spec.get(
                         "replace", {}).get(product_type, PRODUCTS.get(product_type))
                 else:
-                    pair = usual_pair(product_type)
+                    pair = usual_pair(product_type) or VOCABULARY[product_type]["pairs"][0]
                     model, model_parameters, engine, engine_parameters = (
                         pair["model"], {}, pair["engine"], {})
                 needed_model, needed_engine = required_settings(product_type, model, engine)
@@ -457,8 +460,18 @@ def fx_pairs(company):
     return pairs
 
 
+def fx_volatility_pairs(company):
+    """The pairs the system calibrates a surface for whose two currencies the entity builds
+    a curve for, in market quoting order. A surface needs both curves to turn a delta into
+    a strike."""
+    currencies = ENTITY_CURRENCIES[company]
+    return [(base, quote) for base, quote, _delta in surfaces.PAIRS
+            if base in currencies and quote in currencies]
+
+
 def todays_market():
-    """One configuration, default, that discounts every trade on its own overnight curve."""
+    """One configuration, default, that discounts every trade on its own overnight curve and
+    reads each FX volatility surface the entity calibrates."""
     headers, collections, entries, configurations, bindings = [], [], [], [], []
     for company in ENTITY_CURRENCIES:
         header_id = new_uuid(f"todays_market:{company}")
@@ -488,6 +501,9 @@ def todays_market():
                    [(OVERNIGHT[c][0], f"Yield/{c}/{c}1D") for c in currencies])
         collection(2, "FxSpots", "default",
                    [(f"{b}{q}", f"FX/{b}/{q}") for b, q in fx_pairs(company)])
+        collection(3, "FxVolatilities", "default",
+                   [(f"{b}{q}", f"FXVolatility/{b}/{q}/{b}{q}")
+                    for b, q in fx_volatility_pairs(company)])
 
         configuration_id = new_uuid(f"todays_market:{company}:configuration:default")
         configurations.append(row(
@@ -495,7 +511,7 @@ def todays_market():
             configuration_id="default", position=0))
         for index, (kind, reference) in enumerate(
                 [("DiscountingCurves", "ois"), ("IndexForwardingCurves", "default"),
-                 ("FxSpots", "default")]):
+                 ("FxSpots", "default"), ("FxVolatilities", "default")]):
             bindings.append(row(
                 company, id=new_uuid(f"todays_market:{company}:binding:{kind}"),
                 todays_market_configuration_id=configuration_id, collection=kind,
@@ -585,6 +601,44 @@ def inflation_curve_configuration():
     return definitions, configs
 
 
+def fx_volatility_configuration():
+    """An FX volatility curve of dimension Smile and smile type Delta for each pair the
+    entity calibrates a surface for. It reads the published grid as ORE quotes: the
+    surface's expiries by its grid's deltas, under the pair's FX option convention,
+    with the pair's spot and the two overnight curves of the entity. The calendar and the
+    day counter are left to ORE, which takes the pair's joint calendar and A365."""
+    definitions, configs, smiles = [], [], []
+    for company in ENTITY_CURRENCIES:
+        for position, (base, quote) in enumerate(fx_volatility_pairs(company)):
+            curve_id = f"{base}{quote}"
+            definition_id = new_uuid(f"fx_volatility_configuration:{company}:{curve_id}")
+            definitions.append(row(
+                company, id=definition_id,
+                curve_configuration_id=new_uuid(f"curve_configuration:{company}"),
+                section_code="FXVolatilities", curve_id=curve_id,
+                description=f"{base}/{quote} volatility surface, read from the published "
+                            f"{curve_id}_SSVI grid",
+                position=position))
+            config_id = new_uuid(f"fx_volatility_configuration:{company}:{curve_id}:config")
+            configs.append(row(
+                company, id=config_id, curve_definition_id=definition_id,
+                dimension="Smile", deltas=surfaces.ore_deltas(),
+                conventions=surfaces.fx_option_convention_id(base, quote),
+                expiries=",".join(surfaces.EXPIRIES),
+                fx_spot_id=f"FX/{base}/{quote}",
+                fx_foreign_curve_id=f"Yield/{base}/{base}1D",
+                fx_domestic_curve_id=f"Yield/{quote}/{quote}1D",
+                calendar=None, day_counter=None, fx_index_tag=None,
+                base_volatility_1=None, base_volatility_2=None))
+            smiles.append(row(
+                company, id=new_uuid(f"fx_volatility_configuration:{company}:{curve_id}:smile"),
+                fx_volatility_config_id=config_id,
+                smile_type="Delta", smile_interpolation="Cubic", smile_delta=None,
+                smile_extrapolation="Flat", time_interpolation="V", time_weighting=None,
+                butterfly_error_tolerance=0.01))
+    return definitions, configs, smiles
+
+
 def main():
     headers, products, parameters = pricing_engines()
     write("pricing_model_configs", headers)
@@ -602,10 +656,13 @@ def main():
              "curve_segment_conventions", "curve_quotes")
     records = list(curve_configuration())
     inflation_definitions, inflation_configs = inflation_curve_configuration()
-    records[1] = records[1] + inflation_definitions
+    volatility_definitions, volatility_configs, volatility_smiles = fx_volatility_configuration()
+    records[1] = records[1] + inflation_definitions + volatility_definitions
     for name, rows in zip(names, records):
         write(name, rows)
     write("inflation_curve_configs", inflation_configs)
+    write("fx_volatility_configs", volatility_configs)
+    write("fx_volatility_smiles", volatility_smiles)
 
 
 if __name__ == "__main__":

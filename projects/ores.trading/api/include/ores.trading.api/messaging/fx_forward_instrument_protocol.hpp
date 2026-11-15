@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &fx_forward_instrument_key::trade_id},
     };
 }
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &fx_forward_instrument_write::trade_id},
         utility::codec::field{"trade_type_code", &fx_forward_instrument_write::trade_type_code},
         utility::codec::field{"trade_activity_id", &fx_forward_instrument_write::trade_activity_id},
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &fx_forward_instrument_change::write},
         utility::codec::field{"precondition", &fx_forward_instrument_change::precondition},
     };
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_forward_instrument_removal::key},
         utility::codec::field{"precondition", &fx_forward_instrument_removal::precondition},
     };
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_forward_instrument_lookup::key},
         utility::codec::field{"fx_forward_instrument",
                               &fx_forward_instrument_lookup::fx_forward_instrument},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instruments_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id_one_of", &fx_forward_instruments_filter::trade_id_one_of},
     };
 }
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_forward_instrument_event::event_id},
         utility::codec::field{"key", &fx_forward_instrument_event::key},
         utility::codec::field{"action", &fx_forward_instrument_event::action},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_forward_instrument_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_forward_instrument",
                               &fx_forward_instrument_version_key::fx_forward_instrument},
         utility::codec::field{"version", &fx_forward_instrument_version_key::version},
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_forward_instrument_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_forward_instrument_versions_filter::version},
         utility::codec::field{"from_version", &fx_forward_instrument_versions_filter::from_version},
         utility::codec::field{"to_version", &fx_forward_instrument_versions_filter::to_version},
@@ -550,7 +550,7 @@ wire_fields(std::type_identity<fx_forward_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fx_forward_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_forward_instruments_request::offset},
         utility::codec::field{"limit", &list_fx_forward_instruments_request::limit},
         utility::codec::field{"order", &list_fx_forward_instruments_request::order},
@@ -568,7 +568,7 @@ wire_fields(std::type_identity<fx_forward_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fx_forward_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_forward_instruments_response::result},
         utility::codec::field{"fx_forward_instruments",
                               &list_fx_forward_instruments_response::fx_forward_instruments},
@@ -585,7 +585,7 @@ wire_fields(std::type_identity<fx_forward_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_forward_instrument_request::key},
     };
 }
@@ -599,7 +599,7 @@ wire_fields(std::type_identity<fx_forward_instrument_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_forward_instrument_response::result},
         utility::codec::field{"fx_forward_instrument",
                               &get_fx_forward_instrument_response::fx_forward_instrument},
@@ -616,7 +616,7 @@ wire_fields(std::type_identity<fx_forward_instrument_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_forward_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_forward_instruments_request::keys},
     };
 }
@@ -631,7 +631,7 @@ wire_fields(std::type_identity<get_many_fx_forward_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_forward_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_forward_instruments_response::result},
         utility::codec::field{"entries", &get_many_fx_forward_instruments_response::entries},
     };
@@ -646,7 +646,7 @@ wire_fields(std::type_identity<get_many_fx_forward_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_forward_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_fx_forward_instrument_request::change},
         utility::codec::field{"intent", &put_fx_forward_instrument_request::intent},
     };
@@ -661,7 +661,7 @@ wire_fields(std::type_identity<get_many_fx_forward_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_forward_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_fx_forward_instrument_response::result},
         utility::codec::field{"fx_forward_instrument",
                               &put_fx_forward_instrument_response::fx_forward_instrument},
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<get_many_fx_forward_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_fx_forward_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_fx_forward_instruments_request::changes},
         utility::codec::field{"intent", &put_many_fx_forward_instruments_request::intent},
     };
@@ -694,7 +694,7 @@ wire_fields(std::type_identity<put_many_fx_forward_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_fx_forward_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_fx_forward_instruments_response::result},
         utility::codec::field{"fx_forward_instruments",
                               &put_many_fx_forward_instruments_response::fx_forward_instruments},
@@ -710,7 +710,7 @@ wire_fields(std::type_identity<put_many_fx_forward_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_fx_forward_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_fx_forward_instrument_request::removal},
         utility::codec::field{"intent", &delete_fx_forward_instrument_request::intent},
     };
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<put_many_fx_forward_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_fx_forward_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_fx_forward_instrument_response::result},
     };
 }
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<delete_fx_forward_instrument_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_fx_forward_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_fx_forward_instruments_request::removals},
         utility::codec::field{"intent", &delete_many_fx_forward_instruments_request::intent},
     };
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<delete_many_fx_forward_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_fx_forward_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_fx_forward_instruments_response::result},
     };
 }
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<delete_many_fx_forward_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_instrument_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_forward_instrument_versions_request::key},
         utility::codec::field{"offset", &list_fx_forward_instrument_versions_request::offset},
         utility::codec::field{"limit", &list_fx_forward_instrument_versions_request::limit},
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<list_fx_forward_instrument_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_forward_instrument_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_forward_instrument_versions_response::result},
         utility::codec::field{"versions", &list_fx_forward_instrument_versions_response::versions},
         utility::codec::field{"total", &list_fx_forward_instrument_versions_response::total},
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<list_fx_forward_instrument_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_instrument_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_forward_instrument_version_request::key},
     };
 }
@@ -823,7 +823,7 @@ wire_fields(std::type_identity<get_fx_forward_instrument_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_forward_instrument_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_forward_instrument_version_response::result},
         utility::codec::field{"version", &get_fx_forward_instrument_version_response::version},
     };

@@ -70,7 +70,9 @@ struct commodity_instrument final {
     std::string currency;
 
     /**
-     * @brief Contract quantity. Must be positive.
+     * @brief Contract quantity. Must be positive, except on an accumulating product such as an
+     * accumulator or a TaRF: it states its size per fixing in accumulation_amount, and its quantity
+     * is zero.
      */
     double quantity = 0.0;
 
@@ -262,6 +264,103 @@ struct commodity_instrument final {
     std::optional<std::string> position;
 
     /**
+     * @brief The day an intraday power forward delivers on, as DeliveryDate states it.
+     */
+    std::optional<std::chrono::year_month_day> delivery_date;
+
+    /**
+     * @brief The second of the delivery day an intraday power forward starts to deliver, as
+     * DeliveryStart states it.
+     */
+    std::optional<int> delivery_start;
+
+    /**
+     * @brief The second of the delivery day an intraday power forward stops delivering, as
+     * DeliveryEnd states it.
+     */
+    std::optional<int> delivery_end;
+
+    /**
+     * @brief The day a forward volatility agreement fixes the volatility it settles on, as FvaDate
+     * states it.
+     */
+    std::optional<std::chrono::year_month_day> fva_date;
+
+    /**
+     * @brief The day a forward volatility agreement or a strike resettable option pays its premium,
+     * as PremiumDate states it.
+     */
+    std::optional<std::chrono::year_month_day> premium_date;
+
+    /**
+     * @brief The day a scripted commodity product settles, as SettlementDate states it.
+     */
+    std::optional<std::chrono::year_month_day> settlement_date;
+
+    /**
+     * @brief The volatility a forward volatility agreement strikes at, as ImpliedVolStrike states
+     * it.
+     *
+     * A volatility is a continuous quantity and not money, so it is a binary float, as the variance
+     * strike is.
+     */
+    std::optional<double> implied_vol_strike;
+
+    /**
+     * @brief The strike a strike resettable option resets to when its trigger is hit, as
+     * ResetStrike states it.
+     */
+    std::optional<ores::utility::decimal::decimal> reset_strike;
+
+    /**
+     * @brief Whether a strike resettable option triggers above or below its trigger price, as
+     * TriggerType states it.
+     */
+    std::optional<std::string> trigger_type;
+
+    /**
+     * @brief The price that resets a strike resettable option's strike, as TriggerPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> trigger_price;
+
+    /**
+     * @brief The premium a strike resettable option pays, as Premium states it.
+     */
+    std::optional<ores::utility::decimal::decimal> premium_amount;
+
+    /**
+     * @brief The gain at which a TaRF knocks out, as TargetAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> target_amount;
+
+    /**
+     * @brief The multiple of its gain a best entry option pays, as Multiplier states it.
+     */
+    std::optional<ores::utility::decimal::decimal> multiplier;
+
+    /**
+     * @brief The most a best entry option's gain can reach, as Cap states it.
+     */
+    std::optional<ores::utility::decimal::decimal> cap;
+
+    /**
+     * @brief The fraction of the initial price that, when the price falls to it, lets a best entry
+     * option reset its strike, as TriggerLevel states it.
+     */
+    std::optional<ores::utility::decimal::decimal> trigger_level;
+
+    /**
+     * @brief The lowest fraction of the initial price a best entry option's strike can reset to, as
+     * ResetMinimum states it.
+     */
+    std::optional<ores::utility::decimal::decimal> reset_minimum;
+
+    /**
+     * @brief The day a best entry option fixes its initial strike, as StrikeDate states it.
+     */
+    std::optional<std::chrono::year_month_day> strike_date;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -323,6 +422,23 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "future_month_offset", v.future_month_offset);
     ores::utility::digest::append_member(out, "include_period_end", v.include_period_end);
     ores::utility::digest::append_member(out, "position", v.position);
+    ores::utility::digest::append_member(out, "delivery_date", v.delivery_date);
+    ores::utility::digest::append_member(out, "delivery_start", v.delivery_start);
+    ores::utility::digest::append_member(out, "delivery_end", v.delivery_end);
+    ores::utility::digest::append_member(out, "fva_date", v.fva_date);
+    ores::utility::digest::append_member(out, "premium_date", v.premium_date);
+    ores::utility::digest::append_member(out, "settlement_date", v.settlement_date);
+    ores::utility::digest::append_member(out, "implied_vol_strike", v.implied_vol_strike);
+    ores::utility::digest::append_member(out, "reset_strike", v.reset_strike);
+    ores::utility::digest::append_member(out, "trigger_type", v.trigger_type);
+    ores::utility::digest::append_member(out, "trigger_price", v.trigger_price);
+    ores::utility::digest::append_member(out, "premium_amount", v.premium_amount);
+    ores::utility::digest::append_member(out, "target_amount", v.target_amount);
+    ores::utility::digest::append_member(out, "multiplier", v.multiplier);
+    ores::utility::digest::append_member(out, "cap", v.cap);
+    ores::utility::digest::append_member(out, "trigger_level", v.trigger_level);
+    ores::utility::digest::append_member(out, "reset_minimum", v.reset_minimum);
+    ores::utility::digest::append_member(out, "strike_date", v.strike_date);
     out.push_back('}');
     return out;
 }

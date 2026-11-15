@@ -18,7 +18,7 @@
  *
  */
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
@@ -155,8 +155,8 @@ int clamp_limit(int limit) {
 
 }
 
-approval_lifecycle::approval_lifecycle(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+approval_lifecycle::approval_lifecycle(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 std::optional<boost::uuids::uuid> approval_lifecycle::actor_account_id() {
     ores::iam::repository::account_repository accounts;
@@ -219,8 +219,8 @@ approvals_mode_state approval_lifecycle::approvals_mode() const {
     if (!row || row->value.empty()) {
         // No person is signed in to the installation from here, so the read
         // names the service, which is who asks.
-        row = read_mode(
-            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account()));
+        row =
+            read_mode(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account()));
     }
 
     approvals_mode_state state;
@@ -291,18 +291,23 @@ std::optional<boost::uuids::uuid> approval_lifecycle::system_actor_account_id() 
     return found.front().id;
 }
 
+// The kinds are the system tenant's, and every tenant reads them, so they are
+// read on this context, inside a unit of work or outside one, and only the
+// system tenant's rows are kept.
 std::optional<domain::approval_kind> approval_lifecycle::kind(const std::string& code) {
     repository::approval_kind_repository repo;
-    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
-    const auto found = repo.read_latest(system_ctx, code);
-    if (found.empty())
-        return std::nullopt;
-    return found.front();
+    for (auto& k : repo.read_latest(ctx_, code)) {
+        if (k.tenant_id.is_system())
+            return std::move(k);
+    }
+    return std::nullopt;
 }
 
 std::vector<domain::approval_kind> approval_lifecycle::kinds() {
     repository::approval_kind_repository repo;
-    return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
+    auto found = repo.read_latest(ctx_);
+    std::erase_if(found, [](const auto& k) { return !k.tenant_id.is_system(); });
+    return found;
 }
 
 std::optional<domain::approval_request> approval_lifecycle::request(const std::string& id) {
@@ -313,10 +318,26 @@ std::optional<domain::approval_request> approval_lifecycle::request(const std::s
     return found.front();
 }
 
-domain::approval_request approval_lifecycle::raise(const domain::approval_kind& kind,
-                                                   const std::string& reason,
-                                                   const boost::uuids::uuid& requested_by,
-                                                   const std::vector<std::string>& part_codes) {
+raise_policy approval_lifecycle::policy_for(const domain::approval_kind& kind, bool names_parts) {
+    // A raise a policy covers is closed by the system in the same act, so the
+    // account that closes it is resolved before the request is written: a
+    // request left waiting on nobody is one no person can answer.
+    raise_policy policy;
+    policy.mode = approvals_mode();
+    policy.rule = auto_approval_of(kind, names_parts);
+    if (policy.rule) {
+        policy.system_actor = system_actor_account_id();
+        if (!policy.system_actor)
+            throw std::runtime_error("A " + kind.code +
+                                     " request is closed by policy, and no system account is named "
+                                     "to close it with.");
+    }
+    return policy;
+}
+
+namespace {
+
+std::vector<std::string> distinct_part_codes(const std::vector<std::string>& part_codes) {
     std::vector<std::string> codes;
     for (const auto& code : part_codes) {
         if (code.empty())
@@ -324,24 +345,36 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
         if (std::ranges::find(codes, code) == codes.end())
             codes.push_back(code);
     }
+    return codes;
+}
 
-    // A raise a policy covers is closed by the system in the same act, so the
-    // account that closes it is resolved before the request is written: a
-    // request left waiting on nobody is one no person can answer.
-    const auto rule = auto_approval_of(kind, !codes.empty());
+}
+
+domain::approval_request approval_lifecycle::raise(const domain::approval_kind& kind,
+                                                   const std::string& reason,
+                                                   const boost::uuids::uuid& requested_by,
+                                                   const std::vector<std::string>& part_codes) {
+    const auto codes = distinct_part_codes(part_codes);
+    return raise_under(policy_for(kind, !codes.empty()), kind, reason, requested_by, codes);
+}
+
+domain::approval_request
+approval_lifecycle::raise_under(const raise_policy& policy,
+                                const domain::approval_kind& kind,
+                                const std::string& reason,
+                                const boost::uuids::uuid& requested_by,
+                                const std::vector<std::string>& part_codes) {
+    const auto codes = distinct_part_codes(part_codes);
+    const auto& rule = policy.rule;
+    if (rule && !codes.empty())
+        throw std::logic_error("A request that names parts is decided by its parts, so no policy "
+                               "closes it; read the policy with the parts named.");
     if (!rule && kind.approvals_required <= 0)
         throw std::logic_error("The " + kind.code +
                                " kind asks for no approvals and names no policy, so a request of "
                                "it could only ever wait. State which raises close without a "
                                "person, or ask for one.");
-    std::optional<boost::uuids::uuid> system_actor;
-    if (rule) {
-        system_actor = system_actor_account_id();
-        if (!system_actor)
-            throw std::runtime_error("A " + kind.code +
-                                     " request is closed by policy, and no system account is named "
-                                     "to close it with.");
-    }
+    const auto& system_actor = policy.system_actor;
 
     const auto now = std::chrono::system_clock::now();
 
@@ -406,7 +439,7 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
         return *written;
 
     try {
-        return close_without_approval(*written, kind, *system_actor, *rule);
+        return close_without_approval(*written, kind, *system_actor, *rule, policy.mode);
     } catch (...) {
         // A request a policy closes waits on nobody, so one whose close failed
         // must not stay open: it is withdrawn in the asker's own name, which is
@@ -472,7 +505,8 @@ domain::approval_request
 approval_lifecycle::close_without_approval(const domain::approval_request& request,
                                            const domain::approval_kind& kind,
                                            const boost::uuids::uuid& system_actor,
-                                           auto_approval_rule rule) {
+                                           auto_approval_rule rule,
+                                           const approvals_mode_state& mode) {
     BOOST_LOG_SEV(lg(), info) << "Closing " << kind.code << " request "
                               << boost::uuids::to_string(request.id)
                               << " approved by policy: " << code_of(rule);
@@ -480,7 +514,7 @@ approval_lifecycle::close_without_approval(const domain::approval_request& reque
                           request.version,
                           "approve",
                           system_actor,
-                          policy_words(rule, kind.code, approvals_mode()));
+                          policy_words(rule, kind.code, mode));
     if (r.outcome != "ok")
         throw std::runtime_error("A " + kind.code +
                                  " request a policy closes was not closed: " + r.message);
@@ -495,7 +529,7 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
     const auto open = open_parts_of(request_id);
 
     // A refusal ends the request, so a part has at most one answer that counts.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select part_code, decision_code, decided_by::text, decided_at, comment "
         "from ores_inbox_approval_decisions_tbl "
@@ -575,7 +609,7 @@ std::vector<std::string> approval_lifecycle::part_codes_of_kind(const std::strin
 }
 
 std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select rp.part_code "
         "from ores_inbox_approval_request_parts_tbl rp "
@@ -602,7 +636,7 @@ std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::strin
 
 std::vector<domain::approval_part>
 approval_lifecycle::open_parts_of(const std::string& request_id) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         open_parts_query + " and request_id = $1::uuid"
                            " order by display_order, part_code",
@@ -628,7 +662,7 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
                                            const std::string& part_code,
                                            const std::string& hold_reason_code) {
     BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
         "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, "
@@ -657,7 +691,7 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
 decision_result approval_lifecycle::fail_apply(const std::string& request_id,
                                                const std::string& reason) {
     BOOST_LOG_SEV(lg(), info) << "Request " << request_id << " could not be applied: " << reason;
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
         "from ores_inbox_fail_apply_fn($1::uuid, $2, $3)",
@@ -688,7 +722,7 @@ request_page approval_lifecycle::queue(const decidable_scope& scope,
                                                                joined(scope.kind_codes),
                                                                joined(scope.part_codes)};
 
-    const auto counted = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto counted = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select count(*)::text from (" + decidable_requests_query + ") decidable",
         scope_params,
@@ -705,7 +739,7 @@ request_page approval_lifecycle::queue(const decidable_scope& scope,
     auto params = scope_params;
     params.push_back(std::to_string(std::max(offset, 0)));
     params.push_back(std::to_string(clamp_limit(limit)));
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         decidable_requests_query + " order by r.requested_at, r.id"
                                    " offset $5::int limit $6::int",
@@ -737,7 +771,7 @@ approval_lifecycle::recently_answered(const decidable_scope& scope,
     if (window <= std::chrono::seconds::zero())
         return {};
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select r.id::text"
         " from ores_inbox_approval_requests_tbl r"
@@ -800,7 +834,7 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
     // actor to name. The store still requires one, because the row it writes
     // records who closed the request, and the honest answer is the service that
     // ran the sweep.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text"
         " from ores_inbox_expire_approval_requests_fn($1)",
@@ -830,7 +864,7 @@ approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of)
     // Seconds as a double hold a moment to well under a millisecond, which is
     // far finer than a window counted in hours.
     const auto epoch_seconds = std::chrono::duration<double>(as_of.time_since_epoch()).count();
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
         " apply_workflow_type, approved_at::text, over_window::text"
@@ -866,7 +900,7 @@ std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::s
     // crosses every tenant and touches no row, so it needs no actor; the notice
     // it raises needs one, and the service that ran the sweep is the honest
     // answer.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
         " expires_at::text from ores_inbox_remind_expiring_approval_requests_fn($1::double "

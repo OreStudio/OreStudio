@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-trading-views
+#+pr: 4665
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.trading: the blotter and the book tree. Eac
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -42,9 +42,31 @@ Serve these composed views from ores.trading: the blotter and the book tree. Eac
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two views, one unit, two routes: =GET /api/blotter= and =GET /api/books/tree=,
+both owned by =ores.trading= and answered from the collections the trading and
+reference data services hold.
+
+- The book tree is two collection reads, woven into one answer.
+- The blotter reads its rail from every row a filter matches, because a count
+  cannot come from a page, and then cuts the page from the rows it ordered.
+- A structure is placed where its legs are: on the book they share, or on the
+  lowest portfolio that holds them all. Its date is its earliest leg's, and its
+  state is its legs' when they agree.
+- Each view is kept under its cache policy: an ETag over the whole answer, and
+  a freshness the view's own writes decide.
+
+Decisions made:
+
+- The party's label is empty. The BFF answered it from its session, and the
+  caller's token names the party by id only; the rail draws the id it already
+  falls back to.
+- The list is ordered in the gateway, not by the service, because a structure
+  has no date of its own: ordering on the facts the rows state keeps the order
+  a person sees and the order they paged in the same one.
+- The blotter is fresh for 30 seconds and the book tree for 60, as the route
+  inventory records the obligation of each.
+- The rail's labels compare folded, so a counterparty called "ACME" sorts with
+  "Acme" rather than after every lowercase name.
 
 * Measurements
 
@@ -58,7 +80,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The trading area's routes the C++ server answers | 24 of 24 paired | =python3 build/scripts/route_inventory.py --check= | 2cc0000000 |
+| The trading part's test suite | 22 cases, 466 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.trading.tests= | 2cc0000000 |
 
 * Notes
 
@@ -77,12 +100,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4665][#4665]] | [http] Serve the trading composed views |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The id-to-text helper is twice in the part | trade reads, trading views | accepted | one =as_text= in =ores.http.api/net/record_routes.hpp=; both units call it |
+| 2 | The rail, the placement and the ordering are long | trading views | declined | they are the view's own computation, stated once here and tested through the answer |
+| 3 | The party's label is empty where the BFF named it | trading views | accepted | recorded as a decision: the caller's token names the party by id only |
+| 4 | The sort's tie-break reversed with the direction, where the BFF always ascended by id | trading views | accepted | ties ascend by id whatever the direction |
+| 5 | The rail inserted into its label maps inside a sort comparator, and a label the catalogue lacks came out empty | trading views | accepted | the lookups no longer insert, and a missing label falls back to the key |
+| 6 | The portfolio rail drew its nodes in uuid order where the BFF drew them in read order | trading views | accepted | the rail walks the portfolios and books in the order they were read |
+| 7 | A structure reference accepted a row that names no structure | trading views | accepted | a row with the nil id is skipped |
+| 8 | The second =as_text= overload carried no brief | record_routes.hpp | accepted | documented |
+| 9 | The views' readable-code helper is a second =humanised= with different rules | trading views | accepted | renamed =readable=, so two rules are not mistaken for one |
+| 10 | The composition is one long lambda | trading views | declined | the view's computation is one narrative; splitting it would move names without making it testable, which the next row states |
+| 11 | No test proves the composition against the BFF's answer | tests | declined | a route answer needs a connected service; the switch task's ores.web test proves the page. The cache policy, the query checks and the refusal are tested |
+| 12 | Eight reads run in turn where the BFF ran them together | trading views | declined | the forwarding client is synchronous; concurrency would need the session's own loop, which is the server's concern |
+| 13 | The shared =as_text= and the regenerated inventory ride along | several | declined | the helper answers the previous round's duplication finding; the inventory is generated |
+| 14 | The tree's guard named the portfolios subject | trading views | accepted | it names the structures subject the view is about |
 
 * Result
+
+Both trading composed views are served by =ores.trading= at the routes the screens
+call: =GET /api/blotter= and =GET /api/books/tree=. Each answers one call, states
+its owner and computation, and is kept by the caller under an ETag with its
+freshness rule — 30 seconds for the blotter, 60 for the book tree. The trading
+area now pairs all 24 of its routes in the inventory.
+
+Evidence:
+
+- =build/output/linux-clang-release-ninja/publish/bin/ores.http.trading.tests=
+  — 22 cases, 466 assertions, all pass, including the ETag and the 304 of each
+  view and the blotter's query checks.
+- =compass build ores.http.server= — the process links with the views in it.
+- =compass check --exclude-heavy= — 44 of 44 checks pass.
+- =python3 build/scripts/route_inventory.py --check= — the inventory is current;
+  the trading area pairs 24 of its 24 routes.

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Portfolio>
-  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
-    <TradeType>CommodityPairwiseVarianceSwap</TradeType>
-  </Trade>
-  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
-    <TradeType>CommodityPairwiseVarianceSwap</TradeType>
-  </Trade>
-</Portfolio>

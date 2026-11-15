@@ -37,6 +37,14 @@
 #include "ores.synthetic.core/messaging/fx_spot_fixing_item_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_spot_generation_config_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_spot_generation_config_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_contributor_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_contributor_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_surface_feed_contributor_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_surface_feed_contributor_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_surface_feed_expiry_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_surface_feed_expiry_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_surface_feed_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_surface_feed_registrar.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_history_provider_registrar.hpp"
@@ -84,7 +92,7 @@ ores::history::service::dispatch_registry& history_registry() {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
@@ -135,6 +143,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
     {
         auto s = register_variance_calibration_input_point_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_fx_vol_contributor_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_fx_vol_surface_feed_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_fx_vol_surface_feed_expiry_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_fx_vol_surface_feed_contributor_handlers(nats, ctx, verifier);
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
@@ -229,7 +257,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ores::synthetic::domain::publish_market_data_providers_from_dq_step_subject};
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)
-            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+            routes.on(subject,
+                      [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(
             ores::service::messaging::serve_step_commands(nats, "ores.synthetic.service", routes));
     }
@@ -260,6 +289,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_variance_calibration_history_provider(hist_registry);
         register_variance_calibration_input_history_provider(hist_registry);
         register_variance_calibration_input_point_history_provider(hist_registry);
+        register_fx_vol_contributor_history_provider(hist_registry);
+        register_fx_vol_surface_feed_history_provider(hist_registry);
+        register_fx_vol_surface_feed_expiry_history_provider(hist_registry);
+        register_fx_vol_surface_feed_contributor_history_provider(hist_registry);
         register_yield_curve_process_parameter_definition_history_provider(hist_registry);
         register_yield_curve_process_type_history_provider(hist_registry);
         subs.push_back(ores::history::messaging::register_history_handlers(

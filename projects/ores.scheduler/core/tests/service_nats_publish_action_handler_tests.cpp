@@ -73,7 +73,7 @@ struct operation_response {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<operation_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ores::utility::codec::field{"result", &operation_response::result},
         ores::utility::codec::field{"report_instance_id", &operation_response::report_instance_id}};
 }

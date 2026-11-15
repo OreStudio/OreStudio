@@ -18,12 +18,15 @@
  *
  */
 #include "ores.http.client/net/transport.hpp"
+#include "ores.platform/process/pid.hpp"
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/context.hpp>
 #include <boost/asio/ssl/stream.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
+#include <boost/beast/core/stream_traits.hpp>
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/string_body.hpp>
 #include <boost/beast/http/write.hpp>
@@ -42,7 +45,6 @@
 #include <optional>
 #include <string>
 #include <thread>
-#include <unistd.h>
 
 namespace {
 
@@ -99,9 +101,10 @@ certificate make_certificate(const std::string& host) {
 
 std::filesystem::path written(const std::string& pem) {
     static int n = 0;
-    const auto path = std::filesystem::temp_directory_path() /
-                      ("ores_http_client_test_" + std::to_string(::getpid()) + "_" +
-                       std::to_string(n++) + ".pem");
+    const auto path =
+        std::filesystem::temp_directory_path() /
+        ("ores_http_client_test_" + std::to_string(ores::platform::process::current_pid()) + "_" +
+         std::to_string(n++) + ".pem");
     std::ofstream(path) << pem;
     return path;
 }
@@ -110,71 +113,128 @@ std::filesystem::path written(const std::string& pem) {
 struct reply {
     std::string body = "hello";
     std::chrono::milliseconds delay{0};
+    /// Answers with the request's method, content type and body instead of @c body.
+    bool echo = false;
 };
 
-/// A server on a free local port that answers one connection, over TLS when given a
-/// certificate.
+/// One connection to the local server: reads a request, waits, then answers it.
+template <typename Stream>
+class session final : public std::enable_shared_from_this<session<Stream>> {
+public:
+    session(Stream stream, reply r)
+        : stream_(std::move(stream))
+        , timer_(stream_.get_executor())
+        , reply_(std::move(r)) {}
+
+    void serve() {
+        bhttp::async_read(
+            stream_,
+            buffer_,
+            request_,
+            [self = this->shared_from_this()](boost::system::error_code ec, std::size_t) {
+                if (!ec)
+                    self->answer_later();
+            });
+    }
+
+    Stream& stream() {
+        return stream_;
+    }
+
+private:
+    void answer_later() {
+        timer_.expires_after(reply_.delay);
+        timer_.async_wait([self = this->shared_from_this()](boost::system::error_code ec) {
+            if (!ec)
+                self->answer();
+        });
+    }
+
+    void answer() {
+        response_.set(bhttp::field::content_type, "application/json");
+        response_.body() = reply_.echo ? std::string(request_.method_string()) + " " +
+                                             std::string(request_[bhttp::field::content_type]) +
+                                             " " + request_.body() :
+                                         reply_.body;
+        response_.prepare_payload();
+        bhttp::async_write(
+            stream_,
+            response_,
+            [self = this->shared_from_this()](boost::system::error_code, std::size_t) {
+                boost::system::error_code ignored;
+                boost::beast::get_lowest_layer(self->stream_).close(ignored);
+            });
+    }
+
+    Stream stream_;
+    asio::steady_timer timer_;
+    reply reply_;
+    boost::beast::flat_buffer buffer_;
+    bhttp::request<bhttp::string_body> request_;
+    bhttp::response<bhttp::string_body> response_{bhttp::status::ok, 11};
+};
+
+/**
+ * @brief A server on a free local port that answers one connection, over TLS when
+ * given a certificate.
+ *
+ * Every step is asynchronous on the server's own context, and the destructor stops
+ * that context. No accept, handshake or read can then keep the test waiting, whatever
+ * the client did or did not send.
+ */
 class local_server {
 public:
     explicit local_server(reply r,
                           std::optional<certificate> cert = std::nullopt,
                           const std::string& address = "127.0.0.1")
-        : acceptor_(io_, tcp::endpoint(asio::ip::make_address(address), 0)) {
+        : acceptor_(io_, tcp::endpoint(asio::ip::make_address(address), 0))
+        , reply_(std::move(r)) {
         port_ = acceptor_.local_endpoint().port();
-        thread_ = std::thread([this, r = std::move(r), cert = std::move(cert)] {
-            boost::system::error_code ec;
-            tcp::socket socket(io_);
-            acceptor_.accept(socket, ec);
-            if (ec)
-                return;
-            if (!cert) {
-                serve(socket, r);
-                return;
-            }
-            asio::ssl::context ctx(asio::ssl::context::tls_server);
-            ctx.use_certificate_chain(asio::buffer(cert->cert_pem));
-            ctx.use_private_key(asio::buffer(cert->key_pem), asio::ssl::context::pem);
-            asio::ssl::stream<tcp::socket> stream(std::move(socket), ctx);
-            stream.handshake(asio::ssl::stream_base::server, ec);
+        if (cert) {
+            tls_.emplace(asio::ssl::context::tls_server);
+            tls_->use_certificate_chain(asio::buffer(cert->cert_pem));
+            tls_->use_private_key(asio::buffer(cert->key_pem), asio::ssl::context::pem);
+        }
+        acceptor_.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
             if (!ec)
-                serve(stream, r);
+                accepted(std::move(socket));
         });
+        thread_ = std::thread([this] { io_.run(); });
     }
 
     ~local_server() {
-        // A client that never connected leaves the thread blocked in accept, so
-        // a connection of our own releases it and the test reports its failure.
-        boost::system::error_code ec;
-        tcp::socket waker(io_);
-        waker.connect(acceptor_.local_endpoint(ec), ec);
-        waker.close(ec);
+        io_.stop();
         if (thread_.joinable())
             thread_.join();
     }
+
+    local_server(const local_server&) = delete;
+    local_server& operator=(const local_server&) = delete;
 
     [[nodiscard]] std::string url(const std::string& scheme, const std::string& host) const {
         return scheme + "://" + host + ":" + std::to_string(port_) + "/v2/rates?from=2026-10-01";
     }
 
 private:
-    template <typename Stream>
-    static void serve(Stream& stream, const reply& r) {
-        boost::system::error_code ec;
-        boost::beast::flat_buffer buffer;
-        bhttp::request<bhttp::string_body> request;
-        bhttp::read(stream, buffer, request, ec);
-        if (ec)
+    void accepted(tcp::socket socket) {
+        if (!tls_) {
+            std::make_shared<session<tcp::socket>>(std::move(socket), reply_)->serve();
             return;
-        std::this_thread::sleep_for(r.delay);
-        bhttp::response<bhttp::string_body> response{bhttp::status::ok, 11};
-        response.set(bhttp::field::content_type, "application/json");
-        response.body() = r.body;
-        response.prepare_payload();
-        bhttp::write(stream, response, ec);
+        }
+        using tls_stream = asio::ssl::stream<tcp::socket>;
+        auto s =
+            std::make_shared<session<tls_stream>>(tls_stream(std::move(socket), *tls_), reply_);
+        s->stream().async_handshake(asio::ssl::stream_base::server,
+                                    [s](boost::system::error_code ec) {
+                                        if (!ec)
+                                            s->serve();
+                                    });
     }
 
     asio::io_context io_;
+    std::optional<asio::ssl::context> tls_;
     tcp::acceptor acceptor_;
+    reply reply_;
     unsigned short port_ = 0;
     std::thread thread_;
 };
@@ -208,6 +268,28 @@ TEST_CASE("a_get_over_http_returns_the_status_type_and_body", "[net][transport]"
     CHECK(out->status == 200);
     CHECK(out->content_type == "application/json");
     CHECK(out->body == R"({"rates":[]})");
+}
+
+TEST_CASE("a_post_sends_its_body_and_its_content_type", "[net][transport]") {
+    local_server server({.echo = true});
+    beast_transport sut;
+
+    const auto out =
+        sut.post(server.url("http", "127.0.0.1"), "application/x-www-form-urlencoded", "a=1&b=2");
+
+    REQUIRE(out.has_value());
+    CHECK(out->status == 200);
+    CHECK(out->body == "POST application/x-www-form-urlencoded a=1&b=2");
+}
+
+TEST_CASE("a_get_sends_no_body", "[net][transport]") {
+    local_server server({.echo = true});
+    beast_transport sut;
+
+    const auto out = sut.get(server.url("http", "127.0.0.1"));
+
+    REQUIRE(out.has_value());
+    CHECK(out->body == "GET  ");
 }
 
 TEST_CASE("a_body_over_the_limit_is_refused", "[net][transport]") {
@@ -299,6 +381,10 @@ TEST_CASE("a_secret_in_the_query_is_masked_and_the_rest_kept", "[net][transport]
           "https://api.example.org/series?Token=***&series_id=DEXUSEU");
     CHECK(redacted("https://api.example.org/series?from=2026-10-01") ==
           "https://api.example.org/series?from=2026-10-01");
+    CHECK(redacted("https://api.example.org/ws?user=a%40example.org&pass=p-1&function=GetSeries") ==
+          "https://api.example.org/ws?user=***&pass=***&function=GetSeries");
+    CHECK(redacted("https://api.example.org/ws?Password=p&subscription-key=k") ==
+          "https://api.example.org/ws?Password=***&subscription-key=***");
 }
 
 TEST_CASE("a_failure_names_the_address_with_its_secret_masked", "[net][transport]") {

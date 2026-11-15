@@ -44,10 +44,10 @@ static constexpr std::string_view lifecycle_event_queue_group = "ores.trading.se
 
 std::vector<ores::nats::service::subscription>
 register_lifecycle_event_handlers(ores::nats::service::client& nats,
-                                  ores::database::context ctx,
+                                  const ores::database::context& ctx,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<lifecycle_event_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<lifecycle_event_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_lifecycle_events_request::nats_subject,
         lifecycle_event_queue_group,

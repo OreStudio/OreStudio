@@ -1,10 +1,16 @@
 :PROPERTIES:
 :ID: 165E5F12-FB8A-41FD-9137-1C1159170A14
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_generation_config_process_parameter_value
 #+description: Codegen entity model for the synthetic ir_curve_generation_config_process_parameter_value table; one named process-parameter value of an IR curve generation config, referencing its parameter definition.
 #+type: ores.codegen.entity
+#+web_resource: ir-parameter-values
+#+web_writes: many
+#+web_parent_filter: config_id
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: ir_curve_generation_config_process_parameter_value

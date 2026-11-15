@@ -346,7 +346,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &role_product_type_key::role_id},
         utility::codec::field{"product_type_code", &role_product_type_key::product_type_code},
     };
@@ -361,7 +361,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &role_product_type_write::role_id},
         utility::codec::field{"product_type_code", &role_product_type_write::product_type_code},
     };
@@ -376,7 +376,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &role_product_type_change::write},
         utility::codec::field{"precondition", &role_product_type_change::precondition},
     };
@@ -391,7 +391,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &role_product_type_removal::key},
         utility::codec::field{"precondition", &role_product_type_removal::precondition},
     };
@@ -406,7 +406,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &role_product_type_lookup::key},
         utility::codec::field{"role_product_type", &role_product_type_lookup::role_product_type},
     };
@@ -421,7 +421,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &role_product_types_filter::role_id},
         utility::codec::field{"product_type_code", &role_product_types_filter::product_type_code},
         utility::codec::field{"role_id_one_of", &role_product_types_filter::role_id_one_of},
@@ -439,7 +439,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_product_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &role_product_type_event::event_id},
         utility::codec::field{"key", &role_product_type_event::key},
         utility::codec::field{"action", &role_product_type_event::action},
@@ -458,7 +458,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_role_product_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_role_product_types_request::offset},
         utility::codec::field{"limit", &list_role_product_types_request::limit},
         utility::codec::field{"order", &list_role_product_types_request::order},
@@ -475,7 +475,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_role_product_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_role_product_types_response::result},
         utility::codec::field{"role_product_types",
                               &list_role_product_types_response::role_product_types},
@@ -492,7 +492,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_product_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_role_product_type_request::key},
     };
 }
@@ -506,7 +506,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_product_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_role_product_type_response::result},
         utility::codec::field{"role_product_type",
                               &get_role_product_type_response::role_product_type},
@@ -522,7 +522,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_role_product_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_role_product_types_request::keys},
     };
 }
@@ -536,7 +536,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_role_product_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_role_product_types_response::result},
         utility::codec::field{"entries", &get_many_role_product_types_response::entries},
     };
@@ -551,7 +551,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_product_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_role_product_type_request::change},
         utility::codec::field{"intent", &put_role_product_type_request::intent},
     };
@@ -566,7 +566,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_product_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_role_product_type_response::result},
         utility::codec::field{"role_product_type",
                               &put_role_product_type_response::role_product_type},
@@ -582,7 +582,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_role_product_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_role_product_types_request::changes},
         utility::codec::field{"intent", &put_many_role_product_types_request::intent},
     };
@@ -597,7 +597,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_role_product_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_role_product_types_response::result},
         utility::codec::field{"role_product_types",
                               &put_many_role_product_types_response::role_product_types},
@@ -613,7 +613,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_role_product_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_role_product_type_request::removal},
         utility::codec::field{"intent", &delete_role_product_type_request::intent},
     };
@@ -628,7 +628,7 @@ struct list_by_product_type_code_role_product_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_role_product_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_role_product_type_response::result},
     };
 }
@@ -643,7 +643,7 @@ struct list_by_product_type_code_role_product_types_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_role_product_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_role_product_types_request::removals},
         utility::codec::field{"intent", &delete_many_role_product_types_request::intent},
     };
@@ -659,7 +659,7 @@ wire_fields(std::type_identity<delete_many_role_product_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_role_product_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_role_product_types_response::result},
     };
 }
@@ -674,7 +674,7 @@ wire_fields(std::type_identity<delete_many_role_product_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_role_id_role_product_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &list_by_role_id_role_product_types_request::role_id},
         utility::codec::field{"scope", &list_by_role_id_role_product_types_request::scope},
         utility::codec::field{"offset", &list_by_role_id_role_product_types_request::offset},
@@ -694,7 +694,7 @@ wire_fields(std::type_identity<list_by_role_id_role_product_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_role_id_role_product_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_role_id_role_product_types_response::result},
         utility::codec::field{"role_product_types",
                               &list_by_role_id_role_product_types_response::role_product_types},
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<list_by_role_id_role_product_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_product_type_code_role_product_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "product_type_code",
             &list_by_product_type_code_role_product_types_request::product_type_code},
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<list_by_product_type_code_role_product_types_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_product_type_code_role_product_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_product_type_code_role_product_types_response::result},
         utility::codec::field{

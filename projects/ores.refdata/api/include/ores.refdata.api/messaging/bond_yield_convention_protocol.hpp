@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &bond_yield_convention_key::id},
     };
 }
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &bond_yield_convention_write::id},
         utility::codec::field{"compounding", &bond_yield_convention_write::compounding},
         utility::codec::field{"frequency", &bond_yield_convention_write::frequency},
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &bond_yield_convention_change::write},
         utility::codec::field{"precondition", &bond_yield_convention_change::precondition},
     };
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_yield_convention_removal::key},
         utility::codec::field{"precondition", &bond_yield_convention_removal::precondition},
     };
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_yield_convention_lookup::key},
         utility::codec::field{"bond_yield_convention",
                               &bond_yield_convention_lookup::bond_yield_convention},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_conventions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &bond_yield_conventions_filter::id_one_of},
     };
 }
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &bond_yield_convention_event::event_id},
         utility::codec::field{"key", &bond_yield_convention_event::key},
         utility::codec::field{"action", &bond_yield_convention_event::action},
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_yield_convention_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bond_yield_convention",
                               &bond_yield_convention_version_key::bond_yield_convention},
         utility::codec::field{"version", &bond_yield_convention_version_key::version},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bond_yield_conven
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<bond_yield_convention_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &bond_yield_convention_versions_filter::version},
         utility::codec::field{"from_version", &bond_yield_convention_versions_filter::from_version},
         utility::codec::field{"to_version", &bond_yield_convention_versions_filter::to_version},
@@ -523,7 +523,7 @@ wire_fields(std::type_identity<bond_yield_convention_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_yield_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_bond_yield_conventions_request::offset},
         utility::codec::field{"limit", &list_bond_yield_conventions_request::limit},
         utility::codec::field{"order", &list_bond_yield_conventions_request::order},
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<bond_yield_convention_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_yield_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_yield_conventions_response::result},
         utility::codec::field{"bond_yield_conventions",
                               &list_bond_yield_conventions_response::bond_yield_conventions},
@@ -558,7 +558,7 @@ wire_fields(std::type_identity<bond_yield_convention_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_yield_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_yield_convention_request::key},
     };
 }
@@ -572,7 +572,7 @@ wire_fields(std::type_identity<bond_yield_convention_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_yield_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_yield_convention_response::result},
         utility::codec::field{"bond_yield_convention",
                               &get_bond_yield_convention_response::bond_yield_convention},
@@ -589,7 +589,7 @@ wire_fields(std::type_identity<bond_yield_convention_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_bond_yield_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_bond_yield_conventions_request::keys},
     };
 }
@@ -604,7 +604,7 @@ wire_fields(std::type_identity<get_many_bond_yield_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_bond_yield_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_bond_yield_conventions_response::result},
         utility::codec::field{"entries", &get_many_bond_yield_conventions_response::entries},
     };
@@ -619,7 +619,7 @@ wire_fields(std::type_identity<get_many_bond_yield_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bond_yield_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_bond_yield_convention_request::change},
         utility::codec::field{"intent", &put_bond_yield_convention_request::intent},
     };
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<get_many_bond_yield_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bond_yield_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_bond_yield_convention_response::result},
         utility::codec::field{"bond_yield_convention",
                               &put_bond_yield_convention_response::bond_yield_convention},
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<get_many_bond_yield_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_bond_yield_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_bond_yield_conventions_request::changes},
         utility::codec::field{"intent", &put_many_bond_yield_conventions_request::intent},
     };
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<put_many_bond_yield_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_bond_yield_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_bond_yield_conventions_response::result},
         utility::codec::field{"bond_yield_conventions",
                               &put_many_bond_yield_conventions_response::bond_yield_conventions},
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<put_many_bond_yield_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bond_yield_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_bond_yield_convention_request::removal},
         utility::codec::field{"intent", &delete_bond_yield_convention_request::intent},
     };
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<put_many_bond_yield_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_bond_yield_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_bond_yield_convention_response::result},
     };
 }
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<delete_bond_yield_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_bond_yield_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_bond_yield_conventions_request::removals},
         utility::codec::field{"intent", &delete_many_bond_yield_conventions_request::intent},
     };
@@ -730,7 +730,7 @@ wire_fields(std::type_identity<delete_many_bond_yield_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_bond_yield_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_bond_yield_conventions_response::result},
     };
 }
@@ -745,7 +745,7 @@ wire_fields(std::type_identity<delete_many_bond_yield_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_yield_convention_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_bond_yield_convention_versions_request::key},
         utility::codec::field{"offset", &list_bond_yield_convention_versions_request::offset},
         utility::codec::field{"limit", &list_bond_yield_convention_versions_request::limit},
@@ -764,7 +764,7 @@ wire_fields(std::type_identity<list_bond_yield_convention_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_yield_convention_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_yield_convention_versions_response::result},
         utility::codec::field{"versions", &list_bond_yield_convention_versions_response::versions},
         utility::codec::field{"total", &list_bond_yield_convention_versions_response::total},
@@ -781,7 +781,7 @@ wire_fields(std::type_identity<list_bond_yield_convention_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_yield_convention_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_yield_convention_version_request::key},
     };
 }
@@ -796,7 +796,7 @@ wire_fields(std::type_identity<get_bond_yield_convention_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_yield_convention_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_yield_convention_version_response::result},
         utility::codec::field{"version", &get_bond_yield_convention_version_response::version},
     };

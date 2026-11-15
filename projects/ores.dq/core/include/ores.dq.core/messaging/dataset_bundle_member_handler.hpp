@@ -64,11 +64,11 @@ using namespace ores::logging;
 class dataset_bundle_member_handler {
 public:
     dataset_bundle_member_handler(ores::nats::service::client& nats,
-                                  ores::database::context ctx,
+                                  const ores::database::context& ctx,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves dq.v1.dataset_bundle_members.list.

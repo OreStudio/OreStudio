@@ -18,7 +18,8 @@
  *
  */
 #include "ores.trading.core/service/trade_operations_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
@@ -55,8 +56,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-trade_operations_service::trade_operations_service(context ctx, const book_rules_port& books)
-    : ctx_(std::move(ctx))
+trade_operations_service::trade_operations_service(const context& ctx, const book_rules_port& books)
+    : ctx_(ctx)
     , books_(&books) {}
 
 namespace {
@@ -235,6 +236,11 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
             break;
     }
 
+    // The authorisation's kind and policy are read before the unit of work
+    // opens, because a context bound to a transaction cannot read for another
+    // tenant or party.
+    const auto authorisation = operational_authorisation_service(ctx_).prepare();
+
     // One transaction writes the anchor, the activity, the booking, the state,
     // the identifiers and the instrument, so a failure in any of them leaves
     // none of them. A read made through the transaction joins it without
@@ -324,8 +330,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     // A trade booked live in a real book awaits Operations. The request joins
     // this transaction, so a trade is never live without one.
-    operational_authorisation_service authorisation(ctx);
-    const auto raised = authorisation.raise_if_awaiting(anchor.id);
+    const auto raised =
+        operational_authorisation_service(ctx).raise_if_awaiting(anchor.id, authorisation);
 
     uow.commit();
 
@@ -345,7 +351,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 }
 
 std::optional<raised_authorisation>
-trade_operations_service::execute_within(context ctx,
+trade_operations_service::execute_within(const context& ctx,
+                                         const authorisation_policy& authorisation,
                                          const boost::uuids::uuid& trade_id,
                                          const std::string& change_reason_code,
                                          const std::string& change_commentary,
@@ -386,8 +393,7 @@ trade_operations_service::execute_within(context ctx,
     if (activity_id != nullptr)
         *activity_id = activity.id;
 
-    operational_authorisation_service authorisation(ctx);
-    return authorisation.raise_if_awaiting(trade_id);
+    return operational_authorisation_service(ctx).raise_if_awaiting(trade_id, authorisation);
 }
 
 messaging::execute_trade_response
@@ -401,6 +407,11 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
     messaging::execute_trade_response response;
     const auto id = boost::uuids::to_string(request.trade_id);
     BOOST_LOG_SEV(lg(), debug) << "Executing trade " << id;
+
+    // The authorisation's kind and policy are read before the unit of work
+    // opens, because a context bound to a transaction cannot read for another
+    // tenant or party.
+    const auto authorisation = operational_authorisation_service(ctx_).prepare();
 
     // The activity, the state and the request are one decision, so they are one
     // transaction: a trade that goes live without its request is exactly the
@@ -444,7 +455,7 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
         response.result.message = "Trade " + id + " has no state to execute.";
         return response;
     }
-    const auto draft = ores::database::repository::execute_parameterized_string_query(
+    const auto draft = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
         "select ores_trading_status_is_draft_fn($1::uuid)::text",
         {boost::uuids::to_string(held.front().status_id)},
@@ -458,8 +469,12 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
     }
 
     auto activity_id = boost::uuids::uuid{};
-    const auto raised = execute_within(
-        ctx, request.trade_id, request.change_reason_code, request.change_commentary, &activity_id);
+    const auto raised = execute_within(ctx,
+                                       authorisation,
+                                       request.trade_id,
+                                       request.change_reason_code,
+                                       request.change_commentary,
+                                       &activity_id);
 
     uow.commit();
 
@@ -497,6 +512,10 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         return response;
     }
 
+    // The authorisation's kind and policy are read before the unit of work
+    // opens, because a context bound to a transaction cannot read for another
+    // tenant or party.
+    const auto authorisation = operational_authorisation_service(ctx_).prepare();
     unit_of_work uow(ctx_);
     const auto& ctx = uow.ctx();
 
@@ -544,7 +563,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
             response.result.message = "Trade " + leg_id + " has no state to complete.";
             return response;
         }
-        const auto draft = ores::database::repository::execute_parameterized_string_query(
+        const auto draft = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select ores_trading_status_is_draft_fn($1::uuid)::text",
             {boost::uuids::to_string(state.front().status_id)},
@@ -556,7 +575,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
          * Operations, and drafts that have not. A leg in any other state is a
          * deal that ended, and a structure does not hold those.
          */
-        const auto live = ores::database::repository::execute_parameterized_string_query(
+        const auto live = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select ores_trading_status_is_live_fn($1::uuid)::text",
             {boost::uuids::to_string(state.front().status_id)},
@@ -614,7 +633,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         // A leg that is already live has asked its own question; only a draft
         // is taken live here.
         const auto held_state = states.read_latest(ctx, boost::uuids::to_string(leg.trade_id));
-        const auto still_draft = ores::database::repository::execute_parameterized_string_query(
+        const auto still_draft = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select ores_trading_status_is_draft_fn($1::uuid)::text",
             {boost::uuids::to_string(held_state.front().status_id)},
@@ -622,8 +641,11 @@ trade_operations_service::complete_structure(const messaging::complete_structure
             "Checking whether a leg is still a draft");
         if (still_draft.empty() || still_draft.front() != "true")
             continue;
-        auto one = execute_within(
-            ctx, leg.trade_id, request.change_reason_code, request.change_commentary);
+        auto one = execute_within(ctx,
+                                  authorisation,
+                                  leg.trade_id,
+                                  request.change_reason_code,
+                                  request.change_commentary);
         if (one)
             raised.push_back(std::move(*one));
     }

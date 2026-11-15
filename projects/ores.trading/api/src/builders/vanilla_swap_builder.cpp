@@ -18,7 +18,9 @@
  *
  */
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
-#include <array>
+#include "leg_rows.hpp"
+#include "ores.trading.api/builders/cadence.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include <optional>
 #include <string_view>
 #include <utility>
@@ -29,25 +31,6 @@ namespace ores::trading::builders {
 namespace {
 
 using marketdata::conventions::lookup_error;
-
-struct cadence final {
-    std::string_view frequency;
-    std::string_view tenor;
-};
-
-/// A convention states a frequency and an index name a tenor; a schedule takes only a tenor.
-constexpr std::array cadences{cadence{"Annual", "1Y"},
-                              cadence{"Semiannual", "6M"},
-                              cadence{"Quarterly", "3M"},
-                              cadence{"Bimonthly", "2M"},
-                              cadence{"Monthly", "1M"}};
-
-std::optional<cadence> cadence_of(std::string_view stated) {
-    for (const auto& known : cadences)
-        if (stated == known.frequency || stated == known.tenor)
-            return known;
-    return std::nullopt;
-}
 
 struct leg_conventions final {
     cadence period;
@@ -76,7 +59,7 @@ std::string tenor_of(const std::string& index_name) {
 
 domain::instrument_schedule
 schedule_of(int leg_number, const vanilla_swap_terms& terms, const leg_conventions& leg) {
-    domain::instrument_schedule row;
+    domain::instrument_schedule row{};
     row.owner_role = "swap";
     row.owner_number = leg_number;
     row.schedule_role = "schedule";
@@ -92,36 +75,15 @@ schedule_of(int leg_number, const vanilla_swap_terms& terms, const leg_conventio
     return row;
 }
 
-domain::swap_leg leg_of(int leg_number,
-                        bool payer,
-                        std::string type,
-                        const vanilla_swap_terms& terms,
-                        const leg_conventions& leg) {
-    domain::swap_leg row;
-    row.identity.leg_number = leg_number;
-    row.payer = payer;
-    row.leg_type_code = std::move(type);
+domain::swap_leg conventional_leg(int leg_number,
+                                  bool payer,
+                                  std::string type,
+                                  const vanilla_swap_terms& terms,
+                                  const leg_conventions& leg) {
+    auto row = rows::swap_leg(leg_number, payer, std::move(type), terms.currency.get());
     row.day_count_fraction_code = leg.day_count;
     row.business_day_convention_code = leg.adjustment;
     row.payment_frequency_code = std::string(leg.period.frequency);
-    row.currency = terms.currency.get();
-    return row;
-}
-
-domain::swap_leg_amount notional_of(int leg_number, const vanilla_swap_terms& terms) {
-    domain::swap_leg_amount row;
-    row.leg_number = leg_number;
-    row.sequence_number = 1;
-    row.amount = terms.notional.get();
-    return row;
-}
-
-domain::swap_leg_rate rate_of(int leg_number, std::string role, utility::decimal::decimal value) {
-    domain::swap_leg_rate row;
-    row.leg_number = leg_number;
-    row.rate_role = std::move(role);
-    row.sequence_number = 1;
-    row.value = value;
     return row;
 }
 
@@ -150,7 +112,9 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
     if (terms_.maturity.get() <= terms_.start.get())
         return std::unexpected(build_error{"maturity", "must be after the start"});
 
-    const auto swap = conventions_.swap_convention_of(terms_.index.get());
+    const auto swap = terms_.convention ? conventions_.swap_convention_by_id(*terms_.convention,
+                                                                             terms_.index.get()) :
+                                          conventions_.swap_convention_of(terms_.index.get());
     if (!swap)
         return std::unexpected(index_error(swap.error()));
     const auto index = conventions_.index_definition_of(terms_.index.get());
@@ -181,22 +145,37 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
         swap->fixed_calendar.value_or(floating.calendar),
         fixed_adjustment_.value_or(swap->fixed_convention.value_or(floating.adjustment))};
 
+    const auto fixed_count = trade_day_count_of(fixed.day_count);
+    if (!fixed_count)
+        return std::unexpected(
+            build_error{"index", swap->id + ": no trade day count for " + fixed.day_count});
+    const auto floating_count = trade_day_count_of(floating.day_count);
+    if (!floating_count)
+        return std::unexpected(
+            build_error{"index", swap->id + ": no trade day count for " + floating.day_count});
+
     const bool fixed_pays = terms_.fixed_side.get() == side::pay;
-    domain::swap_instrument_data out;
+    // Built inside the result: gcc 16 misreads the strings of a value-initialised
+    // local once it is copied into the expected, and warns that they are uninitialised.
+    std::expected<domain::swap_instrument_data, build_error> result(std::in_place);
+    auto& out = *result;
     out.header.start_date = terms_.start.get();
     out.header.maturity_date = terms_.maturity.get();
     out.facts = domain::vanilla_swap_instrument{};
-    out.legs.push_back(leg_of(1, fixed_pays, "Fixed", terms_, fixed));
-    auto floating_leg = leg_of(2, !fixed_pays, "Floating", terms_, floating);
+    out.legs.push_back(conventional_leg(1, fixed_pays, "Fixed", terms_, fixed));
+    out.legs.back().day_count_fraction_code = std::string(*fixed_count);
+    auto floating_leg = conventional_leg(2, !fixed_pays, "Floating", terms_, floating);
+    floating_leg.day_count_fraction_code = std::string(*floating_count);
     floating_leg.floating_index_code = terms_.index.get().uri();
     floating_leg.fixing_days = fixing_days;
     floating_leg.is_in_arrears = false;
     out.legs.push_back(std::move(floating_leg));
-    out.leg_amounts = {notional_of(1, terms_), notional_of(2, terms_)};
-    out.leg_rates = {rate_of(1, "fixed", terms_.fixed_rate.get()),
-                     rate_of(2, "spread", utility::decimal::decimal{})};
+    out.leg_amounts = {rows::leg_amount(1, terms_.notional.get()),
+                       rows::leg_amount(2, terms_.notional.get())};
+    out.leg_rates = {rows::leg_rate(1, "fixed", terms_.fixed_rate.get()),
+                     rows::leg_rate(2, "spread", utility::decimal::decimal{})};
     out.schedules = {schedule_of(1, terms_, fixed), schedule_of(2, terms_, floating)};
-    return out;
+    return result;
 }
 
 }

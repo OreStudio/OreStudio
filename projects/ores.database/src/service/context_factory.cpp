@@ -21,7 +21,7 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/domain/exceptions.hpp"
 #include "ores.database/pq/store_error.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/schema_fingerprint.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -46,7 +46,7 @@ struct recorded_schema {
 // recreate, and is reported as having no fingerprint.
 recorded_schema read_recorded_schema(const context& ctx, logging::logger_t& lg) {
     try {
-        const auto rows = repository::execute_raw_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
             ctx,
             "select schema_fingerprint, git_commit, git_date "
             "from ores_database_info_tbl order by created_at desc limit 1",

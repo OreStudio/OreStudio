@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/subject_area_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
@@ -36,6 +37,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -82,17 +85,75 @@ query_builder::order subject_area_list_order(const ores::utility::domain::order&
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool subject_area_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using subject_area_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::subject_area>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+subject_area_rows_by_key subject_area_current_rows(subject_area_repository& repo,
+                                                   const ores::database::context& ctx,
+                                                   const std::vector<domain::subject_area>& of) {
+    std::vector<std::string> names;
+    names.reserve(of.size());
+    std::vector<std::string> domain_names;
+    domain_names.reserve(of.size());
+    for (const auto& row : of) {
+        names.push_back(row.name);
+        domain_names.push_back(row.domain_name);
+    }
+    subject_area_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, names, domain_names))
+        current[std::make_tuple(item.name, item.domain_name)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::subject_area>&
+subject_area_rows_of(const subject_area_rows_by_key& current, const domain::subject_area& item) {
+    static const std::vector<domain::subject_area> none;
+    const auto found = current.find(std::make_tuple(item.name, item.domain_name));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-subject_area_repository::replace_claim(context ctx, const domain::subject_area& v) {
-    const auto current = read_latest(ctx, v.name, v.domain_name);
+subject_area_replace_claim(const std::vector<domain::subject_area>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::subject_area subject_area_repository::apply_claim(
-    context ctx, const domain::subject_area& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::subject_area subject_area_apply_claim(const domain::subject_area& v,
+                                              const ores::utility::domain::precondition& claim,
+                                              const std::vector<domain::subject_area>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -104,55 +165,68 @@ domain::subject_area subject_area_repository::apply_claim(
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.name, v.domain_name);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void subject_area_repository::write(context ctx, const domain::subject_area& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void subject_area_repository::write(context ctx, const std::vector<domain::subject_area>& v) {
+void subject_area_repository::write(const context& ctx, const domain::subject_area& v) {
+    write(ctx, v, subject_area_replace_claim(read_latest(ctx, v.name, v.domain_name)));
+}
+
+void subject_area_repository::write(const context& ctx,
+                                    const std::vector<domain::subject_area>& v) {
+    const auto current = subject_area_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(subject_area_replace_claim(subject_area_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void subject_area_repository::write(context ctx,
+void subject_area_repository::write(const context& ctx,
                                     const domain::subject_area& v,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing subject area. " << "name: " << v.name
                                << " domain_name: " << v.domain_name;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = subject_area_apply_claim(v,
+                                            claim,
+                                            subject_area_claim_reads_current(claim) ?
+                                                read_latest(ctx, v.name, v.domain_name) :
+                                                std::vector<domain::subject_area>{});
     query_builder::execute_write_query(
         ctx, subject_area_mapper::map(t), lg(), "Writing subject area to database.");
 }
 
 void subject_area_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::subject_area>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing subject areas. Count: " << v.size();
+    std::vector<domain::subject_area> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (subject_area_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = subject_area_current_rows(*this, ctx, to_read);
     std::vector<domain::subject_area> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            subject_area_apply_claim(v[i], claims[i], subject_area_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, subject_area_mapper::map(batch), lg(), "Writing subject areas to database.");
 }
 
-std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx) {
+std::vector<domain::subject_area> subject_area_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -167,7 +241,7 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(context c
 }
 
 std::vector<domain::subject_area> subject_area_repository::read_latest(
-    context ctx, const std::string& name, const std::string& domain_name) {
+    const context& ctx, const std::string& name, const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject area. " << "name: " << name
                                << " domain_name: " << domain_name;
     static constexpr auto max = db_timestamp::max();
@@ -185,7 +259,7 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(
 
 
 std::vector<domain::subject_area> subject_area_repository::read_all(
-    context ctx, const std::string& name, const std::string& domain_name) {
+    const context& ctx, const std::string& name, const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all subject area versions. " << "name: " << name
                                << " domain_name: " << domain_name;
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
@@ -200,8 +274,11 @@ std::vector<domain::subject_area> subject_area_repository::read_all(
         "Reading all subject area versions by name.");
 }
 
-std::optional<domain::subject_area> subject_area_repository::read_at_version(
-    context ctx, const std::string& name, const std::string& domain_name, std::uint32_t version) {
+std::optional<domain::subject_area>
+subject_area_repository::read_at_version(const context& ctx,
+                                         const std::string& name,
+                                         const std::string& domain_name,
+                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading subject area at version. " << "name: " << name
                                << " domain_name: " << domain_name << " version: " << version;
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
@@ -223,7 +300,7 @@ std::optional<domain::subject_area> subject_area_repository::read_at_version(
 }
 
 subject_area_repository::remove_status
-subject_area_repository::remove(context ctx,
+subject_area_repository::remove(const context& ctx,
                                 const std::string& name,
                                 const std::string& domain_name,
                                 std::optional<std::uint32_t> version) {
@@ -256,14 +333,14 @@ subject_area_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void subject_area_repository::remove(context ctx,
+void subject_area_repository::remove(const context& ctx,
                                      const std::string& name,
                                      const std::string& domain_name) {
     static_cast<void>(remove(ctx, name, domain_name, std::nullopt));
 }
 
 std::vector<domain::subject_area>
-subject_area_repository::read_latest(context ctx,
+subject_area_repository::read_latest(const context& ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
                                      const ores::utility::domain::order& order,
@@ -284,7 +361,7 @@ subject_area_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-subject_area_repository::get_total_area_count(context ctx,
+subject_area_repository::get_total_area_count(const context& ctx,
                                               const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject area count";
 
@@ -299,11 +376,31 @@ subject_area_repository::get_total_area_count(context ctx,
 }
 
 std::vector<domain::subject_area>
-subject_area_repository::read_latest(context ctx,
+subject_area_repository::read_latest(const context& ctx,
                                      const std::vector<std::string>& names,
                                      const std::vector<std::string>& domain_names) {
     if (names.empty() || domain_names.empty())
         return {};
+    if (domain_names.size() != names.size())
+        throw std::invalid_argument(
+            "subject_area_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (names.size() > chunk_size) {
+        std::vector<domain::subject_area> all;
+        for (std::size_t begin = 0; begin < names.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, names.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(names.begin() + begin, names.begin() + end),
+                std::vector<std::string>(domain_names.begin() + begin, domain_names.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto query =
         query_builder::read<std::vector<subject_area_entity>> |
@@ -318,9 +415,6 @@ subject_area_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (domain_names.size() != names.size())
-        throw std::invalid_argument(
-            "subject_area_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < names.size(); ++i)
         requested.emplace(names[i], domain_names[i]);
@@ -333,7 +427,7 @@ subject_area_repository::read_latest(context ctx,
     return filtered;
 }
 
-void subject_area_repository::remove(context ctx,
+void subject_area_repository::remove(const context& ctx,
                                      const std::vector<std::string>& names,
                                      const std::vector<std::string>& domain_names) {
     // Compound key: a per-column .in() DELETE would be a cross-product

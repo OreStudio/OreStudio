@@ -57,7 +57,7 @@ private:
     }
 
 public:
-    explicit cut_authorisation_applier(ores::database::context ctx);
+    explicit cut_authorisation_applier(const ores::database::context& ctx);
 
     /**
      * @brief Applies every decided request the cut is not yet stamped with;

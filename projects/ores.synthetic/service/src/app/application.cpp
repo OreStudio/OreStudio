@@ -25,6 +25,7 @@
 #include "../registrar.hpp"
 #include "../simulator_adapter.hpp"
 #include "../simulator_offers.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
@@ -124,14 +125,14 @@ private:
 public:
     adapter_fleet(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& svc_nats,
-                  ores::database::context db_ctx,
+                  const ores::database::context& db_ctx,
                   generator_fleet& generators,
                   const feed_kind_registry& registry,
                   const ores::synthetic::feed::feed_build_context& build,
                   std::shared_ptr<ores::synthetic::feed::fault_state> faults)
         : nats_(nats)
         , svc_nats_(svc_nats)
-        , db_ctx_(std::move(db_ctx))
+        , db_ctx_(db_ctx)
         , generators_(generators)
         , registry_(registry)
         , build_(build)
@@ -262,10 +263,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // talks to the marketdata service (series + observations), all of which
     // require authentication and the marketdata permissions granted to the
     // SyntheticService IAM role. The token provider authenticates with the
-    // service's own database account credentials.
-    ores::nats::service::nats_client svc_nats(nats,
-                                              ores::iam::client::make_service_token_provider(
-                                                  nats, cfg.database.user, cfg.database.password));
+    // service's own database account credentials, and is kept beside the client
+    // because a provisioning step enters a tenant with it.
+    auto service_token = ores::iam::client::make_service_token_provider(
+        nats, cfg.database.user, cfg.database.password);
+    ores::nats::service::nats_client svc_nats(nats, service_token);
 
     auto db_ctx = make_context(cfg.database);
 
@@ -338,22 +340,86 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                .speed = cfg.market_speed};
     BOOST_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed
                               << ", MARKET SPEED: " << cfg.market_speed;
-    ores::analytics::quant::service::tick_scheduler scheduler(run_clock, market, cfg.run_seed);
+    // The run's one market: its loop decides when every feed ticks, its noise is the
+    // correlation between them, and its values are what they publish for each other. The
+    // aggregate owns all three, so the driver hook it installs points at what it outlives.
+    ores::analytics::quant::service::run_market run_market_of_the_run(
+        run_clock, market, cfg.run_seed);
+    auto& scheduler = run_market_of_the_run.loop();
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [](const std::exception& ex) {
                             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
                         });
-    ores::platform::concurrency::jthread scheduler_thread(
-        [&scheduler](ores::platform::concurrency::stop_token stop) {
-            scheduler.run();
-            (void)stop;
-        });
+    /*
+     * The market is built here, before the loop starts, for two reasons. A block's loadings
+     * are written in one pass while the market is made, so it cannot gain one later; and the
+     * loop reads its driver source without a lock, so the source must be in place before the
+     * loop runs.
+     *
+     * A surface hangs off the spot feed of its own pair: the block's anchor is that feed's
+     * series, so the surface's forward variances, skew and curvature load on the very series
+     * the spot publishes. A pair with no spot feed has no anchor, and its surface is left out
+     * with a warning rather than started to move on its own.
+     */
+    {
+        const auto rows = registry.rows(db_ctx);
+        std::map<std::pair<std::string, std::string>, std::uint64_t> spot_series;
+        for (const auto& row : rows)
+            if (row.candidate.fx_pair && !row.candidate.block)
+                spot_series[*row.candidate.fx_pair] =
+                    ores::analytics::quant::math::series_key(row.candidate.source_name);
+
+        for (const auto& row : rows) {
+            if (!row.candidate.block)
+                continue;
+            const auto anchor = spot_series.find(*row.candidate.fx_pair);
+            if (anchor == spot_series.end()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Synthetic surface '" << row.candidate.source_name << "' has no spot feed "
+                    << "for " << row.candidate.fx_pair->first << "/"
+                    << row.candidate.fx_pair->second << ", so it is not in the run's market";
+                continue;
+            }
+            try {
+                run_market_of_the_run.add_block(anchor->second,
+                                                row.candidate.source_name,
+                                                row.candidate.block->segments,
+                                                row.candidate.block->spot_variance,
+                                                row.candidate.block->spot_skew,
+                                                row.candidate.block->neighbour);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Synthetic surface '" << row.candidate.source_name
+                                          << "' has no block: " << e.what();
+            }
+        }
+        // A second is the finest gap this run can produce until the arrival laws are read
+        // here. Every configured rate is far slower, so no tick is interpolated.
+        run_market_of_the_run.build(3600.0, 0.0, 1.0);
+        BOOST_LOG_SEV(lg(), info) << "SYNTHETIC MARKET: "
+                                  << run_market_of_the_run.noise().factors.size()
+                                  << " factor(s) over "
+                                  << run_market_of_the_run.noise().series_id.size() << " series";
+    }
+
+    ores::platform::concurrency::jthread scheduler_thread([&scheduler] { scheduler.run(); });
+
+    // The scheduler runs until something stops it, so this guard stops it on
+    // every exit path, including a throw. Declared after the thread, it is
+    // destroyed first, which is what makes the thread joinable when its own
+    // destructor runs: a startup failure reports itself instead of hanging
+    // until systemd kills the process.
+    struct stop_scheduler_on_exit final {
+        ores::analytics::quant::service::tick_scheduler& scheduler;
+        ~stop_scheduler_on_exit() {
+            scheduler.stop();
+        }
+    } stop_on_exit{scheduler};
 
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for
     // each id that the demand names.
     const ores::synthetic::feed::feed_build_context adapter_build{
-        .nats = nats, .auth_nats = svc_nats, .scheduler = scheduler};
+        .nats = nats, .auth_nats = svc_nats, .market = run_market_of_the_run};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
@@ -364,12 +430,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto service_run = ores::service::service::run(
         io_ctx,
         nats,
-        std::move(db_ctx),
+        db_ctx,
         "ores.synthetic.service",
-        [&generators, faults, &svc_nats, &registry, &scheduler](auto& n, auto c, auto v) {
+        [&generators, faults, &svc_nats, service_token, &registry, &run_market_of_the_run](
+            auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
-            auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, generators, faults, c, v, registry, scheduler);
+            auto market_subs =
+                ores::synthetic::service::registrar::register_handlers(n,
+                                                                       svc_nats,
+                                                                       service_token,
+                                                                       generators,
+                                                                       faults,
+                                                                       c,
+                                                                       v,
+                                                                       registry,
+                                                                       run_market_of_the_run);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

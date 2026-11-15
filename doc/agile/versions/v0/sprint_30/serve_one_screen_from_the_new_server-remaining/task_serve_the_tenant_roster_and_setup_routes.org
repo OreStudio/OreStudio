@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 169CA9EA-6515-45B6-9F9F-7385FCF53C98
+:END:
+#+title: Task: Serve the provisioning routes
+#+description: ores.web reads the starting points a tenant is provisioned from, and provisions a tenant or a party, through the BFF. The C++ server must answer them.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-tenant-roster-and-setup-routes
+#+pr: 4593
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the starting points a tenant is provisioned from, and the tenant and party provisioning journeys, at the BFF's own addresses and shapes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- Each route names its same-address C++ route in the inventory.
+- A test proves each route against the answer the BFF gives.
+- The local gate is green.
+
+* Plan
+
+The routes fall into four groups, each a reviewable unit:
+
+- The bootstrap and setup reads: =/api/bootstrap=, =/api/bootstrap/administrator=,
+  =/api/bootstrap/complete=, =/api/tenant-setup= and =/api/registration-policy=.
+  The first two run with no session and the BFF rate limits the policy read,
+  which the C++ server cannot do yet.
+- The roster: =/api/tenants=, =/api/tenants/{code}= (read and remove) and
+  =/api/overview=. Each needs the deployment read and joins the provisioning runs.
+- The reads inside a tenant: =/api/tenants/{code}/parties=, =people=,
+  =accounts/{username}/sign-ins= and =images/{id}=. Each enters the tenant for
+  the read alone. The parties read reuses =party_page_routes::read_page= with a
+  request that carries the tenant's token.
+- Provisioning: =/api/seed-profiles=, =/api/provision-party= and
+  =/api/provision-tenant=.
+
+On 2026-11-11 the task served the provisioning group first, and the other
+three groups moved to [[id:6A5E392C-464E-4B9F-9E09-4ADF336D075A][Serve the tenant roster]].
+
+- =provisioning_routes= is a new unit in the IAM part. =GET /api/seed-profiles=
+  joins each starting point with its steps and its parameters, reads the JSON
+  list columns as lists, and orders the cards by their declared order and then
+  by code, as the BFF did.
+- =POST /api/provision-tenant= reads the body into the provision command. Each
+  parameter becomes one =name=value= entry. The codec reads the parameters as a
+  map, so the entries are in name order rather than the order the browser sent;
+  the service reads them by name.
+- =POST /api/provision-party= reads every party of the tenant to find its root,
+  writes the new party under it with a random id, inactive, operational and in
+  =WRLD=, and then starts the party stage. A refused write or stage is an
+  answer with success false, as the BFF sent it.
+- The IAM part takes =ores.refdata.api=, for the party reads and the write.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4593][#4593]] | [http] Serve the provisioning routes from C++ |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the parameters reach the command in name order, not the browser's order. | =provisioning_routes.cpp= | Declined | The codec reads a JSON object as a map. The service reads each entry by its name, so the order carries no meaning. The plan states it. |
+| 2 | Local review: a JSON list column that holds something else. | =provisioning_routes.cpp= | Accepted | The read fails as unanswered, as the BFF's schema failed it, and a test proves the refusal. |
+| 3 | Local review: the request bodies are file-local codec structs. | =provisioning_routes.cpp= | Accepted | They sit in the unit's anonymous namespace, so no other unit of the part can clash with them. |
+| 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: the profile and child reads take one page and never check the total. | =provisioning_routes.cpp= | Accepted in part | The BFF read the same single pages, so the limits stay. They are now named constants whose comments say why one page holds them all. |
+| 6 | PR review: a party whose stage fails stays in the tenant, inactive. | =provisioning_routes.cpp= | Declined | The BFF wrote the party and started the stage the same way. A second attempt with the same short code is refused by the service. |
+| 7 | PR review: the checks are non-empty only, and the LEI is not checked. | =provisioning_routes.cpp= | Declined | The BFF checked the same, and the services check the values. |
+| 8 | PR review: a tenant with several roots gets the first. | =provisioning_routes.cpp= | Declined | A tenant has exactly one root, and the BFF took the first match too. |
+| 9 | PR review: the parameter order needs a comment in the code. | =provisioning_routes.hpp= | Accepted | The reader's comment says the entries are in name order and why that is safe. |
+| 10 | PR review: the handler runs without suspending, and the JSON is written by hand. | =provisioning_routes.cpp= | Declined | Both match the sibling route units, and exact-JSON tests cover the shape. |
+
+* Result
+
+The C++ server answers =GET /api/seed-profiles=, =POST /api/provision-tenant=
+and =POST /api/provision-party= at the BFF's addresses and in its shapes, and
+the inventory pairs each. Tests compare the card shape exactly, read the list
+columns, the tenant body and the root party, and prove the refusals come before
+a forward. The other thirteen routes moved to their own task.

@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 1DE2BE9C-A783-42A6-988B-96DFA6A0DA08
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.rounding_type
 #+description: Codegen entity model for the refdata =rounding_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+web_classification: rounding-type
+#+web_classification_topic: currencies
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: Valid rounding methods per ORE XML schema.

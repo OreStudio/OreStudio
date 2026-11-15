@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_LADDER_SERVICE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_LADDER_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <chrono>
@@ -81,7 +81,7 @@ public:
      *
      * Inputs that name a party read that party's spot and funding curves only.
      */
-    [[nodiscard]] static computed_fx_forward_set compute(ores::database::context ctx,
+    [[nodiscard]] static computed_fx_forward_set compute(const ores::database::context& ctx,
                                                          const fx_forward_inputs& inputs);
 };
 

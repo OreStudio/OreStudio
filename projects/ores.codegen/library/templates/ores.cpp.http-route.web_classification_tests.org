@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 8B2D5D69-6177-4038-BE4D-2F905E1DAC33
+:END:
+#+title: ores.cpp.http-route.web_classification_tests
+#+description: Classification list unit tests: the routes a list registers, the refusals each states before it forwards, and its catalogue entry.
+#+type: archetype
+#+output: projects/ores.http/{component}/tests/{web_classification_entity}_routes_tests.cpp
+#+facet: ores.cpp.http-route
+#+model_types: domain_entity
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+The tests of one code list's routes. Each case runs a handler against a client
+that is not connected, so it needs no server, no NATS and no database. A
+request the route refuses comes back with the BFF's status and its
+={code, message}= body; a request the route accepts fails at the forward step
+as the service not answering.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_web_classification_tests.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_web_classification_tests.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.web_classification_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+{{#web_classification}}
+#include "ores.http/routes/{{component}}/{{unit}}_routes.hpp"
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "test_suite.hpp"
+#include <algorithm>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+
+using ores::http::domain::http_method;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
+using ores::http::net::router;
+using ores::http::openapi::endpoint_registry;
+using ores::http::routes::{{component}}::{{unit}}_routes;
+using ores::nats::service::nats_client;
+
+namespace {
+
+http_response {{unit}}_run(boost::asio::awaitable<http_response> work) {
+    boost::asio::io_context io;
+    std::optional<http_response> answer;
+    boost::asio::co_spawn(
+        io,
+        [&answer, work = std::move(work)]() mutable -> boost::asio::awaitable<void> {
+            answer = co_await std::move(work);
+        },
+        boost::asio::detached);
+    io.run();
+    return answer.value_or(http_response{});
+}
+
+http_request {{unit}}_request(std::string body, std::string code = "X") {
+    http_request req;
+    req.body = std::move(body);
+    req.path_params["code"] = std::move(code);
+    return req;
+}
+
+}
+
+TEST_CASE("{{unit}}_routes_registers_the_screen_addresses", "[routes][classification]") {
+    nats_client session;
+    auto table = std::make_shared<router>();
+    {{unit}}_routes::register_routes(table, std::make_shared<endpoint_registry>(), session);
+    const auto& routes = table->routes();
+    const auto has = [&](http_method method, const std::string& pattern) {
+        return std::any_of(routes.begin(), routes.end(), [&](const auto& route) {
+            return route.method == method && route.pattern == pattern && route.requires_auth;
+        });
+    };
+    CHECK(has(http_method::get, "{{base}}"));
+    CHECK(has(http_method::post, "{{base}}/rows"));
+    CHECK(has(http_method::put, "{{base}}/rows/{code}"));
+    CHECK(has(http_method::put, "{{base}}/order"));
+    CHECK(has(http_method::delete_, "{{base}}/rows/{code}"));
+    CHECK(has(http_method::put, "{{base}}/rows/{code}/label"));
+}
+
+TEST_CASE("{{unit}}_routes_states_its_list_in_the_catalogue", "[routes][classification]") {
+    const auto entry = {{unit}}_routes::catalogue_entry(7);
+    CHECK(entry.find("\"key\":\"{{key}}\"") != std::string::npos);
+    CHECK(entry.find("\"shape\":\"{{shape}}\"") != std::string::npos);
+    CHECK(entry.find("\"count\":7") != std::string::npos);
+    CHECK({{unit}}_routes::catalogue_entry(std::nullopt).find("\"count\":null") != std::string::npos);
+}
+
+TEST_CASE("{{unit}}_routes_refuses_a_write_that_states_no_reason", "[routes][classification]") {
+    nats_client session;
+    // A list of ORE spellings refuses a write before it reads the body.
+    const auto expected = {{#editable}}http_status::bad_request{{/editable}}{{^editable}}http_status::forbidden{{/editable}};
+    CHECK({{unit}}_run({{unit}}_routes::handle_create({{unit}}_request("{}"), session)).status == expected);
+    CHECK({{unit}}_run({{unit}}_routes::handle_update({{unit}}_request("{}"), session)).status == expected);
+    CHECK({{unit}}_run({{unit}}_routes::handle_order({{unit}}_request("{}"), session)).status == expected);
+    CHECK({{unit}}_run({{unit}}_routes::handle_delete({{unit}}_request("{}"), session)).status == expected);
+}
+
+TEST_CASE("{{unit}}_routes_labels_a_row_of_any_list", "[routes][classification]") {
+    nats_client session;
+    // A label is how a code is drawn, so even a list of ORE spellings is labelled.
+    const auto refused = {{unit}}_run({{unit}}_routes::handle_label({{unit}}_request("{}"), session));
+    CHECK(refused.status == http_status::bad_request);
+    const auto accepted = {{unit}}_run({{unit}}_routes::handle_label(
+        {{unit}}_request(R"({"badgeCode":null,"reasonCode":"x"})"), session));
+    CHECK(accepted.status == http_status::bad_gateway);
+}
+{{^has_order}}
+
+TEST_CASE("{{unit}}_routes_refuses_an_order_for_a_list_with_none", "[routes][classification]") {
+    nats_client session;
+    const auto response = {{unit}}_run({{unit}}_routes::handle_order(
+        {{unit}}_request(R"({"rows":[{"code":"A","displayOrder":1,"version":1}],"reasonCode":"x"})"),
+        session));
+    CHECK(response.status == {{#editable}}http_status::bad_request{{/editable}}{{^editable}}http_status::forbidden{{/editable}});
+}
+{{/has_order}}
+{{/web_classification}}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetypes: [[id:6E0B3B47-4F55-4E1C-9C2B-0D7E3C9B8A11][ores.cpp.http-route.web_classification_header]] and [[id:7A1C4C58-5066-4F2D-AD3C-1E8F4D0C9B22][ores.cpp.http-route.web_classification_implementation]].

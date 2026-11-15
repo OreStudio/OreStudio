@@ -45,7 +45,7 @@ bool is_system_reason(const std::string& reason) {
 
 }
 
-void refresh_trade_economic_digest(context ctx,
+void refresh_trade_economic_digest(const context& ctx,
                                    const std::string& trade_id,
                                    const std::string& change_reason_code,
                                    logger_t& log) {

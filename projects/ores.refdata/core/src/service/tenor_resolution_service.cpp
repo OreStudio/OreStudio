@@ -21,6 +21,7 @@
 #include "ores.analytics.quant/domain/business_day_calendar_set.hpp"
 #include "ores.analytics.quant/domain/tenor_resolution.hpp"
 #include "ores.analytics.quant/service/tenor_resolution_engine.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"
@@ -48,11 +49,11 @@ namespace aquant_domain = ores::analytics::quant::domain;
 
 using ores::analytics::quant::domain::business_day_calendar_set;
 using ores::analytics::quant::domain::calendar_date_row;
-using ores::analytics::quant::domain::parse_business_day_convention_code;
-using ores::analytics::quant::domain::parse_period_unit_code;
-using ores::analytics::quant::domain::parse_resolution_algorithm_code;
-using ores::analytics::quant::domain::parse_tenor_anchor_code;
-using ores::analytics::quant::domain::parse_tenor_kind_code;
+using ores::refdata::mapping::parse_business_day_convention_code;
+using ores::refdata::mapping::parse_period_unit_code;
+using ores::refdata::mapping::parse_resolution_algorithm_code;
+using ores::refdata::mapping::parse_tenor_anchor_code;
+using ores::refdata::mapping::parse_tenor_kind_code;
 using ores::analytics::quant::domain::schedule_date;
 using ores::analytics::quant::domain::schedule_kind;
 using ores::analytics::quant::domain::tenor_resolution_request;
@@ -187,8 +188,8 @@ std::optional<business_day_calendar_set> load_calendar(const tenor_resolution_se
 /// once.
 class schedule_axes final {
 public:
-    explicit schedule_axes(tenor_resolution_service::context ctx)
-        : ctx_(std::move(ctx)) {}
+    explicit schedule_axes(const tenor_resolution_service::context& ctx)
+        : ctx_(ctx) {}
 
     /// Points the rule at the named schedule. A schedule that cannot be walked
     /// is a refusal in the response, and every row that names it gets the same
@@ -385,8 +386,8 @@ messaging::convention_tenor_resolution entry_of(std::string tenor_code,
 
 } // namespace
 
-tenor_resolution_service::tenor_resolution_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenor_resolution_service::tenor_resolution_service(const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::resolve_tenor_response
 tenor_resolution_service::resolve(const messaging::resolve_tenor_request& request) const {

@@ -48,6 +48,7 @@ runs show only real defects.
 |------+-------+-------+-----+-------------|
 | [[id:ECC490AD-D0D8-4B8F-9F03-1E69A3109D54][Scaffold story: Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:D37CDA80-087B-481C-A79F-A8B1273E7B1C][Implement Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Initial task for: Hotfix: nightly CI failures |
+| [[id:4E41BCBD-394F-4E5F-983A-BA90728BC154][Fix the remaining nightly failures]] | DONE | | 2026-11-10 | Fix the Windows build, the macOS http client hang and the codegen drift that the nightly runs of 2026-11-10 show. |
 
 * Decisions
 

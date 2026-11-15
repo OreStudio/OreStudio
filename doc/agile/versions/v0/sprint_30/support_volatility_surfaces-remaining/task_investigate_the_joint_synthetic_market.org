@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 0DAFFD2F-0052-4A10-B6CD-92F14420A591
+:END:
+#+title: Task: Investigate how the synthetic market is generated jointly
+#+description: Decide how the synthetic feeds share one correlated market (open decision OD-1), across asset classes and use cases, on the scheduler's clock and with the regime and Hawkes arrivals.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/investigate-the-joint-synthetic-market
+#+pr: 4657
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Decide how the synthetic feeds share one correlated market (open decision OD-1), so that spot, curves, surfaces and the asset classes after them move together under the regime and the Hawkes arrivals they already share, and a test can measure the correlation it states. The investigation states the options, their costs and a recommendation, and the approach is chosen from it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-12                             |
+
+* Acceptance
+
+- An investigation, beside this task, states what the synthetic market shares today, the requirements a joint market must meet, the options weighed against them, and a recommendation.
+- It takes into account the documents on the regime, the Hawkes arrivals, the scheduler and its clock, the volatility channel, the generator library and the approach note's OD-1.
+- The answer serves every asset class and use case, not only the FX volatility surface, and composes with the regime and the Hawkes arrivals.
+- The owner decides the approach from it; no code is written under this task.
+
+* Plan
+
+Read the documents and the code that bear on a shared market, write the requirements an answer must meet, weigh each path against them, and recommend one, in [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Raised by the generator task's runtime PR: the surface must move with spot by a configured correlation, and reaching into the spot feed for its shock was rejected. The investigation is [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]]; it recommends shared Brownian factors in the market's simulated time, and leaves four decisions to the owner.
+
+The owner answered with a technical report that formalises Path F. Its content
+went into the knowledge base as atomic notes, not as a copy of the report:
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]],
+[[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]],
+[[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]] and
+[[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]].
+Reading the report against the code corrected nine statements before they
+reached the notes: the bridge resolution at depth 16 (about 55 ms, not
+microseconds), the driver as a stochastic integral when loadings change with
+the regime, the correlation of increments over unequal intervals (the Epps
+effect), the condition that tick times be independent of the noise, business
+time in the standardisation, the heat's bound on R4, who holds static
+arbitrage (the generator, not ORE), the non-cryptographic status of Philox and
+Threefry, and the cost ($O(KD)$ a tick). The approach note's OD-1 is resolved.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4657][#4657]] | [agile] Investigate how the synthetic market is generated jointly |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The bridge's fixed depth makes increments exact only at its nodes | investigation | Fix | A section states the resolution (3.4 microseconds of simulated time at a cell of an hour and a depth of 30), the error between nodes (a quarter of the finest step at most) and that no tick falls below it at the default speed; the first step tests two ticks inside one finest step. |
+| 2 | Business-time variance makes the factor depend on the regime | investigation | Fix | The exogenous chain keeps the noise independent of who ticks; a loading that includes the endogenous heat does not, which bounds R4 and is stated. |
+| 3 | Loadings at a regime switch | investigation | Fix | Loadings apply per piece of an interval, at the chain's switch times, which is exact. |
+| 4 | The zero-loading identity constrains the driven step's API | investigation | Fix | The series' own increment is drawn from its existing price stream in the same order, and the step receives the Gaussian it would have drawn. |
+| 5 | How the surface's three correlations become loadings | investigation | Fix | A block member loads on its anchor's whole driver, so its correlation with spot is exactly the stated one; a set that is not a correlation is refused, never projected. |
+| 6 | Measure the bridge's cost and the feed count | investigation | Dismiss | No code exists to measure; both are stated as unmeasured, and the story's first step measures them. |
+| 7 | The task's status, result and empty measurement row | task | Fix | Status and result state the investigation's outcome and the pending decision; the measurement table is the template's and stays empty, since nothing was measured. |
+| 8 | "b within a" and the independence of the factors | investigation | Fix | Written as option b inside option a; the factors and each series' own noise are stated independent. |
+| 9 | The anchor rule contradicts the zero-loading identity | shared factors | Fix | An anchor's own noise is a keyed path, since members tick at their own times; the bit-for-bit identity holds for series that anchor no block, in the note and the build task. |
+| 10 | Business time does not fit the keyed path | shared factors | Fix | The noise stays in simulated time and returns a standard normal; the process scales its variance by the volatility channel's loading, exact when the loading is constant over a tick interval, with the first-order error stated otherwise. |
+| 11 | Bit for bit needs a branch, not only d = 1 | shared factors, task | Fix | A series with every loading zero is handed its drawn normal unscaled; step 3 says so. |
+| 12 | Memory per series | shared factors | Fix | Static loadings keep the driver value; per-regime loadings keep the K factor values at the last tick. |
+| 13 | The boundary cache assumes time passes every cell | keyed path, task | Fix | A jump sums the skipped cells' increments; a late start sums from the start cell; step 1 tests a jump over many cells. |
+| 14 | How the arrival rule is pinned | shared factors, task | Fix | The arrival interface takes no price, and a test pins it. |
+| 15 | Measurements, the depth question and licences | task, shared factors | Fix | Step 1 records the read cost at depths 16 and 30 and the licence of every source copied; the open question links to step 1. |
+
+* Result
+
+[[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]] recommends shared Brownian factors in the market's simulated time: low rank and hierarchical, read by each series as increments of its own driver, exact to the bridge's resolution under any sampling. The owner chose it, with the report's answers to the four decisions: Path F;
+block factors first and global factors in Phase 5; static loadings first,
+regime loadings later; the surface's forward from the published spot and
+curves. The build is
+[[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]].

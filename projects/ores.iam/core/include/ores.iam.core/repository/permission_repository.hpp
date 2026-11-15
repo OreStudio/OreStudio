@@ -25,7 +25,7 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_PERMISSION_REPOSITORY_HPP
 #define ORES_IAM_CORE_REPOSITORY_PERMISSION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/messaging/permission_protocol.hpp"
 #include "ores.iam.core/export.hpp"
@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::permission& v);
-    void write(context ctx, const std::vector<domain::permission>& v);
+    void write(const context& ctx, const domain::permission& v);
+    void write(const context& ctx, const std::vector<domain::permission>& v);
     /**@}*/
 
     /**
@@ -89,7 +89,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::permission& v,
                const ores::utility::domain::precondition& claim);
 
@@ -97,7 +97,7 @@ public:
      * @brief Writes a set of permissions, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::permission>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -105,15 +105,26 @@ public:
      * @brief Reads latest permissions, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::permission> read_latest(context ctx);
-    std::vector<domain::permission> read_latest(context ctx, const std::string& id);
-    std::vector<domain::permission> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::permission> read_latest(const context& ctx);
+    std::vector<domain::permission> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::permission> read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest permissions filtered by code.
      */
-    std::vector<domain::permission> read_latest_by_code(context ctx, const std::string& code);
+    std::vector<domain::permission> read_latest_by_code(const context& ctx,
+                                                        const std::string& code);
+
+    /**
+     * @brief Reads latest permissions filtered by a set of code values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::permission> read_latest_by_code(const context& ctx,
+                                                        const std::vector<std::string>& codes);
 
     /**
      * @brief Reads the newest permissions filtered by code, current or not.
@@ -123,13 +134,13 @@ public:
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::permission> read_any_by_code(context ctx, const std::string& code);
+    std::vector<domain::permission> read_any_by_code(const context& ctx, const std::string& code);
 
 
     /**
      * @brief Reads all permissions, possibly filtered by primary key.
      */
-    std::vector<domain::permission> read_all(context ctx, const std::string& id);
+    std::vector<domain::permission> read_all(const context& ctx, const std::string& id);
 
 
     /**
@@ -149,7 +160,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::permission>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -162,14 +173,14 @@ public:
      * @return Total number of active permissions
      */
     std::uint32_t get_total_permission_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::permissions_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a permission by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -191,29 +202,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes permissions by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::permission& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::permission apply_claim(context ctx,
-                                   const domain::permission& v,
-                                   const ores::utility::domain::precondition& claim);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 };
 
 }

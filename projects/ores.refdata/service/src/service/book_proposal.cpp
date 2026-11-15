@@ -18,7 +18,7 @@
  *
  */
 #include "ores.refdata.service/service/book_proposal.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -128,8 +128,8 @@ bool book_preview::refused() const {
     return std::ranges::any_of(lines, [](const auto& l) { return !l.refusal.empty(); });
 }
 
-book_proposal_service::book_proposal_service(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+book_proposal_service::book_proposal_service(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 book_preview book_proposal_service::preview(const std::vector<domain::book_change>& lines) {
     // The transaction is never committed. Its destructor rolls back every
@@ -457,20 +457,23 @@ book_proposal book_proposal_service::raise(const std::vector<domain::book_change
         return out;
     }
 
-    std::optional<ores::inbox::domain::approval_kind> kind;
+    // What the raise needs is read before the unit of work opens, because a
+    // context bound to a transaction cannot read for another tenant or party.
+    const auto kind = ores::inbox::service::approval_lifecycle(ctx_).kind(kind_code);
+    if (!kind)
+        throw std::runtime_error(std::string("No such kind of request: ") + kind_code);
+    const auto policy = ores::inbox::service::approval_lifecycle(ctx_).policy_for(
+        *kind, !out.preview.part_codes.empty());
     std::optional<ores::inbox::domain::approval_request> raised;
     {
         db::unit_of_work uow(ctx_);
         const auto& ctx = uow.ctx();
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
-        kind = lifecycle.kind(kind_code);
-        if (!kind)
-            throw std::runtime_error(std::string("No such kind of request: ") + kind_code);
         const auto me = lifecycle.actor_account_id();
         if (!me)
             throw std::runtime_error("The signed-in account was not found.");
 
-        raised = lifecycle.raise(*kind, reason, *me, out.preview.part_codes);
+        raised = lifecycle.raise_under(policy, *kind, reason, *me, out.preview.part_codes);
 
         std::vector<domain::book_change> rows = lines;
         int line_no = 0;

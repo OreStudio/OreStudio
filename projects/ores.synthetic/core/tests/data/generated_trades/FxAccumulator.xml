@@ -8,24 +8,31 @@
       <Strike>1.0438</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>EUR/USD</Name>
+        <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <PayoffType>Accumulator</PayoffType>
       </OptionData>
       <StartDate>2025-11-02</StartDate>
       <ObservationDates>
         <Rules>
           <StartDate>2025-11-02</StartDate>
-          <Tenor>1D</Tenor>
-          <Convention>MF</Convention>
+          <EndDate>2027-11-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
       <RangeBounds>
-        <RangeBound startDate="2025-11-02">
+        <RangeBound>
+          <RangeTo>1.0438</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
           <RangeFrom>1.0438</RangeFrom>
-          <RangeTo>1.1482</RangeTo>
-          <Strike>1.0438</Strike>
+          <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
       <Barriers>
@@ -46,24 +53,31 @@
       <Strike>1.3507</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>EUR/USD</Name>
+        <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
+        <PayoffType>Accumulator</PayoffType>
       </OptionData>
       <StartDate>2026-01-02</StartDate>
       <ObservationDates>
         <Rules>
           <StartDate>2026-01-02</StartDate>
-          <Tenor>1D</Tenor>
-          <Convention>MF</Convention>
+          <EndDate>2029-01-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
       <RangeBounds>
-        <RangeBound startDate="2026-01-02">
+        <RangeBound>
+          <RangeTo>1.3507</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
           <RangeFrom>1.3507</RangeFrom>
-          <RangeTo>1.4858</RangeTo>
-          <Strike>1.3507</Strike>
+          <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
       <Barriers>

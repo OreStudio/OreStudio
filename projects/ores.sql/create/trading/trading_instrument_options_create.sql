@@ -99,8 +99,8 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("long_short" in ('Long', 'Short')),
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
-    check ("payoff_type" is null or "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla')),
-    check ("payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla'))
+    check ("payoff_type" is null or "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'BestOfAssetOrCash', 'Decumulator', 'MaxRainbow', 'MinRainbow', 'TargetExact', 'TargetFull', 'Vanilla', 'WorstOfAssetOrCash')),
+    check ("payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'BestOfAssetOrCash', 'Decumulator', 'MaxRainbow', 'MinRainbow', 'TargetExact', 'TargetFull', 'Vanilla', 'WorstOfAssetOrCash'))
 );
 
 -- Version uniqueness for optimistic concurrency

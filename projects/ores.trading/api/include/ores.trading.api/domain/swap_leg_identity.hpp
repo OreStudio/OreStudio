@@ -96,7 +96,7 @@ instrument, so it is the parent key rather than a separate instrument key.
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_identity>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &swap_leg_identity::version},
         utility::codec::field{"tenant_id", &swap_leg_identity::tenant_id},
         utility::codec::field{"party_id", &swap_leg_identity::party_id},

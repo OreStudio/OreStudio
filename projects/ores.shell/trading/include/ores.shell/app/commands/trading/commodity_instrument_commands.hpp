@@ -94,8 +94,11 @@ public:
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
      * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
      * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
-     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <description>
-     * <reason> <commentary>
+     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <delivery_date>
+     * <delivery_start> <delivery_end> <fva_date> <premium_date> <settlement_date>
+     * <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> <premium_amount>
+     * <target_amount> <multiplier> <cap> <trigger_level> <reset_minimum> <strike_date>
+     * <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -109,8 +112,11 @@ public:
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
      * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
      * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
-     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <description>
-     * <reason> <commentary> [--version <n>]
+     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <delivery_date>
+     * <delivery_start> <delivery_end> <fva_date> <premium_date> <settlement_date>
+     * <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> <premium_amount>
+     * <target_amount> <multiplier> <cap> <trigger_level> <reset_minimum> <strike_date>
+     * <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -124,8 +130,11 @@ public:
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
      * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
      * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
-     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <description>
-     * <reason> <commentary>
+     * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <delivery_date>
+     * <delivery_start> <delivery_end> <fva_date> <premium_date> <settlement_date>
+     * <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> <premium_amount>
+     * <target_amount> <multiplier> <cap> <trigger_level> <reset_minimum> <strike_date>
+     * <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

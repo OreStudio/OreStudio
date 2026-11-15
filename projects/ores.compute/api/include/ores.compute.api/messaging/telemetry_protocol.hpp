@@ -612,7 +612,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_stats_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -624,7 +624,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<node_stats_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"host_id", &node_stats_summary::host_id},
         ::ores::utility::codec::field{"machine", &node_stats_summary::machine},
         ::ores::utility::codec::field{"tasks_completed", &node_stats_summary::tasks_completed},
@@ -651,7 +651,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_stats_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_grid_stats_response::success},
         ::ores::utility::codec::field{"message", &get_grid_stats_response::message},
         ::ores::utility::codec::field{"total_hosts", &get_grid_stats_response::total_hosts},
@@ -686,7 +686,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_series_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"start_time", &get_grid_series_request::start_time},
         ::ores::utility::codec::field{"end_time", &get_grid_series_request::end_time},
         ::ores::utility::codec::field{"bucket_seconds", &get_grid_series_request::bucket_seconds},
@@ -702,7 +702,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_series_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_grid_series_response::success},
         ::ores::utility::codec::field{"message", &get_grid_series_response::message},
         ::ores::utility::codec::field{"start_time", &get_grid_series_response::start_time},
@@ -740,7 +740,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_node_series_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"start_time", &get_node_series_request::start_time},
         ::ores::utility::codec::field{"end_time", &get_node_series_request::end_time},
         ::ores::utility::codec::field{"bucket_seconds", &get_node_series_request::bucket_seconds},
@@ -756,7 +756,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<node_series_node>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"host_id", &node_series_node::host_id},
         ::ores::utility::codec::field{"machine", &node_series_node::machine},
     };
@@ -771,7 +771,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_node_series_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_node_series_response::success},
         ::ores::utility::codec::field{"message", &get_node_series_response::message},
         ::ores::utility::codec::field{"start_time", &get_node_series_response::start_time},
@@ -804,7 +804,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<node_sample_message>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenant_id", &node_sample_message::tenant_id},
         ::ores::utility::codec::field{"host_id", &node_sample_message::host_id},
         ::ores::utility::codec::field{"machine", &node_sample_message::machine},
@@ -833,7 +833,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_usage_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -845,7 +845,7 @@ struct get_grid_usage_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_grid_usage_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_grid_usage_response::success},
         ::ores::utility::codec::field{"message", &get_grid_usage_response::message},
         ::ores::utility::codec::field{"group_kind", &get_grid_usage_response::group_kind},

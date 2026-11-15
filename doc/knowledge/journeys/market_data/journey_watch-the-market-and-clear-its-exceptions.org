@@ -180,6 +180,7 @@ about every feed.
 - [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — read a candidate against the quotes it came from, including the ones cleared here.
 - [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a built curve by hand when a market point cannot be recovered.
 - [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the audit trail this journey cannot yet write.
+- [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] — the same quotes assembled as a desk reads them, once the exceptions are cleared.
 
 * Related knowledge
 

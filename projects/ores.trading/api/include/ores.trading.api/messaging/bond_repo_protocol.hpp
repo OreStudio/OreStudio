@@ -358,7 +358,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &bond_repo_key::trade_id},
     };
 }
@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &bond_repo_write::trade_id},
         utility::codec::field{"trade_activity_id", &bond_repo_write::trade_activity_id},
         utility::codec::field{"repo_type", &bond_repo_write::repo_type},
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &bond_repo_change::write},
         utility::codec::field{"precondition", &bond_repo_change::precondition},
     };
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_repo_removal::key},
         utility::codec::field{"precondition", &bond_repo_removal::precondition},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_repo_lookup::key},
         utility::codec::field{"bond_repo", &bond_repo_lookup::bond_repo},
     };
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repos_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id_one_of", &bond_repos_filter::trade_id_one_of},
     };
 }
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &bond_repo_event::event_id},
         utility::codec::field{"key", &bond_repo_event::key},
         utility::codec::field{"action", &bond_repo_event::action},
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bond_repo", &bond_repo_version_key::bond_repo},
         utility::codec::field{"version", &bond_repo_version_key::version},
     };
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_repo_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &bond_repo_versions_filter::version},
         utility::codec::field{"from_version", &bond_repo_versions_filter::from_version},
         utility::codec::field{"to_version", &bond_repo_versions_filter::to_version},
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_repos_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_bond_repos_request::offset},
         utility::codec::field{"limit", &list_bond_repos_request::limit},
         utility::codec::field{"order", &list_bond_repos_request::order},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_repos_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_repos_response::result},
         utility::codec::field{"repos", &list_bond_repos_response::repos},
         utility::codec::field{"total", &list_bond_repos_response::total},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_repo_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_repo_request::key},
     };
 }
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_repo_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_repo_response::result},
         utility::codec::field{"bond_repo", &get_bond_repo_response::bond_repo},
     };
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_bond_repos_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_bond_repos_request::keys},
     };
 }
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_bond_repos_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_bond_repos_response::result},
         utility::codec::field{"entries", &get_many_bond_repos_response::entries},
     };
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bond_repo_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_bond_repo_request::change},
         utility::codec::field{"intent", &put_bond_repo_request::intent},
     };
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bond_repo_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_bond_repo_response::result},
         utility::codec::field{"bond_repo", &put_bond_repo_response::bond_repo},
     };
@@ -621,7 +621,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_bond_repos_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_bond_repos_request::changes},
         utility::codec::field{"intent", &put_many_bond_repos_request::intent},
     };
@@ -636,7 +636,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_bond_repos_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_bond_repos_response::result},
         utility::codec::field{"repos", &put_many_bond_repos_response::repos},
     };
@@ -651,7 +651,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bond_repo_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_bond_repo_request::removal},
         utility::codec::field{"intent", &delete_bond_repo_request::intent},
     };
@@ -666,7 +666,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bond_repo_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_bond_repo_response::result},
     };
 }
@@ -680,7 +680,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_bond_repos_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_bond_repos_request::removals},
         utility::codec::field{"intent", &delete_many_bond_repos_request::intent},
     };
@@ -695,7 +695,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_bond_repos_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_bond_repos_response::result},
     };
 }
@@ -709,7 +709,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_repo_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_bond_repo_versions_request::key},
         utility::codec::field{"offset", &list_bond_repo_versions_request::offset},
         utility::codec::field{"limit", &list_bond_repo_versions_request::limit},
@@ -727,7 +727,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_repo_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_repo_versions_response::result},
         utility::codec::field{"versions", &list_bond_repo_versions_response::versions},
         utility::codec::field{"total", &list_bond_repo_versions_response::total},
@@ -743,7 +743,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_repo_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_repo_version_request::key},
     };
 }
@@ -757,7 +757,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_repos.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_repo_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_repo_version_response::result},
         utility::codec::field{"version", &get_bond_repo_version_response::version},
     };

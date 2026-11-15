@@ -1,0 +1,3594 @@
+diff --git a/projects/ores.web/packages/bff/src/market-reads.test.ts b/projects/ores.web/packages/bff/src/market-reads.test.ts
+new file mode 100644
+index 0000000000..5b0e6c28d5
+--- /dev/null
++++ b/projects/ores.web/packages/bff/src/market-reads.test.ts
+@@ -0,0 +1,370 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++import { dirname, resolve } from 'node:path';
++import { fileURLToPath } from 'node:url';
++import { describe, expect, it } from 'vitest';
++import type { OresClient } from '@ores/wire-protocol';
++import type { Config } from './config.js';
++import { buildServer, sessionCookieName } from './server.js';
++import { createSessionStore } from './sessions.js';
++import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
++
++const config: Config = {
++    port: 0,
++    host: '127.0.0.1',
++    logLevel: 'silent',
++    session: { ttlSeconds: 3600, cookieSecure: false },
++    allowedOrigins: [],
++    loginAttemptsPerMinute: 100,
++};
++
++const ENVIRONMENT_ID = 'eager_maxwell';
++const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
++
++function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
++    const path = resolve(
++        dirname(fileURLToPath(import.meta.url)),
++        '../../../config/environments.json',
++    );
++    return loadSiteConfiguration({
++        environment: { [SITE_CONFIG_VARIABLE]: path },
++        environmentId: ENVIRONMENT_ID,
++    });
++}
++
++interface Harness {
++    readonly server: ReturnType<typeof buildServer>;
++    readonly sessionId: string;
++    readonly calls: { subject: string; body: unknown }[];
++}
++
++function buildTestServer(replies: Readonly<Record<string, unknown>>): Harness {
++    const sessions = createSessionStore({ ttlSeconds: 60 });
++    const calls: { subject: string; body: unknown }[] = [];
++    const client = {
++        async callAuthenticated(subject: string, body: unknown): Promise<unknown> {
++            calls.push({ subject, body });
++            if (!(subject in replies)) {
++                throw new Error(`No canned reply for ${subject}`);
++            }
++            return replies[subject];
++        },
++        async close(): Promise<void> {
++            return undefined;
++        },
++    } as unknown as OresClient;
++    const session = sessions.create({
++        client,
++        session: null,
++        username: 'tenant_admin',
++        email: 'tenant_admin@acme.example',
++        accountId: '11111111-1111-1111-1111-111111111111',
++        tenantId: '44444444-4444-4444-4444-444444444444',
++        tenantName: 'Acme',
++        mode: 'tenant-administration',
++        version: 'v0.0.30 (test)',
++        availableParties: [],
++        accessLifetimeSeconds: 1800,
++        passwordResetRequired: false,
++        sessionId: '33333333-3333-3333-3333-333333333333',
++    });
++    return {
++        server: buildServer({
++            config,
++            site: siteConfiguration(),
++            sessions,
++            createClient: () => ({ client, connect: async () => undefined }),
++        }),
++        sessionId: session.id,
++        calls,
++    };
++}
++
++function post(
++    harness: Harness,
++    url: string,
++    payload: Record<string, unknown>,
++): ReturnType<ReturnType<typeof buildServer>['inject']> {
++    return harness.server.inject({
++        method: 'POST',
++        url,
++        payload,
++        cookies: { [SESSION_COOKIE]: harness.sessionId },
++    });
++}
++
++const source = {
++    provider_code: 'derived',
++    provider_kind: 'derived',
++    series_id: 's-1',
++    as_of: '2026-11-13 10:00:00Z',
++    age_seconds: 900,
++    stale: false,
++};
++
++const INSTRUMENTS = {
++    success: true,
++    message: '',
++    total: 1,
++    truncated: false,
++    instruments: [
++        {
++            instrument_id: 'i-1',
++            kind: 'curve',
++            name: 'USD-SOFR',
++            currency: 'USD',
++            base_currency: '',
++            quote_currency: '',
++            instrument_type: 'discount',
++            quote_type: 'rate',
++            forward_start: '',
++            axes: [{ field: 'term', values: ['1M', '3M'] }],
++            sources: [source],
++            party_id: 'p-1',
++            stale: false,
++            as_of: '2026-11-13 10:00:00Z',
++        },
++    ],
++};
++
++const LADDER = {
++    success: true,
++    message: '',
++    currency: 'USD',
++    instrument_type: 'discount',
++    forward_start: '',
++    as_of: '2026-11-13 23:59:59Z',
++    provider_count: 1,
++    tenor_convention: 'RATES_SPOT_FORWARD',
++    day_count_convention: 'A365F',
++    rungs: [
++        {
++            tenor: '1M',
++            maturity_date: '2026-12-14',
++            year_fraction: 0.0833,
++            quotes: [
++                {
++                    provider_code: 'ore',
++                    value: 0.0432,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                    series_id: 's-2',
++                },
++            ],
++            consensus: { value: 0.0432, method: 'mean', providers_used: 1 },
++        },
++    ],
++};
++
++const MONTAGE = {
++    success: true,
++    message: '',
++    base_currency: 'EUR',
++    as_of: '2026-11-13 23:59:59Z',
++    change_since: '2026-11-13 00:00:00Z',
++    pairs: [
++        {
++            pair_name: 'EUR/USD',
++            base_currency: 'EUR',
++            quote_currency: 'USD',
++            spot_by_provider: [
++                {
++                    provider_code: 'ore',
++                    value: 1.085,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                    series_id: 's-3',
++                },
++            ],
++            consensus: 1.085,
++            change_pct: 0.12,
++            day_high: 1.09,
++            day_low: 1.08,
++        },
++    ],
++};
++
++const ANALYTICS = {
++    success: true,
++    message: '',
++    instrument_id: 'c-1',
++    name: 'USD-SOFR',
++    as_of: '2026-11-13 23:59:59Z',
++    stale: false,
++    conventions: {
++        index_name: 'USD-SOFR',
++        day_count: 'A365F',
++        compounding: 'continuous',
++        interpolation: 'flat_forward_then_log_linear',
++        calendar: 'UnitedStates.Settlement',
++        spot_lag_days: 2,
++        pillar_count: 1,
++    },
++    market_pillars: [
++        {
++            tenor: '1M',
++            maturity_date: '2026-12-14',
++            year_fraction: 0.0833,
++            rate: 0.0432,
++            provider_code: 'ore',
++            series_id: 's-4',
++            as_of: '2026-11-13 10:00:00Z',
++        },
++    ],
++    bootstrapped: [
++        {
++            tenor: '1M',
++            maturity_date: '2026-12-14',
++            year_fraction: 0.0833,
++            discount_factor: 0.9964,
++            zero_rate: 0.0432,
++            implied_forward: 0.0432,
++            shift_bps: 0,
++        },
++    ],
++};
++
++const REPLIES = {
++    'marketdata.v1.ops.list_instruments': INSTRUMENTS,
++    'marketdata.v1.ops.get_rate_ladder': LADDER,
++    'marketdata.v1.ops.get_fx_montage': MONTAGE,
++    'marketdata.v1.ops.get_curve_analytics': ANALYTICS,
++};
++
++describe('the market read routes', () => {
++    it('answers the catalogue of the session party', async () => {
++        const harness = buildTestServer(REPLIES);
++        const response = await post(harness, '/api/market/instruments', { query: 'USD' });
++
++        expect(response.statusCode).toBe(200);
++        expect(response.json()).toMatchObject({ total: 1, truncated: false });
++        expect(response.json().instruments[0]).toMatchObject({
++            kind: 'curve',
++            name: 'USD-SOFR',
++            axes: [{ field: 'term', values: ['1M', '3M'] }],
++        });
++        // The party is the session's, so the browser never names it.
++        expect(harness.calls[0]?.body).toMatchObject({ party_id: '', query: 'USD' });
++    });
++
++    it('forwards the ladder as of the instant the screen states', async () => {
++        const harness = buildTestServer(REPLIES);
++        const response = await post(harness, '/api/market/rate-ladder', {
++            currency: 'USD',
++            as_of: '2026-11-13 23:59:59Z',
++        });
++
++        expect(response.statusCode).toBe(200);
++        expect(response.json()).toMatchObject({
++            currency: 'USD',
++            tenor_convention: 'RATES_SPOT_FORWARD',
++            rungs: [{ tenor: '1M', maturity_date: '2026-12-14' }],
++        });
++        // The route's own status is not part of the answer it serves.
++        expect(response.json()).not.toHaveProperty('success');
++    });
++
++    it('says the instant a montage measures its change from', async () => {
++        const harness = buildTestServer(REPLIES);
++        const response = await post(harness, '/api/market/fx-montage', {
++            base_currency: 'EUR',
++            as_of: '2026-11-13 23:59:59Z',
++        });
++
++        expect(response.statusCode).toBe(200);
++        expect(response.json()).toMatchObject({
++            base_currency: 'EUR',
++            change_since: '2026-11-13 00:00:00Z',
++        });
++        expect(response.json().pairs[0]).toMatchObject({
++            pair_name: 'EUR/USD',
++            consensus: 1.085,
++            change_pct: 0.12,
++        });
++    });
++
++    it('keeps an absent change absent rather than zero', async () => {
++        const harness = buildTestServer({
++            ...REPLIES,
++            'marketdata.v1.ops.get_fx_montage': {
++                ...MONTAGE,
++                pairs: [{ ...MONTAGE.pairs[0], change_pct: null, day_high: null, day_low: null }],
++            },
++        });
++        const response = await post(harness, '/api/market/fx-montage', {
++            base_currency: 'EUR',
++            as_of: '2026-11-13 23:59:59Z',
++        });
++
++        expect(response.json().pairs[0]).toMatchObject({
++            change_pct: null,
++            day_high: null,
++            day_low: null,
++        });
++    });
++
++    it('answers a curve with its conventions and both of its sides', async () => {
++        const harness = buildTestServer(REPLIES);
++        const response = await post(harness, '/api/market/curve-analytics', {
++            instrument_id: 'c0000000-0000-0000-0000-000000000001',
++            as_of: '2026-11-13 23:59:59Z',
++        });
++
++        expect(response.statusCode).toBe(200);
++        expect(response.json()).toMatchObject({
++            name: 'USD-SOFR',
++            conventions: { day_count: 'A365F', pillar_count: 1 },
++        });
++        expect(response.json().market_pillars[0]).toMatchObject({ rate: 0.0432 });
++        expect(response.json().bootstrapped[0]).toMatchObject({ discount_factor: 0.9964 });
++    });
++
++    it('carries a refusal in the server words', async () => {
++        const harness = buildTestServer({
++            ...REPLIES,
++            'marketdata.v1.ops.get_rate_ladder': {
++                ...LADDER,
++                success: false,
++                message: 'The party holds no USD ladder.',
++            },
++        });
++        const response = await post(harness, '/api/market/rate-ladder', {
++            currency: 'USD',
++            as_of: '2026-11-13 23:59:59Z',
++        });
++
++        expect(response.statusCode).toBe(422);
++        expect(response.json()).toMatchObject({
++            message: 'The party holds no USD ladder.',
++        });
++    });
++
++    it('refuses a request that states no currency', async () => {
++        const harness = buildTestServer(REPLIES);
++        const response = await post(harness, '/api/market/rate-ladder', {
++            as_of: '2026-11-13 23:59:59Z',
++        });
++
++        expect(response.statusCode).toBe(400);
++        expect(harness.calls).toHaveLength(0);
++    });
++});
+diff --git a/projects/ores.web/packages/bff/src/market-reads.ts b/projects/ores.web/packages/bff/src/market-reads.ts
+new file mode 100644
+index 0000000000..f37285a864
+--- /dev/null
++++ b/projects/ores.web/packages/bff/src/market-reads.ts
+@@ -0,0 +1,350 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++import type { FastifyInstance, FastifyRequest } from 'fastify';
++import { z } from 'zod';
++import { isWireTimestamp } from '@ores/wire-protocol';
++import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
++import { HttpFailure } from './errors.js';
++import { input } from './refdata-calls.js';
++import type { LiveSession } from './sessions.js';
++
++/**
++ * The four market-data reads a desk screen asks: the instrument catalogue, one
++ * currency's rate ladder, one base currency's FX montage and one curve's
++ * analytics.
++ *
++ * Each route forwards the typed request to the server's subject and returns the
++ * answer as the server wrote it. No route derives an instrument's identity, an
++ * axis order, a maturity date or a staleness verdict: those are the server's
++ * facts, and a screen that recomputed one would disagree with the screen beside
++ * it.
++ */
++
++const instant = z.string().refine(isWireTimestamp, {
++    message: 'An instant is written YYYY-MM-DD HH:MM:SSZ.',
++});
++
++const providers = z.array(z.string().trim().min(1).max(100)).max(50).default([]);
++
++const instrumentsBody = z.strictObject({
++    query: z.string().trim().max(200).default(''),
++    kinds: z.array(z.string().trim().min(1).max(100)).max(20).default([]),
++    provider_code: z.string().trim().max(100).default(''),
++    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
++    limit: z.coerce.number().pipe(z.int().min(1).max(500)).default(200),
++});
++
++const rateLadderBody = z.strictObject({
++    currency: z.string().trim().length(3),
++    instrument_type: z.string().trim().min(1).max(100).default('discount'),
++    forward_start: z.string().trim().max(20).default(''),
++    as_of: instant,
++    providers,
++    limit: z.coerce.number().pipe(z.int().min(1).max(200)).default(100),
++});
++
++const fxMontageBody = z.strictObject({
++    base_currency: z.string().trim().length(3),
++    as_of: instant,
++    providers,
++});
++
++const uuid = z
++    .string()
++    .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'An id is a UUID.');
++
++const curveAnalyticsBody = z.strictObject({
++    instrument_id: uuid,
++    as_of: instant,
++});
++
++const sourceSchema = z.looseObject({
++    provider_code: z.string().default(''),
++    provider_kind: z.string().default(''),
++    series_id: z.string().default(''),
++    as_of: z.string().default(''),
++    age_seconds: z.number().default(0),
++    stale: z.boolean().default(false),
++});
++
++const axisSchema = z.looseObject({
++    field: z.string(),
++    values: z.array(z.string()).default([]),
++});
++
++const instrumentSchema = z.looseObject({
++    instrument_id: z.string(),
++    kind: z.string().default(''),
++    name: z.string().default(''),
++    currency: z.string().default(''),
++    base_currency: z.string().default(''),
++    quote_currency: z.string().default(''),
++    instrument_type: z.string().default(''),
++    quote_type: z.string().default(''),
++    forward_start: z.string().default(''),
++    axes: z.array(axisSchema).default([]),
++    sources: z.array(sourceSchema).default([]),
++    party_id: z.string().default(''),
++    stale: z.boolean().default(false),
++    as_of: z.string().default(''),
++});
++
++const instrumentsReply = z.looseObject({
++    success: z.boolean(),
++    message: z.string().default(''),
++    instruments: z.array(instrumentSchema).default([]),
++    total: z.number().default(0),
++    truncated: z.boolean().default(false),
++});
++
++const rungQuoteSchema = z.looseObject({
++    provider_code: z.string().default(''),
++    value: z.number(),
++    as_of: z.string().default(''),
++    age_seconds: z.number().default(0),
++    stale: z.boolean().default(false),
++    series_id: z.string().default(''),
++});
++
++const consensusSchema = z.looseObject({
++    value: z.number(),
++    method: z.string().default(''),
++    providers_used: z.number().default(0),
++});
++
++const rungSchema = z.looseObject({
++    tenor: z.string().default(''),
++    maturity_date: z.string().default(''),
++    year_fraction: z.number().default(0),
++    quotes: z.array(rungQuoteSchema).default([]),
++    consensus: consensusSchema,
++});
++
++const rateLadderReply = z.looseObject({
++    success: z.boolean(),
++    message: z.string().default(''),
++    currency: z.string().default(''),
++    instrument_type: z.string().default(''),
++    forward_start: z.string().default(''),
++    as_of: z.string().default(''),
++    provider_count: z.number().default(0),
++    tenor_convention: z.string().default(''),
++    day_count_convention: z.string().default(''),
++    rungs: z.array(rungSchema).default([]),
++});
++
++const montageSpotSchema = z.looseObject({
++    provider_code: z.string().default(''),
++    value: z.number(),
++    as_of: z.string().default(''),
++    age_seconds: z.number().default(0),
++    stale: z.boolean().default(false),
++    series_id: z.string().default(''),
++});
++
++const montagePairSchema = z.looseObject({
++    pair_name: z.string().default(''),
++    base_currency: z.string().default(''),
++    quote_currency: z.string().default(''),
++    spot_by_provider: z.array(montageSpotSchema).default([]),
++    consensus: z.number(),
++    change_pct: z.number().nullable().default(null),
++    day_high: z.number().nullable().default(null),
++    day_low: z.number().nullable().default(null),
++});
++
++const fxMontageReply = z.looseObject({
++    success: z.boolean(),
++    message: z.string().default(''),
++    base_currency: z.string().default(''),
++    as_of: z.string().default(''),
++    change_since: z.string().default(''),
++    pairs: z.array(montagePairSchema).default([]),
++});
++
++const conventionsSchema = z.looseObject({
++    index_name: z.string().default(''),
++    day_count: z.string().default(''),
++    compounding: z.string().default(''),
++    interpolation: z.string().default(''),
++    calendar: z.string().default(''),
++    spot_lag_days: z.number().default(0),
++    pillar_count: z.number().default(0),
++});
++
++const marketPillarSchema = z.looseObject({
++    tenor: z.string().default(''),
++    maturity_date: z.string().default(''),
++    year_fraction: z.number().default(0),
++    rate: z.number(),
++    provider_code: z.string().default(''),
++    series_id: z.string().default(''),
++    as_of: z.string().default(''),
++});
++
++const bootstrappedSchema = z.looseObject({
++    tenor: z.string().default(''),
++    maturity_date: z.string().default(''),
++    year_fraction: z.number().default(0),
++    discount_factor: z.number(),
++    zero_rate: z.number(),
++    implied_forward: z.number(),
++    shift_bps: z.number(),
++});
++
++const curveAnalyticsReply = z.looseObject({
++    success: z.boolean(),
++    message: z.string().default(''),
++    instrument_id: z.string().default(''),
++    name: z.string().default(''),
++    as_of: z.string().default(''),
++    stale: z.boolean().default(false),
++    conventions: conventionsSchema,
++    market_pillars: z.array(marketPillarSchema).default([]),
++    bootstrapped: z.array(bootstrappedSchema).default([]),
++});
++
++/**
++ * A refused read is a question the server will not answer, such as a currency it
++ * holds no ladder for. The server's words are the reason, so they travel as they
++ * are and the screen shows them.
++ */
++function refused(message: string): HttpFailure {
++    return new HttpFailure(422, { code: 'invalid-request', message: message });
++}
++
++/**
++ * The reply, once the server has agreed to answer it.
++ *
++ * A refusal is the server's, so its words travel as the reason. The schema is
++ * what makes the rest of the answer safe to read: a field the server did not
++ * send is its default here and nowhere else.
++ */
++async function ask<Schema extends z.ZodType>(
++    session: LiveSession,
++    subject: string,
++    body: Record<string, unknown>,
++    schema: Schema,
++): Promise<z.infer<Schema>> {
++    const reply = (await session.client.callAuthenticated(
++        subject,
++        body,
++        schema,
++    )) as z.infer<Schema> & {
++        success?: boolean;
++        message?: string;
++    };
++    if (reply.success === false) {
++        throw refused(reply.message ?? '');
++    }
++    return reply;
++}
++
++export function registerMarketReadRoutes(
++    server: FastifyInstance,
++    requireSession: (request: FastifyRequest) => LiveSession,
++): void {
++    // The catalogue of the session party: one entry per instrument, with its
++    // axes in draw order and the verdict on each source.
++    server.post('/api/market/instruments', async (request) => {
++        const session = requireSession(request);
++        const body = input(instrumentsBody, request.body);
++        const reply = await ask(
++            session,
++            subjects.list_instruments_request,
++            {
++                party_id: '',
++                query: body.query,
++                kinds: body.kinds,
++                provider_code: body.provider_code,
++                offset: body.offset,
++                limit: body.limit,
++            },
++            instrumentsReply,
++        );
++        return {
++            instruments: reply.instruments,
++            total: reply.total,
++            truncated: reply.truncated,
++        };
++    });
++
++    // One currency's ladder at an instant. The maturity dates, the year
++    // fractions and the consensus are the server's.
++    server.post('/api/market/rate-ladder', async (request) => {
++        const session = requireSession(request);
++        const body = input(rateLadderBody, request.body);
++        const reply = await ask(
++            session,
++            subjects.get_rate_ladder_request,
++            {
++                party_id: '',
++                currency: body.currency,
++                instrument_type: body.instrument_type,
++                forward_start: body.forward_start,
++                as_of: body.as_of,
++                providers: body.providers,
++                limit: body.limit,
++            },
++            rateLadderReply,
++        );
++        const { success: _success, message: _message, ...facts } = reply;
++        return facts;
++    });
++
++    // One base currency's crosses at an instant, measured from the instant the
++    // server states rather than one the browser chose.
++    server.post('/api/market/fx-montage', async (request) => {
++        const session = requireSession(request);
++        const body = input(fxMontageBody, request.body);
++        const reply = await ask(
++            session,
++            subjects.get_fx_montage_request,
++            {
++                party_id: '',
++                base_currency: body.base_currency,
++                providers: body.providers,
++                as_of: body.as_of,
++            },
++            fxMontageReply,
++        );
++        const { success: _success, message: _message, ...facts } = reply;
++        return facts;
++    });
++
++    // One curve's conventions, its market pillars and what the bootstrap makes
++    // of them.
++    server.post('/api/market/curve-analytics', async (request) => {
++        const session = requireSession(request);
++        const body = input(curveAnalyticsBody, request.body);
++        const reply = await ask(
++            session,
++            subjects.get_curve_analytics_request,
++            {
++                party_id: '',
++                instrument_id: body.instrument_id,
++                as_of: body.as_of,
++            },
++            curveAnalyticsReply,
++        );
++        const { success: _success, message: _message, ...facts } = reply;
++        return facts;
++    });
++}
+diff --git a/projects/ores.web/packages/bff/src/server.ts b/projects/ores.web/packages/bff/src/server.ts
+index f3e06746dd..10201b80c9 100644
+--- a/projects/ores.web/packages/bff/src/server.ts
++++ b/projects/ores.web/packages/bff/src/server.ts
+@@ -55,6 +55,7 @@ import { registerFixingSeriesRoutes } from './fixing-series.js';
+ import { registerSubscriptionRoutes } from './subscriptions.js';
+ import { registerOresmdRoutes } from './oresmd.js';
+ import { registerSeriesRoutes } from './series.js';
++import { registerMarketReadRoutes } from './market-reads.js';
+ import { registerTenorRoutes } from './tenors.js';
+ import { registerAuditRoutes } from './audit.js';
+ import { registerTimelineRoutes } from './timeline.js';
+@@ -2704,6 +2705,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
+     registerFixingSeriesRoutes(server, requireSession);
+     registerOresmdRoutes(server, requireSession);
+     registerSeriesRoutes(server, requireSession);
++    registerMarketReadRoutes(server, requireSession);
+     registerTenorRoutes(server, requireSession);
+     registerRecordRoutes(server, requireSession);
+     registerInboxRoutes(server, requireSession);
+diff --git a/projects/ores.web/packages/web/src/AppRoutes.tsx b/projects/ores.web/packages/web/src/AppRoutes.tsx
+index 3751f85e44..dc4763b234 100644
+--- a/projects/ores.web/packages/web/src/AppRoutes.tsx
++++ b/projects/ores.web/packages/web/src/AppRoutes.tsx
+@@ -119,6 +119,10 @@ import { ConventionRecordPage } from './refdata/ConventionRecordPage.js';
+ import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
+ import { MarketDataPage } from './marketdata/MarketDataPage.js';
+ import { FxForwardLadderPage } from './marketdata/FxForwardLadderPage.js';
++import { InstrumentFinderPage } from './marketdata/InstrumentFinderPage.js';
++import { RateLadderPage } from './marketdata/RateLadderPage.js';
++import { FxMontagePage } from './marketdata/FxMontagePage.js';
++import { CurveAnalyticsPage } from './marketdata/CurveAnalyticsPage.js';
+ import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
+ import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
+ import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
+@@ -835,6 +839,54 @@ export function AppRoutes({
+                     'workspace',
+                 )}
+             />
++            <Route
++                path={PATHS.instruments}
++                element={signedIn(
++                    gate.version,
++                    session,
++                    shell,
++                    () => (
++                        <InstrumentFinderPage />
++                    ),
++                    'workspace',
++                )}
++            />
++            <Route
++                path={PATHS.rateLadder}
++                element={signedIn(
++                    gate.version,
++                    session,
++                    shell,
++                    () => (
++                        <RateLadderPage />
++                    ),
++                    'workspace',
++                )}
++            />
++            <Route
++                path={PATHS.fxMontage}
++                element={signedIn(
++                    gate.version,
++                    session,
++                    shell,
++                    () => (
++                        <FxMontagePage />
++                    ),
++                    'workspace',
++                )}
++            />
++            <Route
++                path={PATHS.curveAnalytics}
++                element={signedIn(
++                    gate.version,
++                    session,
++                    shell,
++                    () => (
++                        <CurveAnalyticsPage />
++                    ),
++                    'workspace',
++                )}
++            />
+             <Route
+                 path={PATHS.fxForwards}
+                 element={signedIn(
+diff --git a/projects/ores.web/packages/web/src/api/client.ts b/projects/ores.web/packages/web/src/api/client.ts
+index a9a78a0060..4f0854caaf 100644
+--- a/projects/ores.web/packages/web/src/api/client.ts
++++ b/projects/ores.web/packages/web/src/api/client.ts
+@@ -1253,6 +1253,194 @@ const termsOutcomeSchema = z.object({
+ export type TermsOutcome = z.infer<typeof termsOutcomeSchema>;
+ const termsListReplySchema = z.object({ outcomes: z.array(termsOutcomeSchema) });
+ 
++/**
++ * One source behind an instrument, and whether its value is current.
++ *
++ * The verdict is the server's. A screen draws it and does not recompute it, so
++ * two screens cannot disagree about the same series.
++ */
++const instrumentSourceSchema = z.object({
++    provider_code: z.string().default(''),
++    provider_kind: z.string().default(''),
++    series_id: z.string().default(''),
++    as_of: z.string().default(''),
++    age_seconds: z.number().default(0),
++    stale: z.boolean().default(false),
++});
++
++/** One axis of an instrument, its values in the order the server draws them. */
++const instrumentAxisSchema = z.object({
++    field: z.string(),
++    values: z.array(z.string()).default([]),
++});
++
++/**
++ * One instrument: the series a person reads as one thing.
++ *
++ * A curve is one entry and not one per pillar; a pair is one entry with no
++ * axes; a surface is one entry whose two axes are its expiries and its strikes.
++ */
++const marketInstrumentSchema = z.object({
++    instrument_id: z.string(),
++    kind: z.string().default(''),
++    name: z.string().default(''),
++    currency: z.string().default(''),
++    base_currency: z.string().default(''),
++    quote_currency: z.string().default(''),
++    instrument_type: z.string().default(''),
++    quote_type: z.string().default(''),
++    forward_start: z.string().default(''),
++    axes: z.array(instrumentAxisSchema).default([]),
++    sources: z.array(instrumentSourceSchema).default([]),
++    party_id: z.string().default(''),
++    stale: z.boolean().default(false),
++    as_of: z.string().default(''),
++});
++
++const instrumentCatalogueSchema = z.object({
++    instruments: z.array(marketInstrumentSchema).default([]),
++    total: z.number().default(0),
++    truncated: z.boolean().default(false),
++});
++
++export type InstrumentSource = z.infer<typeof instrumentSourceSchema>;
++export type InstrumentAxis = z.infer<typeof instrumentAxisSchema>;
++export type MarketInstrument = z.infer<typeof marketInstrumentSchema>;
++export type InstrumentCatalogue = z.infer<typeof instrumentCatalogueSchema>;
++
++/** One provider's quote of one rung. A provider that does not quote a rung has no entry. */
++const rungQuoteSchema = z.object({
++    provider_code: z.string().default(''),
++    value: z.number(),
++    as_of: z.string().default(''),
++    age_seconds: z.number().default(0),
++    stale: z.boolean().default(false),
++    series_id: z.string().default(''),
++});
++
++const ladderConsensusSchema = z.object({
++    value: z.number(),
++    method: z.string().default(''),
++    providers_used: z.number().default(0),
++});
++
++/**
++ * One rung: a tenor, the maturity the server dated it at, and the quotes.
++ *
++ * The year fraction is the server's, because the calendar, the day count and
++ * the tenor convention are server facts.
++ */
++const rateLadderRungSchema = z.object({
++    tenor: z.string().default(''),
++    maturity_date: z.string().default(''),
++    year_fraction: z.number().default(0),
++    quotes: z.array(rungQuoteSchema).default([]),
++    consensus: ladderConsensusSchema,
++});
++
++const rateLadderSchema = z.object({
++    currency: z.string().default(''),
++    instrument_type: z.string().default(''),
++    forward_start: z.string().default(''),
++    as_of: z.string().default(''),
++    provider_count: z.number().default(0),
++    tenor_convention: z.string().default(''),
++    day_count_convention: z.string().default(''),
++    rungs: z.array(rateLadderRungSchema).default([]),
++});
++
++export type RungQuote = z.infer<typeof rungQuoteSchema>;
++export type LadderConsensus = z.infer<typeof ladderConsensusSchema>;
++export type RateLadderRung = z.infer<typeof rateLadderRungSchema>;
++export type RateLadder = z.infer<typeof rateLadderSchema>;
++
++const montageSpotSchema = z.object({
++    provider_code: z.string().default(''),
++    value: z.number(),
++    as_of: z.string().default(''),
++    age_seconds: z.number().default(0),
++    stale: z.boolean().default(false),
++    series_id: z.string().default(''),
++});
++
++/**
++ * One pair of the base: the providers' spots and the move since the instant the
++ * server stated. A change the window cannot measure is absent, not zero.
++ */
++const fxMontagePairSchema = z.object({
++    pair_name: z.string().default(''),
++    base_currency: z.string().default(''),
++    quote_currency: z.string().default(''),
++    spot_by_provider: z.array(montageSpotSchema).default([]),
++    consensus: z.number(),
++    change_pct: z.number().nullable().default(null),
++    day_high: z.number().nullable().default(null),
++    day_low: z.number().nullable().default(null),
++});
++
++const fxMontageSchema = z.object({
++    base_currency: z.string().default(''),
++    as_of: z.string().default(''),
++    change_since: z.string().default(''),
++    pairs: z.array(fxMontagePairSchema).default([]),
++});
++
++export type MontageSpot = z.infer<typeof montageSpotSchema>;
++export type FxMontagePair = z.infer<typeof fxMontagePairSchema>;
++export type FxMontage = z.infer<typeof fxMontageSchema>;
++
++const curveConventionsSchema = z.object({
++    index_name: z.string().default(''),
++    day_count: z.string().default(''),
++    compounding: z.string().default(''),
++    interpolation: z.string().default(''),
++    calendar: z.string().default(''),
++    spot_lag_days: z.number().default(0),
++    pillar_count: z.number().default(0),
++});
++
++const curveMarketPillarSchema = z.object({
++    tenor: z.string().default(''),
++    maturity_date: z.string().default(''),
++    year_fraction: z.number().default(0),
++    rate: z.number(),
++    provider_code: z.string().default(''),
++    series_id: z.string().default(''),
++    as_of: z.string().default(''),
++});
++
++/**
++ * What the curve makes of one pillar.
++ *
++ * The zero rate is continuously compounded; the implied forward is the rate the
++ * segment ending at this pillar implies; the shift is the zero rate less the
++ * market rate at the pillar, not an applied parallel shift.
++ */
++const curveBootstrappedPointSchema = z.object({
++    tenor: z.string().default(''),
++    maturity_date: z.string().default(''),
++    year_fraction: z.number().default(0),
++    discount_factor: z.number(),
++    zero_rate: z.number(),
++    implied_forward: z.number(),
++    shift_bps: z.number(),
++});
++
++const curveAnalyticsSchema = z.object({
++    instrument_id: z.string().default(''),
++    name: z.string().default(''),
++    as_of: z.string().default(''),
++    stale: z.boolean().default(false),
++    conventions: curveConventionsSchema,
++    market_pillars: z.array(curveMarketPillarSchema).default([]),
++    bootstrapped: z.array(curveBootstrappedPointSchema).default([]),
++});
++
++export type CurveConventions = z.infer<typeof curveConventionsSchema>;
++export type CurveMarketPillar = z.infer<typeof curveMarketPillarSchema>;
++export type CurveBootstrappedPoint = z.infer<typeof curveBootstrappedPointSchema>;
++export type CurveAnalytics = z.infer<typeof curveAnalyticsSchema>;
++
+ export const api = {
+     /**
+      * Whether the deployment still needs its first administrator.
+@@ -3408,6 +3596,103 @@ export const api = {
+         );
+     },
+ 
++    /**
++     * The instruments of the session party: one entry per instrument, with its
++     * axes in draw order and the verdict on each source.
++     *
++     * A search and a kind filter are the server's to apply, because the name and
++     * the kind are facts it states.
++     */
++    async marketInstruments(query: {
++        readonly query?: string;
++        readonly kinds?: readonly string[];
++        readonly providerCode?: string;
++        readonly offset?: number;
++        readonly limit?: number;
++    }): Promise<InstrumentCatalogue> {
++        return instrumentCatalogueSchema.parse(
++            await request('/api/market/instruments', {
++                method: 'POST',
++                headers: JSON_HEADERS,
++                body: JSON.stringify({
++                    query: query.query ?? '',
++                    kinds: query.kinds ?? [],
++                    provider_code: query.providerCode ?? '',
++                    offset: query.offset ?? 0,
++                    limit: query.limit ?? 200,
++                }),
++            }),
++        );
++    },
++
++    /**
++     * One currency's rate ladder at an instant, with the server's maturity dates,
++     * one quote per provider and the consensus it derives.
++     */
++    async rateLadder(query: {
++        readonly currency: string;
++        readonly asOf: string;
++        readonly instrumentType?: string;
++        readonly forwardStart?: string;
++        readonly providers?: readonly string[];
++    }): Promise<RateLadder> {
++        return rateLadderSchema.parse(
++            await request('/api/market/rate-ladder', {
++                method: 'POST',
++                headers: JSON_HEADERS,
++                body: JSON.stringify({
++                    currency: query.currency,
++                    instrument_type: query.instrumentType ?? 'discount',
++                    forward_start: query.forwardStart ?? '',
++                    as_of: query.asOf,
++                    providers: query.providers ?? [],
++                }),
++            }),
++        );
++    },
++
++    /**
++     * One base currency's crosses at an instant, and the instant the server
++     * measures their change from.
++     */
++    async fxMontage(query: {
++        readonly baseCurrency: string;
++        readonly asOf: string;
++        readonly providers?: readonly string[];
++    }): Promise<FxMontage> {
++        return fxMontageSchema.parse(
++            await request('/api/market/fx-montage', {
++                method: 'POST',
++                headers: JSON_HEADERS,
++                body: JSON.stringify({
++                    base_currency: query.baseCurrency,
++                    as_of: query.asOf,
++                    providers: query.providers ?? [],
++                }),
++            }),
++        );
++    },
++
++    /**
++     * One curve's conventions, its market pillars and what the bootstrap makes of
++     * them, as of an instant.
++     */
++    async curveAnalytics(query: {
++        readonly instrumentId: string;
++        readonly asOf: string;
++    }): Promise<CurveAnalytics> {
++        return curveAnalyticsSchema.parse(
++            await request('/api/market/curve-analytics', {
++                method: 'POST',
++                headers: JSON_HEADERS,
++                body: JSON.stringify({
++                    instrument_id: query.instrumentId,
++                    as_of: query.asOf,
++                }),
++            }),
++        );
++    },
++
+     /**
+      * One curve's last published sets, oldest first, with the pillars each holds.
+      *
+diff --git a/projects/ores.web/packages/web/src/i18n/locales/en.ts b/projects/ores.web/packages/web/src/i18n/locales/en.ts
+index ae08563f32..fde3c5f416 100644
+--- a/projects/ores.web/packages/web/src/i18n/locales/en.ts
++++ b/projects/ores.web/packages/web/src/i18n/locales/en.ts
+@@ -315,6 +315,18 @@ export const en: SourceCatalogue = {
+         curvePublish: {
+             subject: 'The subject the request authorises',
+             curve: 'Curve',
++            forwardStart: 'Forward start',
++            starts: {
++                '0D': 'Spot',
++                '3M': '3M',
++                '1Y': '1Y',
++            },
++            window: 'Window',
++            windows: {
++                short: 'Short dates',
++                all: 'The whole curve',
++                long: '1Y to 10Y',
++            },
+             party: 'Party',
+             asOf: 'Published as-of',
+             points: 'Points',
+@@ -5607,6 +5619,129 @@ export const en: SourceCatalogue = {
+                 gap: 'The market held no rate for {pillar}, so the curve was built across the gap.',
+             },
+         },
++        instruments: {
++            title: 'Instruments',
++            lead: 'Every instrument the party holds, as one list: a curve is one row, a ladder is one row across its tenors, and a surface is one row with two axes.',
++            search: 'Search',
++            searchHint: 'Name, currency or index',
++            kind: 'Kind',
++            provider: 'Provider',
++            all: 'All',
++            found: 'Found',
++            pageOf: 'Showing {shown} of {total}',
++            count: '{total} instruments',
++            noMatches: 'No instrument matches.',
++            columns: {
++                kind: 'Kind',
++                instrument: 'Instrument',
++                source: 'Source',
++                values: 'Values',
++                freshness: 'Freshness',
++            },
++            kinds: {
++                curve: 'Curve',
++                ladder: 'Ladder',
++                surface: 'Surface',
++                pair: 'Pair',
++                fixing: 'Fixing',
++            },
++            whatOpens:
++                'A pair opens its convention, a curve its published sets, a fixing its series and a ladder its currency. A surface has no page yet.',
++        },
++
++        rateLadder: {
++            title: 'Rate ladder',
++            lead: "One currency's rates by maturity, each provider's quote beside the consensus the server derives.",
++            currency: 'Currency',
++            asOf: 'As of',
++            providers: 'Providers',
++            allProviders: 'All providers',
++            tenorConvention: 'Tenor convention',
++            dayCount: 'Day count',
++            providerCount: 'Providers',
++            providersQuoting: '{count} quoting',
++            noRungs: 'The party holds no ladder for this currency.',
++            rung: 'Rung',
++            maturity: 'Maturity',
++            consensus: 'Consensus',
++            quotedBy: 'Quoted by',
++            best: 'Best',
++            distance: 'Distance',
++            age: 'Age',
++            thin: 'Thin',
++            noQuotes: 'Nobody quotes this rung',
++            whereThin: 'Where the market is thin',
++            curve: 'Curve',
++            curveLegend:
++                'Consensus by rung, {tenor}, {dayCount}. One provider is one value per rung and no value is invented.',
++            curveLabel: 'The {currency} curve, consensus by rung',
++            thinLine: '{rung}: quoted by {quoted}; the consensus rests on {resting}.',
++        },
++
++        fxMontage: {
++            title: 'FX montage',
++            lead: "One base currency's crosses, each provider's spot beside the consensus, and the day's range.",
++            base: 'Base',
++            asOf: 'As of',
++            sort: 'Sort',
++            sorts: {
++                pair: 'By pair',
++                move: 'By move',
++            },
++            measuredFrom: 'Change measured from {at}',
++            nothingQuoted: 'Nothing quoted.',
++            pair: 'Pair',
++            last: 'Last',
++            change: 'Change',
++            low: 'Low',
++            high: 'High',
++            age: 'Age',
++            unquoted: 'Unquoted',
++        },
++
++        curveAnalytics: {
++            title: 'Curve analytics',
++            lead: "One curve's conventions, the pillars the market quoted and what the bootstrap makes of them.",
++            curve: 'Curve',
++            asOf: 'As of',
++            index: 'Index',
++            dayCount: 'Day count',
++            compounding: 'Compounding',
++            interpolation: 'Interpolation',
++            calendar: 'Calendar',
++            pillars: 'Pillars',
++            pillarCount: '{count} pillars',
++            marketPillars: 'Market pillars',
++            bootstrapped: 'Bootstrapped curve',
++            tenor: 'Tenor',
++            maturity: 'Maturity',
++            tau: 'τ',
++            marketRate: 'Market rate (%)',
++            provider: 'Provider',
++            zeroRate: 'Zero rate (%)',
++            impliedForward: 'Implied forward (%)',
++            discountFactor: 'Discount factor',
++            shift: 'Shift (bp)',
++            shiftNote:
++                'The shift is the zero rate less the market rate at the pillar: the distance between the curve and the market, not a parallel shift applied to it.',
++            noPriorClose:
++                'This read carries no prior close, so the screen states no day-on-day change.',
++            stale: 'The newest quote behind this curve is older than the server treats as current.',
++            noCurves: 'The party holds no curve configuration.',
++            chart: 'The curve',
++            metrics: {
++                zero: 'Zero rate',
++                forward: 'Implied forward',
++                discount: 'Discount factor',
++            },
++            chartLegend: {
++                zero: 'The bootstrapped zero rate, {dayCount}, against the market rate at each pillar.',
++                forward:
++                    'The rate each segment implies, {dayCount}, against the market rate at each pillar.',
++                discount: 'The discount factor the curve holds at each pillar.',
++            },
++        },
++
+         fxForwards: {
+             title: 'FX forward ladder',
+             lead: "One party's published forward set of a pair, as approved, with where each number came from.",
+diff --git a/projects/ores.web/packages/web/src/i18n/locales/fr.ts b/projects/ores.web/packages/web/src/i18n/locales/fr.ts
+index db8c962452..8f33f3888a 100644
+--- a/projects/ores.web/packages/web/src/i18n/locales/fr.ts
++++ b/projects/ores.web/packages/web/src/i18n/locales/fr.ts
+@@ -314,6 +314,18 @@ const fr: SourceCatalogue = {
+         curvePublish: {
+             subject: 'Le sujet que la demande autorise',
+             curve: 'Courbe',
++            forwardStart: 'Départ',
++            starts: {
++                '0D': 'Spot',
++                '3M': '3M',
++                '1Y': '1Y',
++            },
++            window: 'Fenêtre',
++            windows: {
++                short: 'Dates courtes',
++                all: 'Toute la courbe',
++                long: '1Y à 10Y',
++            },
+             party: 'Partie',
+             asOf: 'Date d’arrêté publiée',
+             points: 'Points',
+@@ -5688,6 +5700,129 @@ const fr: SourceCatalogue = {
+                 gap: "Le marché n'avait aucun taux pour {pillar} : la courbe a été construite par-dessus l'écart.",
+             },
+         },
++        instruments: {
++            title: 'Instruments',
++            lead: 'Tous les instruments de la partie, en une seule liste : une courbe est une ligne, une échelle est une ligne sur ses échéances, et une surface est une ligne à deux axes.',
++            search: 'Rechercher',
++            searchHint: 'Nom, devise ou indice',
++            kind: 'Type',
++            provider: 'Fournisseur',
++            all: 'Tous',
++            found: 'Trouvés',
++            pageOf: 'Affichage de {shown} sur {total}',
++            count: '{total} instruments',
++            noMatches: 'Aucun instrument ne correspond.',
++            columns: {
++                kind: 'Type',
++                instrument: 'Instrument',
++                source: 'Source',
++                values: 'Valeurs',
++                freshness: 'Fraîcheur',
++            },
++            kinds: {
++                curve: 'Courbe',
++                ladder: 'Échelle',
++                surface: 'Surface',
++                pair: 'Paire',
++                fixing: 'Fixing',
++            },
++            whatOpens:
++                'Une paire ouvre sa convention, une courbe ses ensembles publiés, un fixing sa série et une échelle sa devise. Une surface n’a pas encore de page.',
++        },
++
++        rateLadder: {
++            title: 'Échelle de taux',
++            lead: "Les taux d'une devise par échéance, la cotation de chaque fournisseur à côté du consensus que le serveur calcule.",
++            currency: 'Devise',
++            asOf: 'Au',
++            providers: 'Fournisseurs',
++            allProviders: 'Tous les fournisseurs',
++            tenorConvention: "Convention d'échéance",
++            dayCount: 'Base de calcul',
++            providerCount: 'Fournisseurs',
++            providersQuoting: '{count} cotants',
++            noRungs: 'La partie ne détient aucune échelle pour cette devise.',
++            rung: 'Barreau',
++            maturity: 'Échéance',
++            consensus: 'Consensus',
++            quotedBy: 'Coté par',
++            best: 'Meilleur',
++            distance: 'Écart',
++            age: 'Âge',
++            thin: 'Mince',
++            noQuotes: 'Personne ne cote ce barreau',
++            whereThin: 'Là où le marché est mince',
++            curve: 'Courbe',
++            curveLegend:
++                'Consensus par barreau, {tenor}, {dayCount}. Un fournisseur donne une valeur par barreau et aucune valeur n’est inventée.',
++            curveLabel: 'La courbe {currency}, consensus par barreau',
++            thinLine: '{rung} : coté par {quoted} ; le consensus repose sur {resting}.',
++        },
++
++        fxMontage: {
++            title: 'Montage FX',
++            lead: "Les croisements d'une devise de base, le spot de chaque fournisseur à côté du consensus, et l'amplitude du jour.",
++            base: 'Base',
++            asOf: 'Au',
++            sort: 'Tri',
++            sorts: {
++                pair: 'Par paire',
++                move: 'Par variation',
++            },
++            measuredFrom: 'Variation mesurée depuis {at}',
++            nothingQuoted: 'Aucune cotation.',
++            pair: 'Paire',
++            last: 'Dernier',
++            change: 'Variation',
++            low: 'Bas',
++            high: 'Haut',
++            age: 'Âge',
++            unquoted: 'Non coté',
++        },
++
++        curveAnalytics: {
++            title: 'Analyse de courbe',
++            lead: "Les conventions d'une courbe, les piliers cotés par le marché et ce que le bootstrap en fait.",
++            curve: 'Courbe',
++            asOf: 'Au',
++            index: 'Indice',
++            dayCount: 'Base de calcul',
++            compounding: 'Capitalisation',
++            interpolation: 'Interpolation',
++            calendar: 'Calendrier',
++            pillars: 'Piliers',
++            pillarCount: '{count} piliers',
++            marketPillars: 'Piliers de marché',
++            bootstrapped: 'Courbe bootstrappée',
++            tenor: 'Échéance',
++            maturity: 'Maturité',
++            tau: 'τ',
++            marketRate: 'Taux de marché (%)',
++            provider: 'Fournisseur',
++            zeroRate: 'Taux zéro (%)',
++            impliedForward: 'Forward implicite (%)',
++            discountFactor: "Facteur d'actualisation",
++            shift: 'Écart (pb)',
++            shiftNote:
++                "L'écart est le taux zéro moins le taux de marché au pilier : la distance entre la courbe et le marché, et non un décalage parallèle appliqué.",
++            noPriorClose:
++                "Cette lecture ne porte pas de clôture précédente, l'écran n'affiche donc aucune variation d'un jour à l'autre.",
++            stale: 'La cotation la plus récente derrière cette courbe est plus ancienne que ce que le serveur considère comme courant.',
++            noCurves: 'La partie ne détient aucune configuration de courbe.',
++            chart: 'La courbe',
++            metrics: {
++                zero: 'Taux zéro',
++                forward: 'Forward implicite',
++                discount: 'Facteur d’actualisation',
++            },
++            chartLegend: {
++                zero: 'Le taux zéro bootstrappé, {dayCount}, face au taux de marché à chaque pilier.',
++                forward:
++                    'Le taux implicite de chaque segment, {dayCount}, face au taux de marché à chaque pilier.',
++                discount: 'Le facteur d’actualisation que la courbe porte à chaque pilier.',
++            },
++        },
++
+         fxForwards: {
+             title: 'Échelle des changes à terme',
+             lead: "L'ensemble de terme publié d'une partie pour une paire, tel qu'approuvé, avec l'origine de chaque nombre.",
+diff --git a/projects/ores.web/packages/web/src/i18n/locales/pt.ts b/projects/ores.web/packages/web/src/i18n/locales/pt.ts
+index f86dd51f78..e5e1efdbd9 100644
+--- a/projects/ores.web/packages/web/src/i18n/locales/pt.ts
++++ b/projects/ores.web/packages/web/src/i18n/locales/pt.ts
+@@ -315,6 +315,18 @@ const pt: SourceCatalogue = {
+         curvePublish: {
+             subject: 'O sujeito que o pedido autoriza',
+             curve: 'Curva',
++            forwardStart: 'Início',
++            starts: {
++                '0D': 'Spot',
++                '3M': '3M',
++                '1Y': '1Y',
++            },
++            window: 'Janela',
++            windows: {
++                short: 'Datas curtas',
++                all: 'A curva toda',
++                long: '1Y a 10Y',
++            },
+             party: 'Parte',
+             asOf: 'Data de referência publicada',
+             points: 'Pontos',
+@@ -5647,6 +5659,129 @@ const pt: SourceCatalogue = {
+                 gap: 'O mercado nao tinha taxa para {pillar}, por isso a curva foi construida sobre a falha.',
+             },
+         },
++        instruments: {
++            title: 'Instrumentos',
++            lead: 'Todos os instrumentos da parte, numa só lista: uma curva é uma linha, uma escada é uma linha ao longo dos seus prazos, e uma superfície é uma linha com dois eixos.',
++            search: 'Procurar',
++            searchHint: 'Nome, moeda ou índice',
++            kind: 'Tipo',
++            provider: 'Fornecedor',
++            all: 'Todos',
++            found: 'Encontrados',
++            pageOf: 'A mostrar {shown} de {total}',
++            count: '{total} instrumentos',
++            noMatches: 'Nenhum instrumento corresponde.',
++            columns: {
++                kind: 'Tipo',
++                instrument: 'Instrumento',
++                source: 'Fonte',
++                values: 'Valores',
++                freshness: 'Atualidade',
++            },
++            kinds: {
++                curve: 'Curva',
++                ladder: 'Escada',
++                surface: 'Superfície',
++                pair: 'Par',
++                fixing: 'Fixing',
++            },
++            whatOpens:
++                'Um par abre a sua convenção, uma curva os seus conjuntos publicados, um fixing a sua série e uma escada a sua moeda. Uma superfície ainda não tem página.',
++        },
++
++        rateLadder: {
++            title: 'Escada de taxas',
++            lead: 'As taxas de uma moeda por maturidade, a cotação de cada fornecedor ao lado do consenso que o servidor calcula.',
++            currency: 'Moeda',
++            asOf: 'Em',
++            providers: 'Fornecedores',
++            allProviders: 'Todos os fornecedores',
++            tenorConvention: 'Convenção de prazo',
++            dayCount: 'Base de contagem',
++            providerCount: 'Fornecedores',
++            providersQuoting: '{count} a cotar',
++            noRungs: 'A parte não tem qualquer escada para esta moeda.',
++            rung: 'Degrau',
++            maturity: 'Maturidade',
++            consensus: 'Consenso',
++            quotedBy: 'Cotado por',
++            best: 'Melhor',
++            distance: 'Distância',
++            age: 'Idade',
++            thin: 'Escasso',
++            noQuotes: 'Ninguém cota este degrau',
++            whereThin: 'Onde o mercado é escasso',
++            curve: 'Curva',
++            curveLegend:
++                'Consenso por degrau, {tenor}, {dayCount}. Um fornecedor dá um valor por degrau e nenhum valor é inventado.',
++            curveLabel: 'A curva {currency}, consenso por degrau',
++            thinLine: '{rung}: cotado por {quoted}; o consenso assenta em {resting}.',
++        },
++
++        fxMontage: {
++            title: 'Montagem FX',
++            lead: 'Os cruzamentos de uma moeda base, o spot de cada fornecedor ao lado do consenso, e a amplitude do dia.',
++            base: 'Base',
++            asOf: 'Em',
++            sort: 'Ordenar',
++            sorts: {
++                pair: 'Por par',
++                move: 'Por variação',
++            },
++            measuredFrom: 'Variação medida desde {at}',
++            nothingQuoted: 'Nada cotado.',
++            pair: 'Par',
++            last: 'Último',
++            change: 'Variação',
++            low: 'Mínimo',
++            high: 'Máximo',
++            age: 'Idade',
++            unquoted: 'Sem cotação',
++        },
++
++        curveAnalytics: {
++            title: 'Análise da curva',
++            lead: 'As convenções de uma curva, os pilares cotados pelo mercado e o que o bootstrap deles faz.',
++            curve: 'Curva',
++            asOf: 'Em',
++            index: 'Índice',
++            dayCount: 'Base de contagem',
++            compounding: 'Capitalização',
++            interpolation: 'Interpolação',
++            calendar: 'Calendário',
++            pillars: 'Pilares',
++            pillarCount: '{count} pilares',
++            marketPillars: 'Pilares de mercado',
++            bootstrapped: 'Curva bootstrapped',
++            tenor: 'Prazo',
++            maturity: 'Maturidade',
++            tau: 'τ',
++            marketRate: 'Taxa de mercado (%)',
++            provider: 'Fornecedor',
++            zeroRate: 'Taxa zero (%)',
++            impliedForward: 'Forward implícito (%)',
++            discountFactor: 'Fator de atualização',
++            shift: 'Desvio (pb)',
++            shiftNote:
++                'O desvio é a taxa zero menos a taxa de mercado no pilar: a distância entre a curva e o mercado, e não um deslocamento paralelo aplicado.',
++            noPriorClose:
++                'Esta leitura não traz o fecho anterior, por isso o ecrã não mostra variação de um dia para o outro.',
++            stale: 'A cotação mais recente por trás desta curva é mais antiga do que o servidor considera atual.',
++            noCurves: 'A parte não tem qualquer configuração de curva.',
++            chart: 'A curva',
++            metrics: {
++                zero: 'Taxa zero',
++                forward: 'Forward implícito',
++                discount: 'Fator de atualização',
++            },
++            chartLegend: {
++                zero: 'A taxa zero bootstrapped, {dayCount}, contra a taxa de mercado em cada pilar.',
++                forward:
++                    'A taxa implícita de cada segmento, {dayCount}, contra a taxa de mercado em cada pilar.',
++                discount: 'O fator de atualização que a curva guarda em cada pilar.',
++            },
++        },
++
+         fxForwards: {
+             title: 'Escada de câmbio a prazo',
+             lead: 'O conjunto a prazo publicado de uma parte para um par, tal como aprovado, com a origem de cada número.',
+diff --git a/projects/ores.web/packages/web/src/marketdata/CurveAnalyticsPage.tsx b/projects/ores.web/packages/web/src/marketdata/CurveAnalyticsPage.tsx
+new file mode 100644
+index 0000000000..050286e53e
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/CurveAnalyticsPage.tsx
+@@ -0,0 +1,367 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++import { useQuery } from '@tanstack/react-query';
++import type { ReactNode } from 'react';
++import { useSearchParams } from 'react-router';
++import { api, type CurveAnalytics } from '../api/client.js';
++import { useTranslation } from '../i18n/Provider.js';
++import { AreaTrail } from '../shell/AreaTrail.js';
++import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
++import { LineChart, SERIES_COLOURS, type ChartSeries } from './LineChart.js';
++
++/**
++ * One curve's analytics, from
++ * doc/prototypes/market_data/inspect-a-curves-analytics/index.html.
++ *
++ * A market pillar and a bootstrapped point for the same tenor are a pair: the
++ * left table says what the market quoted and the right says what the bootstrap
++ * made of it. The zero rate is continuously compounded, the implied forward is
++ * the rate the segment ending at the pillar implies, and the shift is the zero
++ * rate less the market rate, not a parallel shift somebody applied.
++ */
++
++const CONFIGS = 'ir-curve-bootstrap-configs';
++
++/** What the chart draws: the curve's own numbers, one metric at a time, as the prototype does. */
++const METRICS = ['zero', 'forward', 'discount'] as const;
++
++type Metric = (typeof METRICS)[number];
++
++function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
++    return allowed.find((candidate) => candidate === value) ?? fallback;
++}
++
++function asOfInstant(date: string): string {
++    return `${date} 23:59:59Z`;
++}
++
++function todayIso(): string {
++    return new Date().toISOString().slice(0, 10);
++}
++
++function percent(value: number, language: string): string {
++    return (value * 100).toLocaleString(language, {
++        minimumFractionDigits: 4,
++        maximumFractionDigits: 4,
++    });
++}
++
++function basisPoints(value: number): string {
++    return `${value >= 0 ? '+' : ''}${value.toFixed(1)}`;
++}
++
++export function CurveAnalyticsPage(): ReactNode {
++    const { t, language } = useTranslation();
++    const [search, setSearch] = useSearchParams();
++    const set = (values: Readonly<Record<string, string>>): void => {
++        const next = new URLSearchParams(search);
++        Object.entries(values).forEach(([key, value]) => {
++            next.set(key, value);
++        });
++        setSearch(next, { replace: true });
++    };
++
++    const configs = useQuery({
++        queryKey: ['records', CONFIGS],
++        queryFn: async () => api.records(CONFIGS),
++        retry: false,
++    });
++    const options = (configs.data ?? []).map((row) => ({
++        id: String(row['id']),
++        name: String(row['name']),
++    }));
++    const stated = search.get('curve') ?? '';
++    const chosen =
++        options.find((option) => option.id === stated || option.name === stated) ?? options[0];
++    const asOf = search.get('asof') ?? todayIso();
++    const metric = oneOf(search.get('m'), METRICS, 'zero');
++
++    const key = ['curve-analytics', chosen?.id ?? '', asOf] as const;
++    const analytics = useQuery({
++        queryKey: key,
++        queryFn: () =>
++            api.curveAnalytics({ instrumentId: chosen?.id ?? '', asOf: asOfInstant(asOf) }),
++        enabled: chosen !== undefined,
++        retry: false,
++    });
++
++    const data: CurveAnalytics | undefined = analytics.data;
++    const market = data?.market_pillars ?? [];
++    const bootstrapped = data?.bootstrapped ?? [];
++    const head = 'px-2 py-1 text-right text-xs font-semibold text-ink-faint';
++    const cell = 'px-2 py-1 text-right font-mono whitespace-nowrap';
++
++    return (
++        <div className="space-y-4">
++            <AreaTrail area="marketdata" screen={t('marketdata.curveAnalytics.title')} />
++            <PageHeader
++                title={t('marketdata.curveAnalytics.title')}
++                description={t('marketdata.curveAnalytics.lead')}
++            />
++            <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
++                <Field label={t('marketdata.curveAnalytics.curve')}>
++                    <Select
++                        value={chosen?.id ?? ''}
++                        onChange={(event) => {
++                            set({ curve: event.target.value });
++                        }}
++                    >
++                        {options.map((option) => (
++                            <option key={option.id} value={option.id}>
++                                {option.name}
++                            </option>
++                        ))}
++                    </Select>
++                </Field>
++                <Field label={t('marketdata.curveAnalytics.asOf')}>
++                    <Input
++                        type="date"
++                        value={asOf}
++                        onChange={(event) => {
++                            if (event.target.value !== '') set({ asof: event.target.value });
++                        }}
++                    />
++                </Field>
++                {data !== undefined && (
++                    <>
++                        <Fact label={t('marketdata.curveAnalytics.index')}>
++                            {data.conventions.index_name}
++                        </Fact>
++                        <Fact label={t('marketdata.curveAnalytics.dayCount')}>
++                            {data.conventions.day_count}
++                        </Fact>
++                        <Fact label={t('marketdata.curveAnalytics.compounding')}>
++                            {data.conventions.compounding}
++                        </Fact>
++                        <Fact label={t('marketdata.curveAnalytics.interpolation')}>
++                            {data.conventions.interpolation}
++                        </Fact>
++                        <Fact label={t('marketdata.curveAnalytics.calendar')}>
++                            {data.conventions.calendar}
++                        </Fact>
++                        <Fact label={t('marketdata.curveAnalytics.pillars')}>
++                            {t('marketdata.curveAnalytics.pillarCount', {
++                                count: data.conventions.pillar_count,
++                            })}
++                        </Fact>
++                    </>
++                )}
++            </section>
++            {configs.isSuccess && options.length === 0 && (
++                <Notice tone="info">{t('marketdata.curveAnalytics.noCurves')}</Notice>
++            )}
++            {analytics.isError && <Notice tone="error">{analytics.error.message}</Notice>}
++            {data !== undefined && data.stale && (
++                <Notice tone="warn">{t('marketdata.curveAnalytics.stale')}</Notice>
++            )}
++            {data !== undefined && data.bootstrapped.length >= 2 && (
++                <section className="space-y-2 rounded-md border border-line p-4">
++                    <div className="flex flex-wrap items-baseline justify-between gap-2">
++                        <h2 className="text-sm font-semibold">
++                            {t('marketdata.curveAnalytics.chart')}
++                        </h2>
++                        <Select
++                            value={metric}
++                            onChange={(event) => {
++                                set({ m: event.target.value });
++                            }}
++                        >
++                            {METRICS.map((option) => (
++                                <option key={option} value={option}>
++                                    {t(`marketdata.curveAnalytics.metrics.${option}`)}
++                                </option>
++                            ))}
++                        </Select>
++                    </div>
++                    <p className="text-xs text-ink-faint">
++                        {t(`marketdata.curveAnalytics.chartLegend.${metric}`, {
++                            dayCount: data.conventions.day_count,
++                        })}
++                    </p>
++                    <LineChart
++                        series={chartSeries(data, metric)}
++                        categories={data.bootstrapped.map((point) => point.tenor)}
++                        format={(value) =>
++                            metric === 'discount' ? value.toFixed(4) : `${value.toFixed(3)}%`
++                        }
++                        label={t(`marketdata.curveAnalytics.metrics.${metric}`)}
++                        padding={0.08}
++                    />
++                </section>
++            )}
++            {data !== undefined && (
++                <>
++                    <section className="space-y-2 rounded-md border border-line p-4">
++                        <h2 className="text-sm font-semibold">
++                            {t('marketdata.curveAnalytics.marketPillars')}
++                        </h2>
++                        <div className="overflow-x-auto">
++                            <table className="w-full text-sm">
++                                <thead>
++                                    <tr className="border-b border-line">
++                                        <th className={cx(head, 'text-left')}>
++                                            {t('marketdata.curveAnalytics.tenor')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.maturity')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.tau')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.marketRate')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.provider')}
++                                        </th>
++                                    </tr>
++                                </thead>
++                                <tbody>
++                                    {market.map((pillar) => (
++                                        <tr
++                                            key={`${pillar.tenor}-${pillar.maturity_date}`}
++                                            className="border-b border-line-subtle"
++                                        >
++                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
++                                                {pillar.tenor}
++                                            </td>
++                                            <td className={cell}>{pillar.maturity_date}</td>
++                                            <td className={cell}>
++                                                {pillar.year_fraction.toFixed(4)}
++                                            </td>
++                                            <td className={cell}>
++                                                {percent(pillar.rate, language)}
++                                            </td>
++                                            <td className={cell}>{pillar.provider_code}</td>
++                                        </tr>
++                                    ))}
++                                </tbody>
++                            </table>
++                        </div>
++                    </section>
++                    <section className="space-y-2 rounded-md border border-line p-4">
++                        <h2 className="text-sm font-semibold">
++                            {t('marketdata.curveAnalytics.bootstrapped')}
++                        </h2>
++                        <div className="overflow-x-auto">
++                            <table className="w-full text-sm">
++                                <thead>
++                                    <tr className="border-b border-line">
++                                        <th className={cx(head, 'text-left')}>
++                                            {t('marketdata.curveAnalytics.tenor')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.maturity')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.tau')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.zeroRate')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.impliedForward')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.discountFactor')}
++                                        </th>
++                                        <th className={head}>
++                                            {t('marketdata.curveAnalytics.shift')}
++                                        </th>
++                                    </tr>
++                                </thead>
++                                <tbody>
++                                    {bootstrapped.map((point) => (
++                                        <tr
++                                            key={`${point.tenor}-${point.maturity_date}`}
++                                            className="border-b border-line-subtle"
++                                        >
++                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
++                                                {point.tenor}
++                                            </td>
++                                            <td className={cell}>{point.maturity_date}</td>
++                                            <td className={cell}>
++                                                {point.year_fraction.toFixed(4)}
++                                            </td>
++                                            <td className={cell}>
++                                                {percent(point.zero_rate, language)}
++                                            </td>
++                                            <td className={cell}>
++                                                {percent(point.implied_forward, language)}
++                                            </td>
++                                            <td className={cell}>
++                                                {point.discount_factor.toFixed(6)}
++                                            </td>
++                                            <td className={cell}>
++                                                <Tag
++                                                    tone={point.shift_bps >= 0 ? 'up' : 'down'}
++                                                    small
++                                                >
++                                                    {basisPoints(point.shift_bps)}
++                                                </Tag>
++                                            </td>
++                                        </tr>
++                                    ))}
++                                </tbody>
++                            </table>
++                        </div>
++                    </section>
++                    <Notice tone="info">{t('marketdata.curveAnalytics.shiftNote')}</Notice>
++                    <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
++                </>
++            )}
++        </div>
++    );
++}
++
++/**
++ * The metric's own numbers, and for a rate the market's beside them.
++ *
++ * The market overlay is dashed because it is a different kind of fact: the
++ * curve is what the bootstrap made of the quotes, and the overlay is what the
++ * quotes said. A discount, factor by factor, has no market counterpart to draw.
++ */
++function chartSeries(data: CurveAnalytics, metric: Metric): readonly ChartSeries[] {
++    const percent = (value: number): number => value * 100;
++    const curve = data.bootstrapped.map((point) =>
++        metric === 'zero'
++            ? percent(point.zero_rate)
++            : metric === 'forward'
++              ? percent(point.implied_forward)
++              : point.discount_factor,
++    );
++    const series: ChartSeries[] = [
++        { points: curve, colour: SERIES_COLOURS[0], fill: metric !== 'discount', strong: true },
++    ];
++    if (metric !== 'discount') {
++        // The market's own quote at each pillar, matched by tenor so the two lines
++        // share an x. A pillar the market did not quote is a gap, not a zero.
++        const market = new Map(
++            data.market_pillars.map((pillar) => [pillar.tenor, percent(pillar.rate)]),
++        );
++        series.push({
++            points: data.bootstrapped.map((point) => market.get(point.tenor) ?? null),
++            colour: SERIES_COLOURS[2],
++            dashed: true,
++            dots: true,
++        });
++    }
++    return series;
++}
+diff --git a/projects/ores.web/packages/web/src/marketdata/FxMontagePage.tsx b/projects/ores.web/packages/web/src/marketdata/FxMontagePage.tsx
+new file mode 100644
+index 0000000000..bca89aff9a
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/FxMontagePage.tsx
+@@ -0,0 +1,287 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++import { useQuery } from '@tanstack/react-query';
++import type { ReactNode } from 'react';
++import { useSearchParams } from 'react-router';
++import { api, type FxMontagePair } from '../api/client.js';
++import { useTranslation } from '../i18n/Provider.js';
++import { AreaTrail } from '../shell/AreaTrail.js';
++import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
++import { formatDateTime, relativeTime } from '../ui/Time.js';
++
++/**
++ * One base currency's crosses, from
++ * doc/prototypes/market_data/read-the-fx-montage/index.html.
++ *
++ * The base is named once and every row is a cross against it, whichever side of
++ * the pair the base sits on. The instant a row's change is measured from is the
++ * server's, stated once for the whole answer, so the screen does not decide what
++ * "today" means.
++ */
++
++const BASES = ['EUR', 'USD', 'GBP', 'AUD', 'JPY', 'CHF', 'CAD', 'NZD'] as const;
++const SORTS = ['pair', 'move'] as const;
++
++type Sort = (typeof SORTS)[number];
++
++function asOfInstant(date: string): string {
++    return `${date} 23:59:59Z`;
++}
++
++function todayIso(): string {
++    return new Date().toISOString().slice(0, 10);
++}
++
++function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
++    return allowed.find((candidate) => candidate === value) ?? fallback;
++}
++
++function fixed(value: number, places: number, language: string): string {
++    return value.toLocaleString(language, {
++        minimumFractionDigits: places,
++        maximumFractionDigits: places,
++    });
++}
++
++function sorted(rows: readonly FxMontagePair[], sort: Sort): readonly FxMontagePair[] {
++    if (sort === 'pair') return rows;
++    return [...rows].sort((a, b) => (b.change_pct ?? -Infinity) - (a.change_pct ?? -Infinity));
++}
++
++function rowAge(pair: FxMontagePair, language: string): string {
++    const newest = [...pair.spot_by_provider].sort((a, b) => a.age_seconds - b.age_seconds)[0];
++    if (newest === undefined) return '—';
++    const now = new Date();
++    return relativeTime(new Date(now.getTime() - newest.age_seconds * 1000), now, language);
++}
++
++/**
++ * The day's range as a bar with the consensus on it.
++ *
++ * The prototype drew a sparkline from a path it generated. This read holds the
++ * low, the high and the last price and no path, so the bar is what the data
++ * supports: where the pair has traded today, and where it stands now.
++ */
++function RangeBar({
++    low,
++    high,
++    last,
++    up,
++}: {
++    readonly low: number | null;
++    readonly high: number | null;
++    readonly last: number;
++    readonly up: boolean;
++}): ReactNode {
++    if (low === null || high === null || !(high > low)) return <span>—</span>;
++    const width = 120;
++    const height = 12;
++    const share = Math.min(1, Math.max(0, (last - low) / (high - low)));
++    const at = 4 + share * (width - 8);
++    return (
++        <svg
++            width={width}
++            height={height}
++            viewBox={`0 0 ${width} ${height}`}
++            role="img"
++            aria-label={`today ${low} to ${high}, last ${last}`}
++        >
++            <line
++                x1="4"
++                y1={height / 2}
++                x2={width - 4}
++                y2={height / 2}
++                stroke="currentColor"
++                strokeWidth="1"
++                opacity="0.35"
++            />
++            <circle
++                cx={at}
++                cy={height / 2}
++                r="2.5"
++                fill={up ? 'var(--color-up)' : 'var(--color-down)'}
++            />
++        </svg>
++    );
++}
++
++export function FxMontagePage(): ReactNode {
++    const { t, language } = useTranslation();
++    const [search, setSearch] = useSearchParams();
++    const set = (values: Readonly<Record<string, string>>): void => {
++        const next = new URLSearchParams(search);
++        Object.entries(values).forEach(([key, value]) => {
++            next.set(key, value);
++        });
++        setSearch(next, { replace: true });
++    };
++
++    const base = (search.get('base') ?? 'EUR').toUpperCase();
++    const asOf = search.get('asof') ?? todayIso();
++    const sort = oneOf(search.get('sort'), SORTS, 'pair');
++    const key = ['fx-montage', base, asOf] as const;
++
++    const montage = useQuery({
++        queryKey: key,
++        queryFn: () => api.fxMontage({ baseCurrency: base, asOf: asOfInstant(asOf) }),
++        retry: false,
++    });
++
++    const rows = montage.data === undefined ? [] : sorted(montage.data.pairs, sort);
++    const places = 4;
++    const head = 'px-2 py-1 text-right text-xs font-semibold text-ink-faint';
++    const cell = 'px-2 py-1 text-right font-mono whitespace-nowrap';
++
++    return (
++        <div className="space-y-4">
++            <AreaTrail area="marketdata" screen={t('marketdata.fxMontage.title')} />
++            <PageHeader
++                title={t('marketdata.fxMontage.title')}
++                description={t('marketdata.fxMontage.lead')}
++            />
++            <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
++                <Field label={t('marketdata.fxMontage.base')}>
++                    <Select
++                        value={base}
++                        onChange={(event) => {
++                            set({ base: event.target.value });
++                        }}
++                    >
++                        {BASES.map((code) => (
++                            <option key={code}>{code}</option>
++                        ))}
++                    </Select>
++                </Field>
++                <Field label={t('marketdata.fxMontage.asOf')}>
++                    <Input
++                        type="date"
++                        value={asOf}
++                        onChange={(event) => {
++                            if (event.target.value !== '') set({ asof: event.target.value });
++                        }}
++                    />
++                </Field>
++                <Field label={t('marketdata.fxMontage.sort')}>
++                    <Select
++                        value={sort}
++                        onChange={(event) => {
++                            set({ sort: event.target.value });
++                        }}
++                    >
++                        {SORTS.map((option) => (
++                            <option key={option} value={option}>
++                                {t(`marketdata.fxMontage.sorts.${option}`)}
++                            </option>
++                        ))}
++                    </Select>
++                </Field>
++                {montage.data !== undefined && (
++                    <p className="text-xs text-ink-faint">
++                        {t('marketdata.fxMontage.measuredFrom', {
++                            at: formatDateTime(montage.data.change_since, language),
++                        })}
++                    </p>
++                )}
++            </section>
++            {montage.isError && <Notice tone="error">{montage.error.message}</Notice>}
++            {montage.isSuccess && rows.length === 0 && (
++                <Notice tone="info">{t('marketdata.fxMontage.nothingQuoted')}</Notice>
++            )}
++            {rows.length > 0 && montage.data !== undefined && (
++                <section className="space-y-2 rounded-md border border-line p-4">
++                    <div className="overflow-x-auto">
++                        <table className="w-full text-sm">
++                            <thead>
++                                <tr className="border-b border-line">
++                                    <th className={cx(head, 'text-left')}>
++                                        {t('marketdata.fxMontage.pair')}
++                                    </th>
++                                    <th className={head}>{t('marketdata.fxMontage.last')}</th>
++                                    <th className={head}>{t('marketdata.fxMontage.change')}</th>
++                                    <th className={head}>{t('marketdata.fxMontage.low')}</th>
++                                    <th className={head}>{t('marketdata.fxMontage.high')}</th>
++                                    <th className={head}>{t('marketdata.fxMontage.age')}</th>
++                                </tr>
++                            </thead>
++                            <tbody>
++                                {rows.map((pair) => {
++                                    const quoted = pair.spot_by_provider.length;
++                                    return (
++                                        <tr
++                                            key={pair.pair_name}
++                                            className="border-b border-line-subtle"
++                                        >
++                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
++                                                {pair.pair_name}
++                                                {quoted === 0 && (
++                                                    <Tag tone="muted" small>
++                                                        {t('marketdata.fxMontage.unquoted')}
++                                                    </Tag>
++                                                )}
++                                                <div className="text-ink-faint">
++                                                    <RangeBar
++                                                        low={pair.day_low}
++                                                        high={pair.day_high}
++                                                        last={pair.consensus}
++                                                        up={(pair.change_pct ?? 0) >= 0}
++                                                    />
++                                                </div>
++                                            </td>
++                                            <td className={cell}>
++                                                {fixed(pair.consensus, places, language)}
++                                            </td>
++                                            <td
++                                                className={cx(
++                                                    cell,
++                                                    pair.change_pct === null
++                                                        ? 'text-ink-faint'
++                                                        : pair.change_pct >= 0
++                                                          ? 'text-up'
++                                                          : 'text-down',
++                                                )}
++                                            >
++                                                {pair.change_pct === null
++                                                    ? '—'
++                                                    : `${pair.change_pct >= 0 ? '+' : ''}${pair.change_pct.toFixed(2)}%`}
++                                            </td>
++                                            <td className={cell}>
++                                                {pair.day_low === null
++                                                    ? '—'
++                                                    : fixed(pair.day_low, places, language)}
++                                            </td>
++                                            <td className={cell}>
++                                                {pair.day_high === null
++                                                    ? '—'
++                                                    : fixed(pair.day_high, places, language)}
++                                            </td>
++                                            <td className={cx(cell, 'text-ink-muted')}>
++                                                {rowAge(pair, language)}
++                                            </td>
++                                        </tr>
++                                    );
++                                })}
++                            </tbody>
++                        </table>
++                    </div>
++                </section>
++            )}
++        </div>
++    );
++}
+diff --git a/projects/ores.web/packages/web/src/marketdata/InstrumentFinderPage.tsx b/projects/ores.web/packages/web/src/marketdata/InstrumentFinderPage.tsx
+new file mode 100644
+index 0000000000..3e19c797a5
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/InstrumentFinderPage.tsx
+@@ -0,0 +1,242 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++import { useQuery } from '@tanstack/react-query';
++import type { ReactNode } from 'react';
++import { Link, useSearchParams } from 'react-router';
++import { api, type MarketInstrument } from '../api/client.js';
++import { useTranslation } from '../i18n/Provider.js';
++import { AreaTrail } from '../shell/AreaTrail.js';
++import { pairPath } from '../refdata/currencyPairs.js';
++import { PATHS, publishedCurvePath } from '../shell/paths.js';
++import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
++import { relativeTime } from '../ui/Time.js';
++
++/**
++ * Every instrument the party holds, as one list, from
++ * doc/prototypes/market_data/find-an-instrument/index.html.
++ *
++ * The catalogue is the server's grouping: a curve is one row even though it has
++ * a pillar per tenor, a ladder is one row across its term axis, and a surface is
++ * one row with two axes. The search, the kind filter and the freshness verdict
++ * are the server's as well, so this screen states what came back and derives
++ * nothing.
++ */
++
++const KINDS = ['curve', 'ladder', 'surface', 'pair', 'fixing'] as const;
++
++function freshness(seconds: number, language: string): string {
++    const now = new Date();
++    return relativeTime(new Date(now.getTime() - seconds * 1000), now, language);
++}
++
++function valuesOf(instrument: MarketInstrument): string {
++    const values = instrument.axes.flatMap((axis) => axis.values);
++    return values.length === 0 ? '—' : values.join(', ');
++}
++
++function sourcesOf(instrument: MarketInstrument): string {
++    const codes = [...new Set(instrument.sources.map((source) => source.provider_code))];
++    return codes.length === 0 ? '—' : codes.join(', ');
++}
++
++/**
++ * The page a row opens, for the kinds the product has a page for.
++ *
++ * The catalogue's instrument id is the party and the series' URI, so a kind whose
++ * page is addressed by the series reads that URI out of the id. A surface has no
++ * page yet, so its row stays text rather than linking somewhere that would say
++ * nothing.
++ */
++function destination(instrument: MarketInstrument): string | undefined {
++    const uri = instrument.instrument_id.split('|')[1] ?? '';
++    switch (instrument.kind) {
++        case 'pair':
++            return instrument.name.includes('/') ? pairPath(instrument.name) : undefined;
++        case 'curve':
++            return instrument.name === '' ? undefined : publishedCurvePath(instrument.name);
++        case 'fixing':
++            return uri === '' ? undefined : `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
++        case 'ladder':
++            return instrument.currency === ''
++                ? undefined
++                : `${PATHS.rateLadder}?ccy=${instrument.currency}`;
++        default:
++            return undefined;
++    }
++}
++
++function Row({ instrument }: { readonly instrument: MarketInstrument }): ReactNode {
++    const { t, language } = useTranslation();
++    const to = destination(instrument);
++    const newest = [...instrument.sources].sort((a, b) => a.age_seconds - b.age_seconds)[0];
++    return (
++        <tr className="border-b border-line-subtle">
++            <td className="px-2 py-1">
++                <Tag tone="accent" small>
++                    {t(`marketdata.instruments.kinds.${instrument.kind}`)}
++                </Tag>
++            </td>
++            <td className="whitespace-nowrap px-2 py-1 font-semibold">
++                {to === undefined ? (
++                    instrument.name
++                ) : (
++                    <Link className="text-accent" to={to}>
++                        {instrument.name}
++                    </Link>
++                )}
++            </td>
++            <td className="px-2 py-1 text-ink-muted">{sourcesOf(instrument)}</td>
++            <td className="px-2 py-1 font-mono text-xs">{valuesOf(instrument)}</td>
++            <td className={cx('px-2 py-1 text-right', instrument.stale && 'text-danger')}>
++                {newest === undefined ? '—' : freshness(newest.age_seconds, language)}
++            </td>
++        </tr>
++    );
++}
++
++export function InstrumentFinderPage(): ReactNode {
++    const { t } = useTranslation();
++    const [search, setSearch] = useSearchParams();
++    const set = (values: Readonly<Record<string, string>>): void => {
++        const next = new URLSearchParams(search);
++        Object.entries(values).forEach(([key, value]) => {
++            next.set(key, value);
++        });
++        setSearch(next, { replace: true });
++    };
++
++    const query = search.get('q') ?? '';
++    const kind = search.get('kind') ?? '';
++    const provider = search.get('provider') ?? '';
++    const key = ['market-instruments', query, kind, provider] as const;
++
++    const catalogue = useQuery({
++        queryKey: key,
++        queryFn: () =>
++            api.marketInstruments({
++                query,
++                kinds: kind === '' ? [] : [kind],
++                providerCode: provider,
++            }),
++        retry: false,
++    });
++    const instruments = catalogue.data?.instruments ?? [];
++    const providers = [
++        ...new Set(instruments.flatMap((row) => row.sources.map((s) => s.provider_code))),
++    ];
++
++    return (
++        <div className="space-y-4">
++            <AreaTrail area="marketdata" screen={t('marketdata.instruments.title')} />
++            <PageHeader
++                title={t('marketdata.instruments.title')}
++                description={t('marketdata.instruments.lead')}
++            />
++            <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
++                <Field label={t('marketdata.instruments.search')}>
++                    <Input
++                        value={query}
++                        placeholder={t('marketdata.instruments.searchHint')}
++                        onChange={(event) => {
++                            set({ q: event.target.value });
++                        }}
++                    />
++                </Field>
++                <Field label={t('marketdata.instruments.kind')}>
++                    <Select
++                        value={kind}
++                        onChange={(event) => {
++                            set({ kind: event.target.value });
++                        }}
++                    >
++                        <option value="">{t('marketdata.instruments.all')}</option>
++                        {KINDS.map((option) => (
++                            <option key={option} value={option}>
++                                {t(`marketdata.instruments.kinds.${option}`)}
++                            </option>
++                        ))}
++                    </Select>
++                </Field>
++                <Field label={t('marketdata.instruments.provider')}>
++                    <Select
++                        value={provider}
++                        onChange={(event) => {
++                            set({ provider: event.target.value });
++                        }}
++                    >
++                        <option value="">{t('marketdata.instruments.all')}</option>
++                        {providers.map((option) => (
++                            <option key={option}>{option}</option>
++                        ))}
++                    </Select>
++                </Field>
++                {catalogue.data !== undefined && (
++                    <Fact label={t('marketdata.instruments.found')}>
++                        {catalogue.data.truncated
++                            ? t('marketdata.instruments.pageOf', {
++                                  shown: instruments.length,
++                                  total: catalogue.data.total,
++                              })
++                            : t('marketdata.instruments.count', {
++                                  total: catalogue.data.total,
++                              })}
++                    </Fact>
++                )}
++            </section>
++            {catalogue.isError && <Notice tone="error">{catalogue.error.message}</Notice>}
++            {catalogue.isSuccess && instruments.length === 0 && (
++                <Notice tone="info">{t('marketdata.instruments.noMatches')}</Notice>
++            )}
++            {instruments.length > 0 && (
++                <section className="space-y-2 rounded-md border border-line p-4">
++                    <div className="overflow-x-auto">
++                        <table className="w-full text-sm">
++                            <thead>
++                                <tr className="border-b border-line">
++                                    <th className="px-2 py-1 text-left text-xs font-semibold text-ink-faint">
++                                        {t('marketdata.instruments.columns.kind')}
++                                    </th>
++                                    <th className="px-2 py-1 text-left text-xs font-semibold text-ink-faint">
++                                        {t('marketdata.instruments.columns.instrument')}
++                                    </th>
++                                    <th className="px-2 py-1 text-left text-xs font-semibold text-ink-faint">
++                                        {t('marketdata.instruments.columns.source')}
++                                    </th>
++                                    <th className="px-2 py-1 text-left text-xs font-semibold text-ink-faint">
++                                        {t('marketdata.instruments.columns.values')}
++                                    </th>
++                                    <th className="px-2 py-1 text-right text-xs font-semibold text-ink-faint">
++                                        {t('marketdata.instruments.columns.freshness')}
++                                    </th>
++                                </tr>
++                            </thead>
++                            <tbody>
++                                {instruments.map((instrument) => (
++                                    <Row key={instrument.instrument_id} instrument={instrument} />
++                                ))}
++                            </tbody>
++                        </table>
++                    </div>
++                </section>
++            )}
++            <Notice tone="info">{t('marketdata.instruments.whatOpens')}</Notice>
++        </div>
++    );
++}
+diff --git a/projects/ores.web/packages/web/src/marketdata/RateLadderPage.tsx b/projects/ores.web/packages/web/src/marketdata/RateLadderPage.tsx
+new file mode 100644
+index 0000000000..d0b941500e
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/RateLadderPage.tsx
+@@ -0,0 +1,355 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++import { useQuery } from '@tanstack/react-query';
++import type { ReactNode } from 'react';
++import { useSearchParams } from 'react-router';
++import { api, type RateLadderRung } from '../api/client.js';
++import { useTranslation } from '../i18n/Provider.js';
++import { AreaTrail } from '../shell/AreaTrail.js';
++import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
++import { relativeTime } from '../ui/Time.js';
++import { LineChart, SERIES_COLOURS } from './LineChart.js';
++
++/**
++ * One currency's rate ladder, from
++ * doc/prototypes/market_data/read-a-rate-ladder/index.html.
++ *
++ * The rungs, their maturity dates, their year fractions and the consensus are
++ * the server's, because the calendar, the day count and the tenor convention are
++ * server facts. The screen adds only what the prototype asked for and no read
++ * states: the best quote of a rung and its distance in basis points from the
++ * consensus.
++ */
++
++const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD'] as const;
++
++/// The forward start a ladder is quoted from: spot, or a broken date.
++const STARTS = ['0D', '3M', '1Y'] as const;
++
++/// How much of the curve the ladder shows, by the year fraction the server states.
++const WINDOWS = ['short', 'all', 'long'] as const;
++
++type Window = (typeof WINDOWS)[number];
++
++function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
++    return allowed.find((candidate) => candidate === value) ?? fallback;
++}
++
++/** Whether a rung falls in the window, by the year fraction the server dated it with. */
++function inWindow(rung: RateLadderRung, window: Window): boolean {
++    if (window === 'short') return rung.year_fraction < 1.0 / 12.0;
++    if (window === 'long') return rung.year_fraction >= 1.0 && rung.year_fraction <= 10.0;
++    return true;
++}
++
++function asOfInstant(date: string): string {
++    return `${date} 23:59:59Z`;
++}
++
++function todayIso(): string {
++    return new Date().toISOString().slice(0, 10);
++}
++
++function percent(value: number, language: string): string {
++    return (value * 100).toLocaleString(language, {
++        minimumFractionDigits: 4,
++        maximumFractionDigits: 4,
++    });
++}
++
++function distance(best: number | undefined, consensus: number): string {
++    if (best === undefined) return '—';
++    const bp = (best - consensus) * 10000;
++    return `${bp >= 0 ? '+' : ''}${bp.toFixed(1)} bp`;
++}
++
++function ageOf(rung: RateLadderRung, language: string): string {
++    const newest = [...rung.quotes].sort((a, b) => a.age_seconds - b.age_seconds)[0];
++    if (newest === undefined) return '—';
++    const now = new Date();
++    return relativeTime(new Date(now.getTime() - newest.age_seconds * 1000), now, language);
++}
++
++export function RateLadderPage(): ReactNode {
++    const { t, language } = useTranslation();
++    const [search, setSearch] = useSearchParams();
++    const set = (values: Readonly<Record<string, string>>): void => {
++        const next = new URLSearchParams(search);
++        Object.entries(values).forEach(([key, value]) => {
++            next.set(key, value);
++        });
++        setSearch(next, { replace: true });
++    };
++
++    const currency = (search.get('ccy') ?? 'USD').toUpperCase();
++    const asOf = search.get('asof') ?? todayIso();
++    const providers = search.get('providers') ?? '';
++    const start = oneOf(search.get('start'), STARTS, '0D');
++    const window = oneOf(search.get('window'), WINDOWS, 'all');
++    const key = ['rate-ladder', currency, asOf, providers, start] as const;
++
++    const ladder = useQuery({
++        queryKey: key,
++        queryFn: () =>
++            api.rateLadder({
++                currency,
++                asOf: asOfInstant(asOf),
++                providers: providers === '' ? [] : providers.split(','),
++                forwardStart: start,
++            }),
++        retry: false,
++    });
++
++    const rows = (ladder.data?.rungs ?? []).filter((rung) => inWindow(rung, window));
++    // One column per provider, in the order the server lists them, so a gap on a
++    // rung is a gap in a column a person can see.
++    const quoted = [
++        ...new Set(
++            (ladder.data?.rungs ?? []).flatMap((rung) =>
++                rung.quotes.map((quote) => quote.provider_code),
++            ),
++        ),
++    ];
++    const quotedBy = (rung: RateLadderRung): string =>
++        rung.quotes.length === 0
++            ? t('marketdata.rateLadder.noQuotes')
++            : rung.quotes.map((quote) => quote.provider_code).join(', ');
++    const thin = rows.filter((rung) => rung.quotes.length < (ladder.data?.provider_count ?? 0));
++
++    const head = 'px-2 py-1 text-right text-xs font-semibold text-ink-faint';
++    const cell = 'px-2 py-1 text-right font-mono whitespace-nowrap';
++
++    return (
++        <div className="space-y-4">
++            <AreaTrail area="marketdata" screen={t('marketdata.rateLadder.title')} />
++            <PageHeader
++                title={t('marketdata.rateLadder.title')}
++                description={t('marketdata.rateLadder.lead')}
++            />
++            <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
++                <Field label={t('marketdata.rateLadder.currency')}>
++                    <Select
++                        value={currency}
++                        onChange={(event) => {
++                            set({ ccy: event.target.value });
++                        }}
++                    >
++                        {CURRENCIES.map((code) => (
++                            <option key={code}>{code}</option>
++                        ))}
++                    </Select>
++                </Field>
++                <Field label={t('marketdata.rateLadder.asOf')}>
++                    <Input
++                        type="date"
++                        value={asOf}
++                        onChange={(event) => {
++                            if (event.target.value !== '') set({ asof: event.target.value });
++                        }}
++                    />
++                </Field>
++                <Field label={t('marketdata.rateLadder.forwardStart')}>
++                    <Select
++                        value={start}
++                        onChange={(event) => {
++                            set({ start: event.target.value });
++                        }}
++                    >
++                        {STARTS.map((option) => (
++                            <option key={option} value={option}>
++                                {t(`marketdata.rateLadder.starts.${option}`)}
++                            </option>
++                        ))}
++                    </Select>
++                </Field>
++                <Field label={t('marketdata.rateLadder.window')}>
++                    <Select
++                        value={window}
++                        onChange={(event) => {
++                            set({ window: event.target.value });
++                        }}
++                    >
++                        {WINDOWS.map((option) => (
++                            <option key={option} value={option}>
++                                {t(`marketdata.rateLadder.windows.${option}`)}
++                            </option>
++                        ))}
++                    </Select>
++                </Field>
++                <Field label={t('marketdata.rateLadder.providers')}>
++                    <Input
++                        value={providers}
++                        placeholder={t('marketdata.rateLadder.allProviders')}
++                        onChange={(event) => {
++                            set({ providers: event.target.value });
++                        }}
++                    />
++                </Field>
++                {ladder.data !== undefined && (
++                    <>
++                        <Fact label={t('marketdata.rateLadder.tenorConvention')}>
++                            {ladder.data.tenor_convention}
++                        </Fact>
++                        <Fact label={t('marketdata.rateLadder.dayCount')}>
++                            {ladder.data.day_count_convention}
++                        </Fact>
++                        <Fact label={t('marketdata.rateLadder.providerCount')}>
++                            {t('marketdata.rateLadder.providersQuoting', {
++                                count: ladder.data.provider_count,
++                            })}
++                        </Fact>
++                    </>
++                )}
++            </section>
++            {ladder.isError && <Notice tone="error">{ladder.error.message}</Notice>}
++            {ladder.isSuccess && rows.length === 0 && (
++                <Notice tone="info">{t('marketdata.rateLadder.noRungs')}</Notice>
++            )}
++            {rows.length >= 2 && ladder.data !== undefined && (
++                <section className="space-y-2 rounded-md border border-line p-4">
++                    <h2 className="text-sm font-semibold">{t('marketdata.rateLadder.curve')}</h2>
++                    <p className="text-xs text-ink-faint">
++                        {t('marketdata.rateLadder.curveLegend', {
++                            tenor: ladder.data.tenor_convention,
++                            dayCount: ladder.data.day_count_convention,
++                        })}
++                    </p>
++                    <LineChart
++                        series={[
++                            {
++                                points: rows.map((rung) => rung.consensus.value * 100),
++                                colour: SERIES_COLOURS[0],
++                                fill: true,
++                                dots: true,
++                                strong: true,
++                            },
++                        ]}
++                        categories={rows.map((rung) => rung.tenor)}
++                        format={(value) => `${value.toFixed(3)}%`}
++                        label={t('marketdata.rateLadder.curveLabel', {
++                            currency: ladder.data.currency,
++                        })}
++                        padding={0.08}
++                    />
++                </section>
++            )}
++            {rows.length > 0 && ladder.data !== undefined && (
++                <section className="space-y-2 rounded-md border border-line p-4">
++                    <div className="overflow-x-auto">
++                        <table className="w-full text-sm">
++                            <thead>
++                                <tr className="border-b border-line">
++                                    <th className={cx(head, 'text-left')}>
++                                        {t('marketdata.rateLadder.rung')}
++                                    </th>
++                                    <th className={head}>{t('marketdata.rateLadder.maturity')}</th>
++                                    <th className={head}>{t('marketdata.rateLadder.consensus')}</th>
++                                    {quoted.map((provider) => (
++                                        <th className={head} key={provider}>
++                                            {provider}
++                                        </th>
++                                    ))}
++                                    <th className={head}>{t('marketdata.rateLadder.best')}</th>
++                                    <th className={head}>{t('marketdata.rateLadder.distance')}</th>
++                                    <th className={head}>{t('marketdata.rateLadder.age')}</th>
++                                </tr>
++                            </thead>
++                            <tbody>
++                                {rows.map((rung) => {
++                                    const best =
++                                        rung.quotes.length === 0
++                                            ? undefined
++                                            : Math.max(...rung.quotes.map((q) => q.value));
++                                    const isThin = rung.quotes.length < ladder.data.provider_count;
++                                    return (
++                                        <tr
++                                            key={rung.tenor}
++                                            className="border-b border-line-subtle"
++                                        >
++                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
++                                                {rung.tenor}
++                                                {isThin && (
++                                                    <Tag tone="warn" small>
++                                                        {t('marketdata.rateLadder.thin')}
++                                                    </Tag>
++                                                )}
++                                            </td>
++                                            <td className={cell}>{rung.maturity_date}</td>
++                                            <td className={cell}>
++                                                {percent(rung.consensus.value, language)}
++                                            </td>
++                                            {quoted.map((provider) => {
++                                                const quote = rung.quotes.find(
++                                                    (one) => one.provider_code === provider,
++                                                );
++                                                return (
++                                                    <td
++                                                        className={cx(
++                                                            cell,
++                                                            quote === undefined
++                                                                ? 'text-ink-faint'
++                                                                : undefined,
++                                                        )}
++                                                        key={provider}
++                                                    >
++                                                        {quote === undefined
++                                                            ? '—'
++                                                            : percent(quote.value, language)}
++                                                    </td>
++                                                );
++                                            })}
++                                            <td className={cell}>
++                                                {best === undefined ? '—' : percent(best, language)}
++                                            </td>
++                                            <td className={cell}>
++                                                {distance(best, rung.consensus.value)}
++                                            </td>
++                                            <td className={cx(cell, 'text-ink-muted')}>
++                                                {ageOf(rung, language)}
++                                            </td>
++                                        </tr>
++                                    );
++                                })}
++                            </tbody>
++                        </table>
++                    </div>
++                </section>
++            )}
++            {thin.length > 0 && (
++                <section className="space-y-2 rounded-md border border-line p-4">
++                    <h2 className="text-sm font-semibold">
++                        {t('marketdata.rateLadder.whereThin')}
++                    </h2>
++                    <ul className="space-y-1 text-sm">
++                        {thin.map((rung) => (
++                            <li key={rung.tenor}>
++                                {t('marketdata.rateLadder.thinLine', {
++                                    rung: rung.tenor,
++                                    quoted: quotedBy(rung),
++                                    resting: rung.consensus.method,
++                                })}
++                            </li>
++                        ))}
++                    </ul>
++                </section>
++            )}
++        </div>
++    );
++}
+diff --git a/projects/ores.web/packages/web/src/marketdata/curveAnalyticsScreen.test.tsx b/projects/ores.web/packages/web/src/marketdata/curveAnalyticsScreen.test.tsx
+new file mode 100644
+index 0000000000..08e9040d95
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/curveAnalyticsScreen.test.tsx
+@@ -0,0 +1,171 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ *
++ */
++
++import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
++import { renderToStaticMarkup } from 'react-dom/server';
++import { MemoryRouter } from 'react-router';
++import { describe, expect, it } from 'vitest';
++import type { CurveAnalytics } from '../api/client.js';
++import { TranslationProvider } from '../i18n/Provider.js';
++import { CurveAnalyticsPage } from './CurveAnalyticsPage.js';
++
++const CONFIG_ID = 'c0000000-0000-0000-0000-000000000001';
++
++const analytics: CurveAnalytics = {
++    instrument_id: CONFIG_ID,
++    name: 'USD-SOFR',
++    as_of: '2026-11-13 23:59:59Z',
++    stale: false,
++    conventions: {
++        index_name: 'USD-SOFR',
++        day_count: 'A365F',
++        compounding: 'continuous',
++        interpolation: 'flat_forward_then_log_linear',
++        calendar: 'UnitedStates.Settlement',
++        spot_lag_days: 2,
++        pillar_count: 1,
++    },
++    market_pillars: [
++        {
++            tenor: '1M',
++            maturity_date: '2026-12-14',
++            year_fraction: 0.0833,
++            rate: 0.0432,
++            provider_code: 'ore',
++            series_id: 's-1',
++            as_of: '2026-11-13 10:00:00Z',
++        },
++        {
++            tenor: '3M',
++            maturity_date: '2027-02-13',
++            year_fraction: 0.2521,
++            rate: 0.0418,
++            provider_code: 'ore',
++            series_id: 's-1',
++            as_of: '2026-11-13 10:00:00Z',
++        },
++    ],
++    bootstrapped: [
++        {
++            tenor: '1M',
++            maturity_date: '2026-12-14',
++            year_fraction: 0.0833,
++            discount_factor: 0.9964,
++            zero_rate: 0.0432,
++            implied_forward: 0.0432,
++            shift_bps: 1.25,
++        },
++        {
++            tenor: '3M',
++            maturity_date: '2027-02-13',
++            year_fraction: 0.2521,
++            discount_factor: 0.9895,
++            zero_rate: 0.0419,
++            implied_forward: 0.0414,
++            shift_bps: 0.9,
++        },
++    ],
++};
++
++function draw(address: string, set: CurveAnalytics = analytics): string {
++    const client = new QueryClient();
++    client.setQueryData(
++        ['records', 'ir-curve-bootstrap-configs'],
++        [{ id: CONFIG_ID, name: 'USD-SOFR' }],
++    );
++    client.setQueryData(
++        ['curve-analytics', CONFIG_ID, address.includes('asof=2026-11-13') ? '2026-11-13' : ''],
++        set,
++    );
++    return renderToStaticMarkup(
++        <QueryClientProvider client={client}>
++            <TranslationProvider>
++                <MemoryRouter initialEntries={[address]}>
++                    <CurveAnalyticsPage />
++                </MemoryRouter>
++            </TranslationProvider>
++        </QueryClientProvider>,
++    );
++}
++
++describe('the curve analytics page', () => {
++    it('states the conventions the curve was built under', () => {
++        const page = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
++        for (const text of [
++            'USD-SOFR',
++            'A365F',
++            'continuous',
++            'flat_forward_then_log_linear',
++            'UnitedStates.Settlement',
++        ]) {
++            expect(page).toContain(text);
++        }
++    });
++
++    it('pairs the market pillar with what the bootstrap made of it', () => {
++        const page = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
++        expect(page).toContain('Market pillars');
++        expect(page).toContain('Bootstrapped curve');
++        expect(page).toContain('2026-12-14');
++        // The market rate and the zero rate the curve derives from it, in percent.
++        expect(page).toContain('4.3200');
++        expect(page).toContain('0.996400');
++    });
++
++    it('states the shift in basis points as the curve less the market', () => {
++        const page = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
++        expect(page).toContain('+1.3');
++    });
++
++    it('draws the curve and switches the metric it draws', () => {
++        const zero = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
++        expect(zero).toContain('The bootstrapped zero rate');
++        expect(zero).toContain('<svg');
++        const discount = draw(
++            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&m=discount`,
++        );
++        expect(discount).toContain('The discount factor the curve holds at each pillar.');
++        expect(discount).not.toContain('The bootstrapped zero rate');
++    });
++
++    it('warns when the newest quote behind the curve is old', () => {
++        const page = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`, {
++            ...analytics,
++            stale: true,
++        });
++        expect(page).toContain('older than the server treats as current');
++    });
++
++    it('says when the party holds no curve configuration', () => {
++        const client = new QueryClient();
++        client.setQueryData(['records', 'ir-curve-bootstrap-configs'], []);
++        const page = renderToStaticMarkup(
++            <QueryClientProvider client={client}>
++                <TranslationProvider>
++                    <MemoryRouter initialEntries={['/market-data/curve-analytics']}>
++                        <CurveAnalyticsPage />
++                    </MemoryRouter>
++                </TranslationProvider>
++            </QueryClientProvider>,
++        );
++        expect(page).toContain('The party holds no curve configuration.');
++    });
++});
+diff --git a/projects/ores.web/packages/web/src/marketdata/fxMontageScreen.test.tsx b/projects/ores.web/packages/web/src/marketdata/fxMontageScreen.test.tsx
+new file mode 100644
+index 0000000000..26e209a9f5
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/fxMontageScreen.test.tsx
+@@ -0,0 +1,135 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ *
++ */
++
++import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
++import { renderToStaticMarkup } from 'react-dom/server';
++import { MemoryRouter } from 'react-router';
++import { describe, expect, it } from 'vitest';
++import type { FxMontage } from '../api/client.js';
++import { TranslationProvider } from '../i18n/Provider.js';
++import { FxMontagePage } from './FxMontagePage.js';
++
++const montage: FxMontage = {
++    base_currency: 'EUR',
++    as_of: '2026-11-13 23:59:59Z',
++    change_since: '2026-11-13 00:00:00Z',
++    pairs: [
++        {
++            pair_name: 'EUR/USD',
++            base_currency: 'EUR',
++            quote_currency: 'USD',
++            spot_by_provider: [
++                {
++                    provider_code: 'ore',
++                    value: 1.0852,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                    series_id: 's-1',
++                },
++                {
++                    provider_code: 'derived',
++                    value: 1.0848,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 120,
++                    stale: false,
++                    series_id: 's-2',
++                },
++            ],
++            consensus: 1.085,
++            change_pct: 0.12,
++            day_high: 1.0891,
++            day_low: 1.0802,
++        },
++        {
++            pair_name: 'EUR/GBP',
++            base_currency: 'EUR',
++            quote_currency: 'GBP',
++            spot_by_provider: [
++                {
++                    provider_code: 'ore',
++                    value: 0.8421,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                    series_id: 's-3',
++                },
++            ],
++            consensus: 0.8421,
++            change_pct: null,
++            day_high: null,
++            day_low: null,
++        },
++    ],
++};
++
++function draw(address: string, set: FxMontage = montage): string {
++    const client = new QueryClient();
++    client.setQueryData(['fx-montage', 'EUR', '2026-11-13'], set);
++    return renderToStaticMarkup(
++        <QueryClientProvider client={client}>
++            <TranslationProvider>
++                <MemoryRouter initialEntries={[address]}>
++                    <FxMontagePage />
++                </MemoryRouter>
++            </TranslationProvider>
++        </QueryClientProvider>,
++    );
++}
++
++describe('the FX montage page', () => {
++    it('draws every cross of the base with its consensus and its range', () => {
++        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
++        for (const text of ['EUR/USD', '1.0850', '1.0802', '1.0891', 'EUR/GBP', '0.8421']) {
++            expect(page).toContain(text);
++        }
++    });
++
++    it('states the change and leaves an unmeasured one absent', () => {
++        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
++        expect(page).toContain('+0.12%');
++        // The second row's window holds no price at its start.
++        expect(page).toContain('—');
++    });
++
++    it('draws the day\u2019s range with the consensus on it', () => {
++        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
++        expect(page).toContain('today 1.0802 to 1.0891, last 1.085');
++    });
++
++    it('says which instant the change is measured from', () => {
++        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
++        expect(page).toContain('Change measured from');
++    });
++
++    it('sorts by move when asked', () => {
++        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13&sort=move');
++        expect(page.indexOf('EUR/USD')).toBeLessThan(page.indexOf('EUR/GBP'));
++    });
++
++    it('says nothing is quoted when the base has no crosses', () => {
++        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', {
++            ...montage,
++            pairs: [],
++        });
++        expect(page).toContain('Nothing quoted.');
++    });
++});
+diff --git a/projects/ores.web/packages/web/src/marketdata/instrumentFinderScreen.test.tsx b/projects/ores.web/packages/web/src/marketdata/instrumentFinderScreen.test.tsx
+new file mode 100644
+index 0000000000..c723004e7d
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/instrumentFinderScreen.test.tsx
+@@ -0,0 +1,165 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ *
++ */
++
++import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
++import { renderToStaticMarkup } from 'react-dom/server';
++import { MemoryRouter } from 'react-router';
++import { describe, expect, it } from 'vitest';
++import type { InstrumentCatalogue } from '../api/client.js';
++import { TranslationProvider } from '../i18n/Provider.js';
++import { InstrumentFinderPage } from './InstrumentFinderPage.js';
++
++const catalogue: InstrumentCatalogue = {
++    total: 3,
++    truncated: false,
++    instruments: [
++        {
++            instrument_id: 'a0000000-0000-0000-0000-000000000001',
++            kind: 'curve',
++            name: 'USD-SOFR',
++            currency: 'USD',
++            base_currency: '',
++            quote_currency: '',
++            instrument_type: 'discount',
++            quote_type: 'rate',
++            forward_start: '',
++            axes: [{ field: 'term', values: ['ON', '1M', '3M'] }],
++            sources: [
++                {
++                    provider_code: 'ore',
++                    provider_kind: 'derived',
++                    series_id: 's-1',
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 900,
++                    stale: false,
++                },
++            ],
++            party_id: 'p-1',
++            stale: false,
++            as_of: '2026-11-13 10:00:00Z',
++        },
++        {
++            instrument_id: 'a0000000-0000-0000-0000-000000000002',
++            kind: 'pair',
++            name: 'EUR/USD',
++            currency: '',
++            base_currency: 'EUR',
++            quote_currency: 'USD',
++            instrument_type: 'fx_spot',
++            quote_type: 'rate',
++            forward_start: '',
++            axes: [],
++            sources: [
++                {
++                    provider_code: 'derived',
++                    provider_kind: 'derived',
++                    series_id: 's-2',
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                },
++            ],
++            party_id: 'p-1',
++            stale: false,
++            as_of: '2026-11-13 10:00:00Z',
++        },
++        {
++            instrument_id: 'a0000000-0000-0000-0000-000000000003',
++            kind: 'surface',
++            name: 'EURUSD_SSVI',
++            currency: 'EUR',
++            base_currency: 'EUR',
++            quote_currency: 'USD',
++            instrument_type: 'fx_vol_surface',
++            quote_type: 'rate_lnvol',
++            forward_start: '',
++            axes: [
++                { field: 'expiry', values: ['1W', '1M'] },
++                { field: 'strike', values: ['ATM', 'DEL/Spot/Call/25'] },
++            ],
++            sources: [
++                {
++                    provider_code: 'ore',
++                    provider_kind: 'derived',
++                    series_id: 's-3',
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 3600,
++                    stale: true,
++                },
++            ],
++            party_id: 'p-1',
++            stale: true,
++            as_of: '2026-11-13 10:00:00Z',
++        },
++    ],
++};
++
++function draw(address: string, set: InstrumentCatalogue = catalogue): string {
++    const client = new QueryClient();
++    client.setQueryData(['market-instruments', '', '', ''], set);
++    return renderToStaticMarkup(
++        <QueryClientProvider client={client}>
++            <TranslationProvider>
++                <MemoryRouter initialEntries={[address]}>
++                    <InstrumentFinderPage />
++                </MemoryRouter>
++            </TranslationProvider>
++        </QueryClientProvider>,
++    );
++}
++
++describe('the instrument finder', () => {
++    it('draws one row per instrument, with its kind, sources and values', () => {
++        const page = draw('/market-data/instruments');
++        for (const text of ['Curve', 'USD-SOFR', 'ON, 1M, 3M', 'ore', 'Pair', 'EUR/USD']) {
++            expect(page).toContain(text);
++        }
++    });
++
++    it('draws a surface as one instrument with two axes of values', () => {
++        const page = draw('/market-data/instruments');
++        expect(page).toContain('Surface');
++        expect(page).toContain('1W, 1M, ATM, DEL/Spot/Call/25');
++    });
++
++    it('opens a pair at its convention and leaves the other kinds as text', () => {
++        const page = draw('/market-data/instruments');
++        expect(page).toContain('href="/refdata/currency-pairs/EUR%2FUSD"');
++        expect(page).not.toContain('href="/refdata/currency-pairs/USD-SOFR"');
++    });
++
++    it('opens a curve at its published sets and leaves a surface as text', () => {
++        const page = draw('/market-data/instruments');
++        expect(page).toContain('href="/market-data/published-curves/USD-SOFR"');
++        // A surface has no page, so its name is not a link.
++        expect(page).not.toContain('href="/market-data/published-curves/EURUSD_SSVI"');
++        expect(page).not.toContain('href="/market-data/instruments/EURUSD_SSVI"');
++    });
++
++    it('says nothing matched when the catalogue answers nothing', () => {
++        const page = draw('/market-data/instruments', {
++            total: 0,
++            truncated: false,
++            instruments: [],
++        });
++        expect(page).toContain('No instrument matches.');
++    });
++});
+diff --git a/projects/ores.web/packages/web/src/marketdata/rateLadderScreen.test.tsx b/projects/ores.web/packages/web/src/marketdata/rateLadderScreen.test.tsx
+new file mode 100644
+index 0000000000..b8cc87ad2e
+--- /dev/null
++++ b/projects/ores.web/packages/web/src/marketdata/rateLadderScreen.test.tsx
+@@ -0,0 +1,171 @@
++/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ *
++ */
++
++import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
++import { renderToStaticMarkup } from 'react-dom/server';
++import { MemoryRouter } from 'react-router';
++import { describe, expect, it } from 'vitest';
++import type { RateLadder } from '../api/client.js';
++import { TranslationProvider } from '../i18n/Provider.js';
++import { RateLadderPage } from './RateLadderPage.js';
++
++const ladder: RateLadder = {
++    currency: 'USD',
++    instrument_type: 'discount',
++    forward_start: '',
++    as_of: '2026-11-13 23:59:59Z',
++    provider_count: 3,
++    tenor_convention: 'RATES_SPOT_FORWARD',
++    day_count_convention: 'A365F',
++    rungs: [
++        {
++            tenor: '1M',
++            maturity_date: '2026-12-14',
++            year_fraction: 0.0833,
++            quotes: [
++                {
++                    provider_code: 'ore',
++                    value: 0.0432,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                    series_id: 's-1',
++                },
++                {
++                    provider_code: 'bloomberg',
++                    value: 0.0435,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 90,
++                    stale: false,
++                    series_id: 's-2',
++                },
++                {
++                    provider_code: 'derived',
++                    value: 0.043,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 120,
++                    stale: false,
++                    series_id: 's-3',
++                },
++            ],
++            consensus: { value: 0.0432, method: 'mean', providers_used: 3 },
++        },
++        {
++            tenor: '3M',
++            maturity_date: '2027-02-15',
++            year_fraction: 0.25,
++            quotes: [
++                {
++                    provider_code: 'ore',
++                    value: 0.041,
++                    as_of: '2026-11-13 10:00:00Z',
++                    age_seconds: 60,
++                    stale: false,
++                    series_id: 's-4',
++                },
++            ],
++            consensus: { value: 0.041, method: 'mean', providers_used: 1 },
++        },
++    ],
++};
++
++function draw(address: string, set: RateLadder = ladder): string {
++    const client = new QueryClient();
++    client.setQueryData(['rate-ladder', 'USD', '2026-11-13', '', '0D'], set);
++    return renderToStaticMarkup(
++        <QueryClientProvider client={client}>
++            <TranslationProvider>
++                <MemoryRouter initialEntries={[address]}>
++                    <RateLadderPage />
++                </MemoryRouter>
++            </TranslationProvider>
++        </QueryClientProvider>,
++    );
++}
++
++describe('the rate ladder page', () => {
++    it('draws each rung with the date the server dated it at', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
++        for (const text of [
++            '1M',
++            '2026-12-14',
++            '3M',
++            '2027-02-15',
++            'RATES_SPOT_FORWARD',
++            'A365F',
++        ]) {
++            expect(page).toContain(text);
++        }
++    });
++
++    it('draws the consensus in percent and the best quote beside its distance', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
++        // 0.0432 as a percentage, and the best quote 0.0003 above it, in bp.
++        expect(page).toContain('4.3200');
++        expect(page).toContain('+3.0 bp');
++    });
++
++    it('gives every provider a column, and a gap a dash', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
++        for (const provider of ['ore', 'bloomberg', 'derived']) {
++            const header = new RegExp(`<th[^>]*>\\s*${provider}\\s*<\\/th>`);
++            expect(page).toMatch(header);
++        }
++        // The 3M rung is quoted by ore alone, so the other two columns are gaps.
++        expect(page).toContain('—');
++    });
++
++    it('shows only the short dates when the window asks for them', () => {
++        const short = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13&window=short');
++        expect(short).not.toContain('2027-02-15');
++        const all = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
++        expect(all).toContain('2027-02-15');
++    });
++
++    it('marks a rung fewer providers quote than the desk holds', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
++        expect(page).toContain('Thin');
++        expect(page).toContain('Where the market is thin');
++        expect(page).toContain('3M: quoted by ore; the consensus rests on mean.');
++    });
++
++    it('draws the consensus as a curve over the rungs', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
++        expect(page).toContain('The USD curve, consensus by rung');
++        expect(page).toContain('<svg');
++    });
++
++    it('draws no curve for a single rung, because a line needs two', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13', {
++            ...ladder,
++            rungs: [ladder.rungs[0]],
++        });
++        expect(page).not.toContain('The USD curve, consensus by rung');
++    });
++
++    it('says so when the party holds no ladder for the currency', () => {
++        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13', {
++            ...ladder,
++            rungs: [],
++        });
++        expect(page).toContain('The party holds no ladder for this currency.');
++    });
++});
+diff --git a/projects/ores.web/packages/web/src/shell/cards.ts b/projects/ores.web/packages/web/src/shell/cards.ts
+index 0596cd40d3..d47c532852 100644
+--- a/projects/ores.web/packages/web/src/shell/cards.ts
++++ b/projects/ores.web/packages/web/src/shell/cards.ts
+@@ -214,6 +214,38 @@ export const CARDS = {
+         permission: 'synthetic::fx_spot_generation_configs:write',
+         screenTitleKey: 'marketdata.calibration.title',
+     },
++    instruments: {
++        titleKey: 'marketdata.instruments.title',
++        bodyKey: 'marketdata.instruments.lead',
++        to: PATHS.instruments,
++        icon: 'chart',
++        permission: 'marketdata::market_observations:read',
++        screenTitleKey: 'marketdata.instruments.title',
++    },
++    rateLadder: {
++        titleKey: 'marketdata.rateLadder.title',
++        bodyKey: 'marketdata.rateLadder.lead',
++        to: PATHS.rateLadder,
++        icon: 'chart',
++        permission: 'marketdata::market_observations:read',
++        screenTitleKey: 'marketdata.rateLadder.title',
++    },
++    fxMontage: {
++        titleKey: 'marketdata.fxMontage.title',
++        bodyKey: 'marketdata.fxMontage.lead',
++        to: PATHS.fxMontage,
++        icon: 'chart',
++        permission: 'marketdata::market_observations:read',
++        screenTitleKey: 'marketdata.fxMontage.title',
++    },
++    curveAnalytics: {
++        titleKey: 'marketdata.curveAnalytics.title',
++        bodyKey: 'marketdata.curveAnalytics.lead',
++        to: PATHS.curveAnalytics,
++        icon: 'chart',
++        permission: 'marketdata::curve_snapshots:read',
++        screenTitleKey: 'marketdata.curveAnalytics.title',
++    },
+     publishedCurves: {
+         titleKey: 'marketdata.published.title',
+         bodyKey: 'marketdata.published.lead',
+@@ -457,6 +489,10 @@ export const AREA_CARDS = {
+     ],
+     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
+     marketdata: [
++        'instruments',
++        'rateLadder',
++        'fxMontage',
++        'curveAnalytics',
+         'curveBlueprints',
+         'synthetic',
+         'subscriptions',
+diff --git a/projects/ores.web/packages/web/src/shell/paths.ts b/projects/ores.web/packages/web/src/shell/paths.ts
+index e0d148a344..7f67e09494 100644
+--- a/projects/ores.web/packages/web/src/shell/paths.ts
++++ b/projects/ores.web/packages/web/src/shell/paths.ts
+@@ -62,6 +62,10 @@ export const PATHS = {
+     subscriptions: '/market-data/subscriptions',
+     connectivity: '/market-data/connectivity',
+     fixingSeries: '/market-data/fixings',
++    instruments: '/market-data/instruments',
++    rateLadder: '/market-data/rate-ladder',
++    fxMontage: '/market-data/fx-montage',
++    curveAnalytics: '/market-data/curve-analytics',
+     publicRates: '/market-data/public-rates',
+     calibration: '/market-data/calibration',
+     fxFeed: '/market-data/synthetic/fx',

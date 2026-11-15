@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 92644AAC-BE5F-43B6-96E4-084226CDA094
+:END:
+#+title: Tick-to-tick returns understate a correlation that holds exactly
+#+description: The Epps effect: two series sampled at their own times show a correlation of tick returns below their true instantaneous correlation; the Hayashi-Yoshida estimator measures it without bias.
+#+type: knowledge
+#+level: cross
+#+filetags: :correlation:statistics:market_data:synthetic:knowledge:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+* Summary
+
+Epps (1979) observed that the correlation of stock returns falls as the
+sampling interval shrinks. Much of the effect is a property of the measurement:
+two series that tick at their own times have returns over intervals that only
+partly overlap, and the part that does not overlap adds variance but no
+covariance. So a correlation computed from tick returns, or from returns aligned
+to the last tick before a grid point, is biased toward zero. Hayashi and Yoshida
+(2005) gave an estimator of the covariance that sums the products of every pair
+of overlapping returns and is unbiased for any sampling times independent of
+the processes. It is the right way to state that a synthetic market's
+correlation holds under irregular sampling, and the wrong test is the one that
+looks natural.
+
+* Detail
+
+** The bias
+
+Let $X$ and $Y$ be Brownian motions with instantaneous correlation $\rho$, and
+take one return of each over the intervals $I$ and $J$. Then
+
+\[
+\operatorname{Corr}(\Delta X, \Delta Y) = \rho\, \frac{|I \cap J|}{\sqrt{|I|\,|J|}}.
+\]
+
+The ratio is one only when the intervals coincide. For two series with
+independent Poisson clocks the expected ratio falls as the clocks get faster
+relative to the window, which is the Epps effect in its simplest form. Market
+microstructure noise and lead-lag add to it in real data; a synthetic market
+without them shows the sampling part alone.
+
+** The Hayashi-Yoshida estimator
+
+For returns $\Delta X_m$ over intervals $I_m$ and $\Delta Y_n$ over $J_n$,
+covering $[0, T]$,
+
+\[
+\widehat{\langle X, Y \rangle}_T = \sum_{m,n} \Delta X_m\, \Delta Y_n\; \mathbf{1}\{I_m \cap J_n \neq \emptyset\}.
+\]
+
+Every pair of returns whose intervals overlap contributes; no data are
+discarded or interpolated. For Brownian motions sampled at times independent of
+them it is unbiased for $\rho T$ and consistent as the mesh shrinks (Hayashi and
+Yoshida, 2005). Divided by the square root of the two realised variances, it
+estimates $\rho$.
+
+** In ORE Studio
+
+The synthetic market states correlations as the inner products of factor
+loadings
+([[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]]).
+A test of that statement samples two drivers at their own irregular times and
+estimates their correlation with the Hayashi-Yoshida estimator. A test that
+correlates tick returns directly would measure the overlap ratio as well as the
+loadings, and would fail a correct implementation. The arrival work already
+measures count correlation; this measures signed correlation of the noise.
+
+** References
+
+- Epps, T. W. (1979). Comovements in stock prices in the very short run.
+  /Journal of the American Statistical Association/, 74(366), 291-298.
+  [[https://doi.org/10.2307/2286325][doi:10.2307/2286325]].
+- Hayashi, T., and Yoshida, N. (2005). On covariance estimation of
+  non-synchronously observed diffusion processes. /Bernoulli/, 11(2), 359-379.
+  [[https://doi.org/10.3150/bj/1116340299][doi:10.3150/bj/1116340299]].
+
+* See also
+
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- the correlation this measures.
+- [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] -- the clocks whose overlap sets the bias.
+- [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] -- completes: it measures count correlation; this measures signed correlation.
+- [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] -- an improbable neighbour: a desk that estimates its correlation book from tick data inherits the same bias.

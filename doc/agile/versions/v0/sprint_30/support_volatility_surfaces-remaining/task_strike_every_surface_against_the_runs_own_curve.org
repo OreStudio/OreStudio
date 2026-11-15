@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: CFFA13BE-A386-4E72-B06C-60976FA34DF3
+:END:
+#+title: Task: Resolve a pair's market once, shared by the calibration and the surface
+#+description: One resolution of a pair's market at a value date, in quant, adopted by the calibration and by the surface feed; one market per expiry in the surface feed; and the proof that a surface's quoted volatilities are invariant to the level of its spot. The board that feeds it is a task of its own.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/strike-every-surface-against-the-runs-own-curve
+#+pr: 4680
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: bright_faraday
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A pair's market at a value date is one rule in one place. The calibration reads a forward set and the surface feed reads whatever it is given, and both resolve a market -- the spot and the two discount factors -- by the same code, so the surface cannot be struck against one forward and read back against another.
+
+Landed on this task's branch: =math::pair_market_at= in =ores.analytics.quant=, the calibration's adoption of it, one market per expiry in the surface feed's build input, and the proof that a surface's quoted volatilities are invariant to the level of its spot at =1e-12= even when its two discounts differ.
+
+Where the forward comes from at run time is
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]], decided through
+[[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][the investigation]]. The build is
+[[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- A pair's market at a value date is resolved by one block in =ores.analytics.quant=, which an exact date takes from its row's discounts and a date between rows interpolates log-linearly in days from the spot date.
+- The base currency's discount is the foreign side and the quote currency's the domestic side, in the block and not in each caller.
+- The calibration adopts the block and its 251 tests pass unchanged, so the move is a move.
+- The surface feed carries one market for each of its expiries instead of one shared by every expiry, and refuses an expiry with no market and a market that names no expiry.
+- A surface's quoted volatilities move by no more than =1e-12= when its spot moves from 1.0 to 1.30 with its discounts held, and by about =7.8e-05= when the discount ratio moves from one to =0.99/0.97=.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Change in a surface's quoted vols when its spot moves from 1.0 to 1.30, the discounts held | below 1e-12 at all 15 points | =ores.synthetic.api.tests=, "a surface's quotes do not depend on the level of its spot once its discounts differ" | 47b59a61ee |
+| Change in a surface's quoted vols when the discount ratio moves from one to 0.99/0.97 | 7.8e-05, about 0.008 volatility points | the same suite, "a surface's quotes do depend on the ratio of its discounts" | 47b59a61ee |
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4680][#4680]] | [quant,marketdata,synthetic,docs] Resolve a pair's market once, shared by the calibration and the surface |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The block is =ores.analytics.quant/math/fx_pair_market.hpp=, with =pair_market_at= and the neutral =fx_discount_point= the two callers each build. The calibration's private =discounts_at= is deleted and =terms_at= calls the block; its suite passes unchanged, which is the proof that the move changed no number. The surface feed's build input carries =std::vector<fx_vol_expiry_market>= keyed by expiry tenor, and the emitter refuses an expiry with no market and a market that names no expiry.
+
+Why the invariance proof mattered: it lets a surface be quoted against the discount ratio alone, without first resolving the pair's spot, which is what makes a per-expiry market a small piece of data rather than a pair of curves. It is measured, not asserted: the test holds the two discounts and moves the spot.
+
+Six documentation checks pass -- =site-page=, =org-links=, =heading-numbers=, =backlog-indexes=, =structure-notes=, =pattern-uses= -- as do =format= and =unity-collisions=, and the four affected suites are green after the rebase onto =affc9c0d81=.

@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 8F6EE5AE-8B49-4A4C-97F8-E0517BE53775
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.asset_class_code
 #+description: Codegen entity model for the refdata asset_class_code table: the top-level asset class taxonomy the catalogue declares.
 #+type: ores.codegen.entity
+#+web_classification: asset-class-code
+#+web_classification_topic: products
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: asset_class_code

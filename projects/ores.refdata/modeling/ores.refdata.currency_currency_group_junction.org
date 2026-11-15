@@ -8,6 +8,8 @@
 #+description: Codegen junction model for currency_currency_groups.
 #+type: ores.codegen.junction
 #+http_area: reference-data
+#+web_resource: currency-memberships
+#+web_list_by: currency_iso_code
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: currency_currency_groups

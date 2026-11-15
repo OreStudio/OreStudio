@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &trading_account_type::version},
         utility::codec::field{"tenant_id", &trading_account_type::tenant_id},
         utility::codec::field{"code", &trading_account_type::code},

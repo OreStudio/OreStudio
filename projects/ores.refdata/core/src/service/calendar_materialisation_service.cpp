@@ -26,12 +26,14 @@
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
 #include "ores.refdata.api/domain/calendar_rule.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
 #include "ores.refdata.core/repository/currency_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
@@ -70,12 +72,12 @@ quant_domain::calendar_rule_kind parse_kind(const std::string& s) {
     throw std::runtime_error("Unknown calendar_rule kind: " + s);
 }
 
-// The shift codes are quant's, spelled once in parse_observance_shift_code.
+// The shift codes are spelled once, in the quant_codes mapping.
 // This wrapper only restates a bad code in the exception type the rest of
 // this service throws, so the two never drift apart.
 quant_domain::observance_shift parse_shift(const std::string& s) {
     try {
-        return quant_domain::parse_observance_shift_code(s);
+        return mapping::parse_observance_shift_code(s);
     } catch (const std::invalid_argument&) {
         throw std::runtime_error("Unknown observance_shift: " + s);
     }
@@ -158,8 +160,8 @@ bool is_weekend(std::chrono::weekday wd, const std::bitset<7>& weekend_mask) {
 
 } // namespace
 
-calendar_materialisation_service::calendar_materialisation_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+calendar_materialisation_service::calendar_materialisation_service(const context& ctx)
+    : ctx_(ctx) {}
 
 std::size_t
 calendar_materialisation_service::regenerate(const std::string& calendar_code,
@@ -287,7 +289,13 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
     if (!to_write.empty()) {
         BOOST_LOG_SEV(lg(), info) << "Materialising " << to_write.size()
                                   << " calendar_date rows for " << calendar_code;
-        repository::calendar_date_repository(ctx_).write(to_write);
+        // The read above found none of these days, so each is claimed as new without a read of
+        // its own. The insert trigger does not refuse a new claim on a day that exists: a
+        // materialisation that ran since that read gets a second version with the same value.
+        const std::vector<ores::utility::domain::precondition> claims(
+            to_write.size(),
+            {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
+        repository::calendar_date_repository(ctx_).write(to_write, claims);
     }
 
     return to_write.size();

@@ -71,7 +71,7 @@ ores::history::service::dispatch_registry& history_registry() {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              ores::security::jwt::jwt_authenticator signer) {
 
     std::vector<ores::nats::service::subscription> subs;
@@ -143,7 +143,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         messaging::step_completed_event::nats_subject,
         "workflow-engine-step-completed",
         qg,
-        [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); },
+        [engine](ores::nats::delivery delivery) { engine->on_step_completed(std::move(delivery)); },
         engine_stream,
         ores::service::messaging::step_max_deliver,
         ores::service::messaging::step_ack_wait));
@@ -152,7 +152,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         messaging::start_workflow_message::nats_subject,
         "workflow-engine-start",
         qg,
-        [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); },
+        [engine](ores::nats::delivery delivery) { engine->on_start_workflow(std::move(delivery)); },
         engine_stream,
         ores::service::messaging::step_max_deliver,
         ores::service::messaging::step_ack_wait));
@@ -198,7 +198,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ch->renew_step_claim(std::move(msg));
         }));
 
-    auto wh = std::make_shared<workflow_handler>(nats, std::move(ctx), std::move(signer), engine);
+    auto wh = std::make_shared<workflow_handler>(nats, ctx, std::move(signer), engine);
 
     // Resuming a run is the engine's work, so the handler that answers this
     // subject hands the request to the engine that holds the dispatch path.

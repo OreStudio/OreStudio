@@ -140,7 +140,7 @@ struct get_entity_history_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_history_version>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"version", &entity_history_version::version},
         ::ores::utility::codec::field{"modified_by", &entity_history_version::modified_by},
         ::ores::utility::codec::field{"recorded_at", &entity_history_version::recorded_at},
@@ -158,7 +158,7 @@ struct get_entity_history_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entity_history_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"entity_type", &get_entity_history_request::entity_type},
         ::ores::utility::codec::field{"entity_id", &get_entity_history_request::entity_id},
     };
@@ -173,7 +173,7 @@ struct get_entity_history_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entity_history_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"versions", &get_entity_history_response::versions},
         ::ores::utility::codec::field{"success", &get_entity_history_response::success},
         ::ores::utility::codec::field{"message", &get_entity_history_response::message},

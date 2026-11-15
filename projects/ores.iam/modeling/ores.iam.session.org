@@ -368,37 +368,37 @@ consumers onto full-row upserts.
 #+end_src
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    std::optional<domain::session> read(context ctx, const boost::uuids::uuid& session_id);
+    std::optional<domain::session> read(const context& ctx, const boost::uuids::uuid& session_id);
 
-    void update_bytes(context ctx,
+    void update_bytes(const context& ctx,
                       const boost::uuids::uuid& session_id,
                       const std::chrono::system_clock::time_point& start_time,
                       std::uint64_t bytes_sent,
                       std::uint64_t bytes_received);
 
-    void end_session(context ctx,
+    void end_session(const context& ctx,
                      const boost::uuids::uuid& session_id,
                      const std::chrono::system_clock::time_point& start_time,
                      const std::chrono::system_clock::time_point& end_time,
                      std::uint64_t bytes_sent,
                      std::uint64_t bytes_received);
 
-    std::vector<domain::session> read_by_account(context ctx,
+    std::vector<domain::session> read_by_account(const context& ctx,
                                                  const boost::uuids::uuid& account_id,
                                                  std::uint32_t limit = 0,
                                                  std::uint32_t offset = 0);
 
-    std::vector<domain::session> read_active_by_account(context ctx,
+    std::vector<domain::session> read_active_by_account(const context& ctx,
                                                         const boost::uuids::uuid& account_id);
 
-    std::uint32_t count_by_account(context ctx, const boost::uuids::uuid& account_id);
+    std::uint32_t count_by_account(const context& ctx, const boost::uuids::uuid& account_id);
 
-    std::vector<domain::session> read_all_active(context ctx);
+    std::vector<domain::session> read_all_active(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::session>
-session_repository::read(context ctx, const boost::uuids::uuid& session_id) {
+session_repository::read(const context& ctx, const boost::uuids::uuid& session_id) {
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where("id"_c == session_id_str) | query_builder::limit(1);
@@ -414,7 +414,7 @@ session_repository::read(context ctx, const boost::uuids::uuid& session_id) {
     return sessions.front();
 }
 
-void session_repository::update_bytes(context ctx,
+void session_repository::update_bytes(const context& ctx,
                                       const boost::uuids::uuid& session_id,
                                       const std::chrono::system_clock::time_point& start_time,
                                       std::uint64_t bytes_sent,
@@ -432,7 +432,7 @@ void session_repository::update_bytes(context ctx,
         "Updating session bytes");
 }
 
-void session_repository::end_session(context ctx,
+void session_repository::end_session(const context& ctx,
                                      const boost::uuids::uuid& session_id,
                                      const std::chrono::system_clock::time_point& start_time,
                                      const std::chrono::system_clock::time_point& end_time,
@@ -452,7 +452,7 @@ void session_repository::end_session(context ctx,
         "Ending session");
 }
 
-std::vector<domain::session> session_repository::read_by_account(context ctx,
+std::vector<domain::session> session_repository::read_by_account(const context& ctx,
                                                                  const boost::uuids::uuid& account_id,
                                                                  std::uint32_t limit_count,
                                                                  std::uint32_t offset_count) {
@@ -473,7 +473,7 @@ std::vector<domain::session> session_repository::read_by_account(context ctx,
 }
 
 std::vector<domain::session>
-session_repository::read_active_by_account(context ctx, const boost::uuids::uuid& account_id) {
+session_repository::read_active_by_account(const context& ctx, const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query =
         query_builder::read<std::vector<session_entity>> |
@@ -488,7 +488,7 @@ session_repository::read_active_by_account(context ctx, const boost::uuids::uuid
         "Reading active sessions by account");
 }
 
-std::uint32_t session_repository::count_by_account(context ctx,
+std::uint32_t session_repository::count_by_account(const context& ctx,
                                                    const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = query_builder::read<std::vector<session_entity>>;
@@ -496,7 +496,7 @@ std::uint32_t session_repository::count_by_account(context ctx,
         ctx, query, "account_id"_c == account_id_str, lg(), "Counting sessions by account");
 }
 
-std::vector<domain::session> session_repository::read_all_active(context ctx) {
+std::vector<domain::session> session_repository::read_all_active(const context& ctx) {
     const auto query = query_builder::read<std::vector<session_entity>> |
                        query_builder::where(query_builder::is_null("end_time")) |
                        query_builder::order_by("start_time"_c.desc());

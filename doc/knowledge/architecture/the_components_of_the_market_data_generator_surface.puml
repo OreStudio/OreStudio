@@ -1,0 +1,41 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+'
+@startuml
+autonumber
+participant "fx_vol_surface_feed" as surface
+participant "market_board" as values
+participant "pair_market_at" as resolve
+participant "fx_vol_surface_emitter" as emitter
+participant "fx_vol_surface_generator" as engine
+participant "NATS" as nats
+
+surface -> values : view(curve:EUR), view(curve:USD), view(spot:EUR/USD)
+values --> surface : spot date, dated discounts, level, when each was published
+surface -> surface : merge the two curves into one dated discount row per day
+loop each expiry the feed quotes
+    surface -> resolve : pair_market_at(spot, spot_date, rows, value_date)
+    resolve --> surface : the market: spot, P_dom, P_for
+end
+surface -> emitter : step(drivers, markets)
+emitter -> engine : step(spot shock = 0, drivers)
+engine --> emitter : the SSVI surface after the step
+emitter -> emitter : read the smile at the strike of each delta
+emitter --> surface : one observed point per contributor per point
+surface -> nats : a tick per point per contributor
+@enduml

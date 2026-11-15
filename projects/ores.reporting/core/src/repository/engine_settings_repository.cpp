@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -109,19 +113,75 @@ engine_settings_filter_condition(const std::optional<messaging::engine_settings_
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool engine_settings_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using engine_settings_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::engine_settings>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+engine_settings_rows_by_key
+engine_settings_current_rows(engine_settings_repository& repo,
+                             const ores::database::context& ctx,
+                             const std::vector<domain::engine_settings>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    engine_settings_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::engine_settings>&
+engine_settings_rows_of(const engine_settings_rows_by_key& current,
+                        const domain::engine_settings& item) {
+    static const std::vector<domain::engine_settings> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-engine_settings_repository::replace_claim(context ctx, const domain::engine_settings& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+engine_settings_replace_claim(const std::vector<domain::engine_settings>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::engine_settings
-engine_settings_repository::apply_claim(context ctx,
-                                        const domain::engine_settings& v,
-                                        const ores::utility::domain::precondition& claim) {
+engine_settings_apply_claim(const domain::engine_settings& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::engine_settings>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -133,54 +193,67 @@ engine_settings_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void engine_settings_repository::write(context ctx, const domain::engine_settings& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void engine_settings_repository::write(context ctx, const std::vector<domain::engine_settings>& v) {
+void engine_settings_repository::write(const context& ctx, const domain::engine_settings& v) {
+    write(ctx, v, engine_settings_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void engine_settings_repository::write(const context& ctx,
+                                       const std::vector<domain::engine_settings>& v) {
+    const auto current = engine_settings_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(engine_settings_replace_claim(engine_settings_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void engine_settings_repository::write(context ctx,
+void engine_settings_repository::write(const context& ctx,
                                        const domain::engine_settings& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing engine settings. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = engine_settings_apply_claim(v,
+                                               claim,
+                                               engine_settings_claim_reads_current(claim) ?
+                                                   read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                   std::vector<domain::engine_settings>{});
     query_builder::execute_write_query(
         ctx, engine_settings_mapper::map(t), lg(), "Writing engine settings to database.");
 }
 
 void engine_settings_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::engine_settings>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing engine settings. Count: " << v.size();
+    std::vector<domain::engine_settings> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (engine_settings_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = engine_settings_current_rows(*this, ctx, to_read);
     std::vector<domain::engine_settings> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            engine_settings_apply_claim(v[i], claims[i], engine_settings_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, engine_settings_mapper::map(batch), lg(), "Writing engine settings to database.");
 }
 
-std::vector<domain::engine_settings> engine_settings_repository::read_latest(context ctx) {
+std::vector<domain::engine_settings> engine_settings_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<engine_settings_entity>> |
@@ -196,7 +269,7 @@ std::vector<domain::engine_settings> engine_settings_repository::read_latest(con
 }
 
 std::vector<domain::engine_settings>
-engine_settings_repository::read_latest(context ctx, const std::string& id) {
+engine_settings_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -213,7 +286,7 @@ engine_settings_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::engine_settings>
-engine_settings_repository::read_latest_by_name(context ctx, const std::string& name) {
+engine_settings_repository::read_latest_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +309,45 @@ engine_settings_repository::read_latest_by_name(context ctx, const std::string& 
 }
 
 std::vector<domain::engine_settings>
-engine_settings_repository::read_any_by_name(context ctx, const std::string& name) {
+engine_settings_repository::read_latest_by_name(const context& ctx,
+                                                const std::vector<std::string>& names) {
+    if (names.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (names.size() > chunk_size) {
+        std::vector<domain::engine_settings> all;
+        for (std::size_t begin = 0; begin < names.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, names.size());
+            auto part = read_latest_by_name(
+                ctx, std::vector<std::string>(names.begin() + begin, names.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings by name. Count: " << names.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<engine_settings_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<engine_settings_entity, domain::engine_settings>(
+        ctx,
+        query,
+        [](const auto& entities) { return engine_settings_mapper::map(entities); },
+        lg(),
+        "Reading latest engine settings by name.");
+    // The same party rule as the read of one key.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    return found;
+}
+
+std::vector<domain::engine_settings>
+engine_settings_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any engine settings by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<engine_settings_entity>> |
@@ -262,7 +373,7 @@ engine_settings_repository::read_any_by_name(context ctx, const std::string& nam
 }
 
 
-std::vector<domain::engine_settings> engine_settings_repository::read_all(context ctx,
+std::vector<domain::engine_settings> engine_settings_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all engine settings versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -279,7 +390,7 @@ std::vector<domain::engine_settings> engine_settings_repository::read_all(contex
 }
 
 std::optional<domain::engine_settings> engine_settings_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading engine settings at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -302,7 +413,7 @@ std::optional<domain::engine_settings> engine_settings_repository::read_at_versi
 }
 
 std::vector<domain::engine_settings> engine_settings_repository::read_latest_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -330,7 +441,7 @@ std::vector<domain::engine_settings> engine_settings_repository::read_latest_by_
 }
 
 std::uint32_t engine_settings_repository::get_total_settings_count_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     const std::optional<messaging::engine_settings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -353,7 +464,7 @@ std::uint32_t engine_settings_repository::get_total_settings_count_by_configurat
 
 
 engine_settings_repository::remove_status engine_settings_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing engine settings. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -382,12 +493,12 @@ engine_settings_repository::remove_status engine_settings_repository::remove(
     return remove_status::removed;
 }
 
-void engine_settings_repository::remove(context ctx, const std::string& id) {
+void engine_settings_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::engine_settings> engine_settings_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -413,7 +524,7 @@ std::vector<domain::engine_settings> engine_settings_repository::read_latest(
 }
 
 std::uint32_t engine_settings_repository::get_total_settings_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::engine_settings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active engine settings count";
@@ -432,9 +543,24 @@ std::uint32_t engine_settings_repository::get_total_settings_count(
 }
 
 std::vector<domain::engine_settings>
-engine_settings_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+engine_settings_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::engine_settings> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -450,7 +576,7 @@ engine_settings_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void engine_settings_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void engine_settings_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

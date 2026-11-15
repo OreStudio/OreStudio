@@ -75,7 +75,7 @@ public:
      *        Set to a party's own id to read and write that party's settings,
      *        such as =onboarding.party=.
      */
-    explicit system_settings_service(database::context ctx,
+    explicit system_settings_service(const database::context& ctx,
                                      std::string tenant_id = {},
                                      std::string party_id = {});
 

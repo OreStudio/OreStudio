@@ -60,9 +60,12 @@ std::expected<std::vector<published_fixing>, std::string> parse_swestr_rates(std
     return out;
 }
 
-riksbank_fetcher::riksbank_fetcher(http::client::net::transport& transport, std::string base_url)
+riksbank_fetcher::riksbank_fetcher(http::client::net::transport& transport,
+                                   std::string base_url,
+                                   std::optional<std::string> subscription_key)
     : transport_(transport)
-    , base_url_(std::move(base_url)) {
+    , base_url_(std::move(base_url))
+    , subscription_key_(std::move(subscription_key)) {
     while (!base_url_.empty() && base_url_.back() == '/')
         base_url_.pop_back();
 }
@@ -82,11 +85,18 @@ std::expected<std::vector<published_fixing>, std::string> riksbank_fetcher::fixi
     std::string_view key, std::chrono::year_month_day from, std::chrono::year_month_day to) {
     if (auto known = universe(key); !known)
         return std::unexpected(known.error());
+    const auto with_key = [&](std::string url, char separator) {
+        if (subscription_key_)
+            url += std::format("{}subscription-key={}", separator, *subscription_key_);
+        return url;
+    };
     auto body = read_window(
         transport_,
-        std::format(
-            "{}/swestr/v1/all/{}?fromDate={}&toDate={}", base_url_, key, iso(from), iso(to)),
-        std::format("{}/swestr/v1/latest/{}", base_url_, key));
+        with_key(
+            std::format(
+                "{}/swestr/v1/all/{}?fromDate={}&toDate={}", base_url_, key, iso(from), iso(to)),
+            '&'),
+        with_key(std::format("{}/swestr/v1/latest/{}", base_url_, key), '?'));
     if (!body)
         return std::unexpected(body.error());
     if (!*body)

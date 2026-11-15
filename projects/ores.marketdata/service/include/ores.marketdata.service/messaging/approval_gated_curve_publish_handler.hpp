@@ -75,11 +75,11 @@ class approval_gated_curve_publish_handler {
 public:
     approval_gated_curve_publish_handler(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void publish(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -123,13 +123,13 @@ public:
             BOOST_LOG_SEV(curve_publish_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
+            resp.status = service::app::publish_status_failed;
             resp.message = e.what();
         }
         BOOST_LOG_SEV(curve_publish_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
-private:
     /**
      * @brief Raises the request a publish waits on, or applies an approved one.
      *
@@ -141,6 +141,10 @@ private:
      * this operation applies it at once, answering with the instant and the
      * publisher the record holds rather than with a wait. The publisher is the
      * asker, because the asker is the person who applied it.
+     *
+     * Public because the scheduled sweep publishes the system tenant's curves
+     * through this one path, so a person's publish and a schedule's publish can
+     * never drift apart.
      */
     static void answer(const ores::database::context& req_ctx,
                        const publish_curve_request& req,
@@ -155,7 +159,8 @@ private:
             resp.approval_request_id = id;
             resp.state_code = raised.state_code;
             if (raised.state_code != "approved") {
-                resp.success = true;
+                resp.success = false;
+                resp.status = service::app::publish_status_raised;
                 resp.message = "Raised. The publish waits on the decision.";
                 BOOST_LOG_SEV(curve_publish_handler_lg(), info)
                     << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
@@ -173,6 +178,7 @@ private:
         apply(req_ctx, req.approval_request_id, attempted, resp);
     }
 
+private:
     /**
      * @brief Applies the approved request, or says why it may not.
      *
@@ -188,16 +194,30 @@ private:
         const auto verdict = verdict_on_publish(req_ctx, request_id, attempted);
         resp.state_code = verdict.state_code;
         if (!verdict.approved) {
+            resp.status = service::app::publish_status_refused;
             resp.message = verdict.message;
             return;
         }
 
-        curve_republish_service::republish(req_ctx, attempted.bootstrap_config_id, attempted.as_of);
+        // A deferred build writes nothing and stamps nothing, so the request is not
+        // spent on a curve whose inputs have not arrived: the next firing applies it.
+        const auto built = curve_republish_service::republish(
+            req_ctx, attempted.bootstrap_config_id, attempted.as_of);
+        if (!built) {
+            resp.status = service::app::publish_status_deferred;
+            resp.message = "Deferred. " + built.error().reason;
+            BOOST_LOG_SEV(curve_publish_handler_lg(), info)
+                << "Deferred curve " << attempted.bootstrap_config_id << ": "
+                << built.error().reason;
+            return;
+        }
+
         const auto published = record_publication(
             req_ctx,
             *verdict.record,
             req_ctx.actor().empty() ? req_ctx.service_account() : req_ctx.actor());
         resp.success = true;
+        resp.status = service::app::publish_status_published;
         resp.published_at = published.published_at;
         resp.published_by = published.published_by;
     }

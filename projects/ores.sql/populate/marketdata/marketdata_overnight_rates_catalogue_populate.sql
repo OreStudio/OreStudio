@@ -64,7 +64,37 @@ values
     (ores_utility_system_tenant_id_fn(), 'riksbank', 0, 'Sveriges Riksbank', 'reference',
      'The Swedish krona short-term rate, SWESTR, published by the Riksbank each Swedish business day.',
      34, 'https://www.riksbank.se/en-gb/statistics/swestr/conditions-for-use-and-re-publishing/',
-     'Source: Sveriges Riksbank', true, '',
+     'Source: Sveriges Riksbank', true, 'env:ORES_MARKETDATA_RIKSBANK_API_KEY',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'rba', 0, 'Reserve Bank of Australia', 'reference',
+     'The statistical tables of the Reserve Bank of Australia, among them AONIA, the interbank overnight cash rate, published each Australian business day.',
+     35, 'https://www.rba.gov.au/copyright/',
+     'Source: RBA', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'bcb', 0, 'Banco Central do Brasil', 'reference',
+     'The time series of the Banco Central do Brasil, among them the annualised CDI that B3 computes, published each Brazilian business day.',
+     36, 'https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/mercado-de-derivativos/indicadores/indicadores-financeiros/',
+     'Source: B3, through the Banco Central do Brasil', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'banxico', 0, 'Banco de Mexico', 'reference',
+     'The economic information system of Banco de Mexico, among them the TIIE de Fondeo, the overnight funding rate, published each Mexican business day.',
+     37, 'https://www.banxico.org.mx/footer-en/terms-and-conditions-banco-mexico-s-website.html',
+     'Source: Banco de Mexico, https://www.banxico.org.mx', true, 'env:ORES_MARKETDATA_BANXICO_API_KEY',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'bcch', 0, 'Banco Central de Chile', 'reference',
+     'The statistical database of the Banco Central de Chile, among them the average overnight interbank rate on which the Camara index is built, published each Chilean business day. Its account is ORES_MARKETDATA_BCCH_USER and the password it names.',
+     38, 'https://si3.bcentral.cl/estadisticas/Principal1/Web_Services/terminos_condiciones_en.html',
+     'Source: Banco Central de Chile', true, 'env:ORES_MARKETDATA_BCCH_PASSWORD',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'cnb', 0, 'Czech National Bank', 'reference',
+     'CZEONIA, the overnight rate of the Czech crown, published each Czech business day in one file a year. The files need no key.',
+     39, 'https://www.cnb.cz/en/privacy-statement-and-disclaimer/disclaimer-copyright/',
+     'Source: CNB', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'mas', 0, 'Monetary Authority of Singapore', 'reference',
+     'SORA, the overnight rate of the Singapore dollar, published each Singapore business day on the domestic interest rates page, which needs no key.',
+     40, 'https://www.mas.gov.sg/terms-of-use',
+     'Source: Monetary Authority of Singapore, Domestic Interest Rates (SORA), under the MAS Open Data Licence', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -82,7 +112,13 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
     ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
     ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
-    ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR');
+    ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
+    ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),
+    ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
+    ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE'),
+    ('bcch', 'bcch_bde', 'F022.TIB.TIP.D001.NO.Z.D', 'value', 'oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA'),
+    ('cnb', 'cnb_czeonia', 'CZEONIA', 'Rate', 'oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA'),
+    ('mas', 'mas_dir', 'SORA', 'SORA', 'oresmd://ir/SGD?type=fixing&index=ibor&name=SORA');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -166,6 +202,36 @@ values
      'riksbank', 'riksbank_swestr', 'production', 'https://api.riksbank.se', '',
      '{"url":"https://api.riksbank.se","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Riksbank SWESTR API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('rba-statistics', ores_utility_system_tenant_id_fn(), 0, 'RBA statistics',
+     'rba', 'rba_table', 'production', 'https://www.rba.gov.au', '',
+     '{"url":"https://www.rba.gov.au","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the RBA statistical tables.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('bcb-sgs', ores_utility_system_tenant_id_fn(), 0, 'BCB SGS',
+     'bcb', 'bcb_sgs', 'production', 'https://api.bcb.gov.br', '',
+     '{"url":"https://api.bcb.gov.br","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Banco Central do Brasil SGS API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('banxico-sie', ores_utility_system_tenant_id_fn(), 0, 'Banxico SIE',
+     'banxico', 'banxico_sie', 'production', 'https://www.banxico.org.mx', '',
+     '{"url":"https://www.banxico.org.mx","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Banco de Mexico SIE API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('bcch-bde', ores_utility_system_tenant_id_fn(), 0, 'BCCh BDE',
+     'bcch', 'bcch_bde', 'production', 'https://si3.bcentral.cl', '',
+     '{"url":"https://si3.bcentral.cl","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Banco Central de Chile BDE web service.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('cnb-czeonia', ores_utility_system_tenant_id_fn(), 0, 'CNB CZEONIA',
+     'cnb', 'cnb_czeonia', 'production', 'https://www.cnb.cz', '',
+     '{"url":"https://www.cnb.cz","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the yearly CZEONIA files of the Czech National Bank.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('mas-dir', ores_utility_system_tenant_id_fn(), 0, 'MAS domestic interest rates',
+     'mas', 'mas_dir', 'production', 'https://eservices.mas.gov.sg', '',
+     '{"url":"https://eservices.mas.gov.sg","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads SORA from the domestic interest rates page of the Monetary Authority of Singapore.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -203,6 +269,30 @@ values
     ('0e59f2e7-48d8-5ba2-8433-2ea7726f912c', ores_utility_system_tenant_id_fn(), 0,
      'riksbank-swestr', 'riksbank', 'riksbank-api', 'end_of_day', 'SWESTR', true,
      'SWESTR as the Riksbank publishes it, read from its SWESTR API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('bff157c2-bc49-5ef0-8cf6-745fe868f43c', ores_utility_system_tenant_id_fn(), 0,
+     'rba-aonia', 'rba', 'rba-statistics', 'end_of_day', 'f1.FIRMMCRID', true,
+     'AONIA as the RBA publishes it, read from its statistical table F1 by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('2f903f0d-259c-59a8-9867-c632dd1af018', ores_utility_system_tenant_id_fn(), 0,
+     'bcb-cdi', 'bcb', 'bcb-sgs', 'end_of_day', '4389', true,
+     'The annualised CDI as the Banco Central do Brasil publishes it, read from its SGS API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('5d31da1a-16cc-52b8-9d6e-8b3c77c6e5ab', ores_utility_system_tenant_id_fn(), 0,
+     'banxico-tiie-fondeo', 'banxico', 'banxico-sie', 'end_of_day', 'SF331451', true,
+     'The TIIE de Fondeo as Banco de Mexico publishes it, read from its SIE API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('c2418b97-6603-5306-a00c-226b84671227', ores_utility_system_tenant_id_fn(), 0,
+     'bcch-camara', 'bcch', 'bcch-bde', 'end_of_day', 'F022.TIB.TIP.D001.NO.Z.D', true,
+     'The average overnight interbank rate as the Banco Central de Chile publishes it, read from its BDE web service by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('8ae278b7-d2f0-4e89-85a6-9913aaef894a', ores_utility_system_tenant_id_fn(), 0,
+     'cnb-czeonia', 'cnb', 'cnb-czeonia', 'end_of_day', 'CZEONIA', true,
+     'CZEONIA as the Czech National Bank publishes it, read from its yearly files by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('6a6b550b-1845-440f-b4fc-ecfb67c65d45', ores_utility_system_tenant_id_fn(), 0,
+     'mas-sora', 'mas', 'mas-dir', 'end_of_day', 'SORA', true,
+     'SORA as the Monetary Authority of Singapore publishes it, read from its domestic interest rates page by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -222,7 +312,13 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'),
              ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'),
              ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'),
-             ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'))
+             ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'),
+             ('rba-aonia', 'rba', 'rba_table', 'f1.FIRMMCRID'),
+             ('bcb-cdi', 'bcb', 'bcb_sgs', '4389'),
+             ('banxico-tiie-fondeo', 'banxico', 'banxico_sie', 'SF331451'),
+             ('bcch-camara', 'bcch', 'bcch_bde', 'F022.TIB.TIP.D001.NO.Z.D'),
+             ('cnb-czeonia', 'cnb', 'cnb_czeonia', 'CZEONIA'),
+             ('mas-sora', 'mas', 'mas_dir', 'SORA'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -366,5 +462,113 @@ begin
         '0e59f2e7-48d8-5ba2-8433-2ea7726f912c',
         current_user, current_user, 'system.initial_load',
         'The system party reads SWESTR from Sveriges Riksbank'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '150c069d-baee-5006-9f5a-8ee72bfe775a', ores_utility_system_tenant_id_fn(), 0, v_party, 'rba',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes AONIA of Reserve Bank of Australia for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '92519b55-ba52-593e-b221-fbd19dc62972', ores_utility_system_tenant_id_fn(), 0, v_party, 'rba', 'interest_rates',
+        'bff157c2-bc49-5ef0-8cf6-745fe868f43c',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads AONIA from Reserve Bank of Australia'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'ff89d5fb-738e-5fab-8b3d-7c68af56091c', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcb',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the CDI of Banco Central do Brasil for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'a9299cfc-2a37-5c09-8372-9b1dc2da2649', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcb', 'interest_rates',
+        '2f903f0d-259c-59a8-9867-c632dd1af018',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the CDI from Banco Central do Brasil'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '2832ae4e-6ae7-582c-a4ee-84e31693f5d1', ores_utility_system_tenant_id_fn(), 0, v_party, 'banxico',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the TIIE de Fondeo of Banco de Mexico for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '659924a0-4aed-5a92-b9bc-fdaf0c183409', ores_utility_system_tenant_id_fn(), 0, v_party, 'banxico', 'interest_rates',
+        '5d31da1a-16cc-52b8-9d6e-8b3c77c6e5ab',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the TIIE de Fondeo from Banco de Mexico'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'a3544d97-a532-52c7-835c-b225f16bf9b8', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcch',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the overnight interbank rate of Banco Central de Chile for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '77a91fa3-1218-569e-957d-9c25091d813c', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcch', 'interest_rates',
+        'c2418b97-6603-5306-a00c-226b84671227',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the overnight interbank rate from Banco Central de Chile'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '9172e5e2-33bb-4fca-aa1b-9b7141b0a7ea', ores_utility_system_tenant_id_fn(), 0, v_party, 'cnb',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes CZEONIA of the Czech National Bank for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '05e4c166-ee61-47db-a731-a7c5e0643560', ores_utility_system_tenant_id_fn(), 0, v_party, 'cnb', 'interest_rates',
+        '8ae278b7-d2f0-4e89-85a6-9913aaef894a',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads CZEONIA from the Czech National Bank'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '0105744b-e581-4ca7-9e8a-9a225c66c3f5', ores_utility_system_tenant_id_fn(), 0, v_party, 'mas',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes SORA of the Monetary Authority of Singapore for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'db0eda63-3ab8-46f9-a4c5-4b581a8853f3', ores_utility_system_tenant_id_fn(), 0, v_party, 'mas', 'interest_rates',
+        '6a6b550b-1845-440f-b4fc-ecfb67c65d45',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads SORA from the Monetary Authority of Singapore'
     ) on conflict do nothing;
 end $$;

@@ -230,14 +230,14 @@ by-column finder because it deliberately drops the tenant filter.
      * The scheduler loop fires system jobs as well as tenant ones, so it
      * cannot read through the tenant-scoped CRUD set.
      */
-    std::vector<domain::job_definition> read_all_active(context ctx);
+    std::vector<domain::job_definition> read_all_active(const context& ctx);
 #+end_src
 
 *** Repository implementations
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::job_definition>
-job_definition_repository::read_all_active(context ctx) {
+job_definition_repository::read_all_active(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<job_definition_entity>> |

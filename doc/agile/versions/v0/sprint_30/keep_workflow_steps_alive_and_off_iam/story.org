@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: A4D0E305-CEF6-4684-ABBA-0D09657479F1
+:END:
+#+title: Story: Keep workflow steps alive while they work, and off iam
+#+description: A provisioning step times out only when it stops reporting progress, a request does bounded work, and each step runs in the service that owns its work, so iam stays off the critical path of everything that is not identity.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Provisioning completes on a busy host. A step reports its progress as a heartbeat and fails only when that heartbeat stalls, never on elapsed time. No request does work that grows with the data. Each step runs in the service that owns its work, so iam carries only identity work and no workflow that is not about identity waits on it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Bound the work of a request: the provisioning requests that do work per row. |
+| Waiting on    | Nothing.                               |
+| Next          | Run each step in the service that owns it. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- A step that keeps reporting progress is never failed for taking long, and a step whose heartbeat stops fails within a bounded time.
+- The shell shows each running step's progress from its heartbeat.
+- No request handler does work that grows with the tenant's data inside one request.
+- Every provisioning step that is not identity work runs outside ores.iam, and ores.iam links no synthetic, marketdata or reporting core library.
+- Acme provisioning completes on a loaded host, and a check books every generated trade type through the database.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1023FD3C-A6ED-400A-BA75-422788B9FBE6][Report a step's progress as its heartbeat]] | DONE | 2026-11-12 | 2026-11-13 | A step states its progress on the heartbeat it already renews, the engine fails a step only when that heartbeat stalls, and the shell shows the progress. |
+| [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] | DONE | 2026-11-13 | 2026-11-13 | No request handler does work that grows with the data inside one request: such work is paged, or runs as a step with its own heartbeat. |
+| [[id:C1048693-F5A5-40F2-9BCA-186D7E6B84B7][Run each step in the service that owns it]] | STARTED | 2026-11-13 | | Each provisioning step is dispatched to the service that owns its work, so iam runs only identity steps and links no synthetic, marketdata or reporting core library. |
+| [[id:E96AA88B-1355-4957-996E-D0544735F092][Book every generated trade type through the database]] | DONE | 2026-11-13 | 2026-11-14 | A check books one trade of every generated type through the real tables, so a refused value fails the check rather than provisioning. |
+| [[id:4B6D5F00-12DD-4B73-8430-EE04316A7278][Let a database recreate wait for connections to drain]] | DONE | 2026-11-14 | 2026-11-14 | compass db recreate waits for the stopped services' connections to close, instead of refusing while they drain. |
+
+* Decisions
+
+- *Iam stays off the critical path of non-identity work, 2026-11-12.* The
+  user's rule: a key service like iam must not be anywhere near the critical
+  path of a workflow whose activity is not identity. Today every provisioning
+  step is dispatched to =iam.v1.ops.provision_tenant_step=, so iam generates
+  trades, publishes curves, attaches photos and schedules reports, and links
+  the synthetic, marketdata and reporting libraries to do so. Its step
+  consumer runs one step at a time, so the parallel steps queue: a run on
+  this branch waited two minutes before iam took =set_staff_passwords=.
+- *A step fails when it stalls, not when it is slow, 2026-11-12.* The user's
+  rule: a fixed timeout makes no sense while a step is working; the step
+  reports progress as a heartbeat, and only a stalled heartbeat times out.
+  The claim lease a step holder renews is already a heartbeat, but the
+  engine also applies a fixed per-step deadline, and a step's own requests
+  run under the fixed 30 second request deadline with no progress channel.
+- *The evidence, 2026-11-12.* Acme provisioning failed with "NATS request
+  timed out" because =set_staff_passwords= reset 74 passwords in one request,
+  about 30 seconds of hashing on a busy host. A page of eight unblocked it
+  (PR 4648); that is the bounded-request rule applied where it failed, not
+  the redesign. The same run showed =compass db recreate -k= refusing while
+  the stopped services' connections still drained, for about 15 seconds.
+- *Builds on running steps concurrently, 2026-11-12.* The story
+  [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] gave a service a pool of step
+  workers. That shortens the queue inside one service; this story removes
+  the reason the queue forms in iam.
+
+- *A moved step writes as a service account, not as a person, 2026-11-14.*
+  =generate_trades= writes trades whose author is a trader of the party, and
+  the trading service takes the tenant, the party and the author from the
+  caller's claims rather than from the request. iam mints those claims in
+  process, through =internal_impersonation_service=, and that service says it is
+  deliberately not on any subject. Two facts settle the question of what a
+  moved step should be given.
+  - Trading filters =ores_trading_trades_tbl= by tenant *and*, restrictively,
+    by party: =trades_party_isolation_policy= keeps a session to the parties it
+    can see. A session scoped to the party the work belongs to therefore has
+    the reach the work needs, and impersonating a trader would narrow it no
+    further.
+  - The run's actor is already named in the step command, and the provisioning
+    service already writes other rows as its own service account.
+  So the shapes weigh up as:
+  1. *A tenant-scoped writable session for the service account.* The service
+     asks to enter a tenant it serves and acts as itself. Nothing new can be
+     impersonated, the authorship the store records is true, and the capability
+     is the one the service already has. Cost: generated trades name the
+     service, not a person.
+  2. *The step's own actor.* The request names the step being served and iam
+     mints for that step's recorded actor. Cost: a service can write history in
+     a person's name, and buys no reach the party-scoped session lacks.
+  3. *The party's own traders, or any account the caller names.* Faithful
+     authorship, and the largest surface: a compromise of the service becomes
+     the identity of any person it names, with that person's permissions and
+     visible parties, and every write it makes is theirs in the trail. This is
+     the shape to avoid.
+  Recommendation: shape 1, and it is implemented: the session is scoped to the
+  tenant's party, which is the reach the work needs, and the store keeps a
+  booking to the session's author, so a request that names a person is
+  overwritten (case =a_booking_is_stamped_with_the_sessions_actor_not_the_requests=). Authorship of generated
+  data is a simulated fact, and attributing it to real people creates a
+  capability to write in their names for no reach it lacks. Shapes 2 and 3 stay
+  recorded as the ways to get per-trader authorship if the product decides the
+  demonstration needs it, with the cost stated.
+- *A command that cannot read the state it guards on refuses, 2026-11-14.*
+  A recreate asks whether anything is still connected before it drops, and an
+  answer that never came back used to read as "nothing is connected". The
+  count is cluster-wide, so an absent database answers zero and silence is
+  never absence: the command refuses and says what it could not read, because
+  the cost of guessing is a dropped database.
+- *A config draws one asset class, 2026-11-14.* A generated trade is named by
+  its config, so two asset classes drawn from one config book the same trade
+  ids and every one after the first is refused as already booked. The check
+  that books every generated type found this, and a provisioner has to state a
+  config per class, as the config table already says it should.
+- *A service serves one family of step commands per stream, 2026-11-13.* The
+  first end-to-end run of the per-service dispatch failed because ores.refdata
+  declared a second step family on the consumer its data-quality publish steps
+  already used: the second family replaced the first one's filter, the countries
+  publish was never delivered, and the run that nested it stood still for twenty
+  minutes with nothing in the log to say why. A family now names a group of its
+  own, and =serve_step_commands= refuses a second family on one stream rather
+  than let a service silently stop serving one.
+- *A moved step writes as its own service, 2026-11-13.* The calendar step wrote
+  =modified_by = "system"=, which the account trigger refuses now that the tenant
+  has accounts. A step that acts for the tenant being provisioned writes as the
+  service that runs it, which is an account of the system tenant, so the trigger
+  accepts it and the row says which service did the work.
+
+* Out of scope
+
+- The account read that the password and picture steps make with
+  =limit = 10'000= is the one request left that grows with the tenant's data. It
+  is captured as
+  [[id:DC63BCCB-0967-4A2D-B978-2033DF7C943D][Provisioning asks for every account in one request, and drops what is past ten thousand]],
+  because bounding it means giving the step a page to advance through, which is
+  the shape of the step that moves to its owning service.
+
+- Changing what provisioning provisions: the steps, the profile and the data
+  stay as they are; only where and how a step runs changes.

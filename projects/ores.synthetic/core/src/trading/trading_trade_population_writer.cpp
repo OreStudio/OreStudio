@@ -24,14 +24,20 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
+#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/inflation_swap_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
+#include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/yield_curve_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
@@ -330,6 +336,29 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
         if (!entity.lei.empty())
             scope.credit_reference_entities.push_back(entity.lei);
 
+    /*
+     * A trade builder reads the terms it does not draw from the tenant's
+     * conventions, so the scope carries those the builders ask for.
+     */
+    ores::refdata::messaging::list_ibor_index_conventions_request ibor_req;
+    ibor_req.limit = page;
+    scope.conventions.ibor_indices = read(ibor_req).ibor_index_conventions;
+    ores::refdata::messaging::list_overnight_index_conventions_request overnight_req;
+    overnight_req.limit = page;
+    scope.conventions.overnight_indices = read(overnight_req).overnight_index_conventions;
+    ores::refdata::messaging::list_swap_conventions_request swap_req;
+    swap_req.limit = page;
+    scope.conventions.swaps = read(swap_req).swap_conventions;
+    ores::refdata::messaging::list_ois_conventions_request ois_req;
+    ois_req.limit = page;
+    scope.conventions.ois_swaps = read(ois_req).ois_conventions;
+    ores::refdata::messaging::list_cds_conventions_request cds_req;
+    cds_req.limit = page;
+    scope.conventions.cds = read(cds_req).cds_conventions;
+    ores::refdata::messaging::list_inflation_swap_conventions_request inflation_req;
+    inflation_req.limit = page;
+    scope.conventions.inflation_swaps = read(inflation_req).inflation_swap_conventions;
+
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
     const auto counterparties = read(cp_req);
@@ -599,7 +628,7 @@ trading_trade_population_writer::book_request_for(const domain::trade_population
     book_req.instruments.bond_issue_call_dates.clear();
     book_req.instruments.bond_issue_conversion_targets.clear();
     std::size_t rows = 0;
-    std::apply(
+    ores::utility::codec::apply_fields(
         [&](const auto&... fields) {
             (
                 [&] {

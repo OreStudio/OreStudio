@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-bcentral-adapter
+#+pr: 4644
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
-#+updated: 2026-11-10
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The Indice Camara Promedio is stored as fixings in the system tenant, with its h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | A person registers a Banco Central de Chile BDE user; the key goes to the credential store. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-10                               |
+| Now          | Implemented and verified.              |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -60,7 +60,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| CAMARA fixings stored on a fresh environment | 252, from 2025-10-08 to 2026-11-11, values 0.045 to 0.0475 | count over =ores_marketdata_market_fixings_tbl= joined to its series | 5f7fc73555 |
+| Time from service start to the fixings sent | about 2 minutes (08:31:23 to 08:33:10) | =ores.marketdata.official= log: "Sent 252 fixing(s) of 'bcch-camara'" | 5f7fc73555 |
+| History the route serves | 5,817 rates from 2001-08-09 | probe of the BDE web service | 2026-11-11 |
 
 * Notes
 
@@ -81,12 +83,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4644][#4644]] | [marketdata] Add the Banco Central de Chile adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The mask hides any parameter whose name holds user or pass | transport.cpp | Declined | It errs toward hiding; no address the adapters read has such a name that must show. |
+| 2 | A missing account surfaces only as a read error | application.cpp | Checked | official_adapter logs a failed refresh at warning, naming the variable to set. |
+| 3 | credential_ref names only the password variable | marketdata_overnight_rates_catalogue_populate.sql | Declined | The column holds one reference; the description names the user variable. |
+| 4 | Error text must not carry the password | transport.cpp | Checked | Every transport failure and read_body's status error go through redacted(); the fetcher percent-encodes the account, so its addresses parse and are masked. |
+| 5 | Camara is spelled without the accent in SQL | marketdata_overnight_rates_catalogue_populate.sql | Declined | The seeds keep to ASCII. |
 
 * Result
+
+The adapter reads the Banco Central de Chile's BDE web service for series
+=F022.TIB.TIP.D001.NO.Z.D= and goes through the shared official adapter, so it
+copies none of the announce, demand, backfill or publish code. The bank is a
+supplier in the catalogue, its series maps to the CLP-CAMARA item, and a
+session and a feed scoped to that item are seeded in the system tenant. The
+account is read from =ORES_MARKETDATA_BCCH_USER= and
+=ORES_MARKETDATA_BCCH_PASSWORD=, and a logged address masks the user and the
+password.
+
+On a fresh environment the service sent 252 fixings about two minutes after
+it started, and the system tenant holds them from 2025-10-08 to 2026-11-11.
+Each is the decimal of the published percent, 0.045 to 0.0475, and the source
+credit names the bank as owner. The route serves 5,817 rates from 2001-08-09;
+the calibration sources note records it. Unit tests parse a recorded response
+and refuse a malformed one; =ores.marketdata.official.tests= (107 cases) and
+=ores.http.client.tests= (11) pass. The system and Acme provisioned to
+completion.
+

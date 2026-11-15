@@ -130,7 +130,7 @@ struct registration_policy_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<registration_policy_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"hostname", &registration_policy_request::hostname},
     };
 }
@@ -144,7 +144,7 @@ struct registration_policy_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<registration_policy_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &registration_policy_response::success},
         ::ores::utility::codec::field{"message", &registration_policy_response::message},
         ::ores::utility::codec::field{"error_code", &registration_policy_response::error_code},

@@ -856,6 +856,31 @@ def _component_include_root(component):
     return full_name
 
 
+def _resolve_flagged_entity(pattern, model, singular):
+    """Fill the placeholders that only a model with a given declaration has.
+
+    ``{web_entity}`` needs ``#+web_resource:``, ``{web_classification_entity}``
+    needs ``#+web_classification:`` and ``{system_owned_entity}`` needs
+    ``:system_tenant_validation:`` on a model a client may write. A model
+    without what its placeholder needs leaves it unresolved, so the generator
+    skips the archetype rather than writing an empty unit.
+    """
+    if '{web_entity}' in pattern:
+        if not (model.get('web_resource') or '').strip():
+            raise KeyError('web_entity')
+        pattern = pattern.replace('{web_entity}', f'{singular}_web')
+    if '{web_classification_entity}' in pattern:
+        if not (model.get('web_classification') or '').strip():
+            raise KeyError('web_classification_entity')
+        pattern = pattern.replace('{web_classification_entity}', f'{singular}_classification')
+    if '{system_owned_entity}' in pattern:
+        writable = not (model.get('read_only') or model.get('client_read_only'))
+        if not (model.get('system_tenant_validation') and writable):
+            raise KeyError('system_owned_entity')
+        pattern = pattern.replace('{system_owned_entity}', f'{singular}_system_owned')
+    return pattern
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -888,6 +913,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{EntityPascal}', entity_pascal)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('domain_entity', model_data))
+        result = _resolve_flagged_entity(result, entity, entity_singular)
 
     elif model_type == 'junction' and 'junction' in model_data:
         junction = model_data['junction']
@@ -904,6 +930,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', junction_name)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('junction', model_data))
+        result = _resolve_flagged_entity(result, junction, name_singular)
 
     elif model_type == 'family' and 'family' in model_data:
         family = model_data['family']
@@ -2994,6 +3021,20 @@ def _service_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
             or (not entity.get('key_is_primary') and entity.get('declared_key_is_uuid'))
             or entity.get('has_parent_id')),
     }
+
+
+def states_batch_finder(code: str, declared_key: str | None) -> bool:
+    """Whether model code declares the batch form of the finder by a declared key.
+
+    The batch form takes the context and a vector of text values. The match
+    ignores whitespace and the parameter names, so a reformatted declaration
+    is still found and its service does not fall back to one read per key.
+    """
+    if not declared_key:
+        return False
+    pattern = (rf'read_latest_by_{re.escape(declared_key)}\s*\(\s*const\s+context\s*&\s*\w*\s*,'
+               r'\s*const\s+std::vector\s*<\s*std::string\s*>\s*&')
+    return re.search(pattern, code) is not None
 
 
 def _and_list(names: list[str]) -> str:
@@ -6494,6 +6535,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _column_name,
             entity_shell_plan,
             entity_http_route_plan,
+            entity_web_classification_plan,
+            entity_web_records_plan,
             http_recipe_document,
             open_reads_of,
             operations_by_verb,
@@ -6666,6 +6709,31 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['declared_key_text'] = (
             _key_as_text(f'key.{domain_entity["declared_key"]}', _declared_column)
             if _declared_column else f'key.{domain_entity["declared_key"]}')
+        # The same text read from a row, so a batch read by the declared key
+        # joins each row back to the key that named it with one conversion.
+        _declared_row = (f'row.{(_declared_column or {}).get("group_prefix") or ""}'
+                         f'{domain_entity["declared_key"]}')
+        domain_entity['declared_row_text'] = (
+            _key_as_text(_declared_row, _declared_column)
+            if _declared_column else _declared_row)
+        # The generated finder by the declared key also reads a batch. A model
+        # that states that finder itself has no batch form, so its services
+        # read a batch one key at a time.
+        for _finder in domain_entity['key_finders']:
+            _finder['is_declared_key_finder'] = bool(
+                not domain_entity['key_is_primary']
+                and _finder.get('column') == domain_entity['declared_key']
+                and _finder.get('suffix') == domain_entity['declared_key']
+                and not _finder.get('columns')
+                and not _finder.get('parent_column'))
+        # A model that states its own finder can state its batch form too.
+        _stated = "\n".join(
+            code
+            for codes in (domain_entity.get("implementations") or {}).values()
+            for code in codes)
+        domain_entity['declared_key_has_batch_read'] = any(
+            f['is_declared_key_finder'] for f in domain_entity['key_finders']) or (
+                states_batch_finder(_stated, domain_entity['declared_key']))
         domain_entity['declared_key_group_prefix'] = (
             (_declared_column or {}).get('group_prefix') or '')
         domain_entity['declared_key_is_uuid'] = bool(
@@ -6697,6 +6765,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # operation, derived from the shell's command set so the two surfaces
         # answer the same verbs rather than being kept in step by hand.
         domain_entity['http_route'] = entity_http_route_plan(domain_entity)
+        # The record routes a screen reads the entity through, when its model
+        # names the screen's resource key; None renders nothing.
+        domain_entity['web_records'] = entity_web_records_plan(domain_entity)
+        domain_entity['web_classification'] = entity_web_classification_plan(domain_entity)
         # A recipe is a view of the unit the model renders, so it is built from
         # that same plan rather than from a second reading of the model: a
         # command the unit gains arrives in the document that documents it.
@@ -6888,6 +6960,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_events,
             entity_http_route_plan,
             entity_shell_plan,
+            entity_web_classification_plan,
+            entity_web_records_plan,
             http_recipe_document,
             junction_entity_shape,
             junction_protocol_messages,
@@ -6970,6 +7044,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 _shape[f'{_verb}_operations'] = _verb_ops
             _shape['shell'] = entity_shell_plan(_shape)
             _shape['http_route'] = entity_http_route_plan(_shape)
+            _shape['web_records'] = entity_web_records_plan(_shape)
+            _shape['web_classification'] = entity_web_classification_plan(_shape)
             if target_template == _SHELL_RECIPE_TEMPLATE:
                 data['shell_recipe'] = shell_recipe_document(
                     _shape.get('component', ''),

@@ -21,7 +21,7 @@
 
 #+begin_src cpp :name includes
 #include "ores.database/export.hpp"
-#include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/options.hpp"
 #include <string>
 #+end_src
 

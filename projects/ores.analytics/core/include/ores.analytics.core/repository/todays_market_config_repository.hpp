@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/todays_market_config.hpp"
 #include "ores.analytics.api/messaging/todays_market_config_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::todays_market_config& v);
-    void write(context ctx, const std::vector<domain::todays_market_config>& v);
+    void write(const context& ctx, const domain::todays_market_config& v);
+    void write(const context& ctx, const std::vector<domain::todays_market_config>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::todays_market_config& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of today's market configurations, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::todays_market_config>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,23 +101,33 @@ public:
      * @brief Reads latest today's market configurations, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::todays_market_config> read_latest(context ctx);
-    std::vector<domain::todays_market_config> read_latest(context ctx, const std::string& id);
-    std::vector<domain::todays_market_config> read_latest(context ctx,
+    std::vector<domain::todays_market_config> read_latest(const context& ctx);
+    std::vector<domain::todays_market_config> read_latest(const context& ctx,
+                                                          const std::string& id);
+    std::vector<domain::todays_market_config> read_latest(const context& ctx,
                                                           const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest today's market configurations filtered by name.
      */
-    std::vector<domain::todays_market_config> read_latest_by_code(context ctx,
+    std::vector<domain::todays_market_config> read_latest_by_code(const context& ctx,
                                                                   const std::string& name);
 
     /**
      * @brief Reads latest today's market configurations filtered by name.
      */
-    std::vector<domain::todays_market_config> read_latest_by_name(context ctx,
+    std::vector<domain::todays_market_config> read_latest_by_name(const context& ctx,
                                                                   const std::string& name);
+
+    /**
+     * @brief Reads latest today's market configurations filtered by a set of name values.
+     *
+     * The batch form of the read above, with the same rules, so a batch
+     * addressed by the declared key costs one read.
+     */
+    std::vector<domain::todays_market_config>
+    read_latest_by_name(const context& ctx, const std::vector<std::string>& names);
 
     /**
      * @brief Reads the newest today's market configurations filtered by name, current or not.
@@ -132,14 +142,14 @@ public:
      * column means the row belongs to the whole tenant and is kept for every
      * party.
      */
-    std::vector<domain::todays_market_config> read_any_by_name(context ctx,
+    std::vector<domain::todays_market_config> read_any_by_name(const context& ctx,
                                                                const std::string& name);
 
 
     /**
      * @brief Reads all today's market configurations, possibly filtered by primary key.
      */
-    std::vector<domain::todays_market_config> read_all(context ctx, const std::string& id);
+    std::vector<domain::todays_market_config> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single today's market configuration as it stood at a specific
@@ -151,7 +161,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::todays_market_config>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest today's market configurations filtered by configuration_id, with
@@ -163,7 +173,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::todays_market_config> read_latest_by_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -175,7 +185,7 @@ public:
      * configuration_id.
      */
     std::uint32_t get_total_config_count_by_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_id,
         const std::optional<messaging::todays_market_configs_filter>& filter = std::nullopt);
 
@@ -197,7 +207,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::todays_market_config>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -210,14 +220,14 @@ public:
      * @return Total number of active today's market configurations
      */
     std::uint32_t get_total_config_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::todays_market_configs_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a today's market configuration by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -239,30 +249,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes today's market configurations by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(context ctx,
-                                                      const domain::todays_market_config& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::todays_market_config apply_claim(context ctx,
-                                             const domain::todays_market_config& v,
-                                             const ores::utility::domain::precondition& claim);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 };
 
 }

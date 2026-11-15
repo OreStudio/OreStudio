@@ -47,7 +47,7 @@ namespace ores::diff::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<diff_entry>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"field_name", &diff_entry::field_name},
         utility::codec::field{"old_value", &diff_entry::old_value},
         utility::codec::field{"new_value", &diff_entry::new_value},

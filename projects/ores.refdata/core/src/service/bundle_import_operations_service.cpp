@@ -91,8 +91,8 @@ bool known_family(const std::string& family) {
 
 }
 
-bundle_import_operations_service::bundle_import_operations_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bundle_import_operations_service::bundle_import_operations_service(const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::begin_bundle_import_response
 bundle_import_operations_service::begin(const messaging::begin_bundle_import_request& request) {

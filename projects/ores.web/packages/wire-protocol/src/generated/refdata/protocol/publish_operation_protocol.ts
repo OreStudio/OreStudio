@@ -227,6 +227,15 @@ export interface PublishCurrenciesFromDqRequest {}
 export interface PublishCurveConfigurationFromDqRequest {}
 
 /**
+ * @brief The workflow step that publishes the DQ-cleared FX volatility surface blueprints.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn.
+ */
+export interface PublishFxVolSurfaceBlueprintsFromDqRequest {}
+
+/**
  * @brief The workflow step that publishes the DQ-cleared currency groups.
  *
  * A trigger rather than a request: the DQ publisher sends it and reads no
@@ -507,6 +516,8 @@ export const subjects = {
     publish_currencies_from_dq_request: 'refdata.v1.ops.publish_currencies_from_dq',
     publish_curve_configuration_from_dq_request:
         'refdata.v1.ops.publish_curve_configuration_from_dq',
+    publish_fx_vol_surface_blueprints_from_dq_request:
+        'refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq',
     publish_currency_groups_from_dq_request: 'refdata.v1.ops.publish_currency_groups_from_dq',
     publish_currency_currency_groups_from_dq_request:
         'refdata.v1.ops.publish_currency_currency_groups_from_dq',
@@ -576,6 +587,7 @@ export const requiresSession = {
     publish_csas_from_dq_request: true,
     publish_currencies_from_dq_request: true,
     publish_curve_configuration_from_dq_request: true,
+    publish_fx_vol_surface_blueprints_from_dq_request: true,
     publish_currency_groups_from_dq_request: true,
     publish_currency_currency_groups_from_dq_request: true,
     publish_currency_pairs_from_dq_request: true,

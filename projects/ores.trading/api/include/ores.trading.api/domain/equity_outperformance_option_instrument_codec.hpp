@@ -47,7 +47,7 @@ namespace ores::trading::domain {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<equity_outperformance_option_instrument>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &equity_outperformance_option_instrument::version},
         utility::codec::field{"tenant_id", &equity_outperformance_option_instrument::tenant_id},
         utility::codec::field{"trade_id", &equity_outperformance_option_instrument::trade_id},

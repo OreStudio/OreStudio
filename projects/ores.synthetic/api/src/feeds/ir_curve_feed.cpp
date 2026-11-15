@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -33,7 +34,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
+#include <charconv>
 #include <chrono>
+#include <cmath>
 #include <format>
 #include <optional>
 #include <stdexcept>
@@ -61,10 +64,11 @@ ir_curve_feed::ir_curve_feed(
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
-    ores::analytics::quant::service::tick_scheduler& scheduler,
+    ores::analytics::quant::service::run_market& market,
     double step_speed,
     double sensitivity,
-    std::vector<ir_pillar_quote_target> adapter_targets)
+    std::vector<ir_pillar_quote_target> adapter_targets,
+    std::chrono::year_month_day curve_spot_date)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -73,7 +77,7 @@ ir_curve_feed::ir_curve_feed(
     , process_(std::move(process))
     , step_seconds_(step_speed / (arrival.ticks_per_hour / 3600.0))
     , arrival_(arrival)
-    , scheduler_(scheduler)
+    , market_(market)
     , sensitivity_(sensitivity)
     , entries_(std::move(entries)) {
 
@@ -92,6 +96,16 @@ ir_curve_feed::ir_curve_feed(
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
+
+    // The run's board holds this curve, so a surface on a pair that names this currency
+    // solves its strikes against the same discounts this feed prices its pillars off. The
+    // member is taken once, here, so a tick writes by index.
+    {
+        auto& shared = market_.values();
+        board_member_ = shared.member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                                         currency_code_);
+        board_spot_date_ = curve_spot_date;
+    }
 
     display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
 
@@ -138,14 +152,15 @@ ir_curve_feed::ir_curve_feed(
 }
 
 void ir_curve_feed::start() {
-    handle_ = scheduler_.add({.series = ores::analytics::quant::math::series_key(source_name_),
-                              .arrival = arrival_,
-                              .sensitivity = sensitivity_,
-                              .name = source_name_,
-                              .group = "interest_rates"},
-                             [this](const ores::analytics::quant::service::tick_context& context) {
-                                 return tick(context);
-                             });
+    handle_ =
+        market_.loop().add({.series = ores::analytics::quant::math::series_key(source_name_),
+                            .arrival = arrival_,
+                            .sensitivity = sensitivity_,
+                            .name = source_name_,
+                            .group = "interest_rates"},
+                           [this](const ores::analytics::quant::service::tick_context& context) {
+                               return tick(context);
+                           });
 }
 
 std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_context& context) {
@@ -161,6 +176,13 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
     else
         process_->next();
     const auto now = context.observed_at;
+
+    // One publish of the whole curve, from the same state the pillars were priced off: the
+    // board's reader interpolates it rather than rebuilding it from the quotes.
+    if (board_member_) {
+        append_curve_points(board_spot_date_, entries_, *process_, board_points_);
+        market_.values().publish_curve(*board_member_, board_spot_date_, board_points_, now);
+    }
 
     for (std::size_t i = 0; i < entries_.size(); ++i) {
         const auto& e = entries_[i];
@@ -235,9 +257,111 @@ const std::string& ir_curve_feed::published_subject() const {
 
 void ir_curve_feed::stop() {
     if (handle_) {
-        scheduler_.remove(*handle_);
+        market_.loop().remove(*handle_);
         handle_.reset();
     }
+}
+
+namespace {
+
+/// A rate as the process reads it, which may be negative, or nothing when the text is not one.
+std::optional<double> rate_of(const std::string& text) {
+    double out = 0.0;
+    const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), out);
+    if (ec != std::errc{} || end != text.data() + text.size() || !std::isfinite(out))
+        return std::nullopt;
+    return out;
+}
+
+}
+
+ir_curve_start resolve_ir_start(ores::nats::service::nats_client& auth_nats,
+                                const ores::synthetic::domain::ir_curve_generation_config& cfg,
+                                const calibration_policy& policy,
+                                const ores::marketdata::domain::market_clock* clock) {
+    ir_curve_start out;
+    const auto refuse_if_policy_says = [&] {
+        out.refused = policy.fallback_code == "refuse";
+        if (out.refused)
+            out.source.note += "; the class policy refuses to start without a fixing.";
+    };
+
+    auto delegated = auth_nats.with_delegation({});
+    ores::marketdata::client::market_data_client md(delegated);
+    const auto series = md.list_series();
+    if (!series) {
+        out.source.note = "The series of the overnight rates could not be read: " + series.error();
+        refuse_if_policy_says();
+        return out;
+    }
+    std::vector<calibration_candidate> candidates;
+    for (const auto& s : *series)
+        if (const auto currency = overnight_currency_of(s.oresmd_uri))
+            candidates.push_back({.item = s.oresmd_uri,
+                                  .provider_code = s.provider_code,
+                                  .base_currency = *currency,
+                                  .quote_currency = {}});
+    const auto items = derive_overnight_items(policy, cfg.currency_code, candidates);
+
+    const std::chrono::year_month_day today(
+        clock ? clock->today() : ores::marketdata::domain::system_market_clock{}.today());
+    // A fixing is entitled by party, and the service that starts the curve holds no party of its
+    // own, so it reads as the party that owns the config.
+    const auto party_id = boost::uuids::to_string(cfg.party_id);
+    std::vector<std::string> skipped;
+    for (const auto& item : items) {
+        const auto latest = md.get_fixing({.item = item.item,
+                                           .provider_code = item.provider_code,
+                                           .party_id = party_id,
+                                           .on_or_before = today});
+        if (!latest || !latest->fixing_date) {
+            skipped.push_back(
+                item.item + ": " +
+                (latest ? std::string("no fixing on or before today") : latest.error()));
+            continue;
+        }
+        const auto age = static_cast<int>(
+            (std::chrono::sys_days(today) - std::chrono::sys_days(*latest->fixing_date)).count());
+        if (policy.window_days > 0 && age > policy.window_days) {
+            skipped.push_back(item.item + ": its newest fixing is " + std::to_string(age) +
+                              " days old, beyond the policy's " +
+                              std::to_string(policy.window_days) + "-day window");
+            continue;
+        }
+        const auto rate = rate_of(latest->value);
+        const auto published = ores::utility::decimal::decimal::from_string(latest->value);
+        if (!rate || !published) {
+            skipped.push_back(item.item + ": the fixing '" + latest->value + "' is not a rate");
+            continue;
+        }
+        auto& s = out.source;
+        s.from_fixing = true;
+        s.item = item.item;
+        s.provider_code = latest->provider_code;
+        s.vendor_id = latest->vendor_id;
+        s.value = *published;
+        s.fixing_date = latest->fixing_date;
+        s.received_at = latest->received_at;
+        s.age_days = age;
+        // Every adapter stores the decimal of a published percent; a rate above one in size is
+        // a percent stored by mistake, which would start the curve a hundred times too high.
+        if (std::abs(*rate) > 1.0)
+            BOOST_LOG_SEV(ir_curve_feed_lg(), ores::logging::warn)
+                << "Curve " << cfg.source_name << " starts from " << latest->value << " of "
+                << item.item << ", which is above one in size: is it a percent?";
+        out.rate = *rate;
+        return out;
+    }
+
+    out.source.note = items.empty() ?
+                          "No series of the class policy publishes an overnight rate in " +
+                              cfg.currency_code + ", so the curve keeps its fixed initial rate" :
+                          "No overnight rate in " + cfg.currency_code +
+                              " has a fixing, so the curve keeps its fixed initial rate";
+    for (const auto& reason : skipped)
+        out.source.note += "; " + reason;
+    refuse_if_policy_says();
+    return out;
 }
 
 std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
@@ -249,20 +373,37 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
-    ores::analytics::quant::service::tick_scheduler& scheduler,
-    std::vector<ir_pillar_quote_target> adapter_targets) {
+    ores::analytics::quant::service::run_market& market,
+    std::vector<ir_pillar_quote_target> adapter_targets,
+    std::optional<ir_curve_start> start) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
+
+    // A curve that took a fixing starts its short rate there: the initial_rate value row is
+    // replaced for this run, and the config keeps the rate it states.
+    if (start && start->refused)
+        throw std::runtime_error("Curve " + cfg.source_name +
+                                 " did not start: " + start->source.note);
+    auto run_values = values;
+    if (start && start->rate) {
+        for (const auto& d : definitions) {
+            if (d.parameter_name != "initial_rate")
+                continue;
+            for (auto& v : run_values)
+                if (v.parameter_definition_id == d.id)
+                    v.parameter_value = *start->rate;
+        }
+    }
 
     // Read once, so the step the process is built with and the step the feed counts in agree
     // even when the speed changes while the feed is built.
-    const double step_speed = scheduler.market_speed();
+    const double step_speed = market.loop().market_speed();
     const double step_years = curve_step_years(step_speed, static_cast<double>(cfg.ticks_per_hour));
 
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
         cfg.process_type,
         definitions,
-        values,
-        price_stream_for(scheduler.run_seed(), cfg.source_name),
+        run_values,
+        price_stream_for(market.loop().run_seed(), cfg.source_name),
         step_years);
 
     // A scheme that only approximates its law states the largest step it can carry. A rate so
@@ -286,19 +427,43 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     if (!compatibility.valid)
         throw std::invalid_argument("make_ir_curve_feed: " + compatibility.message);
 
-    return std::make_shared<ir_curve_feed>(nats,
-                                           cfg.source_name,
-                                           producer_subject(cfg.source_name),
-                                           cfg.currency_code,
-                                           ir_curve_index_tenor(cfg),
-                                           cfg.role,
-                                           std::move(process),
-                                           arrival,
-                                           std::move(resolved),
-                                           scheduler,
-                                           step_speed,
-                                           cfg.sensitivity,
-                                           std::move(adapter_targets));
+    // A run that took no fixing records the rate it kept, so its start states where the run
+    // began even after the config's rate is edited.
+    ores::marketdata::domain::feed_start record;
+    if (start)
+        record = std::move(start->source);
+    if (!record.from_fixing) {
+        for (const auto& d : definitions)
+            if (d.parameter_name == "initial_rate")
+                for (const auto& v : run_values)
+                    if (v.parameter_definition_id == d.id)
+                        if (const auto kept =
+                                ores::utility::decimal::decimal::from_double(v.parameter_value))
+                            record.value = *kept;
+    }
+    BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+        << "Curve " << cfg.source_name << " starts at "
+        << (record.from_fixing ? record.value.to_string() + " from " + record.item + " (" +
+                                     record.provider_code + ")" :
+                                 record.value.to_string() + ", its fixed initial rate")
+        << (record.note.empty() ? "" : ". " + record.note);
+
+    auto feed = std::make_shared<ir_curve_feed>(nats,
+                                                cfg.source_name,
+                                                producer_subject(cfg.source_name),
+                                                cfg.currency_code,
+                                                ir_curve_index_tenor(cfg),
+                                                cfg.role,
+                                                std::move(process),
+                                                arrival,
+                                                std::move(resolved),
+                                                market,
+                                                step_speed,
+                                                cfg.sensitivity,
+                                                std::move(adapter_targets),
+                                                refctx.spot);
+    feed->record_start_source(std::move(record));
+    return feed;
 }
 
 }

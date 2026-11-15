@@ -47,7 +47,7 @@ struct book_apply_workflow_request {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<book_apply_workflow_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &book_apply_workflow_request::request_id}};
 }
 

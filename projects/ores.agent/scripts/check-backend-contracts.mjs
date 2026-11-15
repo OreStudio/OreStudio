@@ -146,7 +146,17 @@ async function verify(probePath) {
             'Rebuild the codec probe against current sources.',
         );
         assert.equal(wire.subject, subjects[op]);
-        subset(decode(data), wire.request);
+        const request = decode(data);
+        if (op === 'bookTrade') {
+            // Older servers require these retired vectors. The current codec may
+            // ignore them, but any nonempty data must still round-trip.
+            for (const field of ['composite_legs', 'equity_swap_periods']) {
+                if (Object.hasOwn(wire.request.instruments, field)) continue;
+                assert.deepEqual(request.instruments[field], []);
+                delete request.instruments[field];
+            }
+        }
+        subset(request, wire.request);
         seen.add(op);
         return Buffer.from(wire.responseHex, 'hex');
     };

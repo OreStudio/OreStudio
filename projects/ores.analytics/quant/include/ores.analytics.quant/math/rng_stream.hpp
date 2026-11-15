@@ -19,6 +19,7 @@
 #ifndef ORES_ANALYTICS_QUANT_MATH_RNG_STREAM_HPP
 #define ORES_ANALYTICS_QUANT_MATH_RNG_STREAM_HPP
 
+#include "ores.analytics.quant/math/normal.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -90,6 +91,54 @@ struct stream_key {
     draw_purpose purpose;
 };
 
+/// SplitMix64's finaliser, so nearby keys land far apart.
+constexpr std::uint64_t mix64(std::uint64_t x) {
+    x = (x ^ (x >> 30)) * 0xBF58476D1CE4E5B9ull;
+    x = (x ^ (x >> 27)) * 0x94D049BB133111EBull;
+    return x ^ (x >> 31);
+}
+
+/// The 64-bit stream id a pair of series and purpose hashes to.
+constexpr std::uint64_t stream_id_of(const stream_key& key) {
+    return mix64(key.series ^ mix64(static_cast<std::uint64_t>(key.purpose)));
+}
+
+/**
+ * @brief One 128-bit block of a stream, read at a block index without the blocks
+ * before it.
+ *
+ * The layout is the one the stream itself uses, so a direct read and a
+ * sequential read of the same index agree. This is what makes a node of a keyed
+ * path addressable: its value depends on its coordinates and nothing else.
+ */
+constexpr std::array<std::uint32_t, 4> block_at(const stream_key& key, std::uint64_t block_index) {
+    const std::uint64_t id = stream_id_of(key);
+    return philox4x32_10(
+        {static_cast<std::uint32_t>(block_index),
+         static_cast<std::uint32_t>(block_index >> 32),
+         static_cast<std::uint32_t>(id),
+         static_cast<std::uint32_t>(id >> 32)},
+        {static_cast<std::uint32_t>(key.run_seed), static_cast<std::uint32_t>(key.run_seed >> 32)});
+}
+
+/// The 64-bit draw at an index, from the block's lane pair.
+constexpr std::uint64_t draw_at(const stream_key& key, std::uint64_t draw_index) {
+    const auto block = block_at(key, draw_index / 2);
+    const auto lane = static_cast<std::size_t>(draw_index % 2) * 2;
+    return static_cast<std::uint64_t>(block[lane]) | static_cast<std::uint64_t>(block[lane + 1])
+                                                         << 32;
+}
+
+/**
+ * @brief A standard normal at a draw index, from the draw's top 53 bits.
+ *
+ * The same map as open_uniform, so the draw is never exactly one.
+ */
+inline double standard_normal_at(const stream_key& key, std::uint64_t draw_index) {
+    constexpr double scale = 0x1.0p-53;
+    return normal_quantile(static_cast<double>((draw_at(key, draw_index) >> 11) + 1) * scale);
+}
+
 /**
  * @brief A reproducible stream of random bits, keyed by run, series and purpose.
  *
@@ -108,9 +157,7 @@ public:
     using result_type = std::uint64_t;
 
     constexpr explicit rng_stream(const stream_key& key)
-        : key_{static_cast<std::uint32_t>(key.run_seed),
-               static_cast<std::uint32_t>(key.run_seed >> 32)}
-        , stream_id_(mix(key.series ^ mix(static_cast<std::uint64_t>(key.purpose)))) {}
+        : key_(key) {}
 
     static constexpr result_type min() {
         return 0;
@@ -122,11 +169,7 @@ public:
 
     constexpr result_type operator()() {
         if (draws_ % 2 == 0)
-            block_ = philox4x32_10({static_cast<std::uint32_t>(draws_ / 2),
-                                    static_cast<std::uint32_t>(draws_ / 2 >> 32),
-                                    static_cast<std::uint32_t>(stream_id_),
-                                    static_cast<std::uint32_t>(stream_id_ >> 32)},
-                                   key_);
+            block_ = block_at(key_, draws_ / 2);
         const auto lane = static_cast<std::size_t>(draws_ % 2) * 2;
         ++draws_;
         return static_cast<std::uint64_t>(block_[lane]) |
@@ -139,15 +182,7 @@ public:
     }
 
 private:
-    /// SplitMix64's finaliser, so nearby series keys land far apart.
-    static constexpr std::uint64_t mix(std::uint64_t x) {
-        x = (x ^ (x >> 30)) * 0xBF58476D1CE4E5B9ull;
-        x = (x ^ (x >> 27)) * 0x94D049BB133111EBull;
-        return x ^ (x >> 31);
-    }
-
-    std::array<std::uint32_t, 2> key_;
-    std::uint64_t stream_id_;
+    stream_key key_;
     std::uint64_t draws_ = 0;
     std::array<std::uint32_t, 4> block_{};
 };

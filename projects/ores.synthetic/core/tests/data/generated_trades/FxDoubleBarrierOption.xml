@@ -6,6 +6,7 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2029-01-02</ExerciseDate>
@@ -18,10 +19,11 @@
           <Level>1.1691</Level>
         </Levels>
       </BarrierData>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>3243480.22</BoughtAmount>
+      <BoughtAmount>3051825.57</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>3051825.57</SoldAmount>
+      <SoldAmount>3243480.22</SoldAmount>
     </FxDoubleBarrierOptionData>
   </Trade>
   <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
@@ -30,6 +32,7 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2034-09-02</ExerciseDate>
@@ -42,10 +45,11 @@
           <Level>0.8341</Level>
         </Levels>
       </BarrierData>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>4707666.22</BoughtAmount>
+      <BoughtAmount>6208184.38</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>6208184.38</SoldAmount>
+      <SoldAmount>4707666.22</SoldAmount>
     </FxDoubleBarrierOptionData>
   </Trade>
 </Portfolio>

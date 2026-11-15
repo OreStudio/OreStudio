@@ -33,21 +33,10 @@ namespace ores::analytics::quant::service {
  * @brief The instrument classifications this engine can bootstrap -- a
  * strongly typed subset of ores.refdata.curve_role's DEPOSIT/FRA/SWAP
  * (its sentinel NONE is not a valid bootstrap pillar role and has no
- * enumerator here). Enumerator names match their refdata code string
- * exactly so parse_bootstrap_curve_role_code() can delegate to
- * magic_enum::enum_cast.
+ * enumerator here). Reference data reads its codes into these values in
+ * ores.refdata.core's quant_codes mapping.
  */
 enum class bootstrap_curve_role_code { DEPOSIT, FRA, SWAP };
-
-/**
- * @brief Parses a curve_role.code string into its strongly typed
- * enumerator.
- *
- * @throws std::invalid_argument if @p code is not one of DEPOSIT, FRA,
- * SWAP.
- */
-ORES_ANALYTICS_QUANT_EXPORT bootstrap_curve_role_code
-parse_bootstrap_curve_role_code(const std::string& code);
 
 /**
  * @brief The interpolation methods this engine implements -- a strongly
@@ -58,24 +47,14 @@ parse_bootstrap_curve_role_code(const std::string& code);
  * own docs); CUBIC_SPLINE is recognised but not implemented and is
  * rejected at the point of use, not at parse time, so callers can
  * distinguish "unrecognised code" from "recognised but not yet supported".
- * Enumerator names match their refdata code string exactly so
- * parse_interpolation_method_code() can delegate to magic_enum::enum_cast.
+ * Reference data reads its codes into these values in ores.refdata.core's
+ * quant_codes mapping.
  */
 enum class interpolation_method_code {
     LOG_LINEAR_DISCOUNT,
     FLAT_FORWARD_THEN_LOG_LINEAR,
     CUBIC_SPLINE
 };
-
-/**
- * @brief Parses an interpolation_method.code string into its strongly
- * typed enumerator.
- *
- * @throws std::invalid_argument if @p code is not one of
- * LOG_LINEAR_DISCOUNT, FLAT_FORWARD_THEN_LOG_LINEAR, CUBIC_SPLINE.
- */
-ORES_ANALYTICS_QUANT_EXPORT interpolation_method_code
-parse_interpolation_method_code(const std::string& code);
 
 /**
  * @brief One pillar of the raw instrument grid a bootstrap config's pillar

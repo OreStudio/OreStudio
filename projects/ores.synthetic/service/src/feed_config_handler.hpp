@@ -23,6 +23,7 @@
 #include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "generator_fleet.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -47,6 +48,7 @@
 #include "ores.synthetic.core/service/variance_calibration_input_point_service.hpp"
 #include "ores.synthetic.core/service/variance_calibration_input_service.hpp"
 #include "ores.synthetic.core/service/variance_calibration_service.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -170,17 +172,17 @@ public:
     feed_config_handler(ores::nats::service::client& nats,
                         ores::nats::service::nats_client& auth_nats,
                         generator_fleet& generators,
-                        ores::database::context ctx,
+                        const ores::database::context& ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier,
                         const feed_kind_registry& registry,
-                        ores::analytics::quant::service::tick_scheduler& scheduler)
+                        ores::analytics::quant::service::run_market& market)
         : nats_(nats)
         , auth_nats_(auth_nats)
         , generators_(generators)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , registry_(registry)
-        , scheduler_(scheduler) {}
+        , market_(market) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::synthetic::messaging;
@@ -231,7 +233,7 @@ public:
         start_feed_response resp;
         try {
             const ores::synthetic::feed::feed_build_context bctx{
-                .nats = nats_, .auth_nats = auth_nats_, .scheduler = scheduler_};
+                .nats = nats_, .auth_nats = auth_nats_, .market = market_};
             auto attempt = registry_.make_feed(*target, bctx);
             if (!attempt.feed) {
                 resp.success = false;
@@ -1170,9 +1172,9 @@ private:
                 if (written.result.outcome != outcome::ok)
                     throw std::runtime_error("the input was not stored: " + written.result.message);
             }
-            // The points name their input, so they are written after it, in one call. A run that
-            // stopped between the two left an input without its points; the last point's id
-            // tells, and the points are written again.
+            // The points name their input, so they are written after it, in date order and in
+            // parts of a batch's size. A run that stopped before the last part left an input
+            // without its last point; that point's id tells, and the points are written again.
             const bool points_stored =
                 points.empty() ||
                 (input_stored &&
@@ -1191,11 +1193,15 @@ private:
                                                          .used = p.used,
                                                          .exclusion_reason = p.exclusion_reason},
                                                .precondition = {.kind = precondition_kind::any}});
-                const auto stored = svc::variance_calibration_input_point_service(req_ctx)
-                                        .put_many_variance_calibration_input_points(request);
-                if (stored.result.outcome != outcome::ok)
-                    throw std::runtime_error("the points were not stored: " +
-                                             stored.result.message);
+                const auto changes = std::move(request.changes);
+                for (const auto part : ores::utility::domain::batches_of(changes)) {
+                    request.changes.assign(part.begin(), part.end());
+                    const auto stored = svc::variance_calibration_input_point_service(req_ctx)
+                                            .put_many_variance_calibration_input_points(request);
+                    if (stored.result.outcome != outcome::ok)
+                        throw std::runtime_error("the points were not stored: " +
+                                                 stored.result.message);
+                }
             }
             v.input_id = boost::uuids::to_string(input_id);
 
@@ -1282,7 +1288,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;
-    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    ores::analytics::quant::service::run_market& market_;
 };
 
 }

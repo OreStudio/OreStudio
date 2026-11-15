@@ -30,6 +30,16 @@
     "position": 2
   },
   {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fe10aec2-7d4f-5a86-82cf-170f81ffc012",
+    "todays_market_config_id": "f922f760-0d6b-5bf1-8f70-deac22c4f381",
+    "collection": "FxVolatilities",
+    "collection_id": "default",
+    "position": 3
+  },
+  {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -58,6 +68,16 @@
     "collection": "FxSpots",
     "collection_id": "default",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "477bf187-7f9c-525b-b11d-b71d243ebd48",
+    "todays_market_config_id": "9a9cf3ba-ad78-59ae-9e4f-ccc0e8b1e32b",
+    "collection": "FxVolatilities",
+    "collection_id": "default",
+    "position": 3
   },
   {
     "company_code": "acme_us",
@@ -90,6 +110,16 @@
     "position": 2
   },
   {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6998a0ea-683b-5d2c-b1fb-77042c389ede",
+    "todays_market_config_id": "135d59a9-075e-50d1-81f6-83f6b866c18a",
+    "collection": "FxVolatilities",
+    "collection_id": "default",
+    "position": 3
+  },
+  {
     "company_code": "acme_hk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -118,5 +148,15 @@
     "collection": "FxSpots",
     "collection_id": "default",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f72f63d4-f847-5209-903f-575bccc499b2",
+    "todays_market_config_id": "512eaa01-5828-5e84-8728-aa1b106e4b0f",
+    "collection": "FxVolatilities",
+    "collection_id": "default",
+    "position": 3
   }
 ]

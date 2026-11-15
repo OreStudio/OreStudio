@@ -113,14 +113,14 @@ that checks a batch of points reads the shapes of those points' series and
 nothing else.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::series_axis_value> read_latest_for_series(context ctx,
+std::vector<domain::series_axis_value> read_latest_for_series(const context& ctx,
     const std::vector<std::string>& series_ids);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::series_axis_value>
 series_axis_value_repository::read_latest_for_series(
-    context ctx, const std::vector<std::string>& series_ids) {
+    const context& ctx, const std::vector<std::string>& series_ids) {
     if (series_ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();

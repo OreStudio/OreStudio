@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &portfolio_key::name},
     };
 }
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &portfolio_write::id},
         utility::codec::field{"party_id", &portfolio_write::party_id},
         utility::codec::field{"name", &portfolio_write::name},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &portfolio_change::write},
         utility::codec::field{"precondition", &portfolio_change::precondition},
     };
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &portfolio_removal::key},
         utility::codec::field{"precondition", &portfolio_removal::precondition},
     };
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &portfolio_lookup::key},
         utility::codec::field{"portfolio", &portfolio_lookup::portfolio},
     };
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolios_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"sandbox_id", &portfolios_filter::sandbox_id},
         utility::codec::field{"id_one_of", &portfolios_filter::id_one_of},
         utility::codec::field{"sandbox_id_one_of", &portfolios_filter::sandbox_id_one_of},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &portfolio_event::event_id},
         utility::codec::field{"key", &portfolio_event::key},
         utility::codec::field{"action", &portfolio_event::action},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"portfolio", &portfolio_version_key::portfolio},
         utility::codec::field{"version", &portfolio_version_key::version},
     };
@@ -529,7 +529,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<portfolio_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &portfolio_versions_filter::version},
         utility::codec::field{"from_version", &portfolio_versions_filter::from_version},
         utility::codec::field{"to_version", &portfolio_versions_filter::to_version},
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_portfolios_request::offset},
         utility::codec::field{"limit", &list_portfolios_request::limit},
         utility::codec::field{"order", &list_portfolios_request::order},
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_portfolios_response::result},
         utility::codec::field{"portfolios", &list_portfolios_response::portfolios},
         utility::codec::field{"total", &list_portfolios_response::total},
@@ -579,7 +579,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_portfolio_request::key},
     };
 }
@@ -593,7 +593,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_portfolio_response::result},
         utility::codec::field{"portfolio", &get_portfolio_response::portfolio},
     };
@@ -608,7 +608,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_portfolios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_portfolios_request::keys},
     };
 }
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_portfolios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_portfolios_response::result},
         utility::codec::field{"entries", &get_many_portfolios_response::entries},
     };
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_portfolio_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_portfolio_request::change},
         utility::codec::field{"intent", &put_portfolio_request::intent},
     };
@@ -652,7 +652,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_portfolio_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_portfolio_response::result},
         utility::codec::field{"portfolio", &put_portfolio_response::portfolio},
     };
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_portfolios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_portfolios_request::changes},
         utility::codec::field{"intent", &put_many_portfolios_request::intent},
     };
@@ -682,7 +682,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_portfolios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_portfolios_response::result},
         utility::codec::field{"portfolios", &put_many_portfolios_response::portfolios},
     };
@@ -697,7 +697,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_portfolio_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_portfolio_request::removal},
         utility::codec::field{"intent", &delete_portfolio_request::intent},
     };
@@ -712,7 +712,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_portfolio_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_portfolio_response::result},
     };
 }
@@ -726,7 +726,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_portfolios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_portfolios_request::removals},
         utility::codec::field{"intent", &delete_many_portfolios_request::intent},
     };
@@ -741,7 +741,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_portfolios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_portfolios_response::result},
     };
 }
@@ -756,7 +756,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.portfolios.delete
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_sandbox_id_portfolios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"sandbox_id", &list_by_sandbox_id_portfolios_request::sandbox_id},
         utility::codec::field{"scope", &list_by_sandbox_id_portfolios_request::scope},
         utility::codec::field{"offset", &list_by_sandbox_id_portfolios_request::offset},
@@ -776,7 +776,7 @@ wire_fields(std::type_identity<list_by_sandbox_id_portfolios_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_sandbox_id_portfolios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_sandbox_id_portfolios_response::result},
         utility::codec::field{"portfolios", &list_by_sandbox_id_portfolios_response::portfolios},
         utility::codec::field{"total", &list_by_sandbox_id_portfolios_response::total},
@@ -792,7 +792,7 @@ wire_fields(std::type_identity<list_by_sandbox_id_portfolios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolio_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_portfolio_versions_request::key},
         utility::codec::field{"offset", &list_portfolio_versions_request::offset},
         utility::codec::field{"limit", &list_portfolio_versions_request::limit},
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<list_by_sandbox_id_portfolios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_portfolio_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_portfolio_versions_response::result},
         utility::codec::field{"versions", &list_portfolio_versions_response::versions},
         utility::codec::field{"total", &list_portfolio_versions_response::total},
@@ -826,7 +826,7 @@ wire_fields(std::type_identity<list_by_sandbox_id_portfolios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_portfolio_version_request::key},
     };
 }
@@ -840,7 +840,7 @@ wire_fields(std::type_identity<list_by_sandbox_id_portfolios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_portfolio_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_portfolio_version_response::result},
         utility::codec::field{"version", &get_portfolio_version_response::version},
     };

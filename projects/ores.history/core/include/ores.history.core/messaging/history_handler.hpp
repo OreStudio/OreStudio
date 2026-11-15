@@ -59,12 +59,12 @@ class ORES_HISTORY_CORE_EXPORT history_handler final {
 public:
     history_handler(ores::nats::service::client& nats,
                     const service::dispatch_registry& registry,
-                    ores::database::context ctx,
+                    const ores::database::context& ctx,
                     std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , registry_(registry)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void history(ores::nats::message msg) const {
         using ores::service::messaging::decode;

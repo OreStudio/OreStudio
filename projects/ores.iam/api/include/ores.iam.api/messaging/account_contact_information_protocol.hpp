@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_information_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"email", &account_contact_information_key::email},
     };
 }
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_information_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &account_contact_information_write::id},
         utility::codec::field{"account_id", &account_contact_information_write::account_id},
         utility::codec::field{"street_line_1", &account_contact_information_write::street_line_1},
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_information_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &account_contact_information_change::write},
         utility::codec::field{"precondition", &account_contact_information_change::precondition},
     };
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_information_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_contact_information_removal::key},
         utility::codec::field{"precondition", &account_contact_information_removal::precondition},
     };
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_information_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_contact_information_lookup::key},
         utility::codec::field{"account_contact_information",
                               &account_contact_information_lookup::account_contact_information},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_informations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_contact_informations_filter::account_id},
         utility::codec::field{"id_one_of", &account_contact_informations_filter::id_one_of},
         utility::codec::field{"account_id_one_of",
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_contact_information_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &account_contact_information_event::event_id},
         utility::codec::field{"key", &account_contact_information_event::key},
         utility::codec::field{"action", &account_contact_information_event::action},
@@ -559,7 +559,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_contact_infor
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<account_contact_information_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "account_contact_information",
             &account_contact_information_version_key::account_contact_information},
@@ -577,7 +577,7 @@ wire_fields(std::type_identity<account_contact_information_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<account_contact_information_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &account_contact_information_versions_filter::version},
         utility::codec::field{"from_version",
                               &account_contact_information_versions_filter::from_version},
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<account_contact_information_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_account_contact_informations_request::offset},
         utility::codec::field{"limit", &list_account_contact_informations_request::limit},
         utility::codec::field{"order", &list_account_contact_informations_request::order},
@@ -615,7 +615,7 @@ wire_fields(std::type_identity<list_account_contact_informations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_contact_informations_response::result},
         utility::codec::field{
             "account_contact_informations",
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<list_account_contact_informations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_account_contact_information_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_contact_information_request::key},
     };
 }
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_account_contact_information_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_account_contact_information_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_contact_information_response::result},
         utility::codec::field{
             "account_contact_information",
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<get_account_contact_information_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_account_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_account_contact_informations_request::keys},
     };
 }
@@ -682,7 +682,7 @@ wire_fields(std::type_identity<get_many_account_contact_informations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_account_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_account_contact_informations_response::result},
         utility::codec::field{"entries", &get_many_account_contact_informations_response::entries},
     };
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<get_many_account_contact_informations_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_account_contact_information_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_account_contact_information_request::change},
         utility::codec::field{"intent", &put_account_contact_information_request::intent},
     };
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<put_account_contact_information_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_account_contact_information_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_account_contact_information_response::result},
         utility::codec::field{
             "account_contact_information",
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<put_account_contact_information_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_account_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_account_contact_informations_request::changes},
         utility::codec::field{"intent", &put_many_account_contact_informations_request::intent},
     };
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<put_many_account_contact_informations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_account_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_account_contact_informations_response::result},
         utility::codec::field{
             "account_contact_informations",
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<put_many_account_contact_informations_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_account_contact_information_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_account_contact_information_request::removal},
         utility::codec::field{"intent", &delete_account_contact_information_request::intent},
     };
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<delete_account_contact_information_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_account_contact_information_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_account_contact_information_response::result},
     };
 }
@@ -797,7 +797,7 @@ wire_fields(std::type_identity<delete_account_contact_information_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_account_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_account_contact_informations_request::removals},
         utility::codec::field{"intent", &delete_many_account_contact_informations_request::intent},
@@ -814,7 +814,7 @@ wire_fields(std::type_identity<delete_many_account_contact_informations_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_account_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_account_contact_informations_response::result},
     };
 }
@@ -829,7 +829,7 @@ wire_fields(std::type_identity<delete_many_account_contact_informations_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id",
                               &list_by_account_id_account_contact_informations_request::account_id},
         utility::codec::field{"scope",
@@ -855,7 +855,7 @@ wire_fields(std::type_identity<list_by_account_id_account_contact_informations_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_account_id_account_contact_informations_response::result},
         utility::codec::field{"account_contact_informations",
@@ -876,7 +876,7 @@ wire_fields(std::type_identity<list_by_account_id_account_contact_informations_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_contact_information_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_account_contact_information_versions_request::key},
         utility::codec::field{"offset", &list_account_contact_information_versions_request::offset},
         utility::codec::field{"limit", &list_account_contact_information_versions_request::limit},
@@ -895,7 +895,7 @@ wire_fields(std::type_identity<list_account_contact_information_versions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_contact_information_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_account_contact_information_versions_response::result},
         utility::codec::field{"versions",
@@ -914,7 +914,7 @@ wire_fields(std::type_identity<list_account_contact_information_versions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_account_contact_information_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_contact_information_version_request::key},
     };
 }
@@ -929,7 +929,7 @@ wire_fields(std::type_identity<get_account_contact_information_version_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_account_contact_information_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_contact_information_version_response::result},
         utility::codec::field{"version",
                               &get_account_contact_information_version_response::version},
@@ -946,7 +946,7 @@ wire_fields(std::type_identity<get_account_contact_information_version_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_account_contact_informations_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 

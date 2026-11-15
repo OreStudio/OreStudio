@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_MESSAGING_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_REGISTRAR_HPP
 #define ORES_SYNTHETIC_CORE_MESSAGING_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -37,7 +37,7 @@ namespace ores::synthetic::messaging {
 std::vector<ores::nats::service::subscription>
 register_yield_curve_process_parameter_definition_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

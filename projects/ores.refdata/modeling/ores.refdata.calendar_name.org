@@ -1,10 +1,16 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: E4C6E92B-1625-43AE-8129-D01165AB89D8
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.calendar_name
 #+description: Codegen entity model for the refdata =calendar_name= table. The calendar names ORE accepts.
 #+type: ores.codegen.entity
+#+web_classification: calendar-name
+#+web_classification_topic: calendars
+#+web_classification_read_only: true
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: One calendar name that an ORE document may write.

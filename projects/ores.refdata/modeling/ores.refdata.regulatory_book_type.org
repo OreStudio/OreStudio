@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 03728847-1C53-4B1D-AFB1-E83B2C3F3E14
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.regulatory_book_type
 #+description: Codegen entity model for the refdata =regulatory_book_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+web_classification: regulatory-book-type
+#+web_classification_topic: books
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: Basel III/IV FRTB trading book / banking book classification.

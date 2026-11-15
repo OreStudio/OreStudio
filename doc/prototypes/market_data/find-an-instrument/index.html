@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find an instrument prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row.tight{align-items:center}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.field.grow{flex:1;min-width:280px}.field.grow input{font-family:var(--mono);font-size:.9rem}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.pick td{background:var(--panel-2)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.kind{font:600 .66rem/1 var(--mono);letter-spacing:.08em;padding:4px 7px;border-radius:4px;border:1px solid;white-space:nowrap}
+.kind.ladder{color:#d2a8ff;border-color:#4a3a63;background:#1d1629}
+.kind.curve{color:#7ee787;border-color:#264a30;background:#12211a}
+.kind.pair{color:#79c0ff;border-color:#24405e;background:#111b26}
+.kind.surface{color:#f0abfc;border-color:#573262;background:#1f1424}
+.kind.fixing{color:#e3b341;border-color:#4a3a17;background:#221b0e}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.legend{display:flex;gap:22px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend span b{color:var(--ink);font-weight:600}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Find an instrument" screen
+  (doc/knowledge/journeys/market_data/journey_find-an-instrument.org): one
+  input over every instrument the party can see, one row per instrument
+  whatever its kind, and the source, the values and the freshness behind it.
+  Enter opens the screen that fits the kind. A curve is never a row per rung:
+  a curve is one row.
+
+  Variants with ?variant=a|b. a is one flat list with a kind badge per row,
+  b groups the same rows under their kind. The variant is the journey's
+  design question: whether a person scans one list or chooses a kind first.
+  ?state=results|none|stale switches the mock answer: instruments found, an
+  empty answer that says so, and every instrument stale. Nothing reads a
+  service; the catalogue is the list the server would return.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'results';
+const PARTY = 'ACME Corporation UK plc';
+
+/* One row per instrument. `axes` is the shape the server states, in draw
+   order; `values` is the sentence the row shows, built from it. */
+const instruments = [
+  {kind:'ladder', name:'AUD swaps', detail:'IR_SWAP · 0D / 3M start',
+   sources:['bloomberg','demo','derived'], values:'12 rungs · 3 providers',
+   fresh:'2s', age:2, go:'Read a rate ladder'},
+  {kind:'curve', name:'AUD-AONIA', detail:'bootstrapped · ore',
+   sources:['ore'], values:'7 pillars · published 1 day ago',
+   fresh:'STALE', age:91800, go:'Inspect a curve\'s analytics'},
+  {kind:'pair', name:'AUD/USD', detail:'fx_spot',
+   sources:['bloomberg','demo'], values:'1 price · 2 providers',
+   fresh:'1s', age:1, go:'Read the FX montage'},
+  {kind:'pair', name:'GBP/AUD', detail:'fx_spot · AUD on the quote side',
+   sources:['bloomberg'], values:'1 price · 1 provider',
+   fresh:'1s', age:1, go:'Read the FX montage'},
+  {kind:'surface', name:'AUDUSD_SSVI', detail:'vol · ssvi',
+   sources:['refdata'], values:'7 × 5 grid · nothing published',
+   fresh:'NONE', age:null, go:'Read a published surface'}
+];
+const KIND_ORDER = ['ladder','curve','pair','surface','fixing'];
+const KIND_LABEL = {ladder:'LADDER', curve:'CURVE', pair:'PAIR', surface:'SURFACE', fixing:'FIXING'};
+
+function rows(){
+  if (state === 'none') return [];
+  if (state === 'stale') return instruments.map(i => ({...i, fresh:'STALE', age:86400 + (i.age||0)}));
+  return instruments;
+}
+function freshness(i){
+  if (i.fresh === 'NONE') return '<span class="tag">NONE</span>';
+  if (i.fresh === 'STALE') return '<span class="tag warn">STALE</span>';
+  return '<span class="tag ok">' + i.fresh + '</span>';
+}
+function badge(kind){ return '<span class="kind ' + kind + '">' + (KIND_LABEL[kind]||kind) + '</span>'; }
+
+function header(list){
+  return `
+  <div class="top">
+    <h1>Find an instrument</h1>
+    <span class="lead">every instrument the party can see, whatever its kind, with the source behind it</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_find-an-instrument.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <div class="row">
+      <div class="field grow"><label>Search</label>
+        <input id="q" value="aud" autocomplete="off" placeholder="currency, pair, name or provider"></div>
+      <div class="field"><label>Asset</label><select><option>all</option><option>FX</option><option>IR</option></select></div>
+      <div class="field"><label>Provider</label><select><option>all</option><option>bloomberg</option><option>demo</option><option>derived</option><option>ore</option><option>refdata</option></select></div>
+      <div class="field"><label>Kind</label><select><option>all</option><option>pair</option><option>curve</option><option>surface</option><option>ladder</option><option>fixing</option></select></div>
+    </div>
+    <div class="kv">
+      <span>Party <b>${PARTY}</b></span>
+      <span class="sep">|</span>
+      <span>Results <b>${list.length}</b></span>
+      <span class="sep">|</span>
+      <span class="faint">Enter opens · Esc clears · the party is the server's, never a filter here</span>
+    </div>
+  </div>`;
+}
+
+function table(list){
+  return `
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th style="width:86px">Kind</th><th>Instrument</th><th>Source</th>
+        <th>Values</th><th style="width:96px">Freshness</th><th style="width:44px"></th>
+      </tr></thead>
+      <tbody>${list.map((i, n) => `
+        <tr${n === 0 && variant === 'a' ? ' class="pick"' : ''}>
+          <td>${badge(i.kind)}</td>
+          <td><b>${i.name}</b> <span class="faint">· ${i.detail}</span></td>
+          <td class="muted">${i.sources.join(', ')}</td>
+          <td class="muted">${i.values}</td>
+          <td>${freshness(i)}</td>
+          <td class="faint">${n === 0 && variant === 'a' ? '↵' : ''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function grouped(list){
+  const kinds = KIND_ORDER.filter(k => list.some(i => i.kind === k));
+  return kinds.map(k => {
+    const mine = list.filter(i => i.kind === k);
+    return `
+    <div class="panel">
+      <h2>${KIND_LABEL[k]} <span class="faint">· ${mine.length}</span></h2>
+      <table>
+        <thead><tr><th>Instrument</th><th>Source</th><th>Values</th><th style="width:96px">Freshness</th><th style="width:44px"></th></tr></thead>
+        <tbody>${mine.map(i => `
+          <tr>
+            <td><b>${i.name}</b> <span class="faint">· ${i.detail}</span></td>
+            <td class="muted">${i.sources.join(', ')}</td>
+            <td class="muted">${i.values}</td>
+            <td>${freshness(i)}</td><td class="faint">↵</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function empty(){
+  return `
+  <div class="panel">
+    <h2>No instrument matches</h2>
+    <div class="notice">Nothing the party can see matches <b class="mono">aud</b>. The answer is empty, and it
+      says so: an empty list is not a failure, and no row stands in for a read that did not happen.</div>
+    <div class="legend">
+      <span>Try a <b>currency</b>: aud, usd, eur</span>
+      <span>Try a <b>pair</b>: AUD/USD</span>
+      <span>Try a <b>provider</b>: bloomberg</span>
+    </div>
+  </div>`;
+}
+
+function legend(){
+  return `
+  <div class="panel">
+    <h2>What Enter does</h2>
+    <div class="legend">
+      <span><b>LADDER</b> → Read a rate ladder, this currency and instrument</span>
+      <span><b>CURVE</b> → Inspect a curve's analytics, this source</span>
+      <span><b>PAIR</b> → Read the FX montage, this base</span>
+      <span><b>SURFACE</b> → Read a published surface</span>
+    </div>
+    <div class="legend faint">
+      <span>A pair opens on either side: GBP/AUD is a row because AUD is on the quote side.</span>
+    </div>
+  </div>`;
+}
+
+const list = rows();
+document.getElementById('note').textContent =
+  'PROTOTYPE · throwaway · mock data, no server · variant ' + variant +
+  ' · state ' + state;
+document.getElementById('app').innerHTML = header(list) +
+  (list.length === 0 ? empty() : (variant === 'b' ? grouped(list) : table(list) + legend()));
+
+document.getElementById('bar').innerHTML =
+  '<span class="label">Variant</span>' +
+  ['a','b'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v === 'a' ? 'A · flat list' : 'B · grouped by kind'}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['results','results'],['none','nothing found'],['stale','all stale']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v);
+  if (s) next.set('state', s);
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

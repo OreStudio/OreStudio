@@ -8,10 +8,26 @@
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-14
 
 Building one component after a pull leaves every other service running the previous release's libraries. A failure that names a subject, symbol or message no source in the tree produces is that version skew, not a defect.
 
 *Why:* On 2026-10-31 a scoped build of ores.synthetic left the fleet on libraries from before a market-data refactor. Provisioning then failed with 'no service is handling subject marketdata.v1.market_data_sources.list', and a capture was raised against the market-data work. The string appears in no source file and in no library of the current release; it lived in the previous release's ores.iam.core. A full build passed the step.
 
 *How to apply:* When a service fails after a pull, or a failure names something you cannot find with grep, run a full compass build and restart the fleet before diagnosing further. Grep the current release's libraries under publish/lib to tell a live defect from a stale one.
+
+* A skew also aborts a process, not only answers the wrong subject.
+
+On 2026-11-14 a worktree with libraries of two ages ran the synthetic service, and it died
+within two seconds of every start with `Fatal glibc error: pthread_mutex_lock.c:426
+(__pthread_mutex_lock_full): assertion failed: e != ESRCH || !robust`. The stack named real
+symbols -- `market_board::member_of` reached from `fx_spot_feed`'s constructor -- so the
+"names something no source produces" test above did not fire. The mutex in the core dump
+held a `std::function`'s bytes, not a mutex: the caller and the callee disagreed about
+`run_market`'s layout. A full `compass build` and a fleet restart cleared it, and the same
+tree then accepted the demand and ran its generators.
+
+*How to apply:* treat a crash inside an object's own lock, whose memory looks like another
+type, as version skew and rebuild fully before reading the code. The layout question is
+cheaper to answer than the code: compare the mtimes of the libraries and the headers that
+define the types in the stack.

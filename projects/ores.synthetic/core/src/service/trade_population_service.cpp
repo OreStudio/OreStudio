@@ -47,7 +47,9 @@ double seconds_since(std::chrono::steady_clock::time_point start) {
 trade_population_service::trade_population_service(trade_population_writer& writer)
     : writer_(writer) {}
 
-trade_population_run trade_population_service::run(const boost::uuids::uuid& config_id) {
+trade_population_run trade_population_service::run(
+    const boost::uuids::uuid& config_id,
+    const std::function<void(std::uint32_t done, std::uint32_t planned)>& on_progress) {
     using namespace ores::logging;
     const auto started = std::chrono::steady_clock::now();
     const auto config = boost::uuids::to_string(config_id);
@@ -86,6 +88,8 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
                                          .already_present = true,
                                          .version = stored->version,
                                          .external_version = stored->external_version});
+            if (on_progress)
+                on_progress(run.written + run.already_present, run.planned);
             continue;
         }
 
@@ -116,6 +120,8 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
                                      .counterparty_id = slot.counterparty_id,
                                      .trade_type_code = slot.trade_type_code,
                                      .already_present = false});
+        if (on_progress)
+            on_progress(run.written + run.already_present, run.planned);
     }
 
     BOOST_LOG_SEV(population_lg(), info)

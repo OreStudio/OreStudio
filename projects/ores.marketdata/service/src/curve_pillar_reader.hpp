@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_CURVE_PILLAR_READER_HPP
 
 #include "curve_republish_resolver.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
@@ -54,7 +54,7 @@ struct ORES_MARKETDATA_SERVICE_EXPORT pillar_read final {
  * @throws std::invalid_argument if the convention is not defined.
  */
 ORES_MARKETDATA_SERVICE_EXPORT curve_republish_refdata_context
-build_refdata_context(ores::database::context ctx,
+build_refdata_context(const ores::database::context& ctx,
                       std::chrono::year_month_day horizon,
                       const std::string& tenor_convention_code);
 
@@ -64,7 +64,7 @@ build_refdata_context(ores::database::context ctx,
  * @throws std::invalid_argument if an observation is not a discount point.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::vector<ores::analytics::quant::service::bootstrapped_point>
-read_discount_curve(ores::database::context ctx,
+read_discount_curve(const ores::database::context& ctx,
                     const boost::uuids::uuid& output_series_id,
                     std::chrono::system_clock::time_point as_of,
                     const curve_republish_refdata_context& refctx);
@@ -94,7 +94,7 @@ ORES_MARKETDATA_SERVICE_EXPORT double observation_value(const domain::market_obs
  * @p refctx.
  */
 ORES_MARKETDATA_SERVICE_EXPORT pillar_read
-read_pillar_rates(ores::database::context ctx,
+read_pillar_rates(const ores::database::context& ctx,
                   const std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>& pillars,
                   const curve_republish_refdata_context& refctx,
                   std::chrono::system_clock::time_point as_of);

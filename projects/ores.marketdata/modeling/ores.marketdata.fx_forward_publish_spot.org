@@ -155,7 +155,7 @@ Reads every spots of one publish. A set is written once and never changes, so it
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::fx_forward_publish_spot>
-read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id);
+read_latest_by_publish(const context& ctx, const boost::uuids::uuid& publish_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -166,7 +166,7 @@ read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::fx_forward_publish_spot>
-fx_forward_publish_spot_repository::read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id) {
+fx_forward_publish_spot_repository::read_latest_by_publish(const context& ctx, const boost::uuids::uuid& publish_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto pid = boost::uuids::to_string(publish_id);

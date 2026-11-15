@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/repository/trade_generation_config_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/range_bound.hpp"
@@ -39,10 +40,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -129,20 +133,75 @@ std::optional<query_builder::condition> trade_generation_config_filter_condition
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool trade_generation_config_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using trade_generation_config_rows_by_key =
+    std::map<std::tuple<std::string>, std::vector<domain::trade_generation_config>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+trade_generation_config_rows_by_key
+trade_generation_config_current_rows(trade_generation_config_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const std::vector<domain::trade_generation_config>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    trade_generation_config_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::trade_generation_config>&
+trade_generation_config_rows_of(const trade_generation_config_rows_by_key& current,
+                                const domain::trade_generation_config& item) {
+    static const std::vector<domain::trade_generation_config> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-trade_generation_config_repository::replace_claim(context ctx,
-                                                  const domain::trade_generation_config& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+trade_generation_config_replace_claim(const std::vector<domain::trade_generation_config>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::trade_generation_config
-trade_generation_config_repository::apply_claim(context ctx,
-                                                const domain::trade_generation_config& v,
-                                                const ores::utility::domain::precondition& claim) {
+trade_generation_config_apply_claim(const domain::trade_generation_config& v,
+                                    const ores::utility::domain::precondition& claim,
+                                    const std::vector<domain::trade_generation_config>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -154,38 +213,47 @@ trade_generation_config_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void trade_generation_config_repository::write(context ctx,
+}
+
+void trade_generation_config_repository::write(const context& ctx,
                                                const domain::trade_generation_config& v) {
-    write(ctx, v, replace_claim(ctx, v));
+    write(ctx,
+          v,
+          trade_generation_config_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
 }
 
 void trade_generation_config_repository::write(
-    context ctx, const std::vector<domain::trade_generation_config>& v) {
+    const context& ctx, const std::vector<domain::trade_generation_config>& v) {
+    const auto current = trade_generation_config_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            trade_generation_config_replace_claim(trade_generation_config_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void trade_generation_config_repository::write(context ctx,
+void trade_generation_config_repository::write(const context& ctx,
                                                const domain::trade_generation_config& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade generation config. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        trade_generation_config_apply_claim(v,
+                                            claim,
+                                            trade_generation_config_claim_reads_current(claim) ?
+                                                read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                                std::vector<domain::trade_generation_config>{});
     query_builder::execute_write_query(ctx,
                                        trade_generation_config_mapper::map(t),
                                        lg(),
@@ -193,14 +261,21 @@ void trade_generation_config_repository::write(context ctx,
 }
 
 void trade_generation_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_generation_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade generation configs. Count: " << v.size();
+    std::vector<domain::trade_generation_config> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (trade_generation_config_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = trade_generation_config_current_rows(*this, ctx, to_read);
     std::vector<domain::trade_generation_config> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(trade_generation_config_apply_claim(
+            v[i], claims[i], trade_generation_config_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        trade_generation_config_mapper::map(batch),
                                        lg(),
@@ -208,7 +283,7 @@ void trade_generation_config_repository::write(
 }
 
 std::vector<domain::trade_generation_config>
-trade_generation_config_repository::read_latest(context ctx) {
+trade_generation_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_config_entity>> |
@@ -225,7 +300,7 @@ trade_generation_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::trade_generation_config>
-trade_generation_config_repository::read_latest(context ctx, const std::string& id) {
+trade_generation_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade generation config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -244,7 +319,7 @@ trade_generation_config_repository::read_latest(context ctx, const std::string& 
 
 
 std::vector<domain::trade_generation_config>
-trade_generation_config_repository::read_all(context ctx, const std::string& id) {
+trade_generation_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade generation config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_config_entity>> |
@@ -261,7 +336,7 @@ trade_generation_config_repository::read_all(context ctx, const std::string& id)
 }
 
 std::optional<domain::trade_generation_config> trade_generation_config_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading trade generation config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -284,7 +359,7 @@ std::optional<domain::trade_generation_config> trade_generation_config_repositor
 }
 
 trade_generation_config_repository::remove_status trade_generation_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade generation config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -313,12 +388,12 @@ trade_generation_config_repository::remove_status trade_generation_config_reposi
     return remove_status::removed;
 }
 
-void trade_generation_config_repository::remove(context ctx, const std::string& id) {
+void trade_generation_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::trade_generation_config> trade_generation_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -344,7 +419,7 @@ std::vector<domain::trade_generation_config> trade_generation_config_repository:
 }
 
 std::uint32_t trade_generation_config_repository::get_total_trade_generation_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_generation_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade generation config count";
@@ -363,9 +438,25 @@ std::uint32_t trade_generation_config_repository::get_total_trade_generation_con
 }
 
 std::vector<domain::trade_generation_config>
-trade_generation_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+trade_generation_config_repository::read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::trade_generation_config> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -381,7 +472,8 @@ trade_generation_config_repository::read_latest(context ctx, const std::vector<s
     return result;
 }
 
-void trade_generation_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void trade_generation_config_repository::remove(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

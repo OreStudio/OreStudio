@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/fixing_read_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.marketdata.core/repository/pg_array.hpp"
 #include "ores.marketdata.core/repository/stored_text.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -36,7 +36,6 @@
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
 
 namespace {
 
@@ -83,13 +82,13 @@ to_fixings(const std::vector<std::vector<std::optional<std::string>>>& rows) {
 
 }
 
-std::vector<fixing_series> fixing_read_repository::series_of(context ctx,
+std::vector<fixing_series> fixing_read_repository::series_of(const context& ctx,
                                                              const std::string& item,
                                                              const std::string& provider_code) {
     std::vector<std::string> parties;
     for (const auto& p : ctx.visible_party_ids())
         parties.push_back(boost::uuids::to_string(p));
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT id::text, party_id::text, provider_code FROM ores_marketdata_market_series_tbl "
         "WHERE oresmd_uri = $1 AND party_id = ANY($2::uuid[]) "
@@ -109,7 +108,7 @@ std::vector<fixing_series> fixing_read_repository::series_of(context ctx,
     return out;
 }
 
-std::vector<stored_fixing> fixing_read_repository::on_or_before(context ctx,
+std::vector<stored_fixing> fixing_read_repository::on_or_before(const context& ctx,
                                                                 const boost::uuids::uuid& series_id,
                                                                 std::chrono::year_month_day date,
                                                                 std::size_t limit) {
@@ -119,7 +118,7 @@ std::vector<stored_fixing> fixing_read_repository::on_or_before(context ctx,
             boost::uuids::to_string(series_id), date_text(date), std::to_string(limit)};
         if (after)
             params.push_back(date_text(*after));
-        return to_fixings(execute_parameterized_multi_column_query(
+        return to_fixings(ores::database::query_builder::execute_parameterized_multi_column_query(
             ctx,
             std::format("SELECT {} FROM ores_marketdata_market_fixings_tbl f "
                         "WHERE f.series_id = $1::uuid AND f.fixing_date <= $2::date {}"
@@ -143,12 +142,12 @@ std::vector<stored_fixing> fixing_read_repository::on_or_before(context ctx,
     return found;
 }
 
-std::vector<stored_fixing> fixing_read_repository::between(context ctx,
+std::vector<stored_fixing> fixing_read_repository::between(const context& ctx,
                                                            const boost::uuids::uuid& series_id,
                                                            std::chrono::year_month_day from,
                                                            std::chrono::year_month_day to,
                                                            std::size_t limit) {
-    return to_fixings(execute_parameterized_multi_column_query(
+    return to_fixings(ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         std::format("SELECT {} FROM ores_marketdata_market_fixings_tbl f "
                     "WHERE f.series_id = $1::uuid AND f.fixing_date BETWEEN $2::date AND $3::date "
@@ -160,10 +159,10 @@ std::vector<stored_fixing> fixing_read_repository::between(context ctx,
         "reading the fixings of a series in a window"));
 }
 
-std::optional<vendor_key> fixing_read_repository::vendor_of(context ctx,
+std::optional<vendor_key> fixing_read_repository::vendor_of(const context& ctx,
                                                             const std::string& item,
                                                             const std::string& provider_code) {
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT vi.id_scheme, vi.external_id "
         "FROM ores_marketdata_market_data_mappings_tbl m "

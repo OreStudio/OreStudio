@@ -1,10 +1,16 @@
 :PROPERTIES:
 :ID: 5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.folder
 #+description: Codegen entity model for the synthetic folder table; a generic, party-scoped hierarchy node organizing feeds into collection/asset-class/instrument-type folders.
 #+type: ores.codegen.entity
+#+web_resource: folders
+#+web_writes: many
+#+web_read_only_because: No journey writes a folder from the web.
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: folder

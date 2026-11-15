@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_KIND_REGISTRY_HPP
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/vendor/quote_description.hpp"
@@ -54,6 +54,21 @@ struct feed_build_outcome final {
 };
 
 /**
+ * @brief The block a feed declares in the run's latent market, as its row states it.
+ *
+ * A spot states none: it is what the surfaces on its pair hang off. A surface states the
+ * three numbers its correlation is built from and how many forward variances it has, so the
+ * run can build one market from every surface before any feed starts.
+ */
+struct feed_latent_block final {
+    /// The surface's forward variances, one for each expiry row.
+    std::size_t segments = 0;
+    double spot_variance = 0.0;
+    double spot_skew = 0.0;
+    double neighbour = 0.0;
+};
+
+/**
  * @brief One config row of one kind, in the shape every shared verb reads.
  */
 struct feed_kind_candidate final {
@@ -69,6 +84,8 @@ struct feed_kind_candidate final {
     std::optional<boost::uuids::uuid> folder_id;
     /** The asset class an FX feed belongs to. Other kinds leave it empty. */
     std::string asset_class_code;
+    /** The block the feed declares in the run's market, or nothing when it declares none. */
+    std::optional<feed_latent_block> block;
     /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
     std::optional<std::pair<std::string, std::string>> fx_pair;
     /**

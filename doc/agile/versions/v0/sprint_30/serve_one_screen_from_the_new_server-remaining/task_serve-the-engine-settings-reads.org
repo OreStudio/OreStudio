@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: F321B6FD-AA33-4B71-84F2-A000578F02F5
+:END:
+#+title: Task: Serve the engine settings' reads
+#+description: Three routes: the page of settings with each group's tally, one setting with its groups and parts, and the history across the central row and the four part tables.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-engine-settings-reads
+#+pr: 4726
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gateway answers none of the engine settings' reads. Serve the page of
+settings, one setting with its groups and their parts, and its history, at the
+paths and in the shapes the BFF answers.
+
+A configuration is a central row and three parts, one for each group of
+settings. A part with no row means the engine default for every setting in it,
+and a setting that is null inside a row means the engine default for that
+setting. The screens can therefore always say which value is in force, and these
+three reads are how they say it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The value set reader is on main. |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =GET /api/reporting/engine-settings=,
+  =GET /api/reporting/engine-settings/:id= and
+  =GET /api/reporting/engine-settings/:id/history= at the BFF's paths, with the
+  BFF's member names and status codes.
+- The page states, for each configuration, the party's name and code, the count
+  of groups that hold a part, the count of groups the data states, and the
+  threads the execution part holds.
+- One configuration states each group with its values, and a group with no row
+  states null for every value.
+- A group the data states and the wiring does not name is not offered, because
+  its part cannot be read or written.
+- The history states the central row's versions and every part's versions in one
+  list, newest first.
+- A configuration that another party owns is refused, with that party's name in
+  the sentence.
+- A test proves each route against the answer the BFF gives.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-engine-settings-reads=.
+
+The three reads share an =engine_settings_rows= unit beside the documentation
+route: the groups, the parts of each group, the central row, the party names and
+the bound reports. That unit is what the writes task extends, so the second half
+of the engine settings adds to it rather than restating it.
+
+The counts are arithmetic over the reads. No service derives them and the
+gateway derives nothing a service could state.
+
+A part's rows travel under a subject per group, and the gateway names those
+subjects. That is the wiring of the service and not the model of the screen, and
+it stays beside the routes for the same reason.
+
+The router registers =/documentation= before =/{id}=. A parameter at the end of
+a pattern matches anything, so a literal that follows one is never reached
+unless it is registered first.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The reporting part's test suite | 51 cases, 481 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the engine settings reads commit |
+| The reporting area's routes the C++ server answers | 30 of the BFF's 44 paired | =python3 build/scripts/route_inventory.py --check= | the engine settings reads commit |
+| The reporting area's routes the C++ server does not yet answer | 14 | =python3 build/scripts/route_inventory.py --check= | the engine settings reads commit |
+| The gateway's routes in the inventory | 1331 routes, 1003 answered by the gateway, 237 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the engine settings reads commit |
+
+* Notes
+
+** The values come from the row's own codec
+
+A part is one row of a table whose columns are the settings the data names, so a
+value is picked by the column the setting table states. The gateway does not
+carry a table of column names: it renders the row with its own codec, which names
+its members once, and picks the columns the settings name. A column the row does
+not carry is null, which is the engine default.
+
+** The owning-party check is not restated
+
+The BFF refused a configuration another party owns before reading its history.
+The gateway does not: the service reads under the caller's own party, so a row of
+another party is not returned at all, and the gateway stating the rule again
+would be a second copy of it. The writes task decides what a write does when the
+service answers nothing.
+
+** The reports a configuration binds
+
+The BFF read the bindings and their definitions, and stated an empty list when a
+configuration bound no report. A read that failed answered null rather than
+refusing the page, because a binding that cannot be read must not hide the
+settings. The gateway keeps both answers.
+
+** The history's order
+
+The BFF sorted the entries by comparing the rendered timestamps as text. The
+gateway sorts by the timestamp itself, which states the same order without
+depending on how the service renders it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4726][#4726]] | [http] Serve the engine settings' three reads |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+
+The gateway answers the engine settings' three reads at the BFF's paths and in
+its shapes.
+
+- The page states one row per configuration: its party's name and code, its
+  version, how many groups hold a part of the whole, the threads the execution
+  part states, and who changed it when.
+- One configuration states each group with its values, and a group with no row
+  states null for every value, so the screen says which value the engine
+  defaults to.
+- The history states the central row's versions and every part's versions in one
+  list, newest first.
+- A value is picked by the column the setting table names, from the row's own
+  codec, so the shape is stated once.
+- The owning-party check the BFF made is not restated: the service reads under
+  the caller's own party.
+- The suite is 51 cases and 481 assertions, nine of them for these routes and the
+  routing decision between the documentation address and a configuration id.
+- The gate is 44 of 45; the one failure is the reference data drift that main
+  carries.
+- The reporting area states 30 of 44 routes paired where it stated 27.

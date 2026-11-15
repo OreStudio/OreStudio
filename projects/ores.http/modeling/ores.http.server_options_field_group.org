@@ -106,6 +106,26 @@ The directory a build wrote: =index.html=, the =assets/= it names, and the
 prebuilt copies beside them. Empty means the server serves no bundle, and a
 directory that is not there is logged and skipped rather than served empty.
 
+** site_config
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The site configuration the served client reads, the BFF's =environments.json=.
+
+Empty reads the file =ORES_WEB_SITE_CONFIG= names. Without one, the server
+answers no site routes and logs why.
+
+** site_env
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The environment of the site configuration this server serves.
+
+Empty chooses it as the BFF does: =ORES_WEB_ENV=, the checkout's
+=ORES_ENV_NAME=, the file's active environment, then its first.
+
 ** http_base_url
 :PROPERTIES:
 :cpp_type: std::string

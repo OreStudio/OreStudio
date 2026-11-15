@@ -130,7 +130,7 @@ struct {{field_group.entity_singular}} {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{field_group.entity_singular}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#field_group.fields}}
 {{^no_wire}}        utility::codec::field{"{{name}}",
                                  &{{field_group.entity_singular}}::{{name}}},

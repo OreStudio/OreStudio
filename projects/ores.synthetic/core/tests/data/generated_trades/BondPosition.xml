@@ -4,12 +4,24 @@
     <TradeType>BondPosition</TradeType>
     <BondBasketData>
       <Quantity>3051825.57</Quantity>
+      <Identifier>POPZLGWDZBWA7</Identifier>
+      <Underlying>
+        <Type>Bond</Type>
+        <Name>POPZLGWDZBWA7</Name>
+        <Weight>1</Weight>
+      </Underlying>
     </BondBasketData>
   </Trade>
   <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>BondPosition</TradeType>
     <BondBasketData>
       <Quantity>9466062.35</Quantity>
+      <Identifier>POPWJZKDKJKR3</Identifier>
+      <Underlying>
+        <Type>Bond</Type>
+        <Name>POPWJZKDKJKR3</Name>
+        <Weight>1</Weight>
+      </Underlying>
     </BondBasketData>
   </Trade>
 </Portfolio>

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: CD3CC4B6-B5B6-42CE-B697-B2AB050AA85F
+:END:
+#+title: Inspect a curve's analytics prototype
+#+description: A published curve's market pillars and its bootstrapped zero rate, implied forward, discount factor and shift, with the conventions they rest on - ported from hedgr's AUD-AONIA curve inspector.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:curves:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:inspect-a-curves-analytics/][the prototype]]  |
+| Journey       | [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Market data prototypes]]            |
+
+* Summary
+
+A curve is read twice: as what the market sent, and as what the curve makes of
+it. The prototype puts them on the same rows - the market rate and its provider,
+then the zero rate, the implied forward, the discount factor and the shift -
+under a strip of conventions that say what those numbers mean. The shift column
+is the argument a desk needs: it is the distance between the bootstrapped curve
+and the market, stated, not assumed.
+
+It is ported from hedgr's =prototypes/aud_aonia_curve_dialog_prototype.html=.
+This is not the candidate check and not the publish record: those screens exist
+and answer different questions.
+
+* Detail
+
+** The question
+
+Do the inputs and the outputs share one row, or are they read apart? A person
+checking a curve reads across a pillar; a person quoting a discount factor reads
+one column. The variant decides which is the default.
+
+** The variants
+
+Switch with the bar at the foot, or =?variant=.
+
+| Variant | Name              | The structural argument |
+|---------+-------------------+-------------------------|
+| =a=     | Market pillars    | What the market sent: tenor, maturity, year fraction, rate, provider, age. |
+| =b=     | Bootstrapped curve | What the curve makes: zero rate, implied forward, discount factor, shift. |
+| =c=     | All columns       | Both, side by side, which is what a person checks a curve against. |
+
+The default is =b=, because the curve's own numbers are what a person cannot
+compute elsewhere.
+
+** The states
+
+- =?state=stale= — the whole curve is stale: the publish is older than the
+  threshold, and the badge says how old.
+- =?state=live= — the curve is within the threshold.
+- =?state=none= — the party holds no published curve. The page says so and draws
+  nothing.
+- =?compare=1= — the prior close, as a dashed line over the current curve and as
+  a prior and change column.
+
+** What is fake
+
+The pillars are hedgr's AUD-AONIA discount factors, and every rate is derived
+from them in the page so the mock cannot disagree with itself: the zero rate is
+=-ln(DF)/τ=, the forward is the rate the segment implies, the shift is the zero
+rate less the market rate. Nothing reads a service.
+
+The chart draws the zero curve by interpolating log-linearly in the discount
+factor between pillars, which is what =LOG_LINEAR_DISCOUNT= means. That is
+deliberate: the page shows why the curve's mathematics must live on the server,
+because a second implementation would smooth differently.
+
+** Where the code lives
+
+=doc/prototypes/market_data/inspect-a-curves-analytics/index.html=,
+self-contained.
+
+** The verdict
+
+Take it, with three changes, each forced by how ORE Studio stores a fact:
+
+1. *One value per observation.* =ores_marketdata_market_observations_tbl= holds
+   one =value=, so hedgr's Bid, Ask and Spread columns become one market rate
+   and the provider that sent it.
+2. *A page, not a dialog.* The screen is a route with the product's header and
+   cards; its collapse and drag affordances belong to a desktop terminal, not to
+   the web app.
+3. *Two different shifts.* hedgr's =Shift (bps)= is the move against the prior
+   close. Here the shift is curve-less-market, and the move has its own column
+   under the comparison. The journey records why.
+
+** What changed from hedgr
+
+| Item | hedgr | Here | Why |
+|------+-------+------+-----|
+| Pillar columns | Bid, Ask, Mid, Spread | One market rate and its provider | An observation holds one value |
+| Shift | Zero less prior zero | Zero less market, with the prior move as its own column | Two different facts wore one name |
+| Forward | Segment forward | Segment forward, stated as such | A chart needs a value at every pillar |
+| Chrome | A collapse/expand dialog with a feed toggle | A page with a staleness badge | Prototypes read as the product |
+| Refresh | A pulsing button | A Refresh in the header | The standard's refresh, RS-LIST-03 |
+
+* See also
+
+- [[file:index.org][Market data prototypes]] — the group page.
+- [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] — the journey.
+- [[file:check-a-curves-fit.org][Check a curve's fit]] — the candidate check, which is a different screen.
+- [[file:published-curves.org][Published curves]] — the publish record, which is a different screen.

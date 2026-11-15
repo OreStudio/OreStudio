@@ -23,6 +23,7 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -54,10 +55,10 @@ private:
 
 public:
     report_submit_handler(ores::nats::service::client& nats,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           ores::nats::service::nats_client service_nats);
 
-    void submit(ores::nats::message msg);
+    void submit(ores::nats::delivery delivery);
 
 private:
     ores::nats::service::client& nats_;

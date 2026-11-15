@@ -19,7 +19,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_OBSERVATION_READER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_OBSERVATION_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/observation_read_operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <cstddef>
@@ -48,7 +48,8 @@ public:
     static constexpr std::size_t max_observations = 5'000;
 
     static messaging::get_observation_window_response
-    window(ores::database::context ctx, const messaging::get_observation_window_request& request);
+    window(const ores::database::context& ctx,
+           const messaging::get_observation_window_request& request);
 };
 
 }

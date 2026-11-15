@@ -47,7 +47,7 @@ namespace ores::trading::domain {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &risk_participation_agreement_instrument::version},
         utility::codec::field{"tenant_id", &risk_participation_agreement_instrument::tenant_id},
         utility::codec::field{"trade_id", &risk_participation_agreement_instrument::trade_id},

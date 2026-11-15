@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &tenor_basis_swap_pay_receive_key::id},
     };
 }
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &tenor_basis_swap_pay_receive_write::id},
         utility::codec::field{"convention_id", &tenor_basis_swap_pay_receive_write::convention_id},
         utility::codec::field{"pay_index", &tenor_basis_swap_pay_receive_write::pay_index},
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &tenor_basis_swap_pay_receive_change::write},
         utility::codec::field{"precondition", &tenor_basis_swap_pay_receive_change::precondition},
     };
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_basis_swap_pay_receive_removal::key},
         utility::codec::field{"precondition", &tenor_basis_swap_pay_receive_removal::precondition},
     };
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_basis_swap_pay_receive_lookup::key},
         utility::codec::field{"tenor_basis_swap_pay_receive",
                               &tenor_basis_swap_pay_receive_lookup::tenor_basis_swap_pay_receive},
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receives_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_id",
                               &tenor_basis_swap_pay_receives_filter::convention_id},
         utility::codec::field{"id_one_of", &tenor_basis_swap_pay_receives_filter::id_one_of},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &tenor_basis_swap_pay_receive_event::event_id},
         utility::codec::field{"key", &tenor_basis_swap_pay_receive_event::key},
         utility::codec::field{"action", &tenor_basis_swap_pay_receive_event::action},
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_swap_pay_receive_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "tenor_basis_swap_pay_receive",
             &tenor_basis_swap_pay_receive_version_key::tenor_basis_swap_pay_receive},
@@ -567,7 +567,7 @@ wire_fields(std::type_identity<tenor_basis_swap_pay_receive_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<tenor_basis_swap_pay_receive_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &tenor_basis_swap_pay_receive_versions_filter::version},
         utility::codec::field{"from_version",
                               &tenor_basis_swap_pay_receive_versions_filter::from_version},
@@ -586,7 +586,7 @@ wire_fields(std::type_identity<tenor_basis_swap_pay_receive_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_swap_pay_receives_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_tenor_basis_swap_pay_receives_request::offset},
         utility::codec::field{"limit", &list_tenor_basis_swap_pay_receives_request::limit},
         utility::codec::field{"order", &list_tenor_basis_swap_pay_receives_request::order},
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<list_tenor_basis_swap_pay_receives_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_swap_pay_receives_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{
             "tenor_basis_swap_pay_receives",
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<list_tenor_basis_swap_pay_receives_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_basis_swap_pay_receive_request::key},
     };
 }
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_tenor_basis_swap_pay_receive_response::result},
         utility::codec::field{
             "tenor_basis_swap_pay_receive",
@@ -657,7 +657,7 @@ wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_tenor_basis_swap_pay_receives_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_tenor_basis_swap_pay_receives_request::keys},
     };
 }
@@ -672,7 +672,7 @@ wire_fields(std::type_identity<get_many_tenor_basis_swap_pay_receives_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_tenor_basis_swap_pay_receives_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{"entries", &get_many_tenor_basis_swap_pay_receives_response::entries},
     };
@@ -688,7 +688,7 @@ wire_fields(std::type_identity<get_many_tenor_basis_swap_pay_receives_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_tenor_basis_swap_pay_receive_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_tenor_basis_swap_pay_receive_request::change},
         utility::codec::field{"intent", &put_tenor_basis_swap_pay_receive_request::intent},
     };
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<put_tenor_basis_swap_pay_receive_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_tenor_basis_swap_pay_receive_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_tenor_basis_swap_pay_receive_response::result},
         utility::codec::field{
             "tenor_basis_swap_pay_receive",
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<put_tenor_basis_swap_pay_receive_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_tenor_basis_swap_pay_receives_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_tenor_basis_swap_pay_receives_request::changes},
         utility::codec::field{"intent", &put_many_tenor_basis_swap_pay_receives_request::intent},
     };
@@ -738,7 +738,7 @@ wire_fields(std::type_identity<put_many_tenor_basis_swap_pay_receives_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_tenor_basis_swap_pay_receives_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{
             "tenor_basis_swap_pay_receives",
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<put_many_tenor_basis_swap_pay_receives_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_tenor_basis_swap_pay_receive_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_tenor_basis_swap_pay_receive_request::removal},
         utility::codec::field{"intent", &delete_tenor_basis_swap_pay_receive_request::intent},
     };
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<delete_tenor_basis_swap_pay_receive_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_tenor_basis_swap_pay_receive_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_tenor_basis_swap_pay_receive_response::result},
     };
 }
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<delete_tenor_basis_swap_pay_receive_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_tenor_basis_swap_pay_receives_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_tenor_basis_swap_pay_receives_request::removals},
         utility::codec::field{"intent", &delete_many_tenor_basis_swap_pay_receives_request::intent},
@@ -804,7 +804,7 @@ wire_fields(std::type_identity<delete_many_tenor_basis_swap_pay_receives_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_tenor_basis_swap_pay_receives_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_tenor_basis_swap_pay_receives_response::result},
     };
@@ -820,7 +820,7 @@ wire_fields(std::type_identity<delete_many_tenor_basis_swap_pay_receives_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_id_tenor_basis_swap_pay_receives_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "convention_id",
             &list_by_convention_id_tenor_basis_swap_pay_receives_request::convention_id},
@@ -847,7 +847,7 @@ wire_fields(std::type_identity<list_by_convention_id_tenor_basis_swap_pay_receiv
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_id_tenor_basis_swap_pay_receives_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_convention_id_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{"tenor_basis_swap_pay_receives",
@@ -868,7 +868,7 @@ wire_fields(std::type_identity<list_by_convention_id_tenor_basis_swap_pay_receiv
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_swap_pay_receive_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_tenor_basis_swap_pay_receive_versions_request::key},
         utility::codec::field{"offset",
                               &list_tenor_basis_swap_pay_receive_versions_request::offset},
@@ -889,7 +889,7 @@ wire_fields(std::type_identity<list_tenor_basis_swap_pay_receive_versions_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_basis_swap_pay_receive_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_tenor_basis_swap_pay_receive_versions_response::result},
         utility::codec::field{"versions",
@@ -908,7 +908,7 @@ wire_fields(std::type_identity<list_tenor_basis_swap_pay_receive_versions_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_basis_swap_pay_receive_version_request::key},
     };
 }
@@ -923,7 +923,7 @@ wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_version_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_tenor_basis_swap_pay_receive_version_response::result},
         utility::codec::field{"version",
                               &get_tenor_basis_swap_pay_receive_version_response::version},

@@ -114,6 +114,8 @@ public:
                                 double dt = 1.0);
 
     double next() override;
+    double next_with_normal(double standard_normal) override;
+    bool supports_external_normal() const override;
     double current() const override;
     double discount_factor(std::size_t ticks_ahead) const override;
 

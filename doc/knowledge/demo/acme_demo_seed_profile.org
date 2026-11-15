@@ -1,36 +1,37 @@
 :PROPERTIES:
 :ID: 6014CFE1-D978-4ABA-BBA9-D87040FE44BA
 :END:
-#+title: The acme_demo profile is ten ordered steps, and the steps are data
-#+description: The starting point that builds the Acme tenant: what each of its ten steps creates, in which order, and which parts of the tenant a person could change without touching code.
+#+title: The acme_demo profile is an ordered list of steps, and the steps are data
+#+description: The starting point that builds the Acme tenant: what each of its steps creates, in which order, and which parts of the tenant a person could change without touching code.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:provisioning:acme:demo:seed:
 #+created: 2026-10-26
-#+updated: 2026-11-03
+#+updated: 2026-11-12
 #+startup: inlineimages
 
 * Summary
 
 A tenant is built from a starting point, and a starting point is an ordered list
-of steps held as rows. The one the demonstration uses is =acme_demo=: eleven steps
-that install the system data, publish the system's curves, publish the tenant's own datasets, import the LEI
-hierarchy, provision the parties, load the staff, set their passwords, attach
-their pictures, subscribe every party to its market data provider, schedule the
-reports each party publishes and generate a trade population. Nothing in that
+of steps held as rows. The one the demonstration uses is =acme_demo=. Its steps
+install the system data, publish the system's curves, publish the tenant's own
+datasets, import the LEI hierarchy, provision the parties, load the staff, set
+their passwords, attach their pictures, subscribe every party to its market data
+provider, give each party its own curves, surface blueprints and FX forwards,
+schedule the reports each party publishes and generate a trade population. Nothing in that
 list is code. A variant changes a row's arguments, and a tenant that wants a
 thinner book or a different feed changes a value rather than a build.
 
 * Detail
 
-** The fifteen steps
+** The steps
 
 #+ATTR_HTML: :class hug-leading
 | Order | Step | What it creates |
 |-------+------+-----------------|
 | 5 | =system_provision= | publishes the system's own datasets into the system tenant, which every tenant reads as an overlay |
 | 6 | =publish_system_curves= | bootstraps and publishes each IR curve the system tenant holds a config for, from its synthetic quotes. These are the system's reference set: no tenant prices from them |
-| 8 | =start_auto_approval= | turns the tenant's auto-approval on, so the publishes below close without a person. Every screen says so while it is on |
+| 8 | =start_auto_approval= | takes the run's provisioning grant for the publish kinds it raises, so the publishes below close without a person. Every screen says so while it is held |
 | 10 | =publish_bundle= | the =base= bundle, the =marketdata.reference_vintage_2026_05_05= bundle, the GLEIF counterparty set at the profile's chosen size, and the ORE counterparty aliases |
 | 15 | =build_calendars= | the business days of every calendar a currency or a pair convention names, to 2060 |
 | 20 | =import_lei_hierarchy= | the Acme LEI hierarchy, whose root is =9695ACMEGROUP0000030=, as the tenant's four parties |
@@ -40,9 +41,12 @@ thinner book or a different feed changes a value rather than a build.
 | 50 | =attach_photos= | each account's picture and each party's logo, copied from the system tenant's templates |
 | 60 | =subscribe_market_data= | one subscription and one route for every party, at the provider and source the row names |
 | 65 | =publish_party_curves= | each entity's own copy of the 20 curve blueprints, bootstrapped from the quotes its own subscriptions deliver and published under auto-approval |
+| 66 | =give_party_surface_blueprints= | each entity's own copy of the system's FX volatility surface blueprints, reading the volatility quotes its subscription to the derived source delivers |
+| 67 | =publish_party_forwards= | each entity's FX forward set for every pair convention it can build from its spot and its own published funding curves, published under auto-approval. A pair it cannot build is named in the step's result with the reason |
+| 68 | =publish_party_surfaces= | each entity's FX volatility surfaces, calibrated from its volatility quotes and its published forward sets and published under auto-approval. A surface with arbitrage, a fit that did not converge or a pillar beyond the tolerance is held back and named |
 | 70 | =schedule_reports= | a scheduler job and a run grant for every report definition each party publishes whose schedule is a real cron, so the catalogue ticks without a person acting |
 | 80 | =generate_trades= | one trade population per trading entity, each booked into that entity's own book by its own traders |
-| 9000 | =end_auto_approval= | turns auto-approval off after every other step, so people decide from here on |
+| 9000 | =end_auto_approval= | releases the grant after every other step, so people decide from here on. A run that fails or is abandoned releases it as it closes, and the grant's expiry ends it if the run never does |
 
 The run then closes with =complete_provisioning=, which the workflow adds rather
 than the profile: it hands the tenant to its own administrator, clears the
@@ -50,7 +54,7 @@ bootstrap flag, and declares the run done.
 
 ** Why the order is what it is
 
-Five dependencies decide it, and all but the curves have a failure behind them.
+Seven dependencies decide it, and all but the curves, the forwards and the surfaces have a failure behind them.
 
 - The system data comes first, because a tenant is built on a system that already
   makes sense: a coding scheme validator resolves its scheme in the system
@@ -66,6 +70,12 @@ Five dependencies decide it, and all but the curves have a failure behind them.
 - The market data comes after the staff and the parties, because the step acts as
   a party and writes a party's rows: a subscription written before the party
   exists has nothing to hang from.
+- A party's forwards come after its funding curves, because a forward set reads
+  the published curve of each of its two currencies. A pair whose curve is not
+  published is skipped, and the step says why.
+- A party's surfaces come after its forwards and its surface blueprints, because
+  a calibration reads the blueprint's quotes and the party's published forward
+  set of the pair.
 - The schedule comes last but for the trades, because it reads what the earlier
   steps published: a party's report definitions arrive with the bundles the
   staff step names, and a schedule names the party whose consent its runs act
@@ -122,6 +132,7 @@ belong to [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]].
 
 * See also
 
+- [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]] — completes: the window in which the tenant approves without a person.
 - [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
 - [[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][A subscription names the provider and the route names the source]] — completes: the rows step 60 writes.
 - [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — orders: what the catalogue means by on demand, and where step 70's schedules come from.

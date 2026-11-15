@@ -8,6 +8,8 @@
 #+description: One-off override for a single calendar day -- an additional holiday or a business-day override -- applying uniformly to any calendar, transcribed or user-authored, based or base-less.
 #+type: ores.codegen.entity
 #+http_area: reference-data
+#+web_resource: calendar-exceptions
+#+web_list_by: calendar_code
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: calendar_exception

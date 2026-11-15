@@ -51,7 +51,7 @@ public:
         "scheduler.v1.events.job_instances.updated";
 
     scheduler_loop(ores::nats::service::client& nats,
-                   database::context system_ctx,
+                   const database::context& system_ctx,
                    std::vector<std::unique_ptr<action_handler>> handlers);
 
     /**

@@ -28,6 +28,7 @@
 #include "ores.assets.api/messaging/tag_protocol.hpp"
 #include "ores.assets.core/repository/tag_entity.hpp"
 #include "ores.assets.core/repository/tag_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,18 +104,70 @@ tag_filter_condition(const std::optional<messaging::tags_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition tag_repository::replace_claim(context ctx,
-                                                                  const domain::tag& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool tag_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using tag_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::tag>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+tag_rows_by_key tag_current_rows(tag_repository& repo,
+                                 const ores::database::context& ctx,
+                                 const std::vector<domain::tag>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    tag_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::tag>& tag_rows_of(const tag_rows_by_key& current,
+                                            const domain::tag& item) {
+    static const std::vector<domain::tag> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition tag_replace_claim(const std::vector<domain::tag>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::tag tag_repository::apply_claim(context ctx,
-                                        const domain::tag& v,
-                                        const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::tag tag_apply_claim(const domain::tag& v,
+                            const ores::utility::domain::precondition& claim,
+                            const std::vector<domain::tag>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -123,53 +179,64 @@ domain::tag tag_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void tag_repository::write(context ctx, const domain::tag& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void tag_repository::write(context ctx, const std::vector<domain::tag>& v) {
+void tag_repository::write(const context& ctx, const domain::tag& v) {
+    write(ctx, v, tag_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void tag_repository::write(const context& ctx, const std::vector<domain::tag>& v) {
+    const auto current = tag_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(tag_replace_claim(tag_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void tag_repository::write(context ctx,
+void tag_repository::write(const context& ctx,
                            const domain::tag& v,
                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset tag. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = tag_apply_claim(v,
+                                   claim,
+                                   tag_claim_reads_current(claim) ?
+                                       read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                       std::vector<domain::tag>{});
     query_builder::execute_write_query(
         ctx, tag_mapper::map(t), lg(), "Writing asset tag to database.");
 }
 
-void tag_repository::write(context ctx,
+void tag_repository::write(const context& ctx,
                            const std::vector<domain::tag>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset tags. Count: " << v.size();
+    std::vector<domain::tag> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (tag_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = tag_current_rows(*this, ctx, to_read);
     std::vector<domain::tag> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(tag_apply_claim(v[i], claims[i], tag_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, tag_mapper::map(batch), lg(), "Writing asset tags to database.");
 }
 
-std::vector<domain::tag> tag_repository::read_latest(context ctx) {
+std::vector<domain::tag> tag_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tag_entity>> |
@@ -184,7 +251,7 @@ std::vector<domain::tag> tag_repository::read_latest(context ctx) {
         "Reading latest asset tags");
 }
 
-std::vector<domain::tag> tag_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::tag> tag_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tag. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -200,7 +267,8 @@ std::vector<domain::tag> tag_repository::read_latest(context ctx, const std::str
         "Reading latest asset tag by id.");
 }
 
-std::vector<domain::tag> tag_repository::read_latest_by_name(context ctx, const std::string& name) {
+std::vector<domain::tag> tag_repository::read_latest_by_name(const context& ctx,
+                                                             const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tag by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +284,42 @@ std::vector<domain::tag> tag_repository::read_latest_by_name(context ctx, const 
         "Reading latest asset tag by name.");
 }
 
-std::vector<domain::tag> tag_repository::read_any_by_name(context ctx, const std::string& name) {
+std::vector<domain::tag>
+tag_repository::read_latest_by_name(const context& ctx, const std::vector<std::string>& names) {
+    if (names.empty())
+        return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (names.size() > chunk_size) {
+        std::vector<domain::tag> all;
+        for (std::size_t begin = 0; begin < names.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, names.size());
+            auto part = read_latest_by_name(
+                ctx, std::vector<std::string>(names.begin() + begin, names.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tags by name. Count: " << names.size();
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<tag_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max);
+    auto found = query_builder::execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
+        [](const auto& entities) { return tag_mapper::map(entities); },
+        lg(),
+        "Reading latest asset tags by name.");
+    return found;
+}
+
+std::vector<domain::tag> tag_repository::read_any_by_name(const context& ctx,
+                                                          const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any asset tag by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tag_entity>> |
@@ -232,7 +335,7 @@ std::vector<domain::tag> tag_repository::read_any_by_name(context ctx, const std
 }
 
 
-std::vector<domain::tag> tag_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::tag> tag_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all asset tag versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tag_entity>> |
@@ -248,7 +351,7 @@ std::vector<domain::tag> tag_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::tag>
-tag_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+tag_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading asset tag at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -269,8 +372,9 @@ tag_repository::read_at_version(context ctx, const std::string& id, std::uint32_
     return entities.front();
 }
 
-tag_repository::remove_status
-tag_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+tag_repository::remove_status tag_repository::remove(const context& ctx,
+                                                     const std::string& id,
+                                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing asset tag. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -298,12 +402,12 @@ tag_repository::remove(context ctx, const std::string& id, std::optional<std::ui
     return remove_status::removed;
 }
 
-void tag_repository::remove(context ctx, const std::string& id) {
+void tag_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::tag>
-tag_repository::read_latest(context ctx,
+tag_repository::read_latest(const context& ctx,
                             std::uint32_t offset,
                             std::uint32_t limit,
                             const ores::utility::domain::order& order,
@@ -327,7 +431,7 @@ tag_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-tag_repository::get_total_tag_count(context ctx,
+tag_repository::get_total_tag_count(const context& ctx,
                                     const std::optional<messaging::tags_filter>& filter,
                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset tag count";
@@ -344,10 +448,25 @@ tag_repository::get_total_tag_count(context ctx,
         "Counting asset tags");
 }
 
-std::vector<domain::tag> tag_repository::read_latest(context ctx,
+std::vector<domain::tag> tag_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::tag> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -362,7 +481,7 @@ std::vector<domain::tag> tag_repository::read_latest(context ctx,
     return result;
 }
 
-void tag_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void tag_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

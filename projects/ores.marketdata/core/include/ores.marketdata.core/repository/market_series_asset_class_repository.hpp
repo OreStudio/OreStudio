@@ -76,7 +76,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit market_series_asset_class_repository(context ctx);
+    explicit market_series_asset_class_repository(const context& ctx);
 
     std::string sql();
 

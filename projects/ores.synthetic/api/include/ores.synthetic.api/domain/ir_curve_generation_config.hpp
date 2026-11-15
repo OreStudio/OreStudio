@@ -85,10 +85,10 @@ struct ir_curve_generation_config final {
      * indices, or one of the overnight/RFR-style families -- sofr/estr/sonia/tona/
      * saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
      * zaronia/destr/polonia/nzonia/shibor/tiie/taibor/cdi/
-     * czeonia/buboron/telboron/tlref/camara/ibr/hibor), stored as a fixed lower-case token rather
-     * than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR") --
-     * currency_code already carries the currency half of that pair. Only the check below limits the
-     * family. The (currency_code, index_family) pair names an overnight_index_convention or
+     * czeonia/buboron/telboron/tlref/camara/ibr/hibor/ shir/hufonia), stored as a fixed lower-case
+     * token rather than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR")
+     * -- currency_code already carries the currency half of that pair. Only the check below limits
+     * the family. The (currency_code, index_family) pair names an overnight_index_convention or
      * ibor_index_convention, whose own id is currency_code + "-" + upper(index_family); the feed
      * itself reads no convention, so a curve whose pair has no convention seeded still ticks.
      */
@@ -167,10 +167,10 @@ struct ir_curve_generation_config final {
     bool auto_start = false;
 
     /**
-     * @brief Where this curve's starting short rate comes from. The one source is "fixed": the
-     * initial_rate parameter value as entered in the parameter rows. No public source fixes rates
-     * curves yet; when one does, the curve reads it as an FX feed reads its fixings, and this
-     * column names it.
+     * @brief Where this curve's starting short rate comes from. "fixed" is the initial_rate
+     * parameter value as entered in the parameter rows. "fixing" is the newest public overnight
+     * rate of the curve's currency, read under the IR class's calibration policy; a curve whose
+     * currency no source publishes keeps its initial_rate, and its start record says why.
      */
     std::string price_source = "fixed";
 

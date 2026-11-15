@@ -309,7 +309,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mapping_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_domain_code", &badge_mapping_key::code_domain_code},
         utility::codec::field{"entity_code", &badge_mapping_key::entity_code},
     };
@@ -324,7 +324,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mapping_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_domain_code", &badge_mapping_write::code_domain_code},
         utility::codec::field{"entity_code", &badge_mapping_write::entity_code},
         utility::codec::field{"badge_code", &badge_mapping_write::badge_code},
@@ -340,7 +340,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mapping_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &badge_mapping_change::write},
         utility::codec::field{"precondition", &badge_mapping_change::precondition},
     };
@@ -355,7 +355,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mapping_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &badge_mapping_removal::key},
         utility::codec::field{"precondition", &badge_mapping_removal::precondition},
     };
@@ -370,7 +370,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mapping_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &badge_mapping_lookup::key},
         utility::codec::field{"badge_mapping", &badge_mapping_lookup::badge_mapping},
     };
@@ -385,7 +385,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mappings_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_domain_code", &badge_mappings_filter::code_domain_code},
         utility::codec::field{"code_domain_code_one_of",
                               &badge_mappings_filter::code_domain_code_one_of},
@@ -401,7 +401,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_mapping_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &badge_mapping_event::event_id},
         utility::codec::field{"key", &badge_mapping_event::key},
         utility::codec::field{"action", &badge_mapping_event::action},
@@ -420,7 +420,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_badge_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_badge_mappings_request::offset},
         utility::codec::field{"limit", &list_badge_mappings_request::limit},
         utility::codec::field{"order", &list_badge_mappings_request::order},
@@ -437,7 +437,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_badge_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_badge_mappings_response::result},
         utility::codec::field{"badge_mappings", &list_badge_mappings_response::badge_mappings},
         utility::codec::field{"total", &list_badge_mappings_response::total},
@@ -453,7 +453,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_mapping_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_badge_mapping_request::key},
     };
 }
@@ -467,7 +467,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_mapping_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_badge_mapping_response::result},
         utility::codec::field{"badge_mapping", &get_badge_mapping_response::badge_mapping},
     };
@@ -482,7 +482,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_badge_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_badge_mappings_request::keys},
     };
 }
@@ -496,7 +496,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_badge_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_badge_mappings_response::result},
         utility::codec::field{"entries", &get_many_badge_mappings_response::entries},
     };
@@ -511,7 +511,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_badge_mapping_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_badge_mapping_request::change},
         utility::codec::field{"intent", &put_badge_mapping_request::intent},
     };
@@ -526,7 +526,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_badge_mapping_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_badge_mapping_response::result},
         utility::codec::field{"badge_mapping", &put_badge_mapping_response::badge_mapping},
     };
@@ -541,7 +541,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_badge_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_badge_mappings_request::changes},
         utility::codec::field{"intent", &put_many_badge_mappings_request::intent},
     };
@@ -556,7 +556,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_badge_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_badge_mappings_response::result},
         utility::codec::field{"badge_mappings", &put_many_badge_mappings_response::badge_mappings},
     };
@@ -571,7 +571,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_badge_mapping_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_badge_mapping_request::removal},
         utility::codec::field{"intent", &delete_badge_mapping_request::intent},
     };
@@ -586,7 +586,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_badge_mapping_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_badge_mapping_response::result},
     };
 }
@@ -600,7 +600,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_badge_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_badge_mappings_request::removals},
         utility::codec::field{"intent", &delete_many_badge_mappings_request::intent},
     };
@@ -615,7 +615,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_badge_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_badge_mappings_response::result},
     };
 }
@@ -630,7 +630,7 @@ struct list_by_code_domain_code_badge_mappings_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_code_domain_code_badge_mappings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_domain_code",
                               &list_by_code_domain_code_badge_mappings_request::code_domain_code},
         utility::codec::field{"scope", &list_by_code_domain_code_badge_mappings_request::scope},
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<list_by_code_domain_code_badge_mappings_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_code_domain_code_badge_mappings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_code_domain_code_badge_mappings_response::result},
         utility::codec::field{"badge_mappings",
                               &list_by_code_domain_code_badge_mappings_response::badge_mappings},

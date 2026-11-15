@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &future_convention_key::id},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &future_convention_write::id},
         utility::codec::field{"index", &future_convention_write::index},
         utility::codec::field{"date_generation_rule",
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &future_convention_change::write},
         utility::codec::field{"precondition", &future_convention_change::precondition},
     };
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &future_convention_removal::key},
         utility::codec::field{"precondition", &future_convention_removal::precondition},
     };
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &future_convention_lookup::key},
         utility::codec::field{"future_convention", &future_convention_lookup::future_convention},
     };
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_conventions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &future_conventions_filter::id_one_of},
     };
 }
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &future_convention_event::event_id},
         utility::codec::field{"key", &future_convention_event::key},
         utility::codec::field{"action", &future_convention_event::action},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"future_convention",
                               &future_convention_version_key::future_convention},
         utility::codec::field{"version", &future_convention_version_key::version},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<future_convention_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &future_convention_versions_filter::version},
         utility::codec::field{"from_version", &future_convention_versions_filter::from_version},
         utility::codec::field{"to_version", &future_convention_versions_filter::to_version},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_future_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_future_conventions_request::offset},
         utility::codec::field{"limit", &list_future_conventions_request::limit},
         utility::codec::field{"order", &list_future_conventions_request::order},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_future_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_future_conventions_response::result},
         utility::codec::field{"future_conventions",
                               &list_future_conventions_response::future_conventions},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_future_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_future_convention_request::key},
     };
 }
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_future_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_future_convention_response::result},
         utility::codec::field{"future_convention",
                               &get_future_convention_response::future_convention},
@@ -582,7 +582,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_future_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_future_conventions_request::keys},
     };
 }
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_future_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_future_conventions_response::result},
         utility::codec::field{"entries", &get_many_future_conventions_response::entries},
     };
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_future_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_future_convention_request::change},
         utility::codec::field{"intent", &put_future_convention_request::intent},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_future_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_future_convention_response::result},
         utility::codec::field{"future_convention",
                               &put_future_convention_response::future_convention},
@@ -642,7 +642,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_future_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_future_conventions_request::changes},
         utility::codec::field{"intent", &put_many_future_conventions_request::intent},
     };
@@ -657,7 +657,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_future_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_future_conventions_response::result},
         utility::codec::field{"future_conventions",
                               &put_many_future_conventions_response::future_conventions},
@@ -673,7 +673,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_future_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_future_convention_request::removal},
         utility::codec::field{"intent", &delete_future_convention_request::intent},
     };
@@ -688,7 +688,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_future_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_future_convention_response::result},
     };
 }
@@ -703,7 +703,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.future_convention
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_future_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_future_conventions_request::removals},
         utility::codec::field{"intent", &delete_many_future_conventions_request::intent},
     };
@@ -719,7 +719,7 @@ wire_fields(std::type_identity<delete_many_future_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_future_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_future_conventions_response::result},
     };
 }
@@ -734,7 +734,7 @@ wire_fields(std::type_identity<delete_many_future_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_future_convention_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_future_convention_versions_request::key},
         utility::codec::field{"offset", &list_future_convention_versions_request::offset},
         utility::codec::field{"limit", &list_future_convention_versions_request::limit},
@@ -753,7 +753,7 @@ wire_fields(std::type_identity<list_future_convention_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_future_convention_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_future_convention_versions_response::result},
         utility::codec::field{"versions", &list_future_convention_versions_response::versions},
         utility::codec::field{"total", &list_future_convention_versions_response::total},
@@ -770,7 +770,7 @@ wire_fields(std::type_identity<list_future_convention_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_future_convention_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_future_convention_version_request::key},
     };
 }
@@ -785,7 +785,7 @@ wire_fields(std::type_identity<get_future_convention_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_future_convention_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_future_convention_version_response::result},
         utility::codec::field{"version", &get_future_convention_version_response::version},
     };

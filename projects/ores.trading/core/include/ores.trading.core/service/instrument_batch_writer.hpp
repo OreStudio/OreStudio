@@ -25,13 +25,14 @@
 #ifndef ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
 #define ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/ascot_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
+#include "ores.trading.core/repository/basket_swap_period_repository.hpp"
 #include "ores.trading.core/repository/bond_forward_repository.hpp"
 #include "ores.trading.core/repository/bond_future_repository.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
@@ -44,6 +45,10 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_amortization_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_rate_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_repository.hpp"
 #include "ores.trading.core/repository/bond_option_repository.hpp"
 #include "ores.trading.core/repository/bond_repo_repository.hpp"
 #include "ores.trading.core/repository/bond_trs_repository.hpp"
@@ -67,7 +72,6 @@
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
-#include "ores.trading.core/repository/equity_swap_period_repository.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
@@ -185,7 +189,7 @@ template <typename T>
  * replaces a row.
  */
 template <typename Repository, typename Row, typename Stamp, typename Claim>
-void write_rows(ores::database::context ctx,
+void write_rows(const ores::database::context& ctx,
                 std::vector<Row>& rows,
                 const instrument_keys& keys,
                 Stamp& stamp,
@@ -205,7 +209,7 @@ void write_rows(ores::database::context ctx,
  * in the order the catalogue lists them.
  */
 template <typename Stamp, typename Claim>
-void write_instrument_batch(ores::database::context ctx,
+void write_instrument_batch(const ores::database::context& ctx,
                             domain::instrument_batch& batch,
                             const instrument_keys& keys,
                             Stamp&& stamp,
@@ -274,6 +278,12 @@ void write_instrument_batch(ores::database::context ctx,
     write_rows<repository::ascot_repository>(ctx, batch.ascots, keys, stamp, claim);
     write_rows<repository::bond_forward_repository>(ctx, batch.bond_forwards, keys, stamp, claim);
     write_rows<repository::bond_future_repository>(ctx, batch.bond_futures, keys, stamp, claim);
+    write_rows<repository::bond_leg_repository>(ctx, batch.bond_legs, keys, stamp, claim);
+    write_rows<repository::bond_leg_amortization_repository>(
+        ctx, batch.bond_leg_amortizations, keys, stamp, claim);
+    write_rows<repository::bond_leg_amount_repository>(
+        ctx, batch.bond_leg_amounts, keys, stamp, claim);
+    write_rows<repository::bond_leg_rate_repository>(ctx, batch.bond_leg_rates, keys, stamp, claim);
     write_rows<repository::bond_option_repository>(ctx, batch.bond_options, keys, stamp, claim);
     write_rows<repository::bond_repo_repository>(ctx, batch.bond_repos, keys, stamp, claim);
     write_rows<repository::bond_trs_repository>(ctx, batch.bond_trs, keys, stamp, claim);
@@ -299,8 +309,8 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.credit_linked_swap_instruments, keys, stamp, claim);
     write_rows<repository::equity_basket_constituent_repository>(
         ctx, batch.equity_basket_constituents, keys, stamp, claim);
-    write_rows<repository::equity_swap_period_repository>(
-        ctx, batch.equity_swap_periods, keys, stamp, claim);
+    write_rows<repository::basket_swap_period_repository>(
+        ctx, batch.basket_swap_periods, keys, stamp, claim);
     write_rows<repository::equity_position_option_underlying_repository>(
         ctx, batch.equity_position_option_underlyings, keys, stamp, claim);
     write_rows<repository::flexi_swap_instrument_repository>(
@@ -491,6 +501,14 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("bond_forwards");
     if (!batch.bond_futures.empty())
         names.emplace_back("bond_futures");
+    if (!batch.bond_legs.empty())
+        names.emplace_back("bond_legs");
+    if (!batch.bond_leg_amortizations.empty())
+        names.emplace_back("bond_leg_amortizations");
+    if (!batch.bond_leg_amounts.empty())
+        names.emplace_back("bond_leg_amounts");
+    if (!batch.bond_leg_rates.empty())
+        names.emplace_back("bond_leg_rates");
     if (!batch.bond_options.empty())
         names.emplace_back("bond_options");
     if (!batch.bond_repos.empty())
@@ -519,8 +537,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("credit_linked_swap_instruments");
     if (!batch.equity_basket_constituents.empty())
         names.emplace_back("equity_basket_constituents");
-    if (!batch.equity_swap_periods.empty())
-        names.emplace_back("equity_swap_periods");
+    if (!batch.basket_swap_periods.empty())
+        names.emplace_back("basket_swap_periods");
     if (!batch.equity_position_option_underlyings.empty())
         names.emplace_back("equity_position_option_underlyings");
     if (!batch.flexi_swap_instruments.empty())

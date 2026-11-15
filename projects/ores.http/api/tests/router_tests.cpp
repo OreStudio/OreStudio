@@ -94,6 +94,37 @@ TEST_CASE("router_matches_path_with_multiple_parameters", "[router]") {
     REQUIRE(params["postId"] == "100");
 }
 
+TEST_CASE("router_prefers_a_literal_segment_over_a_parameter", "[router]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the more specific pattern answers";
+
+    const auto handler = [](const http_request&) -> boost::asio::awaitable<http_response> {
+        co_return http_response::json("{}");
+    };
+    router r;
+    // The parameter comes first, so only specificity can send the literal path elsewhere.
+    r.add_route(r.get("/parties/{id}").auth_optional().handler(handler).build());
+    r.add_route(r.get("/parties/children").auth_optional().handler(handler).build());
+    r.add_route(r.get("/parties/{id}/visibility").auth_optional().handler(handler).build());
+
+    std::unordered_map<std::string, std::string> params;
+    const auto literal = r.match(http_method::get, "/parties/children", params);
+    REQUIRE(literal.has_value());
+    CHECK(literal->pattern == "/parties/children");
+    CHECK(params.empty());
+
+    const auto parameter = r.match(http_method::get, "/parties/p1", params);
+    REQUIRE(parameter.has_value());
+    CHECK(parameter->pattern == "/parties/{id}");
+    CHECK(params["id"] == "p1");
+
+    params.clear();
+    const auto longer = r.match(http_method::get, "/parties/p1/visibility", params);
+    REQUIRE(longer.has_value());
+    CHECK(longer->pattern == "/parties/{id}/visibility");
+    CHECK(params["id"] == "p1");
+}
+
 TEST_CASE("router_returns_empty_for_unmatched_path", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing unmatched path";

@@ -33,11 +33,13 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -195,7 +197,7 @@ make_lineage(ores::utility::generation::generation_context& ctx,
 // assertion reads the design's own vocabulary.
 std::string
 reported_source_kind(ores::marketdata::repository::observation_lineage_repository& lineage_repo,
-                     market_observation_repository::context ctx,
+                     const market_observation_repository::context& ctx,
                      const boost::uuids::uuid& series_id,
                      const ores::marketdata::domain::market_observation& obs) {
     const auto lineage = lineage_repo.read_latest_by_observation(
@@ -510,6 +512,46 @@ TEST_CASE("read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives",
     }
 }
 
+TEST_CASE("two_manual_points_on_one_coordinate_read_as_the_newer_one", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    // The feed writes another coordinate only, so both manual points are keyed on
+    // a coordinate no fed value stands at.
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0300));
+    // The newer point is keyed first, so a read that kept the store's own order
+    // would end on the older one.
+    for (const auto& [minutes, value] : {std::pair{20, 0.0600}, std::pair{10, 0.0500}}) {
+        auto manual =
+            make_observation(ctx, s.id, "SPOT-1M", t0 + std::chrono::minutes(minutes), value);
+        obs_repo.insert(h.context(), manual);
+        lineage_repo.write(h.context(), make_lineage(ctx, manual, "manual"));
+    }
+
+    const auto instant = t0 + std::chrono::minutes(30);
+    const auto keyed = datum_uri("SPOT-1M");
+    std::vector<std::string> from_one, from_all;
+    for (const auto& o : obs_repo.read_as_of(h.context(), s.id, instant))
+        if (o.oresmd_uri == keyed)
+            from_one.push_back(o.value);
+    for (const auto& o : obs_repo.read_as_of_all(h.context(), instant))
+        if (o.series_id == s.id && o.oresmd_uri == keyed)
+            from_all.push_back(o.value);
+
+    REQUIRE(from_one.size() == 1);
+    CHECK(from_one.front() == "0.060000");
+    CHECK(from_all == from_one);
+}
+
 namespace {
 
 // The session an operator writes a manual point with: the series' party, so
@@ -697,10 +739,12 @@ TEST_CASE("write_manual_point_leaves_neither_row_when_the_annex_write_fails", "[
 
 namespace {
 
-// Whether two instants are within a second of each other. A record time comes
-// back from the database as text and the test only needs to know which write it
-// names, not the microseconds.
-bool near(std::chrono::system_clock::time_point a, std::chrono::system_clock::time_point b) {
+// Whether two instants are within two seconds of each other. A record time
+// comes back from the database as text and the test only needs to know which
+// write it names, not the microseconds. Not "near": windows.h defines near as
+// an empty macro.
+bool is_close_in_time(std::chrono::system_clock::time_point a,
+                      std::chrono::system_clock::time_point b) {
     const auto delta = a > b ? a - b : b - a;
     return delta < std::chrono::seconds(2);
 }
@@ -733,8 +777,8 @@ TEST_CASE("read_as_of_records_carries_the_row_record_time", "[repository]") {
         // The point's own instant is the one it was written at, and its record
         // time is when that write landed -- not the instant the snapshot is
         // read at.
-        CHECK(near(record.observation.observation_datetime, t0));
-        CHECK(near(record.recorded_at, written_at));
+        CHECK(is_close_in_time(record.observation.observation_datetime, t0));
+        CHECK(is_close_in_time(record.recorded_at, written_at));
     }
 }
 
@@ -860,4 +904,57 @@ TEST_CASE("read_latest_by_series_id_refuses_a_bound_it_cannot_read", "[repositor
     const auto sid = boost::uuids::to_string(s.id);
     CHECK_THROWS_AS(obs_repo.read_latest_by_series_id(h.context(), sid, 0, 500, {}, filter),
                     std::invalid_argument);
+}
+
+TEST_CASE("a_batch_create_over_a_row_past_the_first_read_chunk_is_refused_and_writes_nothing",
+          "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observation_repository obs_repo;
+    auto observations = generate_synthetic_market_observations(1001, ctx);
+    for (auto& o : observations)
+        o.series_id = s.id;
+    obs_repo.insert(h.context(), observations.back());
+
+    const std::vector<ores::utility::domain::precondition> creates(
+        observations.size(),
+        {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
+    BOOST_LOG_SEV(lg, info) << "Creating " << observations.size()
+                            << " market observations, the last of which exists.";
+    CHECK_THROWS_AS(obs_repo.write(h.context(), observations, creates), std::invalid_argument);
+
+    std::vector<std::string> ids;
+    for (std::size_t i = 0; i + 1 < observations.size(); ++i)
+        ids.push_back(boost::uuids::to_string(observations[i].id));
+    CHECK(obs_repo.read_latest(h.context(), ids).empty());
+}
+
+TEST_CASE("a_batch_read_of_more_than_one_chunk_returns_every_row", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observation_repository obs_repo;
+    auto observations = generate_synthetic_market_observations(1001, ctx);
+    for (auto& o : observations)
+        o.series_id = s.id;
+    obs_repo.insert(h.context(), observations);
+
+    std::vector<std::string> ids;
+    for (const auto& o : observations)
+        ids.push_back(boost::uuids::to_string(o.id));
+    BOOST_LOG_SEV(lg, info) << "Reading " << ids.size() << " market observations by id.";
+    CHECK(obs_repo.read_latest(h.context(), ids).size() == observations.size());
 }

@@ -1,0 +1,41 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+'
+@startuml
+autonumber
+participant "tick_scheduler" as loop
+participant "run_market" as market
+participant "latent_market" as noise
+participant "the feed" as feed
+participant "its process" as process
+participant "market_board" as values
+participant "NATS" as nats
+
+loop -> loop : fire the series whose mark is reached\n(heat sampled, pace read, mark fixed when the gap was drawn)
+loop -> market : driver source(series, at, out)
+market -> noise : driver(series, from, to, out)
+noise --> market : K standard normals, correlated by loading
+market --> loop : how many it wrote
+loop -> feed : body(tick_context{observed_at, elapsed, simulated, tail_tilt, drivers})
+feed -> process : next_with_normal(driver) or next(elapsed)
+process --> feed : the new price or state
+feed -> values : publish_curve(id, ...) or publish_spot(id, ...)
+feed -> nats : market_tick, and adapter_tick when it has an adapter
+note over values : read on the loop, by id, no lock:\na curve and a spot for the pair, merged into one market
+feed -> nats : one publish per point, as the run always did
+@enduml

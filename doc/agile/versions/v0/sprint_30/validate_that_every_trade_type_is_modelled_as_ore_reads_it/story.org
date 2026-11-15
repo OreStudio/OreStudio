@@ -21,12 +21,12 @@ Every trade type states how well it is modelled as a level we measure, from a co
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The audit task is done: the corpus roundtrip compares content and loses nothing. |
+| Now           | Closed on 2026-11-15 into [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]. The audit task is done: the corpus roundtrip compares content and loses nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Plan the contract per trade type from ORE's reader, and the modelling level each type states. |
-| Last touched  | 2026-11-08 |
+| Next          | Nothing. |
+| Last touched  | 2026-11-15 |
 
 * Acceptance
 
@@ -171,6 +171,16 @@ build checks on top of that honest base.
 - A table check that refuses a valid ORE trade is relaxed to the products
   that state the value, or to the case where it is stated.
 - Reviewed on 2026-11-08 at sprint 30 start. The audit lists this story as ready to close because its one task is done. It is not ready: no level or per-type contract exists in the code. The story needs tasks for those parts.
+
+- Closed on 2026-11-15 into [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which owns how every trade is represented.
+  Suggestions 1 and 2 are done by the audit task. The ORE contract of
+  suggestion 3 and the judgement of suggestion 7 are the ORE engine test, which
+  reads and builds every generated trade and fails on an error of the trade
+  kind. Suggestion 4 is the sample-paths check, whose known list that story
+  empties or justifies. Suggestions 8 and 9 are its catalogue support status and
+  its coverage page, which states each type's measured level. Suggestions 5
+  (property-based roundtrip) and 6 (mutation testing) are its task Prove the
+  trade representation tests catch defects.
 
 * Out of scope
 

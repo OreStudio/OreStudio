@@ -4,15 +4,16 @@
     <TradeType>EquityDoubleBarrierOption</TradeType>
     <EquityDoubleBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2032-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>DownAndOut</Type>
+        <Type>KnockOut</Type>
         <Levels>
           <Level>2355.03</Level>
           <Level>2878.37</Level>
@@ -21,7 +22,7 @@
       <Name>MSFT.O</Name>
       <Currency>USD</Currency>
       <Strike>2616.7</Strike>
-      <Quantity>2962620.02</Quantity>
+      <Quantity>1132.2</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
   <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
@@ -31,12 +32,13 @@
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>DownAndOut</Type>
+        <Type>KnockOut</Type>
         <Levels>
           <Level>1670.56</Level>
           <Level>2041.8</Level>
@@ -45,7 +47,7 @@
       <Name>MSFT.O</Name>
       <Currency>USD</Currency>
       <Strike>1856.18</Strike>
-      <Quantity>8774166.11</Quantity>
+      <Quantity>4727</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
 </Portfolio>

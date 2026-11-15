@@ -230,7 +230,7 @@ struct publish_badge_mappings_from_dq_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_from_dq_command>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"dataset_id", &publish_from_dq_command::dataset_id},
         ::ores::utility::codec::field{"tenant_id", &publish_from_dq_command::tenant_id},
         ::ores::utility::codec::field{"mode", &publish_from_dq_command::mode},
@@ -247,7 +247,7 @@ struct publish_badge_mappings_from_dq_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_from_dq_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &publish_from_dq_result::success},
         ::ores::utility::codec::field{"error_message", &publish_from_dq_result::error_message},
         ::ores::utility::codec::field{"records_inserted",
@@ -267,7 +267,7 @@ struct publish_badge_mappings_from_dq_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_ip2country_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -280,7 +280,7 @@ struct publish_badge_mappings_from_dq_request {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_coding_schemes_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -293,7 +293,7 @@ wire_fields(std::type_identity<publish_coding_schemes_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_badge_severities_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -306,7 +306,7 @@ wire_fields(std::type_identity<publish_badge_severities_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_badge_definitions_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -318,7 +318,7 @@ wire_fields(std::type_identity<publish_badge_definitions_from_dq_request>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_code_domains_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -331,7 +331,7 @@ wire_fields(std::type_identity<publish_badge_definitions_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_badge_mappings_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 }

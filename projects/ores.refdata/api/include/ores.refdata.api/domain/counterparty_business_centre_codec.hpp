@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_business_centre>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &counterparty_business_centre::version},
         utility::codec::field{"tenant_id", &counterparty_business_centre::tenant_id},
         utility::codec::field{"counterparty_id", &counterparty_business_centre::counterparty_id},

@@ -59,7 +59,7 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
                              in.fixing_items,
                              in.policy,
                              in.variance_calibration,
-                             ctx.scheduler,
+                             ctx.market,
                              in.adapter,
                              ctx.clock.get());
 }
@@ -67,18 +67,44 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
 std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
                                                                  const feed_build_input& input) {
     const auto& in = std::get<ir_curve_feed_build_input>(input);
+    std::optional<ir_curve_start> start;
+    if (in.config.price_source == "fixing")
+        start = resolve_ir_start(ctx.auth_nats, in.config, in.policy, ctx.clock.get());
     return make_ir_curve_feed(ctx.nats,
                               in.config,
                               in.entries,
                               in.values,
                               in.definitions,
                               in.refctx,
-                              ctx.scheduler,
-                              in.adapter_targets);
+                              ctx.market,
+                              in.adapter_targets,
+                              std::move(start));
+}
+
+std::shared_ptr<ores::marketdata::domain::i_feed>
+build_fx_vol_surface(const feed_build_context& ctx, const feed_build_input& input) {
+    const auto& in = std::get<fx_vol_surface_feed_build_input>(input);
+    return std::make_shared<fx_vol_surface_feed>(ctx.nats,
+                                                 in.config.source_name,
+                                                 std::string("synthetic.v1.ops.tick.") +
+                                                     in.config.source_name,
+                                                 in,
+                                                 ctx.market.loop().run_seed(),
+                                                 ctx.market,
+                                                 in.config.sensitivity,
+                                                 to_arrival_spec(in.config));
 }
 
 } // namespace
 
+
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::fx_vol_surface_feed& config) {
+    return {.mode = config.arrival_mode,
+            .ticks_per_hour = static_cast<double>(config.ticks_per_hour),
+            .branching_ratio = config.branching_ratio,
+            .decay = config.decay};
+}
 
 ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::fx_spot_generation_config& config) {
@@ -100,6 +126,7 @@ feed_factory make_default_feed_factory() {
     feed_factory factory;
     factory.register_kind(std::string(fx_spot_feed_kind), build_fx_spot);
     factory.register_kind(std::string(ir_curve_feed_kind), build_ir_curve);
+    factory.register_kind(std::string(fx_vol_surface_feed_kind), build_fx_vol_surface);
     return factory;
 }
 

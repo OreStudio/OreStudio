@@ -96,3 +96,24 @@ It is addressed at =storage.v1.objects.list=.
 objects list-objects __none__ __none__
 #+end_src
 
+** =list-archive-entries=
+:PROPERTIES:
+:ID: DC8B3E4C-835D-54D1-BD9A-0DF31EA8F906
+:END:
+
+Sends =list_archive_entries_request= and prints =list_archive_entries_response=, so the shape is the protocol's and the meaning is the service's. It reads =bucket=, =keys=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+objects list-archive-entries <bucket> <keys>
+#+end_example
+
+It is addressed at =storage.v1.ops.list_archive_entries=.
+
+#+name: objects-list-archive-entries
+#+begin_src ores-shell :tangle objects-list-archive-entries.ores :exports none
+objects list-archive-entries __none__ __none__
+#+end_src
+

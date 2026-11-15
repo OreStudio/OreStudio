@@ -32,10 +32,13 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -45,13 +48,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 
-lei_entity_service::lei_entity_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+lei_entity_service::lei_entity_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -71,6 +75,46 @@ std::vector<domain::lei_entity> lei_entity_read_one(repository::lei_entity_repos
     return repo.read_latest(ctx, key.lei);
 }
 
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::lei_entity>>
+lei_entity_read_many(repository::lei_entity_repository& repo,
+                     const ores::database::context& ctx,
+                     const std::vector<messaging::lei_entity_key>& keys) {
+    std::vector<std::vector<domain::lei_entity>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> lei_keys;
+    lei_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        lei_keys.push_back(key.lei);
+    }
+    std::map<key_tuple, std::vector<domain::lei_entity>> by_key;
+    for (auto& row : repo.read_latest(ctx, lei_keys)) {
+        key_tuple named(row.lei);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(key.lei));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
+}
+
 }
 
 messaging::list_lei_entities_response
@@ -82,9 +126,10 @@ lei_entity_service::list_lei_entities(const messaging::list_lei_entities_request
                                  {.entity = "LEI entities", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->lei_one_of && request.filter->lei_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "lei_one_of", .limit = "1000"});
+    if (request.filter && request.filter->lei_one_of &&
+        request.filter->lei_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "lei_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     response.entities =
@@ -108,16 +153,23 @@ lei_entity_service::get_lei_entity(const messaging::get_lei_entity_request& requ
 messaging::get_many_lei_entities_response
 lei_entity_service::get_many_lei_entities(const messaging::get_many_lei_entities_request& request) {
     messaging::get_many_lei_entities_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = lei_entity_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::lei_entity_lookup entry;
-        entry.key = k;
-        auto found = lei_entity_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.lei_entity = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.lei_entity = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

@@ -47,8 +47,8 @@ struct cross_case {
 
 std::string cpp(const Date& d) {
     char out[64];
-    std::snprintf(out, sizeof(out), "%dy / %d / %dd", d.year(), static_cast<int>(d.month()),
-                  d.dayOfMonth());
+    std::snprintf(
+        out, sizeof(out), "%dy / %d / %dd", d.year(), static_cast<int>(d.month()), d.dayOfMonth());
     return out;
 }
 
@@ -66,15 +66,19 @@ int main() {
         {"EUR/JPY", target, japan, Date(29, December, 2026)},
         {"AUD/NZD", australia, new_zealand, Date(22, January, 2027)},
     };
-    const std::vector<std::pair<std::string, Period>> tenors{
-        {"1W", Period(1, Weeks)}, {"1M", Period(1, Months)}, {"3M", Period(3, Months)},
-        {"1Y", Period(1, Years)}};
+    const std::vector<std::pair<std::string, Period>> tenors{{"1W", Period(1, Weeks)},
+                                                             {"1M", Period(1, Months)},
+                                                             {"3M", Period(3, Months)},
+                                                             {"1Y", Period(1, Years)}};
 
     for (const auto& c : cases) {
         const JointCalendar joint(c.first.calendar, c.second.calendar, JoinHolidays);
         const Date window_end = c.as_of + Period(13, Months);
-        std::printf("// %s as of %s, on %s and %s.\n", c.pair.c_str(), cpp(c.as_of).c_str(),
-                    c.first.name.c_str(), c.second.name.c_str());
+        std::printf("// %s as of %s, on %s and %s.\n",
+                    c.pair.c_str(),
+                    cpp(c.as_of).c_str(),
+                    c.first.name.c_str(),
+                    c.second.name.c_str());
         for (const auto* cal : {&c.first, &c.second}) {
             std::printf("//   %s holidays:", cal->name.c_str());
             for (const auto& h : cal->calendar.holidayList(c.as_of, window_end, false))
@@ -82,10 +86,11 @@ int main() {
             std::printf("\n");
         }
         const Date spot = joint.advance(c.as_of, 2, Days);
-        std::printf("//   spot %s, SN %s", cpp(spot).c_str(),
-                    cpp(joint.advance(spot, 1, Days)).c_str());
+        std::printf(
+            "//   spot %s, SN %s", cpp(spot).c_str(), cpp(joint.advance(spot, 1, Days)).c_str());
         for (const auto& [id, p] : tenors)
-            std::printf(", %s %s", id.c_str(),
+            std::printf(", %s %s",
+                        id.c_str(),
                         cpp(joint.advance(spot, p, ModifiedFollowing, false)).c_str());
         std::printf("\n");
     }

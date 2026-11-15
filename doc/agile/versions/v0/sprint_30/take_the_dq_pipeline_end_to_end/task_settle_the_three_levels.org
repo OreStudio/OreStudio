@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53
+:END:
+#+title: Task: Settle the three levels and the bundle map
+#+description: One documented level model, one bundle per level, and no name that means two opposite things.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/settle-the-three-levels
+#+pr: 4719
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader can say which level a dataset belongs to and which bundle publishes it, and no bundle name is ambiguous.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+**Documentation first.** No implementation starts until these documents answer
+every question below.
+
+- One knowledge page paints the whole publishing architecture in one picture:
+  every level, every artefact table, every dataset, every bundle, and what
+  publishes what into which tenant. It replaces the four partial answers, and
+  the pages it supersedes link to it rather than restating it.
+- The page carries UML for the parts a table cannot show, as =*.puml= beside it
+  in =doc/knowledge/=:
+  - a component diagram of the publish path from request to published row;
+  - a diagram of the levels, showing which tables each level writes and which
+    readers look at each;
+  - a sequence diagram for one bundle publish, including the dependency order.
+- The page states, in their own sections:
+  - *Provenance* — for a published row, the dataset and artefact row it came
+    from, and how a person finds that chain.
+  - *Methodology* — how a dataset is staged, declared, bundled and published,
+    as the canonical sequence an author follows.
+  - *Reproducibility* — what a blank database produces, what a recreate
+    reproduces, what depends on the outside world, and how an operator proves a
+    database matches its datasets.
+- Every question the investigation left open is answered on the page:
+  1. Which levels exist, what each is named, and what each holds?
+  2. Which bundle publishes which datasets, into which tenant, once or per
+     tenant?
+  3. How does a reader see world data without a second copy, given row-level
+     security?
+  4. Where do the coded vocabularies and catalogues live, and who owns them?
+  5. What is the single canonical way to add a dataset, end to end?
+  6. What is legacy, and what retires it?
+  7. What does a recreated database contain, and what must an operator run?
+- The page is reviewed and signed off before task 2 starts.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Bundles that name a system-level publication | 0 (no bundle carries calendars, currencies, commodities or equity) | investigation, section 3.4 | e050a2d239 |
+
+* Notes
+
+The page is the deliverable of this task, not a by-product. The investigation
+showed the four existing documents each answer a part and disagree at the seams;
+a fifth partial page would repeat the defect, so this one has to be the single
+picture the others point at.
+
+Answers requirement 4, and unblocks every task below it. Defect D3.
+
+See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4719][#4719]] | [agile] Make the DQ documentation the first deliverable |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

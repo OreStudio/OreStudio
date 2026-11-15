@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 5B08227F-0D91-4FE8-BC47-D004201F19D7
+:END:
+#+title: The ORE index catalogue is stale against its own tool
+#+description: Running external/ore/tools/datum_catalogue/regenerate.sh at the catalogue's own ORE commit (3d75a6908) rewrites index_forms.jsonl (26 lines) and index_corpus.jsonl (104 lines): index_catalogue.cpp now prints settlementDays, fixingCalendar, dayCounter, convention and endOfMonth, which the committed files lack. The committed catalogue was not regenerated when the tool gained those fields.
+#+type: capture
+#+level: cross
+#+filetags: :ore:marketdata:catalogue:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerate the index catalogue from its tool and commit it, so that
+=index_forms.jsonl= and =index_corpus.jsonl= state every field
+=index_catalogue.cpp= prints. Then add a check that a regeneration at the
+catalogue's ORE commit leaves the committed files unchanged.
+
+* Why
+
+The README promises that the =.jsonl= files regenerate byte for byte from the
+same ORE commit. They do not: a run of =regenerate.sh= at =3d75a6908= adds
+=settlementDays=, =fixingCalendar=, =dayCounter=, =convention= and
+=endOfMonth= to every accepted index, 65 lines across the two files. Anything
+that reads those fields from the committed catalogue finds none. Found while
+proving the trade type catalogue's regeneration end to end in
+[[id:E711D36E-ACFE-47D6-BB17-5896F7E8A893][Reconcile the catalogue with the engine]].
+
+* References
+
+- =external/ore/tools/datum_catalogue/index_catalogue.cpp=
+- =external/ore/catalogue/README.md=
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]

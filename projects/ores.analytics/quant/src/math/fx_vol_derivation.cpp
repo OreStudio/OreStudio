@@ -18,8 +18,12 @@
  */
 #include "ores.analytics.quant/math/fx_vol_derivation.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <format>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::analytics::quant::math {
 
@@ -72,6 +76,100 @@ derive_fx_quotes(std::span<const double> daily_log_returns,
             .label = expiry.label, .quotes = *quotes, .smile = smile, .window = window});
     }
     return out;
+}
+
+std::expected<void, std::string> derive_grid(std::span<const double> returns,
+                                             std::span<const fx_expiry> expiries,
+                                             const fx_derivation_settings& settings,
+                                             std::span<fx_derived_cell> out) {
+    if (!(settings.trading_days_per_year > 0.0) || !std::isfinite(settings.trading_days_per_year))
+        return std::unexpected("the trading days in a year must be positive and finite");
+    if (out.size() != returns.size() * expiries.size())
+        return std::unexpected(
+            std::format("the grid holds {} cell(s) for {} day(s) and {} expiry(ies)",
+                        out.size(),
+                        returns.size(),
+                        expiries.size()));
+    std::ranges::fill(out, fx_derived_cell{});
+
+    // What each expiry asks of a day: how many returns its level is read over, and whether it
+    // can be quoted at all.
+    struct window final {
+        std::size_t returns;
+        double days;
+        bool usable;
+    };
+    std::vector<window> windows;
+    windows.reserve(expiries.size());
+    for (const auto& expiry : expiries) {
+        const auto days = expiry.years * settings.trading_days_per_year;
+        const auto count = std::max(settings.minimum_window, static_cast<int>(std::lround(days)));
+        windows.push_back({.returns = static_cast<std::size_t>(std::max(count, 2)),
+                           .days = days,
+                           .usable = expiry.years > 0.0 && expiry.years <= maximum_years});
+    }
+
+    // Prefix sums of the returns and of their second, third and fourth powers: one pass, and
+    // then any range's moments are a subtraction.
+    const auto n = returns.size();
+    std::vector<std::array<double, 4>> prefix(n + 1, {0.0, 0.0, 0.0, 0.0});
+    for (std::size_t i = 0; i < n; ++i) {
+        const double x = returns[i];
+        const double x2 = x * x;
+        prefix[i + 1] = {
+            prefix[i][0] + x, prefix[i][1] + x2, prefix[i][2] + x2 * x, prefix[i][3] + x2 * x2};
+    }
+
+    // The moments of the returns in [from, to), or nothing where they carry no spread -- the
+    // same refusal moments_of makes.
+    const auto moments_between = [&](std::size_t from,
+                                     std::size_t to) -> std::optional<return_moments> {
+        const auto count = static_cast<double>(to - from);
+        if (count < 4.0)
+            return std::nullopt;
+        const double s1 = prefix[to][0] - prefix[from][0];
+        const double s2 = prefix[to][1] - prefix[from][1];
+        const double s3 = prefix[to][2] - prefix[from][2];
+        const double s4 = prefix[to][3] - prefix[from][3];
+        const double mean = s1 / count;
+        const double m2 = s2 / count - mean * mean;
+        if (!std::isfinite(m2) || !(m2 > 1e-30 + 1e-24 * mean * mean))
+            return std::nullopt;
+        const double m3 = s3 / count - 3.0 * mean * s2 / count + 2.0 * mean * mean * mean;
+        const double m4 = s4 / count - 4.0 * mean * s3 / count + 6.0 * mean * mean * s2 / count -
+                          3.0 * mean * mean * mean * mean;
+        return return_moments{.count = static_cast<int>(count),
+                              .mean = mean,
+                              .stdev = std::sqrt(m2 * count / (count - 1.0)),
+                              .skewness = m3 / (m2 * std::sqrt(m2)),
+                              .excess_kurtosis = m4 / (m2 * m2) - 3.0};
+    };
+
+    for (std::size_t count = 1; count <= n; ++count) {
+        const auto sample = moments_between(0, count);
+        if (!sample)
+            continue;
+        const auto shape = shrink(*sample, settings.prior);
+        const double root = std::sqrt(settings.trading_days_per_year);
+        for (std::size_t e = 0; e < expiries.size(); ++e) {
+            if (!windows[e].usable || windows[e].returns > count)
+                continue;
+            const auto level = moments_between(count - windows[e].returns, count);
+            if (!level)
+                continue;
+            const auto held = hold_in_gram_charlier_region(over_days(shape, windows[e].days));
+            const gram_charlier_smile smile{.sigma =
+                                                level->stdev * root * settings.level_multiplier,
+                                            .skewness = held.skewness,
+                                            .excess_kurtosis = held.excess_kurtosis,
+                                            .years = expiries[e].years};
+            const auto quotes = quote_smile(smile, expiries[e].market, expiries[e].convention);
+            if (!quotes)
+                continue;
+            out[(count - 1) * expiries.size() + e] = {.quotes = *quotes, .quoted = true};
+        }
+    }
+    return {};
 }
 
 }

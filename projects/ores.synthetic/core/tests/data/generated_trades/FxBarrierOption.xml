@@ -6,22 +6,23 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2032-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>KnockOut</Type>
+        <Type>UpAndOut</Type>
         <Levels>
-          <Level>0.9202</Level>
           <Level>1.1246</Level>
         </Levels>
       </BarrierData>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>3028982.71</BoughtAmount>
+      <BoughtAmount>2962620.02</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>2962620.02</SoldAmount>
+      <SoldAmount>3028982.71</SoldAmount>
     </FxBarrierOptionData>
   </Trade>
   <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
@@ -30,22 +31,23 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>KnockOut</Type>
+        <Type>UpAndOut</Type>
         <Levels>
-          <Level>0.783</Level>
           <Level>0.957</Level>
         </Levels>
       </BarrierData>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>7633524.52</BoughtAmount>
+      <BoughtAmount>8774166.11</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>8774166.11</SoldAmount>
+      <SoldAmount>7633524.52</SoldAmount>
     </FxBarrierOptionData>
   </Trade>
 </Portfolio>

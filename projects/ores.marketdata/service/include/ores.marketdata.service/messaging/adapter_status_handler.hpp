@@ -54,15 +54,15 @@ class adapter_status_handler {
 public:
     adapter_status_handler(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier,
         std::shared_ptr<ores::marketdata::service::app::adapter_supervisor> supervisor,
         std::shared_ptr<ores::marketdata::service::app::feed_ingest_loop> ingest = nullptr)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
-        , supervisor_(std::move(supervisor))
-        , ingest_(std::move(ingest)) {}
+        , ctx_(ctx)
+        , verifier_(verifier)
+        , supervisor_(supervisor)
+        , ingest_(ingest) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =

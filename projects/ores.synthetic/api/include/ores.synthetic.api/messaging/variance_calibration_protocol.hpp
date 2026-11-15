@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &variance_calibration_key::id},
     };
 }
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &variance_calibration_write::id},
         utility::codec::field{"base_currency_code",
                               &variance_calibration_write::base_currency_code},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &variance_calibration_change::write},
         utility::codec::field{"precondition", &variance_calibration_change::precondition},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &variance_calibration_removal::key},
         utility::codec::field{"precondition", &variance_calibration_removal::precondition},
     };
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &variance_calibration_lookup::key},
         utility::codec::field{"variance_calibration",
                               &variance_calibration_lookup::variance_calibration},
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibrations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"base_currency_code",
                               &variance_calibrations_filter::base_currency_code},
         utility::codec::field{"quote_currency_code",
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &variance_calibration_event::event_id},
         utility::codec::field{"key", &variance_calibration_event::key},
         utility::codec::field{"action", &variance_calibration_event::action},
@@ -537,7 +537,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"variance_calibration",
                               &variance_calibration_version_key::variance_calibration},
         utility::codec::field{"version", &variance_calibration_version_key::version},
@@ -553,7 +553,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &variance_calibration_versions_filter::version},
         utility::codec::field{"from_version", &variance_calibration_versions_filter::from_version},
         utility::codec::field{"to_version", &variance_calibration_versions_filter::to_version},
@@ -569,7 +569,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_variance_calibrations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_variance_calibrations_request::offset},
         utility::codec::field{"limit", &list_variance_calibrations_request::limit},
         utility::codec::field{"order", &list_variance_calibrations_request::order},
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_variance_calibrations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_variance_calibrations_response::result},
         utility::codec::field{"variance_calibrations",
                               &list_variance_calibrations_response::variance_calibrations},
@@ -604,7 +604,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_variance_calibration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_variance_calibration_request::key},
     };
 }
@@ -618,7 +618,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_variance_calibration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_variance_calibration_response::result},
         utility::codec::field{"variance_calibration",
                               &get_variance_calibration_response::variance_calibration},
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.variance_calibr
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_variance_calibrations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_variance_calibrations_request::keys},
     };
 }
@@ -650,7 +650,7 @@ wire_fields(std::type_identity<get_many_variance_calibrations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_variance_calibrations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_variance_calibrations_response::result},
         utility::codec::field{"entries", &get_many_variance_calibrations_response::entries},
     };
@@ -665,7 +665,7 @@ wire_fields(std::type_identity<get_many_variance_calibrations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_variance_calibration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_variance_calibration_request::change},
         utility::codec::field{"intent", &put_variance_calibration_request::intent},
     };
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<get_many_variance_calibrations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_variance_calibration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_variance_calibration_response::result},
         utility::codec::field{"variance_calibration",
                               &put_variance_calibration_response::variance_calibration},
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<get_many_variance_calibrations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_variance_calibrations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_variance_calibrations_request::changes},
         utility::codec::field{"intent", &put_many_variance_calibrations_request::intent},
     };
@@ -713,7 +713,7 @@ wire_fields(std::type_identity<put_many_variance_calibrations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_variance_calibrations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_variance_calibrations_response::result},
         utility::codec::field{"variance_calibrations",
                               &put_many_variance_calibrations_response::variance_calibrations},
@@ -729,7 +729,7 @@ wire_fields(std::type_identity<put_many_variance_calibrations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_variance_calibration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_variance_calibration_request::removal},
         utility::codec::field{"intent", &delete_variance_calibration_request::intent},
     };
@@ -744,7 +744,7 @@ wire_fields(std::type_identity<put_many_variance_calibrations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_variance_calibration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_variance_calibration_response::result},
     };
 }
@@ -759,7 +759,7 @@ wire_fields(std::type_identity<put_many_variance_calibrations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_variance_calibrations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_variance_calibrations_request::removals},
         utility::codec::field{"intent", &delete_many_variance_calibrations_request::intent},
     };
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<delete_many_variance_calibrations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_variance_calibrations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_variance_calibrations_response::result},
     };
 }
@@ -790,7 +790,7 @@ wire_fields(std::type_identity<delete_many_variance_calibrations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_variance_calibration_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_variance_calibration_versions_request::key},
         utility::codec::field{"offset", &list_variance_calibration_versions_request::offset},
         utility::codec::field{"limit", &list_variance_calibration_versions_request::limit},
@@ -809,7 +809,7 @@ wire_fields(std::type_identity<list_variance_calibration_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_variance_calibration_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_variance_calibration_versions_response::result},
         utility::codec::field{"versions", &list_variance_calibration_versions_response::versions},
         utility::codec::field{"total", &list_variance_calibration_versions_response::total},
@@ -826,7 +826,7 @@ wire_fields(std::type_identity<list_variance_calibration_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_variance_calibration_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_variance_calibration_version_request::key},
     };
 }
@@ -841,7 +841,7 @@ wire_fields(std::type_identity<get_variance_calibration_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_variance_calibration_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_variance_calibration_version_response::result},
         utility::codec::field{"version", &get_variance_calibration_version_response::version},
     };

@@ -69,7 +69,7 @@ struct options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"connection", &options::connection},
         ::ores::utility::codec::field{"login", &options::login},

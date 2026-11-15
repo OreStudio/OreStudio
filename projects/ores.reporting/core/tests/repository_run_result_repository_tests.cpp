@@ -24,6 +24,7 @@
 #include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>

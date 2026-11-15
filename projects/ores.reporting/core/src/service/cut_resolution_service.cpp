@@ -53,8 +53,8 @@ covered_year_window(const std::chrono::system_clock::time_point& covered_date) {
 
 }
 
-cut_resolution_service::cut_resolution_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cut_resolution_service::cut_resolution_service(const context& ctx)
+    : ctx_(ctx) {}
 
 cut_resolution cut_resolution_service::preview(const cut_selection& selection,
                                                const cut_resolution_context& ctx) {

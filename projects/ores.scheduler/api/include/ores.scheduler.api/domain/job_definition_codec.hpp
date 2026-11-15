@@ -47,7 +47,7 @@ namespace ores::scheduler::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &job_definition::version},
         utility::codec::field{"tenant_id", &job_definition::tenant_id},
         utility::codec::field{"id", &job_definition::id},

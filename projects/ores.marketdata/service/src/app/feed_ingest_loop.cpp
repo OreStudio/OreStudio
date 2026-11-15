@@ -83,14 +83,14 @@ struct feed_ingest_loop::prepared_batch {
 };
 
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
-                                   ores::database::context ctx,
+                                   const ores::database::context& ctx,
                                    std::shared_ptr<crm_ingest_bridge> crm_bridge,
                                    std::shared_ptr<tick_writer> tick_writer,
                                    bool pipelined)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , crm_bridge_(std::move(crm_bridge))
-    , tick_writer_(std::move(tick_writer))
+    , ctx_(ctx)
+    , crm_bridge_(crm_bridge)
+    , tick_writer_(tick_writer)
     , pipelined_(pipelined)
     , handoff_(1)
     , announce_handoff_(1)
@@ -359,9 +359,9 @@ void feed_ingest_loop::worker_loop() {
         // A tick that has aged out is dropped and not worked through, so the worker
         // that has fallen behind reaches the newest ticks at once.
         const auto ages = translator();
-        const auto stale =
-            erase_stale(batch, std::chrono::system_clock::now(),
-                        [&](const auto& t) { return ages->max_quote_age(t.source); });
+        const auto stale = erase_stale(batch, std::chrono::system_clock::now(), [&](const auto& t) {
+            return ages->max_quote_age(t.source);
+        });
         if (stale > 0) {
             stale_dropped_.fetch_add(stale, std::memory_order_relaxed);
             const auto now = std::chrono::steady_clock::now();

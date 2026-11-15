@@ -35,6 +35,21 @@
       "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.17.0-x64-linux.diff-report.txt in this directory. That report is identical to the 1.8.16.0 one, line for line apart from the paths and the version: same 240x4 curves.csv and 60x25 flows.csv and 1x13 npv.csv, and the same four report columns the engine emits beyond the reference (EffectiveFloorVolatility, EffectiveCapVolatility, Amount(Base), DiscountFactor(Base)). So the two engines agree on the sample within rtol=1e-6, and the column difference is pre-existing, not introduced by v17."
     },
     {
+      "file": "ore-1.8.17.0-intraday-x64-linux.tar.gz",
+      "engine_version": "1.8.17.0-intraday",
+      "engine_commit": "03dd0536c0b49f5571dd246774a5a45876f61380",
+      "engine_commit_date": "2026-11-11T22:06:53Z",
+      "engine_branch": "feature/intraday-dates on git@github.com:OreStudio/Engine.git",
+      "version_note": "Not a git describe string. The version was set with package_ore.sh --version 1.8.17.0-intraday, so the intraday engine sits beside the regular 1.8.17.0 package under its own name. Later commits on the branch after this one changed only documentation and examples, so this package still matches the branch's C++.",
+      "built_at": "2026-11-11T22:12:00Z",
+      "built_with": "clang++ (linux-clang-ninja-release CMake preset with QL_HIGH_RESOLUTION_DATE=ON, build dir build/linux-clang-ninja-release-intraday), Boost 1.92.0, self-contained (bundles libOREAnalytics/libOREData/libQuantExt/libQuantLib.so.1 plus every non-glibc runtime dependency under lib/, RPATH=$ORIGIN/lib)",
+      "purpose": "Intraday engine for same day options: QuantLib dates carry a time of day, so options expiring on the valuation date price and produce sensitivities up to their cut. Accepts the same trade XML as the regular engine; the expiry cut travels in Envelope/AdditionalFields/ExpiryCutTime, which the regular engine ignores.",
+      "sha256": "0aec8ade8ed56efab847f21e66a5624ddb7251aa18a2f7dd52de54a120d0d44a",
+      "size_bytes": 58937588,
+      "built_by": "external/ore/tools/package_ore.sh",
+      "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.17.0-intraday-x64-linux.diff-report.txt in this directory. Same result as the regular 1.8.17.0 package: 240x4 curves.csv, 60x25 flows.csv and 1x13 npv.csv within rtol=1e-6, with the same four pre-existing extra flows.csv columns. The packaged binary also ran the Engine's Examples/IntradayOptions examples outside the build tree."
+    },
+    {
       "file": "ore-1.8.17.0-x64-windows.tar.gz",
       "platform": "x64-windows",
       "engine_version": "1.8.17.0",

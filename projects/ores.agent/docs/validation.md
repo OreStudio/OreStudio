@@ -29,8 +29,8 @@ server contract. Installed-release and model results below remain historical.
 
 ## Current backend contract
 
-2026-11-09: checked upstream `f19210e781dd508c1019f499a74ecd40d59912e3`.
-All 23 operation subjects, strict C++ MessagePack request readers and response
+2026-11-15: checked upstream `26f6bef7c08332aa13452616f5de4ea07bb769b2`.
+All 37 operation subjects, strict C++ MessagePack request readers and response
 writers pass. All 45 contract cases pass through the real NATS adapter and
 current C++ codecs. The probe records its source fingerprint.
 

@@ -47,7 +47,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_instrument>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"identity", &commodity_instrument::identity},
         utility::codec::field{"commodity_code", &commodity_instrument::commodity_code},
         utility::codec::field{"currency", &commodity_instrument::currency},
@@ -86,6 +86,23 @@ namespace ores::trading::domain {
         utility::codec::field{"future_month_offset", &commodity_instrument::future_month_offset},
         utility::codec::field{"include_period_end", &commodity_instrument::include_period_end},
         utility::codec::field{"position", &commodity_instrument::position},
+        utility::codec::field{"delivery_date", &commodity_instrument::delivery_date},
+        utility::codec::field{"delivery_start", &commodity_instrument::delivery_start},
+        utility::codec::field{"delivery_end", &commodity_instrument::delivery_end},
+        utility::codec::field{"fva_date", &commodity_instrument::fva_date},
+        utility::codec::field{"premium_date", &commodity_instrument::premium_date},
+        utility::codec::field{"settlement_date", &commodity_instrument::settlement_date},
+        utility::codec::field{"implied_vol_strike", &commodity_instrument::implied_vol_strike},
+        utility::codec::field{"reset_strike", &commodity_instrument::reset_strike},
+        utility::codec::field{"trigger_type", &commodity_instrument::trigger_type},
+        utility::codec::field{"trigger_price", &commodity_instrument::trigger_price},
+        utility::codec::field{"premium_amount", &commodity_instrument::premium_amount},
+        utility::codec::field{"target_amount", &commodity_instrument::target_amount},
+        utility::codec::field{"multiplier", &commodity_instrument::multiplier},
+        utility::codec::field{"cap", &commodity_instrument::cap},
+        utility::codec::field{"trigger_level", &commodity_instrument::trigger_level},
+        utility::codec::field{"reset_minimum", &commodity_instrument::reset_minimum},
+        utility::codec::field{"strike_date", &commodity_instrument::strike_date},
         utility::codec::field{"description", &commodity_instrument::description},
         utility::codec::field{"audit", &commodity_instrument::audit},
     };

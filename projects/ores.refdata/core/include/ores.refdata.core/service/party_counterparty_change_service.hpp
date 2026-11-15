@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit party_counterparty_change_service(context ctx);
+    explicit party_counterparty_change_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

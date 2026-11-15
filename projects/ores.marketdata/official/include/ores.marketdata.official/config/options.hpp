@@ -78,6 +78,32 @@ struct options final {
      */
     std::string riksbank_url;
     /**
+     * @brief The address of the RBA's site, which serves its statistical tables.
+     */
+    std::string rba_url;
+    /**
+     * @brief The address of the Banco Central do Brasil's API site, which serves its SGS API.
+     */
+    std::string bcb_url;
+    /**
+     * @brief The address of Banco de Mexico's site, which serves its SIE API.
+     */
+    std::string banxico_url;
+    /**
+     * @brief The address of the Banco Central de Chile's statistical site, which serves its BDE web
+     * service.
+     */
+    std::string bcch_url;
+    /**
+     * @brief The address of the Czech National Bank's site, which serves its yearly CZEONIA files.
+     */
+    std::string cnb_url;
+    /**
+     * @brief The address of the Monetary Authority of Singapore's statistics site, which serves its
+     * domestic interest rates.
+     */
+    std::string mas_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -92,7 +118,7 @@ struct options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},
         ::ores::utility::codec::field{"frankfurter_url", &options::frankfurter_url},
@@ -103,6 +129,12 @@ struct options final {
         ::ores::utility::codec::field{"boj_url", &options::boj_url},
         ::ores::utility::codec::field{"norges_bank_url", &options::norges_bank_url},
         ::ores::utility::codec::field{"riksbank_url", &options::riksbank_url},
+        ::ores::utility::codec::field{"rba_url", &options::rba_url},
+        ::ores::utility::codec::field{"bcb_url", &options::bcb_url},
+        ::ores::utility::codec::field{"banxico_url", &options::banxico_url},
+        ::ores::utility::codec::field{"bcch_url", &options::bcch_url},
+        ::ores::utility::codec::field{"cnb_url", &options::cnb_url},
+        ::ores::utility::codec::field{"mas_url", &options::mas_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

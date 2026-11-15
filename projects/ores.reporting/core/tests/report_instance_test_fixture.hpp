@@ -49,7 +49,7 @@ namespace ores::reporting::tests {
  * @return The trigger that was written.
  */
 ores::reporting::domain::report_trigger_event
-write_trigger_for(ores::database::context ctx,
+write_trigger_for(const ores::database::context& ctx,
                   ores::utility::generation::generation_context& gen,
                   const ores::reporting::domain::report_instance& instance);
 

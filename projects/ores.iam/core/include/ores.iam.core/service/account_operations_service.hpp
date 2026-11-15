@@ -107,7 +107,7 @@ public:
      * @param account_repo The repository for managing account data.
      * @param login_info_repo The repository for managing login tracking data.
      */
-    explicit account_operations_service(database::context ctx);
+    explicit account_operations_service(const database::context& ctx);
 
     /**
      * @brief Creates a new account with the provided details.

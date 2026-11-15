@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-image_tag_service::image_tag_service(context ctx)
-    : ctx_(std::move(ctx))
+image_tag_service::image_tag_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

@@ -26,6 +26,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_ADAPTER_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_protocol.hpp"
 #include "ores.marketdata.core/service/adapter_service.hpp"
@@ -56,16 +57,17 @@ using namespace ores::logging;
  * @brief NATS message handler for adapter operations.
  *
  * Adapters are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class adapter_handler {
 public:
     adapter_handler(ores::nats::service::client& nats,
-                    ores::database::context ctx,
+                    const ores::database::context& ctx,
                     std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves marketdata.v1.adapters.list.

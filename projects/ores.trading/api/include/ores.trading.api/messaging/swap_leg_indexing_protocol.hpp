@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &swap_leg_indexing_key::trade_id},
         utility::codec::field{"leg_number", &swap_leg_indexing_key::leg_number},
         utility::codec::field{"sequence_number", &swap_leg_indexing_key::sequence_number},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &swap_leg_indexing_write::trade_id},
         utility::codec::field{"leg_number", &swap_leg_indexing_write::leg_number},
         utility::codec::field{"sequence_number", &swap_leg_indexing_write::sequence_number},
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &swap_leg_indexing_change::write},
         utility::codec::field{"precondition", &swap_leg_indexing_change::precondition},
     };
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &swap_leg_indexing_removal::key},
         utility::codec::field{"precondition", &swap_leg_indexing_removal::precondition},
     };
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &swap_leg_indexing_lookup::key},
         utility::codec::field{"swap_leg_indexing", &swap_leg_indexing_lookup::swap_leg_indexing},
     };
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexings_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &swap_leg_indexings_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &swap_leg_indexings_filter::trade_id_one_of},
     };
@@ -509,7 +509,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &swap_leg_indexing_event::event_id},
         utility::codec::field{"key", &swap_leg_indexing_event::key},
         utility::codec::field{"action", &swap_leg_indexing_event::action},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"swap_leg_indexing",
                               &swap_leg_indexing_version_key::swap_leg_indexing},
         utility::codec::field{"version", &swap_leg_indexing_version_key::version},
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_indexing_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &swap_leg_indexing_versions_filter::version},
         utility::codec::field{"from_version", &swap_leg_indexing_versions_filter::from_version},
         utility::codec::field{"to_version", &swap_leg_indexing_versions_filter::to_version},
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_swap_leg_indexings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_swap_leg_indexings_request::offset},
         utility::codec::field{"limit", &list_swap_leg_indexings_request::limit},
         utility::codec::field{"order", &list_swap_leg_indexings_request::order},
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_swap_leg_indexings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_swap_leg_indexings_response::result},
         utility::codec::field{"swap_leg_indexings",
                               &list_swap_leg_indexings_response::swap_leg_indexings},
@@ -595,7 +595,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_swap_leg_indexing_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_swap_leg_indexing_request::key},
     };
 }
@@ -609,7 +609,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_swap_leg_indexing_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_swap_leg_indexing_response::result},
         utility::codec::field{"swap_leg_indexing",
                               &get_swap_leg_indexing_response::swap_leg_indexing},
@@ -625,7 +625,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_swap_leg_indexings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_swap_leg_indexings_request::keys},
     };
 }
@@ -639,7 +639,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_swap_leg_indexings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_swap_leg_indexings_response::result},
         utility::codec::field{"entries", &get_many_swap_leg_indexings_response::entries},
     };
@@ -654,7 +654,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_swap_leg_indexing_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_swap_leg_indexing_request::change},
         utility::codec::field{"intent", &put_swap_leg_indexing_request::intent},
     };
@@ -669,7 +669,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_swap_leg_indexing_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_swap_leg_indexing_response::result},
         utility::codec::field{"swap_leg_indexing",
                               &put_swap_leg_indexing_response::swap_leg_indexing},
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_swap_leg_indexings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_swap_leg_indexings_request::changes},
         utility::codec::field{"intent", &put_many_swap_leg_indexings_request::intent},
     };
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_swap_leg_indexings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_swap_leg_indexings_response::result},
         utility::codec::field{"swap_leg_indexings",
                               &put_many_swap_leg_indexings_response::swap_leg_indexings},
@@ -716,7 +716,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_swap_leg_indexing_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_swap_leg_indexing_request::removal},
         utility::codec::field{"intent", &delete_swap_leg_indexing_request::intent},
     };
@@ -731,7 +731,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_swap_leg_indexing_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_swap_leg_indexing_response::result},
     };
 }
@@ -746,7 +746,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_leg_indexing
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_swap_leg_indexings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_swap_leg_indexings_request::removals},
         utility::codec::field{"intent", &delete_many_swap_leg_indexings_request::intent},
     };
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<delete_many_swap_leg_indexings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_swap_leg_indexings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_swap_leg_indexings_response::result},
     };
 }
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<delete_many_swap_leg_indexings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_swap_leg_indexings_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &list_by_trade_id_swap_leg_indexings_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_swap_leg_indexings_request::scope},
         utility::codec::field{"offset", &list_by_trade_id_swap_leg_indexings_request::offset},
@@ -797,7 +797,7 @@ wire_fields(std::type_identity<list_by_trade_id_swap_leg_indexings_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_swap_leg_indexings_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_swap_leg_indexings_response::result},
         utility::codec::field{"swap_leg_indexings",
                               &list_by_trade_id_swap_leg_indexings_response::swap_leg_indexings},
@@ -815,7 +815,7 @@ wire_fields(std::type_identity<list_by_trade_id_swap_leg_indexings_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swap_leg_indexing_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_swap_leg_indexing_versions_request::key},
         utility::codec::field{"offset", &list_swap_leg_indexing_versions_request::offset},
         utility::codec::field{"limit", &list_swap_leg_indexing_versions_request::limit},
@@ -834,7 +834,7 @@ wire_fields(std::type_identity<list_swap_leg_indexing_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swap_leg_indexing_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_swap_leg_indexing_versions_response::result},
         utility::codec::field{"versions", &list_swap_leg_indexing_versions_response::versions},
         utility::codec::field{"total", &list_swap_leg_indexing_versions_response::total},
@@ -851,7 +851,7 @@ wire_fields(std::type_identity<list_swap_leg_indexing_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swap_leg_indexing_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_swap_leg_indexing_version_request::key},
     };
 }
@@ -866,7 +866,7 @@ wire_fields(std::type_identity<get_swap_leg_indexing_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swap_leg_indexing_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_swap_leg_indexing_version_response::result},
         utility::codec::field{"version", &get_swap_leg_indexing_version_response::version},
     };

@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-notification_argument_service::notification_argument_service(context ctx)
-    : ctx_(std::move(ctx))
+notification_argument_service::notification_argument_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

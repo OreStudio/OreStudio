@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &range_bound_key::trade_id},
         utility::codec::field{"sequence_number", &range_bound_key::sequence_number},
     };
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &range_bound_write::trade_id},
         utility::codec::field{"sequence_number", &range_bound_write::sequence_number},
         utility::codec::field{"trade_activity_id", &range_bound_write::trade_activity_id},
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &range_bound_change::write},
         utility::codec::field{"precondition", &range_bound_change::precondition},
     };
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &range_bound_removal::key},
         utility::codec::field{"precondition", &range_bound_removal::precondition},
     };
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &range_bound_lookup::key},
         utility::codec::field{"range_bound", &range_bound_lookup::range_bound},
     };
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bounds_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &range_bounds_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &range_bounds_filter::trade_id_one_of},
     };
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &range_bound_event::event_id},
         utility::codec::field{"key", &range_bound_event::key},
         utility::codec::field{"action", &range_bound_event::action},
@@ -515,7 +515,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"range_bound", &range_bound_version_key::range_bound},
         utility::codec::field{"version", &range_bound_version_key::version},
     };
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<range_bound_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &range_bound_versions_filter::version},
         utility::codec::field{"from_version", &range_bound_versions_filter::from_version},
         utility::codec::field{"to_version", &range_bound_versions_filter::to_version},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_range_bounds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_range_bounds_request::offset},
         utility::codec::field{"limit", &list_range_bounds_request::limit},
         utility::codec::field{"order", &list_range_bounds_request::order},
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_range_bounds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_range_bounds_response::result},
         utility::codec::field{"range_bounds", &list_range_bounds_response::range_bounds},
         utility::codec::field{"total", &list_range_bounds_response::total},
@@ -580,7 +580,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_range_bound_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_range_bound_request::key},
     };
 }
@@ -594,7 +594,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_range_bound_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_range_bound_response::result},
         utility::codec::field{"range_bound", &get_range_bound_response::range_bound},
     };
@@ -609,7 +609,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_range_bounds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_range_bounds_request::keys},
     };
 }
@@ -623,7 +623,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_range_bounds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_range_bounds_response::result},
         utility::codec::field{"entries", &get_many_range_bounds_response::entries},
     };
@@ -638,7 +638,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_range_bound_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_range_bound_request::change},
         utility::codec::field{"intent", &put_range_bound_request::intent},
     };
@@ -653,7 +653,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_range_bound_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_range_bound_response::result},
         utility::codec::field{"range_bound", &put_range_bound_response::range_bound},
     };
@@ -668,7 +668,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_range_bounds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_range_bounds_request::changes},
         utility::codec::field{"intent", &put_many_range_bounds_request::intent},
     };
@@ -683,7 +683,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_range_bounds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_range_bounds_response::result},
         utility::codec::field{"range_bounds", &put_many_range_bounds_response::range_bounds},
     };
@@ -698,7 +698,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_range_bound_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_range_bound_request::removal},
         utility::codec::field{"intent", &delete_range_bound_request::intent},
     };
@@ -713,7 +713,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_range_bound_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_range_bound_response::result},
     };
 }
@@ -727,7 +727,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_range_bounds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_range_bounds_request::removals},
         utility::codec::field{"intent", &delete_many_range_bounds_request::intent},
     };
@@ -742,7 +742,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_range_bounds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_range_bounds_response::result},
     };
 }
@@ -757,7 +757,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.range_bounds.dele
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_range_bounds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &list_by_trade_id_range_bounds_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_range_bounds_request::scope},
         utility::codec::field{"offset", &list_by_trade_id_range_bounds_request::offset},
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<list_by_trade_id_range_bounds_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_range_bounds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_range_bounds_response::result},
         utility::codec::field{"range_bounds",
                               &list_by_trade_id_range_bounds_response::range_bounds},
@@ -794,7 +794,7 @@ wire_fields(std::type_identity<list_by_trade_id_range_bounds_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_range_bound_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_range_bound_versions_request::key},
         utility::codec::field{"offset", &list_range_bound_versions_request::offset},
         utility::codec::field{"limit", &list_range_bound_versions_request::limit},
@@ -812,7 +812,7 @@ wire_fields(std::type_identity<list_by_trade_id_range_bounds_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_range_bound_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_range_bound_versions_response::result},
         utility::codec::field{"versions", &list_range_bound_versions_response::versions},
         utility::codec::field{"total", &list_range_bound_versions_response::total},
@@ -828,7 +828,7 @@ wire_fields(std::type_identity<list_by_trade_id_range_bounds_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_range_bound_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_range_bound_version_request::key},
     };
 }
@@ -842,7 +842,7 @@ wire_fields(std::type_identity<list_by_trade_id_range_bounds_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_range_bound_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_range_bound_version_response::result},
         utility::codec::field{"version", &get_range_bound_version_response::version},
     };

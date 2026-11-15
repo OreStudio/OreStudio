@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_SERVICE_ACCOUNT_PARTY_SERVICE_HPP
 #define ORES_IAM_SERVICE_ACCOUNT_PARTY_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
@@ -56,7 +56,7 @@ public:
      *
      * @param ctx The database context.
      */
-    explicit account_party_service(context ctx);
+    explicit account_party_service(const context& ctx);
 
     /**
      * @brief Lists all account parties.

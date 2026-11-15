@@ -77,7 +77,7 @@ struct tenor_basis_swap_receive_leg {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_receive_leg>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"receive_index", &tenor_basis_swap_receive_leg::receive_index},
         utility::codec::field{"receive_frequency",
                               &tenor_basis_swap_receive_leg::receive_frequency},

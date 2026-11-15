@@ -80,8 +80,53 @@ std::optional<market_index> family_address_of(const market_index& index) {
 }
 
 /*
+ * Whether two conventions of one kind state the same terms under two ids. A
+ * kind without a rule here has no alias: two of its conventions that name one
+ * index are a conflict.
+ */
+template <typename Convention>
+bool same_terms(const Convention&, const Convention&) {
+    return false;
+}
+
+/*
+ * ORE's conventions name one swap several times, such as GBP-3M-SWAP,
+ * GBP-3M-SWAP-CONVENTIONS and GBP-LIBOR-3M-SWAP, and curve and CMS conventions
+ * refer to each id. The aliases state the same legs, so they are one swap.
+ */
+bool same_terms(const refdata::domain::swap_convention& a,
+                const refdata::domain::swap_convention& b) {
+    return a.fixed_calendar == b.fixed_calendar && a.fixed_frequency == b.fixed_frequency &&
+           a.fixed_convention == b.fixed_convention &&
+           a.fixed_day_count_fraction == b.fixed_day_count_fraction && a.index == b.index &&
+           a.float_frequency == b.float_frequency &&
+           a.sub_periods_coupon_type == b.sub_periods_coupon_type;
+}
+
+/*
+ * Index conventions that state the same fixing terms under two ids are one
+ * index: OreStudio keeps EUR-ESTR beside ORE's EUR-ESTER, and JPY-TONA beside
+ * JPY-TONAR, because the curve configs name them.
+ */
+bool same_terms(const refdata::domain::overnight_index_convention& a,
+                const refdata::domain::overnight_index_convention& b) {
+    return a.fixing_calendar == b.fixing_calendar && a.day_count_fraction == b.day_count_fraction &&
+           a.settlement_days == b.settlement_days;
+}
+
+bool same_terms(const refdata::domain::ibor_index_convention& a,
+                const refdata::domain::ibor_index_convention& b) {
+    return a.fixing_calendar == b.fixing_calendar && a.day_count_fraction == b.day_count_fraction &&
+           a.settlement_days == b.settlement_days &&
+           a.business_day_convention == b.business_day_convention &&
+           a.end_of_month == b.end_of_month;
+}
+
+/*
  * The one convention of @p candidates that names @p wanted. Two that name it
- * are a conflict the caller must see, not a choice the lookup makes.
+ * with different terms are a conflict the caller must see, not a choice the
+ * lookup makes. Aliases with the same terms are one convention, answered by
+ * the least id, so the answer does not depend on the order of the rows.
  */
 template <typename Convention>
 std::expected<Convention, lookup_error> the_one_at(const detail::answerable<Convention>& candidates,
@@ -93,6 +138,11 @@ std::expected<Convention, lookup_error> the_one_at(const detail::answerable<Conv
         const auto* named = candidate.reference.index();
         if (named == nullptr || !(*named == wanted))
             continue;
+        if (found != nullptr && same_terms(found->convention, candidate.convention)) {
+            if (candidate.convention.id < found->convention.id)
+                found = &candidate;
+            continue;
+        }
         if (found != nullptr)
             return refuse(lookup_refusal_kind::more_than_one_match,
                           asked,
@@ -115,7 +165,9 @@ convention_lookup::convention_lookup(convention_set conventions)
     : ibor_indices_(answerable_of(std::move(conventions.ibor_indices)))
     , overnight_indices_(answerable_of(std::move(conventions.overnight_indices)))
     , swaps_(answerable_of(std::move(conventions.swaps)))
-    , ois_swaps_(answerable_of(std::move(conventions.ois_swaps))) {}
+    , ois_swaps_(answerable_of(std::move(conventions.ois_swaps)))
+    , cds_(std::move(conventions.cds))
+    , inflation_swaps_(answerable_of(std::move(conventions.inflation_swaps))) {}
 
 std::expected<index_definition, lookup_error>
 convention_lookup::index_definition_of(const market_reference& index) const {
@@ -190,6 +242,27 @@ convention_lookup::swap_convention_of(const market_reference& index) const {
     return the_one_at(swaps_, *named, index, "swap convention");
 }
 
+std::expected<refdata::domain::swap_convention, lookup_error>
+convention_lookup::swap_convention_by_id(std::string_view id, const market_reference& index) const {
+    const auto* named = index.index();
+    if (named == nullptr)
+        return refuse(lookup_refusal_kind::addresses_no_index,
+                      index,
+                      "the address names a datum, not an index");
+    for (const auto& candidate : swaps_.readable) {
+        if (candidate.convention.id != id)
+            continue;
+        const auto* stated = candidate.reference.index();
+        if (stated == nullptr || !(*stated == *named))
+            return refuse(lookup_refusal_kind::no_match,
+                          index,
+                          std::format("the swap convention {} names another index", id));
+        return candidate.convention;
+    }
+    return refuse(
+        lookup_refusal_kind::no_match, index, std::format("no swap convention has the id {}", id));
+}
+
 std::expected<refdata::domain::ois_convention, lookup_error>
 convention_lookup::ois_convention_of(const market_reference& index) const {
     const auto* named = index.index();
@@ -198,6 +271,34 @@ convention_lookup::ois_convention_of(const market_reference& index) const {
                       index,
                       "the address names a datum, not an index");
     return the_one_at(ois_swaps_, *named, index, "OIS convention");
+}
+
+std::expected<refdata::domain::cds_convention, lookup_error>
+convention_lookup::cds_convention_of(std::string_view id) const {
+    const refdata::domain::cds_convention* found = nullptr;
+    for (const auto& candidate : cds_) {
+        if (candidate.id != id)
+            continue;
+        if (found != nullptr)
+            return std::unexpected(lookup_error{lookup_refusal_kind::more_than_one_match,
+                                                std::string(id),
+                                                "more than one CDS convention has this id"});
+        found = &candidate;
+    }
+    if (found == nullptr)
+        return std::unexpected(lookup_error{
+            lookup_refusal_kind::no_match, std::string(id), "no CDS convention has this id"});
+    return *found;
+}
+
+std::expected<refdata::domain::inflation_swap_convention, lookup_error>
+convention_lookup::inflation_swap_convention_of(const market_reference& index) const {
+    const auto* named = index.index();
+    if (named == nullptr)
+        return refuse(lookup_refusal_kind::addresses_no_index,
+                      index,
+                      "the address names a datum, not an index");
+    return the_one_at(inflation_swaps_, *named, index, "inflation swap convention");
 }
 
 }

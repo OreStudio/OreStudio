@@ -106,7 +106,7 @@ public:
      * @param system_flags Shared system settings service for settings access.
      * @param auth_service Shared authorization service for role assignment.
      */
-    signup_service(database::context ctx,
+    signup_service(const database::context& ctx,
                    std::shared_ptr<variability::service::system_settings_service> system_flags,
                    std::shared_ptr<authorization_service> auth_service);
 

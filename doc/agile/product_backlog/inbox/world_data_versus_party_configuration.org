@@ -73,8 +73,8 @@ any party table.
   configuration documents became per party.
 - [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Story: Add sandboxes and virtual books]] — the sandbox entity.
 - =projects/ores.sql/populate/refdata/refdata_ibor_index_conventions_populate.sql=
-  and =refdata_overnight_index_conventions_populate.sql= — world conventions
-  seeded per tenant.
+  — world conventions seeded per tenant. The overnight index conventions are
+  now rows of the refdata.conventions dataset.
 - =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql= —
   publishes the currency pair conventions.
 

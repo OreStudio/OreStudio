@@ -1,0 +1,10 @@
+After a fresh `compass db recreate` on 2026-11-13 (commit pending):
+
+ libor_feeds | ceased_or_misnamed | replacements | ice_feeds
+           0 |                  0 |            2 |         0
+
+ ice | libor_ids | shir_ids | hufonia_ids
+   0 |         0 |       12 |          12
+
+The first query counts ores_dq_ir_curve_generation_configs_artefact_tbl by family and provider;
+the second counts ores_marketdata_market_data_vendor_instruments_tbl by provider and external id.

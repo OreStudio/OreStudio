@@ -6,12 +6,18 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>CommodityFloating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
             <StartDate>2025-09-02</StartDate>
+            <EndDate>2029-09-02</EndDate>
             <Tenor>1M</Tenor>
-            <Convention>MF</Convention>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
@@ -22,30 +28,52 @@
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
+      <Puts>
+        <LongShorts>
+          <LongShort>Short</LongShort>
+        </LongShorts>
+        <Strikes>
+          <Strike>65.85</Strike>
+        </Strikes>
+      </Puts>
     </CommodityOptionStripData>
   </Trade>
-  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
     <TradeType>CommodityOptionStrip</TradeType>
     <CommodityOptionStripData>
       <LegData>
         <Payer>false</Payer>
         <LegType>CommodityFloating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
+            <StartDate>2025-10-02</StartDate>
+            <EndDate>2031-10-02</EndDate>
             <Tenor>1M</Tenor>
-            <Convention>MF</Convention>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
           <Name>NYMEX:NG</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>14157.62</Quantity>
+            <Quantity>40102.33</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
+      <Calls>
+        <LongShorts>
+          <LongShort>Short</LongShort>
+        </LongShorts>
+        <Strikes>
+          <Strike>116.49</Strike>
+        </Strikes>
+      </Calls>
     </CommodityOptionStripData>
   </Trade>
 </Portfolio>

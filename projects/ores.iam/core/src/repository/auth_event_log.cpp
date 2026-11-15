@@ -36,8 +36,8 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-auth_event_log::auth_event_log(context ctx)
-    : ctx_(std::move(ctx)) {}
+auth_event_log::auth_event_log(const context& ctx)
+    : ctx_(ctx) {}
 
 void auth_event_log::insert(const std::string& event_type,
                             const std::chrono::system_clock::time_point& event_time,

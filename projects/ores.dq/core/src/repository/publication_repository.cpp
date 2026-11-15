@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/publication_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/publication.hpp"
@@ -38,10 +39,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -100,62 +104,128 @@ publication_filter_condition(const std::optional<messaging::publications_filter>
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool publication_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // No version to state, so only a create needs to know whether a row exists.
+    return claim.kind == precondition_kind::must_not_exist;
+}
+
+using publication_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::publication>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+publication_rows_by_key publication_current_rows(publication_repository& repo,
+                                                 const ores::database::context& ctx,
+                                                 const std::vector<domain::publication>& of) {
+    std::vector<std::string> ids;
+    ids.reserve(of.size());
+    for (const auto& row : of) {
+        ids.push_back(boost::uuids::to_string(row.id));
+    }
+    publication_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, ids))
+        current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::publication>& publication_rows_of(const publication_rows_by_key& current,
+                                                            const domain::publication& item) {
+    static const std::vector<domain::publication> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.id)));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-publication_repository::replace_claim(context ctx, const domain::publication& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+publication_replace_claim(const std::vector<domain::publication>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     // No version column to state, so a replace names no claim at all; the
     // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
+    // when the claim is applied.
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::publication publication_repository::apply_claim(
-    context ctx, const domain::publication& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::publication publication_apply_claim(const domain::publication& v,
+                                            const ores::utility::domain::precondition& claim,
+                                            const std::vector<domain::publication>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
     if (claim.kind == precondition_kind::must_match_version)
         throw std::invalid_argument(
             "publication_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist &&
-        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+    if (claim.kind == precondition_kind::must_not_exist && !current.empty())
         throw std::invalid_argument("publication_repository::write: a current row already exists");
     return t;
 }
 
-void publication_repository::write(context ctx, const domain::publication& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void publication_repository::write(context ctx, const std::vector<domain::publication>& v) {
+void publication_repository::write(const context& ctx, const domain::publication& v) {
+    write(ctx, v, publication_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+}
+
+void publication_repository::write(const context& ctx, const std::vector<domain::publication>& v) {
+    const auto current = publication_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(publication_replace_claim(publication_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void publication_repository::write(context ctx,
+void publication_repository::write(const context& ctx,
                                    const domain::publication& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing publication. " << "id: " << v.id;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = publication_apply_claim(v,
+                                           claim,
+                                           publication_claim_reads_current(claim) ?
+                                               read_latest(ctx, boost::uuids::to_string(v.id)) :
+                                               std::vector<domain::publication>{});
     query_builder::execute_write_op(ctx,
                                     query_builder::insert_or_replace(publication_mapper::map(t)),
                                     lg(),
                                     "Writing publication to database.");
 }
 
-void publication_repository::write(context ctx,
+void publication_repository::write(const context& ctx,
                                    const std::vector<domain::publication>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing publications. Count: " << v.size();
+    std::vector<domain::publication> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (publication_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = publication_current_rows(*this, ctx, to_read);
     std::vector<domain::publication> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(
+            publication_apply_claim(v[i], claims[i], publication_rows_of(current, v[i])));
     query_builder::execute_write_op(
         ctx,
         query_builder::insert_or_replace(publication_mapper::map(batch)),
@@ -163,7 +233,7 @@ void publication_repository::write(context ctx,
         "Writing publications to database.");
 }
 
-std::vector<domain::publication> publication_repository::read_latest(context ctx) {
+std::vector<domain::publication> publication_repository::read_latest(const context& ctx) {
     const auto query =
         query_builder::read<std::vector<publication_entity>> | query_builder::order_by("id"_c);
 
@@ -175,7 +245,7 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
         "Reading latest publications");
 }
 
-std::vector<domain::publication> publication_repository::read_latest(context ctx,
+std::vector<domain::publication> publication_repository::read_latest(const context& ctx,
                                                                      const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest publication. " << "id: " << id;
     const auto query =
@@ -190,7 +260,7 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::publication> publication_repository::read_all(context ctx,
+std::vector<domain::publication> publication_repository::read_all(const context& ctx,
                                                                   const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all publication versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<publication_entity>> |
@@ -206,7 +276,7 @@ std::vector<domain::publication> publication_repository::read_all(context ctx,
 
 
 publication_repository::remove_status publication_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing publication. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -223,12 +293,12 @@ publication_repository::remove_status publication_repository::remove(
     return remove_status::removed;
 }
 
-void publication_repository::remove(context ctx, const std::string& id) {
+void publication_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::publication>
-publication_repository::read_latest(context ctx,
+publication_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -249,7 +319,7 @@ publication_repository::read_latest(context ctx,
 }
 
 std::uint32_t publication_repository::get_total_publication_count(
-    context ctx, const std::optional<messaging::publications_filter>& filter) {
+    const context& ctx, const std::optional<messaging::publications_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active publication count";
 
     const auto query = query_builder::read<std::vector<publication_entity>>;
@@ -259,9 +329,24 @@ std::uint32_t publication_repository::get_total_publication_count(
 }
 
 std::vector<domain::publication>
-publication_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+publication_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (ids.size() > chunk_size) {
+        std::vector<domain::publication> all;
+        for (std::size_t begin = 0; begin < ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, ids.size());
+            auto part =
+                read_latest(ctx, std::vector<std::string>(ids.begin() + begin, ids.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     const auto query =
         query_builder::read<std::vector<publication_entity>> | query_builder::where("id"_c.in(ids));
     auto result = query_builder::execute_read_query<publication_entity, domain::publication>(
@@ -273,7 +358,7 @@ publication_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void publication_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void publication_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

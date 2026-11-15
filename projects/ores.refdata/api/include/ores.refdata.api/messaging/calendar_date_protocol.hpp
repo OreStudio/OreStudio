@@ -178,7 +178,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_date_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar_code", &calendar_date_key::calendar_code},
         utility::codec::field{"date", &calendar_date_key::date},
     };
@@ -193,7 +193,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_date_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calendar_date_lookup::key},
         utility::codec::field{"calendar_date", &calendar_date_lookup::calendar_date},
     };
@@ -208,7 +208,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_dates_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar_code", &calendar_dates_filter::calendar_code},
         utility::codec::field{"calendar_code_one_of", &calendar_dates_filter::calendar_code_one_of},
     };
@@ -223,7 +223,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_calendar_dates_request::offset},
         utility::codec::field{"limit", &list_calendar_dates_request::limit},
         utility::codec::field{"order", &list_calendar_dates_request::order},
@@ -240,7 +240,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calendar_dates_response::result},
         utility::codec::field{"calendar_dates", &list_calendar_dates_response::calendar_dates},
         utility::codec::field{"total", &list_calendar_dates_response::total},
@@ -256,7 +256,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_date_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calendar_date_request::key},
     };
 }
@@ -270,7 +270,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_date_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calendar_date_response::result},
         utility::codec::field{"calendar_date", &get_calendar_date_response::calendar_date},
     };
@@ -285,7 +285,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_calendar_dates_request::keys},
     };
 }
@@ -299,7 +299,7 @@ struct list_by_calendar_code_calendar_dates_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_calendar_dates_response::result},
         utility::codec::field{"entries", &get_many_calendar_dates_response::entries},
     };
@@ -315,7 +315,7 @@ struct list_by_calendar_code_calendar_dates_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_calendar_code_calendar_dates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar_code",
                               &list_by_calendar_code_calendar_dates_request::calendar_code},
         utility::codec::field{"scope", &list_by_calendar_code_calendar_dates_request::scope},
@@ -336,7 +336,7 @@ wire_fields(std::type_identity<list_by_calendar_code_calendar_dates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_calendar_code_calendar_dates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_calendar_code_calendar_dates_response::result},
         utility::codec::field{"calendar_dates",
                               &list_by_calendar_code_calendar_dates_response::calendar_dates},

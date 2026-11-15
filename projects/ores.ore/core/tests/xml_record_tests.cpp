@@ -61,7 +61,7 @@ struct entry {
 
 struct root {
     std::uint64_t present = 0;
-    std::vector<entry> entry;
+    std::vector<entry> entries;
 };
 
 template <typename T>
@@ -222,7 +222,7 @@ const field root_fields[] = {
     {"Entry",
      2629823795u,
      field_kind::repeated_nested,
-     std::uint32_t(offsetof(root, entry)),
+     std::uint32_t(offsetof(root, entries)),
      0,
      false,
      false,
@@ -328,9 +328,9 @@ TEST_CASE("a_writer_marks_every_row_it_fills", "[ore][xml][record]") {
     REQUIRE(read_root(emitted(written), back));
     const auto difference = compare_records(root_record, &written, &back);
     REQUIRE_FALSE(difference);
-    CHECK(written.entry.front().name == "a");
-    CHECK(written.entry.front().count == -3);
-    CHECK(written.entry.front().item.size() == 2);
+    CHECK(written.entries.front().name == "a");
+    CHECK(written.entries.front().count == -3);
+    CHECK(written.entries.front().item.size() == 2);
 }
 
 TEST_CASE("a_writer_writes_only_the_rows_it_was_given", "[ore][xml][record]") {
@@ -389,7 +389,7 @@ TEST_CASE("a_reader_and_a_writer_refuse_a_name_the_table_lacks", "[ore][xml][rec
     CHECK_THROWS_WITH(write.append("Entries"), "the root table has no 'Entries' field");
 
     root other{};
-    auto write_entry = record_writer(entry_record, &other.entry.emplace_back());
+    auto write_entry = record_writer(entry_record, &other.entries.emplace_back());
     CHECK_THROWS_WITH(write_entry.set_spelling("Kind", "C", "kind"), "'C' is not a valid kind");
 }
 
@@ -417,7 +417,7 @@ TEST_CASE("a_reader_states_which_members_the_table_declares", "[ore][xml][record
     // Not declared at all, which is a different answer.
     CHECK_FALSE(read.declares("Entries"));
 
-    const auto entries = record_reader(entry_record, &record.entry.emplace_back());
+    const auto entries = record_reader(entry_record, &record.entries.emplace_back());
     CHECK(entries.declares("Active"));
     CHECK_FALSE(entries.declares("active"));
 }

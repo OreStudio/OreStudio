@@ -44,13 +44,13 @@ struct example_row {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<example_row>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"name", &example_row::name},
-                      field{"note", &example_row::note},
-                      field{"count", &example_row::count},
-                      field{"ratio", &example_row::ratio},
-                      field{"live", &example_row::live},
-                      field{"direction", &example_row::direction},
-                      field{"codes", &example_row::codes}};
+    return ::ores::utility::codec::field_list{field{"name", &example_row::name},
+                                              field{"note", &example_row::note},
+                                              field{"count", &example_row::count},
+                                              field{"ratio", &example_row::ratio},
+                                              field{"live", &example_row::live},
+                                              field{"direction", &example_row::direction},
+                                              field{"codes", &example_row::codes}};
 }
 
 }
@@ -79,4 +79,10 @@ TEST_CASE("a member the shape leaves out is not required", "[codec][json][schema
 
     CHECK(schema.find(R"("required":["name","count","ratio","live","direction","codes"])") !=
           std::string::npos);
+}
+
+TEST_CASE("an optional member may be null", "[codec][json][schema]") {
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
+
+    CHECK(schema.find(R"("note":{"type":"string","nullable":true})") != std::string::npos);
 }

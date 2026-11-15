@@ -80,7 +80,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit {{entity_singular}}_service(context ctx);
+    explicit {{entity_singular}}_service(const context& ctx);
 
 {{#protocol_derived}}
     /**
@@ -412,14 +412,19 @@ private:
      * decision made in one place. A batch that made the decision per element
      * would eventually make it differently from the single write.
      *
+     * The caller reads the current row, so a batch reads every row it names
+     * in one query rather than one query per change.
+     *
      * @param change The change as the caller stated it.
      * @param intent The reason and commentary the caller gave.
+     * @param current The row the change names as it is now, or empty.
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result prepare_change(
         const ::ores::{{component}}::messaging::{{entity_singular}}_change& change,
         const ores::utility::domain::change_intent& intent,
+        const std::vector<domain::{{entity_singular}}>& current,
         domain::{{entity_singular}}& out);
 {{/put_operations}}
 {{#gated}}
@@ -511,7 +516,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit {{name_singular}}_service(context ctx);
+    explicit {{name_singular}}_service(const context& ctx);
 
 {{#protocol_derived}}
     /**
@@ -667,7 +672,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit {{entity_singular}}_service(context ctx);
+    explicit {{entity_singular}}_service(const context& ctx);
 
     /**
      * @brief The family's protocol operations, one method per subject.

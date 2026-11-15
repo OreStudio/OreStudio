@@ -46,7 +46,7 @@ namespace ores::compute::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<grid_sample>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenant_id", &grid_sample::tenant_id},
         utility::codec::field{"id", &grid_sample::id},
         utility::codec::field{"sampled_at", &grid_sample::sampled_at},

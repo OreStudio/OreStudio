@@ -55,7 +55,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit app_version_platform_repository(context ctx);
+    explicit app_version_platform_repository(const context& ctx);
 
     std::string sql();
 

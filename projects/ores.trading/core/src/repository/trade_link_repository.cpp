@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/trade_link_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -116,20 +119,83 @@ trade_link_filter_condition(const std::optional<messaging::trade_links_filter>& 
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool trade_link_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using trade_link_rows_by_key =
+    std::map<std::tuple<std::string, std::string, std::string>, std::vector<domain::trade_link>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+trade_link_rows_by_key trade_link_current_rows(trade_link_repository& repo,
+                                               const ores::database::context& ctx,
+                                               const std::vector<domain::trade_link>& of) {
+    std::vector<std::string> from_trade_ids;
+    from_trade_ids.reserve(of.size());
+    std::vector<std::string> to_trade_ids;
+    to_trade_ids.reserve(of.size());
+    std::vector<std::string> link_types;
+    link_types.reserve(of.size());
+    for (const auto& row : of) {
+        from_trade_ids.push_back(boost::uuids::to_string(row.from_trade_id));
+        to_trade_ids.push_back(boost::uuids::to_string(row.to_trade_id));
+        link_types.push_back(row.link_type);
+    }
+    trade_link_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, from_trade_ids, to_trade_ids, link_types))
+        current[std::make_tuple(boost::uuids::to_string(item.from_trade_id),
+                                boost::uuids::to_string(item.to_trade_id),
+                                item.link_type)]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::trade_link>& trade_link_rows_of(const trade_link_rows_by_key& current,
+                                                          const domain::trade_link& item) {
+    static const std::vector<domain::trade_link> none;
+    const auto found = current.find(std::make_tuple(boost::uuids::to_string(item.from_trade_id),
+                                                    boost::uuids::to_string(item.to_trade_id),
+                                                    item.link_type));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-trade_link_repository::replace_claim(context ctx, const domain::trade_link& v) {
-    const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.from_trade_id),
-                                     boost::uuids::to_string(v.to_trade_id),
-                                     v.link_type);
+trade_link_replace_claim(const std::vector<domain::trade_link>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::trade_link trade_link_repository::apply_claim(
-    context ctx, const domain::trade_link& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::trade_link trade_link_apply_claim(const domain::trade_link& v,
+                                          const ores::utility::domain::precondition& claim,
+                                          const std::vector<domain::trade_link>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -141,58 +207,74 @@ domain::trade_link trade_link_repository::apply_claim(
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx,
-                                             boost::uuids::to_string(v.from_trade_id),
-                                             boost::uuids::to_string(v.to_trade_id),
-                                             v.link_type);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void trade_link_repository::write(context ctx, const domain::trade_link& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void trade_link_repository::write(context ctx, const std::vector<domain::trade_link>& v) {
+void trade_link_repository::write(const context& ctx, const domain::trade_link& v) {
+    write(ctx,
+          v,
+          trade_link_replace_claim(read_latest(ctx,
+                                               boost::uuids::to_string(v.from_trade_id),
+                                               boost::uuids::to_string(v.to_trade_id),
+                                               v.link_type)));
+}
+
+void trade_link_repository::write(const context& ctx, const std::vector<domain::trade_link>& v) {
+    const auto current = trade_link_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(trade_link_replace_claim(trade_link_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void trade_link_repository::write(context ctx,
+void trade_link_repository::write(const context& ctx,
                                   const domain::trade_link& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade link. " << "from_trade_id: " << v.from_trade_id
                                << " to_trade_id: " << v.to_trade_id
                                << " link_type: " << v.link_type;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = trade_link_apply_claim(v,
+                                          claim,
+                                          trade_link_claim_reads_current(claim) ?
+                                              read_latest(ctx,
+                                                          boost::uuids::to_string(v.from_trade_id),
+                                                          boost::uuids::to_string(v.to_trade_id),
+                                                          v.link_type) :
+                                              std::vector<domain::trade_link>{});
     query_builder::execute_write_query(
         ctx, trade_link_mapper::map(t), lg(), "Writing trade link to database.");
 }
 
-void trade_link_repository::write(context ctx,
+void trade_link_repository::write(const context& ctx,
                                   const std::vector<domain::trade_link>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade links. Count: " << v.size();
+    std::vector<domain::trade_link> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (trade_link_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = trade_link_current_rows(*this, ctx, to_read);
     std::vector<domain::trade_link> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(trade_link_apply_claim(v[i], claims[i], trade_link_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, trade_link_mapper::map(batch), lg(), "Writing trade links to database.");
 }
 
-std::vector<domain::trade_link> trade_link_repository::read_latest(context ctx) {
+std::vector<domain::trade_link> trade_link_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_link_entity>> |
@@ -207,7 +289,7 @@ std::vector<domain::trade_link> trade_link_repository::read_latest(context ctx) 
         "Reading latest trade links");
 }
 
-std::vector<domain::trade_link> trade_link_repository::read_latest(context ctx,
+std::vector<domain::trade_link> trade_link_repository::read_latest(const context& ctx,
                                                                    const std::string& from_trade_id,
                                                                    const std::string& to_trade_id,
                                                                    const std::string& link_type) {
@@ -231,7 +313,7 @@ std::vector<domain::trade_link> trade_link_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::trade_link> trade_link_repository::read_all(context ctx,
+std::vector<domain::trade_link> trade_link_repository::read_all(const context& ctx,
                                                                 const std::string& from_trade_id,
                                                                 const std::string& to_trade_id,
                                                                 const std::string& link_type) {
@@ -254,7 +336,7 @@ std::vector<domain::trade_link> trade_link_repository::read_all(context ctx,
 }
 
 std::optional<domain::trade_link>
-trade_link_repository::read_at_version(context ctx,
+trade_link_repository::read_at_version(const context& ctx,
                                        const std::string& from_trade_id,
                                        const std::string& to_trade_id,
                                        const std::string& link_type,
@@ -285,7 +367,7 @@ trade_link_repository::read_at_version(context ctx,
 
 
 trade_link_repository::remove_status
-trade_link_repository::remove(context ctx,
+trade_link_repository::remove(const context& ctx,
                               const std::string& from_trade_id,
                               const std::string& to_trade_id,
                               const std::string& link_type,
@@ -320,7 +402,7 @@ trade_link_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_link_repository::remove(context ctx,
+void trade_link_repository::remove(const context& ctx,
                                    const std::string& from_trade_id,
                                    const std::string& to_trade_id,
                                    const std::string& link_type) {
@@ -328,7 +410,7 @@ void trade_link_repository::remove(context ctx,
 }
 
 std::vector<domain::trade_link>
-trade_link_repository::read_latest(context ctx,
+trade_link_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -353,7 +435,7 @@ trade_link_repository::read_latest(context ctx,
 }
 
 std::uint32_t trade_link_repository::get_total_link_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_links_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade link count";
@@ -372,12 +454,34 @@ std::uint32_t trade_link_repository::get_total_link_count(
 }
 
 std::vector<domain::trade_link>
-trade_link_repository::read_latest(context ctx,
+trade_link_repository::read_latest(const context& ctx,
                                    const std::vector<std::string>& from_trade_ids,
                                    const std::vector<std::string>& to_trade_ids,
                                    const std::vector<std::string>& link_types) {
     if (from_trade_ids.empty() || to_trade_ids.empty() || link_types.empty())
         return {};
+    if (to_trade_ids.size() != from_trade_ids.size() || link_types.size() != from_trade_ids.size())
+        throw std::invalid_argument(
+            "trade_link_repository::read_latest: key column vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (from_trade_ids.size() > chunk_size) {
+        std::vector<domain::trade_link> all;
+        for (std::size_t begin = 0; begin < from_trade_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, from_trade_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(from_trade_ids.begin() + begin,
+                                         from_trade_ids.begin() + end),
+                std::vector<std::string>(to_trade_ids.begin() + begin, to_trade_ids.begin() + end),
+                std::vector<std::string>(link_types.begin() + begin, link_types.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -394,9 +498,6 @@ trade_link_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (to_trade_ids.size() != from_trade_ids.size() || link_types.size() != from_trade_ids.size())
-        throw std::invalid_argument(
-            "trade_link_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string>> requested;
     for (std::size_t i = 0; i < from_trade_ids.size(); ++i)
         requested.emplace(from_trade_ids[i], to_trade_ids[i], link_types[i]);
@@ -411,7 +512,7 @@ trade_link_repository::read_latest(context ctx,
     return filtered;
 }
 
-void trade_link_repository::remove(context ctx,
+void trade_link_repository::remove(const context& ctx,
                                    const std::vector<std::string>& from_trade_ids,
                                    const std::vector<std::string>& to_trade_ids,
                                    const std::vector<std::string>& link_types) {

@@ -47,7 +47,7 @@ auto& lg() {
 
 namespace {
 
-std::vector<std::chrono::year_month_day> fomc_meeting_dates(ores::database::context ctx) {
+std::vector<std::chrono::year_month_day> fomc_meeting_dates(const ores::database::context& ctx) {
     ores::refdata::repository::calendar_event_repository event_repo;
     std::vector<std::chrono::year_month_day> out;
     for (const auto& e :
@@ -69,7 +69,7 @@ std::string discount_point_of(const domain::market_observation& obs) {
 
 }
 
-curve_republish_refdata_context build_refdata_context(ores::database::context ctx,
+curve_republish_refdata_context build_refdata_context(const ores::database::context& ctx,
                                                       std::chrono::year_month_day horizon,
                                                       const std::string& tenor_convention_code) {
     namespace refdata_repo = ores::refdata::repository;
@@ -101,7 +101,7 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
 }
 
 std::vector<ores::analytics::quant::service::bootstrapped_point>
-read_discount_curve(ores::database::context ctx,
+read_discount_curve(const ores::database::context& ctx,
                     const boost::uuids::uuid& output_series_id,
                     std::chrono::system_clock::time_point as_of,
                     const curve_republish_refdata_context& refctx) {
@@ -130,7 +130,7 @@ double observation_value(const domain::market_observation& obs) {
 }
 
 pillar_read
-read_pillar_rates(ores::database::context ctx,
+read_pillar_rates(const ores::database::context& ctx,
                   const std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>& pillars,
                   const curve_republish_refdata_context& refctx,
                   std::chrono::system_clock::time_point as_of) {

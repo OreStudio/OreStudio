@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_AUTHORIZATION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -114,11 +114,11 @@ inline std::optional<std::string> authorization_revoke_refusal(const boost::uuid
 class authorization_handler {
 public:
     authorization_handler(ores::nats::service::client& nats,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , ctx_(ctx)
+        , signer_(signer) {}
 
     void assign(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -810,10 +810,9 @@ public:
             return;
         }
         try {
-            using ores::database::repository::execute_parameterized_string_query;
             std::vector<std::string> results;
             if (!req->tenant_id.empty()) {
-                results = execute_parameterized_string_query(
+                results = ores::database::query_builder::execute_parameterized_string_query(
                     ctx_,
                     "SELECT command FROM "
                     "ores_iam_generate_role_commands_fn($1, NULL, $2::uuid)",
@@ -821,13 +820,13 @@ public:
                     authorization_handler_lg(),
                     "Suggest role commands by tenant_id");
             } else if (!req->hostname.empty()) {
-                results =
-                    execute_parameterized_string_query(ctx_,
-                                                       "SELECT command FROM "
-                                                       "ores_iam_generate_role_commands_fn($1, $2)",
-                                                       {req->username, req->hostname},
-                                                       authorization_handler_lg(),
-                                                       "Suggest role commands by hostname");
+                results = ores::database::query_builder::execute_parameterized_string_query(
+                    ctx_,
+                    "SELECT command FROM "
+                    "ores_iam_generate_role_commands_fn($1, $2)",
+                    {req->username, req->hostname},
+                    authorization_handler_lg(),
+                    "Suggest role commands by hostname");
             } else {
                 reply(nats_, msg, suggest_role_commands_response{});
                 return;

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,10 +38,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -107,17 +111,71 @@ currency_filter_condition(const std::optional<messaging::currencies_filter>& fil
 
 }
 
-ores::utility::domain::precondition currency_repository::replace_claim(context ctx,
-                                                                       const domain::currency& v) {
-    const auto current = read_latest(ctx, v.iso_code);
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool currency_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using currency_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::currency>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+currency_rows_by_key currency_current_rows(currency_repository& repo,
+                                           const ores::database::context& ctx,
+                                           const std::vector<domain::currency>& of) {
+    std::vector<std::string> iso_codes;
+    iso_codes.reserve(of.size());
+    for (const auto& row : of) {
+        iso_codes.push_back(row.iso_code);
+    }
+    currency_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, iso_codes))
+        current[std::make_tuple(item.iso_code)].push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::currency>& currency_rows_of(const currency_rows_by_key& current,
+                                                      const domain::currency& item) {
+    static const std::vector<domain::currency> none;
+    const auto found = current.find(std::make_tuple(item.iso_code));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
+ores::utility::domain::precondition
+currency_replace_claim(const std::vector<domain::currency>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::currency currency_repository::apply_claim(
-    context ctx, const domain::currency& v, const ores::utility::domain::precondition& claim) {
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
+domain::currency currency_apply_claim(const domain::currency& v,
+                                      const ores::utility::domain::precondition& claim,
+                                      const std::vector<domain::currency>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -129,53 +187,64 @@ domain::currency currency_repository::apply_claim(
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.iso_code);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void currency_repository::write(context ctx, const domain::currency& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void currency_repository::write(context ctx, const std::vector<domain::currency>& v) {
+void currency_repository::write(const context& ctx, const domain::currency& v) {
+    write(ctx, v, currency_replace_claim(read_latest(ctx, v.iso_code)));
+}
+
+void currency_repository::write(const context& ctx, const std::vector<domain::currency>& v) {
+    const auto current = currency_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(currency_replace_claim(currency_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void currency_repository::write(context ctx,
+void currency_repository::write(const context& ctx,
                                 const domain::currency& v,
                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency. " << "iso_code: " << v.iso_code;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t =
+        currency_apply_claim(v,
+                             claim,
+                             currency_claim_reads_current(claim) ? read_latest(ctx, v.iso_code) :
+                                                                   std::vector<domain::currency>{});
     query_builder::execute_write_query(
         ctx, currency_mapper::map(t), lg(), "Writing currency to database.");
 }
 
-void currency_repository::write(context ctx,
+void currency_repository::write(const context& ctx,
                                 const std::vector<domain::currency>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currencies. Count: " << v.size();
+    std::vector<domain::currency> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (currency_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = currency_current_rows(*this, ctx, to_read);
     std::vector<domain::currency> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(currency_apply_claim(v[i], claims[i], currency_rows_of(current, v[i])));
     query_builder::execute_write_query(
         ctx, currency_mapper::map(batch), lg(), "Writing currencies to database.");
 }
 
-std::vector<domain::currency> currency_repository::read_latest(context ctx) {
+std::vector<domain::currency> currency_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_entity>> |
@@ -190,7 +259,7 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx) {
         "Reading latest currencies");
 }
 
-std::vector<domain::currency> currency_repository::read_latest(context ctx,
+std::vector<domain::currency> currency_repository::read_latest(const context& ctx,
                                                                const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency. " << "iso_code: " << iso_code;
     static constexpr auto max = db_timestamp::max();
@@ -208,7 +277,7 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::currency> currency_repository::read_all(context ctx,
+std::vector<domain::currency> currency_repository::read_all(const context& ctx,
                                                             const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency versions. " << "iso_code: " << iso_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -224,7 +293,7 @@ std::vector<domain::currency> currency_repository::read_all(context ctx,
         "Reading all currency versions by iso_code.");
 }
 
-std::optional<domain::currency> currency_repository::read_at_version(context ctx,
+std::optional<domain::currency> currency_repository::read_at_version(const context& ctx,
                                                                      const std::string& iso_code,
                                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading currency at version. " << "iso_code: " << iso_code
@@ -248,7 +317,7 @@ std::optional<domain::currency> currency_repository::read_at_version(context ctx
 }
 
 currency_repository::remove_status currency_repository::remove(
-    context ctx, const std::string& iso_code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& iso_code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency. " << "iso_code: " << iso_code;
     const auto current = read_latest(ctx, iso_code);
     if (current.empty())
@@ -276,12 +345,12 @@ currency_repository::remove_status currency_repository::remove(
     return remove_status::removed;
 }
 
-void currency_repository::remove(context ctx, const std::string& iso_code) {
+void currency_repository::remove(const context& ctx, const std::string& iso_code) {
     static_cast<void>(remove(ctx, iso_code, std::nullopt));
 }
 
 std::vector<domain::currency>
-currency_repository::read_latest(context ctx,
+currency_repository::read_latest(const context& ctx,
                                  std::uint32_t offset,
                                  std::uint32_t limit,
                                  const ores::utility::domain::order& order,
@@ -305,7 +374,7 @@ currency_repository::read_latest(context ctx,
 }
 
 std::uint32_t currency_repository::get_total_currency_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::currencies_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency count";
@@ -323,9 +392,24 @@ std::uint32_t currency_repository::get_total_currency_count(
 }
 
 std::vector<domain::currency>
-currency_repository::read_latest(context ctx, const std::vector<std::string>& iso_codes) {
+currency_repository::read_latest(const context& ctx, const std::vector<std::string>& iso_codes) {
     if (iso_codes.empty())
         return {};
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (iso_codes.size() > chunk_size) {
+        std::vector<domain::currency> all;
+        for (std::size_t begin = 0; begin < iso_codes.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, iso_codes.size());
+            auto part = read_latest(
+                ctx, std::vector<std::string>(iso_codes.begin() + begin, iso_codes.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_entity>> |
@@ -340,7 +424,7 @@ currency_repository::read_latest(context ctx, const std::vector<std::string>& is
     return result;
 }
 
-void currency_repository::remove(context ctx, const std::vector<std::string>& iso_codes) {
+void currency_repository::remove(const context& ctx, const std::vector<std::string>& iso_codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -358,7 +442,7 @@ void currency_repository::remove(context ctx, const std::vector<std::string>& is
 }
 
 
-std::vector<domain::currency> currency_repository::read_all(context ctx) {
+std::vector<domain::currency> currency_repository::read_all(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_entity>> |
                        query_builder::where("tenant_id"_c == tid) |

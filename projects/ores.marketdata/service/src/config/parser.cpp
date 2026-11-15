@@ -76,6 +76,13 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
         "writer-db-user",
         boost::program_options::value<std::string>()->default_value(""),
         "Role that copies ticks to the tick table; empty copies none")(
+        "stale-seconds-ir",
+        boost::program_options::value<std::int64_t>()->default_value(0),
+        "How long a quoted IR value stays current, in seconds; 0 uses the deployment's one "
+        "threshold")("stale-seconds-fx",
+                     boost::program_options::value<std::int64_t>()->default_value(0),
+                     "How long a quoted FX value stays current, in seconds; 0 uses the "
+                     "deployment's one threshold")(
         "writer-db-password",
         boost::program_options::value<std::string>()->default_value(""),
         "Password of the tick writer role");
@@ -100,6 +107,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.database = std_opts.database;
     r.http_base_url = vm["http-base-url"].as<std::string>();
     r.tick_writer_user = vm["writer-db-user"].as<std::string>();
+    r.stale_seconds_ir = vm["stale-seconds-ir"].as<std::int64_t>();
+    r.stale_seconds_fx = vm["stale-seconds-fx"].as<std::int64_t>();
     r.tick_writer_password = vm["writer-db-password"].as<std::string>();
     return r;
 }

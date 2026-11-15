@@ -41,6 +41,7 @@ tells a screen whether to offer the form at all is a separate subject,
 :auth: none
 :response: signup_response
 :http_route: true
+:rate_policy: credential
 :END:
 
 *** principal

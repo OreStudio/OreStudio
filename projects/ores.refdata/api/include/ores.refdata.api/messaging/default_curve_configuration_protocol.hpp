@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configuration_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &default_curve_configuration_key::id},
     };
 }
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configuration_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &default_curve_configuration_write::id},
         utility::codec::field{"curve_definition_id",
                               &default_curve_configuration_write::curve_definition_id},
@@ -424,7 +424,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configuration_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &default_curve_configuration_change::write},
         utility::codec::field{"precondition", &default_curve_configuration_change::precondition},
     };
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configuration_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &default_curve_configuration_removal::key},
         utility::codec::field{"precondition", &default_curve_configuration_removal::precondition},
     };
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configuration_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &default_curve_configuration_lookup::key},
         utility::codec::field{"default_curve_configuration",
                               &default_curve_configuration_lookup::default_curve_configuration},
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configurations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &default_curve_configurations_filter::id_one_of},
     };
 }
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_configuration_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &default_curve_configuration_event::event_id},
         utility::codec::field{"key", &default_curve_configuration_event::key},
         utility::codec::field{"action", &default_curve_configuration_event::action},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_configuration_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "default_curve_configuration",
             &default_curve_configuration_version_key::default_curve_configuration},
@@ -522,7 +522,7 @@ wire_fields(std::type_identity<default_curve_configuration_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_configuration_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &default_curve_configuration_versions_filter::version},
         utility::codec::field{"from_version",
                               &default_curve_configuration_versions_filter::from_version},
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<default_curve_configuration_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_default_curve_configurations_request::offset},
         utility::codec::field{"limit", &list_default_curve_configurations_request::limit},
         utility::codec::field{"order", &list_default_curve_configurations_request::order},
@@ -560,7 +560,7 @@ wire_fields(std::type_identity<list_default_curve_configurations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_default_curve_configurations_response::result},
         utility::codec::field{"configurations",
                               &list_default_curve_configurations_response::configurations},
@@ -578,7 +578,7 @@ wire_fields(std::type_identity<list_default_curve_configurations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_default_curve_configuration_request::key},
     };
 }
@@ -593,7 +593,7 @@ wire_fields(std::type_identity<get_default_curve_configuration_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_default_curve_configuration_response::result},
         utility::codec::field{
             "default_curve_configuration",
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<get_default_curve_configuration_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_default_curve_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_default_curve_configurations_request::keys},
     };
 }
@@ -626,7 +626,7 @@ wire_fields(std::type_identity<get_many_default_curve_configurations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_default_curve_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_default_curve_configurations_response::result},
         utility::codec::field{"entries", &get_many_default_curve_configurations_response::entries},
     };
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<get_many_default_curve_configurations_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_default_curve_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_default_curve_configuration_request::change},
         utility::codec::field{"intent", &put_default_curve_configuration_request::intent},
     };
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<put_default_curve_configuration_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_default_curve_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_default_curve_configuration_response::result},
         utility::codec::field{
             "default_curve_configuration",
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<put_default_curve_configuration_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_default_curve_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_default_curve_configurations_request::changes},
         utility::codec::field{"intent", &put_many_default_curve_configurations_request::intent},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<put_many_default_curve_configurations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_default_curve_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_default_curve_configurations_response::result},
         utility::codec::field{"configurations",
                               &put_many_default_curve_configurations_response::configurations},
@@ -709,7 +709,7 @@ wire_fields(std::type_identity<put_many_default_curve_configurations_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_default_curve_configuration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_default_curve_configuration_request::removal},
         utility::codec::field{"intent", &delete_default_curve_configuration_request::intent},
     };
@@ -725,7 +725,7 @@ wire_fields(std::type_identity<delete_default_curve_configuration_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_default_curve_configuration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_default_curve_configuration_response::result},
     };
 }
@@ -740,7 +740,7 @@ wire_fields(std::type_identity<delete_default_curve_configuration_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_default_curve_configurations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_default_curve_configurations_request::removals},
         utility::codec::field{"intent", &delete_many_default_curve_configurations_request::intent},
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<delete_many_default_curve_configurations_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_default_curve_configurations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_default_curve_configurations_response::result},
     };
 }
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<delete_many_default_curve_configurations_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_configuration_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_default_curve_configuration_versions_request::key},
         utility::codec::field{"offset", &list_default_curve_configuration_versions_request::offset},
         utility::codec::field{"limit", &list_default_curve_configuration_versions_request::limit},
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<list_default_curve_configuration_versions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_configuration_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_default_curve_configuration_versions_response::result},
         utility::codec::field{"versions",
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<list_default_curve_configuration_versions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_configuration_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_default_curve_configuration_version_request::key},
     };
 }
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<get_default_curve_configuration_version_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_configuration_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_default_curve_configuration_version_response::result},
         utility::codec::field{"version",
                               &get_default_curve_configuration_version_response::version},

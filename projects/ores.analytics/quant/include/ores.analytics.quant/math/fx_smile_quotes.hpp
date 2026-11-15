@@ -129,6 +129,35 @@ quote_smile(const gram_charlier_smile& smile,
             const fx_market& market,
             const fx_quote_convention& convention);
 
+/**
+ * @brief The at-the-money strike of a smile as log(K / F), solved at the smile's own volatility.
+ *
+ * @param level A volatility near the smile's at-the-money, where the search starts.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<double, std::string>
+smile_atm_log_moneyness(fx_smile_function smile,
+                        double level,
+                        double years,
+                        const fx_market& market,
+                        fx_atm_type atm,
+                        fx_delta_type delta);
+
+/**
+ * @brief The strike of a smile whose delta, at the smile's volatility there, is @p delta, as
+ * log(K / F).
+ *
+ * @param delta The size of the delta, such as 0.25, for a call or a put alike.
+ * @param level A volatility near the smile's at-the-money, where the search starts.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<double, std::string>
+smile_delta_log_moneyness(fx_smile_function smile,
+                          double level,
+                          double years,
+                          const fx_market& market,
+                          fx_delta_type type,
+                          option_side side,
+                          double delta);
+
 }
 
 #endif

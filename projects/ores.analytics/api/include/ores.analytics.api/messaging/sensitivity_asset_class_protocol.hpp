@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"asset_class_code", &sensitivity_asset_class_key::asset_class_code},
     };
 }
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"asset_class_code", &sensitivity_asset_class_write::asset_class_code},
         utility::codec::field{"template_prefix", &sensitivity_asset_class_write::template_prefix},
         utility::codec::field{"name", &sensitivity_asset_class_write::name},
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &sensitivity_asset_class_change::write},
         utility::codec::field{"precondition", &sensitivity_asset_class_change::precondition},
     };
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &sensitivity_asset_class_removal::key},
         utility::codec::field{"precondition", &sensitivity_asset_class_removal::precondition},
     };
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &sensitivity_asset_class_lookup::key},
         utility::codec::field{"sensitivity_asset_class",
                               &sensitivity_asset_class_lookup::sensitivity_asset_class},
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_classes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"asset_class_code_one_of",
                               &sensitivity_asset_classes_filter::asset_class_code_one_of},
     };
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &sensitivity_asset_class_event::event_id},
         utility::codec::field{"key", &sensitivity_asset_class_event::key},
         utility::codec::field{"action", &sensitivity_asset_class_event::action},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_asset_class_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"sensitivity_asset_class",
                               &sensitivity_asset_class_version_key::sensitivity_asset_class},
         utility::codec::field{"version", &sensitivity_asset_class_version_key::version},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_ass
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<sensitivity_asset_class_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &sensitivity_asset_class_versions_filter::version},
         utility::codec::field{"from_version",
                               &sensitivity_asset_class_versions_filter::from_version},
@@ -523,7 +523,7 @@ wire_fields(std::type_identity<sensitivity_asset_class_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_sensitivity_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_sensitivity_asset_classes_request::offset},
         utility::codec::field{"limit", &list_sensitivity_asset_classes_request::limit},
         utility::codec::field{"order", &list_sensitivity_asset_classes_request::order},
@@ -542,7 +542,7 @@ wire_fields(std::type_identity<list_sensitivity_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_sensitivity_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_sensitivity_asset_classes_response::result},
         utility::codec::field{"asset_classes",
                               &list_sensitivity_asset_classes_response::asset_classes},
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<list_sensitivity_asset_classes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sensitivity_asset_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_sensitivity_asset_class_request::key},
     };
 }
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<list_sensitivity_asset_classes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sensitivity_asset_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_sensitivity_asset_class_response::result},
         utility::codec::field{"sensitivity_asset_class",
                               &get_sensitivity_asset_class_response::sensitivity_asset_class},
@@ -590,7 +590,7 @@ wire_fields(std::type_identity<list_sensitivity_asset_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_sensitivity_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_sensitivity_asset_classes_request::keys},
     };
 }
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<get_many_sensitivity_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_sensitivity_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_sensitivity_asset_classes_response::result},
         utility::codec::field{"entries", &get_many_sensitivity_asset_classes_response::entries},
     };
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<get_many_sensitivity_asset_classes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sensitivity_asset_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_sensitivity_asset_class_request::change},
         utility::codec::field{"intent", &put_sensitivity_asset_class_request::intent},
     };
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_many_sensitivity_asset_classes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sensitivity_asset_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_sensitivity_asset_class_response::result},
         utility::codec::field{"sensitivity_asset_class",
                               &put_sensitivity_asset_class_response::sensitivity_asset_class},
@@ -652,7 +652,7 @@ wire_fields(std::type_identity<get_many_sensitivity_asset_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_sensitivity_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_sensitivity_asset_classes_request::changes},
         utility::codec::field{"intent", &put_many_sensitivity_asset_classes_request::intent},
     };
@@ -668,7 +668,7 @@ wire_fields(std::type_identity<put_many_sensitivity_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_sensitivity_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_sensitivity_asset_classes_response::result},
         utility::codec::field{"asset_classes",
                               &put_many_sensitivity_asset_classes_response::asset_classes},
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<put_many_sensitivity_asset_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_sensitivity_asset_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_sensitivity_asset_class_request::removal},
         utility::codec::field{"intent", &delete_sensitivity_asset_class_request::intent},
     };
@@ -701,7 +701,7 @@ wire_fields(std::type_identity<delete_sensitivity_asset_class_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_sensitivity_asset_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_sensitivity_asset_class_response::result},
     };
 }
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<delete_sensitivity_asset_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_sensitivity_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_sensitivity_asset_classes_request::removals},
         utility::codec::field{"intent", &delete_many_sensitivity_asset_classes_request::intent},
     };
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_many_sensitivity_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_sensitivity_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_sensitivity_asset_classes_response::result},
     };
 }
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_many_sensitivity_asset_classes_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_sensitivity_asset_class_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_sensitivity_asset_class_versions_request::key},
         utility::codec::field{"offset", &list_sensitivity_asset_class_versions_request::offset},
         utility::codec::field{"limit", &list_sensitivity_asset_class_versions_request::limit},
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<list_sensitivity_asset_class_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_sensitivity_asset_class_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_sensitivity_asset_class_versions_response::result},
         utility::codec::field{"versions",
                               &list_sensitivity_asset_class_versions_response::versions},
@@ -784,7 +784,7 @@ wire_fields(std::type_identity<list_sensitivity_asset_class_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_sensitivity_asset_class_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_sensitivity_asset_class_version_request::key},
     };
 }
@@ -799,7 +799,7 @@ wire_fields(std::type_identity<get_sensitivity_asset_class_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_sensitivity_asset_class_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_sensitivity_asset_class_version_response::result},
         utility::codec::field{"version", &get_sensitivity_asset_class_version_response::version},
     };

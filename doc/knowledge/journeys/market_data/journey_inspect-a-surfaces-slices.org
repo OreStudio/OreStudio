@@ -177,6 +177,7 @@ lineage read and the generic history read are real. The generic history read is
 - [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the curve-shaped sibling of this check.
 - [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — send a sound surface to a second pair of eyes.
 - [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — see how the published surface moved over the day.
+- [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — what a person reads once this candidate is published.
 
 * Related knowledge
 

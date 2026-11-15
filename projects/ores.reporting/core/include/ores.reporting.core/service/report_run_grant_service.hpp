@@ -81,7 +81,7 @@ public:
      *                    the person as the grantor. A deployment that builds no
      *                    such client cannot create a grant at all.
      */
-    report_run_grant_service(ores::database::context ctx,
+    report_run_grant_service(const ores::database::context& ctx,
                              ores::nats::service::nats_client person_nats);
 
     /**

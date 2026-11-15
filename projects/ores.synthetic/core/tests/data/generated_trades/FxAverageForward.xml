@@ -6,17 +6,20 @@
       <PaymentDate>2032-09-02</PaymentDate>
       <ObservationDates>
         <Rules>
-          <StartDate></StartDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2032-09-02</EndDate>
           <Tenor>1M</Tenor>
-          <Convention>MF</Convention>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
-      <FixedPayer>N</FixedPayer>
+      <FixedPayer>false</FixedPayer>
       <ReferenceNotional>5790664.33</ReferenceNotional>
       <ReferenceCurrency>EUR</ReferenceCurrency>
       <SettlementNotional>4509769.38</SettlementNotional>
       <SettlementCurrency>USD</SettlementCurrency>
-      <FXIndex>EUR/USD</FXIndex>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
     </FxAverageForwardData>
   </Trade>
   <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
@@ -25,17 +28,20 @@
       <PaymentDate>2028-11-02</PaymentDate>
       <ObservationDates>
         <Rules>
-          <StartDate></StartDate>
+          <StartDate>2025-11-02</StartDate>
+          <EndDate>2028-11-02</EndDate>
           <Tenor>1M</Tenor>
-          <Convention>MF</Convention>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
-      <FixedPayer>N</FixedPayer>
+      <FixedPayer>false</FixedPayer>
       <ReferenceNotional>4187691.98</ReferenceNotional>
       <ReferenceCurrency>EUR</ReferenceCurrency>
       <SettlementNotional>3846395.08</SettlementNotional>
       <SettlementCurrency>USD</SettlementCurrency>
-      <FXIndex>EUR/USD</FXIndex>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
     </FxAverageForwardData>
   </Trade>
 </Portfolio>

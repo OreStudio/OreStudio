@@ -44,11 +44,10 @@ static constexpr std::string_view counterparty_identifier_queue_group = "ores.re
 
 std::vector<ores::nats::service::subscription> register_counterparty_identifier_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<counterparty_identifier_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<counterparty_identifier_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_counterparty_identifiers_request::nats_subject,
         counterparty_identifier_queue_group,

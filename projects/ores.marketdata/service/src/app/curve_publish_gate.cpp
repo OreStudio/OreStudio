@@ -26,6 +26,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -196,7 +197,7 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     record.as_of = subject.as_of;
     record.published_by = "";
     record.published_at = std::nullopt;
-    record.modified_by = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+    record.modified_by = ores::service::messaging::delegated_actor(ctx);
     record.performed_by = ctx.service_account();
     record.change_reason_code = "system.new_record";
     record.change_commentary =

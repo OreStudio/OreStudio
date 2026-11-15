@@ -369,7 +369,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &notification_channel_key::code},
     };
 }
@@ -383,7 +383,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &notification_channel_write::code},
         utility::codec::field{"name", &notification_channel_write::name},
         utility::codec::field{"description", &notification_channel_write::description},
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &notification_channel_change::write},
         utility::codec::field{"precondition", &notification_channel_change::precondition},
     };
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &notification_channel_removal::key},
         utility::codec::field{"precondition", &notification_channel_removal::precondition},
     };
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &notification_channel_lookup::key},
         utility::codec::field{"notification_channel",
                               &notification_channel_lookup::notification_channel},
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channels_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &notification_channels_filter::code_one_of},
     };
 }
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &notification_channel_event::event_id},
         utility::codec::field{"key", &notification_channel_event::key},
         utility::codec::field{"action", &notification_channel_event::action},
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"notification_channel",
                               &notification_channel_version_key::notification_channel},
         utility::codec::field{"version", &notification_channel_version_key::version},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_channel_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &notification_channel_versions_filter::version},
         utility::codec::field{"from_version", &notification_channel_versions_filter::from_version},
         utility::codec::field{"to_version", &notification_channel_versions_filter::to_version},
@@ -511,7 +511,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_notification_channels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_notification_channels_request::offset},
         utility::codec::field{"limit", &list_notification_channels_request::limit},
         utility::codec::field{"order", &list_notification_channels_request::order},
@@ -529,7 +529,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_notification_channels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_notification_channels_response::result},
         utility::codec::field{"channels", &list_notification_channels_response::channels},
         utility::codec::field{"total", &list_notification_channels_response::total},
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_notification_channel_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_notification_channel_request::key},
     };
 }
@@ -559,7 +559,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_notification_channel_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_notification_channel_response::result},
         utility::codec::field{"notification_channel",
                               &get_notification_channel_response::notification_channel},
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_channe
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_notification_channels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_notification_channels_request::keys},
     };
 }
@@ -591,7 +591,7 @@ wire_fields(std::type_identity<get_many_notification_channels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_notification_channels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_notification_channels_response::result},
         utility::codec::field{"entries", &get_many_notification_channels_response::entries},
     };
@@ -606,7 +606,7 @@ wire_fields(std::type_identity<get_many_notification_channels_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_notification_channel_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_notification_channel_request::change},
         utility::codec::field{"intent", &put_notification_channel_request::intent},
     };
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<get_many_notification_channels_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_notification_channel_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_notification_channel_response::result},
         utility::codec::field{"notification_channel",
                               &put_notification_channel_response::notification_channel},
@@ -638,7 +638,7 @@ wire_fields(std::type_identity<get_many_notification_channels_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_notification_channels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_notification_channels_request::changes},
         utility::codec::field{"intent", &put_many_notification_channels_request::intent},
     };
@@ -654,7 +654,7 @@ wire_fields(std::type_identity<put_many_notification_channels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_notification_channels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_notification_channels_response::result},
         utility::codec::field{"channels", &put_many_notification_channels_response::channels},
     };
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<put_many_notification_channels_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_notification_channel_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_notification_channel_request::removal},
         utility::codec::field{"intent", &delete_notification_channel_request::intent},
     };
@@ -684,7 +684,7 @@ wire_fields(std::type_identity<put_many_notification_channels_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_notification_channel_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_notification_channel_response::result},
     };
 }
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<put_many_notification_channels_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_notification_channels_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_notification_channels_request::removals},
         utility::codec::field{"intent", &delete_many_notification_channels_request::intent},
     };
@@ -715,7 +715,7 @@ wire_fields(std::type_identity<delete_many_notification_channels_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_notification_channels_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_notification_channels_response::result},
     };
 }
@@ -730,7 +730,7 @@ wire_fields(std::type_identity<delete_many_notification_channels_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_notification_channel_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_notification_channel_versions_request::key},
         utility::codec::field{"offset", &list_notification_channel_versions_request::offset},
         utility::codec::field{"limit", &list_notification_channel_versions_request::limit},
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<list_notification_channel_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_notification_channel_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_notification_channel_versions_response::result},
         utility::codec::field{"versions", &list_notification_channel_versions_response::versions},
         utility::codec::field{"total", &list_notification_channel_versions_response::total},
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<list_notification_channel_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_notification_channel_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_notification_channel_version_request::key},
     };
 }
@@ -781,7 +781,7 @@ wire_fields(std::type_identity<get_notification_channel_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_notification_channel_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_notification_channel_version_response::result},
         utility::codec::field{"version", &get_notification_channel_version_response::version},
     };

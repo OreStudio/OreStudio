@@ -146,8 +146,11 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
-        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
-        "<reason> <commentary>");
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
+        "<delivery_date> <delivery_start> <delivery_end> <fva_date> <premium_date> "
+        "<settlement_date> <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> "
+        "<premium_amount> <target_amount> <multiplier> <cap> <trigger_level> <reset_minimum> "
+        "<strike_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -161,8 +164,11 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
-        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
-        "<reason> <commentary> [--version <n>]");
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
+        "<delivery_date> <delivery_start> <delivery_end> <fva_date> <premium_date> "
+        "<settlement_date> <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> "
+        "<premium_amount> <target_amount> <multiplier> <cap> <trigger_level> <reset_minimum> "
+        "<strike_date> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -176,8 +182,11 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
-        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
-        "<reason> <commentary>");
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
+        "<delivery_date> <delivery_start> <delivery_end> <fva_date> <premium_date> "
+        "<settlement_date> <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> "
+        "<premium_amount> <target_amount> <multiplier> <cap> <trigger_level> <reset_minimum> "
+        "<strike_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -378,8 +387,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 38 + 2) {
-            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 55 + 2) {
+            fail(out) << "Expected " << (55 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -464,6 +473,39 @@ void commodity_instrument_commands::process_add(std::ostream& out,
             req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
         commodity_instrument_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
+        commodity_instrument_read_token(
+            req.change.write.delivery_date, parsed->positionals[next++], "delivery_date");
+        commodity_instrument_read_token(
+            req.change.write.delivery_start, parsed->positionals[next++], "delivery_start");
+        commodity_instrument_read_token(
+            req.change.write.delivery_end, parsed->positionals[next++], "delivery_end");
+        commodity_instrument_read_token(
+            req.change.write.fva_date, parsed->positionals[next++], "fva_date");
+        commodity_instrument_read_token(
+            req.change.write.premium_date, parsed->positionals[next++], "premium_date");
+        commodity_instrument_read_token(
+            req.change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+        commodity_instrument_read_token(
+            req.change.write.implied_vol_strike, parsed->positionals[next++], "implied_vol_strike");
+        commodity_instrument_read_token(
+            req.change.write.reset_strike, parsed->positionals[next++], "reset_strike");
+        commodity_instrument_read_token(
+            req.change.write.trigger_type, parsed->positionals[next++], "trigger_type");
+        commodity_instrument_read_token(
+            req.change.write.trigger_price, parsed->positionals[next++], "trigger_price");
+        commodity_instrument_read_token(
+            req.change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+        commodity_instrument_read_token(
+            req.change.write.target_amount, parsed->positionals[next++], "target_amount");
+        commodity_instrument_read_token(
+            req.change.write.multiplier, parsed->positionals[next++], "multiplier");
+        commodity_instrument_read_token(req.change.write.cap, parsed->positionals[next++], "cap");
+        commodity_instrument_read_token(
+            req.change.write.trigger_level, parsed->positionals[next++], "trigger_level");
+        commodity_instrument_read_token(
+            req.change.write.reset_minimum, parsed->positionals[next++], "reset_minimum");
+        commodity_instrument_read_token(
+            req.change.write.strike_date, parsed->positionals[next++], "strike_date");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -510,8 +552,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 38 + 2) {
-            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 55 + 2) {
+            fail(out) << "Expected " << (55 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -596,6 +638,39 @@ void commodity_instrument_commands::process_set(std::ostream& out,
             req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
         commodity_instrument_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
+        commodity_instrument_read_token(
+            req.change.write.delivery_date, parsed->positionals[next++], "delivery_date");
+        commodity_instrument_read_token(
+            req.change.write.delivery_start, parsed->positionals[next++], "delivery_start");
+        commodity_instrument_read_token(
+            req.change.write.delivery_end, parsed->positionals[next++], "delivery_end");
+        commodity_instrument_read_token(
+            req.change.write.fva_date, parsed->positionals[next++], "fva_date");
+        commodity_instrument_read_token(
+            req.change.write.premium_date, parsed->positionals[next++], "premium_date");
+        commodity_instrument_read_token(
+            req.change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+        commodity_instrument_read_token(
+            req.change.write.implied_vol_strike, parsed->positionals[next++], "implied_vol_strike");
+        commodity_instrument_read_token(
+            req.change.write.reset_strike, parsed->positionals[next++], "reset_strike");
+        commodity_instrument_read_token(
+            req.change.write.trigger_type, parsed->positionals[next++], "trigger_type");
+        commodity_instrument_read_token(
+            req.change.write.trigger_price, parsed->positionals[next++], "trigger_price");
+        commodity_instrument_read_token(
+            req.change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+        commodity_instrument_read_token(
+            req.change.write.target_amount, parsed->positionals[next++], "target_amount");
+        commodity_instrument_read_token(
+            req.change.write.multiplier, parsed->positionals[next++], "multiplier");
+        commodity_instrument_read_token(req.change.write.cap, parsed->positionals[next++], "cap");
+        commodity_instrument_read_token(
+            req.change.write.trigger_level, parsed->positionals[next++], "trigger_level");
+        commodity_instrument_read_token(
+            req.change.write.reset_minimum, parsed->positionals[next++], "reset_minimum");
+        commodity_instrument_read_token(
+            req.change.write.strike_date, parsed->positionals[next++], "strike_date");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -654,8 +729,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 38 + 2) {
-            fail(out) << "Expected " << (change_count * 38 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 55 + 2) {
+            fail(out) << "Expected " << (change_count * 55 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -742,6 +817,39 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
                 change.write.include_period_end, parsed->positionals[next++], "include_period_end");
             commodity_instrument_read_token(
                 change.write.position, parsed->positionals[next++], "position");
+            commodity_instrument_read_token(
+                change.write.delivery_date, parsed->positionals[next++], "delivery_date");
+            commodity_instrument_read_token(
+                change.write.delivery_start, parsed->positionals[next++], "delivery_start");
+            commodity_instrument_read_token(
+                change.write.delivery_end, parsed->positionals[next++], "delivery_end");
+            commodity_instrument_read_token(
+                change.write.fva_date, parsed->positionals[next++], "fva_date");
+            commodity_instrument_read_token(
+                change.write.premium_date, parsed->positionals[next++], "premium_date");
+            commodity_instrument_read_token(
+                change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+            commodity_instrument_read_token(
+                change.write.implied_vol_strike, parsed->positionals[next++], "implied_vol_strike");
+            commodity_instrument_read_token(
+                change.write.reset_strike, parsed->positionals[next++], "reset_strike");
+            commodity_instrument_read_token(
+                change.write.trigger_type, parsed->positionals[next++], "trigger_type");
+            commodity_instrument_read_token(
+                change.write.trigger_price, parsed->positionals[next++], "trigger_price");
+            commodity_instrument_read_token(
+                change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+            commodity_instrument_read_token(
+                change.write.target_amount, parsed->positionals[next++], "target_amount");
+            commodity_instrument_read_token(
+                change.write.multiplier, parsed->positionals[next++], "multiplier");
+            commodity_instrument_read_token(change.write.cap, parsed->positionals[next++], "cap");
+            commodity_instrument_read_token(
+                change.write.trigger_level, parsed->positionals[next++], "trigger_level");
+            commodity_instrument_read_token(
+                change.write.reset_minimum, parsed->positionals[next++], "reset_minimum");
+            commodity_instrument_read_token(
+                change.write.strike_date, parsed->positionals[next++], "strike_date");
             commodity_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

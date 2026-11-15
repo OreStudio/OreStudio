@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C
+:END:
+#+title: Story: Publish one curated convention set and provision to completion
+#+description: Provisioning stopped at generate_trades: tenants held no definition of the indices ORE builds in code, and an index named by several swap conventions was refused. One curated refdata.conventions dataset, published through DQ, replaces the three sources of conventions, and provisioning runs to completion.
+#+type: story
+#+level: s2
+#+filetags: :trading:synthetic:conventions:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-12
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A fresh environment provisions the system and Acme to completion, every step
+of it, and each party holds every convention its trades and curves name.
+
+The conventions reach every tenant one way: the refdata.conventions DQ
+dataset, a system dataset curated in
+=projects/ores.seeder/datasets/conventions/= with a methodology, a source for
+each row, a place in the bundles of the system party and of every party, and
+declared dependencies from each dataset that names a convention.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | All tasks done.                        |
+| Waiting on    | Nothing.                               |
+| Next          | Merge the PR.                          |
+| Last touched  | 2026-11-12                             |
+
+* Acceptance
+
+- One dataset, refdata.conventions, holds every index and instrument
+  convention, each row with its source, under the Convention Curation
+  Methodology. ore.conventions and the two seeds that wrote index conventions
+  straight into the system tenant are gone.
+- The dataset is in the system_core and party_essentials bundles, and every
+  dataset that names a convention depends on it.
+- A gate check fails when the populate script is not what the table
+  generates, and when ORE holds a convention the dataset lacks or states
+  otherwise without a recorded reason.
+- A fresh environment provisions the system and Acme to completion.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FE619375-32C0-4997-92C5-4167FBEB15BA][Scaffold story: Draw only swap indices with one convention]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F803A3DD-3D53-4BDF-8E92-81AFB914D7E1][Publish one curated convention set]] | DONE | 2026-11-11 | 2026-11-12 | Replace the three sources of conventions with the refdata.conventions DQ dataset, fix the builders provisioning stopped on, and provision to completion. |
+
+* Decisions
+
+* Out of scope
+
+- Renaming the curve configs onto ORE's index ids (EUR-ESTR to EUR-ESTER).
+- Calendars spelled in two vocabularies: its capture stays open.

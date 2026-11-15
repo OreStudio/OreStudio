@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_MESSAGING_REGISTRAR_DETAIL_HPP
 #define ORES_TRADING_MESSAGING_REGISTRAR_DETAIL_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -39,47 +39,47 @@ inline constexpr auto queue_name = "ores.trading.service";
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_trade_handlers(ores::nats::service::client& nats,
-                        ores::database::context ctx,
+                        const ores::database::context& ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_rates_handlers(ores::nats::service::client& nats,
-                        ores::database::context ctx,
+                        const ores::database::context& ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_fx_handlers(ores::nats::service::client& nats,
-                     ores::database::context ctx,
+                     const ores::database::context& ctx,
                      std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_bond_handlers(ores::nats::service::client& nats,
-                       ores::database::context ctx,
+                       const ores::database::context& ctx,
                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_credit_handlers(ores::nats::service::client& nats,
-                         ores::database::context ctx,
+                         const ores::database::context& ctx,
                          std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_equity_handlers(ores::nats::service::client& nats,
-                         ores::database::context ctx,
+                         const ores::database::context& ctx,
                          std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_commodity_handlers(ores::nats::service::client& nats,
-                            ores::database::context ctx,
+                            const ores::database::context& ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_composite_handlers(ores::nats::service::client& nats,
-                            ores::database::context ctx,
+                            const ores::database::context& ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_scripted_handlers(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

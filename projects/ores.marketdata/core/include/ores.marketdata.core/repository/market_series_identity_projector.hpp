@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_IDENTITY_PROJECTOR_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_IDENTITY_PROJECTOR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -86,7 +86,7 @@ public:
      *
      * @param party When set, only the series of that party.
      */
-    static backfill_result project_missing(ores::database::context ctx,
+    static backfill_result project_missing(const ores::database::context& ctx,
                                            const std::optional<boost::uuids::uuid>& party = {});
 
     /**
@@ -98,7 +98,7 @@ public:
      * says how many identities the codec could not state rather than how many
      * were dropped -- a write path ignores it, and the backfill reports it.
      */
-    static std::size_t project(ores::database::context ctx,
+    static std::size_t project(const ores::database::context& ctx,
                                const std::vector<domain::market_series>& series);
 
     /**
@@ -112,7 +112,7 @@ public:
      * nothing to write, so the backfill repairs the rows the current projector
      * would spell differently however often it runs.
      */
-    static reprojection_result reproject(ores::database::context ctx,
+    static reprojection_result reproject(const ores::database::context& ctx,
                                          const std::vector<domain::market_series>& series);
 };
 

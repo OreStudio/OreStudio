@@ -1,0 +1,6 @@
+# =publish-fx-vol-surface=
+#
+# GENERATED from doc/recipes/shell/fx_vol_surface_operation/fx_vol_surface_operation.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fx_vol_surface_operation publish-fx-vol-surface __none__ 1970-01-01T00:00:00Z

@@ -5,12 +5,13 @@
     <FxDoubleTouchOptionData>
       <OptionData>
         <LongShort>Long</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
           <ExerciseDate>2028-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>KnockOut</Type>
+        <Type>KnockIn</Type>
         <Levels>
           <Level>1.2926</Level>
           <Level>1.5798</Level>
@@ -27,12 +28,13 @@
     <FxDoubleTouchOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
           <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>KnockOut</Type>
+        <Type>KnockIn</Type>
         <Levels>
           <Level>0.6536</Level>
           <Level>0.7988</Level>

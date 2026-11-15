@@ -32,15 +32,21 @@ export const series = {
      * The observations of a series over a window, oldest first, and how many
      * the window holds. The count caps the answer, so a window wider than the
      * cap returns the newest observations of it.
+     *
+     * The window ends at @p asOf when one is named, and at the deployment's
+     * clock when it is not. A screen that draws a chosen day states that instant,
+     * so the path it draws is the one its other reads described.
      */
     async observations(
         seriesId: string,
         limit?: number,
         window?: SeriesWindow,
+        asOf?: string,
     ): Promise<SeriesObservations> {
         const query = new URLSearchParams();
         if (limit !== undefined) query.set('limit', String(limit));
         if (window !== undefined) query.set('window', window);
+        if (asOf !== undefined) query.set('as_of', asOf);
         const asked = query.size === 0 ? '' : `?${query.toString()}`;
         return seriesObservationsSchema.parse(
             await request(`/api/series/${encodeURIComponent(seriesId)}/observations${asked}`, {

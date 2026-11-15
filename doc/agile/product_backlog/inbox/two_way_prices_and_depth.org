@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 808C444D-B9F7-4C09-B860-C8B98C10FCE7
+:END:
+#+title: Two-way prices, stochastic spreads and depth
+#+description: Bid and ask arrive as a message pair over an unchanged mid, a spread is one more block member with its own mean-reverting positive process, and a book is a new datum and store rather than a series or a board member. The design statement is on the components page; this is the work.
+#+type: capture
+#+level: cross
+#+filetags: :market_data:synthetic:two_way:order_book:spread:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two levels of work the simulator has not reached, and the shape that lets them land
+without a redesign:
+
+- *Two-way quotes.* Every published point becomes a bid and an ask around the mid it
+  already publishes, so a mid consumer never changes.
+- *A stochastic spread.* The spread is a positive mean-reverting process of its own --
+  log-Ornstein-Uhlenbeck or CIR -- and one more member of the feed's block, so its shocks
+  correlate with the mid, with volatility and with the regime by the loading it is given.
+  It widens in the active regime when it is given a regime loading, and a contributor's
+  width stays the contributor's.
+- *Depth.* An order book is state with structural updates, not a scalar observation, so it
+  needs its own datum and its own store (snapshots plus deltas) and an identity per
+  instrument. It must not become a board member.
+
+* Why
+
+Because the two land differently, and only one of them is nearly free. Order flow is what
+the arrival channel already models -- a Hawkes series is self-exciting order arrivals and
+the heat is the market-wide burst -- and a spread is a block member of the latent market
+whose driver already exists. A book is a new kind of data for the platform: the market
+data path stores (instant, value) observations, and depth has structure.
+
+The one thing to decide first is which of the two is primary for a given instrument. Where
+there is depth, the top of the book is the spread and a spread model beside it would be a
+second source of truth; where a contributor quotes without depth -- volatility surfaces,
+curves -- the state process is the only source there is. That split is what the current
+vendor model already implies.
+
+The design statement, and what to keep true now so the work stays cheap, is
+[[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]], section "Two-way prices and depth,
+when they come". The story defers two-way pricing to a later level of work
+([[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]], out of scope).
+
+* References
+
+- =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp=:
+  =fx_vol_point_tick=, the single-valued point a contributor publishes.
+- =projects/ores.analytics.quant/include/ores.analytics.quant/domain/market_board.hpp=:
+  the member kinds, and why a book is not one.
+- =projects/ores.marketdata/modeling/=: the observation and series models the depth store
+  would sit beside.
+
+* See also
+
+- [[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]] -- the implementation foundations
+  this extends.
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] -- the
+  contributor whose width becomes bid and ask.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps]] -- the arrivals a book feed would use.

@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_ibor_fallback_key::id},
     };
 }
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_ibor_fallback_write::id},
         utility::codec::field{"curve_segment_id",
                               &curve_segment_ibor_fallback_write::curve_segment_id},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_segment_ibor_fallback_change::write},
         utility::codec::field{"precondition", &curve_segment_ibor_fallback_change::precondition},
     };
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_ibor_fallback_removal::key},
         utility::codec::field{"precondition", &curve_segment_ibor_fallback_removal::precondition},
     };
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_ibor_fallback_lookup::key},
         utility::codec::field{"curve_segment_ibor_fallback",
                               &curve_segment_ibor_fallback_lookup::curve_segment_ibor_fallback},
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallbacks_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_segment_ibor_fallbacks_filter::id_one_of},
     };
 }
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_segment_ibor_fallback_event::event_id},
         utility::codec::field{"key", &curve_segment_ibor_fallback_event::key},
         utility::codec::field{"action", &curve_segment_ibor_fallback_event::action},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_ibor_fallback_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "curve_segment_ibor_fallback",
             &curve_segment_ibor_fallback_version_key::curve_segment_ibor_fallback},
@@ -512,7 +512,7 @@ wire_fields(std::type_identity<curve_segment_ibor_fallback_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_ibor_fallback_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_segment_ibor_fallback_versions_filter::version},
         utility::codec::field{"from_version",
                               &curve_segment_ibor_fallback_versions_filter::from_version},
@@ -531,7 +531,7 @@ wire_fields(std::type_identity<curve_segment_ibor_fallback_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_ibor_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_segment_ibor_fallbacks_request::offset},
         utility::codec::field{"limit", &list_curve_segment_ibor_fallbacks_request::limit},
         utility::codec::field{"order", &list_curve_segment_ibor_fallbacks_request::order},
@@ -550,7 +550,7 @@ wire_fields(std::type_identity<list_curve_segment_ibor_fallbacks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_ibor_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_segment_ibor_fallbacks_response::result},
         utility::codec::field{"segment_ibor_fallbacks",
                               &list_curve_segment_ibor_fallbacks_response::segment_ibor_fallbacks},
@@ -568,7 +568,7 @@ wire_fields(std::type_identity<list_curve_segment_ibor_fallbacks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_ibor_fallback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_ibor_fallback_request::key},
     };
 }
@@ -583,7 +583,7 @@ wire_fields(std::type_identity<get_curve_segment_ibor_fallback_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_ibor_fallback_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_segment_ibor_fallback_response::result},
         utility::codec::field{
             "curve_segment_ibor_fallback",
@@ -601,7 +601,7 @@ wire_fields(std::type_identity<get_curve_segment_ibor_fallback_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_ibor_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_segment_ibor_fallbacks_request::keys},
     };
 }
@@ -616,7 +616,7 @@ wire_fields(std::type_identity<get_many_curve_segment_ibor_fallbacks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_ibor_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_segment_ibor_fallbacks_response::result},
         utility::codec::field{"entries", &get_many_curve_segment_ibor_fallbacks_response::entries},
     };
@@ -632,7 +632,7 @@ wire_fields(std::type_identity<get_many_curve_segment_ibor_fallbacks_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_ibor_fallback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_segment_ibor_fallback_request::change},
         utility::codec::field{"intent", &put_curve_segment_ibor_fallback_request::intent},
     };
@@ -648,7 +648,7 @@ wire_fields(std::type_identity<put_curve_segment_ibor_fallback_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_ibor_fallback_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_segment_ibor_fallback_response::result},
         utility::codec::field{
             "curve_segment_ibor_fallback",
@@ -666,7 +666,7 @@ wire_fields(std::type_identity<put_curve_segment_ibor_fallback_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_ibor_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_curve_segment_ibor_fallbacks_request::changes},
         utility::codec::field{"intent", &put_many_curve_segment_ibor_fallbacks_request::intent},
     };
@@ -682,7 +682,7 @@ wire_fields(std::type_identity<put_many_curve_segment_ibor_fallbacks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_ibor_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_segment_ibor_fallbacks_response::result},
         utility::codec::field{
             "segment_ibor_fallbacks",
@@ -700,7 +700,7 @@ wire_fields(std::type_identity<put_many_curve_segment_ibor_fallbacks_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_ibor_fallback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_segment_ibor_fallback_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_ibor_fallback_request::intent},
     };
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<delete_curve_segment_ibor_fallback_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_ibor_fallback_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_segment_ibor_fallback_response::result},
     };
 }
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<delete_curve_segment_ibor_fallback_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_ibor_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_ibor_fallbacks_request::removals},
         utility::codec::field{"intent", &delete_many_curve_segment_ibor_fallbacks_request::intent},
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_ibor_fallbacks_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_ibor_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_curve_segment_ibor_fallbacks_response::result},
     };
 }
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_ibor_fallbacks_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_ibor_fallback_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_segment_ibor_fallback_versions_request::key},
         utility::codec::field{"offset", &list_curve_segment_ibor_fallback_versions_request::offset},
         utility::codec::field{"limit", &list_curve_segment_ibor_fallback_versions_request::limit},
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<list_curve_segment_ibor_fallback_versions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_ibor_fallback_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_curve_segment_ibor_fallback_versions_response::result},
         utility::codec::field{"versions",
@@ -801,7 +801,7 @@ wire_fields(std::type_identity<list_curve_segment_ibor_fallback_versions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_ibor_fallback_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_ibor_fallback_version_request::key},
     };
 }
@@ -816,7 +816,7 @@ wire_fields(std::type_identity<get_curve_segment_ibor_fallback_version_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_ibor_fallback_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_segment_ibor_fallback_version_response::result},
         utility::codec::field{"version",
                               &get_curve_segment_ibor_fallback_version_response::version},

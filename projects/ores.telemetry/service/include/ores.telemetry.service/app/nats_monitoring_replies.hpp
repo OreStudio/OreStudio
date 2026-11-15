@@ -47,13 +47,14 @@ struct varz_response {
 };
 
 constexpr auto wire_fields(std::type_identity<varz_response>) {
-    return std::tuple{utility::codec::field{"in_msgs", &varz_response::in_msgs},
-                      utility::codec::field{"out_msgs", &varz_response::out_msgs},
-                      utility::codec::field{"in_bytes", &varz_response::in_bytes},
-                      utility::codec::field{"out_bytes", &varz_response::out_bytes},
-                      utility::codec::field{"connections", &varz_response::connections},
-                      utility::codec::field{"mem", &varz_response::mem},
-                      utility::codec::field{"slow_consumers", &varz_response::slow_consumers}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"in_msgs", &varz_response::in_msgs},
+        utility::codec::field{"out_msgs", &varz_response::out_msgs},
+        utility::codec::field{"in_bytes", &varz_response::in_bytes},
+        utility::codec::field{"out_bytes", &varz_response::out_bytes},
+        utility::codec::field{"connections", &varz_response::connections},
+        utility::codec::field{"mem", &varz_response::mem},
+        utility::codec::field{"slow_consumers", &varz_response::slow_consumers}};
 }
 static_assert(utility::codec::names_every_member<varz_response>());
 
@@ -64,9 +65,10 @@ struct jsz_stream_state {
 };
 
 constexpr auto wire_fields(std::type_identity<jsz_stream_state>) {
-    return std::tuple{utility::codec::field{"messages", &jsz_stream_state::messages},
-                      utility::codec::field{"bytes", &jsz_stream_state::bytes},
-                      utility::codec::field{"consumer_count", &jsz_stream_state::consumer_count}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"messages", &jsz_stream_state::messages},
+        utility::codec::field{"bytes", &jsz_stream_state::bytes},
+        utility::codec::field{"consumer_count", &jsz_stream_state::consumer_count}};
 }
 static_assert(utility::codec::names_every_member<jsz_stream_state>());
 
@@ -84,8 +86,9 @@ struct jsz_stream_detail {
 };
 
 constexpr auto wire_fields(std::type_identity<jsz_stream_detail>) {
-    return std::tuple{utility::codec::field{"name", &jsz_stream_detail::name},
-                      utility::codec::field{"state", &jsz_stream_detail::state}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"name", &jsz_stream_detail::name},
+        utility::codec::field{"state", &jsz_stream_detail::state}};
 }
 static_assert(utility::codec::names_every_member<jsz_stream_detail>());
 
@@ -94,7 +97,8 @@ struct jsz_account_detail {
 };
 
 constexpr auto wire_fields(std::type_identity<jsz_account_detail>) {
-    return std::tuple{utility::codec::field{"stream_detail", &jsz_account_detail::stream_detail}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"stream_detail", &jsz_account_detail::stream_detail}};
 }
 static_assert(utility::codec::names_every_member<jsz_account_detail>());
 
@@ -107,7 +111,8 @@ struct jsz_response {
 };
 
 constexpr auto wire_fields(std::type_identity<jsz_response>) {
-    return std::tuple{utility::codec::field{"account_details", &jsz_response::account_details}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"account_details", &jsz_response::account_details}};
 }
 static_assert(utility::codec::names_every_member<jsz_response>());
 

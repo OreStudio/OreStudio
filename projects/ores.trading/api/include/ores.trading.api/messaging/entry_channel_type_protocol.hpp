@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &entry_channel_type_key::code},
     };
 }
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &entry_channel_type_write::code},
         utility::codec::field{"description", &entry_channel_type_write::description},
     };
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &entry_channel_type_change::write},
         utility::codec::field{"precondition", &entry_channel_type_change::precondition},
     };
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &entry_channel_type_removal::key},
         utility::codec::field{"precondition", &entry_channel_type_removal::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &entry_channel_type_lookup::key},
         utility::codec::field{"entry_channel_type", &entry_channel_type_lookup::entry_channel_type},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &entry_channel_types_filter::code_one_of},
     };
 }
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &entry_channel_type_event::event_id},
         utility::codec::field{"key", &entry_channel_type_event::key},
         utility::codec::field{"action", &entry_channel_type_event::action},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"entry_channel_type",
                               &entry_channel_type_version_key::entry_channel_type},
         utility::codec::field{"version", &entry_channel_type_version_key::version},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entry_channel_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &entry_channel_type_versions_filter::version},
         utility::codec::field{"from_version", &entry_channel_type_versions_filter::from_version},
         utility::codec::field{"to_version", &entry_channel_type_versions_filter::to_version},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_entry_channel_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_entry_channel_types_request::offset},
         utility::codec::field{"limit", &list_entry_channel_types_request::limit},
         utility::codec::field{"order", &list_entry_channel_types_request::order},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_entry_channel_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_entry_channel_types_response::result},
         utility::codec::field{"entry_channel_types",
                               &list_entry_channel_types_response::entry_channel_types},
@@ -540,7 +540,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entry_channel_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_entry_channel_type_request::key},
     };
 }
@@ -554,7 +554,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entry_channel_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_entry_channel_type_response::result},
         utility::codec::field{"entry_channel_type",
                               &get_entry_channel_type_response::entry_channel_type},
@@ -570,7 +570,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_entry_channel_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_entry_channel_types_request::keys},
     };
 }
@@ -585,7 +585,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.entry_channel_typ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_entry_channel_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_entry_channel_types_response::result},
         utility::codec::field{"entries", &get_many_entry_channel_types_response::entries},
     };
@@ -600,7 +600,7 @@ wire_fields(std::type_identity<get_many_entry_channel_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_entry_channel_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_entry_channel_type_request::change},
         utility::codec::field{"intent", &put_entry_channel_type_request::intent},
     };
@@ -615,7 +615,7 @@ wire_fields(std::type_identity<get_many_entry_channel_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_entry_channel_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_entry_channel_type_response::result},
         utility::codec::field{"entry_channel_type",
                               &put_entry_channel_type_response::entry_channel_type},
@@ -631,7 +631,7 @@ wire_fields(std::type_identity<get_many_entry_channel_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_entry_channel_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_entry_channel_types_request::changes},
         utility::codec::field{"intent", &put_many_entry_channel_types_request::intent},
     };
@@ -647,7 +647,7 @@ wire_fields(std::type_identity<get_many_entry_channel_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_entry_channel_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_entry_channel_types_response::result},
         utility::codec::field{"entry_channel_types",
                               &put_many_entry_channel_types_response::entry_channel_types},
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<put_many_entry_channel_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_entry_channel_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_entry_channel_type_request::removal},
         utility::codec::field{"intent", &delete_entry_channel_type_request::intent},
     };
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<put_many_entry_channel_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_entry_channel_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_entry_channel_type_response::result},
     };
 }
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<put_many_entry_channel_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_entry_channel_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_entry_channel_types_request::removals},
         utility::codec::field{"intent", &delete_many_entry_channel_types_request::intent},
     };
@@ -709,7 +709,7 @@ wire_fields(std::type_identity<delete_many_entry_channel_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_entry_channel_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_entry_channel_types_response::result},
     };
 }
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<delete_many_entry_channel_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_entry_channel_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_entry_channel_type_versions_request::key},
         utility::codec::field{"offset", &list_entry_channel_type_versions_request::offset},
         utility::codec::field{"limit", &list_entry_channel_type_versions_request::limit},
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<list_entry_channel_type_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_entry_channel_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_entry_channel_type_versions_response::result},
         utility::codec::field{"versions", &list_entry_channel_type_versions_response::versions},
         utility::codec::field{"total", &list_entry_channel_type_versions_response::total},
@@ -760,7 +760,7 @@ wire_fields(std::type_identity<list_entry_channel_type_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_entry_channel_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_entry_channel_type_version_request::key},
     };
 }
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<get_entry_channel_type_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_entry_channel_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_entry_channel_type_version_response::result},
         utility::codec::field{"version", &get_entry_channel_type_version_response::version},
     };

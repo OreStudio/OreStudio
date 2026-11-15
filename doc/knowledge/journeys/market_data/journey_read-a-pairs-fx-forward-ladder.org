@@ -118,6 +118,7 @@ The start, the measure and the forward-forward need no read. The reply states ea
 - [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — check a curve before trusting its forwards.
 - [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — a surface reads the same forwards.
 - [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — where a spot comes from.
+- [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] — the spot and the crosses the ladder's forwards start from.
 
 * Related knowledge
 

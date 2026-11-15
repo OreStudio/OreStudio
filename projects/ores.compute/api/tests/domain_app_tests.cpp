@@ -22,6 +22,7 @@
 #include "ores.compute.api/domain/app_table.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.

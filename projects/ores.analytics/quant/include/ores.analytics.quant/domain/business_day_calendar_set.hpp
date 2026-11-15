@@ -54,6 +54,16 @@ struct calendar_query final {
 /// std::vector<year_month_day> per calendar.
 class ORES_ANALYTICS_QUANT_EXPORT business_day_calendar_set final {
 public:
+    /// A set of no calendars. @c calendar_count answers zero, and the
+    /// arithmetic that needs a calendar refuses an index past the set rather
+    /// than treating an unknown calendar as one with no holidays, so a caller
+    /// that must not date anything this way checks @c calendar_count first.
+    business_day_calendar_set() = default;
+
+    /// A set of one calendar that closes only at weekends: the holidays a caller knows when it
+    /// knows none, and the calendar a test states when its dates are about weekends alone.
+    [[nodiscard]] static business_day_calendar_set weekends_only();
+
     /// @p rows must be ordered by (calendar_index, date), duplicates
     /// removed by the caller (or -- since holiday sets are typically small
     /// and rows come from a DISTINCT query -- absent by construction).

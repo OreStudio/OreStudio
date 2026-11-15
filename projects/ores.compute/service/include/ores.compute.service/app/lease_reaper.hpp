@@ -54,7 +54,7 @@ private:
 public:
     lease_reaper(std::uint32_t interval_seconds,
                  ores::nats::service::client& nats,
-                 ores::database::context ctx);
+                 const ores::database::context& ctx);
 
     boost::asio::awaitable<void> run();
 

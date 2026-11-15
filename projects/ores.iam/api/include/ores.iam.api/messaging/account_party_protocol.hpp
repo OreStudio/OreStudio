@@ -307,7 +307,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_party_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_party_key::account_id},
         utility::codec::field{"party_id", &account_party_key::party_id},
     };
@@ -322,7 +322,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_party_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_party_write::account_id},
         utility::codec::field{"party_id", &account_party_write::party_id},
     };
@@ -337,7 +337,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_party_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &account_party_change::write},
         utility::codec::field{"precondition", &account_party_change::precondition},
     };
@@ -352,7 +352,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_party_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_party_removal::key},
         utility::codec::field{"precondition", &account_party_removal::precondition},
     };
@@ -367,7 +367,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_party_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_party_lookup::key},
         utility::codec::field{"account_party", &account_party_lookup::account_party},
     };
@@ -382,7 +382,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_parties_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_parties_filter::account_id},
         utility::codec::field{"account_id_one_of", &account_parties_filter::account_id_one_of},
     };
@@ -397,7 +397,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_party_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &account_party_event::event_id},
         utility::codec::field{"key", &account_party_event::key},
         utility::codec::field{"action", &account_party_event::action},
@@ -416,7 +416,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_parties_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_account_parties_request::offset},
         utility::codec::field{"limit", &list_account_parties_request::limit},
         utility::codec::field{"order", &list_account_parties_request::order},
@@ -433,7 +433,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_parties_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_parties_response::result},
         utility::codec::field{"account_parties", &list_account_parties_response::account_parties},
         utility::codec::field{"total", &list_account_parties_response::total},
@@ -449,7 +449,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_party_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_party_request::key},
     };
 }
@@ -463,7 +463,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_party_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_party_response::result},
         utility::codec::field{"account_party", &get_account_party_response::account_party},
     };
@@ -478,7 +478,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_parties_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_account_parties_request::keys},
     };
 }
@@ -492,7 +492,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_parties_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_account_parties_response::result},
         utility::codec::field{"entries", &get_many_account_parties_response::entries},
     };
@@ -507,7 +507,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_account_party_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_account_party_request::change},
         utility::codec::field{"intent", &put_account_party_request::intent},
     };
@@ -522,7 +522,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_account_party_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_account_party_response::result},
         utility::codec::field{"account_party", &put_account_party_response::account_party},
     };
@@ -537,7 +537,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_account_parties_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_account_parties_request::changes},
         utility::codec::field{"intent", &put_many_account_parties_request::intent},
     };
@@ -552,7 +552,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_account_parties_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_account_parties_response::result},
         utility::codec::field{"account_parties",
                               &put_many_account_parties_response::account_parties},
@@ -568,7 +568,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_party_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_account_party_request::removal},
         utility::codec::field{"intent", &delete_account_party_request::intent},
     };
@@ -583,7 +583,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_party_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_account_party_response::result},
     };
 }
@@ -597,7 +597,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_account_parties_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_account_parties_request::removals},
         utility::codec::field{"intent", &delete_many_account_parties_request::intent},
     };
@@ -612,7 +612,7 @@ struct list_by_account_id_account_parties_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_account_parties_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_account_parties_response::result},
     };
 }
@@ -627,7 +627,7 @@ struct list_by_account_id_account_parties_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_parties_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id",
                               &list_by_account_id_account_parties_request::account_id},
         utility::codec::field{"scope", &list_by_account_id_account_parties_request::scope},
@@ -648,7 +648,7 @@ wire_fields(std::type_identity<list_by_account_id_account_parties_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_parties_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_account_id_account_parties_response::result},
         utility::codec::field{"account_parties",
                               &list_by_account_id_account_parties_response::account_parties},

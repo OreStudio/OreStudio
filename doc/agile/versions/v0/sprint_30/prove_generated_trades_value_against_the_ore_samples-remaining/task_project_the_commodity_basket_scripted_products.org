@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 4A8E426E-9DC6-4864-80C1-4F73799DCEAF
+:END:
+#+title: Task: Project and build the commodity basket scripted products
+#+description: The scripted commodity products on a basket get a projection writer, a reader and a builder, and ORE builds each one.
+#+type: task
+#+level: s1
+#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/project-the-commodity-basket-scripted-products
+#+pr: 4648
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The scripted commodity products on a basket are written and read by the projection and built by their builders, and the ORE engine test builds each one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- The projection writes and reads the worst-of basket swap, rainbow option, best entry option and basket variance swap.
+- Each of them is built by its builder, and the planner calls it.
+- The carrier holds the periods a worst-of basket swap observes.
+- Their entries leave the known lists, or stay with a market data reason.
+
+* Plan
+
+ORE's schema declares a =Commodity<Type>Data= element for all four types,
+and the engine reads each from =<TradeType>Data=.
+
+1. Rename the =equity_swap_period= entity to =basket_swap_period=, through
+   codegen, and move the equity carrier, projection and builder onto it.
+   Nothing in a period is equity's own, and ORE states the same worst-of
+   swap for FX and commodities, so the three families share one table.
+   Decided with the user.
+2. Give the commodity carrier the periods, in the shared rows.
+3. Add the four types to the projection's table of products. The rainbow
+   option and the basket variance swap state their basket through the
+   commodity basket constituents. The best entry option states one
+   underlying. The worst-of basket swap states its basket, its initial
+   prices and its periods, as the equity one does.
+4. Add a builder for each type, register it, and call it from the planner.
+5. Record the generated trades, run the ORE engine test, and update the
+   known lists.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Trading API tests | 4429 test cases pass | =ores.trading.api.tests -r compact= | =47b9f41e27= |
+| Synthetic tests against ORE | 133 test cases pass | =ores.synthetic.core.tests -r compact=, with the ORE engine set | =47b9f41e27= |
+| Of the four types, the ones ORE builds | 4 | =ores.synthetic.core.tests '[generated]'= | =47b9f41e27= |
+| Acme provisioning | 17 of 17 steps, 1000 trades written | =compass shell -f= the Acme provisioning script | =71b7cfa747= |
+
+* Notes
+
+- The user decided two models. The worst-of basket swap's periods live in
+  one =basket_swap_period= table that every family shares, renamed from
+  =equity_swap_period=. Its funding leg and fixed coupons live in the shared
+  swap leg rows rather than in new commodity columns.
+- The local checks found two defects that PR 4630 took to main. The implied
+  volatility strike was an exact decimal, and the money rule requires a
+  continuous quantity to be a binary float; this task makes it a float. The
+  commodity shell scripts and the ER diagram were stale, which another
+  session fixed on main.
+- Two checks fail for reasons this branch does not own:
+  =money-decimal-columns= names two FX forward publish columns from main,
+  and =xml-benchmark-recorded= names a nightly clang-format commit on main.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4648][#4648]] | [trading,ore,synthetic] Build the commodity basket scripted products |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The writers state =LongShort= as Long | =commodity_instrument_projection.cpp= | Declined | The scalar terms write the row's position over it; the recorded worst-of and best entry trades state Short. |
+| 2 | The worst-of knock out and trigger levels are fixed | =commodity_builders.cpp= | Declined | The terms' documentation states the par knock out and the three-quarter trigger, as the equity worst-of does. |
+| 3 | The two level lists can misalign | =commodity_instrument_projection.cpp= | Declined | The reader keeps each list at the length the document states, and the writer writes it back at that length. |
+| 4 | An infinite strike passes two builders | =commodity_builders.cpp= | Accepted | The basket variance swap and the forward volatility agreement refuse it. |
+| 5 | The best entry terms are fixed in the planner | =trade_population_planner.cpp= | Declined | Acceptable for a first population. |
+| 6 | The heavy checks did not run | branch | Accepted | Acme provisioning ran on this branch; it books every generated type through the database, and found the three faults below. |
+| 7 | The fraction checks are a loop | =commodity_builders.cpp= | Accepted | Two plain checks. |
+| 8 | Provisioning: the staff passwords timed out | =tenant_provisioning_handler.hpp= | Fixed | One request reset 74 passwords inside the 30 second request deadline; a page of eight keeps each request short. |
+| 9 | Provisioning: the worst-of funding leg's day count | =commodity_builders.cpp= | Fixed | The leg states the trade's code, A360, not the convention's ACT/360. |
+| 10 | Provisioning: the rainbow payoff types | =ores.trading.instrument_option.org= | Fixed | The option table and the payoff type seed accept the four rainbow payoffs. |
+
+* Result
+
+The projection writes and reads the four commodity basket scripted
+products: the rainbow option, the basket variance swap, the best entry
+option and the worst-of basket swap. Each has a builder in the registry,
+and the planner calls it. The worst-of basket swap's periods live in the
+shared basket swap period rows, which the equity worst-of now uses too, and
+its funding leg and coupons live in the shared leg rows. A commodity basket
+constituent gained its initial price, and the commodity row gained the best
+entry option's terms, through the codegen models. ORE builds all four.

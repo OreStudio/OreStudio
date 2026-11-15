@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
@@ -70,7 +71,7 @@ std::string refusal_log(const std::vector<ores::ore::domain::refused_trade>& ref
         event.message_stated = true;
         event.subject = "trade";
         event.subject_id = trade.trade_id;
-        event.source = std::string(ores::ore::net::ore_storage::package_name);
+        event.filename = std::string(ores::ore::net::ore_storage::package_name);
         events.push_back(std::move(event));
     }
     return ores::ore::log::canonical_log_csv(events);
@@ -83,21 +84,21 @@ std::string tarball_storage_key(const std::string& instance_id) {
 } // namespace
 
 report_package_handler::report_package_handler(ores::nats::service::client& nats,
-                                               ores::database::context ctx,
+                                               const ores::database::context& ctx,
                                                std::string http_base_url,
                                                ores::nats::service::nats_client service_nats)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , http_base_url_(std::move(http_base_url))
-    , service_nats_(std::move(service_nats))
+    , ctx_(ctx)
+    , http_base_url_(http_base_url)
+    , service_nats_(service_nats)
     , run_tokens_(ores::iam::client::make_run_token_minter(service_nats_)) {}
 
-void report_package_handler::prepare_package(ores::nats::message msg) {
-    ores::nats::ack_guard ack(msg);
+void report_package_handler::prepare_package(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
 
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf) {
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -105,7 +106,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     auto parsed = ores::utility::codec::json::try_read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
     const auto& req = *parsed;
@@ -116,17 +117,17 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     try {
         if (req.definition_id.empty()) {
             wf->fail("prepare_ore_package: definition_id is missing");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
         if (req.trades_storage_key.empty()) {
             wf->fail("prepare_ore_package: trades_storage_key is missing");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
         if (req.market_data_storage_key.empty()) {
             wf->fail("prepare_ore_package: market_data_storage_key is missing");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -138,7 +139,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         if (run_token.empty()) {
             wf->fail("prepare_ore_package: the run has no run token; its grant is missing or "
                      "IAM refused the exchange");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -227,7 +228,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             wf->fail("prepare_ore_package: the run document names no portfolio file, so the "
                      "gathered trades have nowhere to go for run " +
                      req.report_instance_id);
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -244,13 +245,13 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
                      "export: " +
                      std::string(e.what()));
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
         if (!rows.success) {
             wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
                      rows.message);
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -273,7 +274,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                 (requested_date.empty() ? std::string("no particular date") : requested_date) +
                 ", the package carries " + std::to_string(rows.items.size()) +
                 " trade(s): " + named);
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -300,6 +301,29 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             std::filesystem::create_directories(target.parent_path());
             std::ofstream f(target, std::ios::binary | std::ios::trunc);
             f << content;
+        }
+
+        // The engine stops at the first input it cannot open, before it reads a
+        // trade, so a package that lacks a file its own run document names is a
+        // package that cannot run. It is refused here, naming the files, rather
+        // than shipped for the engine to stop on: a run that failed this way
+        // states an exit code and nothing else.
+        // What the staged directory holds, by the bare name the document uses: the
+        // files the export carried, and the run's own data, which the gather step
+        // supplies and this step places.
+        auto held = run_input;
+        for (const auto& place : {places.market_data, places.fixings, places.portfolio})
+            if (!place.empty())
+                held[std::filesystem::path(place).filename().string()] = std::string{};
+        const auto missing = ores::ore::xml::missing_named_files(held);
+        if (!missing.empty()) {
+            std::string names;
+            for (const auto& name : missing)
+                names += (names.empty() ? "" : ", ") + name;
+            wf->fail("prepare_ore_package: the run document names files the package does not "
+                     "hold: " +
+                     names + ", for run " + req.report_instance_id);
+            return;
         }
 
         const auto tarball_key = tarball_storage_key(req.report_instance_id);
@@ -371,11 +395,11 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                                   << req.report_instance_id << " tarball=" << tarball_key;
 
         wf->complete(ores::utility::codec::json::write(result));
-        ack.accept();
+        std::move(delivery).commit();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();
         wf->fail(e.what());
-        ack.accept();
+        std::move(delivery).commit();
     }
 }
 

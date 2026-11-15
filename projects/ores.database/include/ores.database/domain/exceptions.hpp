@@ -20,6 +20,7 @@
 #ifndef ORES_DATABASE_DOMAIN_EXCEPTIONS_HPP
 #define ORES_DATABASE_DOMAIN_EXCEPTIONS_HPP
 
+#include "ores.database/export.hpp"
 #include <stdexcept>
 #include <string>
 
@@ -32,7 +33,12 @@ namespace ores::database {
  * can catch it specifically and return exit_code::db_connection_failed
  * rather than the generic exit_code::general_error.
  */
-class db_connection_exception : public std::runtime_error {
+/*
+ * Both are exported for the same reason: the service main functions that
+ * catch them live in another shared library, and a hidden typeinfo gives
+ * each side its own copy, which libc++ never matches.
+ */
+class ORES_DATABASE_EXPORT db_connection_exception : public std::runtime_error {
 public:
     explicit db_connection_exception(const std::string& msg)
         : std::runtime_error(msg) {}
@@ -46,7 +52,7 @@ public:
  * means the schema and the code disagree. Service main functions catch it,
  * print its message and return exit_code::schema_mismatch.
  */
-class schema_mismatch_exception : public std::runtime_error {
+class ORES_DATABASE_EXPORT schema_mismatch_exception : public std::runtime_error {
 public:
     explicit schema_mismatch_exception(const std::string& msg)
         : std::runtime_error(msg) {}

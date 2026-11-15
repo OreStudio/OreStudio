@@ -73,7 +73,7 @@ struct tenor_basis_swap_long_leg {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_long_leg>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"long_index", &tenor_basis_swap_long_leg::long_index},
         utility::codec::field{"long_pay_tenor", &tenor_basis_swap_long_leg::long_pay_tenor},
     };

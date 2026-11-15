@@ -49,8 +49,8 @@ bool adds_to(const stored_fixings& stored, const fixing& f) {
     return found == stored.end() || found->second != f.value;
 }
 
-fixing_store::fixing_store(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+fixing_store::fixing_store(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 boost::uuids::uuid fixing_store::series_for(const ores::database::context& tenant_ctx,
                                             const consumer& owner,
@@ -140,9 +140,9 @@ std::size_t fixing_store::store(std::span<const consumer> consumers,
     return written;
 }
 
-fixing_ingest::fixing_ingest(ores::database::context ctx, consumers_of consumers)
-    : store_(std::move(ctx))
-    , consumers_(std::move(consumers))
+fixing_ingest::fixing_ingest(const ores::database::context& ctx, consumers_of consumers)
+    : store_(ctx)
+    , consumers_(consumers)
     , thread_([this] { run(); }) {}
 
 fixing_ingest::~fixing_ingest() {

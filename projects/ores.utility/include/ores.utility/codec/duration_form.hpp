@@ -44,7 +44,8 @@ struct duration_form {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<duration_form>) {
-    return std::tuple{field{"count", &duration_form::count}, field{"unit", &duration_form::unit}};
+    return ::ores::utility::codec::field_list{field{"count", &duration_form::count},
+                                              field{"unit", &duration_form::unit}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<duration_form>(),

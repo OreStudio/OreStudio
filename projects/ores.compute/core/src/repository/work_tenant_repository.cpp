@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/work_tenant_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -28,23 +28,24 @@ namespace ores::compute::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-void work_tenant_repository::note(context ctx, const boost::uuids::uuid& work_tenant_id) {
+void work_tenant_repository::note(const context& ctx, const boost::uuids::uuid& work_tenant_id) {
     static const std::string sql = R"(
         INSERT INTO ores_compute_work_tenants_tbl (work_tenant_id)
         VALUES ($1::uuid)
         ON CONFLICT (work_tenant_id) DO NOTHING
     )";
-    execute_parameterized_command(ctx,
-                                  sql,
-                                  {boost::uuids::to_string(work_tenant_id)},
-                                  lg(),
-                                  "noting a tenant that dispatches work");
+    ores::database::query_builder::execute_parameterized_command(
+        ctx,
+        sql,
+        {boost::uuids::to_string(work_tenant_id)},
+        lg(),
+        "noting a tenant that dispatches work");
 }
 
-std::vector<boost::uuids::uuid> work_tenant_repository::list(context ctx) {
+std::vector<boost::uuids::uuid> work_tenant_repository::list(const context& ctx) {
     static const std::string sql =
         "SELECT work_tenant_id::text FROM ores_compute_work_tenants_tbl ORDER BY first_seen_at";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {}, lg(), "listing the tenants with work");
     std::vector<boost::uuids::uuid> tenants;
     for (const auto& row : rows) {

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 30AA2C7B-8C84-4E7B-8910-1E3C21338C2C
+:END:
+#+title: Story: Hotfix: Main CI is red on Windows, GCC, and tests
+#+description: The main branch CI is red: the Windows build fails, the GCC build fails, and tests fail consistently.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:build:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore a green main branch: the GCC and the Windows builds compile, and the
+test suites that main runs pass.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Three root causes fixed on =hotfix/red-main-ci=. GCC and the web suite were reproduced from the failing signal; the Windows link rests on the arithmetic being equivalent. |
+| Waiting on    | The PR review.                         |
+| Next          | Merge, then confirm the three fixes on the next nightly. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- =linux-gcc-release-ninja= compiles =ores.ore.core.tests= with no
+  =-Wchanges-meaning= error.
+- =windows-clang-release-ninja= links =ores.marketdata.service.dll= with no
+  undefined =__divti3=.
+- =ores.web.tests= passes for every build that runs it.
+- No new failure appears on the nightly platforms.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D290CE1A-FB73-4B4E-8D25-B751B387F03D][Scaffold story: Hotfix: Main CI is red on Windows, GCC, and tests]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:BD6B36C3-6CEB-49C1-9AC5-FB2A82A56157][Implement Hotfix: Main CI is red on Windows, GCC, and tests]] | DONE | 2026-11-13 | 2026-11-13 | The three fixes; see the task for evidence. |
+
+* Decisions
+
+- The GCC failure is a name collision, not a GCC bug: member =root::entry=
+  shadowed struct =entry=. Renaming the member to =entries= fixes it and reads
+  correctly, because the field is a repeated child element.
+- The Windows failure is a runtime gap, not a code error: clang-cl defines
+  =_MSC_VER= but links no =__divti3=. Every MSVC-family target now uses
+  =boost::multiprecision::int128_t=, which needs no runtime helper. The type is
+  arithmetic-equivalent for the two expressions =billing.cpp= uses.
+- The =ores.web.tests= failure is a stale fixture: the step schema gained
+  =progress=, =progress_done= and =progress_total= with defaults, and the
+  fixture still listed the old shape. The defaults are deliberate, so the
+  fixture moved to the shape a browser receives.
+
+* Out of scope
+
+- The sixteen =ores.shell.*.tests= failures. They appear only on builds of
+  =a7622dfb= (merge of PR #4518) that the self-hosted runner
+  =runnervm7aw5e= keeps rebuilding. Current main passes those tests. The stale
+  checkout on that runner is a separate CI-infrastructure defect.
+- The macOS =ores.database.tests= and =ores.analytics.quant.tests= failures at
+  =06db2fb4=, one revision before this hotfix's base. No macOS build has run
+  on =eb21afcdc= yet, so they are unconfirmed against current main.

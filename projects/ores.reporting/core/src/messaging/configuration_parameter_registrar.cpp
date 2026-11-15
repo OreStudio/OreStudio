@@ -44,11 +44,10 @@ static constexpr std::string_view configuration_parameter_queue_group = "ores.re
 
 std::vector<ores::nats::service::subscription> register_configuration_parameter_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<configuration_parameter_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<configuration_parameter_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_configuration_parameters_request::nats_subject,
         configuration_parameter_queue_group,

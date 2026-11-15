@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: BA56F4F5-AA1F-468E-AA7B-B322F20B6382
+:END:
+#+title: Story: Make a workflow step survive a slow request
+#+description: A workflow step calls a service over the bus with one 30-second default for every request, so a slow calibration times out, fails the step on its first occurrence, and names no work. Provisioning failed at step 13 of 15 this way, with 9 of 10 surfaces published. State each request's deadline against its work, classify the failure, retry only what is safe to repeat, name the work when a step gives up, and show the progress and the failure in both clients. The progress channel and the bound on a request's work belong to the story Keep workflow steps alive while they work, and off iam.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A workflow step calls a service over the bus, and every one of those requests
+takes the same 30-second deadline, whatever work it asks for. A provisioning run
+failed at step 13 of 15 because one calibration took longer than that on a
+loaded host. The step had already published 9 of its 10 surfaces. The run failed
+on the first timeout, with no retry, and the only thing it reported was
+=NATS request timed out=.
+
+After this story a step's requests are bounded to the work they ask for. A
+transient failure is retried with backoff and jitter inside the step's own
+budget, and only when repeating the request changes nothing. A refusal fails at
+once. A step that gives up names the party and the item it was working on, with
+its reason, instead of the transport's words. Both clients show that failure,
+and the browser shows the progress a step already reports.
+
+The engine now fails a step only when its progress stands still, and a step
+reports progress as its heartbeat. That arrived in
+[[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]], whose
+own task bounds the work one request may do. This story depends on that work and
+does not repeat it.
+
+The focus is the requests a workflow step makes and what a person sees when one
+fails. This is not a general retry framework for every call site, and not the
+whole audit of the NATS patterns.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- Every request a provisioning step makes either takes the shared default
+  deliberately or states a deadline sized to its work, and the reason is in the
+  code beside it.
+- A transient failure is retried with backoff and jitter inside the step's
+  remaining budget, and every attempt is logged with its number and its reason.
+- A refusal is never retried, and no request is retried unless repeating it
+  leaves the store unchanged.
+- A step that retries and then succeeds completes. A step that still cannot
+  finish fails with a message that names the party and the item it was working
+  on, the attempts it took and the reason.
+- ores.shell and ores.web both show the failure, and the browser shows the
+  progress a running step reports, which the wire already carries.
+- A test drives a step against a responder that answers late and one that
+  refuses, and proves the retry, the refusal and the failure message.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F55B666A-60C3-428D-8255-D2B6B67879A7][State each workflow request's deadline against its work]] | DONE | 2026-11-12 | 2026-11-13 | Every request a provisioning step makes takes the shared 30-second default, so a calibration that needs longer fails the step on a healthy answer. State a deadline for each request, sized to its work, with the reason beside it. |
+| [[id:961F9A06-18FF-4EDC-9EA0-6610DA942DED][Classify a failed request and retry the transient ones]] | DONE | 2026-11-13 | 2026-11-13 | A request that times out throws straight out of the step, so a transient failure fails the run on its first occurrence. Classify the failure, retry the transient one with backoff and jitter inside the step's remaining budget, and never retry a refusal. |
+| [[id:459AB808-737A-4CA0-9BF1-955D629880B2][Make each repeated request safe to repeat]] | DONE | 2026-11-13 | 2026-11-13 | A retry is correct only when repeating the request changes nothing. Give each retried request a stable identity, have the step read the result an earlier attempt may have produced, and prove a repeat writes no second candidate or raises a second approval request. |
+| [[id:45896343-6F92-44D1-AE5F-27B329D66CA6][Name the failing work when a step gives up]] | DONE | 2026-11-13 | 2026-11-13 | A step that gives up reports only the transport's words, so a person cannot tell which party, surface or pair failed. Fail the step with the work it was doing, the request, the attempts and the reason. |
+| [[id:A9F04AFF-87C3-4F63-A771-B4118E7ED415][Show a run's progress and failure in ores.shell]] | DONE | 2026-11-13 | 2026-11-13 | The shell prints a running step's progress now, but a failure still prints only the transport's words. Print the work that failed, the attempts it took and the reason. |
+| [[id:5278DF3A-53B1-4249-B8DC-094DDC70C4B5][Show a run's progress and failure in ores.web]] | DONE | 2026-11-13 | 2026-11-13 | The wire carries a running step's progress, but the rail does not render it, and a failure shows the transport text. Show the progress while the step runs, and name the work and the reason when it stops. |
+| [[id:97379470-2D88-4540-97DD-1F56C7B45B49][Prove a step survives a slow responder]] | DONE | 2026-11-13 | 2026-11-13 | Nothing tests a step against a responder that answers late or refuses, so the retry, the classification and the failure message rest on the code alone. Drive a step with a fake client that answers late and one that refuses. |
+
+* Decisions
+
+- Retry only a transient transport failure, and only where repeating the
+  request changes nothing. A refusal is never retried, and neither is a request
+  whose second attempt would write a second row.
+- A deadline is stated against the work, in one place per class of request, so
+  no call site reinvents the number. The shared 30-second default stays the
+  deadline for a read or a handshake.
+- The step's remaining budget is the outer bound of its retries, so a retry
+  cannot outlive the step the engine judges.
+- The progress channel is not built here. A step reports progress as its
+  heartbeat, the engine fails on a stall rather than on elapsed time, and the
+  shell prints the line. That arrived with
+  [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]].
+  This story consumes the channel and fills the gap it left: the browser
+  rendering and a failure that names the work.
+- The responder bounds its own work, and that belongs to
+  [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] in the same story. The calibrate
+  handler's whole-table pillar read is recorded there as evidence.
+- A failure names the work: the party, the surface or pair, the attempt and the
+  reason. The transport string alone is not a report.
+- A fault that is not a transport failure stays permanent for the retry helper,
+  and the step-level retry is what recovers it. The live run proved this: a
+  =std::bad_alloc= failed =generate_trades=, and the engine's retry of that step
+  completed all 17 steps. The fault itself is data-dependent and is captured as
+  [[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]].
+- The live run completes provisioning on this host: 6,541 trades, 37 bond
+  issues, 80 surface publishes and 40 surfaces, with the heartbeat's progress
+  printed for each step.
+
+* Review round
+
+The branch was reviewed on two axes, standards and spec, before it was offered
+for merge. Every finding that changed what the code does was fixed on the
+branch, and the gaps that remain are stated below rather than left implied.
+
+- The deadline did not bound an attempt, only the waits between attempts: an
+  attempt could wait its full patience past the step's deadline. Each attempt
+  now states the budget left to it, and a request waits no longer than that.
+- The curve read back ignored the as-of, and read on the first attempt as well.
+  It now answers its own as-of, at the store's precision, and reads the candidate
+  a raise of its own left. The first attempt no longer reads at all.
+- Attempts and per-item progress reached only the step log, which the engine
+  reads when the step settles, and the four giving-up paths dropped that log. An
+  attempt now also reports as the step's progress, and every giving-up path
+  carries the log, so a person watching sees the retry while it happens.
+- The calendar retry states why its repeat writes nothing twice, rather than
+  leaving it to be taken on trust.
+- The marketdata case for a calibration asserted a call against itself, and the
+  web case asserted the absence of a string nothing rendered. Both now say
+  something a stub cannot satisfy.
+
+What the round did not close, and leaves stated rather than implied: the cases
+drive the retry helper and not a whole step, the database-level replay of a lost
+publish reply is still unproven, and the requests outside this workflow still
+take the shared default without the reason beside them, which belongs to
+[[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]].
+
+* Out of scope
+
+- An asynchronous calibrate that accepts the work and answers with an id to
+  poll. It is the fallback if the bound on a request's work cannot meet a sane
+  deadline, and it belongs with that bound.
+- Retrying every request at the NATS client for every caller. Only the helper
+  the workflow steps use changes.
+- The engine's dispatch, delivery and claim retries, and the heartbeat deadline,
+  which are already built.
+- Rewriting the provisioning steps that are not requests: the trade generator,
+  the calendars and the bundles keep their current shape.

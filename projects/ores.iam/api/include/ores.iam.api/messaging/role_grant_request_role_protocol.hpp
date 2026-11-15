@@ -316,7 +316,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_role_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &role_grant_request_role_key::request_id},
         utility::codec::field{"role_id", &role_grant_request_role_key::role_id},
     };
@@ -331,7 +331,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_role_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &role_grant_request_role_write::request_id},
         utility::codec::field{"role_id", &role_grant_request_role_write::role_id},
         utility::codec::field{"applied_at", &role_grant_request_role_write::applied_at},
@@ -347,7 +347,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_role_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &role_grant_request_role_change::write},
         utility::codec::field{"precondition", &role_grant_request_role_change::precondition},
     };
@@ -362,7 +362,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_role_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &role_grant_request_role_removal::key},
         utility::codec::field{"precondition", &role_grant_request_role_removal::precondition},
     };
@@ -377,7 +377,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_role_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &role_grant_request_role_lookup::key},
         utility::codec::field{"role_grant_request_role",
                               &role_grant_request_role_lookup::role_grant_request_role},
@@ -393,7 +393,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_roles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &role_grant_request_roles_filter::request_id},
         utility::codec::field{"request_id_one_of",
                               &role_grant_request_roles_filter::request_id_one_of},
@@ -409,7 +409,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_grant_request_role_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &role_grant_request_role_event::event_id},
         utility::codec::field{"key", &role_grant_request_role_event::key},
         utility::codec::field{"action", &role_grant_request_role_event::action},
@@ -429,7 +429,7 @@ struct list_by_request_id_role_grant_request_roles_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_role_grant_request_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_role_grant_request_roles_request::offset},
         utility::codec::field{"limit", &list_role_grant_request_roles_request::limit},
         utility::codec::field{"order", &list_role_grant_request_roles_request::order},
@@ -447,7 +447,7 @@ wire_fields(std::type_identity<list_role_grant_request_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_role_grant_request_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_role_grant_request_roles_response::result},
         utility::codec::field{"role_grant_request_roles",
                               &list_role_grant_request_roles_response::role_grant_request_roles},
@@ -464,7 +464,7 @@ wire_fields(std::type_identity<list_role_grant_request_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_grant_request_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_role_grant_request_role_request::key},
     };
 }
@@ -478,7 +478,7 @@ wire_fields(std::type_identity<list_role_grant_request_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_grant_request_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_role_grant_request_role_response::result},
         utility::codec::field{"role_grant_request_role",
                               &get_role_grant_request_role_response::role_grant_request_role},
@@ -495,7 +495,7 @@ wire_fields(std::type_identity<list_role_grant_request_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_role_grant_request_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_role_grant_request_roles_request::keys},
     };
 }
@@ -510,7 +510,7 @@ wire_fields(std::type_identity<get_many_role_grant_request_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_role_grant_request_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_role_grant_request_roles_response::result},
         utility::codec::field{"entries", &get_many_role_grant_request_roles_response::entries},
     };
@@ -525,7 +525,7 @@ wire_fields(std::type_identity<get_many_role_grant_request_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_grant_request_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_role_grant_request_role_request::change},
         utility::codec::field{"intent", &put_role_grant_request_role_request::intent},
     };
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<get_many_role_grant_request_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_grant_request_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_role_grant_request_role_response::result},
         utility::codec::field{"role_grant_request_role",
                               &put_role_grant_request_role_response::role_grant_request_role},
@@ -557,7 +557,7 @@ wire_fields(std::type_identity<get_many_role_grant_request_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_role_grant_request_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_role_grant_request_roles_request::changes},
         utility::codec::field{"intent", &put_many_role_grant_request_roles_request::intent},
     };
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<put_many_role_grant_request_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_role_grant_request_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_role_grant_request_roles_response::result},
         utility::codec::field{
             "role_grant_request_roles",
@@ -591,7 +591,7 @@ wire_fields(std::type_identity<put_many_role_grant_request_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_role_grant_request_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_role_grant_request_role_request::removal},
         utility::codec::field{"intent", &delete_role_grant_request_role_request::intent},
     };
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<delete_role_grant_request_role_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_role_grant_request_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_role_grant_request_role_response::result},
     };
 }
@@ -622,7 +622,7 @@ wire_fields(std::type_identity<delete_role_grant_request_role_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_role_grant_request_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_role_grant_request_roles_request::removals},
         utility::codec::field{"intent", &delete_many_role_grant_request_roles_request::intent},
     };
@@ -638,7 +638,7 @@ wire_fields(std::type_identity<delete_many_role_grant_request_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_role_grant_request_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_role_grant_request_roles_response::result},
     };
 }
@@ -653,7 +653,7 @@ wire_fields(std::type_identity<delete_many_role_grant_request_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_role_grant_request_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id",
                               &list_by_request_id_role_grant_request_roles_request::request_id},
         utility::codec::field{"scope", &list_by_request_id_role_grant_request_roles_request::scope},
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<list_by_request_id_role_grant_request_roles_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_role_grant_request_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_request_id_role_grant_request_roles_response::result},
         utility::codec::field{

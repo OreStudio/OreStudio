@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: AFAF296D-2962-48CE-A6E1-BFD5229E16C5
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.diary_entry_type
 #+description: Open-ended vocabulary classifying a calendar_event entry: holiday, central_bank_meeting, data_release, or other.
 #+type: ores.codegen.entity
+#+web_classification: diary-entry-type
+#+web_classification_topic: calendars
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: diary_entry_type

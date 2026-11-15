@@ -82,3 +82,50 @@ USD-Prime	overnight	0	Federal Reserve Bankwire System	ACT/360	Following	false	US
 USD-SOFR	ibor	2	SOFR fixing calendar	ACT/360	ModifiedFollowing	false	USD-SOFR	oresmd://ir/USD?type=fixing&index=ibor&name=SOFR
 USD-SOFR	overnight	0	SOFR fixing calendar	ACT/360	Following	false	USD-SOFR	oresmd://ir/USD?type=fixing&index=ibor&name=SOFR
 ZAR-JIBAR	ibor	0	South Africa	ACT/365.FIXED	ModifiedFollowing	false	ZAR-JIBAR	oresmd://ir/ZAR?type=fixing&index=ibor&name=JIBAR
+AOA-GENERIC	ibor	2	TARGET	ACT/360	Following	false	AOA-GENERIC	oresmd://ir/AOA?type=fixing&index=ibor&name=GENERIC
+ARS-GENERIC	ibor	2	TARGET	ACT/360	Following	false	ARS-GENERIC	oresmd://ir/ARS?type=fixing&index=ibor&name=GENERIC
+BGN-GENERIC	ibor	2	TARGET	ACT/360	Following	false	BGN-GENERIC	oresmd://ir/BGN?type=fixing&index=ibor&name=GENERIC
+BHD-GENERIC	ibor	2	TARGET	ACT/360	Following	false	BHD-GENERIC	oresmd://ir/BHD?type=fixing&index=ibor&name=GENERIC
+BRL-GENERIC	ibor	2	TARGET	ACT/360	Following	false	BRL-GENERIC	oresmd://ir/BRL?type=fixing&index=ibor&name=GENERIC
+BWP-GENERIC	ibor	2	TARGET	ACT/360	Following	false	BWP-GENERIC	oresmd://ir/BWP?type=fixing&index=ibor&name=GENERIC
+CLF-GENERIC	ibor	2	TARGET	ACT/360	Following	false	CLF-GENERIC	oresmd://ir/CLF?type=fixing&index=ibor&name=GENERIC
+CLP-GENERIC	ibor	2	TARGET	ACT/360	Following	false	CLP-GENERIC	oresmd://ir/CLP?type=fixing&index=ibor&name=GENERIC
+CNH-GENERIC	ibor	2	TARGET	ACT/360	Following	false	CNH-GENERIC	oresmd://ir/CNH?type=fixing&index=ibor&name=GENERIC
+CNY-GENERIC	ibor	2	TARGET	ACT/360	Following	false	CNY-GENERIC	oresmd://ir/CNY?type=fixing&index=ibor&name=GENERIC
+COP-GENERIC	ibor	2	TARGET	ACT/360	Following	false	COP-GENERIC	oresmd://ir/COP?type=fixing&index=ibor&name=GENERIC
+EGP-GENERIC	ibor	2	TARGET	ACT/360	Following	false	EGP-GENERIC	oresmd://ir/EGP?type=fixing&index=ibor&name=GENERIC
+ETB-GENERIC	ibor	2	TARGET	ACT/360	Following	false	ETB-GENERIC	oresmd://ir/ETB?type=fixing&index=ibor&name=GENERIC
+GEL-GENERIC	ibor	2	TARGET	ACT/360	Following	false	GEL-GENERIC	oresmd://ir/GEL?type=fixing&index=ibor&name=GENERIC
+GHS-GENERIC	ibor	2	TARGET	ACT/360	Following	false	GHS-GENERIC	oresmd://ir/GHS?type=fixing&index=ibor&name=GENERIC
+HRK-GENERIC	ibor	2	TARGET	ACT/360	Following	false	HRK-GENERIC	oresmd://ir/HRK?type=fixing&index=ibor&name=GENERIC
+IDR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	IDR-GENERIC	oresmd://ir/IDR?type=fixing&index=ibor&name=GENERIC
+INR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	INR-GENERIC	oresmd://ir/INR?type=fixing&index=ibor&name=GENERIC
+ISK-GENERIC	ibor	2	TARGET	ACT/360	Following	false	ISK-GENERIC	oresmd://ir/ISK?type=fixing&index=ibor&name=GENERIC
+JOD-GENERIC	ibor	2	TARGET	ACT/360	Following	false	JOD-GENERIC	oresmd://ir/JOD?type=fixing&index=ibor&name=GENERIC
+KES-GENERIC	ibor	2	TARGET	ACT/360	Following	false	KES-GENERIC	oresmd://ir/KES?type=fixing&index=ibor&name=GENERIC
+KRW-GENERIC	ibor	2	TARGET	ACT/360	Following	false	KRW-GENERIC	oresmd://ir/KRW?type=fixing&index=ibor&name=GENERIC
+KWD-GENERIC	ibor	2	TARGET	ACT/360	Following	false	KWD-GENERIC	oresmd://ir/KWD?type=fixing&index=ibor&name=GENERIC
+KZT-GENERIC	ibor	2	TARGET	ACT/360	Following	false	KZT-GENERIC	oresmd://ir/KZT?type=fixing&index=ibor&name=GENERIC
+LKR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	LKR-GENERIC	oresmd://ir/LKR?type=fixing&index=ibor&name=GENERIC
+MAD-GENERIC	ibor	2	TARGET	ACT/360	Following	false	MAD-GENERIC	oresmd://ir/MAD?type=fixing&index=ibor&name=GENERIC
+MUR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	MUR-GENERIC	oresmd://ir/MUR?type=fixing&index=ibor&name=GENERIC
+MXV-GENERIC	ibor	2	TARGET	ACT/360	Following	false	MXV-GENERIC	oresmd://ir/MXV?type=fixing&index=ibor&name=GENERIC
+MYR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	MYR-GENERIC	oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC
+NGN-GENERIC	ibor	2	TARGET	ACT/360	Following	false	NGN-GENERIC	oresmd://ir/NGN?type=fixing&index=ibor&name=GENERIC
+OMR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	OMR-GENERIC	oresmd://ir/OMR?type=fixing&index=ibor&name=GENERIC
+PEN-GENERIC	ibor	2	TARGET	ACT/360	Following	false	PEN-GENERIC	oresmd://ir/PEN?type=fixing&index=ibor&name=GENERIC
+PHP-GENERIC	ibor	2	TARGET	ACT/360	Following	false	PHP-GENERIC	oresmd://ir/PHP?type=fixing&index=ibor&name=GENERIC
+PKR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	PKR-GENERIC	oresmd://ir/PKR?type=fixing&index=ibor&name=GENERIC
+QAR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	QAR-GENERIC	oresmd://ir/QAR?type=fixing&index=ibor&name=GENERIC
+RON-GENERIC	ibor	2	TARGET	ACT/360	Following	false	RON-GENERIC	oresmd://ir/RON?type=fixing&index=ibor&name=GENERIC
+RSD-GENERIC	ibor	2	TARGET	ACT/360	Following	false	RSD-GENERIC	oresmd://ir/RSD?type=fixing&index=ibor&name=GENERIC
+SAR-GENERIC	ibor	2	TARGET	ACT/360	Following	false	SAR-GENERIC	oresmd://ir/SAR?type=fixing&index=ibor&name=GENERIC
+TND-GENERIC	ibor	2	TARGET	ACT/360	Following	false	TND-GENERIC	oresmd://ir/TND?type=fixing&index=ibor&name=GENERIC
+TWD-GENERIC	ibor	2	TARGET	ACT/360	Following	false	TWD-GENERIC	oresmd://ir/TWD?type=fixing&index=ibor&name=GENERIC
+UAH-GENERIC	ibor	2	TARGET	ACT/360	Following	false	UAH-GENERIC	oresmd://ir/UAH?type=fixing&index=ibor&name=GENERIC
+UGX-GENERIC	ibor	2	TARGET	ACT/360	Following	false	UGX-GENERIC	oresmd://ir/UGX?type=fixing&index=ibor&name=GENERIC
+USD-SIFMA	ibor	1	US government bond market	ACT/ACT.ISDA	ModifiedFollowing	false	USD-SIFMA	oresmd://ir/USD?type=fixing&index=ibor&name=SIFMA
+UYU-GENERIC	ibor	2	TARGET	ACT/360	Following	false	UYU-GENERIC	oresmd://ir/UYU?type=fixing&index=ibor&name=GENERIC
+VND-GENERIC	ibor	2	TARGET	ACT/360	Following	false	VND-GENERIC	oresmd://ir/VND?type=fixing&index=ibor&name=GENERIC
+XOF-GENERIC	ibor	2	TARGET	ACT/360	Following	false	XOF-GENERIC	oresmd://ir/XOF?type=fixing&index=ibor&name=GENERIC
+ZMW-GENERIC	ibor	2	TARGET	ACT/360	Following	false	ZMW-GENERIC	oresmd://ir/ZMW?type=fixing&index=ibor&name=GENERIC

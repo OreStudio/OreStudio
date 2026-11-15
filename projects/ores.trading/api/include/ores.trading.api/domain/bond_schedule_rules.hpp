@@ -150,7 +150,7 @@ struct bond_schedule_rules {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_schedule_rules>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"start_date", &bond_schedule_rules::start_date},
         utility::codec::field{"end_date", &bond_schedule_rules::end_date},
         utility::codec::field{"adjust_end_date_to_previous_month_end",

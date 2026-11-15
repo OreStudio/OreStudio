@@ -99,5 +99,6 @@ Resolution]].
 * See also
 
 - [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — completes: a consumer of these curves.
+- [[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]] — a producer of these curves: the order it builds them in, and what it does when an input is not live.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why the order is authored rather than computed.

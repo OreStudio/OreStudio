@@ -42,7 +42,7 @@ std::size_t days_between(std::chrono::year_month_day a, std::chrono::year_month_
     return static_cast<std::size_t>((std::chrono::sys_days(b) - std::chrono::sys_days(a)).count());
 }
 
-double year_fraction(std::chrono::year_month_day a, std::chrono::year_month_day b) {
+double years_between(std::chrono::year_month_day a, std::chrono::year_month_day b) {
     return static_cast<double>(days_between(a, b)) / 365.0;
 }
 
@@ -92,7 +92,7 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
 
     if (freq.period_unit == "NONE" || !freq.period_multiplier || *freq.period_multiplier <= 0) {
         // "Once" (or a malformed row): a single bullet payment at maturity.
-        steps.push_back({days_between(ctx.horizon, maturity), year_fraction(ctx.spot, maturity)});
+        steps.push_back({days_between(ctx.horizon, maturity), years_between(ctx.spot, maturity)});
         return steps;
     }
 
@@ -111,10 +111,10 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
             resolve_end_date(step_tenor, ctx.convention, step_resolution, ctx.horizon, ctx.spot);
         if (date >= maturity) {
             steps.push_back(
-                {days_between(ctx.horizon, maturity), year_fraction(previous, maturity)});
+                {days_between(ctx.horizon, maturity), years_between(previous, maturity)});
             break;
         }
-        steps.push_back({days_between(ctx.horizon, date), year_fraction(previous, date)});
+        steps.push_back({days_between(ctx.horizon, date), years_between(previous, date)});
         previous = date;
         ++multiple;
     }
@@ -157,7 +157,7 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
         re.curve_role = ic_it->second.curve_role;
         re.ticks_ahead_start = days_between(ctx.horizon, start_date);
         re.ticks_ahead_end = days_between(ctx.horizon, end_date);
-        re.year_fraction = year_fraction(start_date, end_date);
+        re.year_fraction = years_between(start_date, end_date);
 
         if (re.curve_role == "SWAP") {
             auto pf_it = ctx.payment_frequencies_by_code.find(fixed_leg_payment_frequency_code);
@@ -178,7 +178,7 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
 }
 
 std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx,
+build_ir_curve_refdata_context(const ores::database::context& ctx,
                                const std::string& tenor_convention_code) {
     namespace refdata_repo = ores::refdata::repository;
 
@@ -252,6 +252,23 @@ double price_ir_curve_entry(const ores::analytics::quant::domain::i_yield_curve_
 
     throw std::invalid_argument("price_ir_curve_entry: unsupported curve_role '" + e.curve_role +
                                 "'");
+}
+
+void append_curve_points(std::chrono::year_month_day spot_date,
+                         const std::vector<ir_curve_resolved_entry>& entries,
+                         const ores::analytics::quant::domain::i_yield_curve_process& process,
+                         std::vector<ores::analytics::quant::domain::curve_point>& out) {
+    using ores::analytics::quant::domain::curve_point;
+
+    out.clear();
+    out.reserve(entries.size() + 1);
+    out.push_back(curve_point{.date = spot_date, .discount_factor = 1.0});
+    for (const auto& e : entries) {
+        if (!(out.back().date < e.end_date))
+            continue;
+        out.push_back(curve_point{.date = e.end_date,
+                                  .discount_factor = process.discount_factor(e.ticks_ahead_end)});
+    }
 }
 
 }

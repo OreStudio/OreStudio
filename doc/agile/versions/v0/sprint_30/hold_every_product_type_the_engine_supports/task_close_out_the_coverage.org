@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: FD598D4A-3CBE-4690-9290-F4E16C0272BA
+:END:
+#+title: Task: Close out the coverage
+#+description: The last task: the catalogue names a table for every type, the generator books every type, and the exclusions are the only types absent.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch: feature/close-out-the-coverage
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader of the catalogue can see the whole of what ORE supports, and a test fails when a type is added, removed or re-routed without its model, its builder and its generator.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Merged into [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]] on 2026-11-15. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- no catalogue row leaves the instrument empty, and the exclusion list holds only types the engine cannot carry
+- the coverage note states every type, its form, its table and the task that closed it
+- a check compares the catalogue with the ORE source it was reconciled against, and fails on a type the engine gained or lost
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Abandoned on 2026-11-15 before it started. It overlapped
+[[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]], the close-out task that moved in from the valuation story, so the two were
+merged there: its three acceptance bullets (no catalogue row without a table,
+the coverage note, the check against ORE's source) are that task's acceptance
+now.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

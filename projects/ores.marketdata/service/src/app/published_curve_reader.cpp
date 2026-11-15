@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -40,7 +40,6 @@
 namespace ores::marketdata::service::app {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
 using ores::platform::time::datetime;
 
 namespace {
@@ -306,7 +305,7 @@ list_published_curves(const ores::database::context& ctx,
     page_params.push_back(std::to_string(request.offset));
     page_params.push_back(std::to_string(std::max(1U, request.limit)));
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, page_sql, page_params, published_curve_reader_lg(), "Reading the published curves");
 
     std::vector<messaging::published_curve_set> sets;
@@ -320,11 +319,12 @@ list_published_curves(const ores::database::context& ctx,
     // without a second read of its own. A page past the end states zero rows and
     // still names the size of the set it paged past.
     const auto count_sql = std::string("select count(*)::text") + set_from + filter;
-    const auto counted = execute_parameterized_multi_column_query(ctx,
-                                                                  count_sql,
-                                                                  filter_params,
-                                                                  published_curve_reader_lg(),
-                                                                  "Counting the published curves");
+    const auto counted = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        count_sql,
+        filter_params,
+        published_curve_reader_lg(),
+        "Counting the published curves");
     response.total = counted.empty() ? 0U : count_at(counted.front(), 0);
 
     response.success = true;
@@ -363,11 +363,12 @@ get_published_curve_sets(const ores::database::context& ctx,
         " limit $3::bigint) newest"
         " order by published_at, (superseded_at is null), as_of";
     const auto published_rows =
-        execute_parameterized_multi_column_query(ctx,
-                                                 published_sql,
-                                                 {tenant, request.series_id, limit},
-                                                 published_curve_reader_lg(),
-                                                 "Reading the published sets of a curve");
+        ores::database::query_builder::execute_parameterized_multi_column_query(
+            ctx,
+            published_sql,
+            {tenant, request.series_id, limit},
+            published_curve_reader_lg(),
+            "Reading the published sets of a curve");
 
     std::vector<messaging::published_curve_set> sets;
     sets.reserve(published_rows.size());
@@ -385,16 +386,17 @@ get_published_curve_sets(const ores::database::context& ctx,
                                    " order by cp.as_of, cp.id"
                                    " limit $3::bigint";
         const auto candidate_rows =
-            execute_parameterized_multi_column_query(ctx,
-                                                     candidate_sql,
-                                                     {tenant, request.series_id, limit},
-                                                     published_curve_reader_lg(),
-                                                     "Reading the candidates of a curve");
+            ores::database::query_builder::execute_parameterized_multi_column_query(
+                ctx,
+                candidate_sql,
+                {tenant, request.series_id, limit},
+                published_curve_reader_lg(),
+                "Reading the candidates of a curve");
         for (const auto& r : candidate_rows)
             sets.push_back(set_of(r));
     }
 
-    const auto counted = execute_parameterized_multi_column_query(
+    const auto counted = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "select count(*)::text"
         " from ores_marketdata_curve_publishes_tbl cp"
@@ -422,19 +424,20 @@ get_published_curve_sets(const ores::database::context& ctx,
     std::map<std::chrono::system_clock::time_point, std::vector<messaging::published_curve_point>>
         points_of;
     if (!instants.empty()) {
-        const auto points_rows = execute_parameterized_multi_column_query(
-            ctx,
-            "select o.observation_datetime::text,"
-            " o.value, o.oresmd_uri"
-            " from ores_marketdata_market_observations_tbl o"
-            " where o.tenant_id = $1::uuid"
-            "   and o.series_id = $2::uuid"
-            "   and o.observation_datetime = any($3::timestamptz[])"
-            "   and o.valid_to = ores_utility_infinity_timestamp_fn()"
-            " order by o.observation_datetime, o.oresmd_uri",
-            {tenant, request.series_id, braced(instants)},
-            published_curve_reader_lg(),
-            "Reading the points of a curve's published sets");
+        const auto points_rows =
+            ores::database::query_builder::execute_parameterized_multi_column_query(
+                ctx,
+                "select o.observation_datetime::text,"
+                " o.value, o.oresmd_uri"
+                " from ores_marketdata_market_observations_tbl o"
+                " where o.tenant_id = $1::uuid"
+                "   and o.series_id = $2::uuid"
+                "   and o.observation_datetime = any($3::timestamptz[])"
+                "   and o.valid_to = ores_utility_infinity_timestamp_fn()"
+                " order by o.observation_datetime, o.oresmd_uri",
+                {tenant, request.series_id, braced(instants)},
+                published_curve_reader_lg(),
+                "Reading the points of a curve's published sets");
         for (const auto& r : points_rows)
             points_of[datetime::from_db_string(text_at(r, 0))].push_back(
                 point_of(text_at(r, 0), text_at(r, 1), text_at(r, 2)));

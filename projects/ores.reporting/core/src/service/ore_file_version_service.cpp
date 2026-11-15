@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -53,13 +55,14 @@ using ores::service::messaging::stamp;
 using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
 
 namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-ore_file_version_service::ore_file_version_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ore_file_version_service::ore_file_version_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**
@@ -78,6 +81,46 @@ ore_file_version_read_one(repository::ore_file_version_repository& repo,
                           const ores::database::context& ctx,
                           const messaging::ore_file_version_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::ore_file_version>>
+ore_file_version_read_many(repository::ore_file_version_repository& repo,
+                           const ores::database::context& ctx,
+                           const std::vector<messaging::ore_file_version_key>& keys) {
+    std::vector<std::vector<domain::ore_file_version>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> id_keys;
+    id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        id_keys.push_back(boost::uuids::to_string(key.id));
+    }
+    std::map<key_tuple, std::vector<domain::ore_file_version>> by_key;
+    for (auto& row : repo.read_latest(ctx, id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
 }
 
 /**
@@ -123,21 +166,24 @@ messaging::list_ore_file_versions_response ore_file_version_service::list_ore_fi
                                  {.entity = "ORE file versions", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->ore_file_code_one_of &&
-        request.filter->ore_file_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "ore_file_code_one_of", .limit = "1000"});
+        request.filter->ore_file_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "ore_file_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->engine_version_one_of &&
-        request.filter->engine_version_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "engine_version_one_of", .limit = "1000"});
+        request.filter->engine_version_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "engine_version_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -167,21 +213,24 @@ ore_file_version_service::list_by_ore_file_code_ore_file_versions(
                                  {.entity = "ORE file versions", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+    if (request.filter && request.filter->id_one_of &&
+        request.filter->id_one_of->size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->ore_file_code_one_of &&
-        request.filter->ore_file_code_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "ore_file_code_one_of", .limit = "1000"});
+        request.filter->ore_file_code_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "ore_file_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->engine_version_one_of &&
-        request.filter->engine_version_one_of->size() > 1000) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "engine_version_one_of", .limit = "1000"});
+        request.filter->engine_version_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "engine_version_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -211,16 +260,23 @@ messaging::get_ore_file_version_response ore_file_version_service::get_ore_file_
 messaging::get_many_ore_file_versions_response ore_file_version_service::get_many_ore_file_versions(
     const messaging::get_many_ore_file_versions_request& request) {
     messaging::get_many_ore_file_versions_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = ore_file_version_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::ore_file_version_lookup entry;
-        entry.key = k;
-        auto found = ore_file_version_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.ore_file_version = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.ore_file_version = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -230,7 +286,9 @@ messaging::put_ore_file_version_response ore_file_version_service::put_ore_file_
     const messaging::put_ore_file_version_request& request) {
     messaging::put_ore_file_version_response response;
     domain::ore_file_version value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = ore_file_version_read_one(
+        repo_, ctx_, ore_file_version_key_from(ore_file_version_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -243,11 +301,18 @@ messaging::put_ore_file_version_response ore_file_version_service::put_ore_file_
 messaging::put_many_ore_file_versions_response ore_file_version_service::put_many_ore_file_versions(
     const messaging::put_many_ore_file_versions_request& request) {
     messaging::put_many_ore_file_versions_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::ore_file_version_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(ore_file_version_key_from(ore_file_version_to_domain(change.write)));
+    const auto current = ore_file_version_read_many(repo_, ctx_, keys);
     std::vector<domain::ore_file_version> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::ore_file_version value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -265,9 +330,11 @@ messaging::put_many_ore_file_versions_response ore_file_version_service::put_man
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.versions.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = ore_file_version_read_one(repo_, ctx_, ore_file_version_key_from(value));
-        response.versions.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = ore_file_version_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.versions.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -384,12 +451,12 @@ ore_file_version_service::get_ore_file_version_version(
 ores::utility::domain::result
 ore_file_version_service::prepare_change(const messaging::ore_file_version_change& change,
                                          const ores::utility::domain::change_intent& intent,
+                                         const std::vector<domain::ore_file_version>& current,
                                          domain::ore_file_version& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = ore_file_version_to_domain(change.write);
-    const auto current = ore_file_version_read_one(repo_, ctx_, ore_file_version_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -52,7 +52,7 @@ private:
 
 public:
     workflow_handler(ores::nats::service::client& nats,
-                     ores::database::context ctx,
+                     const ores::database::context& ctx,
                      ores::security::jwt::jwt_authenticator signer,
                      std::shared_ptr<service::workflow_engine> engine);
 

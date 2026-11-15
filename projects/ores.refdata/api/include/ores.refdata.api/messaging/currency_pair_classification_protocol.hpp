@@ -379,7 +379,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classification_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &currency_pair_classification_key::code},
     };
 }
@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classification_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &currency_pair_classification_write::code},
         utility::codec::field{"name", &currency_pair_classification_write::name},
         utility::codec::field{"description", &currency_pair_classification_write::description},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classification_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &currency_pair_classification_change::write},
         utility::codec::field{"precondition", &currency_pair_classification_change::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classification_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_pair_classification_removal::key},
         utility::codec::field{"precondition", &currency_pair_classification_removal::precondition},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classification_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_pair_classification_lookup::key},
         utility::codec::field{"currency_pair_classification",
                               &currency_pair_classification_lookup::currency_pair_classification},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classifications_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &currency_pair_classifications_filter::code_one_of},
     };
 }
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_pair_classification_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &currency_pair_classification_event::event_id},
         utility::codec::field{"key", &currency_pair_classification_event::key},
         utility::codec::field{"action", &currency_pair_classification_event::action},
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_classification_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "currency_pair_classification",
             &currency_pair_classification_version_key::currency_pair_classification},
@@ -509,7 +509,7 @@ wire_fields(std::type_identity<currency_pair_classification_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<currency_pair_classification_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &currency_pair_classification_versions_filter::version},
         utility::codec::field{"from_version",
                               &currency_pair_classification_versions_filter::from_version},
@@ -528,7 +528,7 @@ wire_fields(std::type_identity<currency_pair_classification_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_pair_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_currency_pair_classifications_request::offset},
         utility::codec::field{"limit", &list_currency_pair_classifications_request::limit},
         utility::codec::field{"order", &list_currency_pair_classifications_request::order},
@@ -547,7 +547,7 @@ wire_fields(std::type_identity<list_currency_pair_classifications_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_pair_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_currency_pair_classifications_response::result},
         utility::codec::field{"classifications",
                               &list_currency_pair_classifications_response::classifications},
@@ -565,7 +565,7 @@ wire_fields(std::type_identity<list_currency_pair_classifications_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_pair_classification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_currency_pair_classification_request::key},
     };
 }
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<get_currency_pair_classification_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_pair_classification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_currency_pair_classification_response::result},
         utility::codec::field{
             "currency_pair_classification",
@@ -598,7 +598,7 @@ wire_fields(std::type_identity<get_currency_pair_classification_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_currency_pair_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_currency_pair_classifications_request::keys},
     };
 }
@@ -613,7 +613,7 @@ wire_fields(std::type_identity<get_many_currency_pair_classifications_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_currency_pair_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_currency_pair_classifications_response::result},
         utility::codec::field{"entries", &get_many_currency_pair_classifications_response::entries},
     };
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_many_currency_pair_classifications_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_currency_pair_classification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_currency_pair_classification_request::change},
         utility::codec::field{"intent", &put_currency_pair_classification_request::intent},
     };
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<put_currency_pair_classification_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_currency_pair_classification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_currency_pair_classification_response::result},
         utility::codec::field{
             "currency_pair_classification",
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<put_currency_pair_classification_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_currency_pair_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_currency_pair_classifications_request::changes},
         utility::codec::field{"intent", &put_many_currency_pair_classifications_request::intent},
     };
@@ -679,7 +679,7 @@ wire_fields(std::type_identity<put_many_currency_pair_classifications_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_currency_pair_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_currency_pair_classifications_response::result},
         utility::codec::field{"classifications",
                               &put_many_currency_pair_classifications_response::classifications},
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<put_many_currency_pair_classifications_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_currency_pair_classification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_currency_pair_classification_request::removal},
         utility::codec::field{"intent", &delete_currency_pair_classification_request::intent},
     };
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<delete_currency_pair_classification_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_currency_pair_classification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_currency_pair_classification_response::result},
     };
 }
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<delete_currency_pair_classification_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_pair_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_currency_pair_classifications_request::removals},
         utility::codec::field{"intent", &delete_many_currency_pair_classifications_request::intent},
@@ -744,7 +744,7 @@ wire_fields(std::type_identity<delete_many_currency_pair_classifications_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_pair_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_currency_pair_classifications_response::result},
     };
@@ -760,7 +760,7 @@ wire_fields(std::type_identity<delete_many_currency_pair_classifications_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_pair_classification_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_currency_pair_classification_versions_request::key},
         utility::codec::field{"offset",
                               &list_currency_pair_classification_versions_request::offset},
@@ -781,7 +781,7 @@ wire_fields(std::type_identity<list_currency_pair_classification_versions_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_currency_pair_classification_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_currency_pair_classification_versions_response::result},
         utility::codec::field{"versions",
@@ -800,7 +800,7 @@ wire_fields(std::type_identity<list_currency_pair_classification_versions_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_pair_classification_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_currency_pair_classification_version_request::key},
     };
 }
@@ -815,7 +815,7 @@ wire_fields(std::type_identity<get_currency_pair_classification_version_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_currency_pair_classification_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_currency_pair_classification_version_response::result},
         utility::codec::field{"version",
                               &get_currency_pair_classification_version_response::version},

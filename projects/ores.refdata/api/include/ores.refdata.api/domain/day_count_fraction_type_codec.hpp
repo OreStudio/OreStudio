@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<day_count_fraction_type>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &day_count_fraction_type::version},
         utility::codec::field{"tenant_id", &day_count_fraction_type::tenant_id},
         utility::codec::field{"code", &day_count_fraction_type::code},

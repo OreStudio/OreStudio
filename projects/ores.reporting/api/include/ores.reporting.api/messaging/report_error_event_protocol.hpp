@@ -259,7 +259,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_event_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &report_error_event_key::id},
     };
 }
@@ -273,7 +273,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_event_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_error_event_lookup::key},
         utility::codec::field{"report_error_event", &report_error_event_lookup::report_error_event},
     };
@@ -288,7 +288,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_events_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_id",
                               &report_error_events_filter::report_instance_id},
         utility::codec::field{"severity", &report_error_events_filter::severity},
@@ -308,7 +308,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_event_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &report_error_event_event::event_id},
         utility::codec::field{"key", &report_error_event_event::key},
         utility::codec::field{"action", &report_error_event_event::action},
@@ -327,7 +327,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_error_events_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_report_error_events_request::offset},
         utility::codec::field{"limit", &list_report_error_events_request::limit},
         utility::codec::field{"order", &list_report_error_events_request::order},
@@ -344,7 +344,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_error_events_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_report_error_events_response::result},
         utility::codec::field{"errors", &list_report_error_events_response::errors},
         utility::codec::field{"total", &list_report_error_events_response::total},
@@ -360,7 +360,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_error_event_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_report_error_event_request::key},
     };
 }
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_error_event_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_report_error_event_response::result},
         utility::codec::field{"report_error_event",
                               &get_report_error_event_response::report_error_event},
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_error_events_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_report_error_events_request::keys},
     };
 }
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_report_error_events_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_report_error_events_response::result},
         utility::codec::field{"entries", &get_many_report_error_events_response::entries},
     };
@@ -421,7 +421,7 @@ wire_fields(std::type_identity<get_many_report_error_events_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "report_instance_id",
             &list_by_report_instance_id_report_error_events_request::report_instance_id},
@@ -448,7 +448,7 @@ wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_report_instance_id_report_error_events_response::result},
         utility::codec::field{"errors",
@@ -467,7 +467,7 @@ wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_count>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_id", &report_error_count::report_instance_id},
         utility::codec::field{"errors", &report_error_count::errors},
         utility::codec::field{"warnings", &report_error_count::warnings},
@@ -483,7 +483,7 @@ wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_error_counts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_ids",
                               &get_report_error_counts_request::report_instance_ids},
     };
@@ -498,7 +498,7 @@ wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_re
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_error_counts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_report_error_counts_response::result},
         utility::codec::field{"counts", &get_report_error_counts_response::counts},
     };

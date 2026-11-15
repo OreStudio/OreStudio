@@ -139,6 +139,23 @@ decision it waits on.
  */
 #+end_src
 
+*** status
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the call did, as one of published, raised, deferred, refused or
+ * failed.
+ *
+ * Published moved the set. Raised waits on a decision and moved nothing.
+ * Deferred did not run because an input the curve declares is not there yet --
+ * the set it published before is still the set in force, and the next firing
+ * tries again. Refused is the gate's no. Failed is an error.
+ */
+#+end_src
+
 *** message
 :PROPERTIES:
 :cpp_type: std::string

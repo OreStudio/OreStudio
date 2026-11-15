@@ -6,6 +6,7 @@
       <BondData>
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POPMRZYFF8XO9</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -14,9 +15,28 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2032-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>
@@ -30,16 +50,16 @@
           </Dates>
         </ScheduleData>
         <Styles>
-          <Style/>
+          <Style>Bermudan</Style>
         </Styles>
         <Prices>
-          <Price>0</Price>
+          <Price>1</Price>
         </Prices>
         <PriceTypes>
-          <PriceType/>
+          <PriceType>Clean</PriceType>
         </PriceTypes>
         <IncludeAccruals>
-          <IncludeAccrual>false</IncludeAccrual>
+          <IncludeAccrual>true</IncludeAccrual>
         </IncludeAccruals>
       </CallData>
     </CallableBondData>
@@ -50,6 +70,7 @@
       <BondData>
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POPKD1ME6GH76</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -58,9 +79,28 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2030-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>
@@ -74,16 +114,16 @@
           </Dates>
         </ScheduleData>
         <Styles>
-          <Style/>
+          <Style>Bermudan</Style>
         </Styles>
         <Prices>
-          <Price>0</Price>
+          <Price>1</Price>
         </Prices>
         <PriceTypes>
-          <PriceType/>
+          <PriceType>Clean</PriceType>
         </PriceTypes>
         <IncludeAccruals>
-          <IncludeAccrual>false</IncludeAccrual>
+          <IncludeAccrual>true</IncludeAccrual>
         </IncludeAccruals>
       </CallData>
     </CallableBondData>

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8E526523-4253-4301-824C-42AD1D4406EC
+:END:
+#+title: The desk screens build the wire timestamp by hand
+#+description: asOfInstant() in projects/ores.web/packages/web/src/marketdata/readScreen.ts templates 'YYYY-MM-DD 23:59:59Z' instead of using toWireTimestamp, against doc/knowledge/architecture/time_architecture.org: the wire timestamp has one owner. The four desk reads now send it on the wire, so the spelling is load-bearing. Fixing it changes the wire spelling of every desk read (six fraction digits) and the tests that pin it.
+#+type: capture
+#+level: cross
+#+filetags: :web:time:standards:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

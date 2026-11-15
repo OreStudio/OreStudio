@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-mas-adapter
+#+pr: 4656
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
-#+updated: 2026-11-10
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,18 +20,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-SORA is stored as fixings in the system tenant, with its history, read from the Monetary Authority of Singapore through the MAS API, with a free key. The adapter is specialised: it reads the Monetary Authority of Singapore alone, and it supplies only its fetcher to the shared half of the official adapter.
+SORA is stored as fixings in the system tenant, with its history, read from the domestic interest rates page of the Monetary Authority of Singapore, which needs no key. The MAS API needs a Singapore Corppass login, so the adapter posts the page's download form back to it. The adapter is specialised: it reads the Monetary Authority of Singapore alone, and it supplies only its fetcher to the shared half of the official adapter.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | A person registers a MAS API key; the key goes to the credential store. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-10                               |
+| Now          | Implemented and verified.              |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -60,7 +60,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| SORA fixings stored on a fresh environment | 275, from 2025-10-08 to 2026-11-11, values 0.007564 to 0.017446 | count over =ores_marketdata_market_fixings_tbl= joined to its series | after the year-header fix |
+| Time from service start to the fixings sent | about 50 seconds (14:24:22 to 14:25:10) | =ores.marketdata.official= log: "Sent 275 fixing(s) of 'mas-sora'" | after the year-header fix |
+| History the route serves | from 2005-07-01 | POST of the Download form for 2005 | 2026-11-12 |
+| ores.marketdata.official.tests | 120 cases pass, 7 of them new | =ores.marketdata.official.tests= | after the year-header fix |
+| ores.http.client.tests | 13 cases pass, 2 of them new | =ores.http.client.tests= | 690a3e0174 |
+| Catalogue pgTAP suite | 5 of 5 pass | =run_tests.sh marketdata_overnight_rates_catalogue_test.sql= | after the year-header fix |
 
 * Notes
 
@@ -81,12 +86,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4656][#4656]] | [marketdata] Add the Monetary Authority of Singapore adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | hidden_value needs name before value in the tag | mas.cpp | Declined | The page writes them in that order; a change fails safely with an error and no fixing. |
+| 2 | A blank line before the footer could fail a row | mas.cpp | Checked | lines_of returns only lines that are not empty. |
+| 3 | Each read fetches the page and posts the form | mas.cpp | Declined | The adapter reads one window a poll; two requests an hour is light. |
+| 4 | A redirect is an error | mas.cpp | Declined | The transport follows no redirect, and any status but 200 is an error with no fixing. |
+| 5 | The SORA column index is brittle | mas.cpp | Checked | The parser refuses a download whose fifth column is not SORA. |
+| 6 | The credit must match the licence | marketdata_overnight_rates_catalogue_populate.sql | Checked | The licence asks for a notice naming the dataset and its source; the credit names both. |
 
 * Result
+
+The adapter reads SORA from the domestic interest rates page of the Monetary
+Authority of Singapore. The MAS API needs a Singapore Corppass login, so the
+fetcher does what the page's Download button does: a GET of the page for its
+ASP.NET hidden fields, then a POST of the form with a range of months and the
+SORA column. The answer is CSV, which states a row's year and month only when
+they change and repeats its header above each year. The page needs no key
+and no cookie. The HTTP transport gained =post= for this; a transport that
+only reads refuses it, so the test transports of every other fetcher are
+unchanged.
+
+The first fresh run failed on the header of the second year, because a first
+read covers 400 days. The parser now reads past it, and a test pins it. On a
+fresh environment the service then sent 275 fixings about 50 seconds after it
+started. Each is the decimal of the published percent, with the credit the
+MAS Open Data Licence asks for, naming the dataset and its source. The date
+of access is not part of the credit, since a provider holds one credit for
+every read. The route serves SORA from 2005-07-01; the calibration sources
+note records it. The system and Acme provisioned to completion.
+

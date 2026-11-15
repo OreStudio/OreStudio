@@ -52,8 +52,8 @@ std::string approval_kind_part_repository::sql() {
     return query_builder::insert_statement_sql<approval_kind_part_entity>(lg());
 }
 
-approval_kind_part_repository::approval_kind_part_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+approval_kind_part_repository::approval_kind_part_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 approval_kind_part_repository::replace_claim(const domain::approval_kind_part& v) {

@@ -1,0 +1,173 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_HTTP_ROUTES_IAM_ROLE_WRITE_ROUTES_HPP
+#define ORES_HTTP_ROUTES_IAM_ROLE_WRITE_ROUTES_HPP
+
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.http/routes/iam/access_screen_shapes.hpp"
+#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/role.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include <memory>
+#include <optional>
+#include <string>
+#include <type_traits>
+#include <unordered_set>
+#include <vector>
+
+namespace ores::http::routes::iam {
+
+/// One role the caller could ask for that would give the permission.
+struct way_to_hold final {
+    std::string id;
+    std::string name;
+    std::string description;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<way_to_hold>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"id", &way_to_hold::id},
+                                              field{"name", &way_to_hold::name},
+                                              field{"description", &way_to_hold::description}};
+}
+
+/**
+ * @brief The principal's ways to hold a permission: the roles of the catalogue
+ * that grant it and the caller does not hold yet.
+ */
+struct ways_to_hold_view final {
+    std::vector<way_to_hold> roles;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ways_to_hold_view>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"roles", &ways_to_hold_view::roles}};
+}
+
+/**
+ * @brief The access screens' role and lock writes, and the catalogues they pick
+ * from, at the addresses and in the shapes ores.web reads.
+ *
+ * A role given to an account or taken away, an account locked or unlocked, a
+ * role made, edited or removed, and the permissions a role grants written whole
+ * or changed by what to add and remove. Each forwards the caller's own token,
+ * so IAM's permission check governs, and states a refusal the way the BFF did.
+ */
+class role_write_routes final {
+public:
+    /**
+     * @brief One role of the tenant's catalogue with the permissions it grants.
+     */
+    struct role_summary final {
+        ores::iam::domain::role role;
+        std::vector<std::string> permission_codes;
+    };
+
+    /**
+     * @brief Register the routes.
+     */
+    static void register_routes(std::shared_ptr<ores::http::net::router> router,
+                                std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+                                ores::nats::service::nats_client& session);
+
+    /**
+     * @brief A role to give, or nothing when the body is not one: a role
+     * identifier, a reason of 1 to 100 characters and a note of at most 2000.
+     */
+    [[nodiscard]] static std::optional<give_role_body> read_give_role(const std::string& body);
+
+    /**
+     * @brief A role to make, or nothing when it is not one: a name of 1 to 100
+     * characters once trimmed and a description of at most 1000.
+     */
+    [[nodiscard]] static std::optional<role_body> read_new_role(const std::string& body);
+
+    /**
+     * @brief A role to edit, or nothing when it is not one: a new role's fields
+     * and the version it was read at and its two flags.
+     */
+    [[nodiscard]] static std::optional<role_body> read_edited_role(const std::string& body);
+
+    /**
+     * @brief The permissions a role grants, or nothing when they are not stated:
+     * at most 2000 codes of 1 to 200 characters and a note of at most 2000.
+     */
+    [[nodiscard]] static std::optional<permission_bundle_body> read_bundle(const std::string& body);
+
+    /**
+     * @brief The permissions to add and remove, or nothing when they are not
+     * stated: at most 2000 codes each and a note of 1 to 2000 characters.
+     */
+    [[nodiscard]] static std::optional<permission_changes_body>
+    read_changes(const std::string& body);
+
+    /**
+     * @brief What a role grants once the changes apply: the held codes without
+     * those removed, then each added code it did not hold.
+     */
+    [[nodiscard]] static std::vector<std::string>
+    apply_changes(std::vector<std::string> held, const permission_changes_body& changes);
+
+    /**
+     * @brief Whether a role grants a permission, by its code, its area's
+     * wildcard or everything.
+     */
+    [[nodiscard]] static bool grants(const role_summary& role, const std::string& code);
+
+    /**
+     * @brief The roles a person could ask for that would give a permission:
+     * requestable, not a service's, not already held, and granting it.
+     */
+    [[nodiscard]] static std::vector<role_summary>
+    ways_to_hold(const std::string& code,
+                 const std::vector<role_summary>& roles,
+                 const std::unordered_set<std::string>& held);
+
+    /**
+     * @brief The ways to hold a permission, as the screen reads them.
+     */
+    [[nodiscard]] static std::string ways_json(const std::vector<role_summary>& roles);
+
+    /**
+     * @brief The tenant's roles as the screen reads them.
+     */
+    [[nodiscard]] static std::string roles_json(const std::vector<role_summary>& roles);
+
+    /**
+     * @brief The permission catalogue as the screen reads it, in code order.
+     */
+    [[nodiscard]] static std::string
+    permissions_json(std::vector<ores::iam::domain::permission> permissions);
+};
+
+}
+
+template <>
+struct ores::utility::codec::wire_traits<ores::http::routes::iam::way_to_hold>
+    : shaped_wire_traits<ores::http::routes::iam::way_to_hold> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::http::routes::iam::ways_to_hold_view>
+    : shaped_wire_traits<ores::http::routes::iam::ways_to_hold_view> {};
+
+#endif

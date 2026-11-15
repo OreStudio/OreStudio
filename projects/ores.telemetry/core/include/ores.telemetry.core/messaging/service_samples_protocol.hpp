@@ -255,7 +255,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<service_sample>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"sampled_at", &service_sample::sampled_at},
         ::ores::utility::codec::field{"service_name", &service_sample::service_name},
         ::ores::utility::codec::field{"instance_id", &service_sample::instance_id},
@@ -273,7 +273,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<service_heartbeat_message>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"service_name", &service_heartbeat_message::service_name},
         ::ores::utility::codec::field{"instance_id", &service_heartbeat_message::instance_id},
         ::ores::utility::codec::field{"host_id", &service_heartbeat_message::host_id},
@@ -290,7 +290,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_samples_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -302,7 +302,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_samples_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_service_samples_response::success},
         ::ores::utility::codec::field{"message", &get_service_samples_response::message},
         ::ores::utility::codec::field{"samples", &get_service_samples_response::samples},
@@ -318,7 +318,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<service_roster_slot>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"service_name", &service_roster_slot::service_name},
         ::ores::utility::codec::field{"display_name", &service_roster_slot::display_name},
         ::ores::utility::codec::field{"description", &service_roster_slot::description},
@@ -341,7 +341,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_roster_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -353,7 +353,7 @@ struct get_service_roster_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_roster_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_service_roster_response::success},
         ::ores::utility::codec::field{"message", &get_service_roster_response::message},
         ::ores::utility::codec::field{"slots", &get_service_roster_response::slots},

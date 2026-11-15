@@ -65,7 +65,7 @@ messaging::get_series_slice_response series_slice_reader_refuse(std::string why)
 }
 
 messaging::get_series_slice_response
-series_slice_reader::read(ores::database::context ctx,
+series_slice_reader::read(const ores::database::context& ctx,
                           const messaging::get_series_slice_request& request) {
     using ores::marketdata::datum::name_of;
 

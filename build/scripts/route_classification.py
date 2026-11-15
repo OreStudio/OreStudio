@@ -91,6 +91,89 @@ class Exemption:
 
 
 RULES = (
+    # The IAM composed views ores.http answers, ahead of the rules for the screen
+    # routes they share a part with; each keeps the BFF's view name, so its
+    # obligations are stated once.
+    Rule("the adapters screen's route",
+         ("exact", "GET /api/marketdata/adapters"),
+         CPP, RESOURCE, "market-data",
+         "Every adapter the market data service tracks, with what it serves, what it was asked to"
+         " serve, and the kind of source its feed reads, joined from the feeds and the sessions."),
+    Rule("the public rates' route",
+         ("regex", r"^(GET /api/marketdata/public-rates/fixings"
+                   r"|POST /api/marketdata/public-rates(/\{code\})?/(accept|withdraw)-terms)$"),
+         CPP, RESOURCE, "market-data",
+         "The fixings the store holds for up to a dozen series, oldest first, and the three"
+         " answers a person gives to a publisher's terms: accept one at the version read,"
+         " withdraw one, and accept many in one request."),
+    Rule("the ORE URI codec route",
+         ("regex", r"^(GET|POST) /api/oresmd"),
+         CPP, TRANSPORT, NO_AREA,
+         "The codec's own table, the read of a URI into its parts, a batch of them, and the"
+         " write of parts into a URI, at the addresses and in the shapes the BFF answered,"
+         " storing nothing."),
+    Rule("a series' observations route",
+         ("exact", "GET /api/series/{id}/observations"),
+         CPP, RESOURCE, "market-data",
+         "One series' observations inside a window, oldest first, the count read as the cap on"
+         " the answer, at the address and in the shape the BFF answered."),
+    Rule("the curves' route",
+         ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
+                   r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"
+                   r"|published(/withdraw|-sets)?)$"),
+         CPP, RESOURCE, "market-data",
+         "The curves at the address and in the shape the BFF answered: the series an identity"
+         " names, the series a party sees, the URIs of the series a blueprint names, the object"
+         " snapshotted and sliced and evolved, the points a recipe computes without storing"
+         " them, the manual points a person keys and clears, the published sets a party holds,"
+         " the FX forward ladder of one pair, and the withdrawal that takes a set out of use."),
+    Rule("the market data subscriptions' route",
+         ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"
+                   r"(/\{(provider|publisher)\})?$"),
+         CPP, RESOURCE, "market-data",
+         "The subscriptions and routes screens at the address and in the shape the BFF answered:"
+         " every subscription and route the caller's party holds, the two creates that name a"
+         " provider or a feed, and the removals that name the version they read."),
+    Rule("the blotter",
+         ("exact", "GET /api/blotter"),
+         CPP, COMPOSED, "trading",
+         "One page of trades with the rail that groups them, answered by ores.trading from the"
+         " summaries, the structures, the members, the books, the portfolios, the"
+         " counterparties and the catalogues, every row read whole before the page is cut."),
+    Rule("the book tree",
+         ("exact", "GET /api/books/tree"),
+         CPP, COMPOSED, "trading",
+         "Every portfolio and every book in one answer, two collection reads woven into the"
+         " tree a person navigates."),
+    Rule("the image map",
+         ("exact", "GET /api/image-map"),
+         CPP, COMPOSED, "assets",
+         "Which image every flagged record uses, answered by ores.http from four reference"
+         " data lists and one image search, at the address and in the shape the BFF"
+         " answered."),
+    Rule("the tenor catalogue",
+         ("exact", "GET /api/tenors/catalogue"),
+         CPP, COMPOSED, "reference-data",
+         "The tenors in their own order with their conventions and schedules, answered by"
+         " ores.http from three whole list reads at the address and in the shape the BFF"
+         " answered."),
+    Rule("the deployment overview",
+         ("exact", "GET /api/overview"),
+         CPP, COMPOSED, "tenancy",
+         "The system administrator's home answered by ores.http at the address and in the"
+         " shape the BFF answered: the roster counted by status, the tenants that need the"
+         " administrator, the first page and the newest setups."),
+    Rule("the bootstrap status",
+         ("exact", "GET /api/bootstrap"),
+         CPP, COMPOSED, "tenancy",
+         "Whether the deployment still needs its first administrator, answered by ores.http"
+         " at the address and in the shape the BFF answered, with the two first-run settings"
+         " a failed read leaves false."),
+    Rule("the principal's ways to hold",
+         ("exact", "GET /api/me/ways-to-hold"),
+         CPP, COMPOSED, "access",
+         "The roles the caller could ask for that would give a permission, answered by"
+         " ores.http at the address and in the shape the BFF answered."),
     Rule("the cookie credential",
          ("regex", r"^(GET|POST|DELETE) /api/session(/party|/switch-party)?$"),
          BFF, TRANSPORT, "auth",
@@ -102,6 +185,11 @@ RULES = (
          BFF, TRANSPORT, "changes",
          "The change stream a client subscribes to, and the watch set that says which"
          " subjects it wants; delivery of events, not a domain object."),
+    Rule("the browser's change stream route",
+         ("regex", r"^(GET /api/events|POST /api/events/watch)$"),
+         CPP, TRANSPORT, "changes",
+         "The change stream in the shape ores.web reads, carrying only the collections the"
+         " session watches, and the route that replaces that watch set."),
     Rule("the change stream route",
          ("exact", "GET /api/v1/changes"),
          CPP, TRANSPORT, "changes",
@@ -123,6 +211,21 @@ RULES = (
          "What the served client needs to render itself, the environment and on the"
          " developer surface the host, port and namespace, which the design delivers with"
          " the bundle rather than as a resource."),
+    Rule("the liveness endpoint route",
+         ("exact", "GET /api/health"),
+         CPP, TRANSPORT, NO_AREA,
+         "The liveness answer the BFF gave the deployment's probes, kept so a probe needs"
+         " no change when the BFF goes."),
+    Rule("the client's journal route",
+         ("exact", "POST /api/client-log"),
+         CPP, TRANSPORT, "operations",
+         "The browser's trail written into the server's journal under the session's id,"
+         " as the BFF wrote it."),
+    Rule("the served client's configuration route",
+         ("prefix", "GET /api/site"),
+         CPP, TRANSPORT, NO_AREA,
+         "What the served client needs to render itself, read from the site configuration"
+         " the BFF read, and the deployment's plumbing where the developer surface is offered."),
     Rule("the ORE URI codec",
          ("regex", r"^(GET|POST) /api/oresmd"),
          BFF, TRANSPORT, NO_AREA,
@@ -164,6 +267,47 @@ RULES = (
          "The resource is a string in the URL, so the payload's shape changes with it and"
          " no client can be generated from it; the generated collection per resource"
          " already carries the same rows under a named entity."),
+    Rule("the refdata resource catalogue route",
+         ("exact", "GET /api/refdata"),
+         CPP, NOT_API, NO_AREA,
+         "The catalogue the BFF answered, built from each record unit's own entry, so the"
+         " screens keep reading the resources they may name when the BFF goes."),
+    Rule("the refdata record routes",
+         ("regex", r"^(GET|PUT|DELETE) /api/refdata/[a-z-]+(/key/\{key\}|/by/\{parent\})?$"),
+         CPP, NOT_API, NO_AREA,
+         "The generic router's addresses, one generated unit per resource in the BFF's"
+         " shapes, kept so the screens work when the BFF goes; the published collection"
+         " per resource is the API."),
+    Rule("the synthetic resource catalogue route",
+         ("exact", "GET /api/synthetic"),
+         CPP, NOT_API, NO_AREA,
+         "The catalogue the BFF answered, built from each record unit's own entry for the"
+         " session, so the screens keep reading the resources they may name when the BFF goes."),
+    # The synthetic composed views, ahead of the record routes whose addresses
+    # they share; each keeps the name the BFF's rule gives it, so the view's
+    # obligations are stated once.
+    Rule("the synthetic folder tree",
+         ("exact", "GET /api/synthetic/feed-folders"),
+         CPP, COMPOSED, "simulation",
+         "The folders and the feeds under each at any depth, answered by ores.http from one"
+         " folder call at the address and in the shape the BFF answered."),
+    Rule("the market trace",
+         ("exact", "GET /api/synthetic/market-trace"),
+         CPP, COMPOSED, "simulation",
+         "The scheduler's recent decisions and every running feed's law, answered by"
+         " ores.http from one trace call at the address and in the shape the BFF answered."),
+    Rule("the calibration of an asset class",
+         ("exact", "GET /api/synthetic/calibration/{assetClass}"),
+         CPP, COMPOSED, "simulation",
+         "The policy a class calibrates under and how every feed of it resolves, with the"
+         " coverage counts, answered by ores.http at the address and in the shape the BFF"
+         " answered; nothing starts."),
+    Rule("the synthetic record routes",
+         ("regex", r"^(GET|PUT|DELETE) /api/synthetic/[a-z-]+(/key/\{key\}|/by/\{parent\})?$"),
+         CPP, NOT_API, NO_AREA,
+         "The generic router's addresses, one generated unit per resource in the BFF's"
+         " shapes and two hand-written feed key reads, kept so the screens work when the BFF"
+         " goes."),
     Rule("the synthetic resource catalogue",
          ("exact", "GET /api/synthetic"),
          BFF, NOT_API, NO_AREA,
@@ -202,17 +346,48 @@ RULES = (
          BFF, NOT_API, NO_AREA,
          "Every label and the labels each code domain uses: translated copy for display,"
          " which the design puts in the client."),
+    Rule("the classification catalogue route",
+         ("exact", "GET /api/classifications"),
+         CPP, NOT_API, NO_AREA,
+         "The catalogue the BFF answered, built from each list unit's own entry with its"
+         " count, so the classification screen works when the BFF goes."),
+    Rule("the classification list routes",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/classifications/[a-z-]+"
+                   r"(/rows(/\{code\}(/label)?)?|/order)?$"),
+         CPP, NOT_API, NO_AREA,
+         "The classification router's addresses, one generated unit per code list in the"
+         " BFF's shapes, kept so the screen works when the BFF goes."),
+    Rule("the label catalogue route",
+         ("exact", "GET /api/labels"),
+         CPP, NOT_API, NO_AREA,
+         "The label catalogue the BFF answered, kept so the screens draw their codes when"
+         " the BFF goes."),
+    Rule("the history read route",
+         ("exact", "GET /api/history"),
+         CPP, NOT_API, NO_AREA,
+         "The one history read every history tab calls, kept so the tabs work when the BFF"
+         " goes; the owning component answers on the subject the entity type names."),
     Rule("the generic history read",
          ("exact", "GET /api/history"),
          BFF, NOT_API, NO_AREA,
          "One history route for every entity type, named by an opaque entityType string, so"
          " the payload has no per-entity schema; ores.http already serves /versions for each"
          " versioned collection."),
+    Rule("a form's pick lists route",
+         ("regex", r"^GET /api/(books|conventions|counterparties|tenors)/pick-lists$"),
+         CPP, NOT_API, NO_AREA,
+         "The option lists the BFF answered for each reference data form, keyed by the"
+         " control's name, kept so the forms work when the BFF goes."),
     Rule("a form's pick lists",
          ("regex", r"^GET /api/(books|conventions|counterparties|tenors)/pick-lists$"),
          BFF, NOT_API, NO_AREA,
          "The option lists one form's controls need, keyed by the control's own name and"
          " joined by nothing; each list is a collection a client reads at its own resource."),
+    Rule("an edit form's codes route",
+         ("exact", "GET /api/reporting/choices"),
+         CPP, NOT_API, NO_AREA,
+         "The codes the report edit form offers, kept so the form works when the BFF goes;"
+         " they are the form's option set and not a resource."),
     Rule("an edit form's codes",
          ("exact", "GET /api/reporting/choices"),
          BFF, NOT_API, NO_AREA,
@@ -225,7 +400,7 @@ RULES = (
          " display order for a form."),
     Rule("the pricing engine vocabulary",
          ("exact", "GET /api/reporting/pricing-engines/vocabulary"),
-         BFF, NOT_API, NO_AREA,
+         None, NOT_API, NO_AREA,
          "Fifteen lookup collections read at once and keyed by the names the editor's"
          " controls use, so a client that wants one of them reads that collection instead."),
 
@@ -319,9 +494,10 @@ RULES = (
          " its values, and the fixings written against it."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
-         BFF, COMPOSED, "reporting",
-         "Each report definition with the row the list would draw for it and the reads that"
-         " failed, so the answer says a run could not be checked rather than that it never ran."),
+         None, RESOURCE, "reporting",
+         "A party's report definitions counted by the health word each carries, one read whose"
+         " counts and total the service derives, so the answer states what it counted and"
+         " derives nothing."),
     Rule("an ORE schema's contents",
          ("exact", "GET /api/reporting/ore-files/:code/schema"),
          BFF, COMPOSED, "reporting",
@@ -329,7 +505,7 @@ RULES = (
          " stored versions supply its contents, so two collections are joined to answer."),
     Rule("the engine's documented groups",
          ("exact", "GET /api/reporting/engine-settings/documentation"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "One collection, the parameter groups read from the store and returned with what"
          " each group means; the documentation screen reads it and no collection is joined"
          " onto it."),
@@ -416,6 +592,13 @@ RULES = (
          BFF, RESOURCE, "market-data",
          "One currency pair's forward ladder at one as-of, one service read that stores"
          " nothing and names the missing input when it refuses."),
+    Rule("the four market-data desk reads",
+         ("regex", r"^POST /api/market/(instruments|rate-ladder|fx-montage"
+                   r"|curve-analytics)$"),
+         BFF, RESOURCE, "market-data",
+         "The four reads the desk screens ask: the session party's instrument catalogue,"
+         " one currency's rate ladder, one base currency's FX montage and one curve's"
+         " analytics, each a service read that stores nothing and names what it refused."),
     Rule("the published curves",
          ("prefix", "POST /api/curves/published"),
          BFF, RESOURCE, "market-data",
@@ -501,6 +684,59 @@ RULES = (
          BFF, RESOURCE, "trading",
          "The kinds a structure may be, a lookup the server holds."),
 
+    Rule("the report list's route",
+         ("exact", "GET /api/reporting/reports"),
+         CPP, RESOURCE, "reporting",
+         "One page of the report definitions the caller's parties own, each row the"
+         " definition with its latest run, its health word, its problem counts, its next"
+         " fire and the party's own name, so a cell that cannot be read says why."),
+    Rule("a report definition's route",
+         ("regex", r"^((GET /api/reporting/reports/(by-name/\{name\}|\{segment\}|"
+                   r"\{id\}/configurations))|(PUT /api/reporting/reports/\{id\}))$"),
+         CPP, RESOURCE, "reporting",
+         "One report definition at the address and in the shape the BFF answered: the id a name "
+         "resolves to, the page an id or an older name opens with the choices a shared name "
+         "offers, the configurations it binds, and the write that rebuilds the record from the "
+         "fields the form shows."),
+    Rule("a run's files",
+         ("regex", r"^GET /api/reporting/runs/\{id\}/files(/(?P<file>\{file\})(/info)?)?$"),
+         CPP, COMPOSED, "reporting",
+         "One run's files: the tree the run hangs in, what each input package holds, the "
+         "output files each accepted result's manifest names, and the bytes of whichever one "
+         "the reader opened, so the screen reads one answer and not a walk of three services."),
+    Rule("the cuts",
+         ("regex", r"^((GET|POST) /api/reporting/cuts.*)$"),
+         CPP, COMPOSED, "reporting",
+         "The cuts a party holds and one cut's record: the body's facts, the state and the label "
+         "the reporting service derives, the kind the body was taken under, the gaps the "
+         "assembly could not fill, the runs that priced from it, and the hand take that "
+         "assembles a body part by part and presses."),
+    Rule("the kinds of cut",
+         ("regex", r"^((GET|PUT|DELETE) /api/reporting/cut-kinds.*|GET /api/reporting/cut-kind-choices)$"),
+         CPP, RESOURCE, "reporting",
+         "The kinds of cut a report may select: the collection, one kind with the cuts the party "
+         "holds of it, a write or removal, and the lookups a kind's form offers. A kind is one "
+         "collection with three keys resolved -- its family's name, its resolution rule's name "
+         "and the approval kind that signs a cut of it, with the permission that decider needs "
+         "-- so one answer states words where the row holds codes."),
+    Rule("a run's results",
+         ("regex", r"^GET /api/reporting/runs/\{id\}/results$"),
+         CPP, RESOURCE, "reporting",
+         "One run's figures at the level the reader asks for: the result rows of the run, the "
+         "bookings of its trades, and the counterparties, books and portfolios those ids name, "
+         "rolled up to the trade, book or counterparty and stated against an earlier run when "
+         "one is named."),
+    Rule("a report run's route",
+         ("regex", r"^GET /api/reporting/runs/\{id\}(/errors)?$"),
+         CPP, RESOURCE, "reporting",
+         "One report run at the address and in the shape the BFF answered: what it is, the state "
+         "it reached, the batch that ran it and its output, and the problems it recorded."),
+    Rule("a report's runs route",
+         ("regex", r"^((GET|POST) /api/reporting/reports/\{id\}/(run|runs))$"),
+         CPP, RESOURCE, "reporting",
+         "One report's runs at the addresses and in the shapes the BFF answered: the start that "
+         "answers the run it made, and the runs of a definition newest first with the state each "
+         "reached."),
     Rule("the report definitions",
          ("regex", r"^GET /api/reporting/reports"),
          BFF, RESOURCE, "reporting",
@@ -516,7 +752,7 @@ RULES = (
          "Starts a run of one definition and answers the run it created."),
     Rule("the report schedule",
          ("regex", r"^POST /api/reporting/reports/(un)?schedule$"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "Sets or clears the schedule of one or more definitions, and answers how many it"
          " changed, which it refused and why."),
     Rule("the report runs",
@@ -525,19 +761,19 @@ RULES = (
          "One report run: its state, its results at the level the reader asked for, and its"
          " output archive as the run stored it."),
     Rule("a report configuration",
-         ("exact", "GET /api/reporting/configurations/:id"),
-         BFF, COMPOSED, "reporting",
+         ("regex", r"^GET /api/reporting/configurations/[^/]+$"),
+         None, COMPOSED, "reporting",
          "One configuration with what its five keys point at: the type names, the party"
          " names, its analytics, their analytic names and its market data bindings, five"
          " reads so the page shows names rather than ids."),
     Rule("the engine settings",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/reporting/engine-settings"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "The reporting engine configuration: the collection, one configuration, its"
          " history, and one group's write or proposal."),
     Rule("the pricing engines",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/reporting/pricing-engines"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "The pricing engine configuration: the collection and its party names, one"
          " configuration with its bound reports, its history, and its ORE document as a file."),
 
@@ -633,6 +869,11 @@ RULES = (
          ("exact", "POST /api/requests/:id/decision"),
          BFF, RESOURCE, "workflow",
          "Approves, refuses, holds or resumes one request against the version read."),
+    Rule("the approvals mode",
+         ("exact", "GET /api/approvals-mode"),
+         BFF, RESOURCE, "workflow",
+         "Whether auto-approval is on, its scope, and who set it, when and why, read from"
+         " the one subject the inbox answers it on."),
     Rule("the principal's requests",
          ("regex", r"^(GET|POST|DELETE) /api/me/requests"),
          BFF, RESOURCE, "workflow",
@@ -649,6 +890,153 @@ RULES = (
          "The codes a decider may park a request with, a tenant-wide lookup that carries no"
          " personal data."),
 
+    Rule("an access screen's route",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/(me|accounts|roles|permissions|reporting-tree)(/.*)?$"),
+         CPP, RESOURCE, "access",
+         "An access screen's read or write at the address and in the shape the BFF answered,"
+         " forwarded to IAM as the caller, kept so the screens work when the BFF goes."),
+    Rule("the counterparty screen's route",
+         ("regex", r"^(GET|PUT) /api/counterparties/(\{id\}(/(visibility|business-centres))?|children|composite)$"),
+         CPP, RESOURCE, "reference-data",
+         "The counterparty onboarding screen's read or write at the address and in the shape"
+         " the BFF answered: one record with its identifiers, the children of a page, the"
+         " composite write, and the visibility and business centre writes."),
+    Rule("the conventions screen's route",
+         ("regex", r"^(GET /api/conventions/(families|\{family\})|PUT /api/conventions/\{family\})$"),
+         CPP, RESOURCE, "reference-data",
+         "The conventions screen's read or write at the address and in the shape the BFF"
+         " answered: each family with its count, one family's page, and the write of a family"
+         " whose terms the screen draws."),
+    Rule("the tenors screen's route",
+         ("regex", r"^(POST /api/tenors/(preview-resolution|resolve|resolve-convention)"
+                   r"|GET /api/tenors/conventions/\{code\}/resolutions"
+                   r"|PUT /api/tenors/(tenors|conventions)"
+                   r"|(PUT|DELETE) /api/tenors/conventions/\{code\}/resolutions/\{tenor\})$"),
+         CPP, RESOURCE, "reference-data",
+         "The tenors screen's operation at the address and in the shape the BFF answered: the"
+         " resolution of a drafted rule and of the stored rules, one convention's membership"
+         " rows, and the writes of a tenor, a convention and a membership row."),
+    Rule("the calendar screen's business days route",
+         ("regex", r"^(GET /api/refdata/calendars/\{code\}/days|POST /api/refdata/calendars/\{code\}/rebuild)$"),
+         CPP, RESOURCE, "reference-data",
+         "One calendar's built days in one year, and the build of its days to the end of a"
+         " year, at the address and in the shape the BFF answered."),
+    Rule("the currencies' ORE document route",
+         ("regex", r"^(GET /api/refdata/currencies/ore-document|POST /api/refdata/currencies/ore-import(/preview)?)$"),
+         CPP, RESOURCE, "reference-data",
+         "The currencies' ORE import and export: the document the ORE service writes, what a"
+         " file would change, and the import, each answered with the service's own words."),
+    Rule("the change reasons a screen offers",
+         ("exact", "GET /api/change-reasons"),
+         CPP, RESOURCE, "reference-data",
+         "The reasons a screen offers for a write, read from the data quality service in the"
+         " shape the BFF answered."),
+    Rule("the feed screen's operation",
+         ("regex", r"^(POST /api/synthetic/(feeds|folders)/\{id\}/(start|stop)"
+                   r"|POST /api/synthetic/feed-selection/(start|stop)"
+                   r"|GET /api/synthetic/folder-feeds)$"),
+         CPP, RESOURCE, "simulation",
+         "The feed screen's operation at the address and in the shape the BFF answered: one"
+         " feed or one folder's feeds started and stopped, a page of the feeds a filter matches"
+         " with whether each runs, and the start and stop of a selection."),
+    Rule("the feed screens' live read",
+         ("regex", r"^GET /api/synthetic/(feeds/\{id\}/ticks|feed-raster)$"),
+         CPP, RESOURCE, "simulation",
+         "One feed's newest ticks, and when each feed's ticks arrived in a window, read from"
+         " the buffers the gateway fills by listening to the feeds a screen names."),
+    Rule("the synthetic screens' preview",
+         ("regex", r"^POST /api/synthetic/(simulate/(fx|ir)|convert/(fx|fx-simple|ir)|preview/ir-shape)$"),
+         CPP, RESOURCE, "simulation",
+         "A preview the synthetic screens draw from the values on the screen and store nothing"
+         " of: sample paths, the conversions between engines and the simple view, and the rate"
+         " at each ladder row."),
+    Rule("the calibration screen's action",
+         ("regex", r"^(POST /api/synthetic/calibration/(\{assetClass\}/run|variance/\{id\}/review)"
+                   r"|(PUT|DELETE) /api/synthetic/calibration/(\{assetClass\}/policy|feeds/\{id\}/pin))$"),
+         CPP, RESOURCE, "simulation",
+         "The calibration screen's action at the address and in the shape the BFF answered: a"
+         " class's calibration run and stored, a variance calibration reviewed, a class's policy"
+         " stated or removed, and one feed's candidate pinned or cleared."),
+    Rule("the market regime screen's route",
+         ("regex", r"^((GET|POST) /api/synthetic/market-regime|PUT /api/synthetic/market-regime/settings"
+                   r"|GET /api/synthetic/market-history)$"),
+         CPP, RESOURCE, "simulation",
+         "The market-wide arrival factor at the address and in the shape the BFF answered: the"
+         " regime in force, the switch that forces it, the settings that move it, and the tick"
+         " counts of the last stretch of the run."),
+    Rule("the trade screens' read",
+         ("regex", r"^GET /api/trades(/\{id\}(/versions/\{version\})?)?$"),
+         CPP, RESOURCE, "trading",
+         "The trade screens' reads at the address and in the shape the BFF answered: a page of"
+         " the trade list enriched with what a person reads, one trade's page, and one trade"
+         " at one version."),
+    Rule("the booking screens' route",
+         ("regex", r"^((GET|POST) /api/trades(/new|/\{id\}/links)?"
+                   r"|GET /api/(draft-reasons|trade-link-types))$"),
+         CPP, RESOURCE, "trading",
+         "The booking screens at the address and in the shape the BFF answered: what the"
+         " form offers, the reasons a deal is a draft, the link types a person records, a"
+         " link between two trades, and the booking write itself."),
+    Rule("the structure screens' route",
+         ("regex", r"^((GET|POST|DELETE) /api/structures(/\{key\}(/legs(/\{tradeId\})?|/leg-candidates)?)?"
+                   r"|GET /api/(structure-kinds|ungrouped-trades))$"),
+         CPP, RESOURCE, "trading",
+         "The structure screens at the address and in the shape the BFF answered: the kinds a"
+         " grouping may choose, the trades no structure holds yet, the grouping write, the list"
+         " as a tree flattened for reading, one structure's page with its tree and legs, the leg"
+         " candidates, and the leg writes."),
+    Rule("the book screens' route",
+         ("regex", r"^((GET /api/books/(\{id\}|portfolios/\{id\}/rights)"
+                   r"|(PUT) /api/books/(books|portfolios)"
+                   r"|POST /api/book-changes(/preview)?))$"),
+         CPP, RESOURCE, "trading",
+         "The book screens at the address and in the shape the BFF answered: one book with the"
+         " portfolio it sits in, the rights at a portfolio node with the accounts that hold them,"
+         " the book and portfolio writes, and the book change proposal's preview and raise."),
+    Rule("an image screen's route",
+         ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
+         CPP, RESOURCE, "assets",
+         "An image screen's read or upload at the address and in the shape the BFF answered,"
+         " forwarded to the assets service as the caller."),
+    Rule("the tenant roster's route",
+         ("regex", r"^(GET /api/(tenants|overview|tenants/\{code\})|DELETE /api/tenants/\{code\})$"),
+         CPP, RESOURCE, "tenancy",
+         "The deployment's tenants as system administration reads them, each joined with the"
+         " run that set it up, at the address and in the shape the BFF answered, refused"
+         " without the deployment read."),
+    Rule("the browser's session route",
+         ("regex", r"^((GET|POST|DELETE) /api/session|POST /api/session/(party|switch-party))$"),
+         CPP, RESOURCE, "auth",
+         "The browser's session at the address and in the shape the BFF answered: sign in,"
+         " read, sign out, choose the party a login waits on, and move to another party."),
+    Rule("the account door's route",
+         ("regex", r"^(POST /api/(signup|account/password)|GET /api/password-policy)$"),
+         CPP, RESOURCE, "auth",
+         "A registration, the rules a password must keep, and the signed-in account's own"
+         " password change, at the address and in the shape the BFF answered; a"
+         " registration shares the sign-in budget."),
+    Rule("a setup screen's route",
+         ("regex", r"^(GET /api/(bootstrap|tenant-setup|registration-policy)|POST /api/bootstrap/(administrator|complete))$"),
+         CPP, RESOURCE, "tenancy",
+         "The deployment's setup state, the first administrator, the end of first-run setup,"
+         " a tenant's own setup run and the registration policy, at the address and in the"
+         " shape the BFF answered."),
+    Rule("a read inside a tenant",
+         ("regex", r"^GET /api/tenants/\{code\}/(parties|people|accounts/\{username\}/sign-ins|images/\{id\})$"),
+         CPP, RESOURCE, "tenancy",
+         "One tenant's data read from system administration, inside the tenant for the read"
+         " alone, at the address and in the shape the BFF answered."),
+    Rule("a provisioning journey's route",
+         ("regex", r"^(GET /api/seed-profiles|POST /api/provision-(tenant|party))$"),
+         CPP, RESOURCE, "tenancy",
+         "The starting points a tenant is provisioned from and the two journeys that"
+         " provision, at the address and in the shape the BFF answered, forwarded as the"
+         " caller."),
+    Rule("a tenancy screen's route",
+         ("regex", r"^GET /api/(tenant-statuses|tenant-types|lei-entities|parties)$"),
+         CPP, RESOURCE, "tenancy",
+         "A tenancy screen's catalogue or page at the address and in the shape the BFF"
+         " answered, forwarded as the caller."),
     Rule("the account collection",
          ("exact", "GET /api/accounts"),
          BFF, RESOURCE, "access",
@@ -859,6 +1247,11 @@ RULES = (
          BFF, RESOURCE, "auth",
          "The tenant's sessions, one page or the open ones, and the write that ends one of"
          " them for an administrator."),
+    Rule("an auth screen's route",
+         ("regex", r"^(GET /api/(auth-events|session-statistics|login-info|sessions|sessions/active|login-info/\{accountId\})|POST /api/sessions/\{sessionId\}/end)$"),
+         CPP, RESOURCE, "auth",
+         "An audit screen's read or an administrator's end of a session, at the address and"
+         " in the shape the BFF answered, forwarded to IAM as the caller."),
     Rule("the session statistics",
          ("exact", "GET /api/session-statistics"),
          BFF, RESOURCE, "auth",
@@ -1157,12 +1550,12 @@ VIEWS = {
         "ores.iam",
         "the tenant roster counted by status, its first page, and the newest setups, "
         "each count a separate list read",
-        "ETag on the whole view, stale after 15 s"),
+        "ETag on the whole view, revalidated at each read, because provisioning changes it"),
     "the bootstrap status": (
         "ores.iam",
         "the IAM account and tenant answer, plus a variability settings read that may "
         "fail without failing the answer",
-        "ETag on the whole view, stale after 5 s"),
+        "ETag on the whole view, revalidated at each read, because setup changes it"),
     "one subject's story": (
         "ores.workflow",
         "every component's rows for one subject, each source read under its owner's "
@@ -1231,7 +1624,8 @@ VIEWS = {
     "the tenor catalogue": (
         "ores.refdata",
         "the tenors with their conventions and schedules, three collection reads",
-        "ETag on the whole view, stale after 5 min"),
+        "ETag on the whole view, revalidated at each read, because the tenors screen's"
+        " writes change it"),
     "the market data catalogue": (
         "ores.marketdata",
         "the providers and the feeds that serve them, two collection reads",
@@ -1270,11 +1664,13 @@ VIEWS = {
         "the configuration, the names of its type and parties, its analytics and their "
         "names, and its market data bindings, five reads",
         "ETag on the whole view, stale after 60 s"),
-    "the report health": (
+    "a run's files": (
         "ores.reporting",
-        "each report definition with the row the list would draw and the reads that "
-        "failed, so a failed read is not read as never having run",
-        "ETag on the whole view, stale after 60 s"),
+        "the run, the packages compute says it read and wrote, the entries storage says each "
+        "input package holds, the files each accepted result's manifest names, and the ORE "
+        "catalogue, so a read that fails leaves its part of the tree out",
+        "no cache: a run's files are read when a person opens the run, and the bytes of a file "
+        "are served from the object as the socket asks for them"),
     "an ORE schema's contents": (
         "ores.reporting",
         "the catalogue entry that is a schema with this code, and its stored contents "
@@ -1284,7 +1680,7 @@ VIEWS = {
         "ores.synthetic",
         "the folders and the feeds under each, at any depth, with the count of each "
         "kind so no screen reads the feeds",
-        "ETag on the whole view, stale after 60 s"),
+        "ETag on the whole view, revalidated at each read, because folder writes change it"),
     "the blotter": (
         "ores.trading",
         "one page of trades with the rail that groups them: books, portfolios, "
@@ -1299,7 +1695,7 @@ VIEWS = {
         "ores.iam",
         "the role catalogue and what each role grants against the grants the person "
         "already holds",
-        "ETag on the whole view, stale after 5 min"),
+        "ETag on the whole view, revalidated at each read, because a grant changes it"),
     "the calibration of an asset class": (
         "ores.synthetic",
         "every feed of the class resolved as a start would, with its candidates and their "

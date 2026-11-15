@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: DBCB9D0E-2592-4968-95FC-A2EE2C3536AD
+:END:
+#+title: Resolve the claims of a batch write in one read
+#+description: The generated batch write reads each row's version in its own transaction before it inserts, so a batch of N rows costs N round trips; 27 repositories carry it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:database:performance:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the generated batch =write(vector)= of a repository resolve the claims of all its rows with one read, such as one query for the current version of each key in the batch, and not with one =replace_claim= read for each row. The template is =projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache=, and 27 repositories carry the loop.
+
+
+Two more defects of the same generated code, found in the review of PR #4561:
+- =write(rows, claims)= indexes =claims[i]= with no check that the two vectors have the same size. A mismatch is undefined behaviour, where it must be an error.
+- A =must_not_exist= claim maps to version 0, and the generated insert trigger checks a version only when it is not 0. So the store cannot refuse a duplicate create: it closes the current row and writes a new version. A real check needs the trigger to tell "no claim" apart from "must not exist".
+
+* Why
+
+Each =replace_claim= read is its own transaction: =begin=, =set_config= for the tenant, a =select=, and =commit=, in sequence. A batch of N rows so costs N round trips before its insert, which is one pipelined batch. On 2026-11-10 this made each holiday calendar of 13,515 days take about 35 s, and the =build_calendars= step of provisioning timed out at 600 s. The calendar materialiser now states its claims, because it knows which days exist. Every other batch writer still pays one round trip for each row.
+
+* References
+
+- =projects/ores.refdata/core/src/repository/calendar_date_repository.cpp=, =write(const std::vector<domain::calendar_date>&)=, an instance of the template.
+- [[id:6EA15737-5413-46FB-9660-9C279B42B454][Build the calendars without a read per day]], which measured the cost and fixed the calendar writer only.
+
+* See also
+
+- [[id:27439333-B0FF-40A0-80AE-D61026E0BEC1][Store only the closed days of a calendar]]

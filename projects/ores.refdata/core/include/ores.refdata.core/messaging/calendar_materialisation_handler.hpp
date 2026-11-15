@@ -37,7 +37,7 @@ class ORES_REFDATA_CORE_EXPORT calendar_materialisation_handler {
 public:
     calendar_materialisation_handler(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
     void regenerate(ores::nats::message msg);

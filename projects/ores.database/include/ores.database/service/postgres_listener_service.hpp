@@ -22,7 +22,8 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/export.hpp"
-#include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/connection_fwd.hpp"
+#include "ores.database/pq/options.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <atomic>
 #include <condition_variable>
@@ -61,6 +62,10 @@ namespace ores::database::service {
  * pg_terminate_backend signal to that exact name.
  *
  * Exposed as a free function so tests can assert the session is UTC.
+ *
+ * A caller that destroys the returned pointer needs the connection's
+ * definition, because destroying a unique_ptr needs the complete type: such a
+ * caller includes pq/connection.hpp.
  */
 [[nodiscard]] ORES_DATABASE_EXPORT std::unique_ptr<pq::connection>
 connect_utc(const pq::connection_options& options, const std::string& application_name);
@@ -105,7 +110,7 @@ public:
      * @param callback The callback function to be invoked when a notification
      *        is received with the channel name and raw payload.
      */
-    explicit postgres_listener_service(context ctx, notification_callback_t callback);
+    explicit postgres_listener_service(const context& ctx, notification_callback_t callback);
 
     /**
      * @brief Destroys the postgres_listener_service.

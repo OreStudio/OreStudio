@@ -19,7 +19,7 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_CONVENTIONS_IDENTITY_HPP
 #define ORES_REFDATA_CORE_SERVICE_CONVENTIONS_IDENTITY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"

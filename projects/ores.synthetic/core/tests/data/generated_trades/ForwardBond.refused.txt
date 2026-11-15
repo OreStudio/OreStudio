@@ -1,1 +1,0 @@
-No trade of the portfolio can be written; the first refusal is: required element 'SettlementData' is absent from 'forwardBondData' (in Trade '0940644b-3f20-5bc6-851f-fc7dccd3579f')

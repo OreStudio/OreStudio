@@ -54,6 +54,22 @@ import {
     subjects as variancePointSubjects,
     type VarianceCalibrationInputPointsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/variance_calibration_input_point_protocol';
+import {
+    subjects as volFeedSubjects,
+    type FxVolSurfaceFeedsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_protocol';
+import {
+    subjects as volFeedExpirySubjects,
+    type FxVolSurfaceFeedExpiriesFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_expiry_protocol';
+import {
+    subjects as volContributorSubjects,
+    type FxVolContributorsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_contributor_protocol';
+import {
+    subjects as volFeedContributorSubjects,
+    type FxVolSurfaceFeedContributorsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_contributor_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
@@ -481,6 +497,79 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             removeMany: variancePointSubjects.delete_many_variance_calibration_input_points_request,
         },
         readOnlyBecause: 'A point is one fixing a calibration run captured, kept as read.',
+    },
+    {
+        key: 'fx-vol-surface-feeds',
+        systemOwned: true,
+        entityType: 'ores.synthetic.fx_vol_surface_feed',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'fx_vol_surface_feeds',
+        filter: { id_one_of: null } satisfies FxVolSurfaceFeedsFilter,
+        subjects: {
+            list: volFeedSubjects.list_fx_vol_surface_feeds_request,
+            putMany: volFeedSubjects.put_many_fx_vol_surface_feeds_request,
+            remove: volFeedSubjects.delete_fx_vol_surface_feed_request,
+            removeMany: volFeedSubjects.delete_many_fx_vol_surface_feeds_request,
+        },
+    },
+    {
+        key: 'fx-vol-surface-feed-expiries',
+        systemOwned: true,
+        entityType: 'ores.synthetic.fx_vol_surface_feed_expiry',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'fx_vol_surface_feed_expiries',
+        filter: {
+            feed_id: null,
+            id_one_of: null,
+            feed_id_one_of: null,
+        } satisfies FxVolSurfaceFeedExpiriesFilter,
+        parentField: 'feed_id',
+        subjects: {
+            list: volFeedExpirySubjects.list_fx_vol_surface_feed_expiries_request,
+            putMany: volFeedExpirySubjects.put_many_fx_vol_surface_feed_expiries_request,
+            remove: volFeedExpirySubjects.delete_fx_vol_surface_feed_expiry_request,
+            removeMany: volFeedExpirySubjects.delete_many_fx_vol_surface_feed_expiries_request,
+        },
+    },
+    {
+        key: 'fx-vol-contributors',
+        systemOwned: true,
+        entityType: 'ores.synthetic.fx_vol_contributor',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'fx_vol_contributors',
+        filter: { id_one_of: null } satisfies FxVolContributorsFilter,
+        subjects: {
+            list: volContributorSubjects.list_fx_vol_contributors_request,
+            putMany: volContributorSubjects.put_many_fx_vol_contributors_request,
+            remove: volContributorSubjects.delete_fx_vol_contributor_request,
+            removeMany: volContributorSubjects.delete_many_fx_vol_contributors_request,
+        },
+    },
+    {
+        key: 'fx-vol-surface-feed-contributors',
+        systemOwned: true,
+        entityType: 'ores.synthetic.fx_vol_surface_feed_contributor',
+        keyField: 'id',
+        oneOf: 'id_one_of',
+        rows: 'fx_vol_surface_feed_contributors',
+        filter: {
+            feed_id: null,
+            contributor_id: null,
+            id_one_of: null,
+            feed_id_one_of: null,
+            contributor_id_one_of: null,
+        } satisfies FxVolSurfaceFeedContributorsFilter,
+        parentField: 'feed_id',
+        subjects: {
+            list: volFeedContributorSubjects.list_fx_vol_surface_feed_contributors_request,
+            putMany: volFeedContributorSubjects.put_many_fx_vol_surface_feed_contributors_request,
+            remove: volFeedContributorSubjects.delete_fx_vol_surface_feed_contributor_request,
+            removeMany:
+                volFeedContributorSubjects.delete_many_fx_vol_surface_feed_contributors_request,
+        },
     },
     {
         key: 'process-types',

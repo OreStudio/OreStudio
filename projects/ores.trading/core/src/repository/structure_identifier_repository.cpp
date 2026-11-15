@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/structure_identifier_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -38,6 +39,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -106,19 +109,80 @@ std::optional<query_builder::condition> structure_identifier_filter_condition(
 
 }
 
+namespace {
+
+/**
+ * @brief Whether a claim is checked against the row its key names now.
+ */
+bool structure_identifier_claim_reads_current(const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    // The store checks a stated version itself. A claim of nothing still has
+    // to state the version it replaces, so only that claim needs the row.
+    return claim.kind == precondition_kind::any;
+}
+
+using structure_identifier_rows_by_key =
+    std::map<std::tuple<std::string, std::string>, std::vector<domain::structure_identifier>>;
+
+/**
+ * @brief The current rows the objects name, by the text form of their key.
+ *
+ * One batch read for the set, so a batch checks its claims against one read
+ * rather than one read per row.
+ */
+structure_identifier_rows_by_key
+structure_identifier_current_rows(structure_identifier_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<domain::structure_identifier>& of) {
+    std::vector<std::string> structure_ids;
+    structure_ids.reserve(of.size());
+    std::vector<std::string> id_types;
+    id_types.reserve(of.size());
+    for (const auto& row : of) {
+        structure_ids.push_back(boost::uuids::to_string(row.structure_id));
+        id_types.push_back(row.id_type);
+    }
+    structure_identifier_rows_by_key current;
+    for (auto& item : repo.read_latest(ctx, structure_ids, id_types))
+        current[std::make_tuple(boost::uuids::to_string(item.structure_id), item.id_type)]
+            .push_back(std::move(item));
+    return current;
+}
+
+/**
+ * @brief The current rows that the key of an object names, or none.
+ */
+const std::vector<domain::structure_identifier>&
+structure_identifier_rows_of(const structure_identifier_rows_by_key& current,
+                             const domain::structure_identifier& item) {
+    static const std::vector<domain::structure_identifier> none;
+    const auto found =
+        current.find(std::make_tuple(boost::uuids::to_string(item.structure_id), item.id_type));
+    return found == current.end() ? none : found->second;
+}
+
+/**
+ * @brief The claim a replace makes: the version the row carries now, or
+ * that no row exists yet.
+ */
 ores::utility::domain::precondition
-structure_identifier_repository::replace_claim(context ctx, const domain::structure_identifier& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.structure_id), v.id_type);
+structure_identifier_replace_claim(const std::vector<domain::structure_identifier>& current) {
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
+/**
+ * @brief The object with the claim's version stamped onto it.
+ *
+ * The caller passes the row the key names now whenever the claim reads it. A
+ * claim the store cannot check is refused here rather than ignored.
+ */
 domain::structure_identifier
-structure_identifier_repository::apply_claim(context ctx,
-                                             const domain::structure_identifier& v,
-                                             const ores::utility::domain::precondition& claim) {
+structure_identifier_apply_claim(const domain::structure_identifier& v,
+                                 const ores::utility::domain::precondition& claim,
+                                 const std::vector<domain::structure_identifier>& current) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -130,39 +194,49 @@ structure_identifier_repository::apply_claim(context ctx,
         case precondition_kind::must_match_version:
             t.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
-        case precondition_kind::any: {
+        case precondition_kind::any:
             // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
+            // the row's current version is stated. A row that moved on between
+            // the read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current =
-                read_latest(ctx, boost::uuids::to_string(v.structure_id), v.id_type);
             t.version = current.empty() ? 0 : current.front().version;
             break;
-        }
     }
     return t;
 }
 
-void structure_identifier_repository::write(context ctx, const domain::structure_identifier& v) {
-    write(ctx, v, replace_claim(ctx, v));
 }
 
-void structure_identifier_repository::write(context ctx,
+void structure_identifier_repository::write(const context& ctx,
+                                            const domain::structure_identifier& v) {
+    write(ctx,
+          v,
+          structure_identifier_replace_claim(
+              read_latest(ctx, boost::uuids::to_string(v.structure_id), v.id_type)));
+}
+
+void structure_identifier_repository::write(const context& ctx,
                                             const std::vector<domain::structure_identifier>& v) {
+    const auto current = structure_identifier_current_rows(*this, ctx, v);
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
-        claims.push_back(replace_claim(ctx, item));
+        claims.push_back(
+            structure_identifier_replace_claim(structure_identifier_rows_of(current, item)));
     write(ctx, v, claims);
 }
 
-void structure_identifier_repository::write(context ctx,
+void structure_identifier_repository::write(const context& ctx,
                                             const domain::structure_identifier& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure identifier. "
                                << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
-    const auto t = apply_claim(ctx, v, claim);
+    const auto t = structure_identifier_apply_claim(
+        v,
+        claim,
+        structure_identifier_claim_reads_current(claim) ?
+            read_latest(ctx, boost::uuids::to_string(v.structure_id), v.id_type) :
+            std::vector<domain::structure_identifier>{});
     query_builder::execute_write_query(ctx,
                                        structure_identifier_mapper::map(t),
                                        lg(),
@@ -170,14 +244,21 @@ void structure_identifier_repository::write(context ctx,
 }
 
 void structure_identifier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::structure_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure identifiers. Count: " << v.size();
+    std::vector<domain::structure_identifier> to_read;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (structure_identifier_claim_reads_current(claims[i]))
+            to_read.push_back(v[i]);
+    }
+    const auto current = structure_identifier_current_rows(*this, ctx, to_read);
     std::vector<domain::structure_identifier> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
-        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+        batch.push_back(structure_identifier_apply_claim(
+            v[i], claims[i], structure_identifier_rows_of(current, v[i])));
     query_builder::execute_write_query(ctx,
                                        structure_identifier_mapper::map(batch),
                                        lg(),
@@ -185,7 +266,7 @@ void structure_identifier_repository::write(
 }
 
 std::vector<domain::structure_identifier>
-structure_identifier_repository::read_latest(context ctx) {
+structure_identifier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_identifier_entity>> |
@@ -202,7 +283,7 @@ structure_identifier_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_latest(
-    context ctx, const std::string& structure_id, const std::string& id_type) {
+    const context& ctx, const std::string& structure_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest structure identifier. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     static constexpr auto max = db_timestamp::max();
@@ -223,7 +304,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_all(
-    context ctx, const std::string& structure_id, const std::string& id_type) {
+    const context& ctx, const std::string& structure_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all structure identifier versions. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +324,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 }
 
 std::optional<domain::structure_identifier>
-structure_identifier_repository::read_at_version(context ctx,
+structure_identifier_repository::read_at_version(const context& ctx,
                                                  const std::string& structure_id,
                                                  const std::string& id_type,
                                                  std::uint32_t version) {
@@ -272,7 +353,7 @@ structure_identifier_repository::read_at_version(context ctx,
 
 std::vector<domain::structure_identifier>
 structure_identifier_repository::read_latest_by_structure_id(
-    context ctx,
+    const context& ctx,
     const std::string& structure_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -300,7 +381,7 @@ structure_identifier_repository::read_latest_by_structure_id(
 }
 
 std::uint32_t structure_identifier_repository::get_total_identifier_count_by_structure_id(
-    context ctx,
+    const context& ctx,
     const std::string& structure_id,
     const std::optional<messaging::structure_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -323,7 +404,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count_by_str
 
 
 structure_identifier_repository::remove_status
-structure_identifier_repository::remove(context ctx,
+structure_identifier_repository::remove(const context& ctx,
                                         const std::string& structure_id,
                                         const std::string& id_type,
                                         std::optional<std::uint32_t> version) {
@@ -358,14 +439,14 @@ structure_identifier_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void structure_identifier_repository::remove(context ctx,
+void structure_identifier_repository::remove(const context& ctx,
                                              const std::string& structure_id,
                                              const std::string& id_type) {
     static_cast<void>(remove(ctx, structure_id, id_type, std::nullopt));
 }
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -391,7 +472,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 }
 
 std::uint32_t structure_identifier_repository::get_total_identifier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::structure_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure identifier count";
@@ -410,11 +491,32 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count(
 }
 
 std::vector<domain::structure_identifier>
-structure_identifier_repository::read_latest(context ctx,
+structure_identifier_repository::read_latest(const context& ctx,
                                              const std::vector<std::string>& structure_ids,
                                              const std::vector<std::string>& id_types) {
     if (structure_ids.empty() || id_types.empty())
         return {};
+    if (id_types.size() != structure_ids.size())
+        throw std::invalid_argument("structure_identifier_repository::read_latest: key column "
+                                    "vectors must be the same length");
+    // Every key is a bind and the store's bind count is finite, so a larger
+    // key set is read one chunk at a time.
+    constexpr std::size_t chunk_size = 1000;
+    if (structure_ids.size() > chunk_size) {
+        std::vector<domain::structure_identifier> all;
+        for (std::size_t begin = 0; begin < structure_ids.size(); begin += chunk_size) {
+            const auto end = std::min(begin + chunk_size, structure_ids.size());
+            auto part = read_latest(
+                ctx,
+                std::vector<std::string>(structure_ids.begin() + begin,
+                                         structure_ids.begin() + end),
+                std::vector<std::string>(id_types.begin() + begin, id_types.begin() + end));
+            all.insert(all.end(),
+                       std::make_move_iterator(part.begin()),
+                       std::make_move_iterator(part.end()));
+        }
+        return all;
+    }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -431,9 +533,6 @@ structure_identifier_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (id_types.size() != structure_ids.size())
-        throw std::invalid_argument("structure_identifier_repository::read_latest: key column "
-                                    "vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
     for (std::size_t i = 0; i < structure_ids.size(); ++i)
         requested.emplace(structure_ids[i], id_types[i]);
@@ -447,7 +546,7 @@ structure_identifier_repository::read_latest(context ctx,
     return filtered;
 }
 
-void structure_identifier_repository::remove(context ctx,
+void structure_identifier_repository::remove(const context& ctx,
                                              const std::vector<std::string>& structure_ids,
                                              const std::vector<std::string>& id_types) {
     // Compound key: a per-column .in() DELETE would be a cross-product

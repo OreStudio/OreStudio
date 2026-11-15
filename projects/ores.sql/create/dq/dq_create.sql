@@ -106,7 +106,7 @@
 
 -- Instrument convention artefact tables. One per live party-scoped or
 -- world-data convention table. They all belong to the single
--- ore.conventions dataset, so the DQ create order here is arbitrary.
+-- refdata.conventions dataset, so the DQ create order here is arbitrary.
 --
 -- The atomised convention is the one exception to one-artefact-per-kind: its
 -- live shape is the central convention row plus the mutually exclusive parts,
@@ -267,6 +267,10 @@
 \ir ./dq_curve_security_configs_artefact_create.sql
 \ir ./dq_intraday_power_curve_configs_artefact_create.sql
 \ir ./dq_fx_volatility_configs_artefact_create.sql
+\ir ./dq_fx_volatility_smiles_artefact_create.sql
+\ir ./dq_fx_vol_surface_blueprints_artefact_create.sql
+\ir ./dq_fx_vol_surface_pillars_artefact_create.sql
+\ir ./dq_fx_vol_surface_pillar_sources_artefact_create.sql
 \ir ./dq_base_correlation_configs_artefact_create.sql
 \ir ./dq_curve_correlation_configs_artefact_create.sql
 \ir ./dq_curve_report_configurations_artefact_create.sql

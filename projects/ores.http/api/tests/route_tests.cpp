@@ -192,3 +192,20 @@ TEST_CASE("response_schema_default_construction", "[route]") {
     CHECK(sut.json_schema.empty());
     CHECK(sut.example_json.empty());
 }
+
+TEST_CASE("route_match_decodes_a_parameter_as_the_browser_encoded_it", "[route]") {
+    auto sut =
+        make_route("/api/accounts/{username}", std::regex("^/api/accounts/([^/]+)$"), {"username"});
+    const auto decoded = [&](const std::string& path) {
+        std::unordered_map<std::string, std::string> params;
+        REQUIRE(sut.match(path, params));
+        return params.at("username");
+    };
+    CHECK(decoded("/api/accounts/alice%40example.com") == "alice@example.com");
+    CHECK(decoded("/api/accounts/a%20b") == "a b");
+    CHECK(decoded("/api/accounts/a+b") == "a+b");
+    CHECK(decoded("/api/accounts/%e2%82%ac") == "\xe2\x82\xac");
+    CHECK(decoded("/api/accounts/100%") == "100%");
+    CHECK(decoded("/api/accounts/%zz") == "%zz");
+    CHECK(decoded("/api/accounts/%4") == "%4");
+}

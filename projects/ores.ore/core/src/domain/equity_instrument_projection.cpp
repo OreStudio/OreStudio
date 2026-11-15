@@ -55,7 +55,7 @@ using trading::domain::equity_option_instrument;
 using trading::domain::equity_position_instrument;
 using trading::domain::equity_position_option_underlying;
 using trading::domain::equity_swap_instrument;
-using trading::domain::equity_swap_period;
+using trading::domain::basket_swap_period;
 using trading::domain::equity_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -101,7 +101,7 @@ void equity_instrument_projection_stamp_columns(equity_position_option_underlyin
 
 template <typename Row>
 auto equity_instrument_projection_make_row(std::string_view trade_type_code) -> Row {
-    Row r;
+    Row r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     stamp_audit(r);
     return r;
@@ -122,23 +122,23 @@ auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day&
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r,
+                                          std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r,
+                                              std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
-    -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r,
+                                             std::string_view name) -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -242,8 +242,8 @@ struct range_bound_text final {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade, std::string_view trade_type)
-    -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade,
+                        std::string_view trade_type) -> equity_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)
@@ -586,10 +586,10 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
 
     const auto knock_outs = levels("KnockOutLevels", "KnockOutLevel");
     const auto triggers = levels("FixedTriggerLevels", "FixedTriggerLevel");
-    std::vector<equity_swap_period> periods;
+    std::vector<basket_swap_period> periods;
     const auto period_count = std::max(knock_outs.size(), triggers.size());
     for (std::size_t i = 0; i < period_count; ++i) {
-        equity_swap_period row;
+        basket_swap_period row;
         row.sequence_number = static_cast<int>(i + 1);
         if (i < knock_outs.size())
             row.knock_out_level = knock_outs[i].to_double();
@@ -977,7 +977,8 @@ void write_equity_cliquet_option(record_writer& trade,
                                  const equity_option_instrument& v,
                                  const equity_instrument_data& carrier) {
     auto data = trade.child("EquityCliquetOptionData");
-    write_name_or_underlying(data, carrier, v.underlying_name);
+    // ORE reads a cliquet's equity from Underlying only; it looks for Name on the trade.
+    write_underlying_or_equity(data, carrier, v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Notional", v.notional);
     data.set_spelling("LongShort", v.long_short.empty() ? "Long" : v.long_short, "long short");
@@ -1002,7 +1003,7 @@ void write_equity_cliquet_option(record_writer& trade,
 void write_equity_worst_of_basket_swap(record_writer& trade,
                                        const equity_swap_instrument& v,
                                        const std::vector<equity_basket_constituent>& rows,
-                                       const std::vector<equity_swap_period>& periods,
+                                       const std::vector<basket_swap_period>& periods,
                                        const equity_instrument_data& carrier) {
     auto data = trade.child("EquityWorstOfBasketSwapData");
     data.set_spelling("LongShort", "Long", "long short");
@@ -1263,8 +1264,8 @@ std::optional<std::string> equity_option_data_element(std::string_view trade_typ
     return std::nullopt;
 }
 
-auto read_equity_product(const xml::record_reader& trade, std::string_view trade_type)
-    -> trading::domain::trade_instrument {
+auto read_equity_product(const xml::record_reader& trade,
+                         std::string_view trade_type) -> trading::domain::trade_instrument {
     if (trade_type == "EquityPosition")
         return trading::domain::trade_instrument{read_equity_position(trade)};
     if (trade_type == "EquityOptionPosition")

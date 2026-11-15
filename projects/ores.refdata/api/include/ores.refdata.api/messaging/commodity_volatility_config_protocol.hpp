@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_volatility_config_key::id},
     };
 }
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_volatility_config_write::id},
         utility::codec::field{"curve_definition_id",
                               &commodity_volatility_config_write::curve_definition_id},
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &commodity_volatility_config_change::write},
         utility::codec::field{"precondition", &commodity_volatility_config_change::precondition},
     };
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_volatility_config_removal::key},
         utility::codec::field{"precondition", &commodity_volatility_config_removal::precondition},
     };
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_volatility_config_lookup::key},
         utility::codec::field{"commodity_volatility_config",
                               &commodity_volatility_config_lookup::commodity_volatility_config},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &commodity_volatility_configs_filter::id_one_of},
     };
 }
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_volatility_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &commodity_volatility_config_event::event_id},
         utility::codec::field{"key", &commodity_volatility_config_event::key},
         utility::codec::field{"action", &commodity_volatility_config_event::action},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_volatility_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "commodity_volatility_config",
             &commodity_volatility_config_version_key::commodity_volatility_config},
@@ -537,7 +537,7 @@ wire_fields(std::type_identity<commodity_volatility_config_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_volatility_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &commodity_volatility_config_versions_filter::version},
         utility::codec::field{"from_version",
                               &commodity_volatility_config_versions_filter::from_version},
@@ -556,7 +556,7 @@ wire_fields(std::type_identity<commodity_volatility_config_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_volatility_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_commodity_volatility_configs_request::offset},
         utility::codec::field{"limit", &list_commodity_volatility_configs_request::limit},
         utility::codec::field{"order", &list_commodity_volatility_configs_request::order},
@@ -575,7 +575,7 @@ wire_fields(std::type_identity<list_commodity_volatility_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_volatility_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodity_volatility_configs_response::result},
         utility::codec::field{
             "commodity_volatility_configs",
@@ -594,7 +594,7 @@ wire_fields(std::type_identity<list_commodity_volatility_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_volatility_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_volatility_config_request::key},
     };
 }
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<get_commodity_volatility_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_volatility_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_volatility_config_response::result},
         utility::codec::field{
             "commodity_volatility_config",
@@ -627,7 +627,7 @@ wire_fields(std::type_identity<get_commodity_volatility_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_volatility_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_commodity_volatility_configs_request::keys},
     };
 }
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<get_many_commodity_volatility_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_volatility_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_commodity_volatility_configs_response::result},
         utility::codec::field{"entries", &get_many_commodity_volatility_configs_response::entries},
     };
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<get_many_commodity_volatility_configs_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_volatility_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_commodity_volatility_config_request::change},
         utility::codec::field{"intent", &put_commodity_volatility_config_request::intent},
     };
@@ -674,7 +674,7 @@ wire_fields(std::type_identity<put_commodity_volatility_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_volatility_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_commodity_volatility_config_response::result},
         utility::codec::field{
             "commodity_volatility_config",
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<put_commodity_volatility_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_volatility_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_commodity_volatility_configs_request::changes},
         utility::codec::field{"intent", &put_many_commodity_volatility_configs_request::intent},
     };
@@ -708,7 +708,7 @@ wire_fields(std::type_identity<put_many_commodity_volatility_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_volatility_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_commodity_volatility_configs_response::result},
         utility::codec::field{
             "commodity_volatility_configs",
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<put_many_commodity_volatility_configs_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_volatility_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_commodity_volatility_config_request::removal},
         utility::codec::field{"intent", &delete_commodity_volatility_config_request::intent},
     };
@@ -742,7 +742,7 @@ wire_fields(std::type_identity<delete_commodity_volatility_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_volatility_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_commodity_volatility_config_response::result},
     };
 }
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<delete_commodity_volatility_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_volatility_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_commodity_volatility_configs_request::removals},
         utility::codec::field{"intent", &delete_many_commodity_volatility_configs_request::intent},
@@ -774,7 +774,7 @@ wire_fields(std::type_identity<delete_many_commodity_volatility_configs_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_volatility_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_commodity_volatility_configs_response::result},
     };
 }
@@ -789,7 +789,7 @@ wire_fields(std::type_identity<delete_many_commodity_volatility_configs_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_volatility_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_commodity_volatility_config_versions_request::key},
         utility::codec::field{"offset", &list_commodity_volatility_config_versions_request::offset},
         utility::codec::field{"limit", &list_commodity_volatility_config_versions_request::limit},
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<list_commodity_volatility_config_versions_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_volatility_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_commodity_volatility_config_versions_response::result},
         utility::codec::field{"versions",
@@ -827,7 +827,7 @@ wire_fields(std::type_identity<list_commodity_volatility_config_versions_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_volatility_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_volatility_config_version_request::key},
     };
 }
@@ -842,7 +842,7 @@ wire_fields(std::type_identity<get_commodity_volatility_config_version_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_volatility_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_volatility_config_version_response::result},
         utility::codec::field{"version",
                               &get_commodity_volatility_config_version_response::version},

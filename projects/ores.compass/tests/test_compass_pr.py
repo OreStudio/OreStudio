@@ -193,3 +193,42 @@ def test_a_result_with_prose_and_no_duplicate_is_read_once():
     sections = compass_pr._result_sections(
         "* Result\n\nDelivered.\n\n* Review\n\n| a |\n")
     assert sections == ["Delivered."]
+
+
+_TASK_DOC = """#+pr: 4732
+#+title: Task: State staleness on the server
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://example.test/4732][#4732]] | [web] The day panel |
+| [[https://example.test/4728][#4728]] | [agile] Close the task |
+| [[https://example.test/4724][#4724]] | [marketdata] State the threshold |
+"""
+
+
+def test_without_pr_drops_the_row_and_moves_the_field():
+    text, found = compass_pr._without_pr(_TASK_DOC, 4732)
+    assert found is True
+    assert "#4732" not in text
+    # The field names the row that remains first, which is the newest one.
+    assert "#+pr: 4728" in text
+    assert "#4728" in text and "#4724" in text
+
+
+def test_without_pr_leaves_a_doc_that_never_recorded_it():
+    text, found = compass_pr._without_pr(_TASK_DOC, 9999)
+    assert found is False
+    assert text == _TASK_DOC
+
+
+def test_without_pr_empties_the_field_when_no_row_remains():
+    one = _TASK_DOC.replace(
+        "| [[https://example.test/4728][#4728]] | [agile] Close the task |\n", ""
+    ).replace(
+        "| [[https://example.test/4724][#4724]] | [marketdata] State the threshold |\n", ""
+    )
+    text, found = compass_pr._without_pr(one, 4732)
+    assert found is True
+    assert "#+pr:\n" in text

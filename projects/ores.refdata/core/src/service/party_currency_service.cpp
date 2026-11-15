@@ -75,8 +75,8 @@ void stamp_party_currency(domain::party_currency& row, const ores::database::con
 
 }
 
-party_currency_service::party_currency_service(context ctx)
-    : ctx_(std::move(ctx))
+party_currency_service::party_currency_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

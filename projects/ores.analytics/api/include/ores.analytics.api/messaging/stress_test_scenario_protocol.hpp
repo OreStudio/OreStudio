@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &stress_test_scenario_key::id},
     };
 }
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &stress_test_scenario_write::id},
         utility::codec::field{"stress_test_library_id",
                               &stress_test_scenario_write::stress_test_library_id},
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &stress_test_scenario_change::write},
         utility::codec::field{"precondition", &stress_test_scenario_change::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &stress_test_scenario_removal::key},
         utility::codec::field{"precondition", &stress_test_scenario_removal::precondition},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &stress_test_scenario_lookup::key},
         utility::codec::field{"stress_test_scenario",
                               &stress_test_scenario_lookup::stress_test_scenario},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenarios_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &stress_test_scenarios_filter::id_one_of},
     };
 }
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &stress_test_scenario_event::event_id},
         utility::codec::field{"key", &stress_test_scenario_event::key},
         utility::codec::field{"action", &stress_test_scenario_event::action},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"stress_test_scenario",
                               &stress_test_scenario_version_key::stress_test_scenario},
         utility::codec::field{"version", &stress_test_scenario_version_key::version},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &stress_test_scenario_versions_filter::version},
         utility::codec::field{"from_version", &stress_test_scenario_versions_filter::from_version},
         utility::codec::field{"to_version", &stress_test_scenario_versions_filter::to_version},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_stress_test_scenarios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_stress_test_scenarios_request::offset},
         utility::codec::field{"limit", &list_stress_test_scenarios_request::limit},
         utility::codec::field{"order", &list_stress_test_scenarios_request::order},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_stress_test_scenarios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_stress_test_scenarios_response::result},
         utility::codec::field{"stress_test_scenarios",
                               &list_stress_test_scenarios_response::stress_test_scenarios},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_stress_test_scenario_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_stress_test_scenario_request::key},
     };
 }
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_stress_test_scenario_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_stress_test_scenario_response::result},
         utility::codec::field{"stress_test_scenario",
                               &get_stress_test_scenario_response::stress_test_scenario},
@@ -583,7 +583,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_sce
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_stress_test_scenarios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_stress_test_scenarios_request::keys},
     };
 }
@@ -598,7 +598,7 @@ wire_fields(std::type_identity<get_many_stress_test_scenarios_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_stress_test_scenarios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_stress_test_scenarios_response::result},
         utility::codec::field{"entries", &get_many_stress_test_scenarios_response::entries},
     };
@@ -613,7 +613,7 @@ wire_fields(std::type_identity<get_many_stress_test_scenarios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_stress_test_scenario_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_stress_test_scenario_request::change},
         utility::codec::field{"intent", &put_stress_test_scenario_request::intent},
     };
@@ -628,7 +628,7 @@ wire_fields(std::type_identity<get_many_stress_test_scenarios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_stress_test_scenario_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_stress_test_scenario_response::result},
         utility::codec::field{"stress_test_scenario",
                               &put_stress_test_scenario_response::stress_test_scenario},
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<get_many_stress_test_scenarios_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_stress_test_scenarios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_stress_test_scenarios_request::changes},
         utility::codec::field{"intent", &put_many_stress_test_scenarios_request::intent},
     };
@@ -661,7 +661,7 @@ wire_fields(std::type_identity<put_many_stress_test_scenarios_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_stress_test_scenarios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_stress_test_scenarios_response::result},
         utility::codec::field{"stress_test_scenarios",
                               &put_many_stress_test_scenarios_response::stress_test_scenarios},
@@ -677,7 +677,7 @@ wire_fields(std::type_identity<put_many_stress_test_scenarios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_stress_test_scenario_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_stress_test_scenario_request::removal},
         utility::codec::field{"intent", &delete_stress_test_scenario_request::intent},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<put_many_stress_test_scenarios_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_stress_test_scenario_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_stress_test_scenario_response::result},
     };
 }
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<put_many_stress_test_scenarios_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_stress_test_scenarios_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_stress_test_scenarios_request::removals},
         utility::codec::field{"intent", &delete_many_stress_test_scenarios_request::intent},
     };
@@ -723,7 +723,7 @@ wire_fields(std::type_identity<delete_many_stress_test_scenarios_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_stress_test_scenarios_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_stress_test_scenarios_response::result},
     };
 }
@@ -738,7 +738,7 @@ wire_fields(std::type_identity<delete_many_stress_test_scenarios_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_stress_test_scenario_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_stress_test_scenario_versions_request::key},
         utility::codec::field{"offset", &list_stress_test_scenario_versions_request::offset},
         utility::codec::field{"limit", &list_stress_test_scenario_versions_request::limit},
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<list_stress_test_scenario_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_stress_test_scenario_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_stress_test_scenario_versions_response::result},
         utility::codec::field{"versions", &list_stress_test_scenario_versions_response::versions},
         utility::codec::field{"total", &list_stress_test_scenario_versions_response::total},
@@ -774,7 +774,7 @@ wire_fields(std::type_identity<list_stress_test_scenario_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_stress_test_scenario_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_stress_test_scenario_version_request::key},
     };
 }
@@ -789,7 +789,7 @@ wire_fields(std::type_identity<get_stress_test_scenario_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_stress_test_scenario_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_stress_test_scenario_version_response::result},
         utility::codec::field{"version", &get_stress_test_scenario_version_response::version},
     };

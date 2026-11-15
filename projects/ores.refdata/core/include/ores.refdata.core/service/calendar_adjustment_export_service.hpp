@@ -57,7 +57,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit calendar_adjustment_export_service(context ctx);
+    explicit calendar_adjustment_export_service(const context& ctx);
 
     /**
      * @brief Assembles calendar_adjustment DTOs for @p calendar_codes

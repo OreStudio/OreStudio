@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ore_example_conventions.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -127,6 +128,7 @@ domain::trade_generation_scope bond_scope() {
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
     scope.trades_per_book = scene_trades_per_book;
+    scope.conventions = ores::synthetic::tests::ore_example_conventions();
     /*
      * A convertible bond states the share it may convert into, so every bond
      * scope needs the equity catalogue the writer loads for it.
@@ -307,6 +309,7 @@ domain::trade_generation_scope credit_scope() {
     scope.asset_class_code = "credit";
     scope.trades_per_book = 4;
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    scope.conventions = ores::synthetic::tests::ore_example_conventions();
     return scope;
 }
 
@@ -317,16 +320,68 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
     for (const auto& slot : plan.slots) {
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
         const auto& row = slot.instruments.credit_instruments.front();
-        // The row states the party boundary and no trade type: the trade states
-        // that one.
-        CHECK_FALSE(row.reference_entity_id_type.empty());
         /*
          * A credit trade names a party by one identifier, and the reference is
          * the LEI the dataset holds.
          */
         CHECK(row.reference_entity_id_type == "LEI");
         CHECK(row.reference_entity_id.size() == 20u);
+        CHECK_FALSE(slot.instruments.swap_legs.empty());
     }
+}
+
+TEST_CASE("a_credit_trade_names_the_credit_curve_of_its_reference_entity", "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trades_per_book = 1;
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    const auto& batch = plan.slots.front().instruments;
+    REQUIRE(batch.credit_default_swap_instruments.size() == 1u);
+    const auto& curve = batch.credit_default_swap_instruments.front().credit_curve_id;
+    REQUIRE(curve.has_value());
+    CHECK(curve->starts_with("oresmd://credit/" +
+                             batch.credit_instruments.front().reference_entity_id + "?"));
+}
+
+namespace {
+
+/// Gives each swap convention a rival that names its index with other terms.
+void name_each_swap_index_twice(domain::trade_generation_scope& scope) {
+    const auto swaps = scope.conventions.swaps;
+    for (auto rival : swaps) {
+        rival.id += "-RIVAL";
+        rival.fixed_frequency = rival.fixed_frequency == "Annual" ? "Semiannual" : "Annual";
+        scope.conventions.swaps.push_back(rival);
+    }
+}
+
+}
+
+TEST_CASE("an_rpa_builds_its_underlying_swap_when_two_conventions_name_the_index",
+          "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trade_type_codes = {"RiskParticipationAgreement"};
+    name_each_swap_index_twice(scope);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    CHECK_FALSE(plan.slots.front().instruments.swap_legs.empty());
+}
+
+TEST_CASE("an_rpa_in_a_currency_no_swap_convention_floats_in_is_refused", "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trade_type_codes = {"RiskParticipationAgreement"};
+    scope.currency_code = "JPY";
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("a_credit_scope_whose_conventions_lack_the_cds_convention_is_refused",
+          "[trade_population]") {
+    auto scope = credit_scope();
+    scope.conventions.cds.clear();
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
 /*
@@ -353,11 +408,13 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
         types.insert(slot.trade_type_code);
 
     /*
-     * Twenty-five codes share the one table the catalogue routes them all to.
+     * Twenty-three codes share the one table the catalogue routes them all to.
      * The planner cycles through them, so a population of one book of
-     * twenty-five reaches every one.
+     * twenty-three reaches every one. The pairwise variance swap and the window
+     * barrier option are not among them: ORE cannot carry either, so the
+     * generator leaves both out.
      */
-    REQUIRE(types.size() == 25u);
+    REQUIRE(types.size() == 23u);
 }
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
@@ -423,6 +480,14 @@ std::size_t header_rows_of(const domain::trade_population_slot& slot) {
 TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_population]") {
     const auto plan = plan_of(equity_scope());
 
+    // A name is an equity address, or a basket member's catalogue code; both name one code.
+    const auto code_of = [](const std::string& name) {
+        const auto query = name.find('?');
+        if (!name.starts_with("oresmd://") || query == std::string::npos)
+            return name;
+        const auto slash = name.rfind('/', query);
+        return name.substr(slash + 1, query - slash - 1);
+    };
     std::set<std::string> named;
     for (const auto& slot : plan.slots) {
         /*
@@ -439,9 +504,9 @@ TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_popu
             REQUIRE(slot.trade_type_code == "EquityWorstOfBasketSwap");
             REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
             for (const auto& member : slot.instruments.equity_basket_constituents)
-                named.insert(member.underlying_name);
+                named.insert(code_of(member.underlying_name));
         } else {
-            named.insert(underlying);
+            named.insert(code_of(underlying));
         }
     }
 
@@ -462,15 +527,24 @@ TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_p
             continue;
         found = true;
         REQUIRE(slot.instruments.equity_swap_instruments.size() == 1u);
-        // Two names over four dates, which is the shape the corpus states.
         REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
-        REQUIRE(slot.instruments.equity_swap_periods.size() == 4u);
+        // The periods run to maturity, and each schedule holds the start and every period end.
+        const auto& periods = slot.instruments.basket_swap_periods;
+        REQUIRE_FALSE(periods.empty());
+        REQUIRE(periods.back().period_date ==
+                slot.instruments.equity_swap_instruments.front().maturity_date);
+        for (const auto* role : {"floating_period_schedule", "floating_pay_schedule"}) {
+            const auto dates =
+                std::ranges::count_if(slot.instruments.instrument_schedule_dates,
+                                      [&](const auto& date) { return date.schedule_role == role; });
+            REQUIRE(static_cast<std::size_t>(dates) == periods.size() + 1);
+        }
         for (const auto& member : slot.instruments.equity_basket_constituents) {
             REQUIRE_FALSE(member.underlying_name.empty());
             REQUIRE_FALSE(member.underlying_kind.empty());
             REQUIRE(member.initial_price.has_value());
         }
-        for (const auto& period : slot.instruments.equity_swap_periods) {
+        for (const auto& period : slot.instruments.basket_swap_periods) {
             REQUIRE(period.period_date.has_value());
             REQUIRE(period.knock_out_level.has_value());
             REQUIRE(period.fixed_trigger_level.has_value());
@@ -500,8 +574,20 @@ TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity"
         REQUIRE(slot.instruments.commodity_instruments.size() == 1u);
         const auto& row = slot.instruments.commodity_instruments.front();
         REQUIRE_FALSE(row.commodity_code.empty());
-        REQUIRE_FALSE(row.unit.empty());
-        commodities.insert(row.commodity_code);
+        /*
+         * A basket's members may count different units, so a basket row states
+         * none. A digital's quantity is the cash it pays, which counts none.
+         */
+        const auto& type = row.identity.trade_type_code;
+        if (type != "CommodityBasketOption" && type != "CommodityDigitalOption" &&
+            type != "CommodityDigitalAveragePriceOption")
+            REQUIRE_FALSE(row.unit.empty());
+        // A built row names its commodity by address, a constructed one by code.
+        const auto query = row.commodity_code.find('?');
+        const auto slash = row.commodity_code.rfind('/', query);
+        commodities.insert(row.commodity_code.starts_with("oresmd://") ?
+                               row.commodity_code.substr(slash + 1, query - slash - 1) :
+                               row.commodity_code);
     }
 
     // Every commodity the scope states is drawn, and no other is invented.
@@ -673,7 +759,7 @@ TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_popu
     CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 15911127303722676035ULL);
 }
 
-TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_population]") {
+TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_population]") {
     const auto scope = rate_scope();
     const auto plan = plan_of(scope);
 
@@ -683,10 +769,13 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
          * The family states its rows and no bag: the legs, the amounts, the
          * rates and the strikes are what the writer persists.
          */
+        // A cap or a floor pays on the floating leg alone; every other type
+        // states a fixed leg against it.
+        const auto legs = slot.trade_type_code == "CapFloor" ? 1u : 2u;
         REQUIRE(slot.instruments.rate_instruments.size() == 1u);
-        REQUIRE(slot.instruments.swap_legs.size() == 2u);
-        REQUIRE(slot.instruments.swap_leg_amounts.size() == 2u);
-        REQUIRE(slot.instruments.swap_leg_rates.size() == 2u);
+        REQUIRE(slot.instruments.swap_legs.size() == legs);
+        REQUIRE(slot.instruments.swap_leg_amounts.size() == legs);
+        REQUIRE(slot.instruments.swap_leg_rates.size() == legs);
 
         const auto& row = slot.instruments.rate_instruments.front();
         REQUIRE(row.start_date.has_value());
@@ -696,7 +785,7 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
         const auto& floating = slot.instruments.swap_legs.back();
         CHECK(floating.leg_type_code == "Floating");
         CHECK(floating.payer.has_value());
-        CHECK_FALSE(*floating.payer);
+        CHECK(floating.floating_index_code.starts_with("oresmd://ir/"));
         if (slot.trade_type_code == "CrossCurrencySwap") {
             // Two legs of one currency are not a cross currency swap, so the
             // floating side states a currency the book does not.
@@ -706,8 +795,7 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
             CHECK(floating.currency == scope.currency_code);
         }
 
-        // Only the cap floor states a strike; the swaption constructor it is
-        // drawn for states its own terms and no strike.
+        // Only the cap floor states a strike; a swaption's strike is its fixed rate.
         const bool struck = slot.trade_type_code == "CapFloor";
         CHECK(slot.instruments.instrument_strikes.size() == (struck ? 1u : 0u));
 
@@ -746,9 +834,32 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     CHECK(codes_of(plan).contains("KnockOutSwap"));
 }
 
-TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", "[trade_population]") {
+TEST_CASE("a_rate_population_draws_an_index_its_alias_conventions_name_and_skips_a_conflict",
+          "[trade_population]") {
     auto scope = rate_scope();
-    scope.floating_index_codes.clear();
+    const auto six_months = scope.conventions.swaps.front();
+    auto alias = six_months;
+    alias.id = "EUR-SWAP";
+    auto conflict = six_months;
+    conflict.id = "EUR-EURIBOR-3M-SWAP";
+    conflict.index = "EUR-EURIBOR-3M";
+    conflict.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M";
+    auto other_terms = conflict;
+    other_terms.id = "EUR-3M-SWAP-CONVENTIONS";
+    other_terms.fixed_frequency = "Semiannual";
+    scope.conventions.swaps.push_back(alias);
+    scope.conventions.swaps.push_back(conflict);
+    scope.conventions.swaps.push_back(other_terms);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+}
+
+TEST_CASE("a_rate_population_without_a_swap_convention_in_its_currency_is_refused",
+          "[trade_population]") {
+    auto scope = rate_scope();
+    scope.conventions.swaps.clear();
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
@@ -790,7 +901,7 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
             const auto& row = batch.fx_barrier_option_instruments.front();
             CHECK_FALSE(row.bought_currency.empty());
             CHECK_FALSE(row.barrier_type.empty());
-            CHECK(row.lower_barrier.has_value());
+            CHECK((row.lower_barrier.has_value() || row.upper_barrier.has_value()));
         } else if (digital(type)) {
             REQUIRE(batch.fx_digital_option_instruments.size() == 1u);
             const auto& row = batch.fx_digital_option_instruments.front();
@@ -801,8 +912,13 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
             // written on an index, not on a named underlying.
             REQUIRE(batch.fx_asian_forward_instruments.size() == 1u);
             const auto& row = batch.fx_asian_forward_instruments.front();
-            CHECK_FALSE(row.fx_index.empty());
-            CHECK(row.reference_notional.has_value());
+            CHECK(row.fx_index.starts_with("oresmd://fx/"));
+            // A TaRF states its fixing amount; only an average forward states
+            // a reference notional.
+            if (type == "FxAverageForward")
+                CHECK(row.reference_notional.has_value());
+            else
+                CHECK(row.fixing_amount.has_value());
         } else if (type == "FxVarianceSwap") {
             REQUIRE(batch.fx_variance_swap_instruments.size() == 1u);
             const auto& row = batch.fx_variance_swap_instruments.front();
@@ -925,7 +1041,8 @@ TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[tr
         } else if (!batch.fx_digital_option_instruments.empty()) {
             CHECK(batch.fx_digital_option_instruments.front().foreign_currency == "EUR");
         } else if (!batch.fx_asian_forward_instruments.empty()) {
-            CHECK(batch.fx_asian_forward_instruments.front().reference_currency == "EUR");
+            CHECK(batch.fx_asian_forward_instruments.front().fx_index.starts_with(
+                "oresmd://fx/EUR?"));
         }
     }
 }
@@ -979,7 +1096,8 @@ TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_popula
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[trade_population]") {
+TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
+          "[trade_population]") {
     const auto scope = scripted_scope();
     const auto plan = plan_of(scope);
 
@@ -990,21 +1108,34 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[t
         const auto& row = slot.instruments.scripted_instruments.front();
         CHECK(row.identity.trade_type_code == slot.trade_type_code);
         CHECK_FALSE(row.script_name.empty());
+
+        const auto& parameters = slot.instruments.scripted_parameters;
+        REQUIRE_FALSE(parameters.empty());
+        for (std::size_t i = 0; i < parameters.size(); ++i) {
+            CHECK(parameters[i].sequence_number == static_cast<int>(i) + 1);
+            CHECK_FALSE(parameters[i].name.empty());
+            CHECK_FALSE(parameters[i].declared_type.empty());
+        }
+
         /*
-         * The projection writes the script's own fields into the document and
-         * reads them back, so both carry the tenant's names rather than a
-         * placeholder.
+         * A script that reads an index names it by address, so the projection
+         * writes the ORE name the address resolves to. The address names an
+         * equity of the tenant's catalogue rather than one the planner invents.
          */
-        CHECK(row.underlyings_json.starts_with("["));
-        CHECK(row.underlyings_json.ends_with("]"));
-        CHECK(row.parameters_json.starts_with("{"));
-        CHECK(row.parameters_json.ends_with("}"));
-        const auto names = row.underlyings_json;
-        CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
-            return names.find(underlying.code) != std::string::npos;
-        }));
+        const auto index = std::ranges::find_if(
+            parameters, [](const auto& parameter) { return parameter.declared_type == "Index"; });
+        if (index != parameters.end()) {
+            REQUIRE(index->value.has_value());
+            CHECK(index->value->starts_with("oresmd://equity/"));
+            CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
+                return index->value->find(underlying.code) != std::string::npos;
+            }));
+            observed.insert(*index->value);
+        }
+        // A product that states Underlying blocks names them there instead.
+        for (const auto& underlying : slot.instruments.instrument_underlyings)
+            observed.insert(underlying.name);
         types.insert(row.identity.trade_type_code);
-        observed.insert(row.underlyings_json);
     }
 
     /*
@@ -1015,6 +1146,34 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[t
     CHECK(types.size() == 3u);
     CHECK_FALSE(types.contains("Autocallable_01"));
     CHECK(observed.size() > 1u);
+}
+
+TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade_population]") {
+    /*
+     * The double digital and the performance option state an Underlying block
+     * for each name, and the engine reads one underlying for each. A trade given
+     * one name exports with no second underlying, and the engine refuses it with
+     * a null node, so the count decides whether the trade is priced at all.
+     */
+    const auto scope = scripted_scope();
+    const auto plan = plan_of(scope);
+
+    std::map<std::string, std::size_t> names_by_type;
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
+        const auto& row = slot.instruments.scripted_instruments.front();
+        names_by_type[row.identity.trade_type_code] =
+            slot.instruments.instrument_underlyings.size();
+        for (const auto& underlying : slot.instruments.instrument_underlyings) {
+            INFO("underlying " << underlying.name);
+            CHECK(underlying.underlying_type == "Equity");
+            CHECK(underlying.name.starts_with("oresmd://equity/"));
+        }
+    }
+
+    CHECK(names_by_type["DoubleDigitalOption"] == 2u);
+    CHECK(names_by_type["PerformanceOption_01"] == 2u);
+    CHECK(names_by_type["ScriptedTrade"] == 0u);
 }
 
 TEST_CASE("a_scripted_population_that_names_no_underlying_is_refused", "[trade_population]") {
@@ -1050,13 +1209,15 @@ TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_p
 
         REQUIRE(slot.instruments.inflation_swap_instruments.size() == 1u);
         const auto& fact = slot.instruments.inflation_swap_instruments.front();
-        CHECK_FALSE(fact.inflation_index_code.empty());
-        CHECK(fact.lag_convention == "3M");
+        // The index is the address of one the tenant's own curves name, and
+        // its lag is the one the index's convention states.
+        CHECK(fact.inflation_index_code.starts_with("oresmd://inflation/"));
+        CHECK_FALSE(fact.lag_convention.empty());
         REQUIRE(fact.base_cpi.has_value());
         CHECK(*fact.base_cpi > 0.0);
-        // The index a trade states is one the tenant's own curves resolve.
-        CHECK(std::ranges::find(scope.inflation_index_codes, fact.inflation_index_code) !=
-              scope.inflation_index_codes.end());
+        CHECK(std::ranges::any_of(scope.inflation_index_codes, [&](const auto& code) {
+            return fact.inflation_index_code.find("/" + code + "?") != std::string::npos;
+        }));
         indices.insert(fact.inflation_index_code);
 
         /*
@@ -1067,12 +1228,7 @@ TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_p
         const auto cpi = std::ranges::find_if(
             slot.instruments.swap_legs, [](const auto& leg) { return leg.leg_type_code == "CPI"; });
         REQUIRE(cpi != slot.instruments.swap_legs.end());
-        /*
-         * The leg states the index family rather than the index: the leg's own
-         * index column references the benchmark catalogue, and an inflation
-         * index is not a member of it.
-         */
-        CHECK(cpi->floating_index_code.empty());
+        CHECK(cpi->floating_index_code == fact.inflation_index_code);
         CHECK_FALSE(cpi->currency.empty());
     }
 
@@ -1372,4 +1528,16 @@ TEST_CASE("a_trade_type_the_class_does_not_book_is_refused", "[trade_population]
     scope.trade_type_codes = {"Bond"};
 
     REQUIRE_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("an_equity_swap_builds_its_funding_leg_when_two_conventions_name_the_index",
+          "[trade_population]") {
+    auto scope = equity_scope();
+    scope.trade_type_codes = {"EquitySwap"};
+    name_each_swap_index_twice(scope);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    CHECK(plan.slots.front().instruments.equity_swap_instruments.size() == 1u);
 }

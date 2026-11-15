@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &commodity_key::code},
     };
 }
@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &commodity_write::code},
         utility::codec::field{"name", &commodity_write::name},
         utility::codec::field{"description", &commodity_write::description},
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &commodity_change::write},
         utility::codec::field{"precondition", &commodity_change::precondition},
     };
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_removal::key},
         utility::codec::field{"precondition", &commodity_removal::precondition},
     };
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_lookup::key},
         utility::codec::field{"commodity", &commodity_lookup::commodity},
     };
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodities_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &commodities_filter::code_one_of},
     };
 }
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &commodity_event::event_id},
         utility::codec::field{"key", &commodity_event::key},
         utility::codec::field{"action", &commodity_event::action},
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"commodity", &commodity_version_key::commodity},
         utility::codec::field{"version", &commodity_version_key::version},
     };
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &commodity_versions_filter::version},
         utility::codec::field{"from_version", &commodity_versions_filter::from_version},
         utility::codec::field{"to_version", &commodity_versions_filter::to_version},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_commodities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_commodities_request::offset},
         utility::codec::field{"limit", &list_commodities_request::limit},
         utility::codec::field{"order", &list_commodities_request::order},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_commodities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodities_response::result},
         utility::codec::field{"commodities", &list_commodities_response::commodities},
         utility::codec::field{"total", &list_commodities_response::total},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_request::key},
     };
 }
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_response::result},
         utility::codec::field{"commodity", &get_commodity_response::commodity},
     };
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_commodities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_commodities_request::keys},
     };
 }
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_commodities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_commodities_response::result},
         utility::codec::field{"entries", &get_many_commodities_response::entries},
     };
@@ -593,7 +593,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_commodity_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_commodity_request::change},
         utility::codec::field{"intent", &put_commodity_request::intent},
     };
@@ -608,7 +608,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_commodity_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_commodity_response::result},
         utility::codec::field{"commodity", &put_commodity_response::commodity},
     };
@@ -623,7 +623,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_commodities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_commodities_request::changes},
         utility::codec::field{"intent", &put_many_commodities_request::intent},
     };
@@ -638,7 +638,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_commodities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_commodities_response::result},
         utility::codec::field{"commodities", &put_many_commodities_response::commodities},
     };
@@ -653,7 +653,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_commodity_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_commodity_request::removal},
         utility::codec::field{"intent", &delete_commodity_request::intent},
     };
@@ -668,7 +668,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_commodity_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_commodity_response::result},
     };
 }
@@ -682,7 +682,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_commodities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_commodities_request::removals},
         utility::codec::field{"intent", &delete_many_commodities_request::intent},
     };
@@ -697,7 +697,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_commodities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_commodities_response::result},
     };
 }
@@ -711,7 +711,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_commodity_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_commodity_versions_request::key},
         utility::codec::field{"offset", &list_commodity_versions_request::offset},
         utility::codec::field{"limit", &list_commodity_versions_request::limit},
@@ -729,7 +729,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_commodity_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodity_versions_response::result},
         utility::codec::field{"versions", &list_commodity_versions_response::versions},
         utility::codec::field{"total", &list_commodity_versions_response::total},
@@ -745,7 +745,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_version_request::key},
     };
 }
@@ -759,7 +759,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.commodities.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_version_response::result},
         utility::codec::field{"version", &get_commodity_version_response::version},
     };

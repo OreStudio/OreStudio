@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 07B94320-9844-4292-A266-3F63639B2CB6
+:END:
+#+title: Story: Hotfix: Publish the catalogues the booking test reads
+#+description: The generated-trade booking test is refused because the refdata catalogues are never published in a recreated database.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:hotfix:synthetic:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the generated-trade booking test pass by publishing the refdata
+catalogues a basket constituent is resolved against.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The test publishes the three catalogues before it books. |
+| Waiting on    | The next integration run.              |
+| Next          | Confirm, then close.                   |
+| Last touched  | 2026-11-14                               |
+
+* Acceptance
+
+- =ores.synthetic.core.tests= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5DA6E048-3172-472B-B0C1-5FED7F6CAA62][Scaffold story: Hotfix: Publish the catalogues the booking test reads]] | DONE | 2026-11-14 | 2026-11-14 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9F37AF41-A824-45A3-A074-BC4F7A7EB665][Implement Hotfix: Publish the catalogues the booking test reads]] | DONE | 2026-11-14 | 2026-11-14 | The publish step in the test. |
+
+* Decisions
+
+* Out of scope
+
+-

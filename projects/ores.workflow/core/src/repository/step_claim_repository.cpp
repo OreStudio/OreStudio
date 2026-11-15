@@ -18,7 +18,7 @@
  *
  */
 #include "ores.workflow.core/repository/step_claim_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -28,7 +28,7 @@ namespace ores::workflow::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::optional<int> step_claim_repository::claim(context ctx,
+std::optional<int> step_claim_repository::claim(const context& ctx,
                                                 const boost::uuids::uuid& step_id,
                                                 const boost::uuids::uuid& work_tenant_id,
                                                 const std::string& owner,
@@ -47,19 +47,23 @@ std::optional<int> step_claim_repository::claim(context ctx,
             SET owner = excluded.owner,
                 claimed_at = now(),
                 lease_expires_at = excluded.lease_expires_at,
-                attempts = ores_workflow_step_claims_tbl.attempts + 1
+                attempts = ores_workflow_step_claims_tbl.attempts + 1,
+                progress = null,
+                progress_done = null,
+                progress_total = null,
+                progressed_at = now()
             WHERE ores_workflow_step_claims_tbl.lease_expires_at <= now()
         RETURNING step_id, attempts
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx,
-                                                 sql,
-                                                 {boost::uuids::to_string(step_id),
-                                                  boost::uuids::to_string(work_tenant_id),
-                                                  owner,
-                                                  std::to_string(lease.count())},
-                                                 lg(),
-                                                 "claiming a workflow step");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(step_id),
+         boost::uuids::to_string(work_tenant_id),
+         owner,
+         std::to_string(lease.count())},
+        lg(),
+        "claiming a workflow step");
     // No row is a lost race, which the caller answers by returning the delivery
     // to the queue. It is not an error, so it is not an exception.
     if (rows.empty() || rows.front().size() < 2 || !rows.front()[1])
@@ -67,26 +71,48 @@ std::optional<int> step_claim_repository::claim(context ctx,
     return std::stoi(*rows.front()[1]);
 }
 
-bool step_claim_repository::renew(context ctx,
+bool step_claim_repository::renew(const context& ctx,
                                   const boost::uuids::uuid& step_id,
                                   const std::string& owner,
-                                  std::chrono::seconds lease) {
+                                  std::chrono::seconds lease,
+                                  const std::optional<step_progress>& progress) {
+    // The progress's time moves only when the report differs from the stored
+    // one, so a holder that renews without advancing is seen to stand still. A
+    // renewal with no report leaves the stored progress and its time alone.
     static const std::string sql = R"(
         UPDATE ores_workflow_step_claims_tbl
-            SET lease_expires_at = now() + make_interval(secs => $3::int)
+            SET lease_expires_at = now() + make_interval(secs => $3::int),
+                progressed_at = CASE
+                    WHEN $4::boolean AND (progress, progress_done, progress_total)
+                         IS DISTINCT FROM ($5::text, $6::bigint, $7::bigint)
+                    THEN now() ELSE progressed_at END,
+                progress = CASE WHEN $4::boolean THEN $5::text ELSE progress END,
+                progress_done = CASE WHEN $4::boolean THEN $6::bigint ELSE progress_done END,
+                progress_total = CASE WHEN $4::boolean THEN $7::bigint ELSE progress_total END
             WHERE step_id = $1::uuid AND owner = $2::text
         RETURNING step_id
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto count = [](const std::optional<std::int64_t>& v) -> std::optional<std::string> {
+        if (!v)
+            return std::nullopt;
+        return std::to_string(*v);
+    };
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {boost::uuids::to_string(step_id), owner, std::to_string(lease.count())},
+        {boost::uuids::to_string(step_id),
+         owner,
+         std::to_string(lease.count()),
+         progress ? "true" : "false",
+         progress ? std::optional<std::string>(progress->phase) : std::nullopt,
+         progress ? count(progress->done) : std::nullopt,
+         progress ? count(progress->total) : std::nullopt},
         lg(),
         "renewing a workflow step claim");
     return !rows.empty();
 }
 
-bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_id) {
+bool step_claim_repository::release(const context& ctx, const boost::uuids::uuid& step_id) {
     // No owner predicate. The engine writes the step's state away from
     // in_progress, and that write is what decides the work is over; the claim
     // only governed the window while it was in flight. Naming the holder here
@@ -100,32 +126,46 @@ bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_
         )
         SELECT count(*) FROM released
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx,
-                                                 sql,
-                                                 {boost::uuids::to_string(step_id)},
-                                                 lg(),
-                                                 "releasing the claim on a workflow step");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(step_id)},
+        lg(),
+        "releasing the claim on a workflow step");
     return !rows.empty() && !rows.front().empty() && rows.front().front() &&
            std::stoll(*rows.front().front()) > 0;
 }
 
-std::optional<std::chrono::system_clock::time_point>
-step_claim_repository::claimed_at(context ctx, const boost::uuids::uuid& step_id) {
-    static const std::string sql =
-        "SELECT claimed_at FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid";
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {boost::uuids::to_string(step_id)}, lg(), "reading when a step was claimed");
-    if (rows.empty() || rows.front().empty() || !rows.front().front())
+std::optional<step_claim_activity>
+step_claim_repository::activity(const context& ctx, const boost::uuids::uuid& step_id) {
+    static const std::string sql = R"(
+        SELECT claimed_at, progressed_at, progress, progress_done, progress_total
+            FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid
+    )";
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx, sql, {boost::uuids::to_string(step_id)}, lg(), "reading a step claim's activity");
+    if (rows.empty() || rows.front().size() < 5 || !rows.front()[0] || !rows.front()[1])
         return std::nullopt;
-    return timestamp_to_timepoint(std::string_view{*rows.front().front()});
+    const auto& row = rows.front();
+    step_claim_activity result{.claimed_at = timestamp_to_timepoint(std::string_view{*row[0]}),
+                               .progressed_at = timestamp_to_timepoint(std::string_view{*row[1]}),
+                               .progress = std::nullopt};
+    if (row[2] || row[3] || row[4]) {
+        step_progress progress{.phase = row[2].value_or(""), .done = {}, .total = {}};
+        if (row[3])
+            progress.done = std::stoll(*row[3]);
+        if (row[4])
+            progress.total = std::stoll(*row[4]);
+        result.progress = std::move(progress);
+    }
+    return result;
 }
 
-std::optional<std::string> step_claim_repository::holder(context ctx,
+std::optional<std::string> step_claim_repository::holder(const context& ctx,
                                                          const boost::uuids::uuid& step_id) {
     static const std::string sql =
         "SELECT owner FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {boost::uuids::to_string(step_id)}, lg(), "reading the holder of a step claim");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return std::nullopt;

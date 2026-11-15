@@ -35,9 +35,10 @@ struct sample {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sample>) {
-    return std::tuple{ores::utility::codec::field{"name", &sample::name},
-                      ores::utility::codec::field{"value", &sample::value},
-                      ores::utility::codec::field{"payload", &sample::payload}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"name", &sample::name},
+        ores::utility::codec::field{"value", &sample::value},
+        ores::utility::codec::field{"payload", &sample::payload}};
 }
 
 struct whole_numbers {
@@ -46,8 +47,9 @@ struct whole_numbers {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<whole_numbers>) {
-    return std::tuple{ores::utility::codec::field{"weight", &whole_numbers::weight},
-                      ores::utility::codec::field{"mean", &whole_numbers::mean}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"weight", &whole_numbers::weight},
+        ores::utility::codec::field{"mean", &whole_numbers::mean}};
 }
 
 struct doubles {
@@ -56,8 +58,9 @@ struct doubles {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<doubles>) {
-    return std::tuple{ores::utility::codec::field{"weight", &doubles::weight},
-                      ores::utility::codec::field{"mean", &doubles::mean}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"weight", &doubles::weight},
+        ores::utility::codec::field{"mean", &doubles::mean}};
 }
 
 }

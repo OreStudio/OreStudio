@@ -58,8 +58,8 @@ to_adjustment(const domain::calendar& c,
 
 } // namespace
 
-calendar_adjustment_export_service::calendar_adjustment_export_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+calendar_adjustment_export_service::calendar_adjustment_export_service(const context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<messaging::calendar_adjustment>
 calendar_adjustment_export_service::assemble(const std::vector<std::string>& calendar_codes) {

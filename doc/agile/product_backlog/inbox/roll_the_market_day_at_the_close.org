@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 656DFA67-E42E-4FCC-BBCB-6502F37CF32B
+:END:
+#+title: Roll the market day at the close
+#+description: Nothing moves the system from one market day to the next: curves, forwards and surfaces are built once in provisioning, the derived FX vol source refreshes on an hourly timer, and the synthetic feeds read their fixings once at start.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:cut:eod:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the system one market-day roll: at a stated close, the market moves from
+one business day to the next as a single, ordered, visible event. The roll
+closes the day, rebuilds what depends on the new date in dependency order, and
+restarts the synthetic feeds on the new day's fixings. Today "today" moves in
+several places on separate timers, and nothing moves the market data together.
+
+The roll is the mechanism behind the cut model the knowledge base already
+states. [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] defines the end
+of day cut, the complete market body fixed at the rates centre's close, and the
+start of day cut, which opens the next day by carrying that body forward. No
+document says how the system gets from one to the other, and no code does it.
+
+** Proposed shape
+
+1. *Close the day.* A configured close per rates centre; for a start, one
+   system-wide close such as 17:00 UTC. At the close the market clock moves to
+   the new as-of date and announces it once, on one subject, with the old and
+   the new date. Every consumer that today computes "today" for itself reads
+   this instead.
+2. *Roll in dependency order.* The same order provisioning uses, each step
+   reading at the new as-of: public fixings, then the derived FX vol quotes,
+   then each party's curves, then its FX forwards, then its surfaces. The roll
+   is a workflow, so a step that fails is named, and a rerun repeats only the
+   missing work, as the provisioning steps already do.
+3. *Restart the feeds.* Each synthetic FX spot feed and IR curve feed of price
+   source =fixing= starts again from the newest fixing, so its start record
+   names the new day's rate.
+4. *Take the cut.* The roll records the end of day cut of the closing day, so a
+   report can select it, and the start of day cut that opens the next.
+5. *Make it visible.* The screen shows the last completed as-of, when the roll
+   ran, each step's outcome, and any party or item it left out.
+
+* Why
+
+On 2026-11-12 a fresh Acme provisioning failed twice in a row at
+=publish_party_surfaces=. All 40 surfaces of the four Acme parties were refused,
+because no pillar had a quote. The cause, traced with the bright_faraday
+session, was the end of day:
+
+- The derived FX vol source stamps each quote at 17:00 UTC of its day
+  (=derived_fx_vol.cpp=, =sys_days{day} + hours(17)=). Once the ECB fixings of
+  today were stored in the afternoon, the latest day was today, so the quotes
+  sent at 15:46 and 15:47 UTC were dated 17:00, after their send.
+- =publish_party_surfaces= calibrates at its as-of and reads the quotes at or
+  before it, so at 15:53 it saw none. The same run before the day's fixings, or
+  after 17:00, passes: a run at about 04:40 UTC published all 40 surfaces.
+- The stamp fix on =feature/calibrate-synthetic-ir-feeds-from-public-rates=
+  dates a live quote no later than its send. That removes the symptom, not the
+  gap: the 17:00 stamp is an unnamed stand-in for a close nothing else knows.
+
+The same session found the wider gap. Each part of the market keeps its own
+"today":
+
+| Part | When it moves to a new day | Evidence |
+|------+----------------------------+----------|
+| Public fixings | each official adapter polls every 60 minutes and stores what is new | =poll_minutes= 60 in the seeded sessions |
+| Derived FX vol quotes | the source refreshes on a fixed one-hour timer, stamping 17:00 UTC | =refresh_interval{3600000}= in =derived_fx_vol_adapter.hpp= |
+| Party curves | built once by =publish_party_curves= in provisioning; the curve republish service runs only when asked | =curve_republish_service.hpp=: on demand, from a request, the shell or a scheduler job |
+| FX forwards and surfaces | built once by =publish_party_forwards= and =publish_party_surfaces= in provisioning | the provisioning profile |
+| Synthetic FX and IR feeds | read their fixings once, when the feed starts | =resolve_fx_start=, =resolve_ir_start=; a running feed never sees a later fixing |
+| Scheduler | one job definition, none of them a market-day roll | =scheduler_populate.sql= |
+
+Three effects follow, all seen this session:
+
+- *Feeds start on stale or no fixings.* On a fresh environment the synthetic
+  feeds start before any fixing is stored, so every FX feed and every IR curve
+  keeps its fixed level. After a restart of the synthetic service, the 13
+  currencies with a publisher started from their fixings (USD 0.0389 from SOFR,
+  EUR 0.02439 from €STR, SGD 0.015992 from SORA, and so on). A feed that keeps
+  running keeps the day it started on.
+- *Curves and surfaces never move.* Nothing rebuilds a party's curves, forwards
+  or surfaces after provisioning, so a report run on a later day prices from
+  the provisioning day's market.
+- *Ordering by accident.* Whether a step sees today's data depends on which
+  timer fired first: the fixings poll, the derived refresh, or a provisioning
+  step. The surfaces failure is that race made visible.
+
+The synthetic design already states the intent:
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+says interest rate curves update daily at standard market close times, and a
+surface used for daily pricing is regenerated once per business day.
+
+** Questions to settle
+
+- One system-wide close, or one per rates centre as the cut documents state?
+  A per-centre close means a party's roll waits for every centre it reads.
+- Does the roll wait for the day's fixings, or take what is stored at the close
+  and record what was missing? A publisher can be late; the ECB publishes at
+  about 16:00 CET.
+- Weekends and holidays: does the roll skip a day that no centre trades, by
+  which calendar, and what does a feed read on such a day?
+- Does a running feed restart, or take a new start level in place? A restart
+  breaks the price path; a level change in place makes a jump.
+- How does the start of day cut relate to the existing cut entities in
+  reporting, and who approves the end of day cut's rates?
+- What replaces the derived source's fixed 17:00 stamp: the close of the
+  centre that owns the pair?
+
+* References
+
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]]: the end of day, start of day, month end and year end cuts.
+- [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]]: the market half of a cut, approved rates and overrides.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]]
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][User Journey: Give a report its cut]]
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]: curves daily at the close, surfaces once a business day.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]: the thirteen overnight rates the roll would read.
+- Code: =projects/ores.synthetic/api/src/feeds/derived_fx_vol.cpp= (the 17:00 stamp),
+  =projects/ores.synthetic/service/src/derived_fx_vol_adapter.hpp= (the hourly refresh),
+  =projects/ores.marketdata/service/include/ores.marketdata.service/app/curve_republish_service.hpp=
+  (on-demand curve republish), and
+  =projects/ores.marketdata/api/include/ores.marketdata.api/domain/market_clock.hpp=
+  (the clock each consumer reads its own =today()= from).
+
+* See also
+
+- [[id:1F9BD472-2D6D-4A67-A159-130B9AA63040][Add EOD Cut to book]]: an empty deferred capture on the same subject; merge it into this one when either is promoted.

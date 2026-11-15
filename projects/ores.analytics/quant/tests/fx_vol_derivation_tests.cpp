@@ -236,8 +236,77 @@ TEST_CASE("an expiry longer than the history is refused alone, naming itself",
     CHECK_FALSE(derive_fx_quotes(std::vector<double>{0.01, -0.01, 0.02}, expiries, {}));
     const std::vector<fx_expiry> absurd{
         {.label = "1E9Y", .years = 1e9, .convention = derivation_convention()}};
-    const auto far = derive_fx_quotes(returns, absurd, {});
-    REQUIRE(far);
-    CHECK_FALSE(far->expiries[0].has_value());
+    const auto far_quotes = derive_fx_quotes(returns, absurd, {});
+    REQUIRE(far_quotes);
+    CHECK_FALSE(far_quotes->expiries[0].has_value());
     CHECK_FALSE(derive_fx_quotes(returns, expiries, {.trading_days_per_year = 0.0}));
+}
+
+TEST_CASE("the grid a pass fills is the grid a day at a time fills", "[fx_vol_derivation]") {
+    // The pass exists to be the same answer, faster: for every day of the sample and every
+    // expiry, it must agree with the day-at-a-time function the feed has always used, to the
+    // last digit the floating point allows -- the moment formulas differ in the order they add
+    // in, and nothing else does.
+    const auto returns = derivation_skewed_returns(600, 11);
+    const std::vector<fx_expiry> expiries{
+        {.label = "1W", .years = 7.0 / 365.0, .convention = derivation_convention()},
+        {.label = "1M", .years = 1.0 / 12.0, .convention = derivation_convention()},
+        {.label = "3M", .years = 0.25, .convention = derivation_convention()},
+        {.label = "6M", .years = 0.5, .convention = derivation_convention()},
+        {.label = "1Y", .years = 1.0, .convention = derivation_convention()},
+        {.label = "3Y", .years = 3.0, .convention = derivation_convention()}};
+
+    std::vector<fx_derived_cell> grid(returns.size() * expiries.size());
+    REQUIRE(derive_grid(returns, expiries, {}, grid));
+
+    // Four returns are the least a moment can be taken over, so the first three days quote
+    // nothing and the day-at-a-time function refuses them outright.
+    for (std::size_t day = 0; day < 3; ++day)
+        for (std::size_t e = 0; e < expiries.size(); ++e)
+            CHECK_FALSE(grid[day * expiries.size() + e].quoted);
+
+    std::size_t quoted = 0;
+    for (std::size_t day = 3; day < returns.size(); ++day) {
+        const auto one =
+            derive_fx_quotes(std::span<const double>(returns.data(), day + 1), expiries, {});
+        REQUIRE(one);
+        for (std::size_t e = 0; e < expiries.size(); ++e) {
+            const auto& cell = grid[day * expiries.size() + e];
+            CHECK(cell.quoted == one->expiries[e].has_value());
+            if (!cell.quoted)
+                continue;
+            ++quoted;
+            const auto& expected = one->expiries[e]->quotes;
+            INFO("day " << day << " expiry " << expiries[e].label);
+            CHECK(cell.quotes.atm == Catch::Approx(expected.atm).epsilon(1e-12));
+            // The wings are differences of two six-percent volumes, so a part in 10^15 of
+            // rounding in a moment shows up in the fifth digit of a butterfly. A nanovol is
+            // the tolerance that means "the same answer", and the level is held tighter.
+            const auto wing = [](double expected) {
+                return Catch::Approx(expected).margin(1e-9);
+            };
+            CHECK(cell.quotes.rr25 == wing(expected.rr25));
+            CHECK(cell.quotes.bf25 == wing(expected.bf25));
+            CHECK(cell.quotes.rr10 == wing(expected.rr10));
+            CHECK(cell.quotes.bf10 == wing(expected.bf10));
+        }
+    }
+    // Six hundred returns cover the five shorter windows and not the three-year one, so the
+    // last day quotes five expiries and refuses the sixth -- the same day the day-at-a-time
+    // function agrees with above.
+    const auto last = (returns.size() - 1) * expiries.size();
+    for (std::size_t e = 0; e < 5; ++e)
+        CHECK(grid[last + e].quoted);
+    CHECK_FALSE(grid[last + 5].quoted);
+    CHECK(quoted > 400 * expiries.size());
+}
+
+TEST_CASE("the grid refuses a cell count that is not one per day and expiry",
+          "[fx_vol_derivation]") {
+    const auto returns = derivation_normal_returns(0.006, 30, 12);
+    const std::vector<fx_expiry> expiries{
+        {.label = "1W", .years = 7.0 / 365.0, .convention = derivation_convention()}};
+    std::vector<fx_derived_cell> too_small(29);
+    CHECK_FALSE(derive_grid(returns, expiries, {}, too_small));
+    CHECK_FALSE(derive_grid(returns, expiries, {.trading_days_per_year = 0.0}, too_small));
 }

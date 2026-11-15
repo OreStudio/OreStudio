@@ -46,7 +46,7 @@ namespace ores::dq::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_severity>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &badge_severity::version},
         utility::codec::field{"tenant_id", &badge_severity::tenant_id},
         utility::codec::field{"code", &badge_severity::code},

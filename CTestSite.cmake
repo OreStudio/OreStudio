@@ -174,6 +174,11 @@ endif()
 # Submit to CDash (skipped for local testing via ORES_CDASH_NOSUBMIT=1).
 if("$ENV{ORES_CDASH_NOSUBMIT}" STREQUAL "1")
     message(STATUS "ORES_CDASH_NOSUBMIT=1 — skipping CDash submission.")
+elseif(DEFINED ENV{GITHUB_REPOSITORY}
+        AND NOT "$ENV{GITHUB_REPOSITORY}" STREQUAL "OreStudio/OreStudio")
+    # A fork's site build would sit beside main's on the OreStudio project.
+    message(STATUS "Repository $ENV{GITHUB_REPOSITORY} is not OreStudio/OreStudio: "
+        "skipping CDash submission.")
 else()
     ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
         RETURN_VALUE submit_result)

@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &sensitivity_template_key::code},
     };
 }
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &sensitivity_template_write::code},
         utility::codec::field{"method_code", &sensitivity_template_write::method_code},
         utility::codec::field{"asset_class_code", &sensitivity_template_write::asset_class_code},
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &sensitivity_template_change::write},
         utility::codec::field{"precondition", &sensitivity_template_change::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &sensitivity_template_removal::key},
         utility::codec::field{"precondition", &sensitivity_template_removal::precondition},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &sensitivity_template_lookup::key},
         utility::codec::field{"sensitivity_template",
                               &sensitivity_template_lookup::sensitivity_template},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_templates_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &sensitivity_templates_filter::code_one_of},
         utility::codec::field{"search", &sensitivity_templates_filter::search},
     };
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &sensitivity_template_event::event_id},
         utility::codec::field{"key", &sensitivity_template_event::key},
         utility::codec::field{"action", &sensitivity_template_event::action},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"sensitivity_template",
                               &sensitivity_template_version_key::sensitivity_template},
         utility::codec::field{"version", &sensitivity_template_version_key::version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sensitivity_template_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &sensitivity_template_versions_filter::version},
         utility::codec::field{"from_version", &sensitivity_template_versions_filter::from_version},
         utility::codec::field{"to_version", &sensitivity_template_versions_filter::to_version},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sensitivity_templates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_sensitivity_templates_request::offset},
         utility::codec::field{"limit", &list_sensitivity_templates_request::limit},
         utility::codec::field{"order", &list_sensitivity_templates_request::order},
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sensitivity_templates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_sensitivity_templates_response::result},
         utility::codec::field{"templates", &list_sensitivity_templates_response::templates},
         utility::codec::field{"total", &list_sensitivity_templates_response::total},
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sensitivity_template_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_sensitivity_template_request::key},
     };
 }
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_sensitivity_template_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_sensitivity_template_response::result},
         utility::codec::field{"sensitivity_template",
                               &get_sensitivity_template_response::sensitivity_template},
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.sensitivity_tem
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_sensitivity_templates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_sensitivity_templates_request::keys},
     };
 }
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<get_many_sensitivity_templates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_sensitivity_templates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_sensitivity_templates_response::result},
         utility::codec::field{"entries", &get_many_sensitivity_templates_response::entries},
     };
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<get_many_sensitivity_templates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sensitivity_template_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_sensitivity_template_request::change},
         utility::codec::field{"intent", &put_sensitivity_template_request::intent},
     };
@@ -626,7 +626,7 @@ wire_fields(std::type_identity<get_many_sensitivity_templates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_sensitivity_template_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_sensitivity_template_response::result},
         utility::codec::field{"sensitivity_template",
                               &put_sensitivity_template_response::sensitivity_template},
@@ -643,7 +643,7 @@ wire_fields(std::type_identity<get_many_sensitivity_templates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_sensitivity_templates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_sensitivity_templates_request::changes},
         utility::codec::field{"intent", &put_many_sensitivity_templates_request::intent},
     };
@@ -659,7 +659,7 @@ wire_fields(std::type_identity<put_many_sensitivity_templates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_sensitivity_templates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_sensitivity_templates_response::result},
         utility::codec::field{"templates", &put_many_sensitivity_templates_response::templates},
     };
@@ -674,7 +674,7 @@ wire_fields(std::type_identity<put_many_sensitivity_templates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_sensitivity_template_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_sensitivity_template_request::removal},
         utility::codec::field{"intent", &delete_sensitivity_template_request::intent},
     };
@@ -689,7 +689,7 @@ wire_fields(std::type_identity<put_many_sensitivity_templates_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_sensitivity_template_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_sensitivity_template_response::result},
     };
 }
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<put_many_sensitivity_templates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_sensitivity_templates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_sensitivity_templates_request::removals},
         utility::codec::field{"intent", &delete_many_sensitivity_templates_request::intent},
     };
@@ -720,7 +720,7 @@ wire_fields(std::type_identity<delete_many_sensitivity_templates_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_sensitivity_templates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_sensitivity_templates_response::result},
     };
 }
@@ -735,7 +735,7 @@ wire_fields(std::type_identity<delete_many_sensitivity_templates_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_sensitivity_template_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_sensitivity_template_versions_request::key},
         utility::codec::field{"offset", &list_sensitivity_template_versions_request::offset},
         utility::codec::field{"limit", &list_sensitivity_template_versions_request::limit},
@@ -754,7 +754,7 @@ wire_fields(std::type_identity<list_sensitivity_template_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_sensitivity_template_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_sensitivity_template_versions_response::result},
         utility::codec::field{"versions", &list_sensitivity_template_versions_response::versions},
         utility::codec::field{"total", &list_sensitivity_template_versions_response::total},
@@ -771,7 +771,7 @@ wire_fields(std::type_identity<list_sensitivity_template_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_sensitivity_template_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_sensitivity_template_version_request::key},
     };
 }
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<get_sensitivity_template_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_sensitivity_template_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_sensitivity_template_version_response::result},
         utility::codec::field{"version", &get_sensitivity_template_version_response::version},
     };

@@ -21,6 +21,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <optional>
 #include <random>
 #include <string>
 #include <vector>
@@ -332,4 +333,40 @@ TEST_CASE("no_measured_level_or_deviation_is_no_change", tags) {
 TEST_CASE("deviations_for_another_number_of_components_are_ignored", tags) {
     const auto change = change_of(1.08, {0.0001, 0.0004}, 1.08, std::vector{0.0002});
     CHECK(change.empty());
+}
+
+TEST_CASE("an_overnight_fixing_names_its_currency_and_a_term_index_does_not", tags) {
+    CHECK(overnight_currency_of("oresmd://ir/USD?type=fixing&index=ibor&name=SOFR") ==
+          std::optional<std::string>("USD"));
+    CHECK(overnight_currency_of("oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR") ==
+          std::optional<std::string>("SEK"));
+    CHECK_FALSE(
+        overnight_currency_of("oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M"));
+    CHECK_FALSE(overnight_currency_of("oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD"));
+    CHECK_FALSE(overnight_currency_of(
+        "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"));
+}
+
+TEST_CASE("the_overnight_items_of_a_currency_follow_the_policy_order", tags) {
+    const std::vector<calibration_candidate> candidates{
+        {.item = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR", .provider_code = "nyfed"},
+        {.item = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR", .provider_code = "fred"},
+        {.item = "oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER", .provider_code = "ecb"},
+        {.item = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M",
+         .provider_code = "nyfed"}};
+    calibration_policy policy;
+    policy.provider_order = {"fred", "nyfed"};
+
+    const auto usd = derive_overnight_items(policy, "USD", candidates);
+
+    REQUIRE(usd.size() == 2);
+    CHECK(usd[0].provider_code == "fred");
+    CHECK(usd[1].provider_code == "nyfed");
+
+    policy.provider_order = {"nyfed"};
+    const auto stated = derive_overnight_items(policy, "USD", candidates);
+    REQUIRE(stated.size() == 1);
+    CHECK(stated[0].provider_code == "nyfed");
+
+    CHECK(derive_overnight_items(policy, "CHF", candidates).empty());
 }

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Read the FX montage prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.blank{text-align:right;color:var(--ink-faint)}
+tr.total td{border-top:1px solid var(--line);border-bottom:none;padding-top:9px}
+tr.pick td{background:var(--panel-2)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend .sw{display:inline-block;width:12px;height:2px;background:var(--accent);vertical-align:3px;margin-right:6px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Read the FX montage" screen
+  (doc/knowledge/journeys/market_data/journey_read-the-fx-montage.org): one
+  base currency, its crosses as rows, one column per provider, and the chosen
+  pair's day below. A pair whose base is on the quote side still appears,
+  because a montage is for the base, not for the pair's spelling.
+  The change, the day's high and low, and the instant they are measured from
+  are the server's: a person does not decide what "today" means.
+
+  Variants with ?variant=a|b. a is a column per provider with the consensus
+  and a sparkline, b is one row per pair with the change and the range and no
+  provider columns. The variant is the journey's design question: whether the
+  montage is a wall of quotes or a board of moves.
+  ?state=full|thin|stale switches the mock answer. Hedgr's Forwards tab is
+  not ported: the forward ladder has its own page and journey.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'full';
+const PARTY = 'ACME Corporation UK plc';
+const AS_OF = '2026-11-13 14:31:07Z';
+const CHANGE_SINCE = '2026-11-13 00:00:00Z';
+const PROVIDERS = ['Bloomberg','Demo','Derived'];
+
+/* one row per pair of the base; `day` is the intraday series the sparkline and
+   the high/low come from, and the server states the window it covers */
+const pairs = [
+  {pair:'AUD/USD', flags:'🇦🇺 🇺🇸', q:{Bloomberg:0.65412, Demo:0.65408}, age:1,
+   high:0.65508, low:0.65211, change:0.09,
+   day:[.65310,.65330,.65305,.65290,.65340,.65380,.65402,.65395,.65420,.65412]},
+  {pair:'AUD/JPY', flags:'🇦🇺 🇯🇵', q:{Bloomberg:101.482, Demo:101.470}, age:1,
+   high:101.610, low:101.201, change:0.14,
+   day:[101.20,101.28,101.24,101.33,101.40,101.36,101.44,101.50,101.47,101.482]},
+  {pair:'AUD/EUR', flags:'🇦🇺 🇪🇺', q:{Bloomberg:0.60321, Demo:0.60318}, age:1,
+   high:0.60402, low:0.60190, change:0.11,
+   day:[.60190,.60215,.60201,.60244,.60260,.60241,.60280,.60295,.60310,.60321]},
+  {pair:'AUD/GBP', flags:'🇦🇺 🇬🇧', q:{Bloomberg:0.51204, Demo:0.51198}, age:1,
+   high:0.51244, low:0.51110, change:0.05,
+   day:[.51112,.51140,.51128,.51155,.51170,.51162,.51180,.51195,.51200,.51204]},
+  {pair:'AUD/NZD', flags:'🇦🇺 🇳🇿', q:{Bloomberg:1.08742, Derived:1.08738}, age:4,
+   high:1.08860, low:1.08605, change:-0.03,
+   day:[1.08850,1.08820,1.08790,1.08800,1.08760,1.08740,1.08755,1.08748,1.08744,1.08742]},
+  {pair:'GBP/AUD', flags:'🇬🇧 🇦🇺', q:{Bloomberg:1.95288}, age:2,
+   high:1.95560, low:1.95002, change:-0.06,
+   day:[1.95550,1.95490,1.95520,1.95440,1.95380,1.95410,1.95340,1.95300,1.95290,1.95288]}
+];
+if (state === 'thin') { delete pairs[4].q.Derived; delete pairs[0].q.Demo; delete pairs[3].q.Demo; }
+if (state === 'stale') pairs.forEach(p => { p.age += 900; });
+
+function consensus(p){
+  const v = Object.values(p.q);
+  return v.reduce((a,b) => a+b, 0) / v.length;
+}
+function quoted(p){ return Object.keys(p.q).length; }
+function dp(p){ return p.pair.includes('JPY') ? 3 : 5; }
+function fmt(p, v){ return v == null ? null : v.toFixed(dp(p)); }
+function chg(p){ const s = p.change >= 0 ? '+' : ''; return `<span class="${p.change >= 0 ? 'up' : 'down'}">${s}${p.change.toFixed(2)}%</span>`; }
+
+function spark(p){
+  const W = 92, H = 20;
+  const lo = Math.min(...p.day), hi = Math.max(...p.day), span = hi - lo || 1;
+  const pts = p.day.map((v,i) => (i*W/(p.day.length-1)).toFixed(1) + ',' + (H - 2 - (v-lo)/span*(H-4)).toFixed(1)).join(' ');
+  const colour = p.change >= 0 ? '#3fb950' : '#f85149';
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${p.pair} today"><polyline points="${pts}" fill="none" stroke="${colour}" stroke-width="1.5"/></svg>`;
+}
+
+function header(){
+  return `
+  <div class="top">
+    <h1>AUD crosses</h1>
+    <span class="lead">one base currency, its crosses as rows, one column per provider, and the chosen pair's day</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_read-the-fx-montage.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <div class="kv">
+      <span>Base <b>AUD</b></span><span class="sep">|</span>
+      <span>Instrument <b>fx_spot</b></span><span class="sep">|</span>
+      <span>Quote <b>rate</b></span><span class="sep">|</span>
+      <span>Pairs <b>${pairs.length}</b></span><span class="sep">|</span>
+      <span>Sources <b>${PROVIDERS.length}</b></span><span class="sep">|</span>
+      <span>Two-way <b>not supported</b></span><span class="sep">|</span>
+      <span>As of <b class="mono">${AS_OF}</b></span>
+      <span>${state === 'stale'
+        ? '<span class="tag warn">STALE · over the threshold</span>'
+        : '<span class="tag ok">LIVE · 1s</span>'}</span>
+    </div>
+    <div class="row">
+      <div class="field"><label>Base</label><select><option>AUD</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+      <div class="field"><label>Providers</label><select><option>all</option>${PROVIDERS.map(p=>`<option>${p}</option>`).join('')}</select></div>
+      <div class="field"><label>Sort</label><select><option>by pair</option><option>by move</option></select></div>
+      <span style="margin-left:auto"></span>
+      <button class="btn">Copy CSV</button>
+      <button class="btn">Refresh</button>
+    </div>
+  </div>`;
+}
+
+function table(){
+  const head = variant === 'b'
+    ? '<tr><th>Pair</th><th></th><th>Last</th><th style="text-align:right">Change</th><th style="text-align:right">Low</th><th style="text-align:right">High</th><th style="text-align:right">Age</th><th>Today</th></tr>'
+    : '<tr><th>Pair</th><th></th>' + PROVIDERS.map(p => '<th style="text-align:right">'+p+'</th>').join('') +
+      '<th style="text-align:right">Consensus</th><th style="text-align:right">Age</th><th>Today</th></tr>';
+  const body = pairs.map((p, n) => {
+    const cells = variant === 'b'
+      ? `<td class="num">${fmt(p, consensus(p))}</td><td class="num">${chg(p)}</td>
+         <td class="num muted">${fmt(p, p.low)}</td><td class="num muted">${fmt(p, p.high)}</td>
+         <td class="num muted">${p.age}s</td><td>${spark(p)}</td>`
+      : PROVIDERS.map(k => p.q[k] == null
+          ? '<td class="blank" title="this provider does not quote this pair">–</td>'
+          : '<td class="num">'+fmt(p, p.q[k])+'</td>').join('') +
+        `<td class="num">${fmt(p, consensus(p))}</td><td class="num muted">${p.age}s</td><td>${spark(p)}</td>`;
+    return `<tr${n === 0 ? ' class="pick"' : ''}><td>${p.pair}</td><td>${p.flags}</td>${cells}</tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Montage</h2>
+    <table><thead>${head}</thead><tbody>${body}</tbody></table>
+    <div class="legend faint">
+      <span>Mid only: the deployment quotes one side.</span>
+      <span>Change, high and low are measured from <b class="mono">${CHANGE_SINCE}</b>, which the server states.</span>
+    </div>
+  </div>`;
+}
+
+function detail(){
+  const p = pairs[0];
+  const W = 1040, H = 220, L = 58, R = 18, T = 18, B = 40;
+  const lo = Math.min(...p.day, p.low) - (p.high-p.low)*0.1;
+  const hi = Math.max(...p.day, p.high) + (p.high-p.low)*0.1;
+  const x = i => L + i * (W - L - R) / (p.day.length - 1);
+  const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const pts = p.day.map((v,i) => x(i) + ',' + y(v).toFixed(1)).join(' ');
+  const grid = [0,.5,1].map(t => {
+    const v = lo + (hi-lo)*t, yy = y(v).toFixed(1);
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#21262d"/>` +
+           `<text x="${L-8}" y="${+yy+3}" text-anchor="end" fill="#71717a" font-size="10">${v.toFixed(4)}</text>`;
+  }).join('');
+  const labels = ['00:00','06:00','12:00','18:00'].map((t,i) =>
+    `<text x="${L + i*(W-L-R)/3}" y="${H-14}" text-anchor="${i===0?'start':'middle'}" fill="#71717a" font-size="10">${t}</text>`).join('');
+  return `
+  <div class="panel">
+    <h2>AUD/USD · today</h2>
+    <div class="legend">
+      <span><span class="sw"></span>Bloomberg, last <b class="mono">${fmt(p, p.q.Bloomberg)}</b></span>
+      <span class="faint">high <b class="mono">${fmt(p, p.high)}</b> · low <b class="mono">${fmt(p, p.low)}</b> · change ${chg(p)}</span>
+    </div>
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="AUD/USD today">
+      ${grid}
+      <polyline points="${pts}" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      <line x1="${L}" y1="${y(p.high).toFixed(1)}" x2="${W-R}" y2="${y(p.high).toFixed(1)}" stroke="#3fb950" stroke-dasharray="3 4" opacity="0.6"/>
+      <line x1="${L}" y1="${y(p.low).toFixed(1)}" x2="${W-R}" y2="${y(p.low).toFixed(1)}" stroke="#f85149" stroke-dasharray="3 4" opacity="0.6"/>
+      ${labels}
+    </svg></div>
+  </div>`;
+}
+
+function none(){
+  return `
+  <div class="panel">
+    <h2>Nothing quoted</h2>
+    <div class="notice">No provider quotes a cross of <b>AUD</b> at this as-of. The montage is empty because the
+      market sent nothing, and it says that: it does not draw a zero, and it does not carry yesterday's price as if
+      it were today's.</div>
+  </div>`;
+}
+
+document.getElementById('note').textContent =
+  'PROTOTYPE · throwaway · mock data, no server · variant ' + variant + ' · state ' + state;
+document.getElementById('app').innerHTML = header() +
+  (state === 'none' ? none() : table() + detail());
+document.getElementById('bar').innerHTML =
+  '<span class="label">Variant</span>' +
+  [['a','A · providers as columns'],['b','B · a board of moves']].map(([v,t]) =>
+    `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['full','full'],['thin','thin market'],['stale','stale'],['none','nothing quoted']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v); if (s) next.set('state', s);
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

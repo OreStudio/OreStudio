@@ -90,6 +90,7 @@ The bootstrap protocol messages.
 :auth: none
 :response: create_initial_admin_response
 :http_route: true
+:rate_policy: credential
 :END:
 
 *** principal

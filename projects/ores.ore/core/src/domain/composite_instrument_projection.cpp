@@ -50,7 +50,7 @@ constexpr bool is_composite_trade_type(std::string_view type) {
 }
 
 auto make_instrument(std::string_view trade_type_code) -> composite_instrument {
-    composite_instrument r;
+    composite_instrument r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     r.audit.modified_by = std::string(composite_instrument_projection_actor);
     r.audit.performed_by = std::string(composite_instrument_projection_actor);

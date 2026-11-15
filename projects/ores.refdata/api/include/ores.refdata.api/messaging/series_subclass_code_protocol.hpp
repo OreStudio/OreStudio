@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &series_subclass_code_key::code},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &series_subclass_code_write::code},
         utility::codec::field{"name", &series_subclass_code_write::name},
         utility::codec::field{"description", &series_subclass_code_write::description},
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &series_subclass_code_change::write},
         utility::codec::field{"precondition", &series_subclass_code_change::precondition},
     };
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &series_subclass_code_removal::key},
         utility::codec::field{"precondition", &series_subclass_code_removal::precondition},
     };
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &series_subclass_code_lookup::key},
         utility::codec::field{"series_subclass_code",
                               &series_subclass_code_lookup::series_subclass_code},
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_codes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &series_subclass_codes_filter::code_one_of},
     };
 }
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &series_subclass_code_event::event_id},
         utility::codec::field{"key", &series_subclass_code_event::key},
         utility::codec::field{"action", &series_subclass_code_event::action},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"series_subclass_code",
                               &series_subclass_code_version_key::series_subclass_code},
         utility::codec::field{"version", &series_subclass_code_version_key::version},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_subclass_code_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &series_subclass_code_versions_filter::version},
         utility::codec::field{"from_version", &series_subclass_code_versions_filter::from_version},
         utility::codec::field{"to_version", &series_subclass_code_versions_filter::to_version},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_series_subclass_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_series_subclass_codes_request::offset},
         utility::codec::field{"limit", &list_series_subclass_codes_request::limit},
         utility::codec::field{"order", &list_series_subclass_codes_request::order},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_series_subclass_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_series_subclass_codes_response::result},
         utility::codec::field{"series_subclasses",
                               &list_series_subclass_codes_response::series_subclasses},
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_subclass_code_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_series_subclass_code_request::key},
     };
 }
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_subclass_code_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_series_subclass_code_response::result},
         utility::codec::field{"series_subclass_code",
                               &get_series_subclass_code_response::series_subclass_code},
@@ -579,7 +579,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.series_subclass_c
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_series_subclass_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_series_subclass_codes_request::keys},
     };
 }
@@ -594,7 +594,7 @@ wire_fields(std::type_identity<get_many_series_subclass_codes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_series_subclass_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_series_subclass_codes_response::result},
         utility::codec::field{"entries", &get_many_series_subclass_codes_response::entries},
     };
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<get_many_series_subclass_codes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_series_subclass_code_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_series_subclass_code_request::change},
         utility::codec::field{"intent", &put_series_subclass_code_request::intent},
     };
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<get_many_series_subclass_codes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_series_subclass_code_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_series_subclass_code_response::result},
         utility::codec::field{"series_subclass_code",
                               &put_series_subclass_code_response::series_subclass_code},
@@ -641,7 +641,7 @@ wire_fields(std::type_identity<get_many_series_subclass_codes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_series_subclass_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_series_subclass_codes_request::changes},
         utility::codec::field{"intent", &put_many_series_subclass_codes_request::intent},
     };
@@ -657,7 +657,7 @@ wire_fields(std::type_identity<put_many_series_subclass_codes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_series_subclass_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_series_subclass_codes_response::result},
         utility::codec::field{"series_subclasses",
                               &put_many_series_subclass_codes_response::series_subclasses},
@@ -673,7 +673,7 @@ wire_fields(std::type_identity<put_many_series_subclass_codes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_series_subclass_code_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_series_subclass_code_request::removal},
         utility::codec::field{"intent", &delete_series_subclass_code_request::intent},
     };
@@ -688,7 +688,7 @@ wire_fields(std::type_identity<put_many_series_subclass_codes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_series_subclass_code_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_series_subclass_code_response::result},
     };
 }
@@ -703,7 +703,7 @@ wire_fields(std::type_identity<put_many_series_subclass_codes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_series_subclass_codes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_series_subclass_codes_request::removals},
         utility::codec::field{"intent", &delete_many_series_subclass_codes_request::intent},
     };
@@ -719,7 +719,7 @@ wire_fields(std::type_identity<delete_many_series_subclass_codes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_series_subclass_codes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_series_subclass_codes_response::result},
     };
 }
@@ -734,7 +734,7 @@ wire_fields(std::type_identity<delete_many_series_subclass_codes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_series_subclass_code_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_series_subclass_code_versions_request::key},
         utility::codec::field{"offset", &list_series_subclass_code_versions_request::offset},
         utility::codec::field{"limit", &list_series_subclass_code_versions_request::limit},
@@ -753,7 +753,7 @@ wire_fields(std::type_identity<list_series_subclass_code_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_series_subclass_code_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_series_subclass_code_versions_response::result},
         utility::codec::field{"versions", &list_series_subclass_code_versions_response::versions},
         utility::codec::field{"total", &list_series_subclass_code_versions_response::total},
@@ -770,7 +770,7 @@ wire_fields(std::type_identity<list_series_subclass_code_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_series_subclass_code_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_series_subclass_code_version_request::key},
     };
 }
@@ -785,7 +785,7 @@ wire_fields(std::type_identity<get_series_subclass_code_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_series_subclass_code_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_series_subclass_code_version_response::result},
         utility::codec::field{"version", &get_series_subclass_code_version_response::version},
     };

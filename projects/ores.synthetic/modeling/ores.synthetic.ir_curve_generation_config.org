@@ -2,10 +2,16 @@
 :ID: 8B840E8D-2763-4A1F-8BC2-6C9E354DB673
 :ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_generation_config
 #+description: Codegen entity model for the synthetic ir_curve_generation_config table; configuration for generating a synthetic IR curve from a short-rate process.
 #+type: ores.codegen.entity
+#+web_resource: ir-curve-feeds
+#+web_writes: many
+#+web_key_read: hand-written
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: ir_curve_generation_config
@@ -100,7 +106,8 @@ term IBOR-style indices, or one
 of the overnight/RFR-style families -- =sofr=/=estr=/=sonia=/=tona=/
 =saron=/=aonia=/=corra=/=honia=/=sora=/=swestr=/=nowa=/=kofr=/=mibor=/
 =zaronia=/=destr=/=polonia=/=nzonia=/=shibor=/=tiie=/=taibor=/=cdi=/
-=czeonia=/=buboron=/=telboron=/=tlref=/=camara=/=ibr=/=hibor=), stored
+=czeonia=/=buboron=/=telboron=/=tlref=/=camara=/=ibr=/=hibor=/
+=shir=/=hufonia=), stored
 as a fixed lower-case token rather than the full ISDA/ORE code the
 predecessor =index_name= column held ("USD-SOFR") -- =currency_code=
 already carries the currency half of that pair. Only the check below
@@ -265,10 +272,11 @@ faker::datatype::boolean()
 :default_value: "fixed"
 :END:
 
-Where this curve's starting short rate comes from. The one source is
-"fixed": the =initial_rate= parameter value as entered in the parameter
-rows. No public source fixes rates curves yet; when one does, the curve
-reads it as an FX feed reads its fixings, and this column names it.
+Where this curve's starting short rate comes from. "fixed" is the
+=initial_rate= parameter value as entered in the parameter rows. "fixing" is
+the newest public overnight rate of the curve's currency, read under the IR
+class's calibration policy; a curve whose currency no source publishes keeps
+its =initial_rate=, and its start record says why.
 
 #+begin_src cpp :name generator
 std::string("fixed")
@@ -590,13 +598,13 @@ How strongly a market-wide regime moves this row, where one is the average.
 | expression                                              |
 |----------------------------------------------------------|
 | "currency_code" <> ''                                    |
-| "index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor') |
-| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor') and "tenor" = '') or ("index_family" = 'sofr' and "tenor" in ('', 'FOMC')) |
+| "index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor', 'shir', 'hufonia') |
+| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor', 'shir', 'hufonia') and "tenor" = '') or ("index_family" = 'sofr' and "tenor" in ('', 'FOMC')) |
 | "role" in ('discount', 'projection', 'self_discounting') |
 | "source_name" <> ''                                       |
 | "source_name" like 'synthetic.%'                          |
 | "ticks_per_hour" > 0                                       |
-| "price_source" in ('fixed')                               |
+| "price_source" in ('fixed', 'fixing')                    |
 
 * Foreign keys
 

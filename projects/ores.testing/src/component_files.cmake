@@ -36,6 +36,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_lifecycle_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/fx_vol_surface_fixture.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/handler_test_support.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/logging_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/make_generation_context.hpp"
@@ -56,5 +57,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_files.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_timeout_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/two_parties.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/uuid_of.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/wire_roundtrip.hpp"
 )

@@ -370,7 +370,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &badge_definition_key::code},
     };
 }
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &badge_definition_write::code},
         utility::codec::field{"name", &badge_definition_write::name},
         utility::codec::field{"description", &badge_definition_write::description},
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &badge_definition_change::write},
         utility::codec::field{"precondition", &badge_definition_change::precondition},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &badge_definition_removal::key},
         utility::codec::field{"precondition", &badge_definition_removal::precondition},
     };
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &badge_definition_lookup::key},
         utility::codec::field{"badge_definition", &badge_definition_lookup::badge_definition},
     };
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definitions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &badge_definitions_filter::code_one_of},
     };
 }
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &badge_definition_event::event_id},
         utility::codec::field{"key", &badge_definition_event::key},
         utility::codec::field{"action", &badge_definition_event::action},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"badge_definition", &badge_definition_version_key::badge_definition},
         utility::codec::field{"version", &badge_definition_version_key::version},
     };
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &badge_definition_versions_filter::version},
         utility::codec::field{"from_version", &badge_definition_versions_filter::from_version},
         utility::codec::field{"to_version", &badge_definition_versions_filter::to_version},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_badge_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_badge_definitions_request::offset},
         utility::codec::field{"limit", &list_badge_definitions_request::limit},
         utility::codec::field{"order", &list_badge_definitions_request::order},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_badge_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_badge_definitions_response::result},
         utility::codec::field{"definitions", &list_badge_definitions_response::definitions},
         utility::codec::field{"total", &list_badge_definitions_response::total},
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_definition_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_badge_definition_request::key},
     };
 }
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_definition_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_badge_definition_response::result},
         utility::codec::field{"badge_definition", &get_badge_definition_response::badge_definition},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_badge_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_badge_definitions_request::keys},
     };
 }
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_badge_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_badge_definitions_response::result},
         utility::codec::field{"entries", &get_many_badge_definitions_response::entries},
     };
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_badge_definition_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_badge_definition_request::change},
         utility::codec::field{"intent", &put_badge_definition_request::intent},
     };
@@ -621,7 +621,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_badge_definition_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_badge_definition_response::result},
         utility::codec::field{"badge_definition", &put_badge_definition_response::badge_definition},
     };
@@ -636,7 +636,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_badge_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_badge_definitions_request::changes},
         utility::codec::field{"intent", &put_many_badge_definitions_request::intent},
     };
@@ -651,7 +651,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_badge_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_badge_definitions_response::result},
         utility::codec::field{"definitions", &put_many_badge_definitions_response::definitions},
     };
@@ -666,7 +666,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_badge_definition_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_badge_definition_request::removal},
         utility::codec::field{"intent", &delete_badge_definition_request::intent},
     };
@@ -681,7 +681,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_badge_definition_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_badge_definition_response::result},
     };
 }
@@ -696,7 +696,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.dele
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_badge_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_badge_definitions_request::removals},
         utility::codec::field{"intent", &delete_many_badge_definitions_request::intent},
     };
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<delete_many_badge_definitions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_badge_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_badge_definitions_response::result},
     };
 }
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<delete_many_badge_definitions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_badge_definition_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_badge_definition_versions_request::key},
         utility::codec::field{"offset", &list_badge_definition_versions_request::offset},
         utility::codec::field{"limit", &list_badge_definition_versions_request::limit},
@@ -746,7 +746,7 @@ wire_fields(std::type_identity<list_badge_definition_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_badge_definition_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_badge_definition_versions_response::result},
         utility::codec::field{"versions", &list_badge_definition_versions_response::versions},
         utility::codec::field{"total", &list_badge_definition_versions_response::total},
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<list_badge_definition_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_definition_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_badge_definition_version_request::key},
     };
 }
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<list_badge_definition_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_badge_definition_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_badge_definition_version_response::result},
         utility::codec::field{"version", &get_badge_definition_version_response::version},
     };

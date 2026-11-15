@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import type { Config } from './config.js';
 
 // Audit reference, not a server version lock. CI checks backend-contract.json for drift.
-export const backendContractRevision = 'b00f9113c1a5485711161f564de909b5eb07bebc';
+export const backendContractRevision = '26f6bef7c08332aa13452616f5de4ea07bb769b2';
 export const subjects = {
     login: 'iam.v1.ops.login',
     logout: 'iam.v1.ops.logout',

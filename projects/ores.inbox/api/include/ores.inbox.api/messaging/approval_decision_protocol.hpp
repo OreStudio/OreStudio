@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &approval_decision_key::id},
     };
 }
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &approval_decision_write::id},
         utility::codec::field{"request_id", &approval_decision_write::request_id},
         utility::codec::field{"decision_code", &approval_decision_write::decision_code},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &approval_decision_change::write},
         utility::codec::field{"precondition", &approval_decision_change::precondition},
     };
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &approval_decision_removal::key},
         utility::codec::field{"precondition", &approval_decision_removal::precondition},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &approval_decision_lookup::key},
         utility::codec::field{"approval_decision", &approval_decision_lookup::approval_decision},
     };
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decisions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &approval_decisions_filter::request_id},
         utility::codec::field{"id_one_of", &approval_decisions_filter::id_one_of},
         utility::codec::field{"request_id_one_of", &approval_decisions_filter::request_id_one_of},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &approval_decision_event::event_id},
         utility::codec::field{"key", &approval_decision_event::key},
         utility::codec::field{"action", &approval_decision_event::action},
@@ -520,7 +520,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"approval_decision",
                               &approval_decision_version_key::approval_decision},
         utility::codec::field{"version", &approval_decision_version_key::version},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_decision_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &approval_decision_versions_filter::version},
         utility::codec::field{"from_version", &approval_decision_versions_filter::from_version},
         utility::codec::field{"to_version", &approval_decision_versions_filter::to_version},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_decisions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_approval_decisions_request::offset},
         utility::codec::field{"limit", &list_approval_decisions_request::limit},
         utility::codec::field{"order", &list_approval_decisions_request::order},
@@ -570,7 +570,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_decisions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_approval_decisions_response::result},
         utility::codec::field{"decisions", &list_approval_decisions_response::decisions},
         utility::codec::field{"total", &list_approval_decisions_response::total},
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_decision_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_approval_decision_request::key},
     };
 }
@@ -600,7 +600,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_decision_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_approval_decision_response::result},
         utility::codec::field{"approval_decision",
                               &get_approval_decision_response::approval_decision},
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_decisions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_approval_decisions_request::keys},
     };
 }
@@ -630,7 +630,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_decisions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_approval_decisions_response::result},
         utility::codec::field{"entries", &get_many_approval_decisions_response::entries},
     };
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_decision_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_approval_decision_request::change},
         utility::codec::field{"intent", &put_approval_decision_request::intent},
     };
@@ -660,7 +660,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_decision_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_approval_decision_response::result},
         utility::codec::field{"approval_decision",
                               &put_approval_decision_response::approval_decision},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_decisions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_approval_decisions_request::changes},
         utility::codec::field{"intent", &put_many_approval_decisions_request::intent},
     };
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_decisions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_approval_decisions_response::result},
         utility::codec::field{"decisions", &put_many_approval_decisions_response::decisions},
     };
@@ -706,7 +706,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_decision_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_approval_decision_request::removal},
         utility::codec::field{"intent", &delete_approval_decision_request::intent},
     };
@@ -721,7 +721,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_decision_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_approval_decision_response::result},
     };
 }
@@ -736,7 +736,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_decisions.
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_approval_decisions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_approval_decisions_request::removals},
         utility::codec::field{"intent", &delete_many_approval_decisions_request::intent},
     };
@@ -752,7 +752,7 @@ wire_fields(std::type_identity<delete_many_approval_decisions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_approval_decisions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_approval_decisions_response::result},
     };
 }
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<delete_many_approval_decisions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_approval_decisions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id",
                               &list_by_request_id_approval_decisions_request::request_id},
         utility::codec::field{"scope", &list_by_request_id_approval_decisions_request::scope},
@@ -788,7 +788,7 @@ wire_fields(std::type_identity<list_by_request_id_approval_decisions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_approval_decisions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_request_id_approval_decisions_response::result},
         utility::codec::field{"decisions",
                               &list_by_request_id_approval_decisions_response::decisions},
@@ -806,7 +806,7 @@ wire_fields(std::type_identity<list_by_request_id_approval_decisions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_approval_decision_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_approval_decision_versions_request::key},
         utility::codec::field{"offset", &list_approval_decision_versions_request::offset},
         utility::codec::field{"limit", &list_approval_decision_versions_request::limit},
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<list_approval_decision_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_approval_decision_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_approval_decision_versions_response::result},
         utility::codec::field{"versions", &list_approval_decision_versions_response::versions},
         utility::codec::field{"total", &list_approval_decision_versions_response::total},
@@ -842,7 +842,7 @@ wire_fields(std::type_identity<list_approval_decision_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_approval_decision_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_approval_decision_version_request::key},
     };
 }
@@ -857,7 +857,7 @@ wire_fields(std::type_identity<get_approval_decision_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_approval_decision_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_approval_decision_version_response::result},
         utility::codec::field{"version", &get_approval_decision_version_response::version},
     };

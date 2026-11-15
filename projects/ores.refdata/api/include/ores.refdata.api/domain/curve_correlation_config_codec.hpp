@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_correlation_config::version},
         utility::codec::field{"tenant_id", &curve_correlation_config::tenant_id},
         utility::codec::field{"id", &curve_correlation_config::id},

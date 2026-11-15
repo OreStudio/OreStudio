@@ -172,7 +172,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationship_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"relationship_start_node_node_id",
                               &lei_relationship_key::relationship_start_node_node_id},
     };
@@ -187,7 +187,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationship_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &lei_relationship_lookup::key},
         utility::codec::field{"lei_relationship", &lei_relationship_lookup::lei_relationship},
     };
@@ -202,7 +202,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationships_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"relationship_start_node_node_id_one_of",
                               &lei_relationships_filter::relationship_start_node_node_id_one_of},
     };
@@ -217,7 +217,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_relationship_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &lei_relationship_event::event_id},
         utility::codec::field{"key", &lei_relationship_event::key},
         utility::codec::field{"action", &lei_relationship_event::action},
@@ -236,7 +236,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_relationships_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_lei_relationships_request::offset},
         utility::codec::field{"limit", &list_lei_relationships_request::limit},
         utility::codec::field{"order", &list_lei_relationships_request::order},
@@ -253,7 +253,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_relationships_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_lei_relationships_response::result},
         utility::codec::field{"relationships", &list_lei_relationships_response::relationships},
         utility::codec::field{"total", &list_lei_relationships_response::total},
@@ -269,7 +269,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_relationship_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_lei_relationship_request::key},
     };
 }
@@ -283,7 +283,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_relationship_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_lei_relationship_response::result},
         utility::codec::field{"lei_relationship", &get_lei_relationship_response::lei_relationship},
     };
@@ -298,7 +298,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_relationships_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_lei_relationships_request::keys},
     };
 }
@@ -312,7 +312,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_relationships.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_relationships_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_lei_relationships_response::result},
         utility::codec::field{"entries", &get_many_lei_relationships_response::entries},
     };

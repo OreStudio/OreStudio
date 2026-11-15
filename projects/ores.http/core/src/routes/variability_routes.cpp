@@ -28,12 +28,12 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 variability_routes::variability_routes(
-    database::context ctx,
+    const database::context& ctx,
     std::shared_ptr<variability::service::system_settings_service> system_settings,
     std::shared_ptr<iam::service::auth_session_service> sessions)
-    : ctx_(std::move(ctx))
-    , system_settings_(std::move(system_settings))
-    , sessions_(std::move(sessions)) {
+    : ctx_(ctx)
+    , system_settings_(system_settings)
+    , sessions_(sessions) {
     BOOST_LOG_SEV(lg(), debug) << "Variability routes initialized";
 }
 

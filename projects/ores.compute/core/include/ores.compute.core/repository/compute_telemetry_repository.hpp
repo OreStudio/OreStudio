@@ -23,7 +23,7 @@
 #include "ores.compute.api/domain/grid_sample.hpp"
 #include "ores.compute.api/domain/node_sample.hpp"
 #include "ores.compute.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -154,7 +154,7 @@ public:
      * states no tenant predicate: the row-level-security policy decides,
      * admitting the session's own tenant's rows and the system tenant's.
      */
-    std::vector<domain::node_sample> latest_node_samples(context ctx);
+    std::vector<domain::node_sample> latest_node_samples(const context& ctx);
 
     /**
      * @brief Compute current grid statistics using SQL aggregations.
@@ -169,7 +169,7 @@ public:
      * the row of a tenant's party carries job counters and no host counts.
      */
     domain::grid_sample
-    compute_grid_stats(context ctx, std::optional<boost::uuids::uuid> party, bool fleet);
+    compute_grid_stats(const context& ctx, std::optional<boost::uuids::uuid> party, bool fleet);
 
     /**
      * @brief The parties whose work the session's tenant holds.
@@ -178,7 +178,7 @@ public:
      * lists the empty party, which stands for work with no party. A session that
      * acts for parties sees only theirs.
      */
-    std::vector<std::optional<boost::uuids::uuid>> parties_with_work(context ctx);
+    std::vector<std::optional<boost::uuids::uuid>> parties_with_work(const context& ctx);
 
     /**
      * @brief Return the stored grid samples of a range as columns.
@@ -192,7 +192,7 @@ public:
      * @throws std::invalid_argument when the bucket is under a second, the
      * range is empty, or the range needs more than max_grid_series_buckets.
      */
-    grid_series grid_series_in_range(context ctx,
+    grid_series grid_series_in_range(const context& ctx,
                                      std::chrono::system_clock::time_point start,
                                      std::chrono::system_clock::time_point end,
                                      int bucket_seconds);
@@ -206,7 +206,7 @@ public:
      * tenant reads the system tenant's work and no other tenant's. To count
      * another tenant, enter it and call this read there.
      */
-    grid_usage grid_usage_by_scope(context ctx);
+    grid_usage grid_usage_by_scope(const context& ctx);
 
     /**
      * @brief Return the stored node samples of a range as columns.
@@ -222,7 +222,7 @@ public:
      * needs more than max_grid_series_buckets, or one whose nodes times
      * buckets exceed max_node_series_cells.
      */
-    node_series node_series_in_range(context ctx,
+    node_series node_series_in_range(const context& ctx,
                                      std::chrono::system_clock::time_point start,
                                      std::chrono::system_clock::time_point end,
                                      int bucket_seconds);

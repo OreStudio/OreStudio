@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit market_series_asset_class_service(context ctx);
+    explicit market_series_asset_class_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

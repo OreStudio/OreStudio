@@ -67,6 +67,7 @@ struct observation_lineage_entity {
     int derivation_config_version = 0;
     std::optional<db_timestamp> source_as_of;
     std::string source_series_ids;
+    std::string source_weights = "[]";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -92,6 +93,7 @@ struct observation_lineage_entity {
                query_builder::bind("derivation_config_version", &e::derivation_config_version) |
                query_builder::bind("source_as_of", &e::source_as_of) |
                query_builder::bind_text("source_series_ids", &e::source_series_ids) |
+               query_builder::bind_text("source_weights", &e::source_weights) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

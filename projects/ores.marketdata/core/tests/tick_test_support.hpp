@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_TESTS_TICK_TEST_SUPPORT_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
@@ -117,13 +117,13 @@ inline boost::uuids::uuid stream_of(const std::string& provider_code,
 /// Stores one tick on @p stream unless its key already holds one. The shared store keeps its rows
 /// between runs, so a test that names a fixed series and a fixed instant finds its own earlier
 /// tick. Use it only where every writer of the key states the same value.
-inline void ensure_tick(ores::database::context ctx,
+inline void ensure_tick(const ores::database::context& ctx,
                         const boost::uuids::uuid& stream_id,
                         int coord,
                         std::chrono::system_clock::time_point ts,
                         double value) {
     auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
-    ores::database::repository::execute_parameterized_multi_column_query(
+    ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "WITH stored AS (INSERT INTO ores_marketdata_ticks_tbl "
         "(stream_id, feed_id, ts, coord, value) "
@@ -140,13 +140,13 @@ inline void ensure_tick(ores::database::context ctx,
 
 /// Appends one tick to @p stream. A statement that returns no row is refused by the read
 /// helper, so the insert states one.
-inline void insert_tick(ores::database::context ctx,
+inline void insert_tick(const ores::database::context& ctx,
                         const boost::uuids::uuid& stream_id,
                         int coord,
                         std::chrono::system_clock::time_point ts,
                         double value) {
     auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
-    ores::database::repository::execute_parameterized_multi_column_query(
+    ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "INSERT INTO ores_marketdata_ticks_tbl (stream_id, feed_id, ts, coord, value) "
         "VALUES ($1::uuid, $2::uuid, $3::timestamptz, $4::smallint, $5::float8) "

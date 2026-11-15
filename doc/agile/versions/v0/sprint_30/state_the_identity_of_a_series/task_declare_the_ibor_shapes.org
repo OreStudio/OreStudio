@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: DE0C9E63-C399-44D9-A388-F64183ABDB37
+:END:
+#+title: Task: Declare the IBOR shapes and refuse a sparse fixing
+#+description: The nine IBOR fixings record ccy and correctly no unit currency; declare the IR shapes so a new one cannot arrive sparse, and collapse the duplicated index_fixing classification rule.
+#+type: task
+#+level: s1
+#+filetags: :state_the_identity_of_a_series:sprint_30:v0:
+#+owner: marco
+#+branch: feature/surface-every-pair-out-to-ten-years
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Handed to clever dijkstra, who owns the IBOR work. The nine IBOR fixings (ESTER, SOFR, SONIA, TONAR, SORA, CORRA, NOWA, AONIA, CDI) are already complete: identity_kind index, asset_class ir, series_subclass index_fixing, ccy filled, unit_ccy correctly empty. What is missing is the statement: declare that an IBOR fixing requires ccy and its index and forbids unit_ccy, that an ir_swap or discount series requires ccy, instrument_type and quote_type and forbids unit_ccy, and collapse the two identical index_fixing classification rules to one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The IR shapes are declared as data, beside the classification rules.
+- A new IBOR fixing arrives with ccy and its index and no unit_ccy, or is refused.
+- series_classification_rules holds one index_fixing rule, not two.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -25,6 +25,7 @@
 #include "ores.marketdata.official/export.hpp"
 #include <chrono>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -48,10 +49,16 @@ namespace ores::marketdata::official::domain {
  * A source's key is a series name, such as =SWESTR=. The API answers both a window with no
  * observation and an unknown series with a 404, so after a 404 the fetcher asks for the
  * series' latest observation to tell them apart.
+ *
+ * Without a key, the API allows few calls and can refuse a host for days. With a key, which a
+ * free registration gives, it allows many more. The fetcher sends a key as the
+ * =subscription-key= query parameter, which a logged address masks.
  */
 class ORES_MARKETDATA_OFFICIAL_EXPORT riksbank_fetcher final : public fetcher {
 public:
-    riksbank_fetcher(http::client::net::transport& transport, std::string base_url);
+    riksbank_fetcher(http::client::net::transport& transport,
+                     std::string base_url,
+                     std::optional<std::string> subscription_key = std::nullopt);
 
     [[nodiscard]] std::string_view adapter_code() const override {
         return "riksbank_swestr";
@@ -78,6 +85,7 @@ public:
 private:
     http::client::net::transport& transport_;
     std::string base_url_;
+    std::optional<std::string> subscription_key_;
 };
 
 }

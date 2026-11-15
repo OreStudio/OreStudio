@@ -3,21 +3,38 @@
   <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
     <TradeType>CallableSwap</TradeType>
     <CallableSwapData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <Style>Bermudan</Style>
+        <Settlement>Physical</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-06-02</ExerciseDate>
+          <ExerciseDate>2027-06-02</ExerciseDate>
+          <ExerciseDate>2028-06-02</ExerciseDate>
+          <ExerciseDate>2029-06-02</ExerciseDate>
+          <ExerciseDate>2030-06-02</ExerciseDate>
+          <ExerciseDate>2031-06-02</ExerciseDate>
+          <ExerciseDate>2032-06-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-12-02">5817155.05</Notional>
+          <Notional>5817155.05</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-12-02</StartDate>
             <EndDate>2032-12-02</EndDate>
             <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FixedLegData>
@@ -27,26 +44,31 @@
         </FixedLegData>
       </LegData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-12-02">5817155.05</Notional>
+          <Notional>5817155.05</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-12-02</StartDate>
             <EndDate>2032-12-02</EndDate>
             <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>EUR-EONIA</Index>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-12-02">0.0029</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
@@ -55,21 +77,39 @@
   <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>CallableSwap</TradeType>
     <CallableSwapData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <Style>Bermudan</Style>
+        <Settlement>Physical</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-03-02</ExerciseDate>
+          <ExerciseDate>2027-03-02</ExerciseDate>
+          <ExerciseDate>2028-03-02</ExerciseDate>
+          <ExerciseDate>2029-03-02</ExerciseDate>
+          <ExerciseDate>2030-03-02</ExerciseDate>
+          <ExerciseDate>2031-03-02</ExerciseDate>
+          <ExerciseDate>2032-03-02</ExerciseDate>
+          <ExerciseDate>2033-03-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
       <LegData>
         <Payer>true</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-09-02">9466062.35</Notional>
+          <Notional>9466062.35</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-09-02</StartDate>
             <EndDate>2033-09-02</EndDate>
             <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FixedLegData>
@@ -82,23 +122,28 @@
         <Payer>false</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-09-02">9466062.35</Notional>
+          <Notional>9466062.35</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-09-02</StartDate>
             <EndDate>2033-09-02</EndDate>
             <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>EUR-EONIA</Index>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-09-02">0.0007</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>

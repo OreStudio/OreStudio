@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &monetary_nature_key::code},
     };
 }
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &monetary_nature_write::code},
         utility::codec::field{"name", &monetary_nature_write::name},
         utility::codec::field{"description", &monetary_nature_write::description},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &monetary_nature_change::write},
         utility::codec::field{"precondition", &monetary_nature_change::precondition},
     };
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &monetary_nature_removal::key},
         utility::codec::field{"precondition", &monetary_nature_removal::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &monetary_nature_lookup::key},
         utility::codec::field{"monetary_nature", &monetary_nature_lookup::monetary_nature},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_natures_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &monetary_natures_filter::code_one_of},
     };
 }
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &monetary_nature_event::event_id},
         utility::codec::field{"key", &monetary_nature_event::key},
         utility::codec::field{"action", &monetary_nature_event::action},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"monetary_nature", &monetary_nature_version_key::monetary_nature},
         utility::codec::field{"version", &monetary_nature_version_key::version},
     };
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<monetary_nature_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &monetary_nature_versions_filter::version},
         utility::codec::field{"from_version", &monetary_nature_versions_filter::from_version},
         utility::codec::field{"to_version", &monetary_nature_versions_filter::to_version},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_monetary_natures_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_monetary_natures_request::offset},
         utility::codec::field{"limit", &list_monetary_natures_request::limit},
         utility::codec::field{"order", &list_monetary_natures_request::order},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_monetary_natures_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_monetary_natures_response::result},
         utility::codec::field{"types", &list_monetary_natures_response::types},
         utility::codec::field{"total", &list_monetary_natures_response::total},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_monetary_nature_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_monetary_nature_request::key},
     };
 }
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_monetary_nature_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_monetary_nature_response::result},
         utility::codec::field{"monetary_nature", &get_monetary_nature_response::monetary_nature},
     };
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_monetary_natures_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_monetary_natures_request::keys},
     };
 }
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_monetary_natures_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_monetary_natures_response::result},
         utility::codec::field{"entries", &get_many_monetary_natures_response::entries},
     };
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_monetary_nature_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_monetary_nature_request::change},
         utility::codec::field{"intent", &put_monetary_nature_request::intent},
     };
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_monetary_nature_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_monetary_nature_response::result},
         utility::codec::field{"monetary_nature", &put_monetary_nature_response::monetary_nature},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_monetary_natures_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_monetary_natures_request::changes},
         utility::codec::field{"intent", &put_many_monetary_natures_request::intent},
     };
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_monetary_natures_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_monetary_natures_response::result},
         utility::codec::field{"types", &put_many_monetary_natures_response::types},
     };
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_monetary_nature_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_monetary_nature_request::removal},
         utility::codec::field{"intent", &delete_monetary_nature_request::intent},
     };
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_monetary_nature_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_monetary_nature_response::result},
     };
 }
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_monetary_natures_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_monetary_natures_request::removals},
         utility::codec::field{"intent", &delete_many_monetary_natures_request::intent},
     };
@@ -701,7 +701,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.monetary_natures.
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_monetary_natures_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_monetary_natures_response::result},
     };
 }
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<delete_many_monetary_natures_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_monetary_nature_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_monetary_nature_versions_request::key},
         utility::codec::field{"offset", &list_monetary_nature_versions_request::offset},
         utility::codec::field{"limit", &list_monetary_nature_versions_request::limit},
@@ -735,7 +735,7 @@ wire_fields(std::type_identity<list_monetary_nature_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_monetary_nature_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_monetary_nature_versions_response::result},
         utility::codec::field{"versions", &list_monetary_nature_versions_response::versions},
         utility::codec::field{"total", &list_monetary_nature_versions_response::total},
@@ -751,7 +751,7 @@ wire_fields(std::type_identity<list_monetary_nature_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_monetary_nature_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_monetary_nature_version_request::key},
     };
 }
@@ -765,7 +765,7 @@ wire_fields(std::type_identity<list_monetary_nature_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_monetary_nature_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_monetary_nature_version_response::result},
         utility::codec::field{"version", &get_monetary_nature_version_response::version},
     };

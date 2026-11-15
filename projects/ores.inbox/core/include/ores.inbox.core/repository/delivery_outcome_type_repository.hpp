@@ -25,7 +25,7 @@
 #ifndef ORES_INBOX_CORE_REPOSITORY_DELIVERY_OUTCOME_TYPE_REPOSITORY_HPP
 #define ORES_INBOX_CORE_REPOSITORY_DELIVERY_OUTCOME_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/delivery_outcome_type.hpp"
 #include "ores.inbox.api/messaging/delivery_outcome_type_protocol.hpp"
 #include "ores.inbox.core/export.hpp"
@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::delivery_outcome_type& v);
-    void write(context ctx, const std::vector<domain::delivery_outcome_type>& v);
+    void write(const context& ctx, const domain::delivery_outcome_type& v);
+    void write(const context& ctx, const std::vector<domain::delivery_outcome_type>& v);
     /**@}*/
 
     /**
@@ -90,7 +90,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::delivery_outcome_type& v,
                const ores::utility::domain::precondition& claim);
 
@@ -98,7 +98,7 @@ public:
      * @brief Writes a set of delivery outcome types, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::delivery_outcome_type>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -106,9 +106,10 @@ public:
      * @brief Reads latest delivery outcome types, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::delivery_outcome_type> read_latest(context ctx);
-    std::vector<domain::delivery_outcome_type> read_latest(context ctx, const std::string& code);
-    std::vector<domain::delivery_outcome_type> read_latest(context ctx,
+    std::vector<domain::delivery_outcome_type> read_latest(const context& ctx);
+    std::vector<domain::delivery_outcome_type> read_latest(const context& ctx,
+                                                           const std::string& code);
+    std::vector<domain::delivery_outcome_type> read_latest(const context& ctx,
                                                            const std::vector<std::string>& codes);
     /**@}*/
 
@@ -119,7 +120,8 @@ public:
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
      */
-    std::vector<domain::delivery_outcome_type> read_all(context ctx, const std::string& code);
+    std::vector<domain::delivery_outcome_type> read_all(const context& ctx,
+                                                        const std::string& code);
 
 
     /**
@@ -139,7 +141,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::delivery_outcome_type> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -151,7 +153,7 @@ public:
      * @return Total number of active delivery outcome types
      */
     std::uint32_t get_total_delivery_outcome_type_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::delivery_outcome_types_filter>& filter = std::nullopt);
 
     /**
@@ -160,7 +162,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& code);
+    void remove(const context& ctx, const std::string& code);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -183,30 +185,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& code, std::optional<std::uint32_t> version);
+    remove(const context& ctx, const std::string& code, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes delivery outcome types permanently.
      */
-    void remove(context ctx, const std::vector<std::string>& codes);
-
-
-private:
-    /**
-     * @brief The claim a replace makes: the version the row carries now, or
-     * that no row exists yet.
-     */
-    ores::utility::domain::precondition replace_claim(context ctx,
-                                                      const domain::delivery_outcome_type& v);
-
-    /**
-     * @brief The object with the claim's version stamped onto it.
-     *
-     * A claim the store cannot check is refused here rather than ignored.
-     */
-    domain::delivery_outcome_type apply_claim(context ctx,
-                                              const domain::delivery_outcome_type& v,
-                                              const ores::utility::domain::precondition& claim);
+    void remove(const context& ctx, const std::vector<std::string>& codes);
 };
 
 }

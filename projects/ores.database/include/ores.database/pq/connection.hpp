@@ -20,11 +20,9 @@
 #define ORES_DATABASE_PQ_CONNECTION_HPP
 
 #include "ores.database/export.hpp"
-#include <chrono>
-#include <cstdint>
+#include "ores.database/pq/options.hpp"
 #include <libpq-fe.h>
 #include <memory>
-#include <span>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -32,68 +30,9 @@
 namespace ores::database::pq {
 
 /**
- * @brief Where and as whom a connection logs in.
+ * @brief One result of a statement, declared where it is passed and not read.
  */
-struct connection_options final {
-    std::string host;
-    std::uint16_t port = 5432;
-    std::string dbname;
-    std::string user;
-    std::string password;
-    std::string application_name;
-    std::chrono::seconds connect_timeout{10};
-
-    /**
-     * @brief The keyword/value connection string, each value quoted.
-     */
-    [[nodiscard]] ORES_DATABASE_EXPORT std::string conninfo() const;
-};
-
-/**
- * @brief One result of a statement, cleared when it goes out of scope.
- *
- * Values are read in the format the statement asked for: binary for a
- * generated repository's row, text for the SQL an entity model does not
- * generate.
- */
-class ORES_DATABASE_EXPORT result final {
-public:
-    result() = default;
-    explicit result(PGresult* r)
-        : handle_(r) {}
-
-    [[nodiscard]] PGresult* native() const noexcept {
-        return handle_.get();
-    }
-
-    [[nodiscard]] explicit operator bool() const noexcept {
-        return handle_ != nullptr;
-    }
-
-    [[nodiscard]] ExecStatusType status() const noexcept;
-    [[nodiscard]] int rows() const noexcept;
-    [[nodiscard]] int columns() const noexcept;
-    [[nodiscard]] bool is_null(int row, int column) const noexcept;
-    [[nodiscard]] std::span<const std::byte> value(int row, int column) const noexcept;
-
-    /**
-     * @brief A value of a statement that asked for text results.
-     */
-    [[nodiscard]] std::string_view text(int row, int column) const noexcept;
-
-    /**
-     * @brief The rows a write touched, from the command tag.
-     */
-    [[nodiscard]] std::uint64_t affected() const;
-
-private:
-    struct deleter {
-        void operator()(PGresult* r) const noexcept {
-            PQclear(r);
-        }
-    };
-    std::unique_ptr<PGresult, deleter> handle_;
-};
+class result;
 
 /**
  * @brief Closes a connection the layer opened.

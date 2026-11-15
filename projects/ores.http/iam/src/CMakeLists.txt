@@ -38,7 +38,20 @@ target_link_libraries(${lib_target_name}
         ores.http.api.lib
         ores.nats.lib
         ores.logging.lib
+        # The account screens answer an account's picture, an assets image.
+        ores.assets.api.lib
+        # The tenancy screens paint each status and type with a dq badge.
+        ores.dq.api.lib
+        # Party provisioning places the new party under the tenant's root party.
+        ores.refdata.api.lib
+        # The tenant roster joins each tenant with the run that set it up.
+        ores.workflow.api.lib
+        # The setup screens read the wizards' settings and record the first run's end.
+        ores.variability.api.lib
     PRIVATE
+        ores.http.nats.lib
+        # A tenant's parties, read inside it, are the refdata part's party page.
+        ores.http.refdata.lib
         ores.iam.api.lib
         ores.utility.lib)
 

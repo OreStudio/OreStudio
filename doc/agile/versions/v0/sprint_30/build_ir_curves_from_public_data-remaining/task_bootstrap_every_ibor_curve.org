@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-every-ibor-curve
-#+pr:
+#+pr: 4737
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4737][#4737]] | [marketdata,iam,web] Bootstrap every IBOR curve beside its overnight curve |
 
 * Review
 

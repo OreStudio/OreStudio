@@ -121,9 +121,11 @@ task and name that file in the Command column.
 | Generated event headers that now name the uuid's text operators | 541 | =codegen.sh regenerate --all --address ores.cpp.nats-eventing= | e5c1ef1851 |
 | Generated protocol headers that now name =<chrono>= | 4 | =codegen.sh regenerate --component <c> --address ores.cpp.protocol= for compute-cpp, trading-cpp, inbox-cpp, iam-cpp | 9d2b581d64 |
 | =text_form= symbols exported by the library | 16, hidden before | =readelf -sW= on the library's unity object | 51b7bcd97c |
-| Build of the tree | 952 steps, 0 failures, 46 m 5 s, most objects already built by the preceding rounds | =compass build --preset linux-clang-release-ninja= | 51b7bcd97c |
-| Suites the change reaches | 7 of 7 passed in 339 s: utility, refdata.api, refdata.core, trading.core, iam.core, compute.core, refdata.service | =compass test run --preset linux-clang-release-ninja -- -j 4 -R <the seven suites above>=, after =compass db recreate -y -k= | 51b7bcd97c |
-| The checks that guard this change | 11 of 11 passed | =compass check --only format --only lint --only org-links --only heading-numbers --only model-drift --only cmake-sources --only tangle-templates --only codegen-tests --only forward-declarable-includes --only exported-types --only boost-deps= | 51b7bcd97c |
+| Build of the tree, before the review | 952 steps, 0 failures, 46 m 5 s, most objects already built by the preceding rounds | =compass build --preset linux-clang-release-ninja= | 51b7bcd97c |
+| Build of the tree, at the reviewed head | 1017 steps, 0 failures, 2 h 6 m | same | 190bb5dfe5 |
+| Suites the change reaches, before / at the reviewed head | 7 of 7 in 339 s / 7 of 7 in 169 s: utility, refdata.api, refdata.core, trading.core, iam.core, compute.core, refdata.service | =compass test run --preset linux-clang-release-ninja -- -j 4 -R <the seven suites above>=, the first after =compass db recreate -y -k= | 51b7bcd97c / 190bb5dfe5 |
+| The checks that guard this change | 11 of 11 passed; the review pass re-ran the 7 that its fixes touch | =compass check --only format --only lint --only org-links --only heading-numbers --only model-drift --only cmake-sources --only tangle-templates --only codegen-tests --only forward-declarable-includes --only exported-types --only boost-deps= | 51b7bcd97c / 190bb5dfe5 |
+| The header change at the reviewed head | preprocessed output identical to the previous header, 133975 lines each | =clang++ -E= on a consumer translation unit, against the header and the copy at =HEAD= | 190bb5dfe5 |
 
 The timings are wall clock on a shared machine, and they move with the load: the
 same pair read 3.97 s / 1.63 s in an earlier session and 3.68 s / 1.75 s here,

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 742F9E67-CDCA-4FA6-BE8B-945C64C27A50
+:END:
+#+title: Task: Generate the container trades
+#+description: CompositeTrade, TotalReturnSwap and ContractForDifference hold trades of other types. The generator books none of them, because a container books its embedded trades as trades of their own, joined by a structure, and the plan, the writer and the recorded export do not yet carry such a group.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generator books CompositeTrade, TotalReturnSwap and
+ContractForDifference through their builders, each holding trades of types the
+generator already books, and ORE builds each.
+
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-16                               |
+
+* Acceptance
+
+- each of the three types has a builder for its own terms, and the generator
+  books one trade of each with its embedded trades, joined by a structure of the
+  type's template
+- the writer books the container and its embedded trades as one group, and the
+  recorded export writes each container with its embedded trades inside it
+- the ORE engine test reads and builds each, with no error of the trade kind
+- the three types leave the list awaiting builders, and the coverage test holds
+  them as generated
+
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

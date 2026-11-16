@@ -13,44 +13,55 @@
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The generator books CompositeTrade, ContractForDifference, TotalReturnSwap,
-EquityOutperformanceOption and SyntheticCDO through their builders, and a test
-holds the coverage as the catalogue's supported types, so a type added without a
-generator fails.
+The generator books SyntheticCDO through its builder, and a test holds the
+generated types equal to the types the builders build, so a type given a
+builder without a generator fails.
+
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
 
-- each of the five types has a builder, and the generator books one trade of
-  each; a container embeds trades of types the generator already books
-- the ORE engine test reads and builds each, with no error of the trade kind
+- SyntheticCDO has a builder, and the generator books it
+- the ORE engine test reads and builds it, with no error of the trade kind
 - every booked type is built by its builder, and a type with no builder fails
   loudly
-- a test asserts the generated types equal the catalogue's supported types, so
-  adding a type without a generator fails
+- a test asserts the generated types equal the built types; the builder test
+  already holds the built types against the catalogue's supported types, so a
+  type added without a generator fails
+
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task named five types. Three are containers: a CompositeTrade,
+TotalReturnSwap or ContractForDifference books its embedded trades as trades of
+their own, joined by a structure, and the plan, the writer and the recorded
+export carry no such group yet. That is a unit of its own, now the task
+[[id:742F9E67-CDCA-4FA6-BE8B-945C64C27A50][Generate the container trades]]. The equity outperformance
+option has no rows of its own: the option row packs its two underlyings into one
+name and keeps neither initial price, so it is modelled first, in the task
+[[id:B14C4720-D757-4CAA-AD4D-09079CBC4D84][Model and generate the equity outperformance option]].
+
+This task keeps SyntheticCDO and the coverage test. The CDO is cut from the
+index its qualifier names, as ORE's sample is, and states no basket: ORE reads
+the names from the index's reference data.
+
 
 * Measurements
 
@@ -92,3 +103,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator books SyntheticCDO, and generation is held to the builders.
+
+- synthetic_cdo_builder states a tranche on the index the qualifier names: the
+  attachment and detachment points, refused unless ordered within zero and one,
+  and the premium leg on the CDS convention. The header names the index as an
+  internal name, as the reader does. The credit planner books the four standard
+  tranches.
+- The ORE engine reads and builds the CDO. It raises only the missing index
+  reference data, which is market data like the index CDS's, so the test's
+  patterns now name ORE's message for it.
+- "the generator books every type a builder builds" holds the generated types
+  equal to the built types. The trading api test already holds the built types
+  against the catalogue's supported ones, so a type given a builder and no
+  generator fails, and a planned type with no builder throws when planned.
+- The engine test rewrites its known list from the run when the recorded trades
+  are updated. It keeps the header and never writes a trade's own error.
+- The containers and the outperformance option moved to tasks of their own, as
+  the Plan says.
+
+Verified: trading api 4645 cases and synthetic 146 with the ORE engine, all
+passing.

@@ -4,7 +4,7 @@
 :ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.fixing_read_operations
-#+description: Codegen operation model for reading the durable fixings: the latest on or before a date, and a window of days.
+#+description: Codegen operation model for reading the durable fixings: the latest on or before a date, a window of days, and a pair composed from them.
 #+type: ores.codegen.operation
 #+component: marketdata
 #+subcomponent: api
@@ -13,7 +13,7 @@
 #+brief: Reading the durable fixings.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-10-28
-#+updated: 2026-10-28
+#+updated: 2026-11-16
 
 A consumer, the calibration of the synthetic feeds first, asks for a fixing by its
 item and a date, and gets the value with where and when it came from. The item is
@@ -384,6 +384,141 @@ two items. The values stay decimal text, as they are stored.
 #+begin_src cpp :name comment
 /**
  * @brief When the service stored each fixing.
+ */
+#+end_src
+
+** get_pair_levels_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_pair_levels
+:response: get_pair_levels_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for a pair's daily levels over a window of days, composed from the
+ * fixings a party holds.
+ *
+ * The caller names the pair, not the fixings: the service chooses the source that
+ * quotes both currencies, reads its fixings and composes the pair through that
+ * source's own base, so a rate never mixes two publishers.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whose fixings to compose the pair from.
+ */
+#+end_src
+
+*** base_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The currency the level prices: one unit of it is the level in the quote.
+ */
+#+end_src
+
+*** quote_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The currency the level is stated in.
+ */
+#+end_src
+
+*** to
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The last date of the window, included.
+ */
+#+end_src
+
+*** days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many calendar days the window spans, ending on the last date.
+ */
+#+end_src
+
+** get_pair_levels_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the call ended: a pair no source of the party can express is refused
+ * here, by name, as is a window the fixings read refuses.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider whose fixings the pair was composed from.
+ */
+#+end_src
+
+*** pivot_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The base that provider quotes every currency against, which the pair
+ * composes through.
+ */
+#+end_src
+
+*** dates
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::year_month_day>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Each day the pair could be read on, oldest first: a day the provider did
+ * not fix both currencies is left out.
+ */
+#+end_src
+
+*** levels
+:PROPERTIES:
+:cpp_type: std::vector<double>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The pair's level on each of those days.
  */
 #+end_src
 

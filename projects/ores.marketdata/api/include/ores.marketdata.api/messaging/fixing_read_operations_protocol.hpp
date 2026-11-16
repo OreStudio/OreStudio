@@ -218,6 +218,78 @@ struct get_fixing_window_response {
 };
 
 /**
+ * @brief Asks for a pair's daily levels over a window of days, composed from the
+ * fixings a party holds.
+ *
+ * The caller names the pair, not the fixings: the service chooses the source that
+ * quotes both currencies, reads its fixings and composes the pair through that
+ * source's own base, so a rate never mixes two publishers.
+ */
+struct get_pair_levels_request {
+    using response_type = struct get_pair_levels_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_pair_levels";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief Whose fixings to compose the pair from.
+     */
+    std::string party_id;
+    /**
+     * @brief The currency the level prices: one unit of it is the level in the quote.
+     */
+    std::string base_currency_code;
+    /**
+     * @brief The currency the level is stated in.
+     */
+    std::string quote_currency_code;
+    /**
+     * @brief The last date of the window, included.
+     */
+    std::chrono::year_month_day to;
+    /**
+     * @brief How many calendar days the window spans, ending on the last date.
+     */
+    int days = 0;
+
+    friend bool operator==(const get_pair_levels_request&,
+                           const get_pair_levels_request&) = default;
+};
+
+struct get_pair_levels_response {
+    /**
+     * @brief How the call ended: a pair no source of the party can express is refused
+     * here, by name, as is a window the fixings read refuses.
+     */
+    ores::utility::domain::result result;
+    /**
+     * @brief The provider whose fixings the pair was composed from.
+     */
+    std::string provider_code;
+    /**
+     * @brief The base that provider quotes every currency against, which the pair
+     * composes through.
+     */
+    std::string pivot_currency_code;
+    /**
+     * @brief Each day the pair could be read on, oldest first: a day the provider did
+     * not fix both currencies is left out.
+     */
+    std::vector<std::chrono::year_month_day> dates;
+    /**
+     * @brief The pair's level on each of those days.
+     */
+    std::vector<double> levels;
+
+    friend bool operator==(const get_pair_levels_response&,
+                           const get_pair_levels_response&) = default;
+};
+
+/**
  * @brief The members of get_fixing_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -296,6 +368,45 @@ struct get_fixing_window_response {
     };
 }
 
+/**
+ * @brief The members of get_pair_levels_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_pair_levels_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"party_id", &get_pair_levels_request::party_id},
+        ::ores::utility::codec::field{"base_currency_code",
+                                      &get_pair_levels_request::base_currency_code},
+        ::ores::utility::codec::field{"quote_currency_code",
+                                      &get_pair_levels_request::quote_currency_code},
+        ::ores::utility::codec::field{"to", &get_pair_levels_request::to},
+        ::ores::utility::codec::field{"days", &get_pair_levels_request::days},
+    };
+}
+
+/**
+ * @brief The members of get_pair_levels_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_pair_levels_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &get_pair_levels_response::result},
+        ::ores::utility::codec::field{"provider_code", &get_pair_levels_response::provider_code},
+        ::ores::utility::codec::field{"pivot_currency_code",
+                                      &get_pair_levels_response::pivot_currency_code},
+        ::ores::utility::codec::field{"dates", &get_pair_levels_response::dates},
+        ::ores::utility::codec::field{"levels", &get_pair_levels_response::levels},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -341,6 +452,29 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_fixing_window_response& v);
     static ores::marketdata::messaging::get_fixing_window_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_pair_levels_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_pair_levels_request& v);
+    static ores::marketdata::messaging::get_pair_levels_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_pair_levels_request& v);
+    static ores::marketdata::messaging::get_pair_levels_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_pair_levels_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_pair_levels_response& v);
+    static ores::marketdata::messaging::get_pair_levels_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_pair_levels_response& v);
+    static ores::marketdata::messaging::get_pair_levels_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

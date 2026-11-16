@@ -40,6 +40,8 @@ namespace ores::marketdata::service::app {
  */
 struct party_fixing_sources {
     std::vector<ores::analytics::quant::service::fixing_source> sources;
+    /// The oresmd URI of each fixing series, by (provider, the currency it prices).
+    std::map<std::pair<std::string, std::string>, std::string> items;
     /**
      * @brief Why this party cannot be served, or empty when it can.
      *

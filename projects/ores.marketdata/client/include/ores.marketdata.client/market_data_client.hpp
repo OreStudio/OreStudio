@@ -128,6 +128,15 @@ public:
     get_fixing_window(const messaging::get_fixing_window_request& request);
 
     /**
+     * @brief A pair's daily levels over a window of days, composed from a party's fixings.
+     *
+     * Sends marketdata.v1.ops.get_pair_levels. A refusal of the service, such as a pair no
+     * source of the party can express, is an error.
+     */
+    [[nodiscard]] std::expected<messaging::get_pair_levels_response, std::string>
+    get_pair_levels(const messaging::get_pair_levels_request& request);
+
+    /**
      * @brief The observations of a series over a window of days, every point each day.
      *
      * Sends marketdata.v1.ops.get_observation_window. A refusal of the service is an

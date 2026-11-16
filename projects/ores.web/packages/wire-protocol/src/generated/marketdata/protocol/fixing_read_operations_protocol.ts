@@ -173,9 +173,67 @@ export interface GetFixingWindowResponse {
     received_at: string[];
 }
 
+/**
+ * @brief Asks for a pair's daily levels over a window of days, composed from the
+ * fixings a party holds.
+ *
+ * The caller names the pair, not the fixings: the service chooses the source that
+ * quotes both currencies, reads its fixings and composes the pair through that
+ * source's own base, so a rate never mixes two publishers.
+ */
+export interface GetPairLevelsRequest {
+    /**
+     * @brief Whose fixings to compose the pair from.
+     */
+    party_id: string;
+    /**
+     * @brief The currency the level prices: one unit of it is the level in the quote.
+     */
+    base_currency_code: string;
+    /**
+     * @brief The currency the level is stated in.
+     */
+    quote_currency_code: string;
+    /**
+     * @brief The last date of the window, included.
+     */
+    to: string;
+    /**
+     * @brief How many calendar days the window spans, ending on the last date.
+     */
+    days: number;
+}
+
+export interface GetPairLevelsResponse {
+    /**
+     * @brief How the call ended: a pair no source of the party can express is refused
+     * here, by name, as is a window the fixings read refuses.
+     */
+    result: Result;
+    /**
+     * @brief The provider whose fixings the pair was composed from.
+     */
+    provider_code: string;
+    /**
+     * @brief The base that provider quotes every currency against, which the pair
+     * composes through.
+     */
+    pivot_currency_code: string;
+    /**
+     * @brief Each day the pair could be read on, oldest first: a day the provider did
+     * not fix both currencies is left out.
+     */
+    dates: string[];
+    /**
+     * @brief The pair's level on each of those days.
+     */
+    levels: number[];
+}
+
 export const subjects = {
     get_fixing_request: 'marketdata.v1.ops.get_fixing',
     get_fixing_window_request: 'marketdata.v1.ops.get_fixing_window',
+    get_pair_levels_request: 'marketdata.v1.ops.get_pair_levels',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -185,4 +243,5 @@ export const subjects = {
 export const requiresSession = {
     get_fixing_request: true,
     get_fixing_window_request: true,
+    get_pair_levels_request: true,
 } as const;

@@ -63,6 +63,7 @@
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/pair_levels_handler.hpp"
 #include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/provisioning_step_registrar.hpp"
 #include "ores.marketdata.service/messaging/publish_due_curves_handler.hpp"
@@ -332,6 +333,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       mm::crm_handler h(n, c, v, crm_bridge);
                                       h.rates(std::move(msg));
                                   }));
+            subs.push_back(n.queue_subscribe(std::string(mm::get_pair_levels_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::pair_levels_handler h(n, c, v);
+                                                 h.get_pair_levels(std::move(msg));
+                                             }));
             subs.push_back(n.queue_subscribe(std::string(mm::compute_bill_request::nats_subject),
                                              queue,
                                              [&n, c, v](ores::nats::message msg) mutable {

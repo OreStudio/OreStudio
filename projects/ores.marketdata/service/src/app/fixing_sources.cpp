@@ -78,6 +78,7 @@ read_fixing_sources(const ores::database::context& ctx) {
         std::string base;
         std::set<std::string> currencies;
         std::string second_base;
+        std::map<std::string, std::string> items;
     };
     struct party_groups {
         std::string refusal;
@@ -114,6 +115,7 @@ read_fixing_sources(const ores::database::context& ctx) {
         else if (source.base != identity.unit_ccy && source.second_base.empty())
             source.second_base = identity.unit_ccy;
         source.currencies.insert(identity.ccy);
+        source.items.emplace(identity.ccy, market.oresmd_uri);
     }
 
     std::map<keys, party_fixing_sources> out;
@@ -129,8 +131,11 @@ read_fixing_sources(const ores::database::context& ctx) {
                     grouped_source.base,
                     grouped_source.second_base);
                 written.sources.clear();
+                written.items.clear();
                 break;
             }
+            for (const auto& [ccy, item] : grouped_source.items)
+                written.items.emplace(std::pair{provider_code, ccy}, item);
             written.sources.push_back({.provider_code = provider_code,
                                        .base_code = grouped_source.base,
                                        .precedence = precedence_of(ranks, provider_code),

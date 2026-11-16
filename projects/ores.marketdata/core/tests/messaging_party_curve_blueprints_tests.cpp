@@ -267,19 +267,16 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
-    // The system's output series is a bootstrap of its own config, as every curve's is,
-    // so the party's copy has a derivation to keep.
-    auto projection_output_series =
+    // The seed writes a curve's output series as observed, and only its first republish
+    // stamps it a bootstrap, so a party can be provisioned before the system's label is
+    // right.
+    system.series.push_back(
         market_series_row(projection_output,
                           system_party,
                           "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
                           "&curve_id=AAA-EURIBOR-6M",
                           "ore",
-                          "yield");
-    projection_output_series.derivation_kind = "IR_CURVE_BOOTSTRAP";
-    projection_output_series.derivation_config_id = projection_config;
-    projection_output_series.derivation_config_version = 1;
-    system.series.push_back(projection_output_series);
+                          "yield"));
     system.series.push_back(
         market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
 
@@ -303,9 +300,8 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     CHECK(plan.configs_to_write[1].name == "AAA-EURIBOR-6M");
     CHECK(plan.configs_to_write[1].discount_curve_config_id == plan.configs_to_write[0].id);
 
-    // The party's output series is its own computation of the same curve, so it keeps
-    // the system's derivation kind rather than claiming to be observed, and it names
-    // the party's own copy of the config that computes it.
+    // The party's output series is its own bootstrap of the same curve, whatever the
+    // system's row says yet, and it names the party's own copy of the config.
     const auto output = std::ranges::find_if(plan.series_to_write, [&](const auto& s) {
         return s.id == party_copy_id(acme_us, "market_series", projection_output);
     });

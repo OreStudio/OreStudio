@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/derive-from-the-pairs-levels
-#+pr:
+#+pr: 4790
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-16
@@ -132,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4790][#4790]] | [marketdata,iam,workflow,shell,web] Derive volatility quotes from the pair's levels; let a setup finish with warnings |
 
 * Review
 

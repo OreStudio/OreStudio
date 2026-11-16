@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-16
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Every family the market data ingest writes states the fields its identity requir
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | The shapes are seeded and the identity writer enforces them; the SQL test passes on a rebuilt database. |
-| Waiting on   | A rebuild, so the projector, the party-curve label and the tenant copy are compiled and the market data suites can run. |
-| Next         | Run the market data core and service suites, then try the screens. |
-| Last touched | 2026-11-15                               |
+| Now          | Rebased on main and rebuilt. The market data core and service suites, the iam core suite and the SQL shape suite pass, and Acme provisions end to end. |
+| Waiting on   | Nothing. |
+| Next         | Try the screens, then push and raise the PR. |
+| Last touched | 2026-11-16                               |
 
 * Acceptance
 
@@ -88,6 +88,11 @@ task and name that file in the Command column.
 | Identity guard unit tests | 9 assertions in 5 test cases, pass | `./publish/bin/ores.marketdata.core.tests "[series_identity][shape]"` | 5f052db062 |
 | Shape test suite | 8 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | 964e4593b8 |
 | Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | 964e4593b8 |
+| Stated shapes, Acme after provisioning | 29 rows over 7 families, the same as the system tenant | per-tenant count over =ores_marketdata_series_identity_shapes_tbl= | 74bdcba5f4 |
+| Identities that contradict a stated shape, Acme provisioned | 0 of 4,712 field checks over 1,178 identities | the =shape_scan= query of =marketdata_series_identity_shape_test.sql= | 74bdcba5f4 |
+| Market data core suite | 431 test cases, 27,655 assertions, pass | `compass build test_ores.marketdata.core.tests` | 80141bca5a |
+| Market data service suite | 309 test cases, 3,776 assertions, pass | `compass build test_ores.marketdata.service.tests` | 80141bca5a |
+| IAM core suite | 306 test cases, 1,425 assertions, pass | `compass build test_ores.iam.core.tests` | 74bdcba5f4 |
 
 * Notes
 
@@ -109,6 +114,13 @@ refuses an index identity whose series subclass is not =index_fixing= before it 
 a family up, and the fixtures that did this state the subclass their URI implies: one
 that writes an FX fixing, one that writes an IBOR fixing, and an FX montage fixture
 that called an FX spot series =yield=.
+
+A provisioned party's curve could not be labelled by copying the system's row. The
+seed writes every curve output =OBSERVED=, and the curve republish stamps it
+=IR_CURVE_BOOTSTRAP= only on its first run, so on 2026-11-16 four LIBOR projection
+curves were still observed when Acme was provisioned. The planner now states the
+label the republish would stamp: a bootstrap of the party's own config copy, at
+version 1. The series table refuses version 0 for a derived series.
 
 * Test Scenarios
 

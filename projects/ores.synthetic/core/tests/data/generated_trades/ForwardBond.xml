@@ -97,7 +97,7 @@
         <LockRate>0.0346</LockRate>
         <SettlementDirty>false</SettlementDirty>
       </SettlementData>
-      <LongInForward>true</LongInForward>
+      <LongInForward>false</LongInForward>
     </ForwardBondData>
   </Trade>
 </Portfolio>

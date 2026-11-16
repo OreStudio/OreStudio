@@ -335,6 +335,7 @@ TEST_CASE("an_equity_swap_pays_the_equity_against_a_floating_leg", equity_tags) 
     const auto built = equity_swap_builder(lookup,
                                            {.underlying = spx(),
                                             .quantity = 200.0,
+                                            .position = option_position::long_option,
                                             .funding = {.notional = equity_amount("1000000"),
                                                         .currency = std::string("USD"),
                                                         .start = 2026y / 1 / 5,
@@ -349,6 +350,11 @@ TEST_CASE("an_equity_swap_pays_the_equity_against_a_floating_leg", equity_tags) 
     CHECK(built->legs[1].leg_type_code == "Equity");
     CHECK(built->legs[1].equity_name == spx().uri());
     CHECK(built->schedules.size() == 2);
+    // A long swap receives the equity's return and pays the funding.
+    CHECK(built->legs[0].payer == true);
+    CHECK(built->legs[1].payer == false);
+    CHECK(std::get<ores::trading::domain::equity_swap_instrument>(built->instrument).long_short ==
+          "Long");
 }
 
 TEST_CASE("the_registry_names_every_equity_builder", equity_tags) {

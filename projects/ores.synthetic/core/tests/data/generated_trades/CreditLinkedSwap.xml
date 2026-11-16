@@ -8,7 +8,7 @@
       <DefaultPaymentTime>atDefault</DefaultPaymentTime>
       <IndependentPayments>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Cashflow</LegType>
           <Currency>EUR</Currency>
           <CashflowData>
@@ -20,7 +20,7 @@
       </IndependentPayments>
       <ContingentPayments>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>Following</PaymentConvention>
@@ -45,7 +45,7 @@
           </FixedLegData>
         </LegData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Cashflow</LegType>
           <Currency>EUR</Currency>
           <CashflowData>
@@ -65,7 +65,7 @@
       <DefaultPaymentTime>atDefault</DefaultPaymentTime>
       <IndependentPayments>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Cashflow</LegType>
           <Currency>EUR</Currency>
           <CashflowData>
@@ -77,7 +77,7 @@
       </IndependentPayments>
       <ContingentPayments>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>Following</PaymentConvention>
@@ -102,7 +102,7 @@
           </FixedLegData>
         </LegData>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Cashflow</LegType>
           <Currency>EUR</Currency>
           <CashflowData>

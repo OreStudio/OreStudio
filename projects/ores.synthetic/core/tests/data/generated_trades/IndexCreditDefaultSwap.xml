@@ -7,7 +7,7 @@
       <SettlesAccrual>Y</SettlesAccrual>
       <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>Following</PaymentConvention>
@@ -40,7 +40,7 @@
       <SettlesAccrual>Y</SettlesAccrual>
       <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>Following</PaymentConvention>

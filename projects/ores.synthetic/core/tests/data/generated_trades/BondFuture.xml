@@ -5,7 +5,7 @@
     <BondFutureData>
       <ContractName>ZB</ContractName>
       <ContractNotional>1e+05</ContractNotional>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <ApplyConversionFactor>true</ApplyConversionFactor>
       <UseFuturePrice>true</UseFuturePrice>
     </BondFutureData>

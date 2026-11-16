@@ -20,6 +20,8 @@
 #include "ore_example_conventions.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -29,9 +31,11 @@
 #include <chrono>
 #include <format>
 #include <map>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -1551,4 +1555,145 @@ TEST_CASE("an_equity_swap_builds_its_funding_leg_when_two_conventions_name_the_i
 
     REQUIRE_FALSE(plan.slots.empty());
     CHECK(plan.slots.front().instruments.equity_swap_instruments.size() == 1u);
+}
+
+namespace {
+
+/// A closed either-or a row states, as the column the rows name it by.
+const std::set<std::string>& either_or_columns() {
+    static const std::set<std::string> columns{"long_short",
+                                               "option_type",
+                                               "payer",
+                                               "fixed_payer",
+                                               "fixed_side",
+                                               "protection_side",
+                                               "long_in_forward",
+                                               "cap_floor_kind",
+                                               "buy_sell"};
+    return columns;
+}
+
+/**
+ * @brief The either-ors a product fixes by its structure rather than draws.
+ *
+ * A bond's legs are the security's coupons, which the holder always receives;
+ * a cap, a floor or an option strip states its direction on the option, not on
+ * its leg; and the average forward's long_short is a label ORE does not read,
+ * whose direction is fixed_payer. The list is closed in both directions.
+ */
+const std::set<std::string>& structural_either_ors() {
+    static const std::set<std::string> columns{
+        "Ascot bond_legs.payer",
+        "BondRepo bond_legs.payer",
+        "BondTRS bond_legs.payer",
+        "CapFloor swap_legs.payer",
+        "CommodityOptionStrip swap_legs.payer",
+        "FxAverageForward fx_asian_forward_instruments.long_short"};
+    return columns;
+}
+
+template <typename T>
+std::optional<std::string> spelled(const T& value) {
+    if constexpr (std::is_same_v<T, std::string>)
+        return value.empty() ? std::nullopt : std::optional<std::string>(value);
+    else if constexpr (std::is_same_v<T, bool>)
+        return std::string(value ? "true" : "false");
+    else if constexpr (requires {
+                           value.has_value();
+                           *value;
+                       })
+        return value ? spelled(*value) : std::nullopt;
+    else
+        return std::nullopt;
+}
+
+/// Records the either-or columns one row states, under its type and array.
+template <typename Row>
+void collect_either_ors(const Row& row,
+                        const std::string& prefix,
+                        std::map<std::string, std::set<std::string>>& seen) {
+    if constexpr (requires { wire_fields(std::type_identity<Row>{}); }) {
+        const auto one = [&](const auto& field) {
+            const std::string name(field.name);
+            if (!either_or_columns().contains(name))
+                return;
+            if (const auto v = spelled(row.*(field.member)))
+                seen[prefix + name].insert(*v);
+        };
+        ores::utility::codec::apply_fields([&](const auto&... fields) { (one(fields), ...); },
+                                           wire_fields(std::type_identity<Row>{}));
+    }
+}
+
+/**
+ * @brief The values each (trade type, either-or column) takes over a plan.
+ */
+std::map<std::string, std::set<std::string>>
+either_or_values(const domain::trade_population_plan& plan) {
+    std::map<std::string, std::set<std::string>> seen;
+    for (const auto& slot : plan.slots) {
+        const auto one = [&](const auto& array) {
+            const auto prefix = slot.trade_type_code + " " + std::string(array.name) + ".";
+            for (const auto& row : slot.instruments.*(array.member))
+                collect_either_ors(row, prefix, seen);
+        };
+        ores::utility::codec::apply_fields(
+            [&](const auto&... arrays) { (one(arrays), ...); },
+            wire_fields(std::type_identity<ores::trading::domain::instrument_batch>{}));
+    }
+    return seen;
+}
+
+std::vector<domain::trade_generation_scope> every_class_scope() {
+    std::vector<domain::trade_generation_scope> scopes{bond_scope(),
+                                                       rate_scope(),
+                                                       scripted_scope(),
+                                                       inflation_scope(),
+                                                       fx_scope(),
+                                                       commodity_scope(),
+                                                       equity_scope(),
+                                                       credit_scope()};
+    for (auto& scope : scopes)
+        scope.trades_per_book = 64;
+    return scopes;
+}
+
+}
+
+TEST_CASE("every_trade_type_reaches_every_book", "[trade_population]") {
+    std::set<std::string> missing;
+    for (const auto& scope : every_class_scope()) {
+        const auto plan = plan_of(scope);
+        std::map<std::string, std::set<std::string>> books;
+        for (const auto& slot : plan.slots)
+            books[slot.trade_type_code].insert(boost::uuids::to_string(slot.book_id));
+        for (const auto& [type, reached] : books)
+            if (reached.size() != scope.book_ids.size())
+                missing.insert(type);
+    }
+    std::string listed;
+    for (const auto& type : missing)
+        listed += "\n  " + type;
+    if (!missing.empty())
+        FAIL_CHECK("these trade types do not reach every book:" + listed);
+}
+
+TEST_CASE("every_closed_either_or_is_drawn_both_ways", "[trade_population]") {
+    std::set<std::string> one_way;
+    std::set<std::string> structural_seen;
+    for (const auto& scope : every_class_scope())
+        for (const auto& [column, values] : either_or_values(plan_of(scope))) {
+            if (structural_either_ors().contains(column)) {
+                structural_seen.insert(column);
+                continue;
+            }
+            if (values.size() < 2)
+                one_way.insert(column + " = " + *values.begin());
+        }
+    std::string listed;
+    for (const auto& column : one_way)
+        listed += "\n  " + column;
+    if (!one_way.empty())
+        FAIL_CHECK("these either-ors are drawn one way only:" + listed);
+    CHECK(structural_seen == structural_either_ors());
 }

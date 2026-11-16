@@ -312,6 +312,15 @@ struct commodity_terms final {
  */
 struct trade_population_slot final {
     std::uint32_t slot = 0;
+    /**
+     * @brief How many times the class's trade types have cycled before this slot.
+     *
+     * The slot's position picks its type, so anything else picked from the
+     * position alone repeats with the type: with two books and an even number
+     * of types, a type would only ever reach one book and only ever be long.
+     * The book is shifted by the turn and every either-or is picked from it.
+     */
+    std::uint32_t turn = 0;
     boost::uuids::uuid trade_id;
     boost::uuids::uuid book_id;
     boost::uuids::uuid counterparty_id;

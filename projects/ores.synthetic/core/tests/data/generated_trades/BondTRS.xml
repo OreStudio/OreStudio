@@ -125,7 +125,7 @@
         <SubType>Fixed</SubType>
       </BondData>
       <TotalReturnData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <InitialPrice>100</InitialPrice>
         <PriceType>Clean</PriceType>
         <ScheduleData>
@@ -141,7 +141,7 @@
       </TotalReturnData>
       <FundingData>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>F</PaymentConvention>

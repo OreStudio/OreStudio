@@ -3,9 +3,9 @@
   <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
     <TradeType>FlexiSwap</TradeType>
     <FlexiSwapData>
-      <OptionLongShort>Short</OptionLongShort>
+      <OptionLongShort>Long</OptionLongShort>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>MF</PaymentConvention>
@@ -31,7 +31,7 @@
         </FixedLegData>
       </LegData>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>MF</PaymentConvention>
@@ -64,9 +64,9 @@
   <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
     <TradeType>FlexiSwap</TradeType>
     <FlexiSwapData>
-      <OptionLongShort>Long</OptionLongShort>
+      <OptionLongShort>Short</OptionLongShort>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>MF</PaymentConvention>
@@ -92,7 +92,7 @@
         </FixedLegData>
       </LegData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>MF</PaymentConvention>

@@ -356,15 +356,16 @@ bond_result bond_trs_builder::build() const {
     trs.return_type = "Price";
     trs.funding_leg_type = "Fixed";
     trs.funding_rate = terms_.funding_rate.get();
-    // The book receives the bond's return and pays the funding leg.
-    trs.payer = "false";
+    // The side that pays the bond's return receives the funding leg.
+    const bool pays_return = terms_.side.get() == return_side::pay;
+    trs.payer = pays_return ? "true" : "false";
     trs.price_type = "Clean";
     trs.initial_price = decimal::from_double(par_price).value();
     product.trs.push_back(std::move(trs));
     add_trade_leg(product,
                   "trs_funding",
                   "Fixed",
-                  true,
+                  !pays_return,
                   terms_.holding,
                   "3M",
                   terms_.start.get(),
@@ -464,7 +465,7 @@ bond_result ascot_builder::build() const {
 
     // The holder may recall the bond on any day from the start to the end.
     domain::instrument_option block{};
-    block.long_short = "Long";
+    block.long_short = long_short_of(terms_.position.get());
     block.option_type = option_type_of(terms_.kind.get());
     block.style = "American";
     block.settlement = "Cash";

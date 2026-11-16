@@ -129,6 +129,7 @@ TEST_CASE("a_bond_repo_states_its_cash_leg_at_the_repo_rate", bond_tags) {
 
 TEST_CASE("a_bond_trs_states_its_funding_leg_in_the_bond_currency", bond_tags) {
     const auto trs = bond_trs_builder({.holding = holding(),
+                                       .side = return_side::receive,
                                        .funding_rate = bond_amount("0.02"),
                                        .start = 2026y / 1 / 2,
                                        .end = 2027y / 1 / 2})
@@ -140,6 +141,23 @@ TEST_CASE("a_bond_trs_states_its_funding_leg_in_the_bond_currency", bond_tags) {
     REQUIRE(trs->schedules.size() == 2);
     CHECK(trs->schedules[1].owner_role == "trs");
     CHECK(trs->schedules[1].tenor == "3M");
+    REQUIRE(trs->trs.size() == 1);
+    CHECK(trs->trs[0].payer == "false");
+    CHECK(trs->legs[0].payer == true);
+}
+
+TEST_CASE("a_bond_trs_that_pays_the_return_receives_the_funding", bond_tags) {
+    const auto trs = bond_trs_builder({.holding = holding(),
+                                       .side = return_side::pay,
+                                       .funding_rate = bond_amount("0.02"),
+                                       .start = 2026y / 1 / 2,
+                                       .end = 2027y / 1 / 2})
+                         .build();
+    REQUIRE(trs.has_value());
+    REQUIRE(trs->trs.size() == 1);
+    CHECK(trs->trs[0].payer == "true");
+    REQUIRE(trs->legs.size() == 1);
+    CHECK(trs->legs[0].payer == false);
 }
 
 TEST_CASE("an_ascot_recalls_against_a_floating_swap_leg", bond_tags) {
@@ -148,6 +166,7 @@ TEST_CASE("an_ascot_recalls_against_a_floating_swap_leg", bond_tags) {
                                                       .share = std::string(".STOXX50E"),
                                                       .conversion_ratio = 10.0},
                                       .kind = option_kind::call,
+                                      .position = option_position::short_option,
                                       .funding_index = euribor,
                                       .recall_spread = bond_amount("0.02"),
                                       .start = 2026y / 1 / 2,
@@ -155,6 +174,8 @@ TEST_CASE("an_ascot_recalls_against_a_floating_swap_leg", bond_tags) {
                            .build();
     REQUIRE(ascot.has_value());
     CHECK(ascot->row.instrument.identity.trade_type_code == "Ascot");
+    REQUIRE(ascot->option_block.size() == 1);
+    CHECK(ascot->option_block[0].long_short == "Short");
     REQUIRE(ascot->legs.size() == 1);
     CHECK(ascot->legs[0].leg_type == "Floating");
     REQUIRE(ascot->leg_rates.size() == 1);

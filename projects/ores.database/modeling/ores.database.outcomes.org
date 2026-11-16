@@ -476,6 +476,24 @@ the matches, so the caller knows what to state.
 The identity names {value} series of the {entity} ({reason}); state the party or the provider so that it names one.
 #+end_src
 
+** part_cardinality
+:PROPERTIES:
+:code: part_cardinality
+:outcome: invalid
+:producer: request
+:args: entity, field, expected
+:END:
+
+A family write states a part fewer or more times than the family's model allows:
+a part every element fills is missing, a part it fills at most once is stated
+twice, or none or several of a group of alternatives are stated. The write is
+refused before any row lands, and the message names the part, so the failure
+surfaces at the write rather than at a later export.
+
+#+begin_src text :name message
+The {entity} must state its {field} part {expected}.
+#+end_src
+
 ** internal_error
 :PROPERTIES:
 :code: internal_error

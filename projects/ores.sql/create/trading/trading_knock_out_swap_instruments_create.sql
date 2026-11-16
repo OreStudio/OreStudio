@@ -101,6 +101,17 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate barrier_type (soft FK to ores_trading_barrier_types_tbl)
+    if not exists (
+        select 1 from ores_trading_barrier_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.barrier_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid barrier_type: %. No active barrier type found with this code.', NEW.barrier_type
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

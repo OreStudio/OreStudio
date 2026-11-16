@@ -124,6 +124,7 @@ public:
     std::optional<domain::bond_issue>
     read_at_version(const context& ctx, const std::string& issue_id, std::uint32_t version);
 
+
     /**
      * @brief Whether a list of bond issues can be ordered by a field.
      *

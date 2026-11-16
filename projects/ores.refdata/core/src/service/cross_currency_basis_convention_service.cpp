@@ -58,6 +58,30 @@ using namespace ores::logging;
 namespace {
 
 /**
+ * @brief Refuses a family element whose parts break the cardinality its model
+ * states, naming the part, before any row of it is written.
+ */
+std::optional<ores::utility::domain::result>
+check_part_cardinality(const messaging::cross_currency_basis_convention_write& write) {
+    if (write.flat_leg.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "cross_currency_basis_convention",
+                       .field = "flat_leg",
+                       .expected = "exactly once"});
+    if (write.spread_leg.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "cross_currency_basis_convention",
+                       .field = "spread_leg",
+                       .expected = "exactly once"});
+    if (write.swap_terms.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "cross_currency_basis_convention",
+                       .field = "swap_terms",
+                       .expected = "exactly once"});
+    return std::nullopt;
+}
+
+/**
  * @brief The current central row a family key names, or an empty vector.
  */
 std::vector<domain::convention>
@@ -266,6 +290,10 @@ messaging::put_cross_currency_basis_convention_response
 cross_currency_basis_convention_service::put_cross_currency_basis_convention(
     const messaging::put_cross_currency_basis_convention_request& request) {
     messaging::put_cross_currency_basis_convention_response response;
+    if (const auto refused = check_part_cardinality(request.item)) {
+        response.result = *refused;
+        return response;
+    }
     // The central row and every part land in one transaction, so no reader
     // sees a part disagree with the central version.
     ores::database::repository::unit_of_work uow(ctx_);
@@ -312,6 +340,12 @@ cross_currency_basis_convention_service::put_many_cross_currency_basis_conventio
             outcome_code::batch_too_large,
             {.entity = "cross_currency_basis_convention", .limit = std::to_string(max_batch_size)});
         return response;
+    }
+    for (const auto& write : request.items) {
+        if (const auto refused = check_part_cardinality(write)) {
+            response.result = *refused;
+            return response;
+        }
     }
     // One transaction for the whole batch. Each element states its own claim,
     // and the store checks each row's claim as it is written; an element that
@@ -403,8 +437,14 @@ ores::utility::domain::result cross_currency_basis_convention_service::prepare_c
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
-    // two come to disagree.
-    stamp(out,
+    // two come to disagree. A grouped row is stamped member by member, because
+    // stamp() reaches only a row's own fields.
+    stamp(out.identity,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    stamp(out.audit,
           ctx,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :

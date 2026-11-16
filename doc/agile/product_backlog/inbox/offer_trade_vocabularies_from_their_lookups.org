@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: FCF06F0F-1D24-4C70-B143-2C74B85FA999
+:END:
+#+title: Offer the trade vocabularies from their lookups in a trade editor
+#+description: No screen edits a trade instrument, so the option type, position, settlement, exercise style and the other vocabularies the store now checks are offered nowhere. A trade editor should fill its choices from the lookup lists.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When a screen edits a trade instrument, its option type, position, settlement,
+exercise style, barrier type, averaging, price and return types, moment and
+amortization fields offer their choices from the lookup tables the store checks
+them against, read through the lookups' list operations.
+
+* Why
+
+The store now refuses a vocabulary value its lookup does not hold, on 43
+trading columns. No screen edits a trade instrument today, so nothing offers
+these choices, and a hand-typed value would be refused on save. The lookups are
+already listable over the wire, for example =trading.v1.option_types.list=.
+
+* References
+
+- [[id:CD45F3CE-AD94-4259-891A-E10B5340C1C6][Type the trade vocabularies and check convention parts]] — where the store side landed.
+
+* See also
+
+- [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]]

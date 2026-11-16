@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -42,6 +46,7 @@
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 // Parent-seed snippet includes (ores_trading_trades_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and

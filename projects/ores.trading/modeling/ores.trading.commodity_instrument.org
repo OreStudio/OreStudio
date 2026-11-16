@@ -743,6 +743,67 @@ is immutable.
     }
 #+end_src
 
+** option_type
+:PROPERTIES:
+:table:             ores_trading_option_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid option_type: %. No active option type found with this code.
+:END:
+
+A foreign key to =ores_trading_option_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** exercise_type
+:PROPERTIES:
+:table:             ores_trading_exercise_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid exercise_type: %. No active exercise type found with this code.
+:END:
+
+A foreign key to =ores_trading_exercise_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** barrier_type
+:PROPERTIES:
+:table:             ores_trading_barrier_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid barrier_type: %. No active barrier type found with this code.
+:END:
+
+A foreign key to =ores_trading_barrier_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** average_type
+:PROPERTIES:
+:table:             ores_trading_average_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid average_type: %. No active average type found with this code.
+:END:
+
+A foreign key to =ores_trading_average_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** moment_type
+:PROPERTIES:
+:table:             ores_trading_moment_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid moment_type: %. No active moment type found with this code.
+:END:
+
+A foreign key to =ores_trading_moment_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+
 * Delete cascade
 
 The rows a commodity instrument owns. A commodity swap states its legs as rows

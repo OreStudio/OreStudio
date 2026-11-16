@@ -138,6 +138,19 @@ The bond issue this row belongs to. A bond's legs belong to the
 security, so a fact or child row names the issue its document states and
 the insert trigger checks it there.
 
+** amortization_type
+:PROPERTIES:
+:table:             ores_trading_amortization_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid amortization_type: %. No active amortization type found with this code.
+:END:
+
+A foreign key to =ores_trading_amortization_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+
 * SQL
 
 ** Flags

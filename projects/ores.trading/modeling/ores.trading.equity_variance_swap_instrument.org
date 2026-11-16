@@ -281,6 +281,31 @@ is immutable.
     }
 #+end_src
 
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long/short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** moment_type
+:PROPERTIES:
+:table:             ores_trading_moment_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid moment_type: %. No active moment type found with this code.
+:END:
+
+A foreign key to =ores_trading_moment_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+
 * SQL
 
 ** Flags

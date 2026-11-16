@@ -4724,6 +4724,36 @@ def _require_family_part(
             f"that is missing the composite flag(s) {', '.join(missing)}")
 
 
+# How many rows of a part one family element states: a part every element fills,
+# a part it fills at most once, or one of a group of alternatives, of which the
+# element fills exactly one. A part table's unique key already stops two rows.
+_PART_CARDINALITIES = ("one", "optional", "one_of")
+
+
+def _part_cardinality_view(path: Path, parts: list[dict[str, str]]) -> dict[str, Any]:
+    """The rules the generated family put checks before it writes a part."""
+    groups: dict[str, list[str]] = {}
+    for part in parts:
+        if part["cardinality"] == "one_of":
+            groups.setdefault(part["group"], []).append(part["part"])
+    for name, members in groups.items():
+        if len(members) < 2:
+            raise ValueError(
+                f"{path}: the group '{name}' names one part; a group states "
+                f"alternatives, so it needs two or more")
+    return {
+        "cardinality_one": [
+            {"part": p["part"]} for p in parts if p["cardinality"] == "one"],
+        "cardinality_optional": [
+            {"part": p["part"]} for p in parts if p["cardinality"] == "optional"],
+        "cardinality_groups": [
+            {"label": " or ".join(members),
+             "terms": [{"part": m, "last": i == len(members) - 1}
+                       for i, m in enumerate(members)]}
+            for members in groups.values()],
+    }
+
+
 def load_org_family_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode composite-family model.
 
@@ -4781,8 +4811,20 @@ def load_org_family_model(path: Path | str) -> dict[str, Any]:
                 f"{path}: the part '{shim}' is listed more than once; a part "
                 f"member name must be unique")
         seen.add(shim)
-        parts.append({"part": shim, "entity": entity})
+        cardinality = (row.get("cardinality") or "").strip()
+        group = (row.get("group") or "").strip()
+        if cardinality not in _PART_CARDINALITIES:
+            raise ValueError(
+                f"{path}: the part '{shim}' must state its cardinality as one of "
+                f"{', '.join(_PART_CARDINALITIES)}, not '{cardinality}'")
+        if (cardinality == "one_of") != bool(group):
+            raise ValueError(
+                f"{path}: the part '{shim}' must name a group exactly when its "
+                f"cardinality is one_of")
+        parts.append({"part": shim, "entity": entity,
+                      "cardinality": cardinality, "group": group})
     family["parts"] = parts
+    family.update(_part_cardinality_view(path, parts))
 
     model_dir = path.resolve().parent
     _, central_model = _family_entity_model(model_dir, central, owner)

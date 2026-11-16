@@ -289,6 +289,20 @@ include the empty element the schema writes for true, so the column holds
 the spelling as text the way =end_of_month= does. =bondReferenceDatum=
 states no such element.
 
+* Foreign keys
+
+** price_type
+:PROPERTIES:
+:table:             ores_trading_price_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid price_type: %. No active price type found with this code.
+:END:
+
+A foreign key to =ores_trading_price_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags

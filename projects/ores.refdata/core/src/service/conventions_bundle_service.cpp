@@ -173,6 +173,9 @@ conventions_apply_result conventions_bundle_service::apply(const conventions_bun
     const auto forms = tenor_basis_swap_forms_of(central, pay_receive, long_short);
 
     // The central row is written before its parts, because a part names it.
+    // These writes go through the repositories, not the family put, so the
+    // family's part cardinality is not checked here: the rows come from ORE
+    // documents, which state exactly one leg form for each convention.
     replace_rows_by_id(ctx_, convention_repository(), std::move(central));
     replace_rows_by_id(ctx_, tenor_basis_swap_pay_receive_repository(), std::move(pay_receive));
     replace_rows_by_id(ctx_, tenor_basis_swap_long_short_repository(), std::move(long_short));

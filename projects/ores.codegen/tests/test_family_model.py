@@ -151,7 +151,7 @@ The central row this part belongs to.
 
 
 def _family_model() -> str:
-    rows = "\n".join(f"| {shim} | {entity} |" for shim, entity in PARTS)
+    rows = "\n".join(f"| {shim} | {entity} | one_of | form |" for shim, entity in PARTS)
     return f"""\
 :PROPERTIES:
 :ID: 00000000-0000-0000-0000-000000000004
@@ -176,8 +176,8 @@ Prose.
 
 * Parts
 
-| part        | entity                       |
-|-------------+------------------------------|
+| part        | entity                       | cardinality | group |
+|-------------+------------------------------+-------------+-------|
 {rows}
 """
 
@@ -453,3 +453,32 @@ def test_resolve_output_path_names_the_family_file(tmp_path):
         "{entity}_protocol.hpp", family, "family")
     assert resolved == ("projects/ores.refdata/api/include/ores.refdata.api/"
                         "messaging/tenor_basis_swap_convention_protocol.hpp")
+
+
+def test_a_group_of_alternatives_is_one_rule_over_its_parts(tmp_path):
+    family = load_model(_modeling_dir(tmp_path))["family"]
+
+    assert family["cardinality_one"] == []
+    assert family["cardinality_optional"] == []
+    assert [group["label"] for group in family["cardinality_groups"]] == [
+        "pay_receive or long_short"]
+
+
+def test_a_part_with_no_cardinality_fails_the_load(tmp_path):
+    path = _modeling_dir(tmp_path)
+    path.write_text(path.read_text(encoding="utf-8").replace(
+        "| one_of | form |", "|  |  |", 1), encoding="utf-8")
+    with pytest.raises(ValueError) as exc:
+        load_model(path)
+    assert "pay_receive" in str(exc.value)
+    assert "cardinality" in str(exc.value)
+
+
+def test_a_group_of_one_part_fails_the_load(tmp_path):
+    path = _modeling_dir(tmp_path)
+    path.write_text(path.read_text(encoding="utf-8").replace(
+        "| one_of | form |", "| optional |  |", 1), encoding="utf-8")
+    with pytest.raises(ValueError) as exc:
+        load_model(path)
+    assert "form" in str(exc.value)
+    assert "two or more" in str(exc.value)

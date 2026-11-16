@@ -115,6 +115,19 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate price_type (optional soft FK to ores_trading_price_types_tbl)
+    if NEW.price_type is not null then
+        if not exists (
+            select 1 from ores_trading_price_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.price_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid price_type: %. No active price type found with this code.', NEW.price_type
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate reference_curve_id (optional field -- skip validation when null)
     if NEW.reference_curve_id is not null then
         NEW.reference_curve_id := ores_marketdata_validate_curve_series_fn(NEW.tenant_id, NEW.reference_curve_id);

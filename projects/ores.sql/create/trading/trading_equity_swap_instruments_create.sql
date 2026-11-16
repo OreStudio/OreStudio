@@ -129,6 +129,28 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate long_short (soft FK to ores_trading_long_short_types_tbl)
+    if not exists (
+        select 1 from ores_trading_long_short_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.long_short
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid long_short: %. No active long/short type found with this code.', NEW.long_short
+            using errcode = '23503';
+    end if;
+
+    -- Validate return_type (soft FK to ores_trading_return_types_tbl)
+    if not exists (
+        select 1 from ores_trading_return_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.return_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid return_type: %. No active return type found with this code.', NEW.return_type
+            using errcode = '23503';
+    end if;
+
     -- Validate payment_frequency_code (optional field -- skip validation when null)
     if NEW.payment_frequency_code is not null then
         NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/type-the-trade-vocabularies-and-convention-parts
+#+pr: 4774
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ A convention family write that breaks a part's cardinality is refused with a ver
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,11 @@ A convention family write that breaks a part's cardinality is refused with a ver
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Give the family model's =* Parts= table a =cardinality= column (=one=, =optional=, =one_of=) and a =group= column, and have the loader refuse a model that leaves them out.
+2. Generate a =check_part_cardinality= function into each family service, called by put and put_many before the transaction opens, refusing with a new =part_cardinality= outcome that names the part.
+3. State the rules the four ORE mappers already enforce at export.
+4. Census the trading columns that hold a lookup's vocabulary and do not check it, and census the values ORE's examples use for each vocabulary.
+5. Declare a soft foreign key to the lookup on each column whose values the seeded lookup covers, and regenerate.
 
 * Measurements
 
@@ -57,7 +59,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Family models stating part cardinality | 4 of 4 | =grep -l '^\* Parts' projects/*/modeling/*.org= | ae2e321ed6 |
+| Trading vocabulary columns with no lookup check, before | 49 (10 checked) | census of =projects/ores.sql/create/trading= against the lookup tables | 800c3a6d09 |
+| Columns given a soft foreign key | 43 across 23 models | =git show 78b7a6e00f --stat= | 78b7a6e00f |
+| Tenor basis conventions in ORE's examples stating exactly one form | 142 of 142 | XML census of =external/ore/examples= | ae2e321ed6 |
+| Part cardinality tests | 4 cases, 11 assertions | =ores.refdata.core.tests "[family]"= | ae2e321ed6 |
+| Refdata core suite | 558 cases, 6,209 assertions | =ores.refdata.core.tests= | 08aa31c128 |
+| Trading core suite | 248 cases, 1,610 assertions | =ores.trading.core.tests= | ae2e321ed6 |
+| Synthetic suite with the ORE engine | 140 cases, 4,148 assertions | =ores.synthetic.core.tests= | ae2e321ed6 |
+| ORE core suite | 543 cases, 520,163 assertions | =ores.ore.core.tests= | ae2e321ed6 |
 
 * Notes
 
@@ -70,6 +80,23 @@ Split from [[id:87282F95-BA5B-40CF-8D41-D4996BEE27BC][Close the known defects in
 - [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]
 - [[id:A1105ED1-A491-4C76-AE0C-D320B989E397][Add proper enumerations for trade key fields]]
 
+
+** The family put could not write a new convention
+
+The test that a valid tenor basis swap is written found that the family put stamped its rows whole. stamp() reaches only a row's own fields, and a convention keeps its tenant and party in its =identity= member, so every family put of a new convention reached the store with the zero party and was refused. The family service now stamps each member that carries a stamped field, as the entity service does.
+
+** What stays free text
+
+- =instrument_underlyings.price_type= is a commodity price basis (=Spot=, =FutureSettlement=), not a bond price type.
+- =instrument_option_exercise_fees.type= is an exercise fee kind; it matched the barrier census only by name.
+- =instrument_options.payoff_type= and =payoff_type_2=: ORE's payoff set is wider than the seeded lookup, so a key would refuse valid trades. The seed covers every payoff ORE's examples use.
+- =equity_outperformance_options.long_short= already has a literal check.
+- The trade's own product type is already checked against =ores_trading_product_types_tbl=.
+
+** Out of this task
+
+- No screen edits a trade instrument today, so no UI offers these vocabularies. Every lookup is listable over the wire (=trading.v1.option_types.list= and the rest), which is what a trade editor reads. The editor belongs to the capture [[id:FCF06F0F-1D24-4C70-B143-2C74B85FA999][Offer the trade vocabularies from their lookups in a trade editor]].
+- The conventions bundle writes the tenor basis rows through the repositories, not the family put, so the cardinality check does not cover it. Its rows come from ORE documents, whose 142 tenor basis conventions all state exactly one form.
 
 * Test Scenarios
 
@@ -86,12 +113,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4774][#4774]] | [codegen,trading,refdata] Type the trade vocabularies and check convention parts |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Existing rows are not backfilled | trading create SQL | decline | Every environment is recreated from the schema; there is no legacy store to audit |
+| 2 | Index the lookups on (tenant_id, code) | trading lookup SQL | no change | Each lookup has a unique partial index on (tenant_id, code) for live rows |
+| 3 | Codes compare case-sensitively | trading create SQL | decline | Intended: the FX columns already compare exactly, and ORE states the canonical spelling |
+| 4 | No test for the optional rule | test_family_service.py | accept | A codegen test renders a one part and an optional part and checks both branches |
+| 5 | Note the bundle's bypass in the code | conventions_bundle_service.cpp | accept | A comment above the bundle's writes says why the check does not run there |
+| 6 | Group message wording | ores.database.outcomes.org | decline | One message for every rule; the group label reads clearly enough in the verdict |
+| 7 | Show the pgTAP failures are on main | projects/ores.sql/test | accept | The three failing test files are byte-identical to main's and read no table this branch changes |
 
 * Result
+
+A convention family's parts now state their cardinality, and the generated family put and put_many refuse a write that breaks it before any row lands, with the =part_cardinality= outcome naming the part. Forty-three trading columns that held a vocabulary as free text now check it against the lookup table, as the FX instruments did.
+
+Acceptance:
+
+- Parts state their cardinality and the family put refuses a write that breaks it, naming the part: met. Four tests cover neither form, both forms, one form, and a commodity future with no contract terms.
+- Trade key fields are typed vocabularies backed by lookups: met for the store, where every value is checked; the UI half is not, because no screen edits a trade instrument. See the notes.
+- A test for each named defect: met. The family put's stamping defect is caught by the one-form test, which failed before the fix.

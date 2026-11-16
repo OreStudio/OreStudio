@@ -82,6 +82,7 @@ enum class outcome_code {
     range_inverted,
     range_too_large,
     series_ambiguous,
+    part_cardinality,
     internal_error,
 };
 
@@ -140,6 +141,8 @@ enum class outcome_code {
             return "range_too_large";
         case outcome_code::series_ambiguous:
             return "series_ambiguous";
+        case outcome_code::part_cardinality:
+            return "part_cardinality";
         case outcome_code::internal_error:
             return "internal_error";
         default:
@@ -201,6 +204,8 @@ enum class outcome_code {
         case outcome_code::range_too_large:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::series_ambiguous:
+            return ores::utility::domain::outcome::invalid;
+        case outcome_code::part_cardinality:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::internal_error:
             return ores::utility::domain::outcome::failed;
@@ -320,6 +325,8 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
             return detail::fill("The identity names {value} series of the {entity} ({reason}); "
                                 "state the party or the provider so that it names one.",
                                 a);
+        case outcome_code::part_cardinality:
+            return detail::fill("The {entity} must state its {field} part {expected}.", a);
         case outcome_code::internal_error:
             return detail::fill("The store refused the write: {reason}", a);
         default:

@@ -177,6 +177,71 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate option_type (optional soft FK to ores_trading_option_types_tbl)
+    if NEW.option_type is not null then
+        if not exists (
+            select 1 from ores_trading_option_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.option_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate exercise_type (optional soft FK to ores_trading_exercise_types_tbl)
+    if NEW.exercise_type is not null then
+        if not exists (
+            select 1 from ores_trading_exercise_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.exercise_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid exercise_type: %. No active exercise type found with this code.', NEW.exercise_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate barrier_type (optional soft FK to ores_trading_barrier_types_tbl)
+    if NEW.barrier_type is not null then
+        if not exists (
+            select 1 from ores_trading_barrier_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.barrier_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid barrier_type: %. No active barrier type found with this code.', NEW.barrier_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate average_type (optional soft FK to ores_trading_average_types_tbl)
+    if NEW.average_type is not null then
+        if not exists (
+            select 1 from ores_trading_average_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.average_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid average_type: %. No active average type found with this code.', NEW.average_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate moment_type (optional soft FK to ores_trading_moment_types_tbl)
+    if NEW.moment_type is not null then
+        if not exists (
+            select 1 from ores_trading_moment_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.moment_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid moment_type: %. No active moment type found with this code.', NEW.moment_type
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

@@ -1803,6 +1803,30 @@ using namespace ores::logging;
 namespace {
 
 /**
+ * @brief Refuses a family element whose parts break the cardinality its model
+ * states, naming the part, before any row of it is written.
+ */
+std::optional<ores::utility::domain::result>
+check_part_cardinality(const messaging::{{entity_singular}}_write& write) {
+{{#cardinality_one}}
+    if (write.{{part}}.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "{{entity_singular}}", .field = "{{part}}", .expected = "exactly once"});
+{{/cardinality_one}}
+{{#cardinality_optional}}
+    if (write.{{part}}.size() > 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "{{entity_singular}}", .field = "{{part}}", .expected = "at most once"});
+{{/cardinality_optional}}
+{{#cardinality_groups}}
+    if ({{#terms}}write.{{part}}.size(){{^last}} + {{/last}}{{/terms}} != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "{{entity_singular}}", .field = "{{label}}", .expected = "exactly once"});
+{{/cardinality_groups}}
+    return std::nullopt;
+}
+
+/**
  * @brief The current central row a family key names, or an empty vector.
  */
 std::vector<domain::{{central.entity}}> read_{{central.entity}}(
@@ -1950,6 +1974,10 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+    if (const auto refused = check_part_cardinality(request.item)) {
+        response.result = *refused;
+        return response;
+    }
     // The central row and every part land in one transaction, so no reader
     // sees a part disagree with the central version.
     ores::database::repository::unit_of_work uow(ctx_);
@@ -1992,6 +2020,12 @@ messaging::{{response}}
         response.result = refuse(outcome_code::batch_too_large,
                                  {.entity = "{{entity_singular}}", .limit = std::to_string(max_batch_size)});
         return response;
+    }
+    for (const auto& write : request.items) {
+        if (const auto refused = check_part_cardinality(write)) {
+            response.result = *refused;
+            return response;
+        }
     }
     // One transaction for the whole batch. Each element states its own claim,
     // and the store checks each row's claim as it is written; an element that
@@ -2086,11 +2120,20 @@ ores::utility::domain::result
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
-    // two come to disagree.
+    // two come to disagree. A grouped row is stamped member by member, because
+    // stamp() reaches only a row's own fields.
+{{#central.stamp_members}}
+    stamp(out.{{member}}, ctx,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{/central.stamp_members}}
+{{^central.stamp_members}}
     stamp(out, ctx,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
               : intent.reason_code);
+{{/central.stamp_members}}
 {{#central.has_audit_columns}}
     out.{{central.commentary_member}} = intent.commentary;
 {{/central.has_audit_columns}}
@@ -2138,10 +2181,18 @@ ores::utility::domain::result
     case precondition_kind::any:
         break;
     }
+{{#stamp_members}}
+    stamp(out.{{member}}, ctx,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{/stamp_members}}
+{{^stamp_members}}
     stamp(out, ctx,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
               : intent.reason_code);
+{{/stamp_members}}
 {{#has_audit_columns}}
     out.{{commentary_member}} = intent.commentary;
 {{/has_audit_columns}}

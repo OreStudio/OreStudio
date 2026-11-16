@@ -611,14 +611,25 @@ describe("a run's step", () => {
         expect(html).toContain('Wrote 3 parties.');
     });
 
-    it('opens a failed step by itself and leaves a finished one closed', () => {
-        const started = { ...step, started_at: '2026-11-01 17:00:00.000000Z' };
-        const failed = render(<RunStep step={{ ...started, status: 'failed' }} words={(s) => s} />);
-        const finished = render(<RunStep step={started} words={(s) => s} />);
+    it('keeps a failed step closed and red, with its error behind the disclosure', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'failed',
+                    started_at: '2026-11-01 17:00:00.000000Z',
+                    error: 'Two were not given: Plc: NZDJPY_SSVI: no series; Plc: AUDJPY_SSVI: no series',
+                }}
+                words={(s) => s}
+            />,
+        );
 
-        expect(failed).toMatch(/<details[^>]* open=""/);
-        expect(finished).toContain('<details');
-        expect(finished).not.toMatch(/<details[^>]* open=""/);
+        expect(html).not.toMatch(/<details[^>]* open/);
+        expect(html).toMatch(/<div class="[^"]*text-down[^"]*">/);
+        const disclosure = html.slice(html.indexOf('<details'));
+        expect(disclosure).toContain('<li>Two were not given: Plc: NZDJPY_SSVI: no series</li>');
+        expect(disclosure).toContain('<li>Plc: AUDJPY_SSVI: no series</li>');
+        expect(html.slice(0, html.indexOf('<details'))).not.toContain('no series');
     });
 
     it('says a step that logged nothing logged nothing', () => {

@@ -703,6 +703,19 @@ function ProgressBar({
     );
 }
 
+/**
+ * An error, one piece of work to a line.
+ *
+ * A step that gives up on several pieces of work names each, separated by a
+ * semicolon, so the semicolon is where a reader's eye wants a new line.
+ */
+function errorLines(error: string): string[] {
+    return error
+        .split(/;\s*/)
+        .map((line) => line.trim())
+        .filter((line) => line !== '');
+}
+
 /** The tone of a line a step logged, by the level it logged it at. */
 const LOG_TONE: Record<string, string> = {
     error: 'text-down',
@@ -721,8 +734,10 @@ const LOG_TONE: Record<string, string> = {
  * states how long it has been running, measured to the clock it is handed.
  *
  * A step that has started opens to show when it started and ended and every
- * line it logged. A failed step opens by itself, because its log is what a
- * person reads next.
+ * line it logged. A failed step is drawn red and its error is read by opening
+ * it: an error names every piece of work that failed, and stated on the rail it
+ * buries the steps around it. Open, the error comes first, one piece of work to
+ * a line.
  */
 export function RunStep({
     step,
@@ -781,7 +796,14 @@ export function RunStep({
                 {STEP_MARK[step.status] ?? '○'}
             </span>
             <div
-                className={cx('min-w-0', step.status === 'pending' ? 'text-ink-faint' : 'text-ink')}
+                className={cx(
+                    'min-w-0',
+                    step.status === 'pending'
+                        ? 'text-ink-faint'
+                        : step.status === 'failed'
+                          ? 'text-down'
+                          : 'text-ink',
+                )}
             >
                 <span className="block">
                     {label}
@@ -817,27 +839,33 @@ export function RunStep({
                 {warning !== '' && (
                     <span className="mt-0.5 block text-xs text-warn">{warning}</span>
                 )}
-                {step.error !== '' && (
-                    <span className="mt-0.5 block text-xs text-down">{words(step.error)}</span>
-                )}
-                {step.started_at !== null && (
-                    <details className="mt-1 text-xs" open={step.status === 'failed'}>
+                {(step.started_at !== null || step.error !== '') && (
+                    <details className="mt-1 text-xs">
                         <summary className="cursor-pointer select-none text-ink-faint hover:text-ink">
                             {t('journey.provisioning.details')}
                         </summary>
                         <div className="mt-1 space-y-1 border-l border-line-subtle pl-3">
-                            <span className="block tabular-nums text-ink-faint">
-                                {t('journey.provisioning.started', {
-                                    time: clockTime(step.started_at),
-                                })}
-                                {step.completed_at !== null && (
-                                    <span className="ml-3">
-                                        {t('journey.provisioning.ended', {
-                                            time: clockTime(step.completed_at),
-                                        })}
-                                    </span>
-                                )}
-                            </span>
+                            {step.error !== '' && (
+                                <ul className="space-y-0.5 text-down">
+                                    {errorLines(words(step.error)).map((line, index) => (
+                                        <li key={index}>{line}</li>
+                                    ))}
+                                </ul>
+                            )}
+                            {step.started_at !== null && (
+                                <span className="block tabular-nums text-ink-faint">
+                                    {t('journey.provisioning.started', {
+                                        time: clockTime(step.started_at),
+                                    })}
+                                    {step.completed_at !== null && (
+                                        <span className="ml-3">
+                                            {t('journey.provisioning.ended', {
+                                                time: clockTime(step.completed_at),
+                                            })}
+                                        </span>
+                                    )}
+                                </span>
+                            )}
                             {step.log.length === 0 ? (
                                 <span className="block text-ink-faint">
                                     {t('journey.provisioning.noLog')}
@@ -1016,11 +1044,18 @@ export function RunProgress({
                     <RunStep key={step.id} step={step} words={text} now={now} />
                 ))}
             </ol>
-            {progress?.error !== undefined && progress.error !== '' && (
-                <div className="mt-4">
-                    <Notice tone="error">{progress.error}</Notice>
-                </div>
-            )}
+            {/*
+             * A run's error is the error of the step that failed, and that step
+             * already holds it behind its own disclosure. The notice is for an
+             * error no step carries, which nothing else on the page would show.
+             */}
+            {progress?.error !== undefined &&
+                progress.error !== '' &&
+                !steps.some((step) => step.error !== '') && (
+                    <div className="mt-4">
+                        <Notice tone="error">{progress.error}</Notice>
+                    </div>
+                )}
             {failure !== undefined && (
                 <div className="mt-4">
                     <Notice tone="error">

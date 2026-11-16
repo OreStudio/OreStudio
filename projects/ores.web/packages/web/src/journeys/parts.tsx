@@ -802,7 +802,9 @@ export function RunStep({
                         ? 'text-ink-faint'
                         : step.status === 'failed'
                           ? 'text-down'
-                          : 'text-ink',
+                          : step.status === 'completed_with_warnings'
+                            ? 'text-warn'
+                            : 'text-ink',
                 )}
             >
                 <span className="block">

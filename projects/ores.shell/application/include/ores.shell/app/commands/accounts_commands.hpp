@@ -86,6 +86,26 @@ public:
                               std::string password);
 
     /**
+     * @brief Prints a summary of the tenant's setup warnings when the setup
+     * finished after the account's previous login.
+     *
+     * Every login path calls this after it prints its own lines, so the tenant
+     * administrator reads the summary once, however the session was opened.
+     *
+     * @param previous_login The login answer's previous login, empty on the
+     *                       account's first login.
+     */
+    static void print_setup_news(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::string& previous_login);
+
+    /**
+     * @brief Prints each step of the tenant's setup that ended with warnings,
+     * with its warnings.
+     */
+    static void process_setup_report(std::ostream& out, ores::nats::service::nats_client& session);
+
+    /**
      * @brief Process a logout request.
      *
      * Logs out the currently logged-in user.

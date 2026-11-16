@@ -3096,6 +3096,17 @@ const pt: SourceCatalogue = {
             readFailed: 'A execução da configuração não pôde ser lida. {message}',
             noRun: 'A configuração deste inquilino ainda não foi iniciada. O administrador da instalação tem de a iniciar.',
             enter: 'Ir para a aplicação',
+            report: {
+                notice: 'A configuração do seu inquilino terminou, mas {count} passo(s) terminaram com avisos. O sistema pode ser usado; podem faltar alguns dados de mercado, transações ou relatórios.',
+                read: 'Ler o relatório da configuração',
+                dismiss: 'Fechar',
+                title: 'Relatório da configuração',
+                lead: 'O que a configuração do seu inquilino não concluiu. Cada passo abaixo terminou com avisos, e a configuração continuou sem o trabalho que indica.',
+                none: 'A configuração do seu inquilino não tem passos com avisos.',
+                unavailable:
+                    'O relatório da configuração não está disponível. Só o administrador do inquilino o pode ler.',
+                run: 'A execução completa',
+            },
         },
 
         ready: {
@@ -3828,27 +3839,27 @@ const pt: SourceCatalogue = {
         "Gives the accounts their photographs, and the tenant's party its logo.":
             'Dá as fotografias às contas e o logótipo à entidade do inquilino.',
         'Subscribe to market data': 'Subscrever os dados de mercado',
-        "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
-            'Dá a cada entidade do inquilino uma subscrição de um fornecedor e uma rota para a fonte do fornecedor.',
+        "Gives each party of the tenant a subscription to a provider and a route to the provider's source. If it fails, the run goes on without market data.":
+            'Dá a cada entidade do inquilino uma subscrição de um fornecedor e uma rota para a fonte do fornecedor. Se falhar, a execução continua sem dados de mercado.',
         "Publish each party's curves": 'Publicar as curvas de cada parte',
-        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.":
-            'Dá a cada parte que nomeia a sua própria cópia dos modelos de curvas do sistema, constrói cada curva a partir das cotações que as subscrições da parte entregam, e publica-a. Uma curva que não é publicada é nomeada com a sua parte e a sua razão, e o passo falha.',
+        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, the step ends with warnings, and the run goes on.":
+            'Dá a cada parte que nomeia a sua própria cópia dos modelos de curvas do sistema, constrói cada curva a partir das cotações que as subscrições da parte entregam, e publica-a. Uma curva que não é publicada é nomeada com a sua parte e a sua razão, o passo termina com avisos, e a execução continua.',
         'Give each party its surface blueprints': 'Dar a cada parte os seus modelos de superfícies',
-        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
-            'Dá a cada parte que nomeia a sua própria cópia dos modelos de superfícies de volatilidade FX do sistema, lendo as cotações de volatilidade que as subscrições da parte entregam. Um modelo cujas cotações não chegam a tempo é nomeado com a sua parte, e o passo falha.',
+        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, the step ends with warnings, and the run goes on.":
+            'Dá a cada parte que nomeia a sua própria cópia dos modelos de superfícies de volatilidade FX do sistema, lendo as cotações de volatilidade que as subscrições da parte entregam. Um modelo cujas cotações não chegam a tempo é nomeado com a sua parte, o passo termina com avisos, e a execução continua.',
         "Publish each party's FX forwards": 'Publicar os câmbios a prazo de cada parte',
-        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.':
-            'Publica um conjunto de câmbios a prazo para cada convenção de par de moedas que cada parte que nomeia consegue construir a partir do seu spot e das suas curvas de financiamento publicadas. Um par que a parte não consegue construir é nomeado com a razão. Um câmbio a prazo que não é publicado é nomeado com a sua parte, e o passo falha.',
+        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, the step ends with warnings, and the run goes on.':
+            'Publica um conjunto de câmbios a prazo para cada convenção de par de moedas que cada parte que nomeia consegue construir a partir do seu spot e das suas curvas de financiamento publicadas. Um par que a parte não consegue construir é nomeado com a razão. Um câmbio a prazo que não é publicado é nomeado com a sua parte, o passo termina com avisos, e a execução continua.',
         "Publish each party's volatility surfaces":
             'Publicar as superfícies de volatilidade de cada parte',
-        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.":
-            'Calibra cada modelo de superfície de cada parte que nomeia a partir das cotações de volatilidade da parte e dos conjuntos de câmbios a prazo publicados, e publica-a. Uma superfície que falha os controlos de arbitragem ou de erro é nomeada e fica por publicar. Uma superfície que não pode ser calibrada ou não é publicada é nomeada com a sua parte, e o passo falha.',
+        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, the step ends with warnings, and the run goes on.":
+            'Calibra cada modelo de superfície de cada parte que nomeia a partir das cotações de volatilidade da parte e dos conjuntos de câmbios a prazo publicados, e publica-a. Uma superfície que falha os controlos de arbitragem ou de erro é nomeada e fica por publicar. Uma superfície que não pode ser calibrada ou não é publicada é nomeada com a sua parte, o passo termina com avisos, e a execução continua.',
         'Generate the trades': 'Gerar as transações',
-        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
-            'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books. Trades that are not written are named, the step ends with warnings, and the run goes on.":
+            'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte. As transações que não são escritas são nomeadas, o passo termina com avisos, e a execução continua.',
         'Schedule the reports': 'Agendar os relatórios',
-        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
-            'Agenda cada definição de relatório que cada parte que nomeia publica, como o administrador da execução, para que o catálogo dispare sem que uma pessoa atue. Um relatório cujo calendário é o marcador sob demanda fica para ser pedido à mão.',
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand. If it fails, the run goes on and the reports can be scheduled later.":
+            'Agenda cada definição de relatório que cada parte que nomeia publica, como o administrador da execução, para que o catálogo dispare sem que uma pessoa atue. Um relatório cujo calendário é o marcador sob demanda fica para ser pedido à mão. Se falhar, a execução continua e os relatórios podem ser agendados mais tarde.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',

@@ -27,11 +27,13 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
@@ -57,6 +59,10 @@ namespace {
 std::string format_time(std::chrono::system_clock::time_point tp) {
     return ores::platform::time::datetime::to_local_display_string(tp);
 }
+
+constexpr std::string_view setup_report_heading =
+    "The tenant's setup finished, but these steps ended with warnings. The system is "
+    "usable; the work they name is missing:";
 
 } // anonymous namespace
 
@@ -125,6 +131,12 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
                 std::ref(out), std::ref(session), std::move(principal), std::move(password));
         },
         "Login with principal (username@hostname or username) and password");
+
+    ores::shell::app::claim_name(root_menu, "setup-report");
+    root_menu.Insert(
+        "setup-report",
+        [&session](std::ostream& out) { process_setup_report(std::ref(out), std::ref(session)); },
+        "Show what the tenant's setup did not finish: each step that ended with warnings");
 
     ores::shell::app::claim_name(root_menu, "logout");
     root_menu.Insert(
@@ -205,6 +217,31 @@ void accounts_commands::process_login(std::ostream& out,
     out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
     if (!selected->empty())
         out << "  Party: " << *selected << std::endl;
+    print_setup_news(out, session, result->previous_login);
+}
+
+void accounts_commands::print_setup_news(std::ostream& out,
+                                         nats_client& session,
+                                         const std::string& previous_login) {
+    // Only the tenant's administrator can read the setup run, so anyone else
+    // sees nothing here.
+    if (workflow_run_commands::print_run_warnings(out,
+                                                  session,
+                                                  iam::workflow::tenant_setup_workflow_type,
+                                                  setup_report_heading,
+                                                  false,
+                                                  previous_login) > 0)
+        out << "  Run 'setup-report' to read the warnings." << std::endl;
+}
+
+void accounts_commands::process_setup_report(std::ostream& out, nats_client& session) {
+    if (workflow_run_commands::print_run_warnings(out,
+                                                  session,
+                                                  iam::workflow::tenant_setup_workflow_type,
+                                                  setup_report_heading,
+                                                  true) == 0)
+        out << "✓ The tenant's setup has no step with warnings, or this account cannot read it."
+            << std::endl;
 }
 
 void accounts_commands::process_logout(std::ostream& out, nats_client& session) {

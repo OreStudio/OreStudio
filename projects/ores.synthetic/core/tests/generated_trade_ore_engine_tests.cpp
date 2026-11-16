@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <fstream>
 #include <iterator>
 #include <regex>
 #include <set>
@@ -196,6 +197,7 @@ const std::vector<error_pattern>& error_patterns() {
         {"market_data", std::regex(R"(^did not find object '.*' of type .* under configuration )")},
         {"market_data", std::regex(R"(^did not find object \S+ in \w+Curves$)")},
         {"market_data", std::regex(R"(^No CreditIndex (reference|constituents) data for )")},
+        {"market_data", std::regex(R"(needs credit index reference data for ID )")},
         {"market_data",
          std::regex(
              R"(BondFactory: could not build bond '.*': no reference data given or no suitable builder)")},
@@ -221,6 +223,25 @@ std::set<std::string> raised_errors(const fs::path& structured_log) {
             lines.insert(kind_of(event.message) + "\t" + field_of(event, "tradeType") + "\t" +
                          field_of(event, "exceptionType") + "\t" + event.message);
     return lines;
+}
+
+/*
+ * Rewrites the known list as the errors the run raised, keeping the comments
+ * that head the file. A trade's own error is never written: it must be fixed,
+ * so the run still fails on it.
+ */
+void record_known_errors(const std::set<std::string>& raised) {
+    const auto path = ores::testing::project_root::resolve(known_errors_file);
+    std::string out;
+    std::istringstream text(text_of(path));
+    for (std::string line; std::getline(text, line) && line.starts_with("#");)
+        out += line + "\n";
+    for (const auto& line : raised)
+        if (!line.starts_with("trade\t"))
+            out += line + "\n";
+    std::ofstream file(path, std::ios::binary);
+    file << out;
+    REQUIRE(file.good());
 }
 
 std::string lines_of(const std::set<std::string>& lines) {
@@ -255,6 +276,8 @@ TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
     REQUIRE(fs::exists(structured_log));
 
     const auto raised = raised_errors(structured_log);
+    if (ores::platform::environment::environment::get_value("ORES_UPDATE_GENERATED_TRADES") == "1")
+        record_known_errors(raised);
     const auto known = known_errors();
     std::set<std::string> unexpected;
     std::set<std::string> no_longer_raised;

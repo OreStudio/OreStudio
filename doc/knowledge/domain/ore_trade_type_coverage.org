@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 90 types name an instrument table, and the generator records 85.
+- 90 types name an instrument table, and the generator records 86.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -135,8 +135,8 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =CommodityVarianceSwap= | native | native | =CommodityVarianceSwapData= | =commodity_instrument= | yes | - | - | - |
 | =CommodityWindowBarrierOption= | scripted | scripted | =CommodityWindowBarrierOptionData= (not in the XSD) | =commodity_instrument= | yes | =WindowBarrierOption= | near | [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]], [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
 | =CommodityWorstOfBasketSwap= | scripted | scripted | =CommodityWorstOfBasketSwapData= | =commodity_instrument= | yes | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
-| =CompositeTrade= | native | container | =CompositeTradeData= | =composite_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
-| =ContractForDifference= | native | native | =ContractForDifferenceData= | =composite_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =CompositeTrade= | native | container | =CompositeTradeData= | =composite_instrument= | no | - | - | [[id:742F9E67-CDCA-4FA6-BE8B-945C64C27A50][Generate the container trades]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =ContractForDifference= | native | native | =ContractForDifferenceData= | =composite_instrument= | no | - | - | [[id:742F9E67-CDCA-4FA6-BE8B-945C64C27A50][Generate the container trades]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
 | =ConvertibleBond= | native | native | =ConvertibleBondData= | =bond_instrument= | yes | - | - | - |
 | =CreditDefaultSwap= | native | native | =CreditDefaultSwapData= | =credit_instrument= | yes | - | - | - |
 | =CreditDefaultSwapOption= | native | native | =CreditDefaultSwapOptionData= | - | no | - | - | [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] |
@@ -161,7 +161,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =EquityGenericBarrierOption= | scripted | scripted | =EquityGenericBarrierOptionData= | - | no | =GenericBarrierOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]] |
 | =EquityOption= | native | native | =EquityOptionData= | =equity_option_instrument= | yes | - | - | - |
 | =EquityOptionPosition= | native | native | =EquityOptionPositionData= | =equity_position_instrument= | yes | - | - | - |
-| =EquityOutperformanceOption= | native | native | =EquityOutperformanceOptionData= | =equity_option_instrument= | no | =OutperformanceOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =EquityOutperformanceOption= | native | native | =EquityOutperformanceOptionData= | =equity_option_instrument= | no | =OutperformanceOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]], [[id:B14C4720-D757-4CAA-AD4D-09079CBC4D84][Model and generate the equity outperformance option]] |
 | =EquityPairwiseVarianceSwap= | native | native | =EquityPairwiseVarianceSwapData= | - | no | =PairwiseVarianceSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
 | =EquityPosition= | native | native | =EquityPositionData= | =equity_position_instrument= | yes | - | - | - |
 | =EquityRainbowOption= | scripted | scripted | =EquityRainbowOptionData= | - | no | =MaxRainbowOption=, =MinRainbowOption=, =BestOfAssetOrCashRainbowOption=, =WorstOfAssetOrCashRainbowOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |
@@ -215,8 +215,8 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =Swap= | native | native | =SwapData= | =rate_instrument= | yes | - | - | - |
 | =Swaption= | native | native | =SwaptionData= | =rate_instrument= | yes | - | - | - |
 | =SwaptionStraddle= | native | native | =SwaptionStraddleData= | - | no | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
-| =SyntheticCDO= | native | native | =CdoData= | =credit_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
-| =TotalReturnSwap= | native | native | =TotalReturnSwapData= | =composite_instrument= | no | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =SyntheticCDO= | native | native | =CdoData= | =credit_instrument= | yes | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
+| =TotalReturnSwap= | native | native | =TotalReturnSwapData= | =composite_instrument= | no | - | - | [[id:742F9E67-CDCA-4FA6-BE8B-945C64C27A50][Generate the container trades]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
 
 # END GENERATED
 

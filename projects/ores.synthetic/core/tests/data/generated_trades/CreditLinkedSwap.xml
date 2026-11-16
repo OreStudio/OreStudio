@@ -57,10 +57,10 @@
       </ContingentPayments>
     </CreditLinkedSwapData>
   </Trade>
-  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
     <TradeType>CreditLinkedSwap</TradeType>
     <CreditLinkedSwapData>
-      <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+      <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
       <SettlesAccrual>Y</SettlesAccrual>
       <DefaultPaymentTime>atDefault</DefaultPaymentTime>
       <IndependentPayments>
@@ -70,7 +70,7 @@
           <Currency>EUR</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2025-11-02">7675517.41</Amount>
+              <Amount date="2025-10-02">3614264.98</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>
@@ -83,12 +83,12 @@
           <PaymentConvention>Following</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>7675517.41</Notional>
+            <Notional>3614264.98</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2025-11-02</StartDate>
-              <EndDate>2027-11-02</EndDate>
+              <StartDate>2025-10-02</StartDate>
+              <EndDate>2031-10-02</EndDate>
               <Tenor>3M</Tenor>
               <Calendar>WeekendsOnly</Calendar>
               <Convention>Following</Convention>
@@ -107,7 +107,7 @@
           <Currency>EUR</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2027-11-02">7675517.41</Amount>
+              <Amount date="2031-10-02">3614264.98</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>

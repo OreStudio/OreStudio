@@ -31,6 +31,7 @@
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/builders/builder_registry.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
@@ -43,6 +44,7 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include <iterator>
 #include <map>
 #include <set>
 #include <sstream>
@@ -562,6 +564,31 @@ TEST_CASE("the generated trades are the ones recorded", "[synthetic][ore][genera
             stale.insert(type);
     INFO("Recorded types no longer generated:" << listed(stale));
     CHECK(stale.empty());
+}
+
+/*
+ * The builders are the catalogue's supported types: a test of the trading api
+ * holds every catalogued type as built, awaiting a builder, or unsupported by
+ * ORE. The generator books every built type, so a type given a builder and no
+ * generator fails here, and a booked type without a builder cannot be planned.
+ */
+TEST_CASE("the generator books every type a builder builds", "[synthetic][ore][generated]") {
+    std::set<std::string> built;
+    for (const auto type : ores::trading::builders::built_trade_types())
+        built.emplace(type);
+    std::set<std::string> booked;
+    for (const auto& [type, trades] : generated())
+        booked.insert(type);
+
+    std::set<std::string> not_booked;
+    std::ranges::set_difference(built, booked, std::inserter(not_booked, not_booked.end()));
+    std::set<std::string> without_builder;
+    std::ranges::set_difference(
+        booked, built, std::inserter(without_builder, without_builder.end()));
+    INFO("Built but never generated:" << listed(not_booked));
+    INFO("Generated without a builder:" << listed(without_builder));
+    CHECK(not_booked.empty());
+    CHECK(without_builder.empty());
 }
 
 TEST_CASE("the writer refuses no recorded trade type", "[synthetic][ore][generated]") {

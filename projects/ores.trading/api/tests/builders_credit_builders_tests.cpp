@@ -23,6 +23,7 @@
 #include "ores.trading.api/builders/builder_registry.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <chrono>
 #include <string>
 
@@ -277,6 +278,48 @@ TEST_CASE("the_registry_names_every_credit_builder", credit_tags) {
                              "IndexCreditDefaultSwap",
                              "IndexCreditDefaultSwapOption",
                              "CreditLinkedSwap",
-                             "RiskParticipationAgreement"})
+                             "RiskParticipationAgreement",
+                             "SyntheticCDO"})
         CHECK(types.contains(type));
+}
+
+TEST_CASE("a_synthetic_cdo_states_its_tranche_on_the_index", credit_tags) {
+    conv::convention_lookup lookup(credit_conventions());
+    const auto cdo = synthetic_cdo_builder(lookup,
+                                           {.protection = protection_terms(),
+                                            .attachment_point = *decimal::from_string("0.03"),
+                                            .detachment_point = *decimal::from_string("0.06")})
+                         .build();
+    REQUIRE(cdo.has_value());
+    CHECK(cdo->instrument.identity.trade_type_code == "SyntheticCDO");
+    CHECK(cdo->instrument.reference_entity_id_type == "Internal");
+    REQUIRE(cdo->synthetic_cdo_instruments.size() == 1);
+    const auto& fact = cdo->synthetic_cdo_instruments.front();
+    CHECK(fact.qualifier == credit_curve().uri());
+    CHECK_THAT(fact.attachment_point, Catch::Matchers::WithinAbs(0.03, 1e-12));
+    CHECK_THAT(fact.detachment_point, Catch::Matchers::WithinAbs(0.06, 1e-12));
+    REQUIRE(cdo->legs.size() == 1);
+    CHECK(cdo->legs.front().leg_group == "premium");
+}
+
+TEST_CASE("a_synthetic_cdo_whose_detachment_is_not_above_its_attachment_fails", credit_tags) {
+    conv::convention_lookup lookup(credit_conventions());
+    const auto cdo = synthetic_cdo_builder(lookup,
+                                           {.protection = protection_terms(),
+                                            .attachment_point = *decimal::from_string("0.06"),
+                                            .detachment_point = *decimal::from_string("0.06")})
+                         .build();
+    REQUIRE_FALSE(cdo.has_value());
+    CHECK(cdo.error().term == "detachment_point");
+}
+
+TEST_CASE("a_synthetic_cdo_detaching_above_the_whole_index_fails", credit_tags) {
+    conv::convention_lookup lookup(credit_conventions());
+    const auto cdo = synthetic_cdo_builder(lookup,
+                                           {.protection = protection_terms(),
+                                            .attachment_point = *decimal::from_string("0.5"),
+                                            .detachment_point = *decimal::from_string("1.5")})
+                         .build();
+    REQUIRE_FALSE(cdo.has_value());
+    CHECK(cdo.error().term == "detachment_point");
 }

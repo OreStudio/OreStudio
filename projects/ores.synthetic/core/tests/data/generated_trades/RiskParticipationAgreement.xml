@@ -78,14 +78,14 @@
       </Underlying>
     </RiskParticipationAgreementData>
   </Trade>
-  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
     <TradeType>RiskParticipationAgreement</TradeType>
     <RiskParticipationAgreementData>
       <ParticipationRate>0.5</ParticipationRate>
-      <ProtectionStart>2025-10-02</ProtectionStart>
-      <ProtectionEnd>2031-10-02</ProtectionEnd>
-      <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
-      <IssuerId>5493001KJTIIGC8Y1R12</IssuerId>
+      <ProtectionStart>2025-09-02</ProtectionStart>
+      <ProtectionEnd>2029-09-02</ProtectionEnd>
+      <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+      <IssuerId>529900T8BM49AURSDO55</IssuerId>
       <SettlesAccrual>true</SettlesAccrual>
       <ProtectionFee>
         <LegData>
@@ -94,7 +94,7 @@
           <Currency>EUR</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2025-10-02">3614.26</Amount>
+              <Amount date="2025-09-02">1036.9</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>
@@ -107,12 +107,12 @@
           <PaymentConvention>MF</PaymentConvention>
           <DayCounter>30/360</DayCounter>
           <Notionals>
-            <Notional>3614264.98</Notional>
+            <Notional>1036903.28</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2025-10-02</StartDate>
-              <EndDate>2031-10-02</EndDate>
+              <StartDate>2025-09-02</StartDate>
+              <EndDate>2029-09-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>MF</Convention>
@@ -122,7 +122,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0262</Rate>
+              <Rate>0.0302</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
@@ -133,12 +133,12 @@
           <PaymentConvention>MF</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>3614264.98</Notional>
+            <Notional>1036903.28</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2025-10-02</StartDate>
-              <EndDate>2031-10-02</EndDate>
+              <StartDate>2025-09-02</StartDate>
+              <EndDate>2029-09-02</EndDate>
               <Tenor>6M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>MF</Convention>

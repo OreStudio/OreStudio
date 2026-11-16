@@ -33,10 +33,10 @@
       </LegData>
     </IndexCreditDefaultSwapData>
   </Trade>
-  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
     <TradeType>IndexCreditDefaultSwap</TradeType>
     <IndexCreditDefaultSwapData>
-      <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+      <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
       <SettlesAccrual>Y</SettlesAccrual>
       <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
       <LegData>
@@ -46,12 +46,12 @@
         <PaymentConvention>Following</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>3051825.57</Notional>
+          <Notional>5817155.05</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-01-02</StartDate>
-            <EndDate>2029-01-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2032-12-02</EndDate>
             <Tenor>3M</Tenor>
             <Calendar>WeekendsOnly</Calendar>
             <Convention>Following</Convention>
@@ -60,7 +60,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.05</Rate>
+            <Rate>0.01</Rate>
           </Rates>
         </FixedLegData>
       </LegData>

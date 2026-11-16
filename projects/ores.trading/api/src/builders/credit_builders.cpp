@@ -363,4 +363,47 @@ risk_participation_agreement_builder::build() const {
     return out;
 }
 
+synthetic_cdo_builder::synthetic_cdo_builder(const convention_lookup& conventions,
+                                             synthetic_cdo_terms terms)
+    : conventions_(conventions)
+    , terms_(std::move(terms)) {}
+
+std::expected<domain::credit_instrument_data, build_error> synthetic_cdo_builder::build() const {
+    const auto& premium_terms = terms_.protection;
+    if (auto refusal = refusal_of(premium_terms))
+        return std::unexpected(std::move(*refusal));
+    const auto attachment = terms_.attachment_point.get();
+    const auto detachment = terms_.detachment_point.get();
+    if (attachment < decimal{})
+        return std::unexpected(build_error{"attachment_point", "must not be negative"});
+    if (detachment <= attachment)
+        return std::unexpected(build_error{"detachment_point", "must be above the attachment"});
+    if (detachment > *decimal::from_string("1"))
+        return std::unexpected(build_error{"detachment_point", "must not be above one"});
+    const auto premium = premium_conventions_of(conventions_, premium_terms.convention.get());
+    if (!premium)
+        return std::unexpected(premium.error());
+
+    // The tranche is on the index, which the reader holds as an internal name.
+    domain::credit_instrument_data out{};
+    const auto index = premium_terms.credit_curve.get().uri();
+    out.instrument =
+        header_of(trade_type, index, premium_terms.start.get(), premium_terms.maturity.get());
+    out.instrument.reference_entity_id_type = "Internal";
+
+    domain::synthetic_cdo_instrument fact{};
+    fact.qualifier = index;
+    fact.protection_start_date = premium_terms.start.get();
+    fact.upfront_date = premium_terms.start.get();
+    fact.upfront_fee = decimal{};
+    fact.attachment_point = attachment.to_double();
+    fact.detachment_point = detachment.to_double();
+    fact.settles_accrual = premium->convention.settles_accrual;
+    fact.pays_at_default_time = premium->convention.pays_at_default_time;
+    out.synthetic_cdo_instruments.push_back(std::move(fact));
+    add_coupon_leg(
+        out, 1, "premium", premium_terms.side.get() == protection::buy, premium_terms, *premium);
+    return out;
+}
+
 }

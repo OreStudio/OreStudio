@@ -328,13 +328,16 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
     for (const auto& slot : plan.slots) {
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
         const auto& row = slot.instruments.credit_instruments.front();
-        /*
-         * A credit trade names a party by one identifier, and the reference is
-         * the LEI the dataset holds.
-         */
+        CHECK_FALSE(slot.instruments.swap_legs.empty());
+        // A tranche is cut from an index, which is no legal entity.
+        if (slot.trade_type_code == "SyntheticCDO") {
+            CHECK(row.reference_entity_id_type == "Internal");
+            CHECK(row.reference_entity_id.starts_with("oresmd://credit/"));
+            continue;
+        }
+        // Any other credit trade names its party by the LEI the dataset holds.
         CHECK(row.reference_entity_id_type == "LEI");
         CHECK(row.reference_entity_id.size() == 20u);
-        CHECK_FALSE(slot.instruments.swap_legs.empty());
     }
 }
 

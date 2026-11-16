@@ -7,8 +7,10 @@
 # the generator, never listed here.
 # The messages are ORE's own, so an upgrade of external/ore or of the engine
 # that runs the test can change them; record the new messages then.
+# ORES_UPDATE_GENERATED_TRADES=1 rewrites the list from the run; review the diff.
 engine_configuration	BondFuture	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type BondFuture
 engine_configuration	CommodityAsianOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type CommodityAsianOptionArithmeticPrice
+engine_configuration	EquitySwap	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityLeg
 engine_configuration	FlexiSwap	Error building trade for context 'analytic/PRICING'	No EngineBuilder for LGM/Grid/FlexiSwap
 market_data	BalanceGuaranteedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'POP-0cd68b09-000006' of type cpr under configuration 'default' or 'default'
 market_data	BalanceGuaranteedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'POP-0cd68b09-000015' of type cpr under configuration 'default' or 'default'
@@ -17,16 +19,12 @@ market_data	BondPosition	Error building trade for context 'analytic/PRICING'	Bui
 market_data	CallableBond	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:NG/COMM-NYMEX:CL in CorrelationCurves
 market_data	CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-market_data	CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-market_data	CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-market_data	IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 market_data	IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 market_data	IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
-market_data	IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 market_data	InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'UKRPIX' of type zero inflation index under configuration 'default' or 'default'
 market_data	InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'USCPIA' of type zero inflation index under configuration 'default' or 'default'
 market_data	IntradayPowerForward	Error building trade for context 'analytic/PRICING'	did not find object 'NYMEX:NG' of type intraday power indices under configuration 'default' or 'default'
 market_data	RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-market_data	RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-engine_configuration	EquitySwap	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityLeg
+market_data	SyntheticCDO	Error building trade for context 'analytic/PRICING'	Trade SyntheticCDO-1 needs credit index reference data for ID oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
+market_data	SyntheticCDO	Error building trade for context 'analytic/PRICING'	Trade SyntheticCDO-2 needs credit index reference data for ID oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR

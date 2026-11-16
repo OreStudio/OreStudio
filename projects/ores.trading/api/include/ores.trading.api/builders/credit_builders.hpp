@@ -174,6 +174,36 @@ private:
     risk_participation_agreement_terms terms_;
 };
 
+/**
+ * @brief The terms of a tranche of protection on a credit index.
+ *
+ * The tranche covers the index's losses between the attachment and the
+ * detachment points, as fractions of the index notional. The index's names come
+ * from its reference data, which ORE reads by the index the qualifier names.
+ */
+struct synthetic_cdo_terms final {
+    /// The premium leg's notional, the price of the protection, and its side.
+    credit_protection_terms protection;
+    required<utility::decimal::decimal> attachment_point;
+    required<utility::decimal::decimal> detachment_point;
+};
+
+class ORES_TRADING_API_EXPORT synthetic_cdo_builder final {
+public:
+    static constexpr std::string_view trade_type = "SyntheticCDO";
+
+    synthetic_cdo_builder(const marketdata::conventions::convention_lookup& conventions,
+                          synthetic_cdo_terms terms);
+    synthetic_cdo_builder(marketdata::conventions::convention_lookup&&,
+                          synthetic_cdo_terms) = delete;
+
+    [[nodiscard]] std::expected<domain::credit_instrument_data, build_error> build() const;
+
+private:
+    const marketdata::conventions::convention_lookup& conventions_;
+    synthetic_cdo_terms terms_;
+};
+
 }
 
 #endif

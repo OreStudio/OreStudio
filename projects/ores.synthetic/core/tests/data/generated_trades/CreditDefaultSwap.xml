@@ -37,15 +37,15 @@
       </LegData>
     </CreditDefaultSwapData>
   </Trade>
-  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
     <TradeType>CreditDefaultSwap</TradeType>
     <CreditDefaultSwapData>
-      <IssuerId>5493001KJTIIGC8Y1R12</IssuerId>
-      <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+      <IssuerId>529900T8BM49AURSDO55</IssuerId>
+      <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
       <SettlesAccrual>Y</SettlesAccrual>
       <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
-      <ProtectionStart>2025-08-02</ProtectionStart>
-      <UpfrontDate>2025-08-02</UpfrontDate>
+      <ProtectionStart>2026-01-02</ProtectionStart>
+      <UpfrontDate>2026-01-02</UpfrontDate>
       <UpfrontFee>0</UpfrontFee>
       <LegData>
         <Payer>true</Payer>
@@ -54,12 +54,12 @@
         <PaymentConvention>Following</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>2962620.02</Notional>
+          <Notional>3051825.57</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
-            <EndDate>2032-08-02</EndDate>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2029-01-02</EndDate>
             <Tenor>3M</Tenor>
             <Calendar>WeekendsOnly</Calendar>
             <Convention>Following</Convention>

@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-the-codec-text-forms-out-of-line
-#+pr:
+#+pr: 4782
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -182,7 +182,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4782][#4782]] | [utility] Move the codec text forms out of line |
 
 * Review
 

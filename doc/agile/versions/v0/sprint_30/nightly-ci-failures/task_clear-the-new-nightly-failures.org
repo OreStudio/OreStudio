@@ -26,12 +26,12 @@ Make the next nightly green on the GCC build, the clang release tests and the cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-16                               |
 
 * Acceptance
 
@@ -41,9 +41,11 @@ Make the next nightly green on the GCC build, the clang release tests and the cl
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the three failures from the nightly's logs, fix the code each names, and
+then use the full GCC build as the census for =-Wchanges-meaning= and for
+whatever warnings the earlier partial builds never reached. Fix those too, and
+fix the site's unresolved link. Verify each change by compiling the translation
+unit that reported it against the current tree.
 
 * Measurements
 
@@ -57,7 +59,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| GCC build, full tree | 823 targets, 0 errors | =compass build --preset linux-gcc-release-ninja -j7= | branch head at build time (pre-rebase) |
+| =-Wchanges-meaning= diagnostics in the tree | 0 | The build's log | branch head at build time (pre-rebase) |
+| Remaining GCC warnings | 18, in three families | The build's log | branch head at build time (pre-rebase) |
+| Warning fixes compile | 5 of 5 files | =clang++ -fsyntax-only= with the target's own flags | 09946c95b4 |
+| Unresolved site links | 0 | =grep -rn '\[\[id:13EA0CF7' --include=*.org .= | 09946c95b4 |
 
 * Notes
 
@@ -85,3 +91,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed on branch =hotfix/clear-the-new-nightly-failures=, rebased onto main at
+0e2470c87e.
+
+The nightly failed on three test-only causes: the analytics tests used
+=std::accumulate= without =<numeric>= (Windows) and compared
+=std::partial_ordering= with the literal zero inside Catch's matcher (clang-cl);
+the tick scheduler case slept a fixed span and took two readings where it
+expected three; and the synthetic golden was stale. The golden and the scripted
+Strike were already fixed on main by the time this branch was rebased, so those
+changes were dropped.
+
+The full GCC build then found no =-Wchanges-meaning= anywhere, so the reporting
+route's =unread= rename was the last one, and reported 18 warnings in three
+families, all cleared here: =-Wsubobject-linkage= on the synthetic application's
+fleet, the marketdata official application's BCCH closure and the host runner
+tests' local types; =-Wmaybe-uninitialized= on the file-types request's
+defaulted order member; and =-Wmaybe-uninitialized= on =http_request::method=,
+which the route tests read from a default-constructed request.
+
+The site build's unresolved link to a superseded task now points at the task
+that replaced it.
+
+Out of scope: the Windows =C2220=/=C4244= narrowing inside =std::optional<int>=,
+which needs an MSVC build to pin down.

@@ -76,6 +76,7 @@ struct class_read_product {
 constexpr class_read_product class_read_products[] = {
     {"DoubleDigitalOption", "DoubleDigitalOptionData"},
     {"PerformanceOption_01", "PerformanceOption01Data"},
+    {"Autocallable_01", "Autocallable01Data"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -544,6 +545,13 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
         const auto& f = type.fields[i];
         if (f.is_attribute || states_an_underlying(f) || repeated_underlying_of(f) != nullptr)
             continue;
+        // A member holding a ScheduleData is an event the class reads as dates.
+        if (const auto element = product.has(f.name) ? product.child(f.name) : std::nullopt;
+            element && field_named(*element, "ScheduleData") != nullptr) {
+            auto& parameter = make_parameter(data, std::string(f.name), "Event");
+            read_event(data, parameter, *element);
+            continue;
+        }
         // A member is a parameter only when it states a leaf, or a list of leaves.
         // Anything else is content the projection holds no row for, and reading it
         // as a leaf would refuse the document.
@@ -582,7 +590,10 @@ void write_class_members(xml::record_writer& product, const scripted_instrument_
     for (const auto* parameter : ordered_parameters(data)) {
         if (!product.declares(parameter->name))
             continue;
-        if (parameter->shape == "vector") {
+        if (parameter->shape == "schedule" || parameter->shape == "derived_schedule") {
+            auto holder = product.child(parameter->name);
+            write_event(holder, data, *parameter);
+        } else if (parameter->shape == "vector") {
             const auto* leaf = container_leaf_of(product.type(), parameter->name);
             if (leaf == nullptr)
                 continue;

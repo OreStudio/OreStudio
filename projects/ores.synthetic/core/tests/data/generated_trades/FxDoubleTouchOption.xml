@@ -23,27 +23,27 @@
       <PayoffAmount>2269142.01</PayoffAmount>
     </FxDoubleTouchOptionData>
   </Trade>
-  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
     <TradeType>FxDoubleTouchOption</TradeType>
     <FxDoubleTouchOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
-          <ExerciseDate>2027-10-02</ExerciseDate>
+          <ExerciseDate>2031-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>KnockIn</Type>
         <Levels>
-          <Level>0.6536</Level>
-          <Level>0.7988</Level>
+          <Level>0.7977</Level>
+          <Level>0.9749</Level>
         </Levels>
       </BarrierData>
       <ForeignCurrency>EUR</ForeignCurrency>
       <DomesticCurrency>USD</DomesticCurrency>
       <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>189880.89</PayoffAmount>
+      <PayoffAmount>3658095.79</PayoffAmount>
     </FxDoubleTouchOptionData>
   </Trade>
 </Portfolio>

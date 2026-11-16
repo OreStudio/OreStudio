@@ -77,6 +77,10 @@ constexpr class_read_product class_read_products[] = {
     {"DoubleDigitalOption", "DoubleDigitalOptionData"},
     {"PerformanceOption_01", "PerformanceOption01Data"},
     {"Autocallable_01", "Autocallable01Data"},
+    {"EquityBasketOption", "EquityBasketOptionData"},
+    {"FxBasketOption", "FxBasketOptionData"},
+    {"EquityRainbowOption", "EquityRainbowOptionData"},
+    {"FxRainbowOption", "FxRainbowOptionData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -184,7 +188,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::*column;
+    std::optional<std::string> scripted_parameter::* column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -233,9 +237,8 @@ auto stated_value_of(const scripted_parameter& parameter, const std::string& val
     return names_an_index(parameter.declared_type) ? ore_name_of(value) : value;
 }
 
-auto make_parameter(scripted_instrument_data& data,
-                    std::string name,
-                    std::string type) -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
+    -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -347,8 +350,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data,
-               int parameter_sequence_number) -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
+    -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -499,6 +502,18 @@ auto states_an_underlying(const xml::field& member) -> bool {
            member.type->name == "underlying";
 }
 
+/// Whether the member is an OptionData block, which the option rows hold.
+auto states_option_data(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           member.type->name == "optionData";
+}
+
+/// Whether the member is itself a schedule, which the schedule rows hold.
+auto states_a_schedule(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           member.type->name == "scheduleData";
+}
+
 /// Whether the member states its value as one leaf, which is what a parameter holds.
 auto states_a_leaf(const xml::field& member) -> bool {
     switch (member.kind) {
@@ -537,12 +552,12 @@ auto repeated_underlying_of(const xml::field& member) -> const xml::field* {
 }
 
 /**
- * @brief The role the underlying rows of a member are kept under.
+ * @brief The role the underlying or schedule rows of a member are kept under.
  *
- * The role names the element the document states the blocks in, so a product
+ * The role names the element the document states the rows in, so a product
  * that states Underlying1 beside Underlying2 keeps the two apart.
  */
-auto underlying_role_of(std::string_view element) -> std::string {
+auto role_of_member(std::string_view element) -> std::string {
     std::string role;
     for (const char c : element)
         role += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
@@ -555,6 +570,17 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
         const auto& f = type.fields[i];
         if (f.is_attribute || states_an_underlying(f) || repeated_underlying_of(f) != nullptr)
             continue;
+        if (states_option_data(f)) {
+            if (product.has(f.name))
+                option_block::read_option_block(data, *product.child(f.name));
+            continue;
+        }
+        if (states_a_schedule(f)) {
+            if (product.has(f.name))
+                option_block::read_schedule(
+                    data, *product.child(f.name), "option", 1, role_of_member(f.name));
+            continue;
+        }
         if (holds_a_schedule(f)) {
             if (product.has(f.name)) {
                 auto& parameter = make_parameter(data, std::string(f.name), "Event");
@@ -588,10 +614,10 @@ void read_class_underlyings(scripted_instrument_data& data, const xml::record_re
             continue;
         if (states_an_underlying(f)) {
             underlying_block::read_underlying(
-                data, *product.child(f.name), underlying_role_of(f.name), 1);
+                data, *product.child(f.name), role_of_member(f.name), 1);
         } else if (const auto* block = repeated_underlying_of(f)) {
             underlying_block::read_underlyings(
-                data, *product.child(f.name), block->name, underlying_role_of(block->name));
+                data, *product.child(f.name), block->name, role_of_member(block->name));
         }
     }
 }
@@ -616,16 +642,26 @@ void write_class_members(xml::record_writer& product, const scripted_instrument_
     }
 }
 
+void write_class_blocks(xml::record_writer& product, const scripted_instrument_data& data) {
+    const auto& type = product.type();
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (states_option_data(f) && !data.options.empty())
+            option_block::write_option_data(product.child(f.name), data);
+        else if (states_a_schedule(f))
+            option_block::write_product_schedule(product, data, f.name, role_of_member(f.name));
+    }
+}
+
 void write_class_underlyings(xml::record_writer& product, const scripted_instrument_data& data) {
     const auto& type = product.type();
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
         if (states_an_underlying(f)) {
             // The element states one block, which is the first row under its role.
-            underlying_block::write_underlyings(product, f.name, data, underlying_role_of(f.name));
+            underlying_block::write_underlyings(product, f.name, data, role_of_member(f.name));
         } else if (const auto* block = repeated_underlying_of(f)) {
-            const auto rows =
-                underlying_block::underlyings_of(data, underlying_role_of(block->name));
+            const auto rows = underlying_block::underlyings_of(data, role_of_member(block->name));
             if (rows.empty())
                 continue;
             auto container = product.child(f.name);
@@ -638,8 +674,8 @@ void write_class_underlyings(xml::record_writer& product, const scripted_instrum
 }
 namespace {
 
-auto read_scripted_row(xml::record_reader trade,
-                       std::string_view trade_type) -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<scripted_instrument> {
     if (trade_type != "ScriptedTrade")
         return std::nullopt;
 
@@ -708,6 +744,7 @@ auto write_scripted_instrument(xml::record_writer& trade,
     if (const auto* class_read = class_read_product_of(trade_type)) {
         auto product = trade.child(class_read->element);
         write_class_members(product, *carrier);
+        write_class_blocks(product, *carrier);
         write_class_underlyings(product, *carrier);
         return true;
     }

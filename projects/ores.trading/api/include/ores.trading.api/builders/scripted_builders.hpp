@@ -30,8 +30,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -156,6 +158,71 @@ public:
 
 private:
     autocallable_terms terms_;
+};
+
+/// The products ORE reads over a weighted basket, each through a class of its own.
+enum class basket_product { equity_basket, fx_basket, equity_rainbow, fx_rainbow };
+
+/// One member of a basket: what it is, its quote currency where the document states one, and its
+/// weight.
+struct basket_option_member final {
+    marketdata::datum::market_reference underlying;
+    std::optional<std::string> currency;
+    utility::decimal::decimal weight;
+};
+
+/**
+ * @brief A European option on a weighted basket.
+ *
+ * The payoff type names the script ORE runs: Vanilla for a basket, and
+ * BestOfAssetOrCash, WorstOfAssetOrCash, MaxRainbow or MinRainbow for a
+ * rainbow. The option type is stated only for the payoffs that read it.
+ */
+struct basket_option_terms final {
+    required<std::string> currency;
+    required<utility::decimal::decimal> notional;
+    required<utility::decimal::decimal> strike;
+    required<std::vector<basket_option_member>> members;
+    required<std::string> payoff_type;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+};
+
+/// Builds the product's rows; the underlying type is the family's, Equity or FX.
+ORES_TRADING_API_EXPORT scripted_result build_basket_option(std::string_view trade_type,
+                                                            std::string_view underlying_type,
+                                                            bool rainbow,
+                                                            const basket_option_terms& terms);
+
+template <basket_product Product>
+class basket_option_builder final {
+public:
+    static constexpr std::string_view trade_type = [] {
+        switch (Product) {
+            case basket_product::equity_basket:
+                return std::string_view("EquityBasketOption");
+            case basket_product::fx_basket:
+                return std::string_view("FxBasketOption");
+            case basket_product::equity_rainbow:
+                return std::string_view("EquityRainbowOption");
+            default:
+                return std::string_view("FxRainbowOption");
+        }
+    }();
+    explicit basket_option_builder(basket_option_terms terms)
+        : terms_(std::move(terms)) {}
+    [[nodiscard]] scripted_result build() const {
+        constexpr bool equity =
+            Product == basket_product::equity_basket || Product == basket_product::equity_rainbow;
+        constexpr bool rainbow =
+            Product == basket_product::equity_rainbow || Product == basket_product::fx_rainbow;
+        return build_basket_option(trade_type, equity ? "Equity" : "FX", rainbow, terms_);
+    }
+
+private:
+    basket_option_terms terms_;
 };
 
 }

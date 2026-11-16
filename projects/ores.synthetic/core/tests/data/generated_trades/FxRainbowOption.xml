@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+    <TradeType>FxRainbowOption</TradeType>
+    <FxRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>6592217.61</Notional>
+      <Strike>2.8458</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-EUR-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-GBP-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>MaxRainbow</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2030-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2030-08-02</Settlement>
+    </FxRainbowOptionData>
+  </Trade>
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+    <TradeType>FxRainbowOption</TradeType>
+    <FxRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>2449079.16</Notional>
+      <Strike>2.0996</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-EUR-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-GBP-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>MaxRainbow</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2026-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2026-08-02</Settlement>
+    </FxRainbowOptionData>
+  </Trade>
+</Portfolio>

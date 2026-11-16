@@ -194,7 +194,7 @@ domain::trade_generation_scope inflation_scope() {
 }
 
 /*
- * A scope of the FX family. The ten routed types are sixteen here, and the
+ * A scope of the FX family. The routed types are eighteen here, and the
  * catalogue carries one pair of the book's currency and one that names neither
  * side of it, so the preference is testable.
  */
@@ -430,7 +430,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 20;
+    wide.trades_per_book = 22;
 
     const auto plan = plan_of(wide);
 
@@ -443,15 +443,15 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     }
 
     /*
-     * Twenty codes, seventeen products and three containers, and the planner
-     * cycles through them, so one book of twenty reaches every one. The
+     * Twenty-two codes, nineteen products and three containers, and the
+     * planner cycles through them, so one book of twenty-two reaches every one. The
      * composite holds two options and each return swap one position, which
      * are trades of their own.
      */
-    REQUIRE(types.size() == 20u);
+    REQUIRE(types.size() == 22u);
     const auto books = wide.book_ids.size();
     CHECK(held == 4u * books);
-    CHECK(plan.slots.size() == 24u * books);
+    CHECK(plan.slots.size() == 26u * books);
     CHECK(plan.structures.size() == 3u * books);
 }
 
@@ -985,26 +985,28 @@ TEST_CASE("a month_end_anchor_still_dates_every_fx_trade", "[trade_population]")
 }
 
 TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade_population]") {
-    const auto plan = plan_of(fx_scope());
+    auto scope = fx_scope();
+    scope.trades_per_book = 18;
+    const auto plan = plan_of(scope);
 
     std::set<std::string> types;
     for (const auto& slot : plan.slots)
         types.insert(slot.trade_type_code);
 
-    CHECK(types.size() == 16);
+    CHECK(types.size() == 18);
 }
 
 TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
           "[trade_population]") {
     /*
-     * The fx planner cycles sixteen routed codes. A config of eight slots never
+     * The fx planner cycles eighteen routed codes. A config of eight slots never
      * reaches the variance swap or the accumulator, which is what a tenant held
      * before the seeded configs stated one trade per code.
      */
     auto wide = fx_scope();
     wide.trades_per_book = 64;
     const auto routed = codes_of(plan_of(wide));
-    REQUIRE(routed.size() == 16);
+    REQUIRE(routed.size() == 18);
 
     auto seeded = fx_scope();
     seeded.book_ids = {bond_book};

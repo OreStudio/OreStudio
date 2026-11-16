@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
+#include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
@@ -2858,6 +2859,101 @@ TEST_CASE("an_outperformance_option_holds_each_equity_as_a_row_and_its_prices_as
     REQUIRE(items.size() == 1);
     check(items[0]);
     check(rebuild(items[0]));
+}
+
+TEST_CASE("a_basket_and_a_rainbow_hold_their_members_option_block_and_schedule_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="AsianBasketOption#1">
+    <TradeType>EquityBasketOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityBasketOptionData>
+      <Currency>USD</Currency>
+      <Notional>1</Notional>
+      <Strike>5000</Strike>
+      <Underlyings>
+        <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name><Weight>1.0</Weight></Underlying>
+        <Underlying>
+          <Type>Equity</Type><Name>RIC:.STOXX50E</Name><Currency>EUR</Currency><Weight>1.0</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>Asian</PayoffType>
+        <ExerciseDates><ExerciseDate>2020-02-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Settlement>2020-02-20</Settlement>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2019-02-05</StartDate>
+          <EndDate>2020-02-05</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>US</Calendar>
+          <Convention>U</Convention>
+          <TermConvention>U</TermConvention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ObservationDates>
+    </EquityBasketOptionData>
+  </Trade>
+  <Trade id="BestOfAssetOrCashRainbowOption#1">
+    <TradeType>EquityRainbowOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>1</Notional>
+      <Strike>2000</Strike>
+      <Underlyings>
+        <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name><Weight>1.0</Weight></Underlying>
+        <Underlying>
+          <Type>Equity</Type><Name>RIC:.STOXX50E</Name><Currency>EUR</Currency><Weight>1.0</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayoffType>BestOfAssetOrCash</PayoffType>
+        <ExerciseDates><ExerciseDate>2020-02-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Settlement>2020-02-20</Settlement>
+    </EquityRainbowOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) -> std::string {
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    const auto check = [&](const ores::ore::xml::trade_import_item& item,
+                           std::string_view payoff,
+                           bool observed) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "Currency") == "USD");
+        CHECK(value_of(*data, "Settlement") == "2020-02-20");
+        CHECK_FALSE(value_of(*data, "Strike") == "<absent>");
+        REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(ores::ore::domain::underlying_name_of(data->instrument_underlyings[1].name) ==
+              "RIC:.STOXX50E");
+        CHECK(data->instrument_underlyings[1].currency == std::optional<std::string>("EUR"));
+        CHECK(data->instrument_underlyings[1].weight == 1.0);
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].payoff_type == std::optional<std::string>(payoff));
+        CHECK(ores::ore::domain::option_block::exercise_dates_of(*data).size() == 1u);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "observationdates") ==
+              observed);
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check(items[0], "Asian", true);
+    check(rebuild(items[0]), "Asian", true);
+    check(items[1], "BestOfAssetOrCash", false);
+    check(rebuild(items[1]), "BestOfAssetOrCash", false);
 }
 
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",

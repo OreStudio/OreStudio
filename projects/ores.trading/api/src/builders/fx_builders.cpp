@@ -146,6 +146,11 @@ fx_result fx_average_forward_builder::build() const {
     domain::fx_instrument_data out{};
     out.asian_forwards.push_back(std::move(row));
     add_schedule(out, "observation_schedule", "1M", terms_.start.get(), terms_.payment_date.get());
+    /*
+     * ORE requires the last observation on or before the payment date. A
+     * payment date on a holiday would otherwise roll the last observation past it.
+     */
+    out.schedules.back().term_convention = "P";
     return out;
 }
 

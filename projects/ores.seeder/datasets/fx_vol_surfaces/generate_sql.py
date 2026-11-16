@@ -26,22 +26,50 @@ METHODOLOGY_DESCRIPTION = ("The recipe the system calibrates each FX volatility 
 METHODOLOGY_URL = ("https://github.com/OreStudio/OreStudio/tree/main/projects/ores.seeder/"
                    "datasets/fx_vol_surfaces")
 
-# The pairs the derived source quotes, in market quoting order, with the short-dated
-# delta type of each pair's FX option convention in refdata.conventions.
+# The pairs the forward ladder publishes a set for and the derived source can quote, in market
+# quoting order, with the short-dated delta type of each pair's FX option convention in
+# refdata.conventions. A grid that reaches past the convention's switch tenor states its
+# strikes in the short-dated type the convention starts at; the calibration resolves each
+# expiry's own delta type.
 PAIRS = [
-    ("EUR", "USD", "Spot"),
-    ("GBP", "USD", "Spot"),
-    ("USD", "JPY", "PaSpot"),
-    ("USD", "CHF", "PaSpot"),
+    ("AUD", "CAD", "PaSpot"),
+    ("AUD", "CHF", "PaSpot"),
+    ("AUD", "JPY", "PaSpot"),
+    ("AUD", "NZD", "PaSpot"),
     ("AUD", "USD", "Spot"),
-    ("USD", "CAD", "PaSpot"),
-    ("NZD", "USD", "Spot"),
+    ("CAD", "JPY", "PaSpot"),
+    ("CHF", "JPY", "PaSpot"),
+    ("EUR", "AUD", "PaSpot"),
+    ("EUR", "CAD", "PaSpot"),
+    ("EUR", "CHF", "PaSpot"),
+    ("EUR", "DKK", "PaSpot"),
     ("EUR", "GBP", "Spot"),
     ("EUR", "JPY", "PaSpot"),
-    ("EUR", "CHF", "PaSpot"),
+    ("EUR", "NZD", "PaSpot"),
+    ("EUR", "SEK", "PaSpot"),
+    ("EUR", "TRY", "PaFwd"),
+    ("EUR", "USD", "Spot"),
+    ("GBP", "AUD", "PaSpot"),
+    ("GBP", "CAD", "PaSpot"),
+    ("GBP", "CHF", "PaSpot"),
+    ("GBP", "JPY", "PaSpot"),
+    ("GBP", "NZD", "PaSpot"),
+    ("GBP", "USD", "Spot"),
+    ("NZD", "JPY", "Spot"),
+    ("NZD", "USD", "Spot"),
+    ("USD", "CAD", "PaSpot"),
+    ("USD", "CHF", "PaSpot"),
+    ("USD", "CZK", "PaFwd"),
+    ("USD", "HKD", "PaFwd"),
+    ("USD", "INR", "PaFwd"),
+    ("USD", "JPY", "PaSpot"),
+    ("USD", "KRW", "PaFwd"),
+    ("USD", "MXN", "PaFwd"),
+    ("USD", "SGD", "PaFwd"),
+    ("USD", "ZAR", "PaFwd"),
 ]
 
-EXPIRIES = ["1W", "1M", "2M", "3M", "6M", "9M", "1Y"]
+EXPIRIES = ["1W", "1M", "2M", "3M", "6M", "9M", "1Y", "18M", "2Y", "3Y", "5Y", "7Y", "10Y"]
 LABELS = ["ATM", "25RR", "25BF", "10RR", "10BF"]
 
 # The strikes of the output grid, as (side, delta), with None for ATM.

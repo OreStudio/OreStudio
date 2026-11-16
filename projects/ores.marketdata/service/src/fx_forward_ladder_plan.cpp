@@ -46,7 +46,10 @@ const ladder_tenor standard_tenors[] = {
     {"1Y", {period_unit::year, 1}},
     {"18M", {period_unit::month, 18}},
     {"2Y", {period_unit::year, 2}},
+    {"3Y", {period_unit::year, 3}},
     {"5Y", {period_unit::year, 5}},
+    {"7Y", {period_unit::year, 7}},
+    {"10Y", {period_unit::year, 10}},
 };
 
 }

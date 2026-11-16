@@ -3688,7 +3688,7 @@ begin
             (v_dataset_id, v_tenant_id, 'IDR-DEPOSIT', 1, v_party_id, 'true', 'IDR-JIBOR', null, null, null, null, null, 'oresmd://ir/IDR?type=fixing&index=ibor&name=JIBOR'),
             (v_dataset_id, v_tenant_id, 'IDR-GENERIC-CONVENTIONS', 1, v_party_id, 'true', 'IDR-GENERIC', null, null, null, null, null, 'oresmd://ir/IDR?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'ILS-DEPOSIT', 1, v_party_id, 'true', 'ILS-TELBOR', null, null, null, null, null, 'oresmd://ir/ILS?type=fixing&index=ibor&name=TELBOR'),
-            (v_dataset_id, v_tenant_id, 'ILS-ON-DEPOSIT', 1, v_party_id, 'true', 'ILS-SHIR', null, null, null, null, null, 'oresmd://ir/ILS?type=fixing&index=ibor&name=SHIR'),
+            (v_dataset_id, v_tenant_id, 'ILS-ON-DEPOSIT', 1, v_party_id, 'true', 'ILS-TELBORON', null, null, null, null, null, 'oresmd://ir/ILS?type=fixing&index=ibor&name=TELBORON'),
             (v_dataset_id, v_tenant_id, 'INR-DEPOSIT', 1, v_party_id, 'true', 'INR-MIFOR', null, null, null, null, null, 'oresmd://ir/INR?type=fixing&index=ibor&name=MIFOR'),
             (v_dataset_id, v_tenant_id, 'INR-GENERIC-CONVENTIONS', 1, v_party_id, 'true', 'INR-GENERIC', null, null, null, null, null, 'oresmd://ir/INR?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'INR-ON-DEPOSIT', 1, v_party_id, 'true', 'INR-MIBOROIS', null, null, null, null, null, 'oresmd://ir/INR?type=fixing&index=ibor&name=MIBOROIS'),
@@ -3840,7 +3840,7 @@ begin
             (v_dataset_id, v_tenant_id, 'USD-SOFR-3M-FUTURES', 1, v_party_id, 'USD-SOFR', 'IMM', 'Compounding', null, '3M', 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR');
     end if;
 
-    -- FxOption: 173 rows
+    -- FxOption: 175 rows
     if not exists (
         select 1 from ores_dq_fx_option_conventions_artefact_tbl
         where dataset_id = v_dataset_id
@@ -3868,6 +3868,7 @@ begin
             (v_dataset_id, v_tenant_id, 'CAD-CNY-FXOPTION', 1, v_party_id, 'CAD-CNY-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'CAD-DKK-FXOPTION', 1, v_party_id, 'CAD-DKK-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'CAD-HKD-FXOPTION', 1, v_party_id, 'CAD-HKD-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
+            (v_dataset_id, v_tenant_id, 'CAD-JPY-FXOPTION', 1, v_party_id, 'CAD-JPY-FX', 'AtmDeltaNeutral', 'PaSpot', '2Y', 'AtmDeltaNeutral', 'PaFwd', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'CAD-MXN-FXOPTION', 1, v_party_id, 'CAD-MXN-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'CAD-NOK-FXOPTION', 1, v_party_id, 'CAD-NOK-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'CAD-ZAR-FXOPTION', 1, v_party_id, 'CAD-ZAR-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
@@ -3940,6 +3941,7 @@ begin
             (v_dataset_id, v_tenant_id, 'FX-USD-JPY-OPTION-CONVENTIONS', 1, v_party_id, null, 'AtmDeltaNeutral', 'PaFwd', null, null, null, null, null, null),
             (v_dataset_id, v_tenant_id, 'GBP-AUD-FXOPTION', 1, v_party_id, 'GBP-AUD-FX', 'AtmDeltaNeutral', 'PaSpot', '2Y', 'AtmDeltaNeutral', 'PaFwd', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'GBP-BRL-FXOPTION', 1, v_party_id, 'GBP-BRL-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
+            (v_dataset_id, v_tenant_id, 'GBP-CAD-FXOPTION', 1, v_party_id, 'GBP-CAD-FX', 'AtmDeltaNeutral', 'PaSpot', '2Y', 'AtmDeltaNeutral', 'PaFwd', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'GBP-CHF-FXOPTION', 1, v_party_id, 'GBP-CHF-FX', 'AtmFwd', 'PaSpot', '2Y', 'AtmFwd', 'PaFwd', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'GBP-CNH-FXOPTION', 1, v_party_id, 'GBP-CNH-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
             (v_dataset_id, v_tenant_id, 'GBP-CNY-FXOPTION', 1, v_party_id, 'GBP-CNY-FX', 'AtmDeltaNeutral', 'PaSpot', '0D', 'AtmDeltaNeutral', 'PaSpot', 'Call', 'Broker', null),
@@ -4222,8 +4224,8 @@ begin
             (v_dataset_id, v_tenant_id, 'GBP-OIS-CONVENTIONS', 1, v_party_id, '0', 'GBP-SONIA', 'ACT/365.FIXED', null, '0', 'false', 'Annual', 'Following', 'Following', 'Backward', null, '0', 'oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
             (v_dataset_id, v_tenant_id, 'HKD-OIS', 1, v_party_id, '2', 'HKD-HONIA', 'ACT/365.FIXED', null, '1', 'false', 'Quarterly', 'ModifiedFollowing', 'ModifiedFollowing', 'Backward', null, null, 'oresmd://ir/HKD?type=fixing&index=ibor&name=HONIA'),
             (v_dataset_id, v_tenant_id, 'HKD-OIS-HIBOROIS', 1, v_party_id, '2', 'HKD-HIBOROIS', 'ACT/365.FIXED', null, '2', 'false', 'Annual', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOROIS'),
-            (v_dataset_id, v_tenant_id, 'HUF-OIS', 1, v_party_id, '1', 'HUF-HUFONIA', 'ACT/365.FIXED', null, '2', 'false', 'Annual', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/HUF?type=fixing&index=ibor&name=HUFONIA'),
-            (v_dataset_id, v_tenant_id, 'ILS-OIS', 1, v_party_id, '1', 'ILS-SHIR', 'ACT/365.FIXED', null, '2', 'false', 'Annual', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/ILS?type=fixing&index=ibor&name=SHIR'),
+            (v_dataset_id, v_tenant_id, 'HUF-OIS', 1, v_party_id, '1', 'HUF-BUBORON', 'ACT/365.FIXED', null, '2', 'false', 'Annual', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/HUF?type=fixing&index=ibor&name=BUBORON'),
+            (v_dataset_id, v_tenant_id, 'ILS-OIS', 1, v_party_id, '1', 'ILS-TELBORON', 'ACT/365.FIXED', null, '2', 'false', 'Annual', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/ILS?type=fixing&index=ibor&name=TELBORON'),
             (v_dataset_id, v_tenant_id, 'INR-OIS', 1, v_party_id, '1', 'INR-MIBOROIS', 'ACT/365.FIXED', null, null, 'false', 'Semiannual', 'ModifiedFollowing', 'ModifiedFollowing', 'Backward', null, null, 'oresmd://ir/INR?type=fixing&index=ibor&name=MIBOROIS'),
             (v_dataset_id, v_tenant_id, 'INR-OIS-POST-1Y', 1, v_party_id, '1', 'INR-MIBOROIS', 'ACT/365.FIXED', null, null, 'false', 'Semiannual', 'ModifiedFollowing', 'ModifiedFollowing', 'Backward', null, null, 'oresmd://ir/INR?type=fixing&index=ibor&name=MIBOROIS'),
             (v_dataset_id, v_tenant_id, 'INR-OIS-PRE-1Y', 1, v_party_id, '1', 'INR-MIBOROIS', 'ACT/365.FIXED', null, null, 'false', 'Annual', 'ModifiedFollowing', 'ModifiedFollowing', 'Backward', null, null, 'oresmd://ir/INR?type=fixing&index=ibor&name=MIBOROIS'),
@@ -4282,8 +4284,6 @@ begin
             (v_dataset_id, v_tenant_id, 'HKD-HONIA', 1, 'HKD', 'ACT/365.FIXED', '0', 'oresmd://ir/HKD?type=fixing&index=ibor&name=HONIA'),
             (v_dataset_id, v_tenant_id, 'HUF-BUBORON', 1, 'HUF', 'ACT/365.FIXED', '0', 'oresmd://ir/HUF?type=fixing&index=ibor&name=BUBORON'),
             (v_dataset_id, v_tenant_id, 'ILS-TELBORON', 1, 'ILS', 'ACT/365.FIXED', '0', 'oresmd://ir/ILS?type=fixing&index=ibor&name=TELBORON'),
-            (v_dataset_id, v_tenant_id, 'HUF-HUFONIA', 1, 'HUF', 'ACT/365.FIXED', '0', 'oresmd://ir/HUF?type=fixing&index=ibor&name=HUFONIA'),
-            (v_dataset_id, v_tenant_id, 'ILS-SHIR', 1, 'ILS', 'ACT/365.FIXED', '0', 'oresmd://ir/ILS?type=fixing&index=ibor&name=SHIR'),
             (v_dataset_id, v_tenant_id, 'INR-MIBOR', 1, 'India', 'ACT/365.FIXED', '0', 'oresmd://ir/INR?type=fixing&index=ibor&name=MIBOR'),
             (v_dataset_id, v_tenant_id, 'INR-MIBOROIS', 1, 'National Stock Exchange of India', 'ACT/365.FIXED', '0', 'oresmd://ir/INR?type=fixing&index=ibor&name=MIBOROIS'),
             (v_dataset_id, v_tenant_id, 'JPY-TONA', 1, 'Japan', 'ACT/365.FIXED', '0', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),

@@ -640,8 +640,13 @@ or of the overnight rates catalogue,
 =projects/ores.sql/populate/marketdata/marketdata_overnight_rates_catalogue_populate.sql=,
 named with the adapter that reads it.
 
+=--backfill-days 3650= is the longest window the adapter accepts, and ten years is what a
+volatility surface's ten-year expiry needs: the derived source builds each expiry from a window of
+daily returns as long as the expiry itself, so a ten-year quote needs ten years of fixings.
+
 ** Extra args
 
+- --backfill-days 3650
 - --source ecb-frankfurter:ecb:frankfurter:ECB
 - --source imf-frankfurter:imf:frankfurter:IMF
 - --source boc-frankfurter:boc:frankfurter:BOC

@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8
+:END:
+#+title: Task: Surface every pair the ladder carries, out to ten years
+#+description: The demo surfaced ten majors out to 1Y because the blueprint catalogue and the derived source said so, not because the pipeline could not do more. Extend the catalogue to every ladder pair the derived source can quote and the grid to 10Y, extending the ladder's own tenor list to match.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:seeder:derived:surfaces:tenors:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/surface-every-pair-out-to-ten-years
+#+pr: 4772
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-16
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every pair the forward ladder publishes a set for has a surface blueprint, and every surface's grid reaches 10Y, so a desk can read a volatility for any pair and tenor its linear book already has.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- Every pair the ladder carries and the derived source can quote has a surface blueprint: 35 of
+  the 39. USD/CLP and USD/COP wait for the derived source to read a second publisher, and
+  EUR/CZK and USD/TRY wait for a smile that stays positive in a short window.
+- Every blueprint's grid names thirteen expiries, 1W to 10Y, and the ladder publishes a row for
+  each of them.
+- A fresh tenant provisions through every step.
+
+* Plan
+
+What bounds the surface set today, measured on a freshly provisioned environment:
+
+1. The catalogue. The system tenant holds ten blueprints, seeded by
+   =projects/ores.seeder/datasets/fx_vol_surfaces/generate_sql.py= from a fixed =PAIRS= list of
+   ten majors. Provisioning copies those ten into each party. Nothing else limits the count.
+2. The quotes. The derived source's universe is its vendor inventory, seeded by
+   =projects/ores.sql/populate/marketdata/marketdata_derived_catalogue_populate.sql= from the
+   same ten pairs and eight expiries (1W to 2Y), so it publishes 10 x 8 x 5 = 400 quotes.
+3. The horizon. A surface's grid expiry must be a tenor the forward ladder publishes a row for.
+   The ladder's standard tenors end at 5Y, so 5Y is the ceiling today; beyond it the calibration
+   refuses the expiry by name, which is the rule the previous task established.
+4. The discounting. Not a constraint: the funding curves bootstrap pillars to 3M, 6M, 12M, 2Y,
+   5Y, 10Y and 30Y, so a forward is priced at 10Y as readily as at 6M.
+5. The forwards. Not a constraint either: 39 pairs already publish a forward set for every party.
+
+Steps:
+
+- Add 3Y, 7Y and 10Y to the ladder's standard tenors, so the grid can reach 10Y. 10Y is where the
+  market convention stops (FX volatility is quoted to 10Y); the curve pillars reach 30Y, so the
+  forward side is not what would stop a 30Y grid, the quote convention is.
+- Extend the derived source's inventory to the same pairs and expiries.
+- Extend the seeder's =PAIRS= to the 39 pairs that carry a ladder, each with its own convention's
+  short-dated delta type, and its =EXPIRIES= to the ladder's list.
+- Regenerate the dataset SQL, recreate the database, provision a tenant, and check that every
+  party has a surface for every pair, with the 10Y grid expiry present and the fit converged.
+
+Open question for the pairs whose convention switches delta type at 2Y (USD/JPY, EUR/CZK and the
+rest): the blueprint states one delta type for its output strikes while the calibration resolves
+the pair's convention per expiry. A grid that reaches past the switch states a strike type the
+long expiry does not use. To be settled while implementing.
+
+* What is done
+
+- The ladder publishes 3Y, 5Y, 7Y and 10Y through the same rule, and a test states those dates.
+- The blueprint catalogue carries 35 pairs over thirteen expiries from 1W to 10Y; the derived
+  source's own expiry list and inventory say the same.
+- CAD/JPY and GBP/CAD, which the ladder carried and reference data had no FX option convention
+  for, now have one.
+- The official adapter's backfill is 3650 days, which is the parser's own maximum and what a
+  ten-year expiry's return window needs.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Blueprints per party | 35 for each of the five parties | =select party_id, count(*) from ores_refdata_fx_vol_surface_blueprints_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1= | 96c1953ac2 + this commit |
+| Blueprints naming each expiry, 1W to 10Y | 175 for each of the thirteen | =select expiry_code, count(distinct blueprint_id) from ores_refdata_fx_vol_surface_pillars_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1= | 96c1953ac2 + this commit |
+| Surfaces published per business party | 29; six held back by the publish gate | provisioning of =acme_demo= on a recreated database: all 17 steps completed | 96c1953ac2 + this commit |
+| Unit gates | ores.marketdata.service.tests and ores.synthetic.api.tests pass | =compass test run -- -R <suite>= | 96c1953ac2 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4772][#4772]] | [marketdata,seeder,synthetic] Surface every pair the derived source can quote, out to ten years |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: a window of 3650 days doubles the reads that list a series' stored days, 31 instead of 16 per pair | derived_fx_vol_adapter.cpp | Decline | Once per pair per process start; the feed keeps the answer, so a pass does not repeat it. |
+| 2 | Local review: EUR/TRY stays in the catalogue though its 1W butterfly is held back on every run | generate_sql.py | Decline | A held-back surface is the gate doing its job and provisioning completes; recorded in the Result. |
+| 3 | Local review: misspell-fixer reports EXPLICT | conventions.tsv | Decline | An ORE convention id copied from upstream, not text this change wrote. |
+| 4 | Bot: the conventions SQL renames ILS-SHIR and HUF-HUFONIA, which the description does not say | refdata_conventions_artefact_populate.sql | Accept | Main's SQL is stale against main's own TSV; regeneration fixes it. Said in the PR description; the ACME UK configuration that still names the old ids is captured. |
+| 5 | Bot: the 3650-day backfill is not in the diff | service_registry.org | Decline | It is: the official adapter's extra args in service_registry.org, which generate its unit. A shorter history leaves the long expiry unquoted and the publish names it. |
+| 6 | Bot: the window comment hard-codes a publisher's day count | derived_fx_vol_adapter.cpp | Decline | The figure is why the read spans the whole backfill; it changes with the constant. |
+| 7 | Bot: no test of the delta type past the switch tenor | generate_sql.py | Decline | The refdata mapping test "an expiry at the switch tenor takes the long-term convention" covers it, and provisioning published CAD/JPY to 10Y. |
+| 8 | Bot: EUR/TRY's 1W butterfly has no tracking item | capture | Accept | Added to the short-window smile capture. |
+| 9 | Bot: no test that the derived expiries are ladder tenors | fx_forward_ladder_plan_tests.cpp | Decline | The two lists live in two services; the calibration refuses an expiry the ladder lacks by name, and provisioning exercises it. |
+
+* Result
+
+Every pair the ladder carries and the derived source can quote now has a surface, and every
+surface's grid reaches 10Y. A fresh Acme tenant provisions through all 17 steps: each of the five
+parties holds 35 blueprints over thirteen expiries, and each business party publishes 29 surfaces.
+
+The other six are held back by the publish gate, which is its job and not a failure: AUD/CHF,
+EUR/GBP, GBP/USD, NZD/USD and USD/MXN each have one pillar just past the fit tolerance (0.0010 to
+0.0025), and EUR/TRY breaks the butterfly condition at 1W.
+
+Four of the 39 ladder pairs are left out, each for a reason with its own owner:
+
+- USD/CLP and USD/COP have no ECB fixing, and the derived source reads only the ECB. They come
+  back when the derived source reads a pair's levels from whichever source quotes it.
+- EUR/CZK at 1W and USD/TRY at 3M never read a quote, because the Gram-Charlier smile turns
+  negative in the wing; a surface missing one expiry is refused whole. Captured as
+  [[id:705E8595-D6FF-45C5-9390-6AAFF53741BA][A short window's Gram-Charlier smile turns negative in the wing]].
+
+The blocker this task first hit, the derived source failing to warm a tenant in time, is gone: the
+one-pass derivation (#4750) answers the blueprint step well inside its wait, and the first party
+in the profile now gets its blueprints like the other three.
+
+No component changed shape: the change is a catalogue, a dataset, one adapter argument and three
+rows of the ladder's tenor list.

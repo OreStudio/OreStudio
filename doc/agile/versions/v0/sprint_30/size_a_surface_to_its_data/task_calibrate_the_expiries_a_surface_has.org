@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
-#+branch: feature/surface-every-pair-out-to-ten-years
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:

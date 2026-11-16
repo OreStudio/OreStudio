@@ -150,6 +150,7 @@ TEST_CASE("a_curve_configuration_draws_its_sections_entries_and_leaves", "[curve
                                      {section_row("YieldCurves", "", "The yield curves")},
                                      {parameters, values, kinds});
 
+    INFO(answer);
     CHECK(answer.find("\"name\":\"ACME curves\"") != std::string::npos);
     CHECK(answer.find("\"configurationId\":\"00000000-0000-0000-0000-000000000001\"") !=
           std::string::npos);
@@ -165,7 +166,10 @@ TEST_CASE("a_curve_configuration_draws_its_sections_entries_and_leaves", "[curve
     CHECK(answer.find("\"valueSet\":\"\"") != std::string::npos);
     CHECK(answer.find("\"documented\":2") != std::string::npos);
     CHECK(answer.find("\"total\":12") != std::string::npos);
-    CHECK(answer.find("\"collections\":[]") != std::string::npos);
+    // The section states its segments as a child element, so the screen draws the
+    // collection even when the entry holds no row of it.
+    CHECK(answer.find("\"collections\":[{\"element\":\"Segments\",\"rows\":[]}]") !=
+          std::string::npos);
 }
 
 TEST_CASE("a_curve_configurations_segments_draw_their_kind_and_quotes", "[curve_view]") {
@@ -185,13 +189,14 @@ TEST_CASE("a_curve_configurations_segments_draw_their_kind_and_quotes", "[curve_
                                      {section_row("YieldCurves", "", "The yield curves")},
                                      {parameters, values, kinds});
 
+    INFO(answer);
     CHECK(answer.find("\"element\":\"Segments\"") != std::string::npos);
     CHECK(answer.find("\"kind\":\"Simple\"") != std::string::npos);
     CHECK(answer.find("\"value\":\"EUR-ESTR-3M\"") != std::string::npos);
     CHECK(answer.find("\"list\":\"Deposit\"") != std::string::npos);
     CHECK(answer.find("\"optional\":true") != std::string::npos);
-    // Twelve leaves of the curve, and the four a Simple segment reads.
-    CHECK(answer.find("\"total\":16") != std::string::npos);
+    // Twelve leaves of the curve, and the five a Simple segment reads.
+    CHECK(answer.find("\"total\":17") != std::string::npos);
 }
 
 TEST_CASE("a_curve_configuration_lists_a_section_no_projection_maps", "[curve_view]") {
@@ -211,6 +216,7 @@ TEST_CASE("a_curve_configuration_lists_a_section_no_projection_maps", "[curve_vi
                                      {section_row("BondCurves", "BondCurve", "The bond curves")},
                                      {parameters, values, kinds});
 
+    INFO(answer);
     CHECK(answer.find("\"code\":\"BondCurves\"") != std::string::npos);
     CHECK(answer.find("\"entryElement\":\"BondCurve\"") != std::string::npos);
     CHECK(answer.find("\"mapped\":false") != std::string::npos);

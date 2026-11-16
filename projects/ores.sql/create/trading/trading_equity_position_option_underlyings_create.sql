@@ -133,6 +133,43 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate option_type (optional soft FK to ores_trading_option_types_tbl)
+    if NEW.option_type is not null then
+        if not exists (
+            select 1 from ores_trading_option_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.option_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate long_short (soft FK to ores_trading_long_short_types_tbl)
+    if not exists (
+        select 1 from ores_trading_long_short_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.long_short
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid long_short: %. No active long/short type found with this code.', NEW.long_short
+            using errcode = '23503';
+    end if;
+
+    -- Validate exercise_type (optional soft FK to ores_trading_exercise_types_tbl)
+    if NEW.exercise_type is not null then
+        if not exists (
+            select 1 from ores_trading_exercise_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.exercise_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid exercise_type: %. No active exercise type found with this code.', NEW.exercise_type
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

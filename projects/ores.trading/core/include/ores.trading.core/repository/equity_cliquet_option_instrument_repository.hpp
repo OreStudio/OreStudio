@@ -127,6 +127,7 @@ public:
     std::optional<domain::equity_cliquet_option_instrument>
     read_at_version(const context& ctx, const std::string& trade_id, std::uint32_t version);
 
+
     /**
      * @brief Whether a list of equity cliquet option instruments can be ordered by a field.
      *

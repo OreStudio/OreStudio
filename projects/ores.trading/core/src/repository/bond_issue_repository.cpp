@@ -312,6 +312,7 @@ std::optional<domain::bond_issue> bond_issue_repository::read_at_version(
     return entities.front();
 }
 
+
 bond_issue_repository::remove_status bond_issue_repository::remove(
     const context& ctx, const std::string& issue_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond issue. " << "issue_id: " << issue_id;

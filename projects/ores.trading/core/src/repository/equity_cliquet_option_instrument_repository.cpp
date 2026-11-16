@@ -348,6 +348,7 @@ equity_cliquet_option_instrument_repository::read_at_version(const context& ctx,
     return entities.front();
 }
 
+
 equity_cliquet_option_instrument_repository::remove_status
 equity_cliquet_option_instrument_repository::remove(const context& ctx,
                                                     const std::string& trade_id,

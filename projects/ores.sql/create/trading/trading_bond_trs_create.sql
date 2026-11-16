@@ -117,6 +117,30 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate price_type (optional soft FK to ores_trading_price_types_tbl)
+    if NEW.price_type is not null then
+        if not exists (
+            select 1 from ores_trading_price_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.price_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid price_type: %. No active price type found with this code.', NEW.price_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate return_type (soft FK to ores_trading_return_types_tbl)
+    if not exists (
+        select 1 from ores_trading_return_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.return_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid return_type: %. No active return type found with this code.', NEW.return_type
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

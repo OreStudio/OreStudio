@@ -146,6 +146,56 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate option_type (optional soft FK to ores_trading_option_types_tbl)
+    if NEW.option_type is not null then
+        if not exists (
+            select 1 from ores_trading_option_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.option_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate long_short (soft FK to ores_trading_long_short_types_tbl)
+    if not exists (
+        select 1 from ores_trading_long_short_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.long_short
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid long_short: %. No active long/short type found with this code.', NEW.long_short
+            using errcode = '23503';
+    end if;
+
+    -- Validate settlement (optional soft FK to ores_trading_settlement_types_tbl)
+    if NEW.settlement is not null then
+        if not exists (
+            select 1 from ores_trading_settlement_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.settlement
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid settlement: %. No active settlement type found with this code.', NEW.settlement
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate style (optional soft FK to ores_trading_exercise_types_tbl)
+    if NEW.style is not null then
+        if not exists (
+            select 1 from ores_trading_exercise_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.style
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid style: %. No active exercise type found with this code.', NEW.style
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

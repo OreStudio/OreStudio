@@ -26,11 +26,11 @@ A surface belongs to a party and reads the party's own series, so the quotes it 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Slice 1 is written and builds; it waits on the build and the suite. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the party's rate history (slice 2). |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -147,3 +147,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Slice 1 landed.* =sources_for_pairs= chooses the source each pair is read
+from, so a pair that only a second publisher quotes is read from that one
+instead of being left underived. This is what the arc was missing: with
+one source for the whole party the ECB, which ranks 20 to the IMF's 21
+and quotes neither CLP nor COP, decided every pair, so USD/CLP could not
+reach a surface however the adapter was written. A rate still never mixes
+two publishers, and a pair no source can express is reported rather than
+dropped.
+
+The rank order, the refusal of a source that states no base, and the set
+of currencies a source can express are helpers shared with
+=topology_from_sources=, so the two choices cannot drift apart. 11 new
+cases cover the pair-level rule, the rank, both sides of a direct edge, an
+unserved pair, and the same shape under names the code has never met.
+
+Also fixed: =fixing_sources.hpp= included the definition of
+=ores::database::context= to name it in one signature, which the
+forward-declarable check reports as a new offender. It carries that check
+red on =main= for any change that touches it, so the line is corrected
+here rather than added to the baseline.
+
+*What this does not do yet.* Nothing consumes =sources_for_pairs=.
+=derived_fx_vol_adapter= still names =fixing_provider = "ecb"=, builds
+its leg URIs with =ecb_fixing_item= and chooses its legs with
+=ecb_legs_of=; the surfaces for USD/CLP and USD/COP stay missing until
+slice 2 serves the pair's levels and slice 3 hands them to the engine.
+
+*Gate.*
+
+- =compass build= succeeded (0:02:31 on the last change, 0:10:27 on the
+  first).
+- =compass test run -- -R ores.analytics.quant.tests=: 750 cases, 0
+  failures, 12.53 s. The 11 new cases ran.
+- =compass test run -- -R ores.marketdata.service.tests=: passed, 93.38 s.
+- =compass check --exclude-heavy=: 25 of 25 checks passed.
+
+The heavy checks were skipped deliberately: this change compiles into
+libraries and test binaries only, so =db recreate=, the full =ctest= run
+and the smoke and step-consumer checks test nothing it can break. That
+choice is recorded here rather than presented as a full gate.

@@ -117,18 +117,25 @@ they are copied into the transfer with their basenames.
    =~=-prefixed =ORES_REMOTE_ROOT= against the remote =HOME= and
    pinning the expansion back into the profile (podman's =--env-file=
    and the C++ parsers never expand =~=).
-2. *Stage*: =docker/stage-runtime.sh= (default mode — every supervised
-   service binary plus its ldd closure).
-3. *Build*: =podman build --format docker= for
-   =localhost/ores-service-runtime:local= and =localhost/ores-nats:local=
-   (the =--format docker= is required — OCI silently drops the
-   Dockerfile's HEALTHCHECK).
-4. *Transfer*: =podman save ... | gzip -1 | ssh <host> podman load=
-   (load auto-detects the gzip stream); the rendered NATS config
+2. *Stage*: =docker/stage-runtime.sh --services <names>= — the binaries
+   the service registry reports plus the closure of their libraries,
+   stripped with =strip --strip-all= on the host.
+3. *Partition*: every library any service loads goes into one shared
+   image, so a library that eleven services use is stored and transferred
+   once; each service image carries only its binary.
+4. *Build*: =podman build --format docker= for
+   =localhost/ores-service-base:local=, =localhost/ores-service-libs:local=
+   (the two shared layers), one =localhost/<service>:local= per service,
+   and =localhost/ores-nats:local= (the =--format docker= is required —
+   OCI silently drops the Dockerfile's HEALTHCHECK).
+5. *Transfer*: =podman save ... | gzip -1 | ssh <host> podman load=
+   (load auto-detects the gzip stream) for the shared images and NATS, then
+   the per-service staging dirs are =scp='d and the images built on the
+   host on top of the loaded library image; the rendered NATS config
    (path-rewritten copy), the NATS client certs, the IAM JWT key and
    the profile are =scp='d to =$REMOTE_ROOT= under the mirrored layout
    (=build/config/...=, =build/keys/...=, =docker/.env=).
-5. *Remote up*: both containers run with =--network=host= (the
+6. *Remote up*: both containers run with =--network=host= (the
    Newton-proven model: Postgres is native on the WSL host at
    =localhost:5433=, unreachable through a pod's slirp4netns — no pod
    object, no =-p= mappings), the services container passes

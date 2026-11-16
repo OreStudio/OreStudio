@@ -1,24 +1,26 @@
 #!/usr/bin/env bash
 # Stages only what a service-runtime image needs into build/docker-stage/
-# for the Dockerfile to COPY: either every supervised service binary plus
-# the closure of their shared-library dependencies (default -- unused now
-# that per-service images via --service <binary-name> are the only
-# supported deployment mode, kept for ad-hoc local use), or, with
+# for the Dockerfile to COPY: either the binaries named by the caller plus
+# the closure of their shared-library dependencies, or, with
 # --service <binary-name>, just that one binary plus its own dependency
 # closure (used to build a minimal per-service image). Either way this
 # excludes Qt libs, test binaries, and everything else under publish/
 # that isn't actually needed at runtime.
 #
-# The default set is the ores.*.service glob plus an explicit allow-list
-# for the two supervised binaries that don't follow that naming convention
-# (ores.http.server, ores.compute.wrapper) -- not derived from
-# ores_controller_service_definitions_tbl itself, so a future supervised
-# binary named outside both patterns can still go silently missing.
+# --services takes the list the service registry reports as runtime
+# services, so a binary whose name does not match the ores.*.service
+# pattern is still staged. Without either flag the script falls back to
+# the ores.*.service glob plus a hard-coded allow-list, kept for ad-hoc
+# local use only: that list goes stale as soon as a supervised binary is
+# named differently.
 set -euo pipefail
 
 service=""
+services=""
 if [[ "${1:-}" == "--service" ]]; then
     service="${2:?--service requires a binary name}"
+elif [[ "${1:-}" == "--services" ]]; then
+    services="${2:?--services requires a space-separated list of binary names}"
 fi
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -43,6 +45,16 @@ mkdir -p "$stage/bin" "$stage/lib"
 
 if [[ -n "$service" ]]; then
     cp -a "$publish/bin/$service" "$stage/bin/"
+elif [[ -n "$services" ]]; then
+    for name in $services; do
+        if [[ -f "$publish/bin/$name" ]]; then
+            cp -a "$publish/bin/$name" "$stage/bin/"
+        else
+            echo "Error: $publish/bin/$name not found -- the service" \
+                 "registry lists it but this build did not produce it" >&2
+            exit 1
+        fi
+    done
 else
     cp -a "$publish"/bin/ores.*.service "$stage/bin/"
     for extra in ores.http.server ores.compute.wrapper; do
@@ -82,12 +94,20 @@ else
          "containers will report an unknown commit" >&2
 fi
 
-# Strip debug symbols on the host BEFORE podman ever sees the files.
-# This eliminates the dedicated strip Dockerfile stage: the build context
-# itself carries pre-stripped binaries and libraries, so the base-image
-# Dockerfile just COPYs them straight into the final image.
-strip --strip-debug "$stage"/bin/* "$stage"/lib/libores.*.so* 2>/dev/null || \
-    echo "Warning: strip not available or no matching files — continuing"
+# Strip on the host BEFORE podman ever sees the files, so the build
+# context itself carries stripped files and the Dockerfiles only COPY
+# them. --strip-all drops .symtab and .strtab, which are about a third of
+# a large library; the dynamic symbol table and the relocations stay, so
+# the libraries still load. The build manifest sits in bin/ too and is not
+# an object file, so each candidate is checked before it is stripped. A
+# strip that fails aborts the staging: shipping unstripped files silently
+# would hide a missing binutils.
+for f in "$stage"/bin/* "$stage"/lib/libores.*.so*; do
+    [[ -L "$f" ]] && continue
+    if readelf -h "$f" >/dev/null 2>&1; then
+        strip --strip-all "$f"
+    fi
+done
 
 # Pre-create the runtime directories that used to be mkdir'd inside the
 # (now-removed) strip Dockerfile stage.  The base-image Dockerfile COPYs

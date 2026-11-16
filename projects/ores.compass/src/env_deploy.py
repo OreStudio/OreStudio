@@ -15,16 +15,20 @@ Image architecture
 ------------------
 Instead of building N near-identical ~2.5 GB images (one per service,
 differing only in the entrypoint symlink), the runtime role uses a
-base + overlay model::
+base + libraries + service model::
 
-    ores-service-base (once, ~1.5 GB on wire)
-        Common shared libraries (ldd intersection across all services),
-        the healthcheck probe, and empty log/run/storage directories.
+    ores-service-base (once, tens of MB on wire)
+        The healthcheck probe and empty log/run/storage directories.
         Built from docker/service-base.Dockerfile.
 
-    Per-service overlays (N images, ~MB each on wire)
-        Just the service binary, its service-specific extra shared libs
-        (if any), and an entrypoint symlink.  FROM ores-service-base.
+    ores-service-libs (once, every library a service loads)
+        Every shared library any service needs, so a library that eleven
+        services load is transferred once.  Built from
+        docker/service-libs.Dockerfile.
+
+    Per-service images (N images, a few MB each on wire)
+        Just the service binary, its build record and an entrypoint
+        symlink.  FROM ores-service-libs.
         Built from docker/service-runtime.Dockerfile.
 
 Binaries are stripped on the host (by stage-runtime.sh) BEFORE podman
@@ -32,8 +36,8 @@ sees them — no in-container strip stage, no redundant COPY of
 unstripped data into the build context.
 
 Transfer: an image is copied with the standard `podman image scp IMAGE
-HOST::`, which writes no staging file; per-service overlays are scp'd as raw
-files and built remotely on top of the already-loaded base.  Nothing a deploy
+HOST::`, which writes no staging file; per-service images are scp'd as raw
+files and built remotely on top of the already-loaded library image.  Nothing a deploy
 writes on this machine is shared with a deploy to another host, so several
 hosts can be deployed at the same time: name them all, as in
 `compass env deploy newton laptop simba --role compute`.
@@ -64,6 +68,7 @@ DEFAULT_REMOTE_DB_PORT = "5433"
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_BASE = "localhost/ores-service-base"
+IMAGE_LIBS = "localhost/ores-service-libs"
 
 _COMPUTE_REQUIRED = (
     "ORES_COMPUTE_TENANT_ID",
@@ -349,25 +354,27 @@ def _write_compute_env(project_root, profile_env, label, remote_root, host):
 def _stream_images(project_root, host, images):
     """Transfer images to the remote host.
 
-    Two-phase strategy (base + overlay model):
-    1. Base image: save → gzip → scp → remote load (once, large).
-    2. Per-service overlays: scp staging dirs + build remotely on top of
-       the already-loaded base (each overlay is just the binary — a few
+    Two-phase strategy (base + libraries + service model):
+    1. Base and library images: save → gzip → scp → remote load (once).
+    2. Per-service images: scp staging dirs + build remotely on top of
+       the already-loaded library image (each is just the binary — a few
        MB — not a full image tarball).
     """
     remote_tmp = f"/tmp/ores-deploy-{host}"
 
-    # Separate the base image from per-service overlays and standalone
-    # images (NATS, compute-wrapper — not part of the overlay system).
+    # Separate the base and library images from the per-service images and
+    # the standalone ones (NATS, compute-wrapper — not part of the model).
     base_images = [i for i in images if "ores-service-base" in i]
+    libs_images = [i for i in images if "ores-service-libs" in i]
     nats_images = [i for i in images if "ores-nats" in i]
     compute_images = [i for i in images if "ores-compute-wrapper" in i]
-    # Everything else is a per-service overlay (localhost/<service_name>).
+    # Everything else is a per-service image (localhost/<service_name>).
     overlay_images = [i for i in images
-                      if i not in base_images + nats_images + compute_images]
+                      if i not in base_images + libs_images
+                      + nats_images + compute_images]
 
-    # -- Phase 1: Transfer base image (once) ------------------------------
-    for img in base_images:
+    # -- Phase 1: Transfer base and library images (once) -----------------
+    for img in base_images + libs_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 2: Transfer standalone images (NATS, compute) --------------
@@ -796,7 +803,7 @@ def _cmd_deploy(argv, project_root):
     svc_images = [f"localhost/{s}:{tag}"
                   for s in _runtime_services(project_root)]
     _stream_images(project_root, remote_host,
-                   [f"{IMAGE_BASE}:{tag}", *svc_images,
+                   [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}", *svc_images,
                     f"{IMAGE_NATS}:{tag}"])
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))

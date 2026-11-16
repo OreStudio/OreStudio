@@ -1,18 +1,22 @@
 """compass image build — build the ORE Studio container image hierarchy.
 
-Builds a shared base image plus thin per-service overlays, stripping
-binaries on the host before podman ever sees them.  A separate step
-that ``compass env deploy`` requires to have been run first.
+Builds a base image, one shared-library image, and thin per-service
+images, stripping binaries on the host before podman ever sees them.  A
+separate step that ``compass env deploy`` requires to have been run first.
 
 Image model::
 
-    ores-service-base (once, ~1.5 GB)
-        Common shared libraries (ldd intersection), healthcheck probe,
-        empty log/run/storage dirs.  docker/service-base.Dockerfile.
+    ores-service-base (once, tens of MB)
+        Healthcheck probe and the empty log/run/storage dirs.
+        docker/service-base.Dockerfile.
 
-    Per-service overlays (N images, ~MB each)
-        Service binary + entrypoint symlink, FROM ores-service-base.
-        docker/service-runtime.Dockerfile.
+    ores-service-libs (once, ~the size of every library a service loads)
+        Every shared library any service needs, so each library is stored
+        and transferred once.  docker/service-libs.Dockerfile.
+
+    Per-service images (N images, a few MB each)
+        Service binary, its build record and the entrypoint symlink,
+        FROM ores-service-libs.  docker/service-runtime.Dockerfile.
 
     ores-nats
         Standalone NATS image.  docker/nats.Dockerfile.
@@ -31,6 +35,7 @@ from pathlib import Path
 
 # Image names (exported — env_deploy imports these).
 IMAGE_BASE = "localhost/ores-service-base"
+IMAGE_LIBS = "localhost/ores-service-libs"
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 
@@ -81,15 +86,36 @@ def build_base(project_root: Path, tag: str | None = None) -> str:
     return tag
 
 
+def build_libs(project_root: Path, tag: str | None = None,
+               base_tag: str | None = None) -> str:
+    """Build the shared-library image.  Returns the tag.
+
+    Requires the base image to already exist.  *base_tag* is the tag of
+    the base image to build FROM; it defaults to *tag*.
+    """
+    if tag is None:
+        tag = _version_tag(project_root)
+    if base_tag is None:
+        base_tag = tag
+    print(f"=== Building library image: {IMAGE_LIBS}:{tag} ===")
+    _run(["podman", "build", "--format", "docker",
+          "--build-arg", f"BASE_TAG={base_tag}",
+          "-t", f"{IMAGE_LIBS}:local",
+          "-t", f"{IMAGE_LIBS}:{tag}",
+          "-f", "docker/service-libs.Dockerfile", "."],
+         project_root)
+    return tag
+
+
 def build_overlays(project_root: Path, tag: str | None = None,
                    services: list | None = None,
                    base_tag: str | None = None) -> str:
-    """Build per-service overlay images (one per enabled service).
+    """Build the per-service images (one per enabled service).
 
-    Requires the base image to already exist.
-    *base_tag* is the tag of the base image to build FROM; it defaults to
-    *tag* (overlays are normally built on the base built in the same run).
-    Returns the tag used for the overlays themselves.
+    Requires the shared-library image to already exist.
+    *base_tag* is the tag of the library image to build FROM; it defaults
+    to *tag* (images are normally built on the library image built in the
+    same run).  Returns the tag used for the images themselves.
     """
     if tag is None:
         tag = _version_tag(project_root)
@@ -97,8 +123,8 @@ def build_overlays(project_root: Path, tag: str | None = None,
         base_tag = tag
     if services is None:
         services = runtime_services(project_root)
-    print(f"=== Building {len(services)} per-service overlays "
-          f"(FROM {IMAGE_BASE}:{base_tag}) ===")
+    print(f"=== Building {len(services)} per-service images "
+          f"(FROM {IMAGE_LIBS}:{base_tag}) ===")
     for svc in services:
         image = f"localhost/{svc}"
         _run(["podman", "build", "--format", "docker",
@@ -142,32 +168,32 @@ def build_all(project_root: Path, tag: str | None = None) -> str:
     print(f"=== Version tag: {tag} ===")
 
     # 1. Stage binaries (also strips them on the host).
+    services = runtime_services(project_root)
     print("=== Staging binaries ===")
-    _run(["bash", "docker/stage-runtime.sh"], project_root)
+    _run(["bash", "docker/stage-runtime.sh", "--services", " ".join(services)],
+         project_root)
 
-    # 2. Compute ldd intersection + stage for build.
+    # 2. Compute the shared libraries and stage for build.
     from library_partition import (  # noqa: PLC0415
-        compute_partition, stage_for_build,
+        compute_shared_libraries, stage_for_build,
     )
     stage_dir = project_root / "build" / "docker-stage"
-    services = runtime_services(project_root)
     print(f"  Runtime services: {len(services)} (from service registry)")
 
-    print("=== Computing library partition (ldd intersection) ===")
-    common_libs, service_extras = compute_partition(
+    print("=== Computing the shared libraries (ldd union) ===")
+    shared_libs = compute_shared_libraries(
         stage_dir / "bin", stage_dir / "lib", services)
-    print(f"  Common libs (base image)  : {len(common_libs)}")
-    svc_with_extras = sum(1 for v in service_extras.values() if v)
-    print(f"  Services with extra libs   : {svc_with_extras} / {len(services)}")
+    print(f"  Shared libs (library image): {len(shared_libs)}")
 
-    print("=== Staging for build (base + per-service dirs) ===")
+    print("=== Staging for build (library + per-service dirs) ===")
     stage_for_build(stage_dir, stage_dir / "bin", stage_dir / "lib",
-                    services, common_libs, service_extras)
+                    services, shared_libs)
 
-    # 3. Build base (once).
+    # 3. Build base (once), then the libraries (once).
     build_base(project_root, tag)
+    build_libs(project_root, tag)
 
-    # 4. Build per-service overlays.
+    # 4. Build the per-service images.
     build_overlays(project_root, tag, services)
 
     # 5. NATS.
@@ -209,7 +235,7 @@ def missing_images(project_root: Path, role: str, tag: str) -> list[str]:
             if not _image_exists(img):
                 missing.append(img)
     else:
-        for img in [f"{IMAGE_BASE}:{tag}"]:
+        for img in [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}"]:
             if not _image_exists(img):
                 missing.append(img)
         services = runtime_services(project_root)
@@ -235,11 +261,11 @@ def run(argv: list[str], project_root: Path) -> int:
     ap = argparse.ArgumentParser(
         prog="compass image build",
         description="Build ORE Studio container images "
-                    "(base + per-service overlays).")
+                    "(base + shared libraries + per-service images).")
     ap.add_argument("--base-only", action="store_true",
-                    help="Build only the shared base image")
+                    help="Build only the shared base and library images")
     ap.add_argument("--overlays-only", action="store_true",
-                    help="Build only per-service overlays "
+                    help="Build only the per-service images "
                          "(requires --base-tag if not 'local')")
     ap.add_argument("--nats", action="store_true",
                     help="Build only the NATS image")
@@ -271,22 +297,24 @@ def run(argv: list[str], project_root: Path) -> int:
         build_overlays(project_root, tag, base_tag=args.base_tag)
         return 0
 
-    # --base-only: stage + strip + build just the base.
+    # --base-only: stage + strip + build just the base and library images.
     if args.base_only:
-        _run(["bash", "docker/stage-runtime.sh"], project_root)
         services = runtime_services(project_root)
+        _run(["bash", "docker/stage-runtime.sh", "--services",
+              " ".join(services)], project_root)
         from library_partition import (  # noqa: PLC0415
-            compute_partition, stage_for_build,
+            compute_shared_libraries, stage_for_build,
         )
         stage_dir = project_root / "build" / "docker-stage"
-        common_libs, service_extras = compute_partition(
+        shared_libs = compute_shared_libraries(
             stage_dir / "bin", stage_dir / "lib", services)
         stage_for_build(stage_dir, stage_dir / "bin", stage_dir / "lib",
-                        services, common_libs, service_extras)
+                        services, shared_libs)
         build_base(project_root, tag)
+        build_libs(project_root, tag)
         return 0
 
-    # Default: full build — base + overlays + NATS.
+    # Default: full build — base + libraries + services + NATS.
     try:
         build_all(project_root, tag)
     except subprocess.CalledProcessError as e:

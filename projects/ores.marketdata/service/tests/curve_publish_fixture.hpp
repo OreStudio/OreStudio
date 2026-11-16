@@ -242,8 +242,7 @@ public:
     boost::uuids::uuid seed_projection_curve_past_its_funding_curve(
         const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
         return seed_projection_curve(
-            {std::tuple{"SPOT", "6M", "DEPOSIT"}, std::tuple{"SPOT", "5Y", "SWAP"}},
-            discounts_off);
+            {std::tuple{"SPOT", "6M", "DEPOSIT"}, std::tuple{"SPOT", "5Y", "SWAP"}}, discounts_off);
     }
 
     /// @brief The output series, as the resolver names it.

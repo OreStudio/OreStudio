@@ -29,12 +29,12 @@ comes back, a refusal included, because the person reads the reason on the step.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | Both steps are served.                 |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request and merge it.    |
+| Last touched | 2026-11-16                               |
 
 * Acceptance
 
@@ -79,7 +79,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's suite | 92 cases, 692 assertions | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | fc51afd038 |
+| The import's own cases | 8 cases, 45 assertions | =ores.http.reporting.tests [pricing_engine_import]= | fc51afd038 |
+| The gateway's routes | 1017 of 1345 | =python3 build/scripts/route_inventory.py --check= | fc51afd038 |
+| The BFF's routes paired with a C++ one | 251 of 328, reporting 43 of 44 | =python3 build/scripts/route_inventory.py --check= | fc51afd038 |
 
 * Notes
 
@@ -138,3 +141,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two import steps are served at the BFF's paths, and each answers the ORE
+service's own reply, a refusal included.
+
+- The preview hands the file over and writes nothing.
+- The import hands the same file over with the removed rows the person kept and
+  the reason for the write, and answers what the service saved and the rows it
+  could not write.
+- The gateway reads no XML, builds none and validates none.
+
+The gateway joins the two ids the screen and the service speak: the screen names
+a configuration by the id it shows, and the service reads a document by the
+reporting configuration that record fills. A body that names no configuration is
+joined to an empty one, which is the file for a document that does not exist yet.
+
+The reporting part's suite passes 92 cases and 692 assertions, eight of them for
+these routes, and the inventory pairs 251 of the BFF's 328 routes, reporting 43 of
+44.

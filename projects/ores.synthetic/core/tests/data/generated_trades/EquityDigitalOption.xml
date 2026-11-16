@@ -19,7 +19,7 @@
       <Quantity>4132.38</Quantity>
     </EquityDigitalOptionData>
   </Trade>
-  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
     <TradeType>EquityDigitalOption</TradeType>
     <EquityDigitalOptionData>
       <OptionData>
@@ -28,14 +28,14 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-08-02</ExerciseDate>
+          <ExerciseDate>2035-01-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>4829.91</Strike>
-      <PayoffCurrency>EUR</PayoffCurrency>
-      <PayoffAmount>674201.2</PayoffAmount>
-      <Name>RIC:DHER.DE</Name>
-      <Quantity>139.59</Quantity>
+      <Strike>209.18</Strike>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>5632565.12</PayoffAmount>
+      <Name>RIC:.SPX</Name>
+      <Quantity>26926.88</Quantity>
     </EquityDigitalOptionData>
   </Trade>
 </Portfolio>

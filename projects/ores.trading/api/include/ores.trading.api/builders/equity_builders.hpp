@@ -89,6 +89,36 @@ private:
     equity_cliquet_option_terms terms_;
 };
 
+/**
+ * An outperformance option: it pays on the return of the first equity over the
+ * second, each return measured from its initial price, against the strike
+ * return. A knock-in or knock-out price on the first equity is optional.
+ */
+struct equity_outperformance_option_terms final {
+    required<marketdata::datum::market_reference> underlying_1;
+    required<marketdata::datum::market_reference> underlying_2;
+    required<std::string> currency;
+    required<utility::decimal::decimal> notional;
+    required<option_kind> kind;
+    required<std::chrono::year_month_day> expiry;
+    required<option_position> position;
+    required<utility::decimal::decimal> initial_price_1;
+    required<utility::decimal::decimal> initial_price_2;
+    required<utility::decimal::decimal> strike_return;
+    std::optional<utility::decimal::decimal> knock_in_price;
+    std::optional<utility::decimal::decimal> knock_out_price;
+};
+
+class ORES_TRADING_API_EXPORT equity_outperformance_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityOutperformanceOption";
+    explicit equity_outperformance_option_builder(equity_outperformance_option_terms terms);
+    [[nodiscard]] equity_result build() const;
+
+private:
+    equity_outperformance_option_terms terms_;
+};
+
 /// An Asian option on the arithmetic average of monthly prices from the start to the expiry.
 struct equity_asian_option_terms final {
     equity_option_terms option;

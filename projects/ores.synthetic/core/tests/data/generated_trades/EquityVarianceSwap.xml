@@ -14,16 +14,16 @@
       <MomentType>Variance</MomentType>
     </EquityVarianceSwapData>
   </Trade>
-  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
     <TradeType>EquityVarianceSwap</TradeType>
     <EquityVarianceSwapData>
-      <StartDate>2025-10-02</StartDate>
-      <EndDate>2031-10-02</EndDate>
-      <Currency>USD</Currency>
-      <Name>RIC:.NDX</Name>
+      <StartDate>2025-09-02</StartDate>
+      <EndDate>2026-09-02</EndDate>
+      <Currency>EUR</Currency>
+      <Name>RIC:.STOXX50E</Name>
       <LongShort>Long</LongShort>
       <Strike>0.04</Strike>
-      <Notional>1729322.52</Notional>
+      <Notional>4253585.58</Notional>
       <Calendar>USD</Calendar>
       <MomentType>Variance</MomentType>
     </EquityVarianceSwapData>

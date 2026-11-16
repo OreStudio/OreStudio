@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
+    <TradeType>EquityOutperformanceOption</TradeType>
+    <EquityOutperformanceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Currency>EUR</Currency>
+      <Notional>4191327.35</Notional>
+      <Underlying1>
+        <Type>Equity</Type>
+        <Name>RIC:DHER.DE</Name>
+      </Underlying1>
+      <Underlying2>
+        <Type>Equity</Type>
+        <Name>RIC:.STOXX50E</Name>
+      </Underlying2>
+      <InitialPrice1>1322.52</InitialPrice1>
+      <InitialPrice2>1454.77</InitialPrice2>
+      <StrikeReturn>0.01</StrikeReturn>
+      <KnockInPrice>1388.65</KnockInPrice>
+    </EquityOutperformanceOptionData>
+  </Trade>
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
+    <TradeType>EquityOutperformanceOption</TradeType>
+    <EquityOutperformanceOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2031-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Currency>EUR</Currency>
+      <Notional>4607772.6</Notional>
+      <Underlying1>
+        <Type>Equity</Type>
+        <Name>RIC:DHER.DE</Name>
+      </Underlying1>
+      <Underlying2>
+        <Type>Equity</Type>
+        <Name>RIC:.STOXX50E</Name>
+      </Underlying2>
+      <InitialPrice1>3193.44</InitialPrice1>
+      <InitialPrice2>3512.78</InitialPrice2>
+      <StrikeReturn>0.01</StrikeReturn>
+      <KnockInPrice>3353.11</KnockInPrice>
+    </EquityOutperformanceOptionData>
+  </Trade>
+</Portfolio>

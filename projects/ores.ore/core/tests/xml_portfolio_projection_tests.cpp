@@ -2805,6 +2805,61 @@ TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying",
     CHECK(round->strike.to_string() == "2800.5");
 }
 
+TEST_CASE("an_outperformance_option_holds_each_equity_as_a_row_and_its_prices_as_columns",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+    using ores::utility::decimal::decimal;
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="EqOutperf">
+    <TradeType>EquityOutperformanceOption</TradeType>
+    <Envelope><CounterParty>CPTY</CounterParty><NettingSetId>NS</NettingSetId></Envelope>
+    <EquityOutperformanceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates><ExerciseDate>2025-03-03</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Currency>USD</Currency>
+      <Notional>500000</Notional>
+      <Underlying1><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying1>
+      <Underlying2><Type>Equity</Type><Name>RIC:.NDX</Name></Underlying2>
+      <InitialPrice1>11500</InitialPrice1>
+      <InitialPrice2>14000</InitialPrice2>
+      <StrikeReturn>0.01</StrikeReturn>
+      <KnockInPrice>12000</KnockInPrice>
+    </EquityOutperformanceOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto check = [](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* option =
+            std::get_if<ores::trading::domain::equity_option_instrument>(&data->instrument);
+        REQUIRE(option != nullptr);
+        CHECK(option->identity.trade_type_code == "EquityOutperformanceOption");
+        CHECK(ores::ore::domain::underlying_name_of(option->underlying_name) == "RIC:.SPX");
+        CHECK(option->strike == *decimal::from_string("0.01"));
+        CHECK(option->initial_price_1 == decimal::from_string("11500"));
+        CHECK(option->initial_price_2 == decimal::from_string("14000"));
+        CHECK(option->knock_in_price == decimal::from_string("12000"));
+        CHECK_FALSE(option->knock_out_price.has_value());
+        std::map<std::string, std::string> names;
+        for (const auto& row : data->instrument_underlyings)
+            names[row.underlying_role] = ores::ore::domain::underlying_name_of(row.name);
+        CHECK(names == std::map<std::string, std::string>{{"underlying1", "RIC:.SPX"},
+                                                          {"underlying2", "RIC:.NDX"}});
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    check(items[0]);
+    check(rebuild(items[0]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
@@ -3991,18 +4046,6 @@ TEST_CASE("an_underlying_name_returns_from_its_address_as_ore_states_it",
     CHECK(underlying_name_of(fx) == "ECB-EUR-USD");
     CHECK(underlying_name_of(underlying_address_of("Bond", "ISIN:XS0982710740")) ==
           "ISIN:XS0982710740");
-}
-
-TEST_CASE("a_pair_of_equities_with_a_member_no_family_can_hold_stays_as_names",
-          "[ore][xml][portfolio][projection]") {
-    using namespace ores::ore::domain;
-    CHECK(equity_pair_of("EQ-A", ".SPX") == "EQ-A/.SPX");
-    CHECK(equity_pair_of(".SPX", "EQ-A") == ".SPX/EQ-A");
-    const auto addresses = equity_pair_of(".SPX", ".NDX");
-    CHECK(addresses.starts_with("oresmd://"));
-    CHECK(equity_pair_separator(addresses) == ' ');
-    CHECK(addresses.find(' ') != std::string::npos);
-    CHECK(equity_pair_separator(".SPX/EQ-A") == '/');
 }
 
 TEST_CASE("an_underlying_no_family_can_hold_stays_as_written",

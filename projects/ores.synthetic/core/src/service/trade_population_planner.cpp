@@ -2011,12 +2011,8 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityWorstOfBasketSwap",
                                              "CompositeTrade",
                                              "ContractForDifference",
-                                             "TotalReturnSwap"};
-/*
- * EquityOutperformanceOption stays out until it is modelled: the option row
- * holds its pair as one name and keeps neither initial price, so a generated
- * trade would export prices of zero.
- */
+                                             "TotalReturnSwap",
+                                             "EquityOutperformanceOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -2682,6 +2678,39 @@ build_equity_trade(const domain::trade_generation_scope& scope,
 
     if (type == "EquityOption")
         return built(tb::equity_option_builder(option).build());
+    if (type == "EquityOutperformanceOption") {
+        /*
+         * The two equities are quoted in one currency, so neither initial
+         * price needs FX terms to meet the option's currency.
+         */
+        std::vector<std::pair<const domain::equity_underlying_reference*,
+                              const domain::equity_underlying_reference*>>
+            pairs;
+        for (const auto& first : scope.equity_underlyings)
+            for (const auto& second : scope.equity_underlyings)
+                if (&first != &second && first.code != second.code &&
+                    first.currency == second.currency)
+                    pairs.emplace_back(&first, &second);
+        if (pairs.empty())
+            throw trade_population_error("An outperformance option names two equities in one "
+                                         "currency, and the tenant holds no such pair.");
+        const auto [first, second] = pairs[slot % pairs.size()];
+        const auto pair_currency = first->currency.empty() ? std::string("USD") : first->currency;
+        return built(tb::equity_outperformance_option_builder(
+                         {.underlying_1 = equity_address_of(first->code),
+                          .underlying_2 = equity_address_of(second->code),
+                          .currency = pair_currency,
+                          .notional = money(notional),
+                          .kind = kind,
+                          .expiry = end,
+                          .position = position,
+                          .initial_price_1 = money(level),
+                          .initial_price_2 = money(level * 1.1),
+                          .strike_return = money(0.01),
+                          .knock_in_price = money(level * 1.05),
+                          .knock_out_price = std::nullopt})
+                         .build());
+    }
     if (type == "EquityCliquetOption")
         return built(tb::equity_cliquet_option_builder(
                          {.option = option, .start = start, .reset_tenor = std::string("3M")})

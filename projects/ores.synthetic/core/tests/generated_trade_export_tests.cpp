@@ -19,6 +19,7 @@
 #include "ore_example_conventions.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -171,7 +172,18 @@ const std::map<std::string, recorded_type>& generated() {
         std::map<std::string, type_trades> by_type;
         for (const auto& asset_class : asset_classes) {
             const auto scope = scope_of(asset_class);
-            for (const auto& slot : planner_for(asset_class).plan(scope).slots) {
+            const auto plan = planner_for(asset_class).plan(scope);
+            /*
+             * A container's trades are written inside it, so they are recorded
+             * with it, in its type's file, and joined to it by the structure
+             * the exporter reads.
+             */
+            std::map<boost::uuids::uuid, std::string> container_of;
+            for (const auto& slot : plan.slots)
+                if (slot.structure_id && slot.structure_role != "sub_trade" &&
+                    slot.structure_role != "leg")
+                    container_of[*slot.structure_id] = slot.trade_type_code;
+            for (const auto& slot : plan.slots) {
                 auto request = trading_trade_population_writer::book_request_for(slot, scope);
                 /*
                  * A bond's security is written before its trade, and the export
@@ -214,7 +226,11 @@ const std::map<std::string, recorded_type>& generated() {
                          .schedules = slot.bond_issue_leg_schedules});
                 }
                 state_keys(request.instruments, slot.trade_id, slot.trade_type_code);
-                auto& trades = by_type[slot.trade_type_code];
+                const auto container =
+                    slot.structure_id ? container_of.find(*slot.structure_id) : container_of.end();
+                auto& trades = by_type[container == container_of.end() ? slot.trade_type_code :
+                                                                         container->second];
+
                 /*
                  * The booking service refuses a batch whose arrays the trade
                  * type does not route, or whose children have no header, so
@@ -235,8 +251,26 @@ const std::map<std::string, recorded_type>& generated() {
                 ores::trading::messaging::trade_export_item item;
                 item.anchor = request.anchor;
                 item.ore_id = boost::uuids::to_string(slot.trade_id);
+                /*
+                 * ORE gives a container's trades the container's envelope and
+                 * refuses a trade without one, so a container states the
+                 * counterparty its export would carry.
+                 */
+                if (container != container_of.end() && slot.structure_role != "sub_trade") {
+                    ores::trading::domain::trade_envelope_data envelope;
+                    envelope.counter_party = boost::uuids::to_string(slot.counterparty_id);
+                    item.envelope = std::move(envelope);
+                }
                 trades.items.push_back(std::move(item));
                 append(trades.instruments, request.instruments);
+                if (container != container_of.end()) {
+                    ores::trading::domain::structure_member member;
+                    member.trade_id = slot.trade_id;
+                    member.structure_id = *slot.structure_id;
+                    member.role = slot.structure_role;
+                    member.sequence_number = static_cast<int>(slot.structure_sequence);
+                    trades.instruments.structure_members.push_back(std::move(member));
+                }
             }
         }
 
@@ -709,6 +743,42 @@ TEST_CASE("every recorded trade reads back and writes the same values",
             exported.envelope = item.envelope;
             exports.push_back(std::move(exported));
             ores::trading::domain::append_instrument(batch, instrument);
+        }
+        /*
+         * A container's trades come back as trades of their own, each naming
+         * its container; the booking joins them by a structure, which the
+         * export reads to write them inside it again.
+         */
+        std::map<std::string, std::size_t> top_level;
+        for (std::size_t i = 0; i < items.size(); ++i)
+            if (!items[i].membership)
+                top_level.emplace(items[i].ore_id, i);
+        std::map<std::string, boost::uuids::uuid> structure_of;
+        const auto join = [&](std::size_t i,
+                              std::string role,
+                              int sequence_number,
+                              const boost::uuids::uuid& structure_id) {
+            ores::trading::domain::structure_member member;
+            member.trade_id = exports[i].anchor.id;
+            member.structure_id = structure_id;
+            member.role = std::move(role);
+            member.sequence_number = sequence_number;
+            batch.structure_members.push_back(std::move(member));
+        };
+        for (std::size_t i = 0; i < items.size(); ++i) {
+            const auto& membership = items[i].membership;
+            if (!membership)
+                continue;
+            const auto parent = top_level.find(membership->parent_ore_id);
+            REQUIRE(parent != top_level.end());
+            const auto joined = ores::ore::domain::portfolio_projection::structure_of(
+                items[parent->second].anchor.trade_type);
+            REQUIRE(joined.has_value());
+            auto [structure, created] = structure_of.try_emplace(membership->parent_ore_id,
+                                                                 exports[parent->second].anchor.id);
+            if (created)
+                join(parent->second, std::string(joined->parent_role), 1, structure->second);
+            join(i, membership->role, membership->sequence_number, structure->second);
         }
         const auto recorded = document::read(file::read_content(entry.path()));
         const auto written = document::read(xml::exporter::export_portfolio(exports, batch));

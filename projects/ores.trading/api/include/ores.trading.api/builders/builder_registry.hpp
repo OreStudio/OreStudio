@@ -22,6 +22,7 @@
 
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
+#include "ores.trading.api/builders/composite_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
@@ -43,6 +44,9 @@ using all_builders =
                credit_linked_swap_builder,
                risk_participation_agreement_builder,
                synthetic_cdo_builder,
+               composite_trade_builder,
+               contract_for_difference_builder,
+               total_return_swap_builder,
                cross_currency_swap_builder,
                forward_rate_agreement_builder,
                cap_floor_builder,

@@ -45,25 +45,25 @@
       </Barriers>
     </EquityAccumulatorData>
   </Trade>
-  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
     <TradeType>EquityAccumulator</TradeType>
     <EquityAccumulatorData>
-      <Currency>USD</Currency>
-      <FixingAmount>2061.99</FixingAmount>
-      <Strike>4590.75</Strike>
+      <Currency>EUR</Currency>
+      <FixingAmount>3169.2</FixingAmount>
+      <Strike>1322.52</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayoffType>Accumulator</PayoffType>
       </OptionData>
-      <StartDate>2025-09-02</StartDate>
+      <StartDate>2025-12-02</StartDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-09-02</StartDate>
-          <EndDate>2033-09-02</EndDate>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2026-12-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </ObservationDates>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>4590.75</RangeTo>
+          <RangeTo>1322.52</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>4590.75</RangeFrom>
+          <RangeFrom>1322.52</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>5049.83</Level>
+            <Level>1454.77</Level>
           </Levels>
         </BarrierData>
       </Barriers>

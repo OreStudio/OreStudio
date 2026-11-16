@@ -22,14 +22,14 @@
       </Underlying>
     </EquityOptionPositionData>
   </Trade>
-  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
     <TradeType>EquityOptionPosition</TradeType>
     <EquityOptionPositionData>
-      <Quantity>6509</Quantity>
+      <Quantity>1966</Quantity>
       <Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:.SPX</Name>
         </Underlying>
         <OptionData>
           <LongShort>Short</LongShort>
@@ -37,10 +37,10 @@
           <Style>European</Style>
           <Settlement>Cash</Settlement>
           <ExerciseDates>
-            <ExerciseDate>2029-12-02</ExerciseDate>
+            <ExerciseDate>2026-09-02</ExerciseDate>
           </ExerciseDates>
         </OptionData>
-        <Strike>1342.37</Strike>
+        <Strike>2442.99</Strike>
       </Underlying>
     </EquityOptionPositionData>
   </Trade>

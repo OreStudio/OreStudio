@@ -18,22 +18,22 @@
       <Strike>2538.69</Strike>
     </EquityOptionData>
   </Trade>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
     <TradeType>EquityOption</TradeType>
     <EquityOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2035-01-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>RIC:.SPX</Name>
-      <Currency>USD</Currency>
-      <Quantity>26926.88</Quantity>
-      <Strike>209.18</Strike>
+      <Name>RIC:DHER.DE</Name>
+      <Currency>EUR</Currency>
+      <Quantity>166.76</Quantity>
+      <Strike>1138.67</Strike>
     </EquityOptionData>
   </Trade>
 </Portfolio>

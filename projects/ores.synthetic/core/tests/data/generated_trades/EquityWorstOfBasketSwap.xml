@@ -112,52 +112,36 @@
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
-  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
       <Currency>EUR</Currency>
-      <Quantity>5666887.39</Quantity>
+      <Quantity>4253585.58</Quantity>
       <Underlyings>
-        <Underlying>
-          <Type>Equity</Type>
-          <Name>RIC:DHER.DE</Name>
-        </Underlying>
         <Underlying>
           <Type>Equity</Type>
           <Name>RIC:.STOXX50E</Name>
         </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:DHER.DE</Name>
+        </Underlying>
       </Underlyings>
       <InitialPrices>
-        <InitialPrice>2500.87</InitialPrice>
-        <InitialPrice>2750.96</InitialPrice>
+        <InitialPrice>1125.18</InitialPrice>
+        <InitialPrice>1237.7</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
           <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
+            <Date>2025-09-02</Date>
             <Date>2025-12-02</Date>
             <Date>2026-03-02</Date>
             <Date>2026-06-02</Date>
             <Date>2026-09-02</Date>
-            <Date>2026-12-02</Date>
-            <Date>2027-03-02</Date>
-            <Date>2027-06-02</Date>
-            <Date>2027-09-02</Date>
-            <Date>2027-12-02</Date>
-            <Date>2028-03-02</Date>
-            <Date>2028-06-02</Date>
-            <Date>2028-09-02</Date>
-            <Date>2028-12-02</Date>
-            <Date>2029-03-02</Date>
-            <Date>2029-06-02</Date>
-            <Date>2029-09-02</Date>
-            <Date>2029-12-02</Date>
-            <Date>2030-03-02</Date>
-            <Date>2030-06-02</Date>
-            <Date>2030-09-02</Date>
-            <Date>2030-12-02</Date>
           </Dates>
         </Dates>
       </FloatingPeriodSchedule>
@@ -166,27 +150,11 @@
           <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
+            <Date>2025-09-02</Date>
             <Date>2025-12-02</Date>
             <Date>2026-03-02</Date>
             <Date>2026-06-02</Date>
             <Date>2026-09-02</Date>
-            <Date>2026-12-02</Date>
-            <Date>2027-03-02</Date>
-            <Date>2027-06-02</Date>
-            <Date>2027-09-02</Date>
-            <Date>2027-12-02</Date>
-            <Date>2028-03-02</Date>
-            <Date>2028-06-02</Date>
-            <Date>2028-09-02</Date>
-            <Date>2028-12-02</Date>
-            <Date>2029-03-02</Date>
-            <Date>2029-06-02</Date>
-            <Date>2029-09-02</Date>
-            <Date>2029-12-02</Date>
-            <Date>2030-03-02</Date>
-            <Date>2030-06-02</Date>
-            <Date>2030-09-02</Date>
-            <Date>2030-12-02</Date>
           </Dates>
         </Dates>
       </FloatingPayDates>
@@ -195,40 +163,8 @@
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
       </KnockOutLevels>
       <FixedTriggerLevels>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>

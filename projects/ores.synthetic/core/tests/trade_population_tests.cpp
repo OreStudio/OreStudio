@@ -430,20 +430,29 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 16;
+    wide.trades_per_book = 19;
 
     const auto plan = plan_of(wide);
 
     std::set<std::string> types;
-    for (const auto& slot : plan.slots)
+    std::size_t held = 0;
+    for (const auto& slot : plan.slots) {
         types.insert(slot.trade_type_code);
+        if (slot.structure_role == "sub_trade")
+            ++held;
+    }
 
     /*
-     * Sixteen codes share nine tables -- the outperformance option is routed
-     * to a table whose check cannot admit it -- and the planner cycles through
-     * them, so one book of sixteen reaches every one.
+     * Nineteen codes, sixteen products and three containers, and the planner
+     * cycles through them, so one book of nineteen reaches every one. The
+     * composite holds two options and each return swap one position, which
+     * are trades of their own.
      */
-    REQUIRE(types.size() == 16u);
+    REQUIRE(types.size() == 19u);
+    const auto books = wide.book_ids.size();
+    CHECK(held == 4u * books);
+    CHECK(plan.slots.size() == 23u * books);
+    CHECK(plan.structures.size() == 3u * books);
 }
 
 namespace {

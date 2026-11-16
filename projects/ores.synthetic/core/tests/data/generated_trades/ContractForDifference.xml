@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+    <TradeType>ContractForDifference</TradeType>
+    <Envelope>
+      <CounterParty>55555555-5555-5555-5555-555555555555</CounterParty>
+    </Envelope>
+    <ContractForDifferenceData>
+      <UnderlyingData>
+        <SubTrade id="13205243-a387-52bd-a39e-0b17329b6293">
+          <SubTradeType>EquityPosition</SubTradeType>
+          <EquityPositionData>
+            <Quantity>1428</Quantity>
+            <Underlying>
+              <Type>Equity</Type>
+              <Name>RIC:DHER.DE</Name>
+            </Underlying>
+          </EquityPositionData>
+        </SubTrade>
+      </UnderlyingData>
+      <ReturnData>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2030-08-02</EndDate>
+            <Tenor>0D</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <InitialPrice>4615.37</InitialPrice>
+        <InitialPriceCurrency>EUR</InitialPriceCurrency>
+      </ReturnData>
+    </ContractForDifferenceData>
+  </Trade>
+  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
+    <TradeType>ContractForDifference</TradeType>
+    <Envelope>
+      <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
+    </Envelope>
+    <ContractForDifferenceData>
+      <UnderlyingData>
+        <SubTrade id="4158165a-fb6f-580e-86f3-25b5e1e324a3">
+          <SubTradeType>EquityPosition</SubTradeType>
+          <EquityPositionData>
+            <Quantity>697</Quantity>
+            <Underlying>
+              <Type>Equity</Type>
+              <Name>RIC:.STOXX50E</Name>
+            </Underlying>
+          </EquityPositionData>
+        </SubTrade>
+      </UnderlyingData>
+      <ReturnData>
+        <Payer>true</Payer>
+        <Currency>EUR</Currency>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2030-01-02</EndDate>
+            <Tenor>0D</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <InitialPrice>4586.31</InitialPrice>
+        <InitialPriceCurrency>EUR</InitialPriceCurrency>
+      </ReturnData>
+    </ContractForDifferenceData>
+  </Trade>
+</Portfolio>

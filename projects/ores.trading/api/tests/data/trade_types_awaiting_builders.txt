@@ -1,8 +1,6 @@
 BondFutureOption
 CBO
 CashPosition
-CompositeTrade
-ContractForDifference
 CreditDefaultSwapOption
 EquityAutoDeltaHedgedOption
 EquityBasketOption
@@ -30,4 +28,3 @@ FxWindowBarrierOption
 FxWorstOfBasketSwap
 RateDigitalOption
 SwaptionStraddle
-TotalReturnSwap

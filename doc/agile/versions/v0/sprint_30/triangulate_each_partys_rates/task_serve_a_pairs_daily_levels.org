@@ -8,7 +8,7 @@
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-a-pairs-daily-levels
-#+pr:
+#+pr: 4775
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-16
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4775][#4775]] | [marketdata] Serve a pair's daily levels from the party's fixings |
 
 * Review
 

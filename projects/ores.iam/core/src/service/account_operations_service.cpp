@@ -403,6 +403,7 @@ authenticated_login account_operations_service::login(const std::string& usernam
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
+    const auto previous_login = login_info.last_login;
     login_info.last_ip = ip_address;
     login_info.last_login = std::chrono::system_clock::now();
     login_info.failed_logins = 0;
@@ -414,7 +415,8 @@ authenticated_login account_operations_service::login(const std::string& usernam
     login_info_repo_.write(ctx_, login_info);
 
     return authenticated_login{.account = account,
-                               .password_reset_required = login_info.password_reset_required};
+                               .password_reset_required = login_info.password_reset_required,
+                               .previous_login = previous_login};
 }
 
 void account_operations_service::record_lock_event(bool locked,

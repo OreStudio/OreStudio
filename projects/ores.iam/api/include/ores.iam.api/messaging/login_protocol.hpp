@@ -129,6 +129,16 @@ struct login_response {
      * this question on its own.
      */
     bool tenant_bootstrapping = false;
+    /**
+     * @brief When the account last logged in before this login, as a wire
+     * timestamp, or empty when this is its first.
+     *
+     * The login records itself as the last one, so this is read before that write.
+     * A client compares it with the time something happened to tell a person
+     * about it once: the shell prints the setup report on the first login after
+     * the tenant's setup finished.
+     */
+    std::string previous_login;
     bool party_setup_required = false;
     /**
      * @brief Set when the party provisioner wizard has completed
@@ -357,6 +367,7 @@ struct service_login_response {
                                       &login_response::tenant_bootstrap_mode},
         ::ores::utility::codec::field{"tenant_bootstrapping",
                                       &login_response::tenant_bootstrapping},
+        ::ores::utility::codec::field{"previous_login", &login_response::previous_login},
         ::ores::utility::codec::field{"party_setup_required",
                                       &login_response::party_setup_required},
         ::ores::utility::codec::field{"party_setup_warning", &login_response::party_setup_warning},

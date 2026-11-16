@@ -281,14 +281,26 @@ std::optional<boost::uuids::uuid> trade_of(const Row& row) {
 template <typename Row>
 std::vector<std::string> differing_fields(const Row& a, const Row& b) {
     std::vector<std::string> out;
-    ores::utility::codec::apply_fields(
-        [&](const auto&... fields) {
-            ((a.*(fields.member) == b.*(fields.member)
-                  ? void()
-                  : out.push_back(std::string(fields.name))),
-             ...);
-        },
-        wire_fields(std::type_identity<Row>{}));
+    const auto one = [&](const auto& field) {
+        const auto& x = a.*(field.member);
+        const auto& y = b.*(field.member);
+        if (x == y)
+            return;
+        using Member = std::remove_cvref_t<decltype(x)>;
+        const std::string name(field.name);
+        if constexpr (requires { wire_fields(std::type_identity<Member>{}); }) {
+            for (const auto& inner : differing_fields(x, y))
+                out.push_back(name + "." + inner);
+        } else if constexpr (std::is_same_v<Member, std::string>) {
+            out.push_back(name + "=" + x + "|" + y);
+        } else if constexpr (std::is_arithmetic_v<Member>) {
+            out.push_back(name + "=" + std::to_string(x) + "|" + std::to_string(y));
+        } else {
+            out.push_back(name);
+        }
+    };
+    ores::utility::codec::apply_fields([&](const auto&... fields) { (one(fields), ...); },
+                                       wire_fields(std::type_identity<Row>{}));
     return out;
 }
 

@@ -21,6 +21,7 @@
 #include "ores.trading.api/builders/fx_builder_rows.hpp"
 #include "refusals.hpp"
 #include <algorithm>
+#include <format>
 #include <utility>
 
 namespace ores::trading::builders {
@@ -102,8 +103,12 @@ fx_result fx_generic_barrier_option_builder::build() const {
     row.expiry_date = option.expiry.get();
     row.settlement = "Cash";
     row.quantity = option.exchange.bought_amount.get().to_double();
-    const auto strike = decimal::from_double(option.exchange.sold_amount.get().to_double() /
-                                             option.exchange.bought_amount.get().to_double());
+    // The strike column holds twelve places, so the rate is stated at that
+    // scale; a longer ratio would be rounded by the store and read back changed.
+    const auto strike = decimal::from_string(std::format(
+        "{:.12f}",
+        option.exchange.sold_amount.get().to_double() /
+            option.exchange.bought_amount.get().to_double()));
     if (!strike)
         return std::unexpected(build_error{"strike", "the exchange states no rate a strike holds"});
     row.strike = *strike;

@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-and-generate-the-equity-outperformance-option
-#+pr:
+#+pr: 4788
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-16
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4788][#4788]] | [ore,synthetic,trading] Model and generate the equity outperformance option |
 
 * Review
 

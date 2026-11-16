@@ -557,3 +557,23 @@ jobs:
             --engine docker \
             --registry ghcr.io/orestudio \
             --alias main
+
+      - name: Make the published packages public
+        # A package is created private, and a host that pulls without
+        # credentials needs it public. A failure here is a warning, not a red
+        # build: the images are published either way, and an owner can change
+        # the visibility in the organisation's package settings.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "/orgs/${GITHUB_REPOSITORY_OWNER}/packages?package_type=container&per_page=100" \
+            --jq '.[] | select(.name | startswith("ores")) | select(.visibility != "public") | .name' \
+          | while read -r name; do
+              if gh api --method PATCH \
+                   "/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${name}" \
+                   -f visibility=public > /dev/null; then
+                echo "public: ${name}"
+              else
+                echo "::warning::Could not make ${name} public. Set it in the organisation's package settings."
+              fi
+            done

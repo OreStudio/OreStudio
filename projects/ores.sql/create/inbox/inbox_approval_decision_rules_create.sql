@@ -22,7 +22,9 @@
  * The rules every approval decision keeps, whatever the kind.
  *
  * Four-eyes: the person who asked a request does not decide it. A withdrawal
- * is the one decision the person who asked takes, and nobody else takes it.
+ * is the one decision the person who asked takes, and nobody else takes it. A
+ * request a policy authorised is not decided by a person, so the rule does not
+ * reach it.
  * A decision names a current request; without one there is nobody to compare
  * the decider with, so it is refused rather than let through.
  *
@@ -37,8 +39,9 @@ create or replace function ores_inbox_approval_decisions_rules_fn()
 returns trigger as $$
 declare
     v_requested_by uuid;
+    v_auto_approval_code text;
 begin
-    select requested_by into v_requested_by
+    select requested_by, auto_approval_code into v_requested_by, v_auto_approval_code
     from ores_inbox_approval_requests_tbl
     where tenant_id = NEW.tenant_id
       and id = NEW.request_id
@@ -54,7 +57,13 @@ begin
             raise exception 'Only the person who asked can withdraw request %.', NEW.request_id
                 using errcode = '23514';
         end if;
-    elsif NEW.decided_by = v_requested_by then
+    elsif NEW.decided_by = v_requested_by
+          and coalesce(v_auto_approval_code, '') = '' then
+        -- The rule is about people: a person may not approve what they asked
+        -- for. A request a policy authorised is decided by the installation,
+        -- and a provisioner acts as its service, so the hand that raised and
+        -- the hand that records the decision are the same account. Refusing
+        -- that would refuse every automatic approval a service raises.
         raise exception 'The person who asked cannot decide request %.', NEW.request_id
             using errcode = '23514';
     end if;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/messaging/party_surface_blueprints.hpp"
+#include "ores.marketdata.core/messaging/party_surface_blueprints.hpp"
 #include "ores.testing/fx_vol_surface_fixture.hpp"
 #include "ores.testing/uuid_of.hpp"
 #include "party_blueprint_fixture.hpp"
@@ -26,13 +26,13 @@
 
 namespace {
 
-using ores::iam::messaging::party_surface_holdings;
-using ores::iam::messaging::plan_party_surfaces;
-using ores::iam::messaging::system_surface_blueprints;
+using ores::marketdata::messaging::party_surface_holdings;
+using ores::marketdata::messaging::plan_party_surfaces;
+using ores::marketdata::messaging::surface_blueprints;
 using ores::marketdata::domain::market_series;
 
-using ores::iam::tests::market_series_row;
-using ores::iam::tests::system_party;
+using ores::marketdata::tests::market_series_row;
+using ores::marketdata::tests::system_party;
 using ores::testing::uuid_of;
 
 const auto acme_uk = uuid_of("00000000-0000-4000-8000-0000000000a2");
@@ -42,10 +42,10 @@ const auto quotes_id = uuid_of("00000000-0000-4000-8000-0000000000e1");
 const std::string quotes_uri =
     "oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD";
 
-system_surface_blueprints eurusd() {
+surface_blueprints eurusd() {
     const auto rows =
         ores::testing::eur_usd_ssvi_surface(system_party, quotes_id, {"1M"}, {"ATM", "25RR"});
-    system_surface_blueprints system;
+    surface_blueprints system;
     system.blueprints = {rows.blueprint};
     system.pillars = rows.pillars;
     system.sources = rows.sources;

@@ -418,3 +418,33 @@ TEST_CASE("a_kind_that_needs_one_approval_still_waits_for_a_person", "[approval]
     REQUIRE(decided.outcome == "ok");
     CHECK(decided.state_code == "approved");
 }
+
+TEST_CASE("a_service_acting_in_a_tenant_is_its_maker_read_where_it_lives", "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+
+    // A service account of the deployment belongs to the system tenant, so the
+    // name a provisioner's session carries is no account of the tenant the work
+    // lands in.
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()),
+        "select id::text, username from ores_iam_accounts_tbl"
+        " where tenant_id = ores_utility_system_tenant_id_fn()"
+        "   and account_type = 'service'"
+        "   and valid_to = ores_utility_infinity_timestamp_fn()"
+        " order by username limit 1",
+        {},
+        test_lg(),
+        "Reading a service account of the system tenant");
+    REQUIRE(rows.size() == 1);
+    const auto service_id = rows.front()[0].value_or("");
+    const auto service_name = rows.front()[1].value_or("");
+    REQUIRE_FALSE(service_name.empty());
+
+    // The session is that service, acting in somebody's tenant.
+    const auto as_service = h.context().with_tenant(h.tenant_id(), service_name);
+    approval_lifecycle lifecycle(as_service);
+
+    const auto maker = lifecycle.actor_account_id();
+    REQUIRE(maker);
+    CHECK(boost::uuids::to_string(*maker) == service_id);
+}

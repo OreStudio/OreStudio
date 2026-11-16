@@ -161,9 +161,24 @@ approval_lifecycle::approval_lifecycle(const ores::database::context& ctx)
 std::optional<boost::uuids::uuid> approval_lifecycle::actor_account_id() {
     ores::iam::repository::account_repository accounts;
     const auto found = accounts.read_latest_by_username(ctx_, ctx_.actor());
-    if (found.empty())
+    if (!found.empty())
+        return found.front().id;
+
+    // A provisioner acts as its service and not as a person, and a service
+    // account belongs to the system tenant, so the name the session carries is
+    // no account of the tenant the work lands in. The request then names the
+    // service, read where it lives. Only a service account answers here: a
+    // person's name is always an account of their own tenant, so a name that
+    // resolves to a person's account elsewhere is not a maker of this tenant's
+    // request.
+    const auto name = !ctx_.actor().empty() ? ctx_.actor() : ctx_.service_account();
+    if (name.empty())
         return std::nullopt;
-    return found.front().id;
+    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), name);
+    const auto service = accounts.read_latest_by_username(system_ctx, name);
+    if (service.empty() || service.front().account_type != "service")
+        return std::nullopt;
+    return service.front().id;
 }
 
 bool approval_lifecycle::holds(const std::string& permission_code) const {

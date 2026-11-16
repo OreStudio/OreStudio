@@ -1245,6 +1245,21 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'storage::objects:write');
     -- The import reads the currency pairs it files observations under. Every read checks its code, so each is granted by name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::currency_pairs:read');
+    -- The curve step this service serves gives each party its own copy of the
+    -- system's curve blueprints, which are reference data rows the party owns
+    -- once written.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::ir_curve_bootstrap_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::ir_curve_bootstrap_configs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::ir_curve_bootstrap_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::ir_curve_bootstrap_pillars:write');
+    -- The surface step gives each party its own copy of the system's surface
+    -- blueprints, which is the same copy the curve step makes of the curves.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::fx_vol_surface_blueprints:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::fx_vol_surface_blueprints:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::fx_vol_surface_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::fx_vol_surface_pillars:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::fx_vol_surface_pillar_sources:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::fx_vol_surface_pillar_sources:write');
 
     -- Analytics service: full own-component access
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AnalyticsService', 'Analytics pricing engine domain service', false);

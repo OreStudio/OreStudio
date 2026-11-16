@@ -28,6 +28,7 @@ namespace ores::marketdata::service::messaging {
 
 std::vector<ores::nats::service::subscription> provisioning_step_registrar::register_handlers(
     ores::nats::service::client& nats,
+    const ores::database::context& ctx,
     ores::nats::service::nats_client::token_provider service_token) {
     // The step commands come from the engine, which has proved them, so the
     // handler takes no verifier.
@@ -36,13 +37,18 @@ std::vector<ores::nats::service::subscription> provisioning_step_registrar::regi
     // two families sharing one would replace each other's filter, so the
     // service would serve the second and silently stop serving the first.
     ores::service::messaging::step_routes routes{"provisioning"};
-    auto steps = std::make_shared<provisioning_step_handler>(nats, std::move(service_token));
+    auto steps = std::make_shared<provisioning_step_handler>(nats, ctx, std::move(service_token));
     routes.on(ores::iam::workflow::marketdata_provision_tenant_step_subject,
               [steps](ores::nats::delivery delivery) { steps->step(std::move(delivery)); });
 
+    // The curve step waits on quotes and publishes, and the subscription step
+    // beside it asks the catalogue: both spend their time waiting on other
+    // services, so two of them run at once and neither holds the other back.
+    constexpr std::size_t provisioning_step_workers = 2;
+
     std::vector<ores::nats::service::subscription> subs;
-    subs.push_back(
-        ores::service::messaging::serve_step_commands(nats, "ores.marketdata.service", routes));
+    subs.push_back(ores::service::messaging::serve_step_commands(
+        nats, "ores.marketdata.service", routes, provisioning_step_workers));
     return subs;
 }
 

@@ -62,6 +62,40 @@ using namespace ores::logging;
 namespace {
 
 /**
+ * @brief Refuses a family element whose parts break the cardinality its model
+ * states, naming the part, before any row of it is written.
+ */
+std::optional<ores::utility::domain::result>
+check_part_cardinality(const messaging::commodity_future_convention_write& write) {
+    if (write.contract_terms.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "commodity_future_convention",
+                       .field = "contract_terms",
+                       .expected = "exactly once"});
+    if (write.averaging_terms.size() > 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "commodity_future_convention",
+                       .field = "averaging_terms",
+                       .expected = "at most once"});
+    if (write.expiry_anchor.size() > 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "commodity_future_convention",
+                       .field = "expiry_anchor",
+                       .expected = "at most once"});
+    if (write.off_peak_index.size() > 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "commodity_future_convention",
+                       .field = "off_peak_index",
+                       .expected = "at most once"});
+    if (write.option_expiry.size() > 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "commodity_future_convention",
+                       .field = "option_expiry",
+                       .expected = "at most once"});
+    return std::nullopt;
+}
+
+/**
  * @brief The current central row a family key names, or an empty vector.
  */
 std::vector<domain::convention>
@@ -367,6 +401,10 @@ messaging::put_commodity_future_convention_response
 commodity_future_convention_service::put_commodity_future_convention(
     const messaging::put_commodity_future_convention_request& request) {
     messaging::put_commodity_future_convention_response response;
+    if (const auto refused = check_part_cardinality(request.item)) {
+        response.result = *refused;
+        return response;
+    }
     // The central row and every part land in one transaction, so no reader
     // sees a part disagree with the central version.
     ores::database::repository::unit_of_work uow(ctx_);
@@ -424,6 +462,12 @@ commodity_future_convention_service::put_many_commodity_future_conventions(
             outcome_code::batch_too_large,
             {.entity = "commodity_future_convention", .limit = std::to_string(max_batch_size)});
         return response;
+    }
+    for (const auto& write : request.items) {
+        if (const auto refused = check_part_cardinality(write)) {
+            response.result = *refused;
+            return response;
+        }
     }
     // One transaction for the whole batch. Each element states its own claim,
     // and the store checks each row's claim as it is written; an element that

@@ -58,6 +58,30 @@ using namespace ores::logging;
 namespace {
 
 /**
+ * @brief Refuses a family element whose parts break the cardinality its model
+ * states, naming the part, before any row of it is written.
+ */
+std::optional<ores::utility::domain::result>
+check_part_cardinality(const messaging::cross_currency_fix_float_convention_write& write) {
+    if (write.fixed_leg.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "cross_currency_fix_float_convention",
+                       .field = "fixed_leg",
+                       .expected = "exactly once"});
+    if (write.float_leg.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "cross_currency_fix_float_convention",
+                       .field = "float_leg",
+                       .expected = "exactly once"});
+    if (write.swap_terms.size() != 1)
+        return refuse(outcome_code::part_cardinality,
+                      {.entity = "cross_currency_fix_float_convention",
+                       .field = "swap_terms",
+                       .expected = "exactly once"});
+    return std::nullopt;
+}
+
+/**
  * @brief The current central row a family key names, or an empty vector.
  */
 std::vector<domain::convention>
@@ -260,6 +284,10 @@ messaging::put_cross_currency_fix_float_convention_response
 cross_currency_fix_float_convention_service::put_cross_currency_fix_float_convention(
     const messaging::put_cross_currency_fix_float_convention_request& request) {
     messaging::put_cross_currency_fix_float_convention_response response;
+    if (const auto refused = check_part_cardinality(request.item)) {
+        response.result = *refused;
+        return response;
+    }
     // The central row and every part land in one transaction, so no reader
     // sees a part disagree with the central version.
     ores::database::repository::unit_of_work uow(ctx_);
@@ -306,6 +334,12 @@ cross_currency_fix_float_convention_service::put_many_cross_currency_fix_float_c
                                  {.entity = "cross_currency_fix_float_convention",
                                   .limit = std::to_string(max_batch_size)});
         return response;
+    }
+    for (const auto& write : request.items) {
+        if (const auto refused = check_part_cardinality(write)) {
+            response.result = *refused;
+            return response;
+        }
     }
     // One transaction for the whole batch. Each element states its own claim,
     // and the store checks each row's claim as it is written; an element that

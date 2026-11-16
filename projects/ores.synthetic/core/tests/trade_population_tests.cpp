@@ -135,6 +135,8 @@ domain::trade_generation_scope bond_scope() {
      */
     scope.equity_underlyings = {domain::equity_underlying_reference{
         .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
+    // A callable bond names the credit curve of a legal entity the tenant holds.
+    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
     scope.issuer_ids = {bank, second_bank};
@@ -308,7 +310,6 @@ domain::trade_generation_scope credit_scope() {
     auto scope = bond_scope();
     scope.asset_class_code = "credit";
     scope.trades_per_book = 4;
-    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.conventions = ores::synthetic::tests::ore_example_conventions();
     return scope;
 }
@@ -1122,15 +1123,25 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
          * writes the ORE name the address resolves to. The address names an
          * equity of the tenant's catalogue rather than one the planner invents.
          */
-        const auto index = std::ranges::find_if(
-            parameters, [](const auto& parameter) { return parameter.declared_type == "Index"; });
-        if (index != parameters.end()) {
-            REQUIRE(index->value.has_value());
-            CHECK(index->value->starts_with("oresmd://equity/"));
-            CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
-                return index->value->find(underlying.code) != std::string::npos;
-            }));
-            observed.insert(*index->value);
+        // A list states its addresses as value rows rather than one value.
+        for (const auto& parameter : parameters) {
+            if (parameter.declared_type != "Index")
+                continue;
+            std::vector<std::string> addresses;
+            if (parameter.value)
+                addresses.push_back(*parameter.value);
+            for (const auto& value : slot.instruments.scripted_parameter_values)
+                if (value.parameter_sequence_number == parameter.sequence_number)
+                    addresses.push_back(value.value);
+            INFO("parameter " << parameter.name);
+            REQUIRE_FALSE(addresses.empty());
+            for (const auto& address : addresses) {
+                CHECK(address.starts_with("oresmd://equity/"));
+                CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
+                    return address.find(underlying.code) != std::string::npos;
+                }));
+                observed.insert(address);
+            }
         }
         // A product that states Underlying blocks names them there instead.
         for (const auto& underlying : slot.instruments.instrument_underlyings)

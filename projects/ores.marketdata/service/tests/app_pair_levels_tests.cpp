@@ -127,6 +127,17 @@ TEST_CASE("a_day_only_one_side_was_fixed_on_has_no_level", tag) {
     CHECK(r.levels[1] == Catch::Approx(170.0 / 1.30).epsilon(1e-12));
 }
 
+TEST_CASE("a_day_one_side_reports_twice_is_still_a_day_the_other_side_missed", tag) {
+    const auto party = one_source("ecb", "EUR", {"USD", "JPY"});
+    const auto read = reader_of(
+        {{"ecb:USD", {{2, "1.10"}, {3, "1.20"}, {3, "1.20"}}}, {"ecb:JPY", {{2, "165"}}}});
+
+    const auto r = compose_pair_levels(party, pair("USD", "JPY"), read);
+
+    REQUIRE(r.result.outcome == outcome::ok);
+    CHECK(r.dates == std::vector{day_of(2)});
+}
+
 TEST_CASE("a_pair_only_a_source_read_later_quotes_is_read_from_that_source", tag) {
     auto party = one_source("first", "AAA", {"BBB", "CCC"}, 20);
     const auto second = one_source("second", "BBB", {"DDD"}, 21);

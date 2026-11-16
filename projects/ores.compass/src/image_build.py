@@ -40,6 +40,11 @@ IMAGE_LIBS = "localhost/ores-service-libs"
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 
+# The compute wrapper is a supervised binary but not a runtime service: it
+# ships its own image, yet it shares the library image with the services and
+# therefore is staged with them.
+COMPUTE_SERVICE = "ores.compute.wrapper"
+
 
 def _run(cmd, project_root, check=True, **kwargs):
     return subprocess.run(cmd, cwd=project_root, check=check, **kwargs)
@@ -177,11 +182,17 @@ def build_nats(project_root: Path, tag: str | None = None) -> str:
     return tag
 
 
-def build_compute(project_root: Path, tag: str | None = None) -> str:
+def build_compute(project_root: Path, tag: str | None = None,
+                  base_tag: str | None = None) -> str:
+    """Build the compute-wrapper image. Requires the library image."""
     if tag is None:
         tag = _version_tag(project_root)
+    if base_tag is None:
+        base_tag = tag
     print(f"=== Building compute image: {IMAGE_COMPUTE}:{tag} ===")
     _run(_build_args([
+          "--build-arg", f"SERVICE_NAME={COMPUTE_SERVICE}",
+          "--build-arg", f"BASE_TAG={base_tag}",
           "-t", f"{IMAGE_COMPUTE}:local",
           "-t", f"{IMAGE_COMPUTE}:{tag}",
           "-f", "docker/service-compute.Dockerfile", "."]),
@@ -203,7 +214,8 @@ def build_all(project_root: Path, tag: str | None = None,
     build_base(project_root, tag)
     build_libs(project_root, tag)
 
-    # 4. Build the per-service images.
+    # 4. Build the compute image and the per-service images.
+    build_compute(project_root, tag)
     build_overlays(project_root, tag, services)
 
     # 5. NATS.
@@ -275,8 +287,9 @@ def stage_only(project_root: Path) -> list[str]:
     and that job builds the images without staging again.
     """
     services = runtime_services(project_root)
+    staged = services + [COMPUTE_SERVICE]
     print("=== Staging binaries ===")
-    _run(["bash", "docker/stage-runtime.sh", "--services", " ".join(services)],
+    _run(["bash", "docker/stage-runtime.sh", "--services", " ".join(staged)],
          project_root)
     from library_partition import (  # noqa: PLC0415
         compute_shared_libraries, stage_for_build,
@@ -284,12 +297,14 @@ def stage_only(project_root: Path) -> list[str]:
     stage_dir = project_root / "build" / "docker-stage"
     print(f"  Runtime services: {len(services)} (from service registry)")
     print("=== Computing the shared libraries (ldd union) ===")
+    # The wrapper is staged with the services, so its libraries belong in the
+    # shared image too: its image is the library image plus that binary.
     shared_libs = compute_shared_libraries(
-        stage_dir / "bin", stage_dir / "lib", services)
+        stage_dir / "bin", stage_dir / "lib", staged)
     print(f"  Shared libs (library image): {len(shared_libs)}")
     print("=== Staging for build (library + per-service dirs) ===")
     stage_for_build(stage_dir, stage_dir / "bin", stage_dir / "lib",
-                    services, shared_libs)
+                    staged, shared_libs)
     return services
 
 
@@ -320,7 +335,8 @@ def _published(ref: str) -> bool:
 
 
 def publish(project_root: Path, registry: str, tag: str | None = None,
-            alias: str | None = None, dry_run: bool = False) -> int:
+            alias: str | None = None, dry_run: bool = False,
+            force: bool = False) -> int:
     """Push every image to *registry* under *tag*, and under *alias* too.
 
     *registry* is a repository prefix such as ghcr.io/orestudio. The images
@@ -338,7 +354,7 @@ def publish(project_root: Path, registry: str, tag: str | None = None,
                                               if alias else ""))
             pushed += 1
             continue
-        if _published(ref):
+        if not force and _published(ref):
             print(f"  {ref} is already published")
             skipped += 1
             continue
@@ -397,6 +413,9 @@ def run(argv: list[str], project_root: Path) -> int:
                     help="Print the version-commit tag and exit")
     ap.add_argument("--dry-run", action="store_true",
                     help="Report what publish would push, and push nothing")
+    ap.add_argument("--force", action="store_true",
+                    help="Push a tag the registry already holds (after "
+                         "rebuilding an image in place)")
     args = ap.parse_args(argv)
 
     # The caller's preset wins over the one in .env, so a lambda can build a
@@ -421,13 +440,15 @@ def run(argv: list[str], project_root: Path) -> int:
             if not args.dry_run:
                 build_all(project_root, tag, skip_stage=args.from_stage)
             publish(project_root, args.registry, tag, args.alias,
-                    dry_run=args.dry_run)
+                    dry_run=args.dry_run, force=args.force)
             return 0
 
-        # --compute is standalone — no staging, no library partition.
+        # --compute still needs the shared stage: its image is the library
+        # image plus the wrapper binary.
         if args.compute:
-            _run(["bash", "docker/stage-runtime.sh", "--service",
-                  "ores.compute.wrapper"], project_root)
+            stage_only(project_root)
+            build_base(project_root, tag)
+            build_libs(project_root, tag)
             build_compute(project_root, tag)
             return 0
 

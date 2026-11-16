@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/close-the-known-defects-in-the-generator
-#+pr:
+#+pr: 4776
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4776][#4776]] | [synthetic,trading] Close the known defects in the trade generator |
 
 * Review
 

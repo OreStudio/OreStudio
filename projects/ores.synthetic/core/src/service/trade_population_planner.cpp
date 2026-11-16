@@ -327,13 +327,13 @@ std::size_t book_index(std::uint32_t slot, std::uint32_t turn, std::size_t book_
 
 /*
  * Which way a closed either-or falls: long or short, pay or receive, call or
- * put. It is picked from the turn, so each type is drawn both ways within four
- * turns, and it moves out of step with the book.
+ * put. Each either-or of one trade reads its own stream, the stream-th bit of
+ * the turn, so the choices of a trade are independent: over eight turns every
+ * pair of them states all four combinations, and stream 0 flips each turn
+ * while the book moves only once per books' worth of turns.
  */
-bool first_way(const domain::trade_generation_scope& scope,
-               const domain::trade_population_slot& entry) {
-    const auto books = std::max<std::size_t>(scope.book_ids.size(), 1);
-    return (entry.turn + entry.turn / (books + 1)) % 2 == 0;
+bool first_way(const domain::trade_population_slot& entry, unsigned stream = 0) {
+    return ((entry.turn >> stream) & 1u) == 0;
 }
 
 domain::trade_population_slot common_slot(const domain::trade_generation_scope& scope,
@@ -480,8 +480,8 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
     const tb::bond_holding holding{
         .issue_id = issue_id, .notional = money(entry.notional), .currency = entry.currency};
     const auto kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put;
-    const auto position = first_way(scope, entry) ? tb::option_position::long_option :
-                                                    tb::option_position::short_option;
+    const auto position =
+        first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     const auto rate = [&](double low, double span, std::uint32_t stream) {
         return money(std::round((low + span * draw(name, stream)) * 10000.0) / 10000.0);
     };
@@ -532,7 +532,7 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
     if (type == "ForwardBond")
         // A forward on the bond matures a year out, well before the bond does.
         return built(tb::forward_bond_builder({.holding = holding,
-                                               .long_in_forward = first_way(scope, entry),
+                                               .long_in_forward = first_way(entry),
                                                .forward_maturity = add_years(scope.as_of_date, 1),
                                                .settlement = add_years(scope.as_of_date, 1),
                                                .lock_rate = rate(0.02, 0.03, 7)})
@@ -550,14 +550,13 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
                                             .end = add_years(scope.as_of_date, 1)})
                          .build());
     if (type == "BondTRS")
-        return built(
-            tb::bond_trs_builder(
-                {.holding = holding,
-                 .side = first_way(scope, entry) ? tb::return_side::receive : tb::return_side::pay,
-                 .funding_rate = rate(0.02, 0.01, 9),
-                 .start = scope.as_of_date,
-                 .end = add_years(scope.as_of_date, 1)})
-                .build());
+        return built(tb::bond_trs_builder({.holding = holding,
+                                           .side = first_way(entry) ? tb::return_side::receive :
+                                                                      tb::return_side::pay,
+                                           .funding_rate = rate(0.02, 0.01, 9),
+                                           .start = scope.as_of_date,
+                                           .end = add_years(scope.as_of_date, 1)})
+                         .build());
     if (type == "CallableBond")
         return built(tb::callable_bond_builder(
                          {.holding = holding,
@@ -1640,8 +1639,8 @@ build_rate_trade(const domain::trade_generation_scope& scope,
     const auto slot = entry.slot;
     const auto& type = entry.trade_type_code;
     const auto name = slot_name(scope, slot);
-    const auto position = first_way(scope, entry) ? tb::option_position::long_option :
-                                                    tb::option_position::short_option;
+    const auto position =
+        first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     /*
      * A rate is a decimal in the store, not a percentage: one per cent to six
      * per cent, quantised to a ten-thousandth so a decimal column holds it
@@ -1655,8 +1654,8 @@ build_rate_trade(const domain::trade_generation_scope& scope,
                                       .maturity = maturity,
                                       .fixed_rate = fixed_rate,
                                       .index = domestic[slot % domestic.size()].index,
-                                      .fixed_side = first_way(scope, entry) ? tb::side::pay :
-                                                                              tb::side::receive,
+                                      .fixed_side =
+                                          first_way(entry, 1) ? tb::side::pay : tb::side::receive,
                                       .convention = domestic[slot % domestic.size()].convention};
     };
     const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
@@ -1696,13 +1695,12 @@ build_rate_trade(const domain::trade_generation_scope& scope,
                 .build());
     }
     if (type == "CapFloor")
-        return built(
-            tb::cap_floor_builder(conventions,
-                                  {.swap = swap,
-                                   .kind = first_way(scope, entry) ? tb::cap_floor_kind::cap :
-                                                                     tb::cap_floor_kind::floor,
-                                   .position = position})
-                .build());
+        return built(tb::cap_floor_builder(conventions,
+                                           {.swap = swap,
+                                            .kind = first_way(entry, 2) ? tb::cap_floor_kind::cap :
+                                                                          tb::cap_floor_kind::floor,
+                                            .position = position})
+                         .build());
     if (type == "Swaption") {
         /*
          * An option is exercised after the population is written, and the
@@ -2234,7 +2232,7 @@ build_credit_trade(const domain::trade_generation_scope& scope,
 
     const auto& type = entry.trade_type_code;
     const auto name = slot_name(scope, entry.slot);
-    const auto side = first_way(scope, entry) ? tb::protection::buy : tb::protection::sell;
+    const auto side = first_way(entry, 1) ? tb::protection::buy : tb::protection::sell;
     const auto start = add_months(scope.as_of_date, -static_cast<int>(entry.slot % 6));
     const auto protection = [&](year_month_day from) {
         return tb::credit_protection_terms{
@@ -2265,8 +2263,8 @@ build_credit_trade(const domain::trade_generation_scope& scope,
             .expiry = expiry,
             .strike = money(1.0),
             .index_term = std::format("{}Y", years),
-            .position = first_way(scope, entry) ? tb::option_position::long_option :
-                                                  tb::option_position::short_option};
+            .position = first_way(entry) ? tb::option_position::long_option :
+                                           tb::option_position::short_option};
         return batch_of(tb::index_credit_default_swap_option_builder(conventions, terms).build(),
                         type);
     }
@@ -2690,8 +2688,8 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
                               .value(),
             .index = *index,
             .base_cpi = base_cpi_from(name),
-            .fixed_side = first_way(scope, entry) ? ores::trading::builders::side::pay :
-                                                    ores::trading::builders::side::receive};
+            .fixed_side = first_way(entry) ? ores::trading::builders::side::pay :
+                                             ores::trading::builders::side::receive};
         entry.instruments = swap_batch_of(
             ores::trading::builders::inflation_swap_builder(conventions, terms).build(),
             entry.trade_type_code,

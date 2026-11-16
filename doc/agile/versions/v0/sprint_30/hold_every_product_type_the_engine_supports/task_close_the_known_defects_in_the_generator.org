@@ -115,7 +115,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Either-ors of one trade flip together: every cap long, every floor short | trade_population_planner.cpp | accept | Each either-or reads its own stream, the stream-th bit of the turn; a test checks all four cap/floor and position pairs; grid-checked over 1-24 types and 1-4 books |
+| 2 | TRS doc comment sits above the new enum | bond_builders.hpp | accept | Moved back above bond_trs_terms |
+| 3 | Stream 6 may correlate with another draw | trade_population_planner.cpp | no change | In the commodity planner stream 6 is drawn only for the option type, one shape per slot |
+| 4 | Explain the turn/(books+1) term | trade_population_planner.cpp | no change | The term is gone with item 1; the comment states the streams |
+| 5 | Do not claim the bad_alloc closed | task notes | accept | The notes and the PR say it is not reproduced and the stress run does not cross the NATS decode |
 
 * Result
 

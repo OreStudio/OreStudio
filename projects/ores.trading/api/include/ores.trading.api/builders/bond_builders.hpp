@@ -179,10 +179,10 @@ private:
     bond_repo_terms terms_;
 };
 
-/// The bond's price return against a quarterly fixed funding leg, whose rate may be negative.
 /// Whether the book receives the bond's total return and pays the funding, or the reverse.
 enum class return_side { receive, pay };
 
+/// The bond's price return against a quarterly fixed funding leg, whose rate may be negative.
 struct bond_trs_terms final {
     bond_holding holding;
     required<return_side> side;

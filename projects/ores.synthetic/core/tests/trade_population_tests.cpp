@@ -36,6 +36,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -1711,4 +1712,25 @@ TEST_CASE("a_bond_issue_names_its_issuer_by_its_legal_name", "[trade_population]
         CHECK((slot.bond_issue->issuer == "Bank One Plc" ||
                slot.bond_issue->issuer == "Bank Two Plc"));
     }
+}
+
+TEST_CASE("a_cap_floor_population_states_every_kind_with_every_position", "[trade_population]") {
+    /*
+     * The kind and the position are two either-ors of one trade. Picked from
+     * one stream they move together, and every cap would be long and every
+     * floor short; each reads its own, so all four pairs occur.
+     */
+    auto scope = rate_scope();
+    scope.trade_type_codes = {"CapFloor"};
+    scope.trades_per_book = 16;
+
+    std::set<std::pair<std::string, std::string>> pairs;
+    for (const auto& slot : plan_of(scope).slots) {
+        const auto& instruments = slot.instruments;
+        REQUIRE(instruments.cap_floor_instruments.size() == 1u);
+        REQUIRE(instruments.instrument_strikes.size() == 1u);
+        pairs.emplace(instruments.instrument_strikes.front().strike_role,
+                      instruments.cap_floor_instruments.front().long_short.value_or(""));
+    }
+    CHECK(pairs.size() == 4u);
 }

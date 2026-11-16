@@ -71,9 +71,9 @@
           </Spreads>
         </FloatingLegData>
       </LegData>
-      <Floors>
-        <Floor>0.0568</Floor>
-      </Floors>
+      <Caps>
+        <Cap>0.0568</Cap>
+      </Caps>
     </CapFloorData>
   </Trade>
 </Portfolio>

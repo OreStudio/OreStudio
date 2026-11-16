@@ -34,6 +34,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/approval_gate.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/authorise.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/handler_helpers.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/request_retry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/service_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_command_stream.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_progress_board.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_workers.hpp"

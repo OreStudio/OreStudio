@@ -25,6 +25,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/timeouts.hpp"
+#include "ores.service/messaging/service_error.hpp"
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -76,20 +77,7 @@ public:
      * told us why, and retrying with the same token will not help" apart
      * from a transient hiccup worth retrying.
      */
-    class service_error : public std::runtime_error {
-    public:
-        service_error(std::string error_code, std::string_view subject)
-            : std::runtime_error("Request to " + std::string(subject) +
-                                 " rejected by server: " + error_code)
-            , error_code_(std::move(error_code)) {}
-
-        [[nodiscard]] const std::string& error_code() const noexcept {
-            return error_code_;
-        }
-
-    private:
-        std::string error_code_;
-    };
+    using service_error = ores::service::messaging::service_error;
 
     /**
      * @brief Issues @p req and returns the parsed response.

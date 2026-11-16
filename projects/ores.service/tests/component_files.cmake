@@ -28,6 +28,7 @@ set(files
     "messaging_step_progress_board_tests.cpp"
     "rate_limiter_tests.cpp"
     "request_context_tests.cpp"
+    "request_retry_tests.cpp"
     "run_token_cache_tests.cpp"
     "standard_service_options_tests.cpp"
     "step_workers_tests.cpp"

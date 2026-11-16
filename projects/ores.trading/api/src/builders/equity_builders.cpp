@@ -222,8 +222,8 @@ equity_result equity_outperformance_option_builder::build() const {
     if (terms_.notional.get() <= decimal{})
         return std::unexpected(build_error{"notional", "must be positive"});
     if (first.uri() == second.uri())
-        return std::unexpected(
-            build_error{"underlying_2", "must differ from the first: an equity has no return over itself"});
+        return std::unexpected(build_error{
+            "underlying_2", "must differ from the first: an equity has no return over itself"});
     if (terms_.initial_price_1.get() <= decimal{} || terms_.initial_price_2.get() <= decimal{})
         return std::unexpected(build_error{"initial_price", "both must be positive"});
     if (terms_.strike_return.get() < decimal{})

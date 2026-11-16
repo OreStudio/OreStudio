@@ -121,8 +121,7 @@ equity_outperformance_option_terms spx_over_ndx() {
 
 }
 
-TEST_CASE("an_outperformance_option_states_each_equity_in_its_role_and_its_prices",
-          equity_tags) {
+TEST_CASE("an_outperformance_option_states_each_equity_in_its_role_and_its_prices", equity_tags) {
     const auto built = equity_outperformance_option_builder(spx_over_ndx()).build();
     REQUIRE(built.has_value());
     const auto* row =

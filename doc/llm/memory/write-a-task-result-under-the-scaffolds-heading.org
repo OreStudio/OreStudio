@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E41FC476-9025-4385-AA22-7791910DDB34
+:END:
+#+title: Write a task's Result under the scaffold's own heading
+#+description: A task scaffold already ends with an empty '* Result'. Appending a second one makes compass warn at merge and leaves two headings.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+A task document's '* Result' heading already exists when the document is scaffolded, so the result is written under it and never appended as a second heading.
+
+*Why:* compass pr merge warns that the document carries two '* Result' headings, and a reader sees an empty section above the written one. It happened to two task documents of the BFF port story before anyone noticed.
+
+*How to apply:* When closing a task, replace or extend the existing '* Result' section. Count the headings before committing: grep -c '^\* Result' on the task document must be 1.

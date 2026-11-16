@@ -178,8 +178,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The pricing engines' five reads are served at the BFF's paths, with its member
 names and status codes, and the family's three units that remained share one
 statement each rather than a copy:

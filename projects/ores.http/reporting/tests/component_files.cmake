@@ -26,6 +26,7 @@ set(files
     "engine_settings_routes_tests.cpp"
     "health_routes_tests.cpp"
     "main.cpp"
+    "pricing_engine_import_tests.cpp"
     "pricing_engine_routes_tests.cpp"
     "pricing_engine_writes_tests.cpp"
     "report_routes_tests.cpp"

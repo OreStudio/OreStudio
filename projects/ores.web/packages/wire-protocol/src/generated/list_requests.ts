@@ -6579,6 +6579,66 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.script_calibration_strikes.list': {
+        asOf: true,
+        filter: [],
+        rows: ['strikes'],
+    },
+    'trading.v1.script_calibration_strikes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_calibrations.list': {
+        asOf: true,
+        filter: [],
+        rows: ['calibrations'],
+    },
+    'trading.v1.script_calibrations_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_coarsenings.list': {
+        asOf: true,
+        filter: [],
+        rows: ['coarsenings'],
+    },
+    'trading.v1.script_coarsenings_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_inputs.list': {
+        asOf: true,
+        filter: [],
+        rows: ['inputs'],
+    },
+    'trading.v1.script_inputs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_results.list': {
+        asOf: true,
+        filter: [],
+        rows: ['results'],
+    },
+    'trading.v1.script_results_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_variants.list': {
+        asOf: true,
+        filter: [],
+        rows: ['variants'],
+    },
+    'trading.v1.script_variants_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.scripted_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
@@ -6615,6 +6675,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['scripted_parameters'],
     },
     'trading.v1.scripted_parameters_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.scripts.list': {
+        asOf: true,
+        filter: ['name_one_of'],
+        rows: ['scripts'],
+    },
+    'trading.v1.scripts_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

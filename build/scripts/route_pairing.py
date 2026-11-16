@@ -247,6 +247,12 @@ PAIRS = {
         "DELETE",
         "/api/reporting/engine-settings/{id}"),
     ("POST", "/api/reporting/pricing-engines"): ("POST", "/api/reporting/pricing-engines"),
+    ("POST", "/api/reporting/pricing-engines/ore-import"): (
+        "POST",
+        "/api/reporting/pricing-engines/ore-import"),
+    ("POST", "/api/reporting/pricing-engines/ore-import/preview"): (
+        "POST",
+        "/api/reporting/pricing-engines/ore-import/preview"),
     ("PUT", "/api/reporting/pricing-engines/:id"): ("PUT", "/api/reporting/pricing-engines/{id}"),
     ("DELETE", "/api/reporting/pricing-engines/:id"): (
         "DELETE",

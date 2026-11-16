@@ -2090,8 +2090,12 @@ private:
      * A surface is derived data, so it belongs to the party that calibrates it. The party copies
      * every blueprint the system tenant holds, and each pillar source reads the party's own series
      * of the same item from the same provider, which its subscription to the derived source fills.
-     * The step waits up to three minutes for those series, writes the rows, and fails naming each
-     * blueprint still waiting. A second run writes no row twice.
+     *
+     * Every party is planned together and asked about again until all are ready, and the wait
+     * lasts while the work moves: three minutes with no new blueprint ready is when it stops. A
+     * wait counted per party, one after another, gave the first party the least time, because its
+     * clock started while the derived source was still on its first pass. The step then writes
+     * the rows and fails naming each blueprint still waiting. A second run writes no row twice.
      */
     void give_party_surface_blueprints_step(
         const ores::service::messaging::workflow_step_context& wf,
@@ -2120,41 +2124,72 @@ private:
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
         std::vector<std::string> waiting;
+
+        struct party_target {
+            std::string name;
+            boost::uuids::uuid id;
+            internal_request_client client;
+            party_surface_plan plan;
+        };
+        std::vector<party_target> targets;
+        targets.reserve(parties.size());
         for (const auto& party_name : parties) {
             const auto party = find_party(discover, party_name);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
-            auto party_client =
-                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+            targets.push_back({.name = party_name,
+                               .id = party->id,
+                               .client = make_step_client(
+                                   command.tenant_id, actor.account_id, party->id, actor.username),
+                               .plan = {}});
+        }
 
-            const auto started = std::chrono::steady_clock::now();
-            auto plan =
-                plan_party_surfaces(system, read_party_surface_holdings(party_client, party->id));
-            while (!plan.waiting.empty() &&
-                   std::chrono::steady_clock::now() < started + quote_patience) {
-                const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
+        const auto plan_all = [&] {
+            std::size_t ready = 0;
+            std::size_t total = 0;
+            for (auto& target : targets) {
+                target.plan = plan_party_surfaces(
+                    system, read_party_surface_holdings(target.client, target.id));
+                ready += target.plan.ready.size();
+                total += target.plan.ready.size() + target.plan.waiting.size();
+            }
+            return std::pair{ready, total};
+        };
+        auto [ready, total] = plan_all();
+        auto last_moved = std::chrono::steady_clock::now();
+        while (ready < total && std::chrono::steady_clock::now() < last_moved + quote_patience) {
+            for (const auto& target : targets) {
+                if (target.plan.waiting.empty())
+                    continue;
+                const auto line = target.name + ": " + std::to_string(target.plan.waiting.size()) +
                                   " surface blueprint(s) wait for their quotes, asking again in " +
                                   std::to_string(retry_interval.count()) + "s";
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "give_party_surface_blueprints: " << line;
-                wf.progress(party_name + ": surface blueprints with their quotes",
-                            static_cast<std::int64_t>(plan.ready.size()),
-                            static_cast<std::int64_t>(plan.ready.size() + plan.waiting.size()));
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = line,
                                     .context = {}});
-                std::this_thread::sleep_for(retry_interval);
-                plan = plan_party_surfaces(system,
-                                           read_party_surface_holdings(party_client, party->id));
             }
-            write_party_surface_plan(party_client, plan, party_name);
+            wf.progress("Surface blueprints with their quotes, over every party",
+                        static_cast<std::int64_t>(ready),
+                        static_cast<std::int64_t>(total));
+            std::this_thread::sleep_for(retry_interval);
+            const auto before = ready;
+            std::tie(ready, total) = plan_all();
+            if (ready > before)
+                last_moved = std::chrono::steady_clock::now();
+        }
+
+        for (auto& target : targets) {
+            write_party_surface_plan(target.client, target.plan, target.name);
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "give_party_surface_blueprints: " << party_name << ": "
-                << plan.blueprints_to_write.size() << " written, " << plan.ready.size() << " held, "
-                << plan.waiting.size() << " waiting";
-            for (const auto& w : plan.waiting)
-                waiting.push_back(party_name + ": " + w);
-            result.parties.push_back(boost::uuids::to_string(party->id));
+                << "give_party_surface_blueprints: " << target.name << ": "
+                << target.plan.blueprints_to_write.size() << " written, "
+                << target.plan.ready.size() << " held, " << target.plan.waiting.size()
+                << " waiting";
+            for (const auto& w : target.plan.waiting)
+                waiting.push_back(target.name + ": " + w);
+            result.parties.push_back(boost::uuids::to_string(target.id));
         }
         if (!waiting.empty()) {
             std::string reason = std::to_string(waiting.size()) +

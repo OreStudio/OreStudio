@@ -118,6 +118,11 @@ using namespace ores::service::messaging;
 
 namespace {
 
+// Why every row an import writes changed, as its audit states it.
+ores::utility::domain::change_intent import_intent() {
+    return {.reason_code = "system.import", .commentary = "Imported from an ORE directory"};
+}
+
 // The canonical write record carries what the caller owns. The imported
 // domain objects carry the server's fields too, so each projects by name.
 ores::refdata::messaging::currency_write
@@ -519,6 +524,7 @@ std::string write_imported_components(Nats& nats,
     id_req.change.write.trade_activity_id = activity_id;
     id_req.change.write.id_type = "ORE";
     id_req.change.write.id_value = item.ore_id;
+    id_req.intent = import_intent();
     auto identified = nats_call(nats, id_req, error);
     if (!identified || identified->result.outcome != outcome::ok)
         return error.empty() ? "save_trade_identifier failed" : error;
@@ -531,6 +537,7 @@ std::string write_imported_components(Nats& nats,
         portfolio_req.change.write.trade_activity_id = activity_id;
         portfolio_req.change.write.sequence_number = ++portfolio_sequence;
         portfolio_req.change.write.portfolio_id = portfolio_id;
+        portfolio_req.intent = import_intent();
         auto saved = nats_call(nats, portfolio_req, error);
         if (!saved || saved->result.outcome != outcome::ok)
             return error.empty() ? "save_trade_portfolio failed" : error;
@@ -546,6 +553,7 @@ std::string write_imported_components(Nats& nats,
             field_req.change.write.sequence_number = ++sequence_number;
             field_req.change.write.name = field.name;
             field_req.change.write.value = field.value;
+            field_req.intent = import_intent();
             auto saved = nats_call(nats, field_req, error);
             if (!saved || saved->result.outcome != outcome::ok)
                 return error.empty() ? "save_trade_additional_field failed" : error;
@@ -604,8 +612,7 @@ join_composites(Nats& nats,
             ores::ore::domain::portfolio_projection::structure_of(item.anchor.trade_type))
             composite_of.emplace(item.ore_id, &item);
 
-    const auto intent = ores::utility::domain::change_intent{
-        .reason_code = "system.import", .commentary = "Imported from an ORE directory"};
+    const auto intent = import_intent();
     std::unordered_set<std::string> made;
     const auto join = [&](const boost::uuids::uuid& trade_id,
                           const boost::uuids::uuid& structure_id,
@@ -1185,8 +1192,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         const auto iso = currency.iso_code;
         ores::refdata::messaging::put_currency_request save_req{
             .change = {.write = ore_import_execute_handler_to_write(currency)},
-            .intent = ores::utility::domain::change_intent{
-                .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
+            .intent = import_intent()};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1221,8 +1227,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         const auto name = portfolio.name;
         ores::refdata::messaging::put_portfolio_request save_req{
             .change = {.write = ore_import_execute_handler_to_write(portfolio)},
-            .intent = ores::utility::domain::change_intent{
-                .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
+            .intent = import_intent()};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1258,8 +1263,7 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         const auto name = book.name;
         ores::refdata::messaging::put_book_request save_req{
             .change = {.write = ore_import_execute_handler_to_write(book)},
-            .intent = ores::utility::domain::change_intent{
-                .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
+            .intent = import_intent()};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {

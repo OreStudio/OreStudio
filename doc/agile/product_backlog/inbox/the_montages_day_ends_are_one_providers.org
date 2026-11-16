@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 26A811F2-EC98-4F0C-8919-0EB74540FA4F
+:END:
+#+title: The montage's day high and low are one provider's, not the pair's
+#+description: apply_window runs once per series into the shared pair draft and overwrites day_high, day_low and change_pct, so a pair's stated ends and change come from whichever series the store returned last, not from all its providers. The screen now marks its drawn provider's own ends and says so, but the table's columns still carry the last-provider figures. The fix is to fold the window across the pair's series: change from the consensus's first and last, and the ends as the minimum and maximum over the pair.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:correctness:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

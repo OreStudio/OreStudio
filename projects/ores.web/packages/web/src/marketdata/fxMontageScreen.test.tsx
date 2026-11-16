@@ -23,7 +23,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { FxMontage } from '../api/client.js';
+import type { FxMontage, FxMontagePair } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { FxMontagePage } from './FxMontagePage.js';
 import { chosenDayQuery, montageQuery } from './fxMontage.js';
@@ -111,6 +111,17 @@ const observations: Readonly<Record<string, readonly [string, string][]>> = {
     ],
 };
 
+/** The answer a deployment gives when the person asks for one provider only. */
+function onlyProviders(answer: FxMontage, codes: readonly string[]): FxMontage {
+    const keep = (pair: FxMontagePair): FxMontagePair => ({
+        ...pair,
+        spot_by_provider: pair.spot_by_provider.filter((spot) =>
+            codes.includes(spot.provider_code),
+        ),
+    });
+    return { ...answer, pairs: answer.pairs.map(keep) };
+}
+
 /**
  * Answer both routes the screen reads, and record what it asked for.
  *
@@ -120,25 +131,30 @@ const observations: Readonly<Record<string, readonly [string, string][]>> = {
 function serve(
     montageAnswer: FxMontage = montage,
     dayRows: Readonly<Record<string, readonly [string, string][]>> = observations,
-): string[] {
+): { readonly asked: string[]; readonly posted: readonly unknown[] } {
     const asked: string[] = [];
-    vi.stubGlobal('fetch', async (url: string | URL | Request) => {
-        const address = String(url);
-        asked.push(address);
-        if (address.startsWith('/api/market/fx-montage')) {
-            return new Response(JSON.stringify(montageAnswer), { status: 200 });
-        }
-        const id = /^\/api\/series\/([^/]+)\/observations/.exec(address)?.[1] ?? '';
-        const rows = dayRows[id] ?? [];
-        return new Response(
-            JSON.stringify({
-                observations: rows.map(([at, value]) => ({ at, value, source: 'ore' })),
-                total: rows.length,
-            }),
-            { status: 200 },
-        );
-    });
-    return asked;
+    const posted: unknown[] = [];
+    vi.stubGlobal(
+        'fetch',
+        async (url: string | URL | Request, init?: { readonly body?: unknown }) => {
+            const address = String(url);
+            asked.push(address);
+            if (address.startsWith('/api/market/fx-montage')) {
+                posted.push(typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body);
+                return new Response(JSON.stringify(montageAnswer), { status: 200 });
+            }
+            const id = /^\/api\/series\/([^/]+)\/observations/.exec(address)?.[1] ?? '';
+            const rows = dayRows[id] ?? [];
+            return new Response(
+                JSON.stringify({
+                    observations: rows.map(([at, value]) => ({ at, value, source: 'ore' })),
+                    total: rows.length,
+                }),
+                { status: 200 },
+            );
+        },
+    );
+    return { asked, posted };
 }
 
 /**
@@ -148,8 +164,8 @@ function serve(
  * page that chose another provider would find that provider's rows and say so in
  * its heading, which is what these tests read.
  */
-async function settle(client: QueryClient): Promise<void> {
-    await client.fetchQuery(montageQuery('EUR', AS_OF));
+async function settle(client: QueryClient, providers: readonly string[] = []): Promise<void> {
+    await client.fetchQuery(montageQuery('EUR', AS_OF, providers));
     for (const id of ['s-1', 's-2', 's-3']) {
         await client.fetchQuery(chosenDayQuery(id, AS_OF));
     }
@@ -207,10 +223,36 @@ describe('the FX montage page', () => {
         expect(page).toContain('Today from 1.0802 to 1.0891, last 1.085');
     });
 
+    it('draws every pair\u2019s day as a shape in its own row', async () => {
+        const page = await drawnPage();
+        expect(page).toContain('aria-label="EUR/USD day shape"');
+        expect(page).toContain('aria-label="EUR/GBP day shape"');
+    });
+
     it('draws the chosen pair\u2019s day from the freshest provider, and names it', async () => {
         const page = await drawnPage();
         expect(page).toContain('The EUR/USD day, from ore');
         expect(page).toContain('3 values, oldest first.');
+    });
+
+    it('states the drawn day\u2019s last, its ends and its change beside the path', async () => {
+        const page = await drawnPage();
+        expect(page).toContain('ore 1.0850 · high 1.0860 · low 1.0820 · change +0.28%');
+    });
+
+    it('marks the drawn day\u2019s high and low on it', async () => {
+        const page = await drawnPage();
+        // The path, then the two dashed levels: no other chart on the screen.
+        expect(page.match(/stroke-dasharray="4 3"/g) ?? []).toHaveLength(2);
+    });
+
+    it('states a dash for a pair whose day holds one observation', async () => {
+        const page = await drawnPage(ADDRESS, montage, {
+            ...observations,
+            's-3': [['2026-11-13 09:00:00Z', '0.8410']],
+        });
+        expect(page).not.toContain('aria-label="EUR/GBP day shape"');
+        expect(page).toContain('aria-label="EUR/USD day shape"');
     });
 
     it('states one value without drawing a line from it', async () => {
@@ -228,10 +270,41 @@ describe('the FX montage page', () => {
         expect(page).toContain('No observations for EUR/USD on this day.');
     });
 
-    it('reads the day the address names, ending at that day and nothing after it', async () => {
-        const asked = serve();
+    it('asks for the providers the address names, and for every one when it names none', async () => {
+        const all = serve();
         const client = emptyClient();
-        await client.fetchQuery(montageQuery('EUR', AS_OF));
+        await client.fetchQuery(montageQuery('EUR', AS_OF, []));
+        draw(client);
+        expect(all.posted[0]).toMatchObject({ providers: [] });
+
+        const { posted } = serve(onlyProviders(montage, ['ore']));
+        const filtered = emptyClient();
+        await filtered.fetchQuery(montageQuery('EUR', AS_OF, ['ore']));
+        draw(filtered, `${ADDRESS}&provider=ore`);
+        expect(posted[0]).toMatchObject({ providers: ['ore'] });
+    });
+
+    it('draws the columns of the providers it asked for, with the chosen one pressed', async () => {
+        serve(onlyProviders(montage, ['ore']));
+        const client = emptyClient();
+        await settle(client, ['ore']);
+        const page = draw(client, `${ADDRESS}&provider=ore`);
+
+        expect(page).not.toContain('>derived<');
+        expect(/<button[^>]*aria-pressed="true"[^>]*>ore<\/button>/.test(page)).toBe(true);
+        expect(/<button[^>]*aria-pressed="false"[^>]*>All<\/button>/.test(page)).toBe(true);
+    });
+
+    it('shows every provider when the address names none', async () => {
+        const page = await drawnPage();
+        expect(/<button[^>]*aria-pressed="true"[^>]*>All<\/button>/.test(page)).toBe(true);
+        expect(/<button[^>]*aria-pressed="false"[^>]*>derived<\/button>/.test(page)).toBe(true);
+    });
+
+    it('reads the day the address names, ending at that day and nothing after it', async () => {
+        const { asked } = serve();
+        const client = emptyClient();
+        await client.fetchQuery(montageQuery('EUR', AS_OF, []));
         await client.fetchQuery(chosenDayQuery('s-1', AS_OF));
         draw(client);
 

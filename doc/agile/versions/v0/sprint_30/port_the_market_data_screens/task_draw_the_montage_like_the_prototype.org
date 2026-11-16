@@ -8,12 +8,12 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/draw-the-montage-like-the-prototype
-#+pr:
+#+pr: 4759
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Close the gap between the FX montage prototype and the screen, so a person can c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -76,12 +76,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4759][#4759]] | [web] Draw the montage's providers, shapes and day ends |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Provider order keys two cache entries and two requests for one answer | =fxMontage.ts= | Fixed | The set is deduplicated and sorted before it keys the read. |
+| 2 | The chip set shrinks to the filtered answer, so a removed provider cannot be put back | =FxMontagePage.tsx= | Fixed | The providers an unfiltered answer named are kept across a filter. |
+| 3 | One series read per pair, with no cache | =fxMontage.ts= | Captured | The fan-out is accepted and recorded, with the server-side and bulk-read shapes as the fix; the read now holds a cached answer for thirty seconds. |
+| 4 | An empty series id might still ask | =fxMontage.ts= | No change | The shared query already states =enabled: seriesId !== ''=. |
+| 5 | The marked high and low may belong to another provider | =FxMontagePage.tsx=, =fx_montage_reader.cpp= | Fixed in the screen, captured on the server | The panel now states and marks the drawn path's own ends; the table's figures are the last provider's, folded once per series, which is recorded as its own capture. |
+| 6 | The summary would show =0.0000= when no spot is drawn | =FxMontagePage.tsx= | Fixed | The numbers are the path's, and the panel only draws when the path has a point. |
+| 7 | The sparkline's guard is unreachable | =Sparkline.tsx= | No change | The component states its own precondition rather than trusting every caller. |
+| 8 | No test for the marked ends or for the one-observation dash | =fxMontageScreen.test.tsx= | Fixed | Both cases added; the suite is nineteen cases. |
 
 * Result
+
+The provider set, the Today column and the day's marked ends are merged in
+#4759. The provider set travels in the address and is asked of the server as a
+set; each row draws its own freshest provider's day, sharing the open pair's
+read; and the panel states and marks the day it draws, not the row's figures.
+
+The review's one real defect was the chip set: filtering to a provider emptied
+the control down to it, so the others could not be put back. That is fixed, and
+the claim in the PR body that said otherwise was wrong and is corrected. The
+review's sharpest point led to the panel separating two provenances: the path's
+own numbers, and the table's, which are the server's pair answer.
+
+Two costs are recorded rather than hidden. Each row's shape is one series read,
+which wants a server or bulk read; and the pair's stated high, low and change
+come from whichever provider the store returned last, which wants the read to
+fold the window across the pair.

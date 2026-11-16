@@ -5689,6 +5689,11 @@ export const en: SourceCatalogue = {
             title: 'FX montage',
             lead: "One base currency's crosses, each provider's spot beside the consensus, and the day's range.",
             base: 'Base',
+            providers: 'Providers',
+            providersAll: 'All',
+            today: 'Today',
+            dayShape: '{pair} day shape',
+            daySummary: '{provider} {last} · high {high} · low {low} · change {change}',
             chosenDay: 'The {pair} day, from {provider}',
             chosenDayLead: {
                 one: '{count} value, oldest first.',

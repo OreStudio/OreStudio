@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 92D83459-6B57-404D-84AE-D553DCF0517C
+:END:
+#+title: The montage's row shapes are read one series at a time
+#+description: The FX montage's Today column draws each pair's day through the series observations route, one read per pair: seven reads for a EUR montage, each up to five hundred rows, on every load. The durable fix is a server read that answers each pair's day shape in the montage itself, or a bulk observations read for a set of series, so the table costs one round trip.
+#+type: capture
+#+level: cross
+#+filetags: :web:marketdata:performance:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

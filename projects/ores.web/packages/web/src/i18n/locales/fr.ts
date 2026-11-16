@@ -5771,6 +5771,11 @@ const fr: SourceCatalogue = {
             title: 'Montage FX',
             lead: "Les croisements d'une devise de base, le spot de chaque fournisseur à côté du consensus, et l'amplitude du jour.",
             base: 'Base',
+            providers: 'Fournisseurs',
+            providersAll: 'Tous',
+            today: 'Aujourd’hui',
+            dayShape: 'Forme de la journée {pair}',
+            daySummary: '{provider} {last} · haut {high} · bas {low} · variation {change}',
             chosenDay: 'La journée {pair}, de {provider}',
             chosenDayLead: {
                 one: '{count} valeur, de la plus ancienne à la plus récente.',

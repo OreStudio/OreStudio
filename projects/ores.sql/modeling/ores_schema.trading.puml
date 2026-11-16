@@ -1478,6 +1478,7 @@ package "trading" #E8F5E9 {
           average_type : text <<FK>>
           averaging_start_date : date
           averaging_end_date : date
+          window_end_date : date
           spread_commodity_code : text
           spread_amount : numeric(38, 12)
           strip_frequency_code : text

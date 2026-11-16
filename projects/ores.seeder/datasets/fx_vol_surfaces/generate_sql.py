@@ -26,10 +26,11 @@ METHODOLOGY_DESCRIPTION = ("The recipe the system calibrates each FX volatility 
 METHODOLOGY_URL = ("https://github.com/OreStudio/OreStudio/tree/main/projects/ores.seeder/"
                    "datasets/fx_vol_surfaces")
 
-# The pairs the forward ladder publishes a set for, in market quoting order, with the
-# short-dated delta type of each pair's FX option convention in refdata.conventions. A grid
-# that reaches past the convention's switch tenor states its strikes in the short-dated type
-# the convention starts at; the calibration resolves each expiry's own delta type.
+# The pairs the forward ladder publishes a set for and the derived source can quote, in market
+# quoting order, with the short-dated delta type of each pair's FX option convention in
+# refdata.conventions. A grid that reaches past the convention's switch tenor states its
+# strikes in the short-dated type the convention starts at; the calibration resolves each
+# expiry's own delta type.
 PAIRS = [
     ("AUD", "CAD", "PaSpot"),
     ("AUD", "CHF", "PaSpot"),
@@ -59,8 +60,6 @@ PAIRS = [
     ("NZD", "USD", "Spot"),
     ("USD", "CAD", "PaSpot"),
     ("USD", "CHF", "PaSpot"),
-    ("USD", "CLP", "PaFwd"),
-    ("USD", "COP", "PaFwd"),
     ("USD", "CZK", "PaFwd"),
     ("USD", "HKD", "PaFwd"),
     ("USD", "INR", "PaFwd"),

@@ -106,9 +106,9 @@ from (values ('AUD', 'CAD'), ('AUD', 'CHF'), ('AUD', 'JPY'), ('AUD', 'NZD'),
              ('EUR', 'TRY'), ('EUR', 'USD'), ('GBP', 'AUD'), ('GBP', 'CAD'),
              ('GBP', 'CHF'), ('GBP', 'JPY'), ('GBP', 'NZD'), ('GBP', 'USD'),
              ('NZD', 'JPY'), ('NZD', 'USD'), ('USD', 'CAD'), ('USD', 'CHF'),
-             ('USD', 'CLP'), ('USD', 'COP'), ('USD', 'CZK'), ('USD', 'HKD'),
-             ('USD', 'INR'), ('USD', 'JPY'), ('USD', 'KRW'), ('USD', 'MXN'),
-             ('USD', 'SGD'), ('USD', 'TRY'), ('USD', 'ZAR')) as p (base, quote)
+             ('USD', 'CZK'), ('USD', 'HKD'), ('USD', 'INR'), ('USD', 'JPY'),
+             ('USD', 'KRW'), ('USD', 'MXN'), ('USD', 'SGD'), ('USD', 'TRY'),
+             ('USD', 'ZAR')) as p (base, quote)
 cross join (values ('1W'), ('1M'), ('2M'), ('3M'), ('6M'), ('9M'), ('1Y'), ('18M'),
                     ('2Y'), ('3Y'), ('5Y'), ('7Y'), ('10Y')) as e (expiry)
 cross join (values ('ATM'), ('25RR'), ('25BF'), ('10RR'), ('10BF')) as l (label);

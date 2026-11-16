@@ -166,6 +166,18 @@ struct workflow_step_def {
     std::chrono::seconds timeout{};
 
     /**
+     * @brief Whether the run needs this step's work to go on.
+     *
+     * A step that is not essential and fails, or outlives its deadline, ends
+     * with warnings instead: its error goes into its log, and the steps after
+     * it run without its work. The run still finishes, and a person reads what
+     * is missing from the step. The definition states it for the same reason it
+     * states the deadline: whether later work can do without this step is the
+     * step author's knowledge.
+     */
+    bool essential = true;
+
+    /**
      * @brief Builds the step command payload.
      *
      * @param request_json  The workflow instance's originating request JSON.

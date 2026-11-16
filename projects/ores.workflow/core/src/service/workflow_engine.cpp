@@ -153,6 +153,7 @@ std::vector<domain::workflow_plan_step> plan_steps_of(const domain::workflow_ins
         row.command_subject = step.command_subject;
         row.compensation_subject = step.compensation_subject;
         row.timeout_seconds = static_cast<std::int32_t>(step.timeout.count());
+        row.essential = step.essential;
         row.modified_by = actor;
         row.performed_by = actor;
         rows.push_back(std::move(row));
@@ -503,6 +504,33 @@ void workflow_engine::set_step_state(const domain::workflow_step& step,
                               << " state=" << state_name(step_states_, from_state_id) << "->"
                               << state_name(step_states_, state_id)
                               << " at=" << ores::platform::time::datetime::to_iso8601_utc(now);
+}
+
+bool workflow_engine::is_essential_step(const boost::uuids::uuid& instance_id,
+                                        const std::string& step_name) {
+    const auto chain = plan_step_repo_.read_latest_by_workflow_id(
+        ctx_, boost::uuids::to_string(instance_id), 0, 1000);
+    const auto found = std::ranges::find(chain, step_name, &domain::workflow_plan_step::name);
+    return found == chain.end() || found->essential;
+}
+
+void workflow_engine::settle_with_warnings(
+    const domain::workflow_step& step,
+    const std::string& result_json,
+    const std::string& failure,
+    std::vector<ores::workflow::messaging::step_log_entry> log) {
+    BOOST_LOG_SEV(lg(), warn) << "Step " << step.name
+                              << " is not essential, so it ends with warnings and the run goes "
+                                 "on without its work: "
+                              << failure;
+    log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                   .message = failure,
+                   .context = {}});
+    set_step_state(step,
+                   step_states_.require("completed_with_warnings"),
+                   result_json,
+                   "",
+                   ores::utility::codec::json::write(log));
 }
 
 void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) {
@@ -950,7 +978,9 @@ void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
     const auto log_json =
         event.log.empty() ? std::string{} : ores::utility::codec::json::write(event.log);
 
-    // Update step state.
+    // Update step state. A step that is not essential and failed is settled
+    // with warnings, and the run goes on as it would after a success.
+    bool went_on_without = false;
     using outcome = ores::workflow::messaging::step_outcome;
     switch (event.outcome) {
         case outcome::completed:
@@ -968,6 +998,11 @@ void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
                            log_json);
             break;
         case outcome::failed:
+            if (step.step_index >= 0 && !is_essential_step(step.workflow_id, step.name)) {
+                settle_with_warnings(step, event.result_json, event.error_message, event.log);
+                went_on_without = true;
+                break;
+            }
             set_step_state(step, step_states_.require("failed"), "", event.error_message, log_json);
             break;
     }
@@ -993,8 +1028,8 @@ void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
 
     // Distinguish between forward steps and compensation steps.
     using outcome = ores::workflow::messaging::step_outcome;
-    const bool is_success =
-        event.outcome == outcome::completed || event.outcome == outcome::completed_with_warnings;
+    const bool is_success = event.outcome == outcome::completed ||
+                            event.outcome == outcome::completed_with_warnings || went_on_without;
 
     if (step.step_index < 0) {
         // Compensation step completed — check if all compensations are done.
@@ -1404,6 +1439,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
     const auto step_failed = step_states_.require("failed");
 
     std::size_t expired = 0;
+    std::vector<domain::workflow_instance> went_on_without;
     // The pass walks the steps the engine dispatched, not every run the store
     // holds: what it is looking for is work in flight, and that is what the
     // engine itself handed out. The step row decides whether the step is still
@@ -1505,11 +1541,26 @@ std::size_t workflow_engine::expire_overdue_steps() {
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;
 
-            set_step_state(step, step_failed, "", reason);
             ++expired;
-
             const auto instances =
                 instance_repo_.read_latest(ctx_, boost::uuids::to_string(waiting.instance_id));
+
+            /*
+             * A step that is not essential is settled with warnings and the run
+             * goes on without it. Its work is unknown, as below, but nothing
+             * after it needs that work, so the run has no reason to wait for a
+             * person. A late answer from it is then a duplicate. The run is
+             * advanced after the pass, because a dispatch adds to the list the
+             * pass walks.
+             */
+            if (!is_essential_step(waiting.instance_id, step.name)) {
+                settle_with_warnings(step, "", reason, {});
+                if (!instances.empty())
+                    went_on_without.push_back(instances.front());
+                it = awaiting_.erase(it);
+                continue;
+            }
+            set_step_state(step, step_failed, "", reason);
             /*
              * The run stops, whatever failure policy its definition declares.
              *
@@ -1536,8 +1587,18 @@ std::size_t workflow_engine::expire_overdue_steps() {
         }
     }
 
+    for (auto& instance : went_on_without) {
+        try {
+            dispatch_ready_steps(instance);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "A run that went on without an overdue step was not advanced: workflow="
+                << boost::uuids::to_string(instance.id) << " reason=" << e.what();
+        }
+    }
+
     if (expired > 0)
-        BOOST_LOG_SEV(lg(), warn) << "Expiry pass failed " << expired << " overdue step(s).";
+        BOOST_LOG_SEV(lg(), warn) << "Expiry pass settled " << expired << " overdue step(s).";
     return expired;
 }
 

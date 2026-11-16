@@ -158,7 +158,7 @@ TEST_CASE("workflow_plan_step_commands_process_add_requires_a_session", "[comman
     std::ostringstream out;
 
     command_feedback::reset();
-    workflow_plan_step_commands::process_add(out, session, workflow_plan_step_tokens(9));
+    workflow_plan_step_commands::process_add(out, session, workflow_plan_step_tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -192,7 +192,7 @@ TEST_CASE("workflow_plan_step_commands_process_set_requires_a_session", "[comman
     std::ostringstream out;
 
     command_feedback::reset();
-    workflow_plan_step_commands::process_set(out, session, workflow_plan_step_tokens(9));
+    workflow_plan_step_commands::process_set(out, session, workflow_plan_step_tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -226,7 +226,7 @@ TEST_CASE("workflow_plan_step_commands_process_put_many_requires_a_session", "[c
     std::ostringstream out;
 
     command_feedback::reset();
-    workflow_plan_step_commands::process_put_many(out, session, workflow_plan_step_tokens(9));
+    workflow_plan_step_commands::process_put_many(out, session, workflow_plan_step_tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

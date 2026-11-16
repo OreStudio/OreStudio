@@ -49,6 +49,7 @@
 #include <chrono>
 #include <memory>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -227,13 +228,15 @@ struct fixture {
     void register_steps(const std::string& type,
                         const std::vector<std::string>& names,
                         failure_policy on_failure = failure_policy::compensate,
-                        std::chrono::seconds timeout = write_step_timeout) {
+                        std::chrono::seconds timeout = write_step_timeout,
+                        std::set<std::string> optional = {}) {
         workflow_definition def;
         def.type_name = type;
         def.description = "engine fixture";
         def.on_failure = on_failure;
         def.build_steps =
-            [names, timeout](const std::string& request, const std::string&, const std::string&) {
+            [names, timeout, optional](
+                const std::string& request, const std::string&, const std::string&) {
                 std::vector<workflow_step_def> steps;
                 steps.reserve(names.size());
                 for (const auto& name : names) {
@@ -242,6 +245,7 @@ struct fixture {
                     s.description = name;
                     s.command_subject = step_subject;
                     s.timeout = timeout;
+                    s.essential = !optional.contains(name);
                     s.compensation_subject = compensation_subject;
                     if (!steps.empty())
                         s.consumes = {steps.back().name};
@@ -1792,6 +1796,80 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", "[engi
     // a pass that ran twice cannot fail the same step twice.
     CHECK(f.engine->expire_overdue_steps() == 0);
     BOOST_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
+}
+
+TEST_CASE("a step that is not essential and fails ends with warnings and the run goes on",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_optional_failure_workflow",
+                     {"one", "two"},
+                     failure_policy::stop,
+                     write_step_timeout,
+                     {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_delivery(start_for("test_optional_failure_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_delivery(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
+
+    // The run did not stop: the next step was dispatched.
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.front().state_id == f.step_states.require("completed_with_warnings"));
+    CHECK(rows.front().error.empty());
+    CHECK(rows.front().step_log_json.find("one broke") != std::string::npos);
+
+    f.engine->on_step_completed(as_delivery(completion_for(
+        instance_id, boost::uuids::to_string(rows.back().id), step_outcome::completed)));
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("completed"));
+    BOOST_LOG_SEV(lg, debug) << "A failed optional step left the run going.";
+}
+
+TEST_CASE("an overdue step that is not essential ends with warnings and the run goes on",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_optional_deadline_workflow",
+                     {"one", "two"},
+                     failure_policy::compensate,
+                     std::chrono::seconds{60},
+                     {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_delivery(start_for("test_optional_deadline_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    backdate_dispatch(f.h.context(), steps, instance_id, std::chrono::seconds(120));
+    CHECK(f.engine->expire_overdue_steps() == 1);
+
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.front().state_id == f.step_states.require("completed_with_warnings"));
+    CHECK(rows.front().step_log_json.find("did not answer within 1m") != std::string::npos);
+
+    workflow_instance_repository instances;
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id != f.instance_states.require("failed"));
+    BOOST_LOG_SEV(lg, debug) << "An overdue optional step left the run going.";
 }
 
 TEST_CASE("workflow_engine leaves a queued step alone", "[engine][integration]") {

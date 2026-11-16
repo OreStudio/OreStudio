@@ -49,6 +49,7 @@ create table if not exists "ores_workflow_plan_steps_tbl" (
     "command_subject" text not null,
     "compensation_subject" text not null,
     "timeout_seconds" integer not null default 0,
+    "essential" boolean not null default true,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

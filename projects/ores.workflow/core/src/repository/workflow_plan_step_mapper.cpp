@@ -54,6 +54,7 @@ domain::workflow_plan_step workflow_plan_step_mapper::map(const workflow_plan_st
     r.command_subject = v.command_subject;
     r.compensation_subject = v.compensation_subject;
     r.timeout_seconds = v.timeout_seconds;
+    r.essential = v.essential;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -79,6 +80,7 @@ workflow_plan_step_entity workflow_plan_step_mapper::map(const domain::workflow_
     r.command_subject = v.command_subject;
     r.compensation_subject = v.compensation_subject;
     r.timeout_seconds = v.timeout_seconds;
+    r.essential = v.essential;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

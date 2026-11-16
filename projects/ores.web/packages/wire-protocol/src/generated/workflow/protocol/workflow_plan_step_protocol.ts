@@ -43,6 +43,7 @@ export interface WorkflowPlanStepWrite {
     command_subject: string;
     compensation_subject: string;
     timeout_seconds: number;
+    essential: boolean;
 }
 
 export interface WorkflowPlanStepChange {

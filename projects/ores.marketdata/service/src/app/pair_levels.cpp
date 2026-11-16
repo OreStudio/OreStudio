@@ -46,6 +46,15 @@ result refusal(outcome why, std::string code, std::string message) {
     return {.outcome = why, .code = std::move(code), .message = std::move(message), .fields = {}};
 }
 
+/**
+ * The most calendar days a side's last fixing may fall before the window's last date.
+ *
+ * A publisher fixes on its own business days, so a weekend and the longest holiday
+ * closure fit inside a week. Past it the publisher has stopped fixing the currency,
+ * and a level read from its last fixing would be an old rate stated as a new one.
+ */
+constexpr std::chrono::days fixing_gap{7};
+
 std::optional<double> number_of(const std::string& text) {
     double value = 0.0;
     const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
@@ -120,6 +129,29 @@ compose_pair_levels(const party_fixing_sources& party,
             return response;
         }
         const auto n = std::min(window.dates.size(), window.values.size());
+        std::optional<std::chrono::sys_days> last_fixed;
+        for (std::size_t i = 0; i < n; ++i)
+            if (number_of(window.values[i]))
+                last_fixed = std::max(last_fixed.value_or(std::chrono::sys_days{}),
+                                      std::chrono::sys_days{window.dates[i]});
+        if (!last_fixed || std::chrono::sys_days{request.to} - *last_fixed > fixing_gap) {
+            response.result = refusal(
+                outcome::missing,
+                "fixing_stopped",
+                last_fixed ? std::format("{} last fixed {} on {}, so {} has no level as of {}.",
+                                         choice.provider_code,
+                                         leg,
+                                         std::chrono::year_month_day{*last_fixed},
+                                         pair_name,
+                                         request.to) :
+                             std::format("{} has no fixing of {} in the window, so {} has no "
+                                         "level as of {}.",
+                                         choice.provider_code,
+                                         leg,
+                                         pair_name,
+                                         request.to));
+            return response;
+        }
         std::set<std::chrono::sys_days> seen;
         for (std::size_t i = 0; i < n; ++i) {
             const auto value = number_of(window.values[i]);

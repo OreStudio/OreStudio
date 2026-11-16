@@ -3048,6 +3048,12 @@ export const en: SourceCatalogue = {
             retrying: 'The run resumed at {step}.',
             rolledBack:
                 'The run rolled back the steps it had completed, so it left nothing behind.',
+            stepsDone: '{done} of {total} steps done',
+            elapsed: '{time} elapsed',
+            details: 'What this step did',
+            started: 'Started {time}',
+            ended: 'Ended {time}',
+            noLog: 'The step logged nothing.',
         },
 
         finish: {

@@ -3085,6 +3085,12 @@ const fr: SourceCatalogue = {
             retrying: "L'exécution a repris à {step}.",
             rolledBack:
                 "L'exécution a annulé les étapes qu'elle avait terminées, elle ne laisse donc rien derrière elle.",
+            stepsDone: '{done} étapes terminées sur {total}',
+            elapsed: '{time} écoulées',
+            details: 'Ce que cette étape a fait',
+            started: 'Commencée à {time}',
+            ended: 'Terminée à {time}',
+            noLog: "L'étape n'a rien consigné.",
         },
 
         finish: {

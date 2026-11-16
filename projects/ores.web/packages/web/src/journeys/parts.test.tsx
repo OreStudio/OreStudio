@@ -23,7 +23,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { ProfileCards, RunStep, TenantForm, TenantSummary } from './parts.js';
+import { ProfileCards, RunStep, RunSummary, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyServer } from './server.js';
 import { detailsFor, type TenantDetails } from './state.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
@@ -568,5 +568,177 @@ describe("a run's step", () => {
         );
 
         expect(html).not.toMatch(/\d+m?s</);
+    });
+
+    it('states how long a running step has run, to the clock it is handed', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'in_progress',
+                    started_at: '2026-11-01 17:00:00.000000Z',
+                    completed_at: null,
+                }}
+                words={(sentence) => sentence}
+                now={new Date('2026-11-01T17:00:41Z')}
+            />,
+        );
+
+        expect(html).toContain('41s');
+    });
+
+    it('opens to show when a step started and ended and every line it logged', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    started_at: '2026-11-01 17:00:00.000000Z',
+                    completed_at: '2026-11-01 17:00:41.000000Z',
+                    log: [
+                        { level: 'info', message: 'Read 3 legal entities.', context: '' },
+                        { level: 'info', message: 'Wrote 3 parties.', context: '' },
+                    ],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('<details');
+        expect(html).toContain('What this step did');
+        expect(html).toContain('Started ');
+        expect(html).toContain('Ended ');
+        expect(html).toContain('Read 3 legal entities.');
+        expect(html).toContain('Wrote 3 parties.');
+    });
+
+    it('opens a failed step by itself and leaves a finished one closed', () => {
+        const started = { ...step, started_at: '2026-11-01 17:00:00.000000Z' };
+        const failed = render(<RunStep step={{ ...started, status: 'failed' }} words={(s) => s} />);
+        const finished = render(<RunStep step={started} words={(s) => s} />);
+
+        expect(failed).toMatch(/<details[^>]* open=""/);
+        expect(finished).toContain('<details');
+        expect(finished).not.toMatch(/<details[^>]* open=""/);
+    });
+
+    it('says a step that logged nothing logged nothing', () => {
+        const html = render(
+            <RunStep
+                step={{ ...step, started_at: '2026-11-01 17:00:00.000000Z' }}
+                words={(s) => s}
+            />,
+        );
+
+        expect(html).toContain('The step logged nothing.');
+    });
+
+    it('has nothing to open on a step that has not started', () => {
+        const html = render(<RunStep step={{ ...step, status: 'pending' }} words={(s) => s} />);
+
+        expect(html).not.toContain('<details');
+    });
+
+    it('draws a counting step\u2019s bar of done over total', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'in_progress',
+                    started_at: '2026-11-01 17:00:00.000000Z',
+                    progress: 'ACME: surfaces',
+                    progress_done: 3,
+                    progress_total: 10,
+                }}
+                words={(s) => s}
+            />,
+        );
+
+        expect(html).toContain('role="progressbar"');
+        expect(html).toContain('aria-valuenow="3"');
+        expect(html).toContain('aria-valuemax="10"');
+        expect(html).toContain('width:30%');
+    });
+});
+
+describe("a run's summary", () => {
+    const at = (seconds: number): string =>
+        `2026-11-01 17:${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}.000000Z`;
+    const base = {
+        name: 'step',
+        label: '',
+        description: '',
+        created_at: '',
+        error: '',
+        log: [],
+        progress: '',
+        progress_done: null,
+        progress_total: null,
+    };
+    const steps = [
+        {
+            ...base,
+            id: 'a',
+            step_index: 0,
+            status: 'completed',
+            started_at: at(0),
+            completed_at: at(30),
+        },
+        {
+            ...base,
+            id: 'b',
+            step_index: 1,
+            status: 'completed_with_warnings',
+            started_at: at(30),
+            completed_at: at(65),
+        },
+        {
+            ...base,
+            id: 'c',
+            step_index: 2,
+            status: 'in_progress',
+            started_at: at(65),
+            completed_at: null,
+        },
+        {
+            ...base,
+            id: 'd',
+            step_index: 3,
+            status: 'pending',
+            started_at: null,
+            completed_at: null,
+        },
+    ];
+
+    it('states how many steps are done out of how many, with a bar', () => {
+        const html = render(
+            <RunSummary steps={steps} open now={new Date('2026-11-01T17:02:05Z')} />,
+        );
+
+        expect(html).toContain('2 of 4 steps done');
+        expect(html).toContain('aria-valuenow="2"');
+        expect(html).toContain('aria-valuemax="4"');
+    });
+
+    it('measures an open run from its first start to the clock', () => {
+        const html = render(
+            <RunSummary steps={steps} open now={new Date('2026-11-01T17:02:05Z')} />,
+        );
+
+        expect(html).toContain('2m 5s elapsed');
+    });
+
+    it('measures a finished run to its last end, not to the clock', () => {
+        const finished = steps.slice(0, 2);
+        const html = render(
+            <RunSummary steps={finished} open={false} now={new Date('2026-11-01T18:00:00Z')} />,
+        );
+
+        expect(html).toContain('1m 5s elapsed');
+    });
+
+    it('states nothing for a run with no steps yet', () => {
+        const html = render(<RunSummary steps={[]} open now={new Date()} />);
+
+        expect(html).toBe('');
     });
 });

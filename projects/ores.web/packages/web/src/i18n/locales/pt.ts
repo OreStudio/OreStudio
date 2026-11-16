@@ -3076,6 +3076,12 @@ const pt: SourceCatalogue = {
             retrying: 'A execução retomou em {step}.',
             rolledBack:
                 'A execução anulou os passos que tinha concluído, por isso não deixa nada atrás.',
+            stepsDone: '{done} de {total} passos concluídos',
+            elapsed: '{time} decorridos',
+            details: 'O que este passo fez',
+            started: 'Começou às {time}',
+            ended: 'Terminou às {time}',
+            noLog: 'O passo não registou nada.',
         },
 
         finish: {

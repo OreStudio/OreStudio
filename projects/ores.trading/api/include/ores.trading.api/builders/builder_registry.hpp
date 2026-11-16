@@ -109,6 +109,7 @@ using all_builders =
                commodity_accumulator_builder,
                commodity_tarf_builder,
                commodity_generic_barrier_option_builder,
+               commodity_window_barrier_option_builder,
                commodity_strike_resettable_option_builder,
                commodity_forward_volatility_agreement_builder,
                commodity_rainbow_option_builder,

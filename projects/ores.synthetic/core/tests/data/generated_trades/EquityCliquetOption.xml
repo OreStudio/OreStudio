@@ -9,7 +9,7 @@
       </Underlying>
       <Currency>GBP</Currency>
       <Notional>39332.83</Notional>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <OptionType>Call</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>
@@ -33,7 +33,7 @@
       </Underlying>
       <Currency>GBP</Currency>
       <Notional>3169.2</Notional>
-      <LongShort>Long</LongShort>
+      <LongShort>Short</LongShort>
       <OptionType>Call</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>

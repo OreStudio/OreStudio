@@ -72,6 +72,10 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
          .value = v.averaging_end_date ?
                       ores::platform::time::datetime::to_iso8601_date(*v.averaging_end_date) :
                       std::string{}});
+    fields.push_back({.name = "Window End Date",
+                      .value = v.window_end_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                       *v.window_end_date) :
+                                                   std::string{}});
     fields.push_back({.name = "Spread Commodity Code", .value = v.spread_commodity_code});
     fields.push_back({.name = "Spread Amount",
                       .value = v.spread_amount ? v.spread_amount->to_string() : std::string{}});

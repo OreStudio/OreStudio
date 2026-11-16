@@ -272,6 +272,21 @@ End of the averaging window for Asian options.
 std::chrono::year_month_day{std::chrono::year{2025}/6/15}
 #+end_src
 
+** window_end_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+End of the window a window barrier option monitors its barrier in, as =EndDate=
+states it; the window starts at the row's start date.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/9/15}
+#+end_src
+
 ** spread_commodity_code
 :PROPERTIES:
 :type:     text

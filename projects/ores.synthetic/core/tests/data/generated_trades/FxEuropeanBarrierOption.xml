@@ -29,7 +29,7 @@
     <TradeType>FxEuropeanBarrierOption</TradeType>
     <FxEuropeanBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>

@@ -30,7 +30,7 @@
     <TradeType>FxDoubleBarrierOption</TradeType>
     <FxDoubleBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>

@@ -176,6 +176,22 @@ def hash_name(name):
     return h
 
 
+# Element names the vendored schema states wrongly, by the name ORE's reader
+# reads. WindowBarrierOption::fromXML reads tradeType() + "Data", so ORE reads
+# CommodityWindowBarrierOptionData, while instruments.xsd misspells it Barier.
+# A binding generated from the misspelling could neither read nor write the
+# document ORE accepts.
+SCHEMA_ERRATA = {
+    "CommodityWindowBarierOptionData": "CommodityWindowBarrierOptionData",
+}
+
+
+def apply_errata(root):
+    for node in root.iter():
+        if local(node.tag) == "element" and node.get("name") in SCHEMA_ERRATA:
+            node.set("name", SCHEMA_ERRATA[node.get("name")])
+
+
 class Schema:
     def __init__(self, paths):
         self.complex_types = {}
@@ -214,6 +230,7 @@ class Schema:
         self.inline_enum = {}
         for path in paths:
             root = ET.parse(path).getroot()
+            apply_errata(root)
             register_inline(self, root)
             register_substitutes(self, root)
             for node in root.iter():

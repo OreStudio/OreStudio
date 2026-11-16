@@ -415,13 +415,13 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
         types.insert(slot.trade_type_code);
 
     /*
-     * Twenty-three codes share the one table the catalogue routes them all to.
+     * Twenty-four codes share the one table the catalogue routes them all to.
      * The planner cycles through them, so a population of one book of
-     * twenty-three reaches every one. The pairwise variance swap and the window
-     * barrier option are not among them: ORE cannot carry either, so the
-     * generator leaves both out.
+     * twenty-four reaches every one. The pairwise variance swap is not among
+     * them: ORE has no builder for it, so the generator leaves it out.
      */
-    REQUIRE(types.size() == 23u);
+    REQUIRE(types.size() == 24u);
+    CHECK(types.contains("CommodityWindowBarrierOption"));
 }
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
@@ -589,7 +589,8 @@ TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity"
         if (type != "CommodityBasketOption" && type != "CommodityDigitalOption" &&
             type != "CommodityDigitalAveragePriceOption")
             REQUIRE_FALSE(row.unit.empty());
-        // A built row names its commodity by address, a constructed one by code.
+        // Every commodity row is built, so it names its commodity by address.
+        REQUIRE(row.commodity_code.starts_with("oresmd://"));
         const auto query = row.commodity_code.find('?');
         const auto slash = row.commodity_code.rfind('/', query);
         commodities.insert(row.commodity_code.starts_with("oresmd://") ?

@@ -134,7 +134,6 @@ set(files
     "credit_linked_swap_instrument_codec_roundtrip_tests.cpp"
     "credit_linked_swap_instrument_protocol_codec_roundtrip_tests.cpp"
     "domain_activity_type_tests.cpp"
-    "domain_commodity_instruments_tests.cpp"
     "domain_economic_digest_tests.cpp"
     "domain_fpml_event_type_tests.cpp"
     "domain_fx_variance_swap_wire_tests.cpp"

@@ -162,6 +162,7 @@ commodity_instrument_to_domain(const messaging::commodity_instrument_write& writ
     v.average_type = write.average_type;
     v.averaging_start_date = write.averaging_start_date;
     v.averaging_end_date = write.averaging_end_date;
+    v.window_end_date = write.window_end_date;
     v.spread_commodity_code = write.spread_commodity_code;
     v.spread_amount = write.spread_amount;
     v.strip_frequency_code = write.strip_frequency_code;

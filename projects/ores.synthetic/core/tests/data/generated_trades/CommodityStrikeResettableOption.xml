@@ -3,7 +3,7 @@
   <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
     <TradeType>CommodityStrikeResettableOption</TradeType>
     <CommodityStrikeResettableOptionData>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <OptionType>Put</OptionType>
       <Currency>USD</Currency>
       <Strike>79.15</Strike>
@@ -31,29 +31,29 @@
       </ObservationDates>
     </CommodityStrikeResettableOptionData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
     <TradeType>CommodityStrikeResettableOption</TradeType>
     <CommodityStrikeResettableOptionData>
-      <LongShort>Long</LongShort>
-      <OptionType>Call</OptionType>
+      <LongShort>Short</LongShort>
+      <OptionType>Put</OptionType>
       <Currency>USD</Currency>
-      <Strike>136.76</Strike>
-      <ResetStrike>123.08</ResetStrike>
-      <Quantity>4860.5</Quantity>
-      <TriggerType>Down</TriggerType>
-      <TriggerPrice>123.08</TriggerPrice>
+      <Strike>71.3</Strike>
+      <ResetStrike>78.43</ResetStrike>
+      <Quantity>55150.57</Quantity>
+      <TriggerType>Up</TriggerType>
+      <TriggerPrice>78.43</TriggerPrice>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:NG</Name>
+        <Name>NYMEX:CL</Name>
       </Underlying>
-      <ExpiryDate>2031-08-02</ExpiryDate>
-      <SettlementDate>2031-08-04</SettlementDate>
-      <Premium>13294.44</Premium>
-      <PremiumDate>2025-08-04</PremiumDate>
+      <ExpiryDate>2029-01-02</ExpiryDate>
+      <SettlementDate>2029-01-04</SettlementDate>
+      <Premium>78644.71</Premium>
+      <PremiumDate>2026-01-04</PremiumDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2031-08-02</EndDate>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2029-01-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>

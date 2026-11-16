@@ -13,7 +13,7 @@
         <Name>MSFT.O</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
@@ -46,7 +46,7 @@
         <Name>MSFT.O</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>

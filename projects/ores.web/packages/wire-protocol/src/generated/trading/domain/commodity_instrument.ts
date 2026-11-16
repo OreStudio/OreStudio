@@ -47,6 +47,7 @@ export interface CommodityInstrument {
     average_type: string;
     averaging_start_date: string | null;
     averaging_end_date: string | null;
+    window_end_date: string | null;
     spread_commodity_code: string;
     spread_amount: string | null;
     strip_frequency_code: string;

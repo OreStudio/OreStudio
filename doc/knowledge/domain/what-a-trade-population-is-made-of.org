@@ -122,3 +122,17 @@ planners and a bag with Northwind-specific quirks would be a second bag.
 4. Reduce the writer to a persister.
 5. Keep =trade_generation_config= and the scope as they are; they are the
    generator's own language.
+
+* What happened
+
+The constructors this note asked for are the trade builders: a product is still
+constructed once, but through the builder named for it, which also refuses the
+terms ORE cannot price. Every family's =*_terms= is gone. The commodity family
+kept its own constructor path longest, because twenty-three products shared one
+table and the builders arrived in batches; the last of it went on 2026-11-15,
+when the planner's =commodity_terms= and the trading domain's
+=construct_commodity_*= functions were deleted and every booked commodity type
+went through its builder or left the generator with its reason.
+
+The plan still carries the drawing's own shape inside the planner
+(=drawn_commodity=), which is the generator's language and never leaves it.

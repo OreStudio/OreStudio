@@ -62,6 +62,7 @@ namespace ores::trading::domain {
         utility::codec::field{"average_type", &commodity_instrument::average_type},
         utility::codec::field{"averaging_start_date", &commodity_instrument::averaging_start_date},
         utility::codec::field{"averaging_end_date", &commodity_instrument::averaging_end_date},
+        utility::codec::field{"window_end_date", &commodity_instrument::window_end_date},
         utility::codec::field{"spread_commodity_code",
                               &commodity_instrument::spread_commodity_code},
         utility::codec::field{"spread_amount", &commodity_instrument::spread_amount},

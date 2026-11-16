@@ -67,6 +67,7 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.average_type = v.average_type.value_or("");
     r.averaging_start_date = v.averaging_start_date;
     r.averaging_end_date = v.averaging_end_date;
+    r.window_end_date = v.window_end_date;
     r.spread_commodity_code = v.spread_commodity_code.value_or("");
     r.spread_amount = v.spread_amount;
     r.strip_frequency_code = v.strip_frequency_code.value_or("");
@@ -140,6 +141,7 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.average_type = v.average_type.empty() ? std::nullopt : std::optional(v.average_type);
     r.averaging_start_date = v.averaging_start_date;
     r.averaging_end_date = v.averaging_end_date;
+    r.window_end_date = v.window_end_date;
     r.spread_commodity_code =
         v.spread_commodity_code.empty() ? std::nullopt : std::optional(v.spread_commodity_code);
     r.spread_amount = v.spread_amount;

@@ -13,7 +13,7 @@
         <Name>NYMEX:NG</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
@@ -34,17 +34,17 @@
       </ObservationDates>
     </CommodityAsianOptionData>
   </Trade>
-  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
+  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
     <TradeType>CommodityAsianOption</TradeType>
     <CommodityAsianOptionData>
       <Currency>USD</Currency>
-      <Quantity>91209.48</Quantity>
+      <Quantity>4860.5</Quantity>
       <StrikeData>
-        <Value>136.18</Value>
+        <Value>136.76</Value>
       </StrikeData>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:CL</Name>
+        <Name>NYMEX:NG</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
@@ -53,13 +53,13 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2031-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-09-02</StartDate>
-          <EndDate>2026-09-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2031-08-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>

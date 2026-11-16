@@ -137,6 +137,12 @@ struct commodity_instrument final {
     std::optional<std::chrono::year_month_day> averaging_end_date;
 
     /**
+     * @brief End of the window a window barrier option monitors its barrier in, as EndDate states
+     * it; the window starts at the row's start date.
+     */
+    std::optional<std::chrono::year_month_day> window_end_date;
+
+    /**
      * @brief Second commodity code for spread options.
      */
     std::string spread_commodity_code;
@@ -401,6 +407,7 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "average_type", v.average_type);
     ores::utility::digest::append_member(out, "averaging_start_date", v.averaging_start_date);
     ores::utility::digest::append_member(out, "averaging_end_date", v.averaging_end_date);
+    ores::utility::digest::append_member(out, "window_end_date", v.window_end_date);
     ores::utility::digest::append_member(out, "spread_commodity_code", v.spread_commodity_code);
     ores::utility::digest::append_member(out, "spread_amount", v.spread_amount);
     ores::utility::digest::append_member(out, "strip_frequency_code", v.strip_frequency_code);

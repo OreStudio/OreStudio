@@ -452,6 +452,29 @@ private:
     commodity_generic_barrier_option_terms terms_;
 };
 
+/**
+ * @brief An option knocked in or out when the commodity's price reaches the
+ * barrier between the window's start and its end, which falls on or before the
+ * expiry.
+ */
+struct commodity_window_barrier_option_terms final {
+    commodity_option_terms option;
+    required<barrier_kind> barrier;
+    required<utility::decimal::decimal> barrier_level;
+    required<std::chrono::year_month_day> window_start;
+    required<std::chrono::year_month_day> window_end;
+};
+
+class ORES_TRADING_API_EXPORT commodity_window_barrier_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityWindowBarrierOption";
+    explicit commodity_window_barrier_option_builder(commodity_window_barrier_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_window_barrier_option_terms terms_;
+};
+
 /// Whether a trigger fires when the price rises to it or falls to it.
 enum class trigger_direction { up, down };
 

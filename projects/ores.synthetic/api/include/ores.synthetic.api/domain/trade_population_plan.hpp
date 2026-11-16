@@ -247,59 +247,6 @@ struct trade_generation_scope final {
  * Keeping them here rather than on the slot is what lets a slot describe a
  * family that has no security at all.
  */
-/**
- * @brief The facts the commodity planner draws, before it states its rows.
- *
- * The family states rows in the plan, so this is the drawing's own shape and
- * never a slot's bag.
- *
- * A commodity row is wide and flat: the same table holds a forward, an
- * option, an Asian or a variance swap, and each shape states the fields its
- * own terms need and leaves the rest empty. This mirrors that shape rather
- * than inventing a hierarchy the store does not have.
- */
-/**
- * @brief One member of a commodity basket, as the catalogue spells it.
- */
-struct commodity_basket_member final {
-    std::string code;
-    std::optional<double> weight;
-};
-
-struct commodity_terms final {
-    /**
-     * @brief The commodity the trade names, as the catalogue spells it, such
-     * as =NYMEX:CL=.
-     */
-    std::string commodity_code;
-    /// The unit the commodity is quoted in, taken from its catalogue row.
-    std::string unit;
-    /// The quantity in that unit.
-    double quantity = 0.0;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    /// The price a forward or a fixed leg states.
-    std::optional<double> fixed_price;
-    /// The option's side, as the catalogue spells it: =Call= or =Put=.
-    std::string option_type;
-    std::optional<double> strike_price;
-    std::string exercise_type;
-    std::string average_type;
-    std::optional<std::chrono::year_month_day> averaging_start_date;
-    std::optional<std::chrono::year_month_day> averaging_end_date;
-    std::string spread_commodity_code;
-    std::optional<double> spread_amount;
-    std::string strip_frequency_code;
-    std::optional<double> variance_strike;
-    std::optional<double> accumulation_amount;
-    std::optional<double> knock_out_barrier;
-    std::string barrier_type;
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
-    std::optional<std::chrono::year_month_day> swaption_expiry_date;
-    /// The members a basket product names, in the order it draws them.
-    std::vector<commodity_basket_member> basket;
-};
 
 /**
  * @brief The terms of one slot, in the shape its asset class states them.

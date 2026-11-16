@@ -9,7 +9,7 @@
         <Name>NYMEX:NG</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
@@ -39,30 +39,30 @@
       </Barriers>
     </CommodityGenericBarrierOptionData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>CommodityGenericBarrierOption</TradeType>
     <CommodityGenericBarrierOptionData>
       <PayCurrency>USD</PayCurrency>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:CL</Name>
+        <Name>NYMEX:NG</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Long</LongShort>
-        <OptionType>Call</OptionType>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2026-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Quantity>93707.49</Quantity>
-      <Strike>46.75</Strike>
+      <Quantity>14157.62</Quantity>
+      <Strike>142.12</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2026-09-02</EndDate>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2026-08-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>US-NYSE</Calendar>
             <Convention>F</Convention>
@@ -72,7 +72,7 @@
         <BarrierData>
           <Type>DownAndOut</Type>
           <Levels>
-            <Level>35.51</Level>
+            <Level>106.22</Level>
           </Levels>
         </BarrierData>
       </Barriers>

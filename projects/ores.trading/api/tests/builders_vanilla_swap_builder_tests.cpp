@@ -23,6 +23,7 @@
 #include "ores.trading.api/builders/cadence.hpp"
 #include "ores.trading.api/builders/day_count.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <fstream>
@@ -170,6 +171,11 @@ std::set<std::string> trade_types_awaiting_builders() {
 }
 
 TEST_CASE("every_catalogued_trade_type_has_a_builder_or_awaits_one", tags) {
+    /*
+     * A type ORE has no builder for is unsupported, not awaiting: no builder of
+     * ours could make ORE build it, so it is accounted by its reason and may not
+     * also be listed as awaiting one.
+     */
     const auto catalogue = catalogued_trade_types();
     const auto awaiting = trade_types_awaiting_builders();
     REQUIRE_FALSE(catalogue.empty());
@@ -179,6 +185,13 @@ TEST_CASE("every_catalogued_trade_type_has_a_builder_or_awaits_one", tags) {
         CHECK(catalogue.contains(std::string(type)));
         CHECK_FALSE(awaiting.contains(std::string(type)));
         accounted.emplace(type);
+    }
+    for (const auto& type : catalogue) {
+        if (!ores::trading::domain::unsupported_reason_for(type))
+            continue;
+        INFO(type);
+        CHECK_FALSE(awaiting.contains(type));
+        accounted.insert(type);
     }
     CHECK(accounted == catalogue);
 }

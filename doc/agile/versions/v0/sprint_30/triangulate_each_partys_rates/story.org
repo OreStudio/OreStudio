@@ -46,6 +46,7 @@ A rate a firm does not observe, it triangulates: the driver pairs are the ones i
 | [[id:EF7FB489-FD64-41B9-8FD6-CB3888AE9CAC][Replay a publisher's fixings into daily levels]] | DONE | 2026-11-15 | 2026-11-15 | The rate engine answers for now, from live ticks; add a replay that applies one day's fixings and reads every pair, so a caller can ask for a pair's levels over a date range. |
 | [[id:C330DD6F-258B-4D41-930D-AE00FC60BF2E][Derive each party's quotes from its own market]] | DONE | 2026-11-15 | 2026-11-16 | The derived volatility source names its publisher, its legs and its currencies in code; take the party's triangulated history from CRM instead, so each party derives its own quotes and the constants disappear. |
 | [[id:3D29D41E-E006-4404-8D94-7966EB224B29][Serve the CRM the topology the store describes]] | DONE | 2026-11-15 | 2026-11-15 | The policy reads a topology from the identity a source states; nothing fills it yet. Read a party's fixing identities and the provider rank into fixing sources, and build the CRM's engines from those instead of crm_driver_pair. |
+| [[id:BD6B7F10-4E38-4072-8F40-4AC9C25CE588][Serve a pair's daily levels from the party's fixings]] | BACKLOG | | | The derived source reads two ECB fixing windows and composes the pair itself; serve the pair's daily levels from the party's own fixings instead, through the source that quotes the pair. |
 
 * Decisions
 

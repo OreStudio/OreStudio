@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
-#+pr: 4767
+#+pr: 4768
 #+branch: feature/take-each-pair-from-the-source-that-quotes-it
 #+blocked_on:
 #+blocked_since:
@@ -138,6 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4768][#4768]] | [analytics] Take each pair from the source that quotes it |
 | [[https://github.com/OreStudio/OreStudio/pull/4767][#4767]] | [agile] Plan the move of the derivation onto the CRM |
 
 * Review

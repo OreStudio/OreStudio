@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 8A487D47-1383-4EBD-9CB9-794D18802812
+:END:
+#+title: Task: Clear the valgrind and GCC failures
+#+description: Clear the memcheck defects the debug nightly reports and the -Wchanges-meaning the GCC build reports on the bond trade rows.
+#+type: task
+#+level: s1
+#+filetags: :nightly-ci-failures:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/clear-the-valgrind-and-gcc-failures
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the debug nightly free of valgrind defects and the GCC nightly free of -Wchanges-meaning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-16                               |
+
+* Acceptance
+
+- The marketdata service config serialises only initialised members.
+- No -Wchanges-meaning remains in the bond trade rows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

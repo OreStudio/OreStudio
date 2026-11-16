@@ -114,7 +114,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] | DONE | 2026-11-15 | 2026-11-16 | Three routes: the document save across the header, its products and its parameters, the update, and the removal. |
 | [[id:408B68E8-AFC7-46C3-9C04-ED9C181A308B][Serve the ORE import and its preview]] | DONE | 2026-11-16 | 2026-11-16 | Two routes: the preview that states what importing a document would change, and the import that acts on the same answer, both the service's. |
 | [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | DONE | 2026-11-16 | 2026-11-16 | One route: a schema and every schema it includes, at the engine version asked for, with a missing include a 404 that names it. |
-| [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | STARTED | 2026-11-16 | | Five routes the story's Acceptance moves from the reference data and pick-list tasks: two convention documents and three curve configurations, through the value set reader. |
+| [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | DONE | 2026-11-16 | 2026-11-16 | Three routes the story's Acceptance moves from the reference data and pick-list tasks: a party's curve configurations, one configuration drawn from its document, and the write of the leaves it names. |
 | [[id:9796EE15-7695-4999-B00C-F872F84B2763][Serve the convention documents this story moved here]] | BACKLOG | | | Two routes the moved-reference-data task splits off: one family's convention document with its terms, and the write of those terms. |
 
 * Decisions

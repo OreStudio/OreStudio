@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-ore-schema-zip
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,12 +28,12 @@ one route in the area that answers a binary made of several stored objects.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:408B68E8-AFC7-46C3-9C04-ED9C181A308B][Serve the ORE import and its preview]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | The schema archive is served.          |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request and merge it.    |
+| Last touched | 2026-11-16                               |
 
 * Acceptance
 
@@ -70,9 +70,43 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's suite | 102 cases, 731 assertions | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | fc51afd038 |
+| The schema zip's own cases | 10 cases, 39 assertions | =ores.http.reporting.tests [ore_schema_zip]= | fc51afd038 |
+| The gateway's routes | 1018 of 1346 | =python3 build/scripts/route_inventory.py --check= | fc51afd038 |
+| The BFF's routes paired with a C++ one | 252 of 328, reporting 44 of 44 | =python3 build/scripts/route_inventory.py --check= | fc51afd038 |
 
 * Notes
+
+** The includes are read from the contents, not from the catalogue**
+
+A schema states its includes in its own markup, so the route scans the content it
+already holds rather than trusting a column: an include is
+=<xs:include schemaLocation="…">= and the scan finds it the way the BFF's scanner
+did, which is the same order of attributes. A schema is complete only with its
+includes, so an include the version does not store is a refusal that names it
+rather than an archive that cannot validate a document.
+
+The walk is breadth first and remembers what it has seen, so a schema included
+twice travels once and an include of an include is reached.
+
+** The archive is built here, and its bytes are not the BFF's**
+
+The BFF wrote the zip by hand with raw deflate; this writes it with libarchive,
+which the storage part already depends on. Both are zips of the same files under
+the same names, and neither reader can tell them apart, but the bytes differ, so
+a test compares what the archive holds and not the archive.
+
+** The route is the area's one binary answer, and it states no cache**
+
+The answer is =application/zip= with the name =<code>-<version>.zip= and
+=cache-control: private, no-store=, because the schema is read from the store per
+request and a schema read a version at a time is not a thing to keep.
+
+** The catalogue is read once, whole**
+
+The BFF read the file catalogue twice, once whole to find the schema and once
+filtered by the schemas category to map a version's file code to its name. One
+whole read answers both, so the route reads it once.
 
 * Test Scenarios
 
@@ -98,3 +132,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The ORE schema is served as one archive: the schema the catalogue names at the
+engine version asked for, and every schema it includes at once or through
+another. A missing include is a refusal that names what is missing and what
+includes it, and never a partial archive.
+
+The includes are read from the schema's own markup rather than from a column, and
+the walk is breadth first and remembers what it has seen, so a schema included
+twice travels once. The archive is written with libarchive, which the storage
+part already depends on, so the answer's bytes are not the BFF's hand-written
+zip even though every reader sees the same files under the same names.
+
+With this route the reporting area has no BFF route left unpaired: 44 of 44. The
+whole inventory stands at 252 of the BFF's 328 routes paired, with 1018 of the
+1346 routes answered by the gateway.
+
+The reporting part's suite passes 102 cases and 731 assertions, ten of them for
+this route, and half of those for the include walk itself, which is a pure
+function and needs no estate.

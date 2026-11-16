@@ -499,8 +499,8 @@ RULES = (
          " counts and total the service derives, so the answer states what it counted and"
          " derives nothing."),
     Rule("an ORE schema's contents",
-         ("exact", "GET /api/reporting/ore-files/:code/schema"),
-         BFF, COMPOSED, "reporting",
+         ("regex", r"^GET /api/reporting/ore-files/[^/]+/schema$"),
+         None, COMPOSED, "reporting",
          "One schema of one engine version: the file catalogue names the schema and the"
          " stored versions supply its contents, so two collections are joined to answer."),
     Rule("the engine's documented groups",

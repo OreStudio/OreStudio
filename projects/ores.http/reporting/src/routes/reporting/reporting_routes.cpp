@@ -23,6 +23,7 @@
 #include "ores.http/routes/reporting/cut_kind_routes.hpp"
 #include "ores.http/routes/reporting/cut_routes.hpp"
 #include "ores.http/routes/reporting/engine_settings_routes.hpp"
+#include "ores.http/routes/reporting/ore_schema_zip.hpp"
 #include "ores.http/routes/reporting/pricing_engine_import.hpp"
 #include "ores.http/routes/reporting/pricing_engine_routes.hpp"
 #include "ores.http/routes/reporting/pricing_engine_writes.hpp"
@@ -50,6 +51,7 @@ void reporting_routes::register_routes(
     pricing_engine_routes::register_read_routes(router, registry, session);
     pricing_engine_writes::register_write_routes(router, registry, session);
     pricing_engine_import::register_routes(router, registry, session);
+    ore_schema_zip::register_routes(router, registry, session);
     pricing_vocabulary::register_routes(router, registry, session);
     report_routes::register_routes(router, registry, session);
     result_routes::register_routes(router, registry, session);

@@ -36,6 +36,7 @@ namespace reporting_messaging = ores::reporting::messaging;
 namespace inbox_messaging = ores::inbox::messaging;
 
 using ores::http::domain::http_request;
+using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 
 namespace {

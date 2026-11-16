@@ -54,3 +54,6 @@ target_link_libraries(${lib_target_name}
 if(NOT WIN32)
     install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
 endif()
+
+find_package(LibArchive REQUIRED)
+target_link_libraries(${lib_target_name} PRIVATE LibArchive::LibArchive)

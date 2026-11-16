@@ -113,7 +113,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:C1830F26-2A60-49CE-AC82-6B784F34F79E][Serve the pricing engines' reads]] | DONE | 2026-11-14 | 2026-11-15 | Five routes: the page of engines, one document with its bound reports, its history, its ORE document as a file, and the vocabulary the editor draws its controls from. |
 | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] | STARTED | 2026-11-15 | | Three routes: the document save across the header, its products and its parameters, the update, and the removal. |
 | [[id:408B68E8-AFC7-46C3-9C04-ED9C181A308B][Serve the ORE import and its preview]] | STARTED | 2026-11-16 | | Two routes: the preview that states what importing a document would change, and the import that acts on the same answer, both the service's. |
-| [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | BACKLOG | | | One route: a schema and every schema it includes, at the engine version asked for, with a missing include a 404 that names it. |
+| [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | STARTED | 2026-11-16 | | One route: a schema and every schema it includes, at the engine version asked for, with a missing include a 404 that names it. |
 | [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | BACKLOG | | | Five routes the story's Acceptance moves from the reference data and pick-list tasks: two convention documents and three curve configurations, through the value set reader. |
 
 * Decisions

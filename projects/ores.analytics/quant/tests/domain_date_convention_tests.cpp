@@ -64,15 +64,23 @@ TEST_CASE("periods order as QuantLib orders them", "[date_convention]") {
         return date_period{u, n};
     };
 
-    CHECK(compare_periods(p(period_unit::month, 12), p(period_unit::year, 1)) == 0);
-    CHECK(compare_periods(p(period_unit::year, 1), p(period_unit::month, 18)) < 0);
-    CHECK(compare_periods(p(period_unit::week, 2), p(period_unit::day, 14)) == 0);
-    CHECK(compare_periods(p(period_unit::week, 3), p(period_unit::month, 1)) < 0);
-    CHECK(compare_periods(p(period_unit::month, 1), p(period_unit::week, 5)) < 0);
-    CHECK(compare_periods(p(period_unit::year, 2), p(period_unit::week, 1)) > 0);
+    // Compared against the ordering's own values: clang-cl reads a comparison with
+    // the literal zero inside Catch's constexpr matcher as a non-constant expression.
+    CHECK(compare_periods(p(period_unit::month, 12), p(period_unit::year, 1)) ==
+          std::partial_ordering::equivalent);
+    CHECK(compare_periods(p(period_unit::year, 1), p(period_unit::month, 18)) ==
+          std::partial_ordering::less);
+    CHECK(compare_periods(p(period_unit::week, 2), p(period_unit::day, 14)) ==
+          std::partial_ordering::equivalent);
+    CHECK(compare_periods(p(period_unit::week, 3), p(period_unit::month, 1)) ==
+          std::partial_ordering::less);
+    CHECK(compare_periods(p(period_unit::month, 1), p(period_unit::week, 5)) ==
+          std::partial_ordering::less);
+    CHECK(compare_periods(p(period_unit::year, 2), p(period_unit::week, 1)) ==
+          std::partial_ordering::greater);
     CHECK(compare_periods(p(period_unit::month, 1), p(period_unit::week, 4)) ==
           std::partial_ordering::unordered);
     CHECK(compare_periods(date_period{}, p(period_unit::day, 1)) ==
           std::partial_ordering::unordered);
-    CHECK(compare_periods(date_period{}, date_period{}) == 0);
+    CHECK(compare_periods(date_period{}, date_period{}) == std::partial_ordering::equivalent);
 }

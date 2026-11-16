@@ -49,6 +49,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <functional>
 #include <map>
 #include <memory>
 #include <optional>
@@ -67,6 +68,12 @@ namespace feed = ores::synthetic::feed;
 namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
 constexpr std::string_view service_version = ORES_VERSION;
+} // namespace
+
+// Named, and outside the anonymous namespace, because application::run() is a
+// coroutine and its frame holds the fleet: a type with no linkage in the frame
+// is what gcc refuses under -Wsubobject-linkage.
+namespace detail {
 
 // An adapter serves one source of the catalogue. Its id is the name of the source, and the provider
 // of the source is the one whose notation its ticks use.
@@ -234,7 +241,15 @@ private:
     std::vector<simulated_adapter> adapters_;
     ores::platform::concurrency::jthread worker_;
 };
-}
+
+/// Stops the scheduler when the run leaves, however it leaves.
+struct stop_scheduler_on_exit final {
+    ores::analytics::quant::service::tick_scheduler& scheduler;
+    ~stop_scheduler_on_exit() {
+        scheduler.stop();
+    }
+};
+} // namespace detail
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -302,7 +317,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // the demand set does not already serve still needs an adapter, or the ingest drops every
     // tick it makes. A provider the catalogue serves no simulated source for has none, and a
     // feed under its collection is refused rather than started silently.
-    const auto adapter_of_provider =
+    std::function<std::optional<feed::feed_adapter>(std::string_view)> adapter_of_provider =
         [&svc_nats](std::string_view provider_code) -> std::optional<feed::feed_adapter> {
         try {
             ores::marketdata::client::market_data_client client(svc_nats);
@@ -408,12 +423,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // destroyed first, which is what makes the thread joinable when its own
     // destructor runs: a startup failure reports itself instead of hanging
     // until systemd kills the process.
-    struct stop_scheduler_on_exit final {
-        ores::analytics::quant::service::tick_scheduler& scheduler;
-        ~stop_scheduler_on_exit() {
-            scheduler.stop();
-        }
-    } stop_on_exit{scheduler};
+    detail::stop_scheduler_on_exit stop_on_exit{scheduler};
 
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for
@@ -424,7 +434,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
     generator_fleet generators;
-    adapter_fleet fleet(nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
+    detail::adapter_fleet fleet(nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

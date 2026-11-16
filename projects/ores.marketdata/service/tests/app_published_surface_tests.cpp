@@ -50,6 +50,10 @@ struct threshold_guard final {
 
 TEST_CASE("the_published_surface_states_its_model_its_convention_and_its_grid",
           published_surface_tags) {
+    // The age this case reads is a minute, so the threshold it is judged by must be
+    // this case's own and not whatever a case before it configured.
+    threshold_guard guard;
+    staleness_policy::configure(3600);
     surface_fixture f(a_minute_ago());
 
     const auto resp = f.read();

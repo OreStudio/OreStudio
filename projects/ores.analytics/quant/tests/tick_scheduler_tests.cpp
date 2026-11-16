@@ -303,7 +303,13 @@ TEST_CASE("a running scheduler reads the heat on its sample period", "[tick_sche
     steady_run_clock clock;
     tick_scheduler scheduler(clock, no_heat, 1);
     std::thread loop([&] { scheduler.run(); });
-    std::this_thread::sleep_for(350ms);
+
+    // A loaded runner can start the loop late, so wait for the samples rather than
+    // for a fixed span that assumes three of them landed.
+    const auto until = std::chrono::steady_clock::now() + 5s;
+    while (scheduler.readings_since(std::chrono::system_clock::time_point{}).size() < 3 &&
+           std::chrono::steady_clock::now() < until)
+        std::this_thread::sleep_for(10ms);
     scheduler.stop();
     loop.join();
 

@@ -100,7 +100,7 @@ constexpr std::string_view errors_cell = "errors";
 constexpr std::string_view next_fire_cell = "nextFire";
 
 /// A read that failed, and the cell it would have filled.
-struct unread final {
+struct unread_row final {
     std::string cell;
     std::string message;
 };
@@ -197,7 +197,7 @@ struct composed final {
     std::vector<report_routes::health_row> health;
     std::optional<std::vector<report_routes::count_row>> counts;
     std::optional<std::vector<report_routes::fire_row>> fires;
-    std::vector<unread> unread;
+    std::vector<unread_row> unread;
 };
 
 /// One row, as the list draws it.

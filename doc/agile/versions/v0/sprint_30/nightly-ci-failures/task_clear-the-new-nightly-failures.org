@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: B9BCB152-1A9B-40D9-87CB-3731BDE838B6
+:END:
+#+title: Task: Clear the new nightly failures
+#+description: Clear the failures the 2026-11-15 nightly reports after yesterday's fixes: the next -Wchanges-meaning, the synthetic export golden and the marketdata staleness case.
+#+type: task
+#+level: s1
+#+filetags: :nightly-ci-failures:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/clear-the-new-nightly-failures
+#+pr: 4770
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the next nightly green on the GCC build, the clang release tests and the clang debug memcheck run.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-16                               |
+
+* Acceptance
+
+- The GCC build reports no -Wchanges-meaning anywhere in the tree.
+- ores.synthetic.core.tests passes on the release build.
+- ores.marketdata.service.tests passes in the debug memcheck run.
+
+* Plan
+
+Read the three failures from the nightly's logs, fix the code each names, and
+then use the full GCC build as the census for =-Wchanges-meaning= and for
+whatever warnings the earlier partial builds never reached. Fix those too, and
+fix the site's unresolved link. Verify each change by compiling the translation
+unit that reported it against the current tree.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| GCC build, full tree | 823 targets, 0 errors | =compass build --preset linux-gcc-release-ninja -j7= | branch head at build time (pre-rebase) |
+| =-Wchanges-meaning= diagnostics in the tree | 0 | The build's log | branch head at build time (pre-rebase) |
+| Remaining GCC warnings | 18, in three families | The build's log | branch head at build time (pre-rebase) |
+| Warning fixes compile | 5 of 5 files | =clang++ -fsyntax-only= with the target's own flags | 09946c95b4 |
+| Unresolved site links | 0 | =grep -rn '\[\[id:13EA0CF7' --include=*.org .= | 09946c95b4 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4770][#4770]] | [build,http,marketdata,ore,service,synthetic] Clear the new nightly failures and the GCC warnings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Closed on branch =hotfix/clear-the-new-nightly-failures=, rebased onto main at
+0e2470c87e.
+
+The nightly failed on three test-only causes: the analytics tests used
+=std::accumulate= without =<numeric>= (Windows) and compared
+=std::partial_ordering= with the literal zero inside Catch's matcher (clang-cl);
+the tick scheduler case slept a fixed span and took two readings where it
+expected three; and the synthetic golden was stale. The golden and the scripted
+Strike were already fixed on main by the time this branch was rebased, so those
+changes were dropped.
+
+The full GCC build then found no =-Wchanges-meaning= anywhere, so the reporting
+route's =unread= rename was the last one, and reported 18 warnings in three
+families, all cleared here: =-Wsubobject-linkage= on the synthetic application's
+fleet, the marketdata official application's BCCH closure and the host runner
+tests' local types; =-Wmaybe-uninitialized= on the file-types request's
+defaulted order member; and =-Wmaybe-uninitialized= on =http_request::method=,
+which the route tests read from a default-constructed request.
+
+The site build's unresolved link to a superseded task now points at the task
+that replaced it.
+
+Out of scope: the Windows =C2220=/=C4244= narrowing inside =std::optional<int>=,
+which needs an MSVC build to pin down.

@@ -31,8 +31,10 @@
 #include <stdexcept>
 #include <string>
 
-namespace {
-
+// Named, outside the anonymous namespace: run_host_async is a coroutine, and
+// its frame holds the parser, the application and the configuration, which gcc
+// refuses under -Wsubobject-linkage while their types have no linkage.
+//
 // The runners only read cfg.logging, and a null optional turns logging off for
 // the run, so the tests never need a configured logging_options.
 struct fake_config {
@@ -74,8 +76,6 @@ struct throwing_application {
         throw std::runtime_error("application failed");
     }
 };
-
-}
 
 using ores::service::service::host_runner_options;
 using ores::service::service::run_host_async;

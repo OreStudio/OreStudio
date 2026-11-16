@@ -8,7 +8,7 @@
 #+filetags: :hotfix:ci:sprint_30:v0:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment: clever_dijkstra
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -49,6 +49,7 @@ runs show only real defects.
 | [[id:ECC490AD-D0D8-4B8F-9F03-1E69A3109D54][Scaffold story: Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:D37CDA80-087B-481C-A79F-A8B1273E7B1C][Implement Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Initial task for: Hotfix: nightly CI failures |
 | [[id:4E41BCBD-394F-4E5F-983A-BA90728BC154][Fix the remaining nightly failures]] | DONE | | 2026-11-10 | Fix the Windows build, the macOS http client hang and the codegen drift that the nightly runs of 2026-11-10 show. |
+| [[id:B9BCB152-1A9B-40D9-87CB-3731BDE838B6][Clear the new nightly failures]] | DONE | 2026-11-15 | 2026-11-16 | Clear the failures the 2026-11-15 nightly reports after yesterday's fixes: the next -Wchanges-meaning, the synthetic export golden and the marketdata staleness case. |
 
 * Decisions
 

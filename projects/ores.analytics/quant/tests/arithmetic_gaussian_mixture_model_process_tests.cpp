@@ -21,6 +21,7 @@
 #include "price_stream.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <numeric>
 #include <stdexcept>
 
 using ores::analytics::quant::service::arithmetic_gaussian_mixture_model_process;

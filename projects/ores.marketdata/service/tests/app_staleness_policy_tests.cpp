@@ -32,9 +32,20 @@ system_clock::time_point instant_at(seconds offset) {
     return system_clock::time_point{} + std::chrono::hours{24 * 365 * 50} + offset;
 }
 
+/// Puts the policy back, so a case that configures it leaves no verdict behind.
+struct restore_policy final {
+    std::int64_t was = staleness_policy::threshold_seconds();
+    ~restore_policy() {
+        staleness_policy::configure(was);
+        staleness_policy::configure("fx", 0);
+        staleness_policy::configure("ir", 0);
+    }
+};
+
 }
 
 TEST_CASE("a_value_inside_the_threshold_is_not_stale", policy_tags) {
+    restore_policy guard;
     staleness_policy::configure(60);
     const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::age_seconds(now - seconds{60}, now) == 60);
@@ -42,12 +53,14 @@ TEST_CASE("a_value_inside_the_threshold_is_not_stale", policy_tags) {
 }
 
 TEST_CASE("a_value_past_the_threshold_is_stale", policy_tags) {
+    restore_policy guard;
     staleness_policy::configure(60);
     const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::is_stale(now - seconds{61}, now) == true);
 }
 
 TEST_CASE("a_value_with_no_instant_is_stale_and_has_no_age", policy_tags) {
+    restore_policy guard;
     staleness_policy::configure(60);
     const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::age_seconds(system_clock::time_point{}, now) == 0);
@@ -55,6 +68,7 @@ TEST_CASE("a_value_with_no_instant_is_stale_and_has_no_age", policy_tags) {
 }
 
 TEST_CASE("an_instant_after_now_has_no_negative_age", policy_tags) {
+    restore_policy guard;
     staleness_policy::configure(60);
     const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::age_seconds(now + seconds{30}, now) == 0);
@@ -62,6 +76,7 @@ TEST_CASE("an_instant_after_now_has_no_negative_age", policy_tags) {
 }
 
 TEST_CASE("the_threshold_is_configurable_and_refuses_a_non_positive_one", policy_tags) {
+    restore_policy guard;
     staleness_policy::configure(120);
     CHECK(staleness_policy::threshold_seconds() == 120);
     CHECK(staleness_policy::is_configured() == true);
@@ -70,16 +85,9 @@ TEST_CASE("the_threshold_is_configurable_and_refuses_a_non_positive_one", policy
 }
 
 TEST_CASE("each_instrument_kind_has_its_own_threshold", policy_tags) {
-    struct restore final {
-        std::int64_t was = staleness_policy::threshold_seconds();
-        ~restore() {
-            staleness_policy::configure(was);
-            // Zero removes the kind's own threshold, so a later case starts where this
-            // one did rather than inheriting "fx" and "ir".
-            staleness_policy::configure("fx", 0);
-            staleness_policy::configure("ir", 0);
-        }
-    } guard;
+    // Zero removes the kind's own threshold, so a later case starts where this
+    // one did rather than inheriting "fx" and "ir".
+    restore_policy guard;
 
     staleness_policy::configure(3600);
     staleness_policy::configure("fx", 60);

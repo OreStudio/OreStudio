@@ -52,6 +52,17 @@ namespace {
 constexpr std::string_view service_name = "ores.marketdata.official";
 constexpr std::string_view service_version = ORES_VERSION;
 
+/// The account the BCCH adapter signs in with, read from the environment.
+std::expected<domain::bcch_account, std::string> read_bcch_account() {
+    auto user = domain::resolve_secret("env:ORES_MARKETDATA_BCCH_USER");
+    if (!user)
+        return std::unexpected(user.error());
+    auto password = domain::resolve_secret("env:ORES_MARKETDATA_BCCH_PASSWORD");
+    if (!password)
+        return std::unexpected(password.error());
+    return domain::bcch_account{std::move(*user), std::move(*password)};
+}
+
 }
 
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
@@ -99,16 +110,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     domain::bcb_fetcher bcb(transport, cfg.bcb_url);
     domain::banxico_fetcher banxico(
         transport, cfg.banxico_url, domain::resolve_secret("env:ORES_MARKETDATA_BANXICO_API_KEY"));
-    const auto bcch_account = []() -> std::expected<domain::bcch_account, std::string> {
-        auto user = domain::resolve_secret("env:ORES_MARKETDATA_BCCH_USER");
-        if (!user)
-            return std::unexpected(user.error());
-        auto password = domain::resolve_secret("env:ORES_MARKETDATA_BCCH_PASSWORD");
-        if (!password)
-            return std::unexpected(password.error());
-        return domain::bcch_account{std::move(*user), std::move(*password)};
-    };
-    domain::bcch_fetcher bcch(transport, cfg.bcch_url, bcch_account());
+    domain::bcch_fetcher bcch(transport, cfg.bcch_url, read_bcch_account());
     domain::cnb_fetcher cnb(transport, cfg.cnb_url);
     domain::mas_fetcher mas(transport, cfg.mas_url);
     adapter_timing timing;

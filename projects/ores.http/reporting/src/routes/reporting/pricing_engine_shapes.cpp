@@ -19,7 +19,7 @@
  */
 #include "ores.http/routes/reporting/pricing_engine_shapes.hpp"
 #include "ores.http.api/net/record_routes.hpp"
-#include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -31,8 +31,8 @@ namespace {
 
 namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
-using shape::member;
-using shape::object;
+using ores::http::net::shape::member;
+using ores::http::net::shape::object;
 
 /// One product of a document.
 std::string product_json_of(const pricing_product_row& row) {

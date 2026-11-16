@@ -25,7 +25,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
-#include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -45,8 +45,8 @@ namespace rr = ores::http::net::record_routes;
 using ores::http::domain::http_request;
 using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
-using shape::member;
-using shape::object;
+using ores::http::net::shape::member;
+using ores::http::net::shape::object;
 
 auto& pricing_rows_lg() {
     static auto instance = ores::logging::make_logger("ores.http.reporting.pricing_engine_rows");

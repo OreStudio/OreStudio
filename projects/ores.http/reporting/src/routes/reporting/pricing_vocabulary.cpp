@@ -31,7 +31,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -61,8 +61,8 @@ using ores::http::domain::http_response;
 using ores::http::routes::value_set_reader;
 using ores::reporting::domain::ore_parameter;
 using ores::nats::service::nats_client;
-using shape::member;
-using shape::object;
+using ores::http::net::shape::member;
+using ores::http::net::shape::object;
 
 auto& pricing_vocabulary_lg() {
     static auto instance = ores::logging::make_logger("ores.http.reporting.pricing_vocabulary");

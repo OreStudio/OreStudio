@@ -52,6 +52,7 @@
 \ir ./trading_payoff_types_populate.sql
 \ir ./trading_trade_link_types_populate.sql
 \ir ./trading_structure_reference_data_populate.sql
+\ir ./trading_script_library_populate.sql
 
 \echo ''
 \echo '=== Trade Population Complete ==='

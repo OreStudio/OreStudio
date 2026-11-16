@@ -750,6 +750,18 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
     ),
     Check(
+        id="script-library-seed",
+        title="The script library seed is what ORE's library gives",
+        argv=("python3", "projects/ores.sql/utility/generate_script_library.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/populate/trading/trading_script_library_populate.sql",
+            "projects/ores.sql/utility/generate_script_library.py",
+            "external/ore/examples/Products/Input/scriptlibrary.xml",
+        ),
+        fix="Run projects/ores.sql/utility/generate_script_library.py and commit the seed.",
+    ),
+    Check(
         id="ore-renderings-tables",
         title="The reader's rendering tables are the ones the renderings file states",
         argv=("python3", "projects/ores.ore/scripts/generate_renderings_tables.py", "--check"),

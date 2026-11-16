@@ -58,6 +58,7 @@
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
+#include "ores.trading.core/repository/script_input_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
@@ -70,6 +71,7 @@
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -1237,4 +1239,81 @@ TEST_CASE("every_array_the_trade_type_does_not_hold_is_named_once", "[service]")
     CHECK(response.result.code == "instrument_not_routed");
     CHECK(response.result.message.contains("fx_forward_instruments"));
     CHECK(response.result.message.contains("rate_instruments"));
+}
+
+namespace {
+
+/*
+ * A generic scripted trade of the library's window barrier option, stating
+ * every input the library holds for it as the script reads it. The library
+ * is the system tenant's, so the inputs are read there.
+ */
+book_trade_request window_barrier_request(fixture& f) {
+    auto req = f.request();
+    req.anchor.trade_type = "ScriptedTrade";
+    ores::trading::domain::scripted_instrument row;
+    row.identity.trade_id = req.anchor.id;
+    row.identity.trade_type_code = "ScriptedTrade";
+    row.script_name = "WindowBarrierOption";
+    row.audit.change_reason_code = "system.test";
+    req.instruments.scripted_instruments.push_back(row);
+
+    const auto system = f.ctx.with_tenant(ores::utility::uuid::tenant_id::system(), "test");
+    int sequence = 0;
+    for (const auto& input :
+         ores::trading::repository::script_input_repository().read_latest(system)) {
+        if (input.script_name != "WindowBarrierOption")
+            continue;
+        ores::trading::domain::scripted_parameter p;
+        p.trade_id = req.anchor.id;
+        p.sequence_number = ++sequence;
+        p.name = input.input_name;
+        p.declared_type = input.data_type;
+        p.shape = input.is_array ? "vector" : "scalar";
+        p.value = std::string("1");
+        p.change_reason_code = "system.test";
+        req.instruments.scripted_parameters.push_back(p);
+    }
+    return req;
+}
+
+}
+
+TEST_CASE("a_scripted_trade_that_leaves_out_an_input_of_its_script_is_refused_by_name",
+          "[service]") {
+    fixture f;
+    auto req = window_barrier_request(f);
+    REQUIRE(req.instruments.scripted_parameters.size() == 15u);
+    std::erase_if(req.instruments.scripted_parameters,
+                  [](const auto& p) { return p.name == "BarrierLevel"; });
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "script_input_mismatch");
+    CHECK(response.result.message.contains("BarrierLevel"));
+}
+
+TEST_CASE("a_scripted_trade_that_states_an_input_as_another_type_is_refused_by_name", "[service]") {
+    fixture f;
+    auto req = window_barrier_request(f);
+    for (auto& p : req.instruments.scripted_parameters)
+        if (p.name == "Expiry")
+            p.declared_type = "Number";
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    CHECK(response.result.code == "script_input_mismatch");
+    CHECK(response.result.message.contains("Expiry"));
+    CHECK(response.result.message.contains("Event"));
+}
+
+TEST_CASE("a_scripted_trade_that_states_every_input_of_its_script_passes_the_check", "[service]") {
+    fixture f;
+    const auto req = window_barrier_request(f);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    INFO(response.result.message);
+    CHECK(response.result.code != "script_input_mismatch");
 }

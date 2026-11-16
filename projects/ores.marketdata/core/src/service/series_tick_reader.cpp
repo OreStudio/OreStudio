@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/series_tick_reader.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"

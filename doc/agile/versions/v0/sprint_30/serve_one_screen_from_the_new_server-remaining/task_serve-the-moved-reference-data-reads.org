@@ -2,7 +2,7 @@
 :ID: B55B55AE-1F27-402A-86F4-92419A2A6E38
 :END:
 #+title: Task: Serve the reference data reads this story moved here
-#+description: Five routes the story's Acceptance moves from the reference data and pick-list tasks: two convention documents and three curve configurations, through the value set reader.
+#+description: Three routes the story's Acceptance moves here: a party's curve configurations, through the value set reader. The two convention documents split off into their own task.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
@@ -20,10 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Serve the five reference data routes that read the ORE value sets, which the
-story's Acceptance moved here from the reference data and pick-list tasks. Two
-answer a convention document and its terms; three answer a party's curve
-configurations.
+Serve the three curve-configuration routes that read the ORE value sets, which
+the story's Acceptance moved here from the reference data and pick-list tasks.
+The two convention documents this task first carried split off into
+[[id:9796EE15-7695-4999-B00C-F872F84B2763][Serve the convention documents this
+story moved here]], because their machinery is the convention family registry and
+not the value set reader.
 
 * Status
 
@@ -38,9 +40,7 @@ configurations.
 
 * Acceptance
 
-- The C++ server answers =GET /api/conventions/:family/documents/:id=,
-  =PUT /api/conventions/:family/documents/:id/terms=,
-  =GET /api/refdata/curve-configurations=,
+- The C++ server answers =GET /api/refdata/curve-configurations=,
   =GET /api/refdata/curve-configurations/:id= and
   =PUT /api/refdata/curve-configurations/:id= at the BFF's member names and
   status codes.
@@ -85,6 +85,16 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** The task split in two, as its own plan allowed**
+
+The plan said that if the convention document routes proved as large as the
+machinery they need, this task would split. They did: a convention document is
+found through the family registry, and its terms come off the held form of a
+family's own entity, so neither route reads a value set for its own sake. Those
+two routes are [[id:9796EE15-7695-4999-B00C-F872F84B2763][their own task]] now,
+and this one carries the three curve-configuration routes, which are the ones
+that read the value sets.
 
 * Test Scenarios
 

@@ -372,3 +372,14 @@ def test_a_grouped_part_names_its_columns_through_the_group(tmp_path):
     assert "v.identity.id = write.id;" in text
     assert "row.identity.party_id = central.party_id;" in text
     assert "w.identity.id == row.identity.id" in text
+
+
+def test_the_put_checks_part_cardinality_before_it_opens_the_transaction(tmp_path):
+    body = _render(tmp_path, "svc.cpp", SERVICE_IMPL)
+    assert ("if (write.pay_receive.size() + write.long_short.size() != 1)"
+            in body)
+    assert "outcome_code::part_cardinality" in body
+    assert ".field = \"pay_receive or long_short\"" in body
+    assert (body.index("check_part_cardinality(request.item)")
+            < body.index("ores::database::repository::unit_of_work uow(ctx_);"))
+    assert "check_part_cardinality(write)" in body

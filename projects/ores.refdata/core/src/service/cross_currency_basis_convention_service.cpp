@@ -437,8 +437,14 @@ ores::utility::domain::result cross_currency_basis_convention_service::prepare_c
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
-    // two come to disagree.
-    stamp(out,
+    // two come to disagree. A grouped row is stamped member by member, because
+    // stamp() reaches only a row's own fields.
+    stamp(out.identity,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    stamp(out.audit,
           ctx,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :

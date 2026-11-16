@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 334A6E2F-A423-4F4C-90D6-C645D3567044
+:END:
+#+title: Retire the unrouted outperformance fact table
+#+description: No trade reaches ores_trading_equity_outperformance_options_tbl; the option row holds its terms.
+#+type: capture
+#+level: cross
+#+filetags: :trading:sql:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Remove the entity =equity_outperformance_option_instrument= and its table
+=ores_trading_equity_outperformance_options_tbl=: the model, the SQL, the C++
+domain, repository, service, protocol and shell commands that codegen made
+for it.
+
+* Why
+
+Sprint 28 authored the table for EquityOutperformanceOption, but the routing
+never sent a trade to it. The trade type routes to the equity option row, which
+now holds the initial prices, the strike return and the knock prices as
+columns, and the two underlyings as rows of the shared underlying table. The
+table is a second home for the same terms that nothing writes. The only terms
+it holds that the option row does not are the two optional initial price
+currencies.
+
+* References
+
+- [[id:B14C4720-D757-4CAA-AD4D-09079CBC4D84][Model and generate the equity outperformance option]]
+- Commit 508687e10c, which authored the table.
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]

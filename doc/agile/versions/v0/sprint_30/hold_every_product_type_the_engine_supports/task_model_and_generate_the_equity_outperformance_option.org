@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-and-generate-the-equity-outperformance-option
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ booked by the generator, and ORE builds it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -47,9 +47,25 @@ booked by the generator, and ORE builds it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The option row already holds the initial prices and the knock prices as
+columns (=initial_price_1=, =initial_price_2=, =knock_in_price=,
+=knock_out_price=), and the scalar terms read and write them. Only the pair is
+packed. So:
+
+- The two underlyings become rows of the shared underlying table, in the roles
+  =underlying1= and =underlying2=, as ORE names the elements. The row's
+  =underlying_name= states the first equity, as every equity option states
+  its one underlying both on the row and as a role row.
+- The projection reads both elements through the underlying holder table and
+  writes them from the rows. The packed-pair helpers lose their last user and
+  go.
+- A builder states the option, and the equity planner books it on two
+  equities in one currency, so neither initial price needs FX terms.
+
+The sprint 28 fact table =equity_outperformance_options= stays unrouted. The
+option row now holds every term that table holds except the two initial price
+currencies, which ORE makes optional, so the table is a candidate
+to retire, filed as a capture rather than done here.
 
 * Measurements
 
@@ -91,3 +107,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator books EquityOutperformanceOption, and ORE builds it.
+
+- The option's two equities are rows of the shared underlying table, in the
+  roles underlying1 and underlying2. The row's underlying_name states the
+  first equity. The initial prices, the strike return and the knock prices
+  use the option row's existing columns, which the scalar terms read and
+  write. The export no longer writes initial prices of zero.
+- The projection reads and writes both elements through the underlying
+  holder table. The packed-pair helpers are removed. A new round-trip test
+  reads ORE's own example trade and writes it back.
+- equity_outperformance_option_builder states the option. It refuses an
+  equity against itself, a price that is not positive, and a negative strike
+  return. The equity planner books it on two equities in one currency, with a
+  knock-in price, as ORE's example does.
+- The type leaves the list awaiting builders. The engine raises no error on
+  it.
+- The sprint 28 fact table equity_outperformance_options is not routed. A
+  capture proposes to retire it:
+  [[id:334A6E2F-A423-4F4C-90D6-C645D3567044][Retire the unrouted outperformance fact table]].
+
+The two optional initial price currencies and their FX terms are not held.
+The generated pair is in one currency, so it does not need them.
+
+Verified: trading api 4653 cases, ore core 545, synthetic 146 with the ORE
+engine.

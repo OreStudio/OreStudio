@@ -35,6 +35,7 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/script_input_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
@@ -45,6 +46,7 @@
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include "ores.trading.core/service/structure_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -118,6 +120,46 @@ std::string join(const std::vector<std::string>& names) {
     return joined;
 }
 
+/*
+ * The first input of a library script that a scripted trade does not state as
+ * the script reads it: missing, of another type, or a list where the script
+ * reads one value or the reverse. The library is the system tenant's reference
+ * data, so it is read there. A trade that carries its own code, or names a
+ * script the library does not hold, is not checked against the library.
+ */
+std::optional<std::string> script_input_refusal(const domain::instrument_batch& instruments,
+                                                const ores::database::context& ctx) {
+    std::optional<std::vector<domain::script_input>> library;
+    for (const auto& instrument : instruments.scripted_instruments) {
+        if (instrument.identity.trade_type_code != "ScriptedTrade" ||
+            instrument.script_name.empty() || !instrument.script_body.empty())
+            continue;
+        if (!library) {
+            const auto system =
+                ctx.with_tenant(ores::utility::uuid::tenant_id::system(), ctx.actor());
+            library = repository::script_input_repository().read_latest(system);
+        }
+        for (const auto& input : *library) {
+            if (input.script_name != instrument.script_name)
+                continue;
+            const auto stated = std::ranges::find_if(
+                instruments.scripted_parameters, [&](const domain::scripted_parameter& p) {
+                    return p.trade_id == instrument.identity.trade_id && p.name == input.input_name;
+                });
+            const auto reads = input.data_type + (input.is_array ? " list" : "");
+            if (stated == instruments.scripted_parameters.end())
+                return "The script " + instrument.script_name + " reads the input " +
+                       input.input_name + ", a " + reads + ", which the trade does not state.";
+            const bool listed = stated->shape != "scalar";
+            if (stated->declared_type != input.data_type || listed != input.is_array)
+                return "The script " + instrument.script_name + " reads the input " +
+                       input.input_name + " as a " + reads + ", and the trade states it as a " +
+                       stated->declared_type + (listed ? " list" : "") + ".";
+        }
+    }
+    return std::nullopt;
+}
+
 }
 
 messaging::book_trade_response
@@ -156,6 +198,12 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.code = "instrument_child_without_header";
         response.result.message =
             "The batch holds rows for " + join(orphans) + " and no instrument header.";
+        return response;
+    }
+    if (const auto refusal = script_input_refusal(request.instruments, ctx_)) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "script_input_mismatch";
+        response.result.message = *refusal;
         return response;
     }
 

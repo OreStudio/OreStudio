@@ -108,6 +108,13 @@
 #include "ores.trading.core/messaging/return_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/return_type_registrar.hpp"
 #include "ores.trading.core/messaging/risk_participation_agreement_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/script_calibration_registrar.hpp"
+#include "ores.trading.core/messaging/script_calibration_strike_registrar.hpp"
+#include "ores.trading.core/messaging/script_coarsening_registrar.hpp"
+#include "ores.trading.core/messaging/script_input_registrar.hpp"
+#include "ores.trading.core/messaging/script_registrar.hpp"
+#include "ores.trading.core/messaging/script_result_registrar.hpp"
+#include "ores.trading.core/messaging/script_variant_registrar.hpp"
 #include "ores.trading.core/messaging/scripted_parameter_registrar.hpp"
 #include "ores.trading.core/messaging/scripted_parameter_value_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_history_provider_registrar.hpp"
@@ -209,6 +216,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_long_short_type_handlers(nats, ctx, verifier));
     append(register_moment_type_handlers(nats, ctx, verifier));
     append(register_option_type_handlers(nats, ctx, verifier));
+    append(register_script_handlers(nats, ctx, verifier));
+    append(register_script_variant_handlers(nats, ctx, verifier));
+    append(register_script_result_handlers(nats, ctx, verifier));
+    append(register_script_calibration_handlers(nats, ctx, verifier));
+    append(register_script_calibration_strike_handlers(nats, ctx, verifier));
+    append(register_script_coarsening_handlers(nats, ctx, verifier));
+    append(register_script_input_handlers(nats, ctx, verifier));
     append(register_party_role_type_handlers(nats, ctx, verifier));
     append(register_payoff_type_handlers(nats, ctx, verifier));
     append(register_price_type_handlers(nats, ctx, verifier));

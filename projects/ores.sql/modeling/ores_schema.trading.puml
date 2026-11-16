@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 129
+Tables: 136
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3986,6 +3986,166 @@ package "trading" #E8F5E9 {
     only the product's own fields, and joins the header by trade_id.
     end note
 
+    entity ores_trading_script_calibration_strikes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * script_name : text <<PK, FK>>
+        * purpose : text <<PK>>
+        * calibration_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * strike_variable : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_script_calibration_strikes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Calibration Strike Table
+    One strike a library script calibration is made at, named by the script
+    variable that holds it.
+    end note
+
+    entity ores_trading_script_calibrations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * script_name : text <<PK, FK>>
+        * purpose : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * index_variable : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_script_calibrations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Calibration Table
+    One calibration a library script variant asks the engine for: the index
+    variable it is made against. Its strikes are rows of their own.
+    end note
+
+    entity ores_trading_script_coarsenings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * script_name : text <<PK, FK>>
+        * purpose : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * eligible_schedule : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_script_coarsenings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Coarsening Table
+    One schedule a library script variant names as eligible for coarsening,
+    which lets the engine price a long schedule on fewer dates.
+    end note
+
+    entity ores_trading_script_inputs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * script_name : text <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * input_name : text
+        * data_type : text
+        * is_array : boolean
+          value_rule : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_script_inputs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Input Table
+    One input a library script reads from its trade: a variable the code uses
+    and does not declare. The type is the one ORE's scripted trade states for it
+    (Number, Event, Index, Currency or Daycounter), and an array input states a list.
+    A value rule, where the library states one, says which values the script accepts.
+    The rows are mined from the code, not typed by hand.
+    end note
+
+    entity ores_trading_script_results_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * script_name : text <<PK, FK>>
+        * purpose : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * variable : text
+          rename : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_script_results_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Result Table
+    One result a library script variant reports beside its NPV: the script
+    variable it reads and, when the library renames it, the name it reports it
+    under.
+    end note
+
+    entity ores_trading_script_variants_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * script_name : text <<PK, FK>>
+        * purpose : text <<PK>>
+        --
+        * version : integer
+        * code : text
+        * npv_variable : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_script_variants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Variant Table
+    One variant of a library script. Every script has a default variant, and
+    a few add one for another purpose, such as a finite-difference engine. The
+    variant holds the payoff code and the variable the NPV is read from.
+    end note
+
     entity ores_trading_scripted_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -4110,6 +4270,32 @@ package "trading" #E8F5E9 {
     A list value is scripted_parameter_value rows, and an event's schedule is
     rows of the shared schedule tables under the owner scripted and the
     parameter's ordinal.
+    end note
+
+    entity ores_trading_scripts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * name : text <<PK>>
+        --
+        * version : integer
+          product_tag : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_scripts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Script Table
+    One script of ORE's script library. A scripted trade names a script by
+    its library name, and the library states its code once for every trade of it.
+    The rows are the system tenant's reference data, mined from the library ORE
+    ships (external/ore/examples/Products/Input/scriptlibrary.xml).
     end note
 
     entity ores_trading_settlement_types_tbl <<temporal>> #C6F0D8 {
@@ -5270,6 +5456,12 @@ ores_trading_trades_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"
+ores_trading_scripts_tbl ||--o{ ores_trading_script_calibration_strikes_tbl : "has"
+ores_trading_scripts_tbl ||--o{ ores_trading_script_calibrations_tbl : "has"
+ores_trading_scripts_tbl ||--o{ ores_trading_script_coarsenings_tbl : "has"
+ores_trading_scripts_tbl ||--o{ ores_trading_script_inputs_tbl : "has"
+ores_trading_scripts_tbl ||--o{ ores_trading_script_results_tbl : "has"
+ores_trading_scripts_tbl ||--o{ ores_trading_script_variants_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_parameter_values_tbl : "has"

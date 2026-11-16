@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 0E34518C-920B-4786-978D-A346E6E6BD9D
+:END:
+#+title: ores.trading.script_calibration
+#+description: One calibration a library script variant asks for.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The index one calibration of a library script variant is made against.
+#+entity_singular: script_calibration
+#+entity_plural: script_calibrations
+#+entity_title: Script Calibration
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+One calibration a library script variant asks the engine for: the index
+variable it is made against. Its strikes are rows of their own.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** script_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The library name of the script, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("WindowBarrierOption")
+#+end_src
+
+** purpose
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The purpose the variant serves: =default= for the one a trade runs unless the engine asks for another, else ORE's =purpose= attribute, such as =FD=.
+
+#+begin_src cpp :name generator
+std::string("default")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+Ordinal of the row within its owner, in the library's order.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** index_variable
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The script variable naming the index calibrated.
+
+#+begin_src cpp :name generator
+std::string("Underlying")
+#+end_src
+
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_script_calibrations_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calibration
+:entity_plural_short:   calibrations
+:entity_singular_words: script calibration
+:entity_plural_words:   script calibrations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: scc
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| script_name | Script |
+| purpose | Purpose |
+| index_variable | Index |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

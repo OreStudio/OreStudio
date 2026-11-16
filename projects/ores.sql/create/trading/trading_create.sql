@@ -172,6 +172,20 @@
 \ir ./trading_scripted_parameters_notify_trigger_create.sql
 \ir ./trading_scripted_parameter_values_create.sql
 \ir ./trading_scripted_parameter_values_notify_trigger_create.sql
+\ir ./trading_scripts_create.sql
+\ir ./trading_scripts_notify_trigger_create.sql
+\ir ./trading_script_variants_create.sql
+\ir ./trading_script_variants_notify_trigger_create.sql
+\ir ./trading_script_results_create.sql
+\ir ./trading_script_results_notify_trigger_create.sql
+\ir ./trading_script_calibrations_create.sql
+\ir ./trading_script_calibrations_notify_trigger_create.sql
+\ir ./trading_script_calibration_strikes_create.sql
+\ir ./trading_script_calibration_strikes_notify_trigger_create.sql
+\ir ./trading_script_coarsenings_create.sql
+\ir ./trading_script_coarsenings_notify_trigger_create.sql
+\ir ./trading_script_inputs_create.sql
+\ir ./trading_script_inputs_notify_trigger_create.sql
 
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/hold-ores-script-library
+#+pr: 4778
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ Every script in ORE's library is a row with its code, its NPV and results, and o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -43,9 +43,11 @@ Every script in ORE's library is a row with its code, its NPV and results, and o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Model the library column by column as seven trading entities: the script, each variant's code and NPV variable, its results, its calibrations and their strikes, its coarsenings, and the script's inputs. The rows are the system tenant's reference data.
+2. Mine the rows from ORE's library with a script, the inputs from the code rather than the comments: an input is a variable a variant reads and does not assign or declare; its type is what the code does with it; it is an array when the code indexes it or asks its size; its rule is the script's REQUIRE statement about it.
+3. Measure the miner against every scripted trade of ORE's examples, and register its --check as a local check.
+4. Write scriptlibrary.xml from the rows, and have the engine run read it.
+5. Refuse a booking whose scripted trade does not state its library script's inputs as the script reads them.
 
 * Measurements
 
@@ -59,9 +61,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scripts, variants and inputs seeded | 54 scripts, 56 variants, 254 results, 750 inputs | =python3 projects/ores.sql/utility/generate_script_library.py= | 1c643ee8da |
+| Mined inputs against ORE's example scripted trades | 240 agree, 0 disagree, 0 missed, 4 stated but never read | =python3 projects/ores.sql/utility/generate_script_library.py --compare= | 1c643ee8da |
+| Scripts the written library keeps whole | 54 of 54 | =ores.ore.core.tests "[script_library]"= | 1c643ee8da |
+| Trading core suite | 251 cases, 1,618 assertions | =ores.trading.core.tests= | 1c643ee8da |
+| Synthetic suite with the ORE engine, reading the library from the rows | 145 cases, 4,273 assertions | =ores.synthetic.core.tests= | 1c643ee8da |
+| ORE core suite | 545 cases, 520,171 assertions | =ores.ore.core.tests= | 1c643ee8da |
 
 * Notes
+
+** What the mining found
+
+- The comment blocks are stale in places: the window barrier option's lists =ObservationDates=, while its code reads =StartDate= and =EndDate=. The inputs come from the code; a comment only adds a description.
+- An input is the union over the variants: =BermudanSwaption= reads =ExerciseSettlement= only in its AMC variant, and a trade states what every variant it may run reads.
+- A variable the code assigns is the script's output, not an input, even when it is not declared; one it only reads is an input even when it is also reported as a result (=PayCcy= is reported as =notionalCurrency=).
+- ORE spells the day counter type =Daycounter=, which the column keeps.
+- Four example trades state a variable their script never reads, which ORE ignores; the comparison counts them apart from misses.
+- A trade that carries its own code, or names a script the library does not hold, is not checked against the library.
 
 * Test Scenarios
 
@@ -78,12 +94,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4778][#4778]] | [trading,sql,ore] Hold ORE's script library as reference data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The union over variants may refuse a trade ORE would take | generate_script_library.py | keep | A trade must state what every variant it may run reads; no input of ORE's library is read by only some variants |
+| 2 | A variable one variant assigns drops out even where another reads it | generate_script_library.py | accept | Outputs are now per variant; no such variable exists in ORE's library, and the seed is unchanged |
+| 3 | The seed does nothing on conflict | trading_script_library_populate.sql | note | Every environment is recreated from the schema, so a changed library reaches the store through a recreate |
+| 4 | A missing submodule gives a traceback | generate_script_library.py | accept | The script names the missing library and the submodule |
+| 5 | The check reads the whole input table | trade_operations_service.cpp | decline | One read per booking, of 750 rows |
+| 6 | No test that an extra variable is not refused | service_trade_operations_service_tests.cpp | accept | Test added |
+| 7 | Every non-scalar shape counts as a list | trade_operations_service.cpp | no change | The shapes are scalar, vector, schedule and derived_schedule; all three non-scalar ones are lists |
+| 8 | An unbalanced call drops its last argument | generate_script_library.py | accept | It keeps what it gathered |
 
 * Result
+
+ORE's script library is reference data: 54 scripts, column by column, seeded by a script that mines the library, with each script's 750 inputs taken from its code. The run's scriptlibrary.xml is written from the rows, and the ORE engine prices every generated scripted trade on it. A generic scripted trade that leaves out an input of its script, or states one as another type or shape, is refused with the input's name.
+
+Acceptance:
+
+- Every script is seeded with its code, product tag, NPV and results: met.
+- Each script states its inputs as rows, mined by a script rather than typed: met; the mined inputs agree with all 240 typed variables of ORE's example scripted trades.
+- The run's scriptlibrary.xml is written from the rows, and ORE reads it: met; the engine test writes it from the store.
+- A scripted trade that misses an input or states the wrong type is refused with the input's name: met; three service tests.
+- A check fails when a later ORE library changes a script's inputs: met; =script-library-seed=.

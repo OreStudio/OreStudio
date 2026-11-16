@@ -17,11 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/script_library_projection.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/process/pid.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.core/repository/script_calibration_repository.hpp"
+#include "ores.trading.core/repository/script_calibration_strike_repository.hpp"
+#include "ores.trading.core/repository/script_coarsening_repository.hpp"
+#include "ores.trading.core/repository/script_repository.hpp"
+#include "ores.trading.core/repository/script_result_repository.hpp"
+#include "ores.trading.core/repository/script_variant_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/process/v2/environment.hpp>
 #include <boost/process/v2/process.hpp>
@@ -96,6 +105,21 @@ std::string merged_portfolio() {
     return out + "</Portfolio>\n";
 }
 
+/// The script library the store holds, which is the system tenant's.
+ores::ore::domain::script_library_rows script_library_from_store() {
+    namespace repo = ores::trading::repository;
+    ores::testing::scoped_database_helper h;
+    const auto ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+    ores::ore::domain::script_library_rows rows;
+    rows.scripts = repo::script_repository().read_latest(ctx);
+    rows.variants = repo::script_variant_repository().read_latest(ctx);
+    rows.results = repo::script_result_repository().read_latest(ctx);
+    rows.calibrations = repo::script_calibration_repository().read_latest(ctx);
+    rows.calibration_strikes = repo::script_calibration_strike_repository().read_latest(ctx);
+    rows.coarsenings = repo::script_coarsening_repository().read_latest(ctx);
+    return rows;
+}
+
 /// The example's configuration, pricing only, so the run builds every trade once.
 void stage_input(const fs::path& input) {
     fs::create_directories(input);
@@ -109,6 +133,13 @@ void stage_input(const fs::path& input) {
     ores::platform::filesystem::file::write_content(ore,
                                                     std::regex_replace(text_of(ore), reports, ""));
     ores::platform::filesystem::file::write_content(input / "portfolio.xml", merged_portfolio());
+
+    // The run reads the script library the store holds, not the copy ORE ships,
+    // so a script the rows lose fails the run that needs it.
+    const auto library = script_library_from_store();
+    REQUIRE(library.scripts.size() == 54u);
+    ores::platform::filesystem::file::write_content(
+        input / "scriptlibrary.xml", ores::ore::domain::write_script_library(library));
 }
 
 int run_engine(const std::string& executable, const fs::path& run_dir) {

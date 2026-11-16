@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: A7E7419C-F3FC-4D3F-A367-FBF3647F789C
+:END:
+#+title: ores.trading.script_calibration_strike
+#+description: One strike a script calibration is made at.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One strike variable a library script calibration is made at.
+#+entity_singular: script_calibration_strike
+#+entity_plural: script_calibration_strikes
+#+entity_title: Script Calibration Strike
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+One strike a library script calibration is made at, named by the script
+variable that holds it.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** script_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The library name of the script, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("WindowBarrierOption")
+#+end_src
+
+** purpose
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The purpose the variant serves: =default= for the one a trade runs unless the engine asks for another, else ORE's =purpose= attribute, such as =FD=.
+
+#+begin_src cpp :name generator
+std::string("default")
+#+end_src
+
+** calibration_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The ordinal of the calibration the strike belongs to.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+Ordinal of the row within its owner, in the library's order.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** strike_variable
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The script variable that holds the strike.
+
+#+begin_src cpp :name generator
+std::string("Strike")
+#+end_src
+
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_script_calibration_strikes_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: strike
+:entity_plural_short:   strikes
+:entity_singular_words: script calibration strike
+:entity_plural_words:   script calibration strikes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sccs
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| script_name | Script |
+| strike_variable | Strike |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

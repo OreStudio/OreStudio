@@ -44,3 +44,11 @@ TEST_CASE("ores::marketdata::messaging::get_fixing_window_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_fixing_window_response>();
 }
+
+TEST_CASE("ores::marketdata::messaging::get_pair_levels_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_pair_levels_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_pair_levels_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_pair_levels_response>();
+}

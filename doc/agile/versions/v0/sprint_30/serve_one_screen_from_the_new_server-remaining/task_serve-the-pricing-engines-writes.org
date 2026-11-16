@@ -150,8 +150,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The pricing engines' three writes are served at the BFF's paths, member names and
 status codes, and the document a write answers is the document a read answers.
 

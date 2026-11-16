@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-ore-import
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,7 +29,7 @@ comes back, a refusal included, because the person reads the reason on the step.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] |
@@ -82,6 +82,37 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** The answer is the service's reply, unchanged
+
+The BFF's schemas for the two answers are loose objects over the wire's own
+member names -- =root_element=, =in_file_products=, =configuration_id= -- so the
+route states the reply exactly as the service wrote it. Nothing is renamed and
+nothing is dropped, and a =success: false= is answered rather than refused,
+because the person reads the reason on the step.
+
+** The two ids are joined here**
+
+The screen names a configuration by the id it shows; the service reads a
+document by the reporting configuration the record fills. The gateway reads the
+record for that second id. A body that names no configuration is joined to an
+empty one, which is the file for a configuration that does not exist yet, so a
+preview of a new document needs no configuration at all.
+
+** The size is the service's to refuse**
+
+The service refuses a document over four mebibytes with its own sentence, so the
+gateway states no size rule of its own; the BFF refused it in the schema and this
+does not. The route's body limit is twice the document's, so the JSON escaping
+around the file does not refuse it first: a document at the limit arrives whole
+and the service states what is wrong with it.
+
+** A duplicate =Result= heading, twice**
+
+Both of this story's earlier task documents carried an empty =* Result= heading
+beside the written one, because the scaffold ends with one and the result was
+appended below it. Both are repaired here rather than in a document-only pull
+request, and the warning =compass pr merge= printed after each merge names it.
 
 * Test Scenarios
 

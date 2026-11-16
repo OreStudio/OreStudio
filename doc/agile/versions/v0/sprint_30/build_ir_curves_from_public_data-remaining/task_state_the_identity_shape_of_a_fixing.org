@@ -37,7 +37,7 @@ Every family the market data ingest writes states the fields its identity requir
 
 - The projection refuses a series whose identity contradicts its stated family, naming the class, the subdivision and the field.
 - The IBOR, swap and FX fixing families state the fields they key on, and one seed states each one.
-- A provisioned tenant holds the same shapes as the system tenant and one rule for the index keys.
+- A provisioned tenant reads the same shapes as the system tenant, holds no copy of them, and reads one rule for the index keys.
 - The identities already written contradict no shape they are held to.
 
 * Plan
@@ -121,6 +121,12 @@ seed writes every curve output =OBSERVED=, and the curve republish stamps it
 curves were still observed when Acme was provisioned. The planner now states the
 label the republish would stamp: a bootstrap of the party's own config copy, at
 version 1. The series table refuses version 0 for a derived series.
+
+The second rebase, on 2026-11-16, brought main's shared-reference read: a tenant
+reads the system tenant's catalogues and the provisioner no longer copies them.
+The shape copy that this branch added to the provisioner went with the rest. The
+shape model now declares the same two flags as the classification rules, so a
+tenant reads the system's shapes, and the projector reads them with no change.
 
 * Test Scenarios
 

@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-ore-schema-zip
-#+pr:
+#+pr: 4787
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4787][#4787]] | [http] Serve an ORE schema and every schema it includes |
 
 * Review
 

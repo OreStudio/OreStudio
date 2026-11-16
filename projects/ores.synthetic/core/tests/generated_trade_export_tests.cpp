@@ -40,11 +40,11 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <iterator>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include <iterator>
 #include <map>
 #include <set>
 #include <sstream>

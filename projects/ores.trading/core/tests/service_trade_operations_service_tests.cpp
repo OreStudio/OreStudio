@@ -1117,7 +1117,10 @@ TEST_CASE("a_scripted_trade_books_its_variables_and_underlyings_back", "[service
 
     ores::trading::domain::scripted_instrument row;
     row.identity.trade_type_code = "ScriptedTrade";
-    row.script_name = "AsianBasketOption";
+    // The case is the round trip of the variables, not a trade of a library
+    // script, so it names a script the library does not hold: a library
+    // script would refuse a trade that states three of its inputs.
+    row.script_name = "RoundTripScript";
     first.instruments.scripted_instruments.push_back(row);
 
     const auto add_parameter = [](ores::trading::domain::instrument_batch& batch,

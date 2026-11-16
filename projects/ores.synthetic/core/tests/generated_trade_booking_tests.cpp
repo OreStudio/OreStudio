@@ -448,3 +448,58 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
         FAIL_CHECK("the types whose export differs from what was booked are not the known ones:" +
                    detail);
 }
+
+TEST_CASE("a_stress_run_of_bond_populations_writes_every_issue", tags) {
+    /*
+     * A bond issue once failed its composite write with std::bad_alloc, and
+     * the retry drew different terms, so it could not say whether a drawn value
+     * caused it. This run writes the issues of many bond populations, each with
+     * its own seed, anchor and config, so a value-dependent failure has many
+     * draws to show itself in.
+     */
+    auto lg(make_logger(test_suite));
+    fixture f;
+    open_books open;
+    trade_operations_service books(f.ctx, open);
+
+    std::size_t written = 0;
+    std::size_t already = 0;
+    std::set<std::string> refused;
+    for (std::uint32_t run = 0; run < 24; ++run) {
+        auto scope = booking_scope_of(f, "bond");
+        scope.seed = 1000 + run;
+        scope.config_id = config_id_for(f.party_id, "bond stress " + std::to_string(run));
+        scope.as_of_date = std::chrono::year_month_day{std::chrono::sys_days{scope.as_of_date} -
+                                                       std::chrono::days{31 * run}};
+        scope.trades_per_book = 96;
+        for (const auto& slot : planner_for("bond").plan(scope).slots) {
+            if (!slot.bond_issue)
+                continue;
+            put_bond_issue_composite_request request;
+            request.issue = *slot.bond_issue;
+            request.legs = slot.bond_issue_legs;
+            request.amounts = slot.bond_issue_leg_amounts;
+            request.rates = slot.bond_issue_leg_rates;
+            request.schedules = slot.bond_issue_leg_schedules;
+            request.call_dates = slot.bond_issue_call_dates;
+            request.conversion_targets = slot.bond_issue_conversion_targets;
+            const auto response = books.put_bond_issue_composite(request);
+            if (response.result.outcome == outcome::ok)
+                ++written;
+            else if (response.result.code == "already_exists")
+                ++already;
+            else
+                refused.insert(slot.trade_type_code + ": " + response.result.code + " " +
+                               response.result.message);
+        }
+    }
+    BOOST_LOG_SEV(lg, info) << "Stress run wrote " << written << " bond issues; " << already
+                            << " were already stored.";
+    INFO("written=" << written << " already=" << already);
+    CHECK(written > 0);
+    std::string listed;
+    for (const auto& reason : refused)
+        listed += "\n  " + reason;
+    if (!refused.empty())
+        FAIL_CHECK("these bond issues were refused:" + listed);
+}

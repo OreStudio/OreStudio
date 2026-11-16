@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-the-container-trades
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,11 +29,11 @@ generator already books, and ORE builds each.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -94,3 +94,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator books the three containers, each with the trades it holds, and
+ORE builds each.
+
+- New builders in ores.trading.api/builders/composite_builders: the composite
+  states its currency and notional calculation; the contract for difference its
+  return leg; the total return swap its return leg and a funding leg, the
+  floating leg of a vanilla swap on the index's conventions, paid by the side
+  that receives the return.
+- The equity planner books the containers. A composite is a synthetic forward,
+  a long call and a short put at one strike and expiry. A total return swap and
+  a contract for difference pay the return on a position in an equity quoted in
+  the scope's currency. The held trades are trades of their own, joined to the
+  container by a structure of its template, CompositeTrade or TotalReturnSwap,
+  in the roles the import books: composite or total_return_swap, and sub_trade.
+  The package grouping leaves them alone.
+- The recorded export writes each container with its trades inside it, and the
+  read-back test joins the imported trades to their container as the round trip
+  does. A container states its counterparty's envelope: ORE gives a container's
+  trades the container's envelope and refuses a trade without one.
+- The composite no longer writes its description as a basket name.
+- The three types leave the list awaiting builders, and the coverage test holds
+  them as generated. The engine raises no error on any of them.
+
+Verified: trading api 4650 cases, synthetic 146 with the ORE engine.

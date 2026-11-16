@@ -40,13 +40,16 @@ import { asOfInstant } from './readScreen.js';
  * filters the crosses and the consensus is the one those providers make.
  */
 export function montageQuery(base: string, asOf: string, providers: readonly string[]) {
+    // One spelling for one set: the address may list the same providers in any
+    // order, and every order must land on the same key and the same read.
+    const chosen = [...new Set(providers)].sort();
     return queryOptions({
-        queryKey: ['fx-montage', base, asOf, providers.join(',')] as const,
+        queryKey: ['fx-montage', base, asOf, chosen.join(',')] as const,
         queryFn: () =>
             api.fxMontage({
                 baseCurrency: base,
                 asOf: asOfInstant(asOf),
-                providers,
+                providers: chosen,
             }),
         retry: false,
     });
@@ -65,6 +68,10 @@ export function chosenDayQuery(seriesId: string, asOf: string) {
         queryKey: ['series-observations', seriesId, 'day', asOf] as const,
         queryFn: () =>
             series.observations(seriesId, DEFAULT_OBSERVATIONS, 'day', asOfInstant(asOf)),
+        // A day that has already ended will not change under the person's eyes,
+        // and today's does not change on every re-sort either.
+        staleTime: 30_000,
+        // A pair with no series has nothing to ask for, and must not ask.
         enabled: seriesId !== '',
         retry: false,
     });

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { FxMontagePair } from '../api/client.js';
@@ -165,8 +165,9 @@ export function FxMontagePage(): ReactNode {
     const asked = (search.get('provider') ?? '').split(',').filter((code) => code !== '');
 
     const montage = useQuery(montageQuery(base, asOf, asked));
-    // Every provider the answer quotes, plus the ones the address names, so a
-    // provider taken out can be put back without clearing the filter.
+    // Every provider the answer quotes, plus the ones the address names. A
+    // filtered answer quotes only the providers asked for, so the providers an
+    // unfiltered answer named are kept: they are what the chips can put back.
     const quoted = [
         ...new Set(
             (montage.data?.pairs ?? []).flatMap((pair) =>
@@ -174,7 +175,17 @@ export function FxMontagePage(): ReactNode {
             ),
         ),
     ];
-    const providerSet = [...new Set([...quoted, ...asked])].sort();
+    const [known, setKnown] = useState<readonly string[]>([]);
+    const quotedKey = quoted.join(',');
+    useEffect(() => {
+        if (asked.length !== 0 || quotedKey === '') return;
+        setKnown((held) => {
+            const next = [...new Set([...held, ...quotedKey.split(',')])].sort();
+            // The same set is the same state: a new array would re-render for ever.
+            return next.length === held.length ? held : next;
+        });
+    }, [asked.length, quotedKey]);
+    const providerSet = [...new Set([...known, ...quoted, ...asked])].sort();
     const chooseProvider = (code: string): void => {
         const next = asked.includes(code) ? asked.filter((one) => one !== code) : [...asked, code];
         set({ provider: next.length === 0 ? null : next.join(',') });
@@ -189,12 +200,18 @@ export function FxMontagePage(): ReactNode {
     const seriesId = drawn?.series_id ?? '';
     const day = useQuery(chosenDayQuery(seriesId, asOf));
     const dayPoints = day.data === undefined ? [] : pointsOf(day.data.observations);
-    const high = chosen?.day_high ?? null;
-    const low = chosen?.day_low ?? null;
+    // The panel states the day it draws: one provider's series, its own ends and
+    // its own move. The table's high, low and change are the montage's answer,
+    // and the screen does not present one as the other.
+    const dayValues = dayPoints.map((point) => point.value);
+    const high = dayValues.length === 0 ? null : Math.max(...dayValues);
+    const low = dayValues.length === 0 ? null : Math.min(...dayValues);
+    const first = dayValues[0];
+    const last = dayValues[dayValues.length - 1];
     const dayChange =
-        chosen?.change_pct == null
+        first === undefined || last === undefined || first === 0
             ? '—'
-            : `${chosen.change_pct >= 0 ? '+' : ''}${chosen.change_pct.toFixed(2)}%`;
+            : `${last - first >= 0 ? '+' : ''}${(((last - first) / first) * 100).toFixed(2)}%`;
     const places = 4;
     const head = HEAD_CELL;
     const cell = DATA_CELL;
@@ -460,7 +477,7 @@ export function FxMontagePage(): ReactNode {
                     <p className="text-xs text-ink-faint">
                         {t('marketdata.fxMontage.daySummary', {
                             provider: drawn?.provider_code ?? '',
-                            last: fixed(drawn?.value ?? 0, places, language),
+                            last: last === undefined ? '—' : fixed(last, places, language),
                             high: high === null ? '—' : fixed(high, places, language),
                             low: low === null ? '—' : fixed(low, places, language),
                             change: dayChange,

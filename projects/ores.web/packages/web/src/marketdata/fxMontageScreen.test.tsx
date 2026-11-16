@@ -235,9 +235,24 @@ describe('the FX montage page', () => {
         expect(page).toContain('3 values, oldest first.');
     });
 
-    it('states the provider\u2019s last, the day\u2019s ends and its change beside the path', async () => {
+    it('states the drawn day\u2019s last, its ends and its change beside the path', async () => {
         const page = await drawnPage();
-        expect(page).toContain('ore 1.0852 · high 1.0891 · low 1.0802 · change +0.12%');
+        expect(page).toContain('ore 1.0850 · high 1.0860 · low 1.0820 · change +0.28%');
+    });
+
+    it('marks the drawn day\u2019s high and low on it', async () => {
+        const page = await drawnPage();
+        // The path, then the two dashed levels: no other chart on the screen.
+        expect(page.match(/stroke-dasharray="4 3"/g) ?? []).toHaveLength(2);
+    });
+
+    it('states a dash for a pair whose day holds one observation', async () => {
+        const page = await drawnPage(ADDRESS, montage, {
+            ...observations,
+            's-3': [['2026-11-13 09:00:00Z', '0.8410']],
+        });
+        expect(page).not.toContain('aria-label="EUR/GBP day shape"');
+        expect(page).toContain('aria-label="EUR/USD day shape"');
     });
 
     it('states one value without drawing a line from it', async () => {

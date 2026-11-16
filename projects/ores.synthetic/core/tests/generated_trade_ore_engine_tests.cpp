@@ -239,7 +239,9 @@ void record_known_errors(const std::set<std::string>& raised) {
     for (const auto& line : raised)
         if (!line.starts_with("trade\t"))
             out += line + "\n";
-    std::ofstream(path, std::ios::binary) << out;
+    std::ofstream file(path, std::ios::binary);
+    file << out;
+    REQUIRE(file.good());
 }
 
 std::string lines_of(const std::set<std::string>& lines) {

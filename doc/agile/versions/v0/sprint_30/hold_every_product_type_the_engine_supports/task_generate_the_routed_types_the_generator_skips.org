@@ -100,7 +100,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The known-list rewrite ignores a failed write | generated_trade_ore_engine_tests.cpp | fix | REQUIRE(file.good()) after the write |
+| 2 | Exact double comparison of the tranche points | builders_credit_builders_tests.cpp | fix | WithinAbs(1e-12) |
+| 3 | Unchecked dereference of parsed tranche literals | trade_population_planner.cpp | decline | The literals are fixed and parse; a bad one fails every planner test |
+| 4 | The CDO is built but not priced | generated_trades_known_ore_errors.txt | decline | Credit addresses have no ORE names or index reference data in the Products example, the same gap the CDS and index CDS show; the known list tracks it |
+| 5 | component-drift fails on ores.ore tests CMakeLists | projects/ores.ore/core/tests/CMakeLists.txt | decline | The drift is on main; this branch does not touch the file |
 
 * Result
 

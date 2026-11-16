@@ -23,6 +23,7 @@
 #include "ores.trading.api/builders/builder_registry.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <chrono>
 #include <string>
 
@@ -295,8 +296,8 @@ TEST_CASE("a_synthetic_cdo_states_its_tranche_on_the_index", credit_tags) {
     REQUIRE(cdo->synthetic_cdo_instruments.size() == 1);
     const auto& fact = cdo->synthetic_cdo_instruments.front();
     CHECK(fact.qualifier == credit_curve().uri());
-    CHECK(fact.attachment_point == 0.03);
-    CHECK(fact.detachment_point == 0.06);
+    CHECK_THAT(fact.attachment_point, Catch::Matchers::WithinAbs(0.03, 1e-12));
+    CHECK_THAT(fact.detachment_point, Catch::Matchers::WithinAbs(0.06, 1e-12));
     REQUIRE(cdo->legs.size() == 1);
     CHECK(cdo->legs.front().leg_group == "premium");
 }

@@ -43,13 +43,15 @@ fields are in this family's parts.
 
 * Parts
 
-| part            | entity                           |
-|-----------------+----------------------------------|
-| averaging_terms | commodity_future_averaging_terms |
-| contract_terms  | commodity_future_contract_terms  |
-| expiry_anchor   | commodity_future_expiry_anchor   |
-| off_peak_index  | commodity_future_off_peak_index  |
-| option_expiry   | commodity_future_option_expiry   |
+A part is filled exactly once (=one=), at most once (=optional=), or as one of a group of alternatives, of which an element fills exactly one (=one_of=). The family put refuses a write that breaks it.
+
+| part            | entity                           | cardinality | group |
+|-----------------+----------------------------------+-------------+-------|
+| averaging_terms | commodity_future_averaging_terms | optional    |       |
+| contract_terms  | commodity_future_contract_terms  | one         |       |
+| expiry_anchor   | commodity_future_expiry_anchor   | optional    |       |
+| off_peak_index  | commodity_future_off_peak_index  | optional    |       |
+| option_expiry   | commodity_future_option_expiry   | optional    |       |
 
 * See also
 

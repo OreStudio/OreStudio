@@ -39,11 +39,13 @@ states: those fields are in this family's parts.
 
 * Parts
 
-| part       | entity                           |
-|------------+----------------------------------|
-| flat_leg   | cross_currency_basis_flat_leg    |
-| spread_leg | cross_currency_basis_spread_leg  |
-| swap_terms | cross_currency_basis_swap_terms  |
+A part is filled exactly once (=one=), at most once (=optional=), or as one of a group of alternatives, of which an element fills exactly one (=one_of=). The family put refuses a write that breaks it.
+
+| part       | entity                          | cardinality | group |
+|------------+---------------------------------+-------------+-------|
+| flat_leg   | cross_currency_basis_flat_leg   | one         |       |
+| spread_leg | cross_currency_basis_spread_leg | one         |       |
+| swap_terms | cross_currency_basis_swap_terms | one         |       |
 
 * See also
 

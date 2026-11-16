@@ -41,10 +41,12 @@ kind-specific is in the two parts.
 
 * Parts
 
-| part        | entity                       |
-|-------------+------------------------------|
-| pay_receive | tenor_basis_swap_pay_receive |
-| long_short  | tenor_basis_swap_long_short  |
+A part is filled exactly once (=one=), at most once (=optional=), or as one of a group of alternatives, of which an element fills exactly one (=one_of=). The family put refuses a write that breaks it.
+
+| part        | entity                       | cardinality | group |
+|-------------+------------------------------+-------------+-------|
+| pay_receive | tenor_basis_swap_pay_receive | one_of      | form  |
+| long_short  | tenor_basis_swap_long_short  | one_of      | form  |
 
 * See also
 

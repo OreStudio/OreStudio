@@ -255,6 +255,16 @@ RULES = (
          "The name, version and running state the API states about itself, the readiness"
          " answer beside the metrics."),
 
+    # The curve configuration screen's routes, ahead of the record routes whose
+    # addresses they share.
+    Rule("the curve configurations",
+         ("regex", r"^(GET|PUT) /api/refdata/curve-configurations"),
+         None, RESOURCE, "reference-data",
+         "The curve configurations a party holds: the collection with the count of curves"
+         " and sections each names, one configuration drawn as the sections the schema"
+         " declares with every entry's leaves, the words the contract gives each leaf and"
+         " the values the value sets accept, and the write that changes the leaves it"
+         " names."),
     Rule("the refdata resource catalogue",
          ("exact", "GET /api/refdata"),
          BFF, NOT_API, NO_AREA,
@@ -550,11 +560,6 @@ RULES = (
          BFF, RESOURCE, "reference-data",
          "Builds the materialised days of one calendar to the end of a year, a write to one"
          " calendar's derived rows."),
-    Rule("the curve configurations",
-         ("regex", r"^(GET|PUT) /api/refdata/curve-configurations"),
-         BFF, RESOURCE, "reference-data",
-         "The curve configurations a party holds, with the definitions, the count of curves"
-         " each section names, and a write that changes the leaves it names."),
     Rule("the counterparty collection",
          ("regex", r"^(GET|PUT) /api/counterparties"),
          BFF, RESOURCE, "reference-data",

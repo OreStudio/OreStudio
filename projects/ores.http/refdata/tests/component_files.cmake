@@ -68,6 +68,8 @@ set(files
     "currency_routes_tests.cpp"
     "currency_web_routes_tests.cpp"
     "curve_configuration_screen_routes_tests.cpp"
+    "curve_configuration_view_tests.cpp"
+    "curve_document_cells_tests.cpp"
     "curve_role_classification_routes_tests.cpp"
     "day_count_fraction_type_classification_routes_tests.cpp"
     "day_counter_classification_routes_tests.cpp"

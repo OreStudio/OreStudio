@@ -250,6 +250,9 @@ PAIRS = {
     ("GET", "/api/refdata/curve-configurations"): (
         "GET",
         "/api/refdata/curve-configurations"),
+    ("GET", "/api/refdata/curve-configurations/:id"): (
+        "GET",
+        "/api/refdata/curve-configurations/{id}"),
     ("GET", "/api/reporting/ore-files/:code/schema"): (
         "GET",
         "/api/reporting/ore-files/{code}/schema"),

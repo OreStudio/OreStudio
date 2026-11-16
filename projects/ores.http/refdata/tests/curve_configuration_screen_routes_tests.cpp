@@ -42,19 +42,23 @@ using namespace ores::logging;
 namespace {
 
 const std::string configurations_address = "/api/refdata/curve-configurations";
+const std::string configuration_address =
+    "/api/refdata/curve-configurations/00000000-0000-0000-0000-000000000001";
 
 /**
  * @brief The answer the curve configuration page gives a request, on a client
  * that is not connected, so any forward fails.
  */
-http_status configuration_status_of(http_request req) {
+http_status configuration_status_of(http_request req,
+                                     std::string address = configurations_address,
+                                     std::string pattern = configurations_address) {
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
     curve_configuration_screen_routes::register_routes(
         table, std::make_shared<ores::http::openapi::endpoint_registry>(), session);
-    const auto route = table->match(http_method::get, configurations_address, req.path_params);
+    const auto route = table->match(http_method::get, address, req.path_params);
     REQUIRE(route.has_value());
-    REQUIRE(route->pattern == configurations_address);
+    REQUIRE(route->pattern == pattern);
     REQUIRE(route->requires_auth);
     boost::asio::io_context io;
     std::optional<ores::http::domain::http_response> answer;
@@ -85,4 +89,48 @@ TEST_CASE("a_page_of_curve_configurations_with_no_service_is_refused_as_upstream
     BOOST_LOG_SEV(lg, info) << "Testing the curve configuration page with no service behind it";
 
     CHECK(configuration_status_of(http_request{}) == http_status::bad_gateway);
+}
+
+TEST_CASE("one_curve_configuration_refuses_an_identifier_that_is_not_one",
+          "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document's identifier";
+
+    CHECK(configuration_status_of(http_request{},
+                                  "/api/refdata/curve-configurations/not-an-id",
+                                  "/api/refdata/curve-configurations/{id}") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("one_curve_configuration_refuses_a_party_that_is_not_one", "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document's party";
+
+    http_request req;
+    req.query_params["party"] = "acme";
+    CHECK(configuration_status_of(
+              req, configuration_address, "/api/refdata/curve-configurations/{id}") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("one_curve_configuration_refuses_a_query_it_does_not_read",
+          "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document's query";
+
+    http_request req;
+    req.query_params["asOf"] = "2026-01-01";
+    CHECK(configuration_status_of(
+              req, configuration_address, "/api/refdata/curve-configurations/{id}") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("one_curve_configuration_with_no_service_is_refused_as_upstream",
+          "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document with no service behind it";
+
+    CHECK(configuration_status_of(
+              http_request{}, configuration_address, "/api/refdata/curve-configurations/{id}") ==
+          http_status::bad_gateway);
 }

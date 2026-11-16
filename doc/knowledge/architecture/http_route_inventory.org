@@ -75,13 +75,13 @@ an API publishes no area, so it is counted under =(none)=.
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, subscriptions | 60 | composed view 6, resource 54 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
-| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
+| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 303 | composed view 2, resource 301 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 88 | composed view 20, resource 68 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
-| (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 430 | not an API 408, transport capability 22 |
+| (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 429 | not an API 407, transport capability 22 |
 
 * The composed views
 
@@ -153,14 +153,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | market-data | 35 | 25 | 10 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
-| reference-data | 30 | 26 | 4 |
+| reference-data | 30 | 27 | 3 |
 | reporting | 44 | 44 | 0 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 253 | 75 |
+| total | 328 | 254 | 74 |
 
 * The pairing
 
@@ -343,7 +343,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/refdata/currencies/ore-import= | POST /api/refdata/currencies/ore-import |
 | POST =/api/refdata/currencies/ore-import/preview= | POST /api/refdata/currencies/ore-import/preview |
 | GET =/api/refdata/curve-configurations= | GET /api/refdata/curve-configurations |
-| GET =/api/refdata/curve-configurations/:id= | none |
+| GET =/api/refdata/curve-configurations/:id= | GET /api/refdata/curve-configurations/{id} |
 | PUT =/api/refdata/curve-configurations/:id= | none |
 | GET =/api/registration-policy= | GET /api/registration-policy |
 | GET =/api/reporting-tree= | GET /api/reporting-tree |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1347 routes: 328 answered by the BFF and 1019 by ores.http.
+1348 routes: 328 answered by the BFF and 1020 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1020,10 +1020,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | get | =/api/refdata/currency-pairs= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:291 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/currency-pairs= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:313 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currency-pairs/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:302 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
-| resource | reference-data | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:720 | The curve configurations a party holds, with the definitions, the count of curves each section names, and a write that changes the leaves it names. |
-| not an API | (none) | get | =/api/refdata/curve-configurations= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:81 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
-| resource | reference-data | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:763 | The curve configurations a party holds, with the definitions, the count of curves each section names, and a write that changes the leaves it names. |
-| resource | reference-data | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:884 | The curve configurations a party holds, with the definitions, the count of curves each section names, and a write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:720 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:175 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:763 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:884 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:230 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | not an API | (none) | delete | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:361 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:328 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:350 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
@@ -1093,21 +1094,21 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | reporting | get | =/api/reporting/cuts/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/cut_routes.cpp:379 | The cuts a party holds and one cut's record: the body's facts, the state and the label the reporting service derives, the kind the body was taken under, the gaps the assembly could not fill, the runs that priced from it, and the hand take that assembles a body part by part and presses. |
 | composed view | reporting | get | =/api/reporting/cuts/{id}/runs= | ores.http | projects/ores.http/reporting/src/routes/reporting/cut_routes.cpp:365 | The cuts a party holds and one cut's record: the body's facts, the state and the label the reporting service derives, the kind the body was taken under, the gaps the assembly could not fill, the runs that priced from it, and the hand take that assembles a body part by part and presses. |
 | resource | reporting | get | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:743 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
-| resource | reporting | get | =/api/reporting/engine-settings= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:383 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:385 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | post | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:841 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
-| resource | reporting | post | =/api/reporting/engine-settings= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:814 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | post | =/api/reporting/engine-settings= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:816 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | delete | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:950 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:787 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | put | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:868 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | put | =/api/reporting/engine-settings/:id/groups/:group= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:898 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/:id/history= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:793 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/documentation= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:782 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
-| resource | reporting | get | =/api/reporting/engine-settings/documentation= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:350 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
-| resource | reporting | delete | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:958 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
-| resource | reporting | get | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:403 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
-| resource | reporting | put | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:857 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
-| resource | reporting | put | =/api/reporting/engine-settings/{id}/groups/{group}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:888 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
-| resource | reporting | get | =/api/reporting/engine-settings/{id}/history= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:421 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/documentation= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:352 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
+| resource | reporting | delete | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:960 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:405 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | put | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:859 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | put | =/api/reporting/engine-settings/{id}/groups/{group}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:890 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/{id}/history= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:423 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | composed view | reporting | get | =/api/reporting/ore-files/:code/schema= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:677 | One schema of one engine version: the file catalogue names the schema and the stored versions supply its contents, so two collections are joined to answer. |
 | composed view | reporting | get | =/api/reporting/ore-files/{code}/schema= | ores.http | projects/ores.http/reporting/src/routes/reporting/ore_schema_zip.cpp:206 | One schema of one engine version: the file catalogue names the schema and the stored versions supply its contents, so two collections are joined to answer. |
 | resource | reporting | get | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:926 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
@@ -1124,7 +1125,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reporting | post | =/api/reporting/pricing-engines/ore-import/preview= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1077 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | resource | reporting | post | =/api/reporting/pricing-engines/ore-import/preview= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_engine_import.cpp:117 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | not an API | (none) | get | =/api/reporting/pricing-engines/vocabulary= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:970 | Fifteen lookup collections read at once and keyed by the names the editor's controls use, so a client that wants one of them reads that collection instead. |
-| not an API | (none) | get | =/api/reporting/pricing-engines/vocabulary= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_vocabulary.cpp:425 | Fifteen lookup collections read at once and keyed by the names the editor's controls use, so a client that wants one of them reads that collection instead. |
+| not an API | (none) | get | =/api/reporting/pricing-engines/vocabulary= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_vocabulary.cpp:426 | Fifteen lookup collections read at once and keyed by the names the editor's controls use, so a client that wants one of them reads that collection instead. |
 | resource | reporting | delete | =/api/reporting/pricing-engines/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_engine_writes.cpp:384 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | resource | reporting | get | =/api/reporting/pricing-engines/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_engine_routes.cpp:199 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | resource | reporting | put | =/api/reporting/pricing-engines/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_engine_writes.cpp:359 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |

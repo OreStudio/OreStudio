@@ -23,10 +23,22 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <filesystem>
 #include <format>
+#include <stdexcept>
+#include <string>
 
 namespace ores::utility::codec {
+
+namespace {
+
+[[noreturn]] void refuse(std::string_view what, std::string_view text, std::string_view why) {
+    throw std::invalid_argument("Not " + std::string(what) + ": " + std::string(text) + ": " +
+                                std::string(why));
+}
+
+}
 
 std::string text_form<std::string>::to_text(const std::string& v) {
     return v;
@@ -53,8 +65,7 @@ ores::utility::uuid::tenant_id
 text_form<ores::utility::uuid::tenant_id>::from_text(std::string_view text) {
     auto result = ores::utility::uuid::tenant_id::from_string(std::string(text));
     if (!result)
-        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                    ": " + result.error());
+        refuse(wire_name, text, result.error());
     return *result;
 }
 
@@ -69,8 +80,7 @@ text_form<std::chrono::year_month_day>::from_text(std::string_view text) {
     try {
         return ores::platform::time::datetime::from_iso8601_date(std::string(text));
     } catch (const std::exception& e) {
-        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                    ": " + e.what());
+        refuse(wire_name, text, e.what());
     }
 }
 
@@ -83,8 +93,7 @@ ores::utility::decimal::decimal
 text_form<ores::utility::decimal::decimal>::from_text(std::string_view text) {
     auto result = ores::utility::decimal::decimal::from_string(std::string(text));
     if (!result)
-        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                    ": " + result.error());
+        refuse(wire_name, text, result.error());
     return *result;
 }
 
@@ -96,8 +105,7 @@ boost::asio::ip::address text_form<boost::asio::ip::address>::from_text(std::str
     try {
         return boost::asio::ip::make_address(std::string(text));
     } catch (const std::exception& e) {
-        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                    ": " + e.what());
+        refuse(wire_name, text, e.what());
     }
 }
 
@@ -111,8 +119,7 @@ text_form<std::chrono::system_clock::time_point>::from_text(std::string_view tex
     try {
         return ores::platform::time::datetime::from_iso8601_utc(std::string(text));
     } catch (const std::exception& e) {
-        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                    ": " + e.what());
+        refuse(wire_name, text, e.what());
     }
 }
 
@@ -124,8 +131,7 @@ boost::uuids::uuid text_form<boost::uuids::uuid>::from_text(std::string_view tex
     try {
         return boost::lexical_cast<boost::uuids::uuid>(text);
     } catch (const boost::bad_lexical_cast& e) {
-        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                    ": " + e.what());
+        refuse(wire_name, text, e.what());
     }
 }
 

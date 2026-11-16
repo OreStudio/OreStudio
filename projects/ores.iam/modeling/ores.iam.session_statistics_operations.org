@@ -30,10 +30,10 @@ table itself and answers in either edition.
 * Includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <chrono>
 #+end_src
 
 * Messages

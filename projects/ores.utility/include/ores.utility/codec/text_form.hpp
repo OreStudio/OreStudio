@@ -9,7 +9,8 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -53,11 +54,11 @@ namespace ores::utility::codec {
  * A type that has a text form specialises this with three members: =wire_name=,
  * which names it in a refusal, =to_text=, and =from_text=.
  *
- * The forms of the concrete types are declared here and defined in
- * text_form.cpp, because a form of a decimal needs the decimal's definition and
- * every translation unit that encodes a message was parsing it for nothing. An
- * enumerator's form is a template, so it stays here with the rest of the class:
- * it is defined once and instantiated by the codec that meets the enumerator.
+ * The concrete forms are declared here and defined in text_form.cpp, so a
+ * translation unit that encodes a message parses the declarations and not the
+ * decimal, the address or the uuid's stream operators behind them. The
+ * enumerator form is a template over any enumerated type: the codec that meets
+ * an enumerator instantiates it from this header.
  */
 template <typename T>
 struct text_form;

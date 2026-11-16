@@ -587,6 +587,30 @@ TEST_CASE("a_commodity_window_barrier_option_whose_window_outlives_the_expiry_fa
     CHECK(option.error().term == "window_end");
 }
 
+TEST_CASE("a_commodity_window_barrier_option_with_no_level_fails", commodity_tags) {
+    const auto option =
+        commodity_window_barrier_option_builder({.option = crude_call(),
+                                                 .barrier = barrier_kind::down_and_out,
+                                                 .barrier_level = amount("0"),
+                                                 .window_start = 2026y / 1 / 5,
+                                                 .window_end = 2026y / 4 / 5})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "barrier_level");
+}
+
+TEST_CASE("a_commodity_window_barrier_option_whose_window_ends_before_it_starts_fails",
+          commodity_tags) {
+    const auto option =
+        commodity_window_barrier_option_builder({.option = crude_call(),
+                                                 .barrier = barrier_kind::down_and_out,
+                                                 .barrier_level = amount("60"),
+                                                 .window_start = 2026y / 4 / 5,
+                                                 .window_end = 2026y / 1 / 5})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+}
+
 TEST_CASE("a_commodity_strike_resettable_option_keeps_its_trigger", commodity_tags) {
     const auto option = commodity_strike_resettable_option_builder(crude_resettable()).build();
     REQUIRE(option.has_value());

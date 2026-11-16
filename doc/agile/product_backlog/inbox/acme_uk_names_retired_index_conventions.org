@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 20AC7FA7-F7E2-4154-AF4D-3E922B914FFD
+:END:
+#+title: The ACME UK curve configuration names two index conventions the curated set retired
+#+description: The curated convention set renamed ILS-SHIR to ILS-TELBORON and HUF-HUFONIA to HUF-BUBORON, but the committed conventions SQL kept the old rows until a regeneration dropped them. The ACME UK curve configuration and today's market still name ILS-SHIR and HUF-HUFONIA, so an ORE run that builds the ILS or HUF overnight curve for ACME UK reads a convention that no longer exists.
+#+type: capture
+#+level: cross
+#+filetags: :conventions:acme:refdata:drift:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=conventions.tsv= on main states =ILS-TELBORON= and =HUF-BUBORON= as the overnight indices of
+the ILS and HUF deposit and OIS conventions, and has no =ILS-SHIR= or =HUF-HUFONIA= index row.
+The committed =refdata_conventions_artefact_populate.sql= still carried the old names until a
+regeneration, so main's own =conventions-dataset= check fails against it. Regenerating, as
+[[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][the ten-year surface task]] had to, drops the two index rows.
+
+Four places still name them:
+
+- =projects/ores.seeder/datasets/acme_corporation/generate_configuration_data.py=, lines 314-315.
+- =projects/ores.sql/populate/acme/acme_uk_curve_configuration_artefact_populate.sql=, lines 80-81.
+- =projects/ores.sql/populate/acme/acme_uk_todays_market_artefact_populate.sql=, lines 109-110.
+- =projects/ores.sql/populate/fpml/fpml_business_center_artefact_populate.sql=, line 1182, the
+  publication calendar of the index.
+
+* Why
+
+An ORE run that builds ACME UK's ILS or HUF overnight curve asks for a convention the curated set
+no longer publishes. Provisioning does not notice: a recreated database with the regenerated SQL
+provisions through all 17 steps. The fault waits for the first valuation that needs one of the
+two curves. The fix is to regenerate the ACME configuration from the curated names, and to decide
+whether the business-centre calendar follows the index or keeps its own name.
+
+* References
+
+- =grep -rn "ILS-SHIR\|HUF-HUFONIA" projects= lists the four sites above.
+- Commit d02f80d7df, "[sql] Publish one curated convention set through DQ", which brought the
+  new names into the TSV.
+
+* See also
+
+- [[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][Surface every pair the ladder carries, out to ten years]] -- the regeneration that exposed it.

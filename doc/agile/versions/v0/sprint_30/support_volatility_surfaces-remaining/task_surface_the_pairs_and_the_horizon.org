@@ -128,6 +128,12 @@ via its "Verifies task" field.
 | 1 | Local review: a window of 3650 days doubles the reads that list a series' stored days, 31 instead of 16 per pair | derived_fx_vol_adapter.cpp | Decline | Once per pair per process start; the feed keeps the answer, so a pass does not repeat it. |
 | 2 | Local review: EUR/TRY stays in the catalogue though its 1W butterfly is held back on every run | generate_sql.py | Decline | A held-back surface is the gate doing its job and provisioning completes; recorded in the Result. |
 | 3 | Local review: misspell-fixer reports EXPLICT | conventions.tsv | Decline | An ORE convention id copied from upstream, not text this change wrote. |
+| 4 | Bot: the conventions SQL renames ILS-SHIR and HUF-HUFONIA, which the description does not say | refdata_conventions_artefact_populate.sql | Accept | Main's SQL is stale against main's own TSV; regeneration fixes it. Said in the PR description; the ACME UK configuration that still names the old ids is captured. |
+| 5 | Bot: the 3650-day backfill is not in the diff | service_registry.org | Decline | It is: the official adapter's extra args in service_registry.org, which generate its unit. A shorter history leaves the long expiry unquoted and the publish names it. |
+| 6 | Bot: the window comment hard-codes a publisher's day count | derived_fx_vol_adapter.cpp | Decline | The figure is why the read spans the whole backfill; it changes with the constant. |
+| 7 | Bot: no test of the delta type past the switch tenor | generate_sql.py | Decline | The refdata mapping test "an expiry at the switch tenor takes the long-term convention" covers it, and provisioning published CAD/JPY to 10Y. |
+| 8 | Bot: EUR/TRY's 1W butterfly has no tracking item | capture | Accept | Added to the short-window smile capture. |
+| 9 | Bot: no test that the derived expiries are ladder tenors | fx_forward_ladder_plan_tests.cpp | Decline | The two lists live in two services; the calibration refuses an expiry the ladder lacks by name, and provisioning exercises it. |
 
 * Result
 

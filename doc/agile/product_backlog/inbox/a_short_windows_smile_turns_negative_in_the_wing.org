@@ -29,6 +29,11 @@ to the 10-delta wing where the broker butterfly search starts. A short window ca
 largest skewness, because =over_days= scales it down with the square root of the days, which is
 why EUR/CZK fails at 1W and nowhere longer.
 
+A related symptom of the same short-window shape: EUR/TRY reads all five quotes at 1W, but the
+calibrated surface breaks the butterfly condition there, so the publish gate holds it back on
+every run ("EURTRY_SSVI: breaks 1 arbitrage condition(s): butterfly at 1W"). Provisioning still
+completes, because a held-back surface is not a failure.
+
 * Why
 
 A surface whose expiry has no quotes is refused whole at publish, so provisioning fails for

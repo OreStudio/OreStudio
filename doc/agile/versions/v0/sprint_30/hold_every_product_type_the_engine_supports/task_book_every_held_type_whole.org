@@ -119,7 +119,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed trade leaves its new bond issue behind, against the comment | ore_import_execute_handler.cpp | accept | The issue stays as its security's on purpose; the comment now says so |
+| 2 | Parents matched by ORE id alone, which repeats across documents | ore_import_execute_handler.cpp | accept | The parent key is the document and the id |
+| 3a | A failed close still drops the trades from the saved list | ore_import_execute_handler.cpp | accept | Trades leave the list only once their bookings close; a failed close names each trade |
+| 3b | Skip embedded trades with no parent before booking | ore_import_execute_handler.cpp | decline | A second path for the same rule; the close after booking already holds it |
+| 4 | Unit tests beside the rows file | bond_instrument_rows.cpp | decline | The corpus test covers every bond in ORE's examples and the rebook test every generated type |
+| 5 | Stray blank lines; pre-split batches | bond_instrument_rows.cpp | accept | Blank lines removed; book_trade is the only caller of split_bond_rows |
 
 * Result
 

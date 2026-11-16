@@ -105,6 +105,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
 #include <format>
 #include <set>
 #include <unordered_map>
@@ -1420,8 +1421,10 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
         }
 
         // The booking is written first: it checks the trade's book, counterparty
-        // and netting set against one another, so a trade it refuses leaves
-        // nothing behind.
+        // and netting set against one another, so a trade it refuses leaves no
+        // trade rows behind. A bond's new issue is the exception: it is written
+        // before the trade and stays as its security's, for the next trade of
+        // that security to join.
         const auto booking_error =
             book_imported_trade(delegated_nats, item, resolved, into_sandbox, bond_issues);
         if (!booking_error.empty()) {
@@ -1439,37 +1442,51 @@ void ore_import_execute_handler::execute(ores::nats::delivery delivery) {
     // A parent is its embedded trades as much as its own terms, so an embedded
     // trade whose parent did not reach the book comes off it again: the parent
     // and its trades land together or not at all.
+    // An embedded trade is stated in its parent's document, and ORE ids repeat
+    // across documents, so a parent is its document and its id.
+    const auto parent_key = [](const std::filesystem::path& source, const std::string& ore_id) {
+        return source.string() + '\n' + ore_id;
+    };
     std::unordered_set<std::string> booked_parents;
     for (const auto& item : plan.trades)
         if (!item.membership &&
             booked_counterparty.contains(boost::uuids::to_string(item.anchor.id)))
-            booked_parents.insert(item.ore_id);
-    std::vector<boost::uuids::uuid> orphaned;
-    for (const auto& item : plan.trades) {
-        if (!item.membership || booked_parents.contains(item.membership->parent_ore_id))
-            continue;
-        const auto id = boost::uuids::to_string(item.anchor.id);
-        if (booked_counterparty.erase(id) == 0)
-            continue;
-        std::erase(result.saved_trade_ids, id);
-        orphaned.push_back(item.anchor.id);
-        result.item_errors.push_back(
-            {.source_file = item.source_file.string(),
-             .item_id = item.ore_id,
-             .message = "The trade this one is stated inside was not booked, so this one was "
-                        "taken off the book again."});
-    }
-    if (!orphaned.empty()) {
+            booked_parents.insert(parent_key(item.source_file, item.ore_id));
+    std::vector<const ores::ore::xml::trade_import_item*> orphans;
+    for (const auto& item : plan.trades)
+        if (item.membership &&
+            !booked_parents.contains(
+                parent_key(item.source_file, item.membership->parent_ore_id)) &&
+            booked_counterparty.contains(boost::uuids::to_string(item.anchor.id)))
+            orphans.push_back(&item);
+    if (!orphans.empty()) {
+        std::vector<boost::uuids::uuid> orphaned;
+        for (const auto* item : orphans)
+            orphaned.push_back(item->anchor.id);
+        // A trade leaves the saved list only once its booking is closed, so a
+        // failed close still names it among the trades on the book.
         if (const auto reason = close_bookings(delegated_nats, orphaned); !reason.empty()) {
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.execute embedded trades not closed | corr=" << req.correlation_id
                 << " error=" << reason;
-            result.item_errors.push_back(
-                {.source_file = {},
-                 .item_id = {},
-                 .message = "The embedded trades of a parent that was not booked could not be "
-                            "taken off the book: " +
-                            reason});
+            for (const auto* item : orphans)
+                result.item_errors.push_back(
+                    {.source_file = item->source_file.string(),
+                     .item_id = item->ore_id,
+                     .message = "The trade this one is stated inside was not booked, and this "
+                                "one could not be taken off the book: " +
+                                reason});
+        } else {
+            for (const auto* item : orphans) {
+                const auto id = boost::uuids::to_string(item->anchor.id);
+                booked_counterparty.erase(id);
+                std::erase(result.saved_trade_ids, id);
+                result.item_errors.push_back(
+                    {.source_file = item->source_file.string(),
+                     .item_id = item->ore_id,
+                     .message = "The trade this one is stated inside was not booked, so this "
+                                "one was taken off the book again."});
+            }
         }
     }
 

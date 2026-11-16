@@ -1105,7 +1105,6 @@ std::vector<bond_leg_data> bond_legs_of(const issue_leg_rows& rows) {
     return legs;
 }
 
-
 void split_bond_rows(instrument_batch& batch) {
     for (auto& bond : batch.bond_instruments) {
         auto rows = disassemble_bond(bond).trade;
@@ -1135,6 +1134,5 @@ void split_bond_rows(instrument_batch& batch) {
         bond = std::move(header);
     }
 }
-
 
 }

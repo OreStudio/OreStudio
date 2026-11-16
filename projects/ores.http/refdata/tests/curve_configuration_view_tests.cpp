@@ -45,8 +45,8 @@ namespace refdata_domain = ores::refdata::domain;
 namespace refdata_messaging = ores::refdata::messaging;
 namespace reporting_domain = ores::reporting::domain;
 
-const auto definition_id = boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
-const auto segment_id = boost::uuids::string_generator()("00000000-0000-0000-0000-0000000000c1");
+const auto view_definition_id = boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
+const auto view_segment_id = boost::uuids::string_generator()("00000000-0000-0000-0000-0000000000c1");
 
 /// The document one yield curve needs: its definition, its row, and its segment.
 refdata_messaging::curve_configuration_document yield_curve_document(bool with_segment) {
@@ -55,7 +55,7 @@ refdata_messaging::curve_configuration_document yield_curve_document(bool with_s
     document.config.version = 3;
 
     refdata_domain::curve_definition stated;
-    stated.id = definition_id;
+    stated.id = view_definition_id;
     stated.curve_id = "EUR-ESTR";
     stated.description = "ESTR discounting";
     stated.section_code = "YieldCurves";
@@ -64,7 +64,7 @@ refdata_messaging::curve_configuration_document yield_curve_document(bool with_s
     document.definitions.push_back(stated);
 
     refdata_domain::yield_curve_config curve;
-    curve.curve_definition_id = definition_id;
+    curve.curve_definition_id = view_definition_id;
     curve.currency = "EUR";
     curve.day_counter = "ACT/360";
     document.yield_curves.push_back(curve);
@@ -73,20 +73,20 @@ refdata_messaging::curve_configuration_document yield_curve_document(bool with_s
         return document;
 
     refdata_domain::curve_segment segment;
-    segment.id = segment_id;
-    segment.curve_definition_id = definition_id;
+    segment.id = view_segment_id;
+    segment.curve_definition_id = view_definition_id;
     segment.segment_type = "Deposit";
     segment.position = 1;
     document.segments.push_back(segment);
 
     refdata_domain::curve_segment_convention convention;
-    convention.curve_segment_id = segment_id;
+    convention.curve_segment_id = view_segment_id;
     convention.conventions = "EUR-ESTR-3M";
     document.segment_conventions.push_back(convention);
 
     refdata_domain::curve_quote quote;
     quote.id = boost::uuids::string_generator()("00000000-0000-0000-0000-0000000000d1");
-    quote.curve_segment_id = segment_id;
+    quote.curve_segment_id = view_segment_id;
     quote.quote_list = "Deposit";
     quote.quote_text = "EUR-ESTR-3M";
     quote.optional_flag = "true";

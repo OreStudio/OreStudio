@@ -51,12 +51,13 @@ const std::string configuration_address =
  */
 http_status configuration_status_of(http_request req,
                                      std::string address = configurations_address,
-                                     std::string pattern = configurations_address) {
+                                     std::string pattern = configurations_address,
+                                     http_method method = http_method::get) {
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
     curve_configuration_screen_routes::register_routes(
         table, std::make_shared<ores::http::openapi::endpoint_registry>(), session);
-    const auto route = table->match(http_method::get, address, req.path_params);
+    const auto route = table->match(method, address, req.path_params);
     REQUIRE(route.has_value());
     REQUIRE(route->pattern == pattern);
     REQUIRE(route->requires_auth);
@@ -133,4 +134,50 @@ TEST_CASE("one_curve_configuration_with_no_service_is_refused_as_upstream",
     CHECK(configuration_status_of(
               http_request{}, configuration_address, "/api/refdata/curve-configurations/{id}") ==
           http_status::bad_gateway);
+}
+
+TEST_CASE("a_curve_amendment_refuses_a_body_it_cannot_read", "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the curve amendment's body";
+
+    http_request req;
+    req.body = "not a body";
+    CHECK(configuration_status_of(req,
+                                 configuration_address,
+                                 "/api/refdata/curve-configurations/{id}",
+                                 http_method::put) == http_status::bad_request);
+
+    req.body = R"({"version":3,"reasonCode":"desk.change","changes":[]})";
+    CHECK(configuration_status_of(req,
+                                 configuration_address,
+                                 "/api/refdata/curve-configurations/{id}",
+                                 http_method::put) == http_status::bad_request);
+}
+
+TEST_CASE("a_curve_amendment_refuses_a_reason_it_cannot_state", "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the curve amendment's reason";
+
+    http_request req;
+    req.body = R"({"version":3,"reasonCode":"  ","changes":[)" 
+               R"({"entity":"yield_curve_config","entryId":"00000000-0000-0000-0000-00000000000a",)"
+               R"("column":"currency","value":"EUR"}]})";
+    CHECK(configuration_status_of(req,
+                                 configuration_address,
+                                 "/api/refdata/curve-configurations/{id}",
+                                 http_method::put) == http_status::bad_request);
+}
+
+TEST_CASE("a_curve_amendment_with_no_service_is_refused_as_upstream", "[curve_configurations]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a curve amendment with no service behind it";
+
+    http_request req;
+    req.body = R"({"version":3,"reasonCode":"desk.change","changes":[)"
+               R"({"entity":"yield_curve_config","entryId":"00000000-0000-0000-0000-00000000000a",)"
+               R"("column":"currency","value":"EUR"}]})";
+    CHECK(configuration_status_of(req,
+                                 configuration_address,
+                                 "/api/refdata/curve-configurations/{id}",
+                                 http_method::put) == http_status::bad_gateway);
 }

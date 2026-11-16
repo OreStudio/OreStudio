@@ -24,8 +24,11 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/refdata/curve_amend_rules.hpp"
 #include "ores.http/routes/refdata/curve_configuration_view.hpp"
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
+#include "ores.http/routes/refdata/curve_document_edit.hpp"
+#include "ores.http/routes/refdata/curve_section_wiring.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_configuration_protocol.hpp"
@@ -37,7 +40,9 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <charconv>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -51,6 +56,8 @@ namespace rr = ores::http::net::record_routes;
 namespace forwarding = ores::http::forwarding;
 namespace refdata_messaging = ores::refdata::messaging;
 namespace document = ores::http::routes::refdata::document;
+namespace wiring = ores::http::routes::refdata::wiring;
+namespace curve_document_edit = ores::http::routes::refdata::document;
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
@@ -158,6 +165,82 @@ std::map<std::string, std::string> segment_kinds_of(const http_request& req, nat
         kinds.emplace(type.code, type.segment_kind);
     return kinds;
 }
+
+/// The table every entry's identifier and description live in.
+constexpr std::string_view definition_entity = "curve_definition";
+
+/// The document vector the definition table is carried in.
+constexpr std::string_view definitions_vector = "definitions";
+
+/// The bodies the screen sends, beside the wire_fields each is read with.
+namespace curve_amend {
+
+/// One leaf a screen changes: the table, the entry, the column and the value.
+struct change final {
+    std::string entity;
+    std::string entry_id;
+    std::string column;
+    std::optional<std::string> value;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<change>) {
+    using ores::utility::codec::field;
+    return ores::utility::codec::field_list{field{"entity", &change::entity},
+                                            field{"entryId", &change::entry_id},
+                                            field{"column", &change::column},
+                                            field{"value", &change::value}};
+}
+
+/// The changes a screen asks for, and the version it read before it asks.
+struct body final {
+    int version = 0;
+    std::string reason_code;
+    std::string commentary;
+    std::vector<change> changes;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<body>) {
+    using ores::utility::codec::field;
+    return ores::utility::codec::field_list{field{"version", &body::version},
+                                            field{"reasonCode", &body::reason_code},
+                                            field{"commentary", &body::commentary},
+                                            field{"changes", &body::changes}};
+}
+
+}
+
+/// The most changes one amendment may state, and the longest reason it may give.
+constexpr std::size_t most_changes = 200;
+constexpr std::size_t longest_reason = 120;
+constexpr std::size_t longest_commentary = 4000;
+
+/// The leaf the wiring names by one table and one column, or nothing for none.
+const wiring::curve_parameter* leaf_of(std::string_view entity, std::string_view column) {
+    for (const auto& section : wiring::sections())
+        for (const auto& parameter : section.parameters)
+            if (parameter.entity == entity && parameter.column == column)
+                return &parameter;
+    return nullptr;
+}
+
+/// Where one table of a document is carried, and the column its rows are keyed by.
+struct table_place final {
+    std::string_view vector;
+    std::string_view key_column;
+};
+
+/// The place one entity's rows are carried in, or nothing for a table a curve
+/// configuration does not hold.
+std::optional<table_place> place_of(std::string_view entity) {
+    if (entity == definition_entity)
+        return table_place{definitions_vector, "id"};
+    for (const auto& section : wiring::sections())
+        for (const auto& one : section.entities)
+            if (one.entity == entity)
+                return table_place{one.vector, section.definition_key};
+    return std::nullopt;
+}
+
 
 }
 
@@ -272,6 +355,132 @@ void curve_configuration_screen_routes::register_routes(
                     return http_response::json(curve_view::view_json_of(
                         flattened, msg.configuration_id, sections, {contract, values, kinds}));
                 });
+            }));
+
+
+    add(router->put("/api/refdata/curve-configurations/{id}")
+            .summary("Change leaves of one curve configuration")
+            .description("Reads the stored document whole, changes the leaves the caller names "
+                         "and writes back only the tables they reach, so the rows the screen does "
+                         "not draw keep their versions and their history stays a record of what "
+                         "changed. A version that moved on since the read is a conflict rather "
+                         "than an overwrite.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<refdata_messaging::save_curve_configuration_document_request>(
+                    [&] {
+                        rr::refuse_unknown_params(req, {"party"});
+                        const auto statement = rr::lenient_body_of<curve_amend::body>(
+                            req,
+                            {"version", "reasonCode", "commentary", "changes"},
+                            "An amendment states the version it read, the reason it gives, and "
+                            "the leaves it changes.");
+                        auto reason = rr::trimmed(statement.reason_code);
+                        if (reason.empty() || rr::characters_of(reason) > longest_reason)
+                            rr::invalid("A reason is 1 to 120 characters.");
+                        const auto commentary = rr::trimmed(statement.commentary);
+                        if (rr::characters_of(commentary) > longest_commentary)
+                            rr::invalid("The words that go with a reason are at most 4000 "
+                                        "characters.");
+                        if (statement.version < 0)
+                            rr::invalid("An amendment states the version it read.");
+                        if (statement.changes.empty() || statement.changes.size() > most_changes)
+                            rr::invalid("An amendment states 1 to 200 changes.");
+
+                        refdata_messaging::get_curve_configuration_document_request read;
+                        read.configuration_id = configuration_id_of(req);
+                        read.party_id = party_of(req);
+                        const auto stored = forwarding::forward(req, session, read);
+                        if (!stored.success)
+                            rr::refuse(http_status::not_found,
+                                       "not-found",
+                                       stored.message.empty()
+                                           ? "No curve configuration document fills the "
+                                             "configuration the address names."
+                                           : stored.message);
+                        if (stored.document.config.version != statement.version)
+                            rr::refuse(http_status::conflict,
+                                       "conflict",
+                                       "This curve configuration changed since you opened it. "
+                                       "Read it again before you change it.");
+
+                        const auto parameters = forwarding::forward_all(
+                            req,
+                            session,
+                            ores::reporting::messaging::list_ore_parameters_request{},
+                            &ores::reporting::messaging::list_ore_parameters_response::parameters);
+                        curve_view::contract contract;
+                        fill_contract(parameters, contract);
+                        const auto values = value_set_reader(
+                            read_value_set_tables(req, session),
+                            [&req, &session](std::string_view relation) {
+                                return curve_catalogue_choices(req, session, relation);
+                            });
+
+                        auto working = stored.document;
+                        std::set<std::string, std::less<>> touched;
+                        for (const auto& change : statement.changes) {
+                            const auto* leaf = leaf_of(change.entity, change.column);
+                            if (leaf == nullptr)
+                                rr::invalid(change.entity + "." + change.column +
+                                            " is not a leaf of a curve configuration.");
+                            const auto found =
+                                contract.find("/" + std::string(leaf->xpath));
+                            const auto* parameter =
+                                found == contract.end() ? nullptr : found->second;
+                            auto fields = ores::http::routes::value_fields{};
+                            if (parameter != nullptr)
+                                fields = values.fields_of(parameter->scope, parameter->name);
+                            const auto label = parameter == nullptr || parameter->label.empty()
+                                                   ? std::string(leaf->ore)
+                                                   : parameter->label;
+                            const auto refusal = amend::refusal_of(
+                                fields,
+                                label,
+                                parameter != nullptr && parameter->is_required,
+                                change.value);
+                            if (refusal)
+                                rr::invalid(*refusal);
+                            const auto place = place_of(change.entity);
+                            if (!place)
+                                rr::invalid(change.entity +
+                                            " has no table in a curve configuration.");
+                            auto written = false;
+                            try {
+                                written = curve_document_edit::write_column(working,
+                                                                      place->vector,
+                                                                      place->key_column,
+                                                                      change.entry_id,
+                                                                      change.column,
+                                                                      change.value);
+                            } catch (const std::invalid_argument& e) {
+                                rr::invalid(e.what());
+                            }
+                            if (!written)
+                                rr::invalid("No " + change.entity + " row of the curve entry " +
+                                            change.entry_id + " is stored.");
+                            touched.emplace(place->vector);
+                        }
+
+                        refdata_messaging::save_curve_configuration_document_request save;
+                        save.document.config = working.config;
+                        for (const auto& vector : touched)
+                            if (!curve_document_edit::copy_vector(
+                                    working, vector, save.document))
+                                rr::invalid("The change names a table the document does not "
+                                            "carry.");
+                        save.reason_code = reason;
+                        save.commentary = commentary;
+                        const auto answer = forwarding::forward(req, session, save);
+                        if (!answer.success) {
+                            const auto stale = amend::is_stale(answer.message);
+                            rr::refuse(stale ? http_status::conflict
+                                             : http_status::bad_request,
+                                       stale ? "conflict" : "invalid-request",
+                                       answer.message.empty() ? "The change was refused."
+                                                              : answer.message);
+                        }
+                        return rr::no_content();
+                    });
             }));
 }
 

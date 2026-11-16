@@ -86,8 +86,6 @@
 #include "ores.refdata.api/domain/swaption_volatility_smile_codec.hpp"
 #include "ores.refdata.api/domain/yield_curve_config_codec.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config_codec.hpp"
-#include "ores.utility/codec/text_form.hpp"
-#include "ores.utility/codec/wire_fields.hpp"
 #include <charconv>
 #include <type_traits>
 #include <utility>
@@ -95,44 +93,6 @@
 namespace ores::http::routes::refdata::document {
 
 namespace {
-
-namespace codec = ores::utility::codec;
-
-/// Whether the type states the text its wire form takes.
-template <typename T>
-concept states_text = requires(const T& value) { codec::text_form<T>::to_text(value); };
-
-/// The shortest text a number takes, so a value read back is the one written.
-std::string shortest_text(double value) {
-    char buffer[32];
-    const auto written = std::to_chars(buffer, buffer + sizeof(buffer), value);
-    return std::string(buffer, written.ptr);
-}
-
-/**
- * @brief The text one cell of a row holds.
- *
- * A member the wire carries as a string is its text; a flag is written the way
- * ORE writes one; a number is its shortest form, so a value the screen reads and
- * writes back does not drift; and a type with a stated wire text, such as a
- * uuid or an instant, is that text.
- */
-template <typename T>
-cell cell_of(const T& value) {
-    if constexpr (codec::is_optional_member<T>) {
-        return value ? cell_of(*value) : cell();
-    } else if constexpr (std::is_same_v<T, bool>) {
-        return value ? "true" : "false";
-    } else if constexpr (std::is_integral_v<T>) {
-        return std::to_string(value);
-    } else if constexpr (std::is_floating_point_v<T>) {
-        return shortest_text(static_cast<double>(value));
-    } else if constexpr (states_text<T>) {
-        return codec::text_form<T>::to_text(value);
-    } else {
-        static_assert(states_text<T>, "a row member with no wire text cannot be read");
-    }
-}
 
 /// One row, as the cells the wiring reads by column name.
 template <typename T>

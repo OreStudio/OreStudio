@@ -75,7 +75,7 @@ an API publishes no area, so it is counted under =(none)=.
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, series, subscriptions | 60 | composed view 6, resource 54 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
-| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 303 | composed view 2, resource 301 |
+| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 304 | composed view 2, resource 302 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 88 | composed view 20, resource 68 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
@@ -153,14 +153,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | market-data | 35 | 25 | 10 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
-| reference-data | 30 | 27 | 3 |
+| reference-data | 30 | 28 | 2 |
 | reporting | 44 | 44 | 0 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 254 | 74 |
+| total | 328 | 255 | 73 |
 
 * The pairing
 
@@ -344,7 +344,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/refdata/currencies/ore-import/preview= | POST /api/refdata/currencies/ore-import/preview |
 | GET =/api/refdata/curve-configurations= | GET /api/refdata/curve-configurations |
 | GET =/api/refdata/curve-configurations/:id= | GET /api/refdata/curve-configurations/{id} |
-| PUT =/api/refdata/curve-configurations/:id= | none |
+| PUT =/api/refdata/curve-configurations/:id= | PUT /api/refdata/curve-configurations/{id} |
 | GET =/api/registration-policy= | GET /api/registration-policy |
 | GET =/api/reporting-tree= | GET /api/reporting-tree |
 | GET =/api/reporting/choices= | GET /api/reporting/choices |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1348 routes: 328 answered by the BFF and 1020 by ores.http.
+1349 routes: 328 answered by the BFF and 1021 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1021,10 +1021,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | put | =/api/refdata/currency-pairs= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:313 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currency-pairs/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_web_routes.cpp:302 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | resource | reference-data | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:720 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
-| resource | reference-data | get | =/api/refdata/curve-configurations= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:175 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:258 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | resource | reference-data | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:763 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | resource | reference-data | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:884 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
-| resource | reference-data | get | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:230 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:313 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| resource | reference-data | put | =/api/refdata/curve-configurations/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/curve_configuration_screen_routes.cpp:361 | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
 | not an API | (none) | delete | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:361 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:328 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/ir-curve-bootstrap-configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_web_routes.cpp:350 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |

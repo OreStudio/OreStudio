@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 705E8595-D6FF-45C5-9390-6AAFF53741BA
+:END:
+#+title: A short window's Gram-Charlier smile turns negative in the wing
+#+description: The derived source drops an expiry when the broker butterfly cannot be solved because the Gram-Charlier smile is not positive at the search start. EUR/CZK at 1W and USD/TRY at 3M hit it on every pass, and a surface missing one expiry is refused whole, so both pairs are left out of the catalogue.
+#+type: capture
+#+level: cross
+#+filetags: :volatility:surfaces:derived:quant:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The derived source builds each expiry's smile as a Gram-Charlier expansion and reads the
+five quotes off it. For two pairs one expiry never reads, on any day:
+
+#+begin_src text
+  The derived source left out EURCZK 1W: the broker butterfly: no sign change near the start; the smile is not positive there
+  The derived source left out USDTRY 3M: the broker butterfly: the smile is not positive where the search starts
+#+end_src
+
+The series of both pairs hold every other expiry. The fixings behind them are ordinary ECB
+days (EUR/CZK near 24.4, EUR/TRY near 55.7 in November 2026), so the input is not the fault.
+The smile is: =hold_in_gram_charlier_region= keeps the skewness and kurtosis inside the region
+where the density is positive, but that does not keep the implied-volatility smile positive out
+to the 10-delta wing where the broker butterfly search starts. A short window carries the
+largest skewness, because =over_days= scales it down with the square root of the days, which is
+why EUR/CZK fails at 1W and nowhere longer.
+
+* Why
+
+A surface whose expiry has no quotes is refused whole at publish, so provisioning fails for
+every party that holds the pair. The horizon task left EUR/CZK and USD/TRY out of the catalogue
+for that reason. Either fix brings them back:
+
+- keep the smile positive across the strikes the quotes read, in the derivation itself; or
+- calibrate the expiries a surface has and record the rest, which is the sizing story's task,
+  so one missing expiry costs that expiry and not the surface.
+
+* References
+
+- =projects/ores.analytics/quant/src/math/fx_vol_derivation.cpp=: =derive_grid= skips a cell
+  whose =quote_smile= fails, and keeps no reason.
+- =projects/ores.analytics/quant/src/math/fx_smile_quotes.cpp=: =broker_butterfly= and the
+  bracket that refuses a non-positive smile.
+- The synthetic service log of a provisioned environment holds the two lines above on every
+  pass.
+
+* See also
+
+- [[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][Surface every pair the ladder carries, out to ten years]] -- the task that left the pairs out.
+- [[id:235B0F12-EFFD-4B9F-A397-362B2242149D][Calibrate the expiries a surface has and record the rest]] -- the task that would make one missing expiry cheap.

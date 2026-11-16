@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :volatility:surfaces:derived:provisioning:tenors:
 #+created: 2026-11-14
-#+updated: 2026-11-14
+#+updated: 2026-11-16
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
@@ -88,6 +88,13 @@ Two distinct things, and only the first is new:
   no CLP or COP fixing, so the derivation says so by name -- =not_found: The fixing item
   oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=CLP does not exist=. Their blueprints should
   not be in the catalogue, or the pair needs a source that quotes it.
+
+* Resolved
+
+On a recreated database at 35 pairs and 3650 days of fixings, the blueprint step gives every
+party, the first one included, all of its blueprints, and the run completes all 17 steps. The
+one-pass derivation took the cost out of the wait. The two pairs no source quotes are left out of
+the catalogue until the derived source reads each pair from the source that quotes it.
 
 * See also
 

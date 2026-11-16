@@ -434,7 +434,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
     generator_fleet generators;
-    detail::adapter_fleet fleet(nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
+    detail::adapter_fleet fleet(
+        nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

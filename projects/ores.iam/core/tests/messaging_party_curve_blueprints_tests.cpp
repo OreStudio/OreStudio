@@ -292,4 +292,3 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     CHECK(plan.configs_to_write[1].name == "AAA-EURIBOR-6M");
     CHECK(plan.configs_to_write[1].discount_curve_config_id == plan.configs_to_write[0].id);
 }
-

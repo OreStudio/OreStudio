@@ -131,6 +131,8 @@ read_issue_family_rows(const ores::database::context& ctx,
     return rows;
 }
 
+}
+
 bond_instrument_reader::bond_instrument_reader(const context& ctx)
     : ctx_(ctx) {}
 

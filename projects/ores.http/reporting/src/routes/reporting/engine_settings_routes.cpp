@@ -28,10 +28,10 @@
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
 #include "ores.http/routes/reporting/json_shape.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
+#include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
-#include "ores.reporting.api/messaging/configuration_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_building_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_fixings_protocol.hpp"
@@ -95,7 +95,7 @@ std::string setting_json_of(const engine_setting_row& setting,
                             const value_fields& fields,
                             const ores::reporting::domain::ore_parameter* documented) {
     const auto of_parameter =
-        [documented](std::string ores::reporting::domain::ore_parameter::*field) {
+        [documented](std::string ores::reporting::domain::ore_parameter::* field) {
             return documented == nullptr ? std::string() : documented->*field;
         };
     auto members = std::vector<std::string>{
@@ -531,16 +531,12 @@ using ores::utility::domain::precondition_kind;
 
 constexpr std::string_view engine_settings_owning_component = "ores.reporting";
 
-/// The party a token states when the session chose none.
-constexpr std::string_view nil_party = "00000000-0000-0000-0000-000000000000";
-
 /// The sentence a body of this unit states when it is not the shape the form sends.
 constexpr std::string_view malformed_settings_write =
     "A write names the details it changes and its reason.";
 
-change_intent intent_or_none(const rr::stated_intent& stated) {
-    return rr::intent_of(stated).value_or(change_intent{});
-}
+using reporting_configuration_rows::intent_or_none;
+using reporting_configuration_rows::remove_configuration;
 
 /// The id a path states.
 boost::uuids::uuid settings_id_of(const http_request& req) {
@@ -548,24 +544,6 @@ boost::uuids::uuid settings_id_of(const http_request& req) {
     if (!rr::is_uuid(raw))
         rr::invalid("Engine settings are named by their id.");
     return boost::uuids::string_generator()(raw);
-}
-
-/**
- * @brief The party that holds a new configuration: the one the body names, else
- * the one the caller's token states.
- */
-boost::uuids::uuid party_for_new(const http_request& req, const std::optional<std::string>& asked) {
-    if (asked && !asked->empty()) {
-        if (!rr::is_uuid(*asked))
-            rr::invalid("A configuration names its party by its id.");
-        return boost::uuids::string_generator()(*asked);
-    }
-    if (req.authenticated_user && req.authenticated_user->party_id) {
-        const auto& party = *req.authenticated_user->party_id;
-        if (!party.empty() && party != nil_party)
-            return boost::uuids::string_generator()(party);
-    }
-    rr::invalid("Choose the party that holds the engine settings.");
 }
 
 /// The group with this code, refused when the data does not hold it.
@@ -576,39 +554,6 @@ const engine_group_row& group_of(const std::vector<engine_group_row>& groups,
         rr::refuse(
             http_status::not_found, "not-found", "There is no such group of engine settings.");
     return *found;
-}
-
-/// The reporting configuration a create registers the settings as.
-boost::uuids::uuid register_configuration(const http_request& req,
-                                          nats_client& session,
-                                          const std::string& name,
-                                          const change_intent& intent) {
-    reporting_messaging::put_configuration_request msg;
-    msg.change.write.id = boost::uuids::random_generator()();
-    msg.change.write.name = name;
-    msg.change.write.configuration_type_code = std::string(settings_configuration_type);
-    msg.change.write.owning_component = std::string(engine_settings_owning_component);
-    msg.change.precondition.kind = precondition_kind::must_not_exist;
-    msg.intent = intent;
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_ok(reply.result);
-    return msg.change.write.id;
-}
-
-/// Remove the configuration a failed create wrote, stating no failure of its own.
-void remove_configuration(const http_request& req,
-                          nats_client& session,
-                          const std::string& name,
-                          const change_intent& intent) {
-    try {
-        reporting_messaging::delete_configuration_request msg;
-        msg.removal.key.name = name;
-        msg.removal.precondition.kind = precondition_kind::any;
-        msg.intent = intent;
-        forwarding::forward(req, session, msg);
-    } catch (const std::exception&) {
-        // The create's own failure is the one the caller reads.
-    }
 }
 
 /// Write the central row, at no version for a create or at the version read.
@@ -881,10 +826,17 @@ void engine_settings_routes::register_write_routes(
                     if (name.empty() || rr::characters_of(name) > 200 ||
                         rr::characters_of(body.description) > 2000)
                         rr::invalid(std::string(malformed_settings_write));
-                    const auto party = party_for_new(req, body.party_id);
+                    const auto party = reporting_configuration_rows::party_for_new(
+                        req, body.party_id, "Choose the party that holds the engine settings.");
                     const auto intent = intent_or_none(body.intent);
                     const auto configuration_id =
-                        register_configuration(req, session, name, intent);
+                        reporting_configuration_rows::register_configuration(
+                            req,
+                            session,
+                            name,
+                            settings_configuration_type,
+                            engine_settings_owning_component,
+                            intent);
                     const auto id = boost::uuids::random_generator()();
                     try {
                         reporting_messaging::engine_settings_write write;

@@ -24,6 +24,11 @@
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/reporting/engine_settings_rows.hpp"
+#include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <string>
@@ -35,10 +40,18 @@ namespace {
 
 namespace forwarding = ores::http::forwarding;
 namespace analytics_messaging = ores::analytics::messaging;
+namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
 using ores::http::domain::http_request;
 using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
+using shape::member;
+using shape::object;
+
+auto& pricing_rows_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.reporting.pricing_engine_rows");
+    return instance;
+}
 
 }
 
@@ -133,6 +146,28 @@ read_document(const http_request& req, nats_client& session, const boost::uuids:
     document.products = read_products(req, session, id);
     document.parameters = read_parameters(req, session, id);
     return document;
+}
+
+std::string bound_reports_json_of(const http_request& req,
+                                  nats_client& session,
+                                  const std::string& configuration_id) {
+    std::vector<engine_bound_report> reports;
+    try {
+        reports = engine_settings_rows::read_bound_reports(
+            req, session, configuration_type, boost::uuids::string_generator()(configuration_id));
+    } catch (const std::exception&) {
+        // A binding that cannot be read must not hide the document.
+        BOOST_LOG_SEV(pricing_rows_lg(), ores::logging::debug)
+            << "The reports that bind configuration " << configuration_id
+            << " could not be read, so the page states them as unknown.";
+        return "null";
+    }
+    std::vector<std::string> rows;
+    rows.reserve(reports.size());
+    for (const auto& report : reports)
+        rows.push_back(object(
+            {member("id", json::write(report.id)), member("name", json::write(report.name))}));
+    return rr::array_of(rows);
 }
 
 document_counts read_counts(const http_request& req, nats_client& session) {

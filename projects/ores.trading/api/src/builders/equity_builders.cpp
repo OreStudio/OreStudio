@@ -91,9 +91,11 @@ void equity_add_barrier(domain::equity_instrument_data& out, std::string type, d
 }
 
 /// The equity an accumulating product observes, as its Underlying block states it.
-void equity_add_underlying(domain::equity_instrument_data& out, std::string address) {
+void equity_add_underlying(domain::equity_instrument_data& out,
+                           std::string address,
+                           std::string role = "underlying") {
     domain::instrument_underlying row{};
-    row.underlying_role = "underlying";
+    row.underlying_role = std::move(role);
     row.sequence_number = 1;
     row.underlying_type = "Equity";
     row.name = std::move(address);
@@ -205,6 +207,51 @@ equity_result equity_cliquet_option_builder::build() const {
                                             terms_.reset_tenor.get(),
                                             terms_.start.get(),
                                             terms_.option.expiry.get()));
+    return out;
+}
+
+equity_outperformance_option_builder::equity_outperformance_option_builder(
+    equity_outperformance_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+equity_result equity_outperformance_option_builder::build() const {
+    const auto& first = terms_.underlying_1.get();
+    const auto& second = terms_.underlying_2.get();
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
+    if (terms_.notional.get() <= decimal{})
+        return std::unexpected(build_error{"notional", "must be positive"});
+    if (first.uri() == second.uri())
+        return std::unexpected(
+            build_error{"underlying_2", "must differ from the first: an equity has no return over itself"});
+    if (terms_.initial_price_1.get() <= decimal{} || terms_.initial_price_2.get() <= decimal{})
+        return std::unexpected(build_error{"initial_price", "both must be positive"});
+    if (terms_.strike_return.get() < decimal{})
+        return std::unexpected(build_error{"strike_return", "must not be negative"});
+    for (const auto& price : {terms_.knock_in_price, terms_.knock_out_price})
+        if (price && *price <= decimal{})
+            return std::unexpected(build_error{"knock_price", "must be positive when stated"});
+
+    domain::equity_option_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.underlying_name = first.uri();
+    row.currency = terms_.currency.get();
+    row.notional = terms_.notional.get();
+    row.option_type = option_type_of(terms_.kind.get());
+    row.strike = terms_.strike_return.get();
+    row.expiry_date = terms_.expiry.get();
+    row.exercise_type = "European";
+    row.long_short = long_short_of(terms_.position.get());
+    row.settlement_type = "Cash";
+    row.initial_price_1 = terms_.initial_price_1.get();
+    row.initial_price_2 = terms_.initial_price_2.get();
+    row.knock_in_price = terms_.knock_in_price;
+    row.knock_out_price = terms_.knock_out_price;
+    domain::equity_instrument_data out;
+    out.instrument = std::move(row);
+    out.options.push_back(equity_detail::option_row(terms_.position.get(), "European"));
+    equity_add_underlying(out, first.uri(), "underlying1");
+    equity_add_underlying(out, second.uri(), "underlying2");
     return out;
 }
 

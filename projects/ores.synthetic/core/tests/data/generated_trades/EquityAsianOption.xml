@@ -33,17 +33,17 @@
       </ObservationDates>
     </EquityAsianOptionData>
   </Trade>
-  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
     <TradeType>EquityAsianOption</TradeType>
     <EquityAsianOptionData>
       <Currency>USD</Currency>
-      <Quantity>1995.71</Quantity>
+      <Quantity>4727</Quantity>
       <StrikeData>
-        <Value>2098.35</Value>
+        <Value>1856.18</Value>
       </StrikeData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
@@ -51,13 +51,13 @@
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
         <ExerciseDates>
-          <ExerciseDate>2028-11-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2028-11-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2027-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>

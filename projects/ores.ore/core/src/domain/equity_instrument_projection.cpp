@@ -438,13 +438,11 @@ auto read_equity_outperformance_option(const record_reader& trade) -> equity_opt
     r.option_type = equity_instrument_projection_option_type_of(option);
     r.expiry_date = expiry_date_of(option);
     r.strike = equity_instrument_projection_decimal_of(*data, "StrikeReturn");
-
-    // The option row has no basket column, so the pair travels as one name.
-    const auto first = data->child("Underlying1");
-    const auto second = data->child("Underlying2");
-    r.underlying_name = equity_pair_of(
-        first ? equity_instrument_projection_text_of(*first, "Name") : std::string{},
-        second ? equity_instrument_projection_text_of(*second, "Name") : std::string{});
+    // The row names the first equity, whose return is measured over the
+    // second's; each is a row of its role.
+    if (const auto first = data->child("Underlying1"))
+        r.underlying_name =
+            equity_address_of(equity_instrument_projection_text_of(*first, "Name"));
     return r;
 }
 
@@ -891,31 +889,16 @@ void write_equity_touch_option(record_writer& trade,
         barrier.child("Levels").append_decimal("Level", *v.barrier_level);
 }
 
-void write_equity_outperformance_option(record_writer& trade, const equity_option_instrument& v) {
+void write_equity_outperformance_option(record_writer& trade,
+                                        const equity_option_instrument& v,
+                                        const equity_instrument_data& carrier) {
     auto data = trade.child("EquityOutperformanceOptionData");
     write_option_entry(data.child("OptionData"), v);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Notional", v.notional);
     data.set_decimal("StrikeReturn", v.strike);
-
-    // The option row carries the pair as one name, so the split is its reverse.
-    const auto separator = v.underlying_name.find(equity_pair_separator(v.underlying_name));
-    const auto first =
-        separator == std::string::npos ? v.underlying_name : v.underlying_name.substr(0, separator);
-    const auto second =
-        separator == std::string::npos ? first : v.underlying_name.substr(separator + 1);
-    auto underlying1 = data.child("Underlying1");
-    underlying1.set_text("Name", underlying_name_of(first));
-    underlying1.set_text("Type", "Equity");
-    auto underlying2 = data.child("Underlying2");
-    underlying2.set_text("Name", underlying_name_of(second));
-    underlying2.set_text("Type", "Equity");
-
-    // The schema requires both initial prices and the row keeps neither, so the
-    // export states the zero the rest of the writing states for a term the row
-    // holds no column for.
-    data.set_decimal("InitialPrice1", decimal{});
-    data.set_decimal("InitialPrice2", decimal{});
+    underlying_block::write_underlyings(data, "Underlying1", carrier, "underlying1");
+    underlying_block::write_underlyings(data, "Underlying2", carrier, "underlying2");
 }
 
 void write_equity_accumulator(record_writer& trade,
@@ -1221,6 +1204,8 @@ constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
     {"EquityAccumulator", "", "Underlying", "underlying"},
     {"EquityTaRF", "", "Underlying", "underlying"},
     {"EquityPosition", "", "Underlying", "underlying"},
+    {"EquityOutperformanceOption", "", "Underlying1", "underlying1"},
+    {"EquityOutperformanceOption", "", "Underlying2", "underlying2"},
 };
 
 /// Where an equity product states its barriers.
@@ -1383,7 +1368,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                     write_equity_cliquet_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityOutperformanceOption") {
-                    write_equity_outperformance_option(trade, row);
+                    write_equity_outperformance_option(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_forward_instrument>) {

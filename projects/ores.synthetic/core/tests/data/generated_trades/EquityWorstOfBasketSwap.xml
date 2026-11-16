@@ -112,36 +112,36 @@
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
       <Currency>EUR</Currency>
-      <Quantity>4253585.58</Quantity>
+      <Quantity>2449079.16</Quantity>
       <Underlyings>
-        <Underlying>
-          <Type>Equity</Type>
-          <Name>RIC:.STOXX50E</Name>
-        </Underlying>
         <Underlying>
           <Type>Equity</Type>
           <Name>RIC:DHER.DE</Name>
         </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.STOXX50E</Name>
+        </Underlying>
       </Underlyings>
       <InitialPrices>
-        <InitialPrice>1125.18</InitialPrice>
-        <InitialPrice>1237.7</InitialPrice>
+        <InitialPrice>2753.31</InitialPrice>
+        <InitialPrice>3028.64</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
           <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-09-02</Date>
-            <Date>2025-12-02</Date>
-            <Date>2026-03-02</Date>
-            <Date>2026-06-02</Date>
-            <Date>2026-09-02</Date>
+            <Date>2025-08-02</Date>
+            <Date>2025-11-02</Date>
+            <Date>2026-02-02</Date>
+            <Date>2026-05-02</Date>
+            <Date>2026-08-02</Date>
           </Dates>
         </Dates>
       </FloatingPeriodSchedule>
@@ -150,11 +150,11 @@
           <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-09-02</Date>
-            <Date>2025-12-02</Date>
-            <Date>2026-03-02</Date>
-            <Date>2026-06-02</Date>
-            <Date>2026-09-02</Date>
+            <Date>2025-08-02</Date>
+            <Date>2025-11-02</Date>
+            <Date>2026-02-02</Date>
+            <Date>2026-05-02</Date>
+            <Date>2026-08-02</Date>
           </Dates>
         </Dates>
       </FloatingPayDates>

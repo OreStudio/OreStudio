@@ -24,7 +24,7 @@
       <Quantity>1082.9</Quantity>
     </EquityEuropeanBarrierOptionData>
   </Trade>
-  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>EquityEuropeanBarrierOption</TradeType>
     <EquityEuropeanBarrierOptionData>
       <OptionData>
@@ -33,19 +33,19 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2029-12-02</ExerciseDate>
+          <ExerciseDate>2028-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>DownAndOut</Type>
         <Levels>
-          <Level>1208.13</Level>
+          <Level>3838.25</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.NDX</Name>
-      <Currency>USD</Currency>
-      <Strike>1342.37</Strike>
-      <Quantity>6508.96</Quantity>
+      <Name>RIC:.STOXX50E</Name>
+      <Currency>EUR</Currency>
+      <Strike>4264.72</Strike>
+      <Quantity>237.84</Quantity>
     </EquityEuropeanBarrierOptionData>
   </Trade>
 </Portfolio>

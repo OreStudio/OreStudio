@@ -94,6 +94,76 @@ TEST_CASE("an_equity_option_states_its_style_on_the_option_row", equity_tags) {
     CHECK(row->underlying_name == spx().uri());
 }
 
+namespace {
+
+md::market_reference ndx() {
+    auto index = md::market_index::make(md::index_family::equity, ".NDX", {});
+    REQUIRE(index);
+    auto reference = md::market_reference::of(std::move(*index));
+    REQUIRE(reference);
+    return *reference;
+}
+
+equity_outperformance_option_terms spx_over_ndx() {
+    return {.underlying_1 = spx(),
+            .underlying_2 = ndx(),
+            .currency = std::string("USD"),
+            .notional = equity_amount("500000"),
+            .kind = option_kind::call,
+            .expiry = 2027y / 1 / 5,
+            .position = option_position::long_option,
+            .initial_price_1 = equity_amount("5000"),
+            .initial_price_2 = equity_amount("17000"),
+            .strike_return = equity_amount("0.01"),
+            .knock_in_price = equity_amount("5200"),
+            .knock_out_price = std::nullopt};
+}
+
+}
+
+TEST_CASE("an_outperformance_option_states_each_equity_in_its_role_and_its_prices",
+          equity_tags) {
+    const auto built = equity_outperformance_option_builder(spx_over_ndx()).build();
+    REQUIRE(built.has_value());
+    const auto* row =
+        std::get_if<ores::trading::domain::equity_option_instrument>(&built->instrument);
+    REQUIRE(row != nullptr);
+    CHECK(row->identity.trade_type_code == "EquityOutperformanceOption");
+    CHECK(row->underlying_name == spx().uri());
+    CHECK(row->strike == equity_amount("0.01"));
+    CHECK(row->initial_price_1 == equity_amount("5000"));
+    CHECK(row->initial_price_2 == equity_amount("17000"));
+    CHECK(row->knock_in_price == equity_amount("5200"));
+    CHECK_FALSE(row->knock_out_price.has_value());
+    REQUIRE(built->instrument_underlyings.size() == 2);
+    CHECK(built->instrument_underlyings[0].underlying_role == "underlying1");
+    CHECK(built->instrument_underlyings[0].name == spx().uri());
+    CHECK(built->instrument_underlyings[1].underlying_role == "underlying2");
+    CHECK(built->instrument_underlyings[1].name == ndx().uri());
+}
+
+TEST_CASE("an_outperformance_option_refuses_an_equity_against_itself", equity_tags) {
+    auto terms = spx_over_ndx();
+    terms.underlying_2 = spx();
+    const auto built = equity_outperformance_option_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "underlying_2");
+}
+
+TEST_CASE("an_outperformance_option_refuses_a_price_that_is_not_positive", equity_tags) {
+    auto terms = spx_over_ndx();
+    terms.initial_price_2 = equity_amount("0");
+    auto built = equity_outperformance_option_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "initial_price");
+
+    terms = spx_over_ndx();
+    terms.knock_in_price = equity_amount("-1");
+    built = equity_outperformance_option_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "knock_price");
+}
+
 TEST_CASE("an_equity_digital_states_its_style", equity_tags) {
     const auto digital =
         equity_digital_option_builder({.option = spx_call(), .payout = equity_amount("100000")})

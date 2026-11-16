@@ -10,7 +10,6 @@ EquityDoubleTouchOption
 EquityForwardVolatilityAgreement
 EquityFutureOption
 EquityGenericBarrierOption
-EquityOutperformanceOption
 EquityPairwiseVarianceSwap
 EquityRainbowOption
 EquityStrikeResettableOption

@@ -56,6 +56,7 @@ using all_builders =
                flexi_swap_builder,
                balance_guaranteed_swap_builder,
                inflation_swap_builder,
+               equity_outperformance_option_builder,
                fx_forward_builder,
                fx_swap_builder,
                fx_option_builder,

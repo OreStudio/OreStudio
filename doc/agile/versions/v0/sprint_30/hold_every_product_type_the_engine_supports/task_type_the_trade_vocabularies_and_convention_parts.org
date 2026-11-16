@@ -119,7 +119,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Existing rows are not backfilled | trading create SQL | decline | Every environment is recreated from the schema; there is no legacy store to audit |
+| 2 | Index the lookups on (tenant_id, code) | trading lookup SQL | no change | Each lookup has a unique partial index on (tenant_id, code) for live rows |
+| 3 | Codes compare case-sensitively | trading create SQL | decline | Intended: the FX columns already compare exactly, and ORE states the canonical spelling |
+| 4 | No test for the optional rule | test_family_service.py | accept | A codegen test renders a one part and an optional part and checks both branches |
+| 5 | Note the bundle's bypass in the code | conventions_bundle_service.cpp | accept | A comment above the bundle's writes says why the check does not run there |
+| 6 | Group message wording | ores.database.outcomes.org | decline | One message for every rule; the group label reads clearly enough in the verdict |
+| 7 | Show the pgTAP failures are on main | projects/ores.sql/test | accept | The three failing test files are byte-identical to main's and read no table this branch changes |
 
 * Result
 

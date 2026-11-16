@@ -383,3 +383,21 @@ def test_the_put_checks_part_cardinality_before_it_opens_the_transaction(tmp_pat
     assert (body.index("check_part_cardinality(request.item)")
             < body.index("ores::database::repository::unit_of_work uow(ctx_);"))
     assert "check_part_cardinality(write)" in body
+
+
+def test_a_one_part_and_an_optional_part_render_their_own_checks(tmp_path):
+    path = family_model._modeling_dir(tmp_path)
+    text = path.read_text(encoding="utf-8")
+    text = text.replace("| one_of | form |", "| one |  |", 1)
+    text = text.replace("| one_of | form |", "| optional |  |", 1)
+    path.write_text(text, encoding="utf-8")
+    out = tmp_path / "out"
+    out.mkdir(exist_ok=True)
+    core.generate_from_model(
+        str(path), BASE_DIR / "library/data", BASE_DIR / "library/templates",
+        out, target_template=SERVICE_IMPL, target_output="svc.cpp")
+    body = (out / "svc.cpp").read_text(encoding="utf-8")
+    assert "if (write.pay_receive.size() != 1)" in body
+    assert "if (write.long_short.size() > 1)" in body
+    assert ".expected = \"at most once\"" in body
+    assert " + " not in body.split("check_part_cardinality(")[1].split("return std::nullopt;")[0]

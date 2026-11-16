@@ -47,7 +47,7 @@
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>

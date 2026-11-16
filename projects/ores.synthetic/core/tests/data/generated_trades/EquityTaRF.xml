@@ -22,7 +22,7 @@
         </Rules>
       </ScheduleData>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <PayoffType>TargetExact</PayoffType>
       </OptionData>
       <RangeBounds>

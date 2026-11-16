@@ -4,7 +4,7 @@
     <TradeType>FxOption</TradeType>
     <FxOptionData>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>

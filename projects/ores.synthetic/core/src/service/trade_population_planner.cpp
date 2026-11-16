@@ -823,7 +823,7 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
     const auto start = drawn.start_date;
     const auto end = drawn.maturity_date;
     const auto position =
-        draw(name, 9) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
+        first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     const auto kind = drawn.option_type == "Put" ? tb::option_kind::put : tb::option_kind::call;
     const auto strike = money(drawn.strike_price.value_or(0.0));
     // A swaption's fixed price is its strike.
@@ -1817,7 +1817,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
     const auto index = fx_index_of(pair);
     const auto notional = entry.notional;
     const auto position =
-        draw(name, 4) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
+        first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     const auto kind = draw(name, 3) < 0.5 ? tb::option_kind::call : tb::option_kind::put;
     const tb::fx_exchange exchange{.bought_currency = pair.base,
                                    .bought_amount = money(notional),
@@ -2691,7 +2691,7 @@ build_equity_trade(const domain::trade_generation_scope& scope,
     const auto address = equity_address_of(underlying.code);
     const auto currency = underlying.currency.empty() ? std::string("USD") : underlying.currency;
     const auto position =
-        draw(name, 3) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
+        first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
     const auto kind = draw(name, 4) < 0.5 ? tb::option_kind::call : tb::option_kind::put;
     const auto notional = entry.notional;
     const tb::equity_option_terms option{.underlying = address,

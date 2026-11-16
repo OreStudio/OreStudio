@@ -22,7 +22,7 @@
     <TradeType>EquityOption</TradeType>
     <EquityOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>

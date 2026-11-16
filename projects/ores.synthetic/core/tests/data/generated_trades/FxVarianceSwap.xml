@@ -10,7 +10,7 @@
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <Strike>0.1</Strike>
       <Notional>5709785.78</Notional>
       <Calendar>TARGET</Calendar>

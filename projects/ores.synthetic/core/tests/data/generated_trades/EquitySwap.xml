@@ -4,7 +4,7 @@
     <TradeType>EquitySwap</TradeType>
     <EquitySwapData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Floating</LegType>
         <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>
@@ -33,7 +33,7 @@
         </FloatingLegData>
       </LegData>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>Equity</LegType>
         <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>

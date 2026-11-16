@@ -627,7 +627,7 @@ auto read_commodity_window_barrier_option(const record_reader& trade) -> commodi
     r.commodity_code = scripted_commodity_of(*data);
     r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "FixingAmount").value_or(0.0);
-    r.strike_price = optional_decimal_of(*data, "Strike");
+    r.strike_price = optional_strike_of(*data);
     read_option_summary(r, data->child("OptionData"));
     r.start_date = optional_date_of(*data, "StartDate");
     r.window_end_date = optional_date_of(*data, "EndDate");
@@ -1178,8 +1178,9 @@ void write_commodity_window_barrier_option(record_writer& trade,
     auto data = trade.child("CommodityWindowBarrierOptionData");
     set_decimal_from_double(data, "FixingAmount", v.quantity);
     data.set_spelling("Currency", v.currency, "currency");
+    // The schema states the strike through its strike group, as text.
     if (v.strike_price)
-        data.set_decimal("Strike", *v.strike_price);
+        data.set_text("Strike", v.strike_price->to_string());
     write_scripted_underlying(data, carrier);
     write_option_terms(data.child("OptionData"), v, v.maturity_date);
     data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.start_date));

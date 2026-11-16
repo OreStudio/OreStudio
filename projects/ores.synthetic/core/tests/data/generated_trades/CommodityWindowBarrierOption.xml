@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
+    <TradeType>CommodityWindowBarrierOption</TradeType>
+    <CommodityWindowBarrierOptionData>
+      <Currency>USD</Currency>
+      <FixingAmount>90542.46</FixingAmount>
+      <Strike>143.75</Strike>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:CL</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2036-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <StartDate>2026-01-02</StartDate>
+      <EndDate>2031-01-02</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>114.97</Level>
+        </Levels>
+      </BarrierData>
+    </CommodityWindowBarrierOptionData>
+  </Trade>
+  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
+    <TradeType>CommodityWindowBarrierOption</TradeType>
+    <CommodityWindowBarrierOptionData>
+      <Currency>USD</Currency>
+      <FixingAmount>83000.57</FixingAmount>
+      <Strike>132.53</Strike>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:CL</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2030-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <StartDate>2026-01-02</StartDate>
+      <EndDate>2028-01-02</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>108.9</Level>
+        </Levels>
+      </BarrierData>
+    </CommodityWindowBarrierOptionData>
+  </Trade>
+</Portfolio>

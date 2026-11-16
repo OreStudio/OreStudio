@@ -26,11 +26,11 @@ Every booked commodity type is built by its builder, and the old commodity const
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -42,9 +42,11 @@ Every booked commodity type is built by its builder, and the old commodity const
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Delete the constructor path: =commodity_instruments.hpp=, its terms, its =construct_commodity_*= functions and their tests, and the planner's fallback to them. This was done on 2026-11-15 on a branch that was never pushed (kept as =archive/close-out-the-commodity-constructors-2026-11-15=) and is cherry-picked here.
+2. Correct the vendored schema's misspelling of =CommodityWindowBarrierOptionData= in the bindings generator, as an erratum table.
+3. Give the commodity row a =window_end_date=, write a window barrier builder, read and write the type in the projection, and book it from the planner.
+4. Take the unsupported types out of the awaiting-builders list, accounting them in the builder test by their reason.
+5. Re-record the commodity documents and prove ORE reads and builds the new type.
 
 * Measurements
 
@@ -58,7 +60,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The constructor path before the deletion | 24 =construct_commodity_*= functions, 14 tests, 720 lines of terms | =git show 48e643dc50:projects/ores.trading/api/include/ores.trading.api/domain/commodity_instruments.hpp= | 48e643dc50 |
+| The constructor path after | 0 references | =grep -rn "construct_commodity_" projects/ --include=*.cpp --include=*.hpp= | da15b66e4a |
+| Commodity types the planner books | 24 (was 23) | =ores.synthetic.core.tests every_commodity_trade_type_the_catalogue_routes_is_planned= | da15b66e4a |
+| Commodity types in the awaiting-builders list | 0 (was 2) | =grep -c '^Commodity' projects/ores.trading/api/tests/data/trade_types_awaiting_builders.txt= | da15b66e4a |
+| Trading api suite | 4,420 cases, 16,387 assertions | =ores.trading.api.tests= | 62c902bffb |
+| Trading core suite | 248 cases, 1,610 assertions | =ores.trading.core.tests= | 62c902bffb |
+| ORE core suite | 543 cases, 520,163 assertions | =ores.ore.core.tests= | 62c902bffb |
+| Synthetic suite with the ORE engine | 145 cases, 4,272 assertions | =ores.synthetic.core.tests= | da15b66e4a |
 
 * Notes
 
@@ -68,6 +77,14 @@ ORE reads =CommodityWindowBarrierOptionData=, but the vendored XSD declares no
 such element, so a writer that follows the XSD cannot write the type. That is
 the likely reason the generator does not book it. See [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]].
 
+
+** What this run found
+
+- The planner's reason for leaving the window barrier option out was wrong. ORE reads =tradeType() + "Data"= (=windowbarrieroption.cpp=, =fromXML=), so it reads =CommodityWindowBarrierOptionData=; it is the vendored =instruments.xsd= that misspells it =CommodityWindowBarierOptionData=. The bindings generator now corrects it through =SCHEMA_ERRATA=.
+- The schema states a window barrier option's strike through its strike group, as text. The first writer set it as a decimal and the bindings refused it; the recorded refusal showed it before ORE ran.
+- Adding a type moves every commodity slot to another type, so all 23 commodity documents were re-recorded, and two known engine errors stopped occurring and left the known list.
+- The commodity, FX and equity positions were drawn by hash. They held both directions by chance until the slots moved, when the basket option fell to one direction; they now read the turn as the other families do.
+- =CommodityPairwiseVarianceSwap= and =ForwardVolatilityAgreement= are unsupported, as [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] states, so they are no longer listed as awaiting a builder.
 
 * Test Scenarios
 
@@ -93,3 +110,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every booked commodity type is built by its builder, and the constructor path, its terms and the planner's fallback are gone. The window barrier option is booked through a new builder, read and written by the projection, and ORE reads and builds it. No commodity type is left awaiting a builder.
+
+Acceptance:
+
+- CommodityPairwiseVarianceSwap leaves the generator and is tagged unsupported: met; it was absent, and the tag task tags it.
+- The generator books CommodityWindowBarrierOption through its builder, and ORE reads and builds it: met; its recorded document passes the engine run with no error.
+- The construct_commodity_* functions, their terms and the plan's commodity_terms are deleted: met.
+- No commodity type is left in the awaiting-builders list: met.

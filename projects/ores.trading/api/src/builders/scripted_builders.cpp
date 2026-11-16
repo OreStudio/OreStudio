@@ -21,6 +21,7 @@
 #include "refusals.hpp"
 #include <algorithm>
 #include <format>
+#include <iterator>
 #include <utility>
 
 namespace ores::trading::builders {
@@ -169,6 +170,19 @@ scripted_result scripted_trade_builder::build() const {
                                                    stated->type + (listed ? " list" : "")});
     }
 
+    // The script reads only its inputs, each once, so a variable it does not
+    // read, such as a misspelt name, is refused rather than booked unread.
+    for (auto it = terms_.variables.begin(); it != terms_.variables.end(); ++it) {
+        if (std::ranges::find(terms_.inputs, it->name, &domain::script_input::input_name) ==
+            terms_.inputs.end())
+            return std::unexpected(
+                build_error{it->name, "the script " + script + " reads no such input"});
+        if (std::ranges::find(
+                std::next(it), terms_.variables.end(), it->name, &scripted_variable::name) !=
+            terms_.variables.end())
+            return std::unexpected(build_error{it->name, "is stated more than once"});
+    }
+
     scripted_rows out(trade_type, script);
     for (const auto& variable : terms_.variables) {
         if (const auto* text = std::get_if<std::string>(&variable.value))
@@ -192,6 +206,8 @@ scripted_result double_digital_option_builder::build() const {
     if (terms_.pay_currency.get().empty())
         return std::unexpected(build_error{"pay_currency", "must name a currency"});
 
+    // A class-read product names no library script: ORE reads the product's own
+    // class, so the row keeps the trade type as its script name.
     scripted_rows out(trade_type, std::string(trade_type));
     out.value("Expiry", "text", scripted_date(terms_.expiry.get()));
     out.value("Settlement", "text", scripted_date(terms_.settlement.get()));
@@ -251,8 +267,10 @@ scripted_result autocallable_builder::build() const {
     if (auto refusal = refusals::period(settlements.start, settlements.end))
         return std::unexpected(std::move(*refusal));
     if (terms_.accumulation_factors.get().empty())
-        return std::unexpected(
-            build_error{"accumulation_factors", "must state one factor for each fixing"});
+        return std::unexpected(build_error{
+            "accumulation_factors",
+            "must state at least one factor; ORE reads one for each fixing, which a rules "
+            "schedule states only once the calendar rolls it, so the caller matches the count"});
 
     scripted_rows out(trade_type, std::string(trade_type));
     out.value("NotionalAmount", "decimal", scripted_text(terms_.notional.get()));

@@ -101,6 +101,23 @@ TEST_CASE("a_scripted_trade_that_states_an_input_in_another_shape_names_it", scr
     CHECK(trade.error().term == "Underlyings");
 }
 
+TEST_CASE("a_scripted_trade_that_states_a_variable_the_script_does_not_read_names_it",
+          scripted_tags) {
+    auto terms = scripted_example();
+    terms.variables.push_back({"Notionl", "Number", std::string("1000")});
+    const auto trade = scripted_trade_builder(terms).build();
+    REQUIRE_FALSE(trade.has_value());
+    CHECK(trade.error().term == "Notionl");
+}
+
+TEST_CASE("a_scripted_trade_that_states_a_variable_twice_names_it", scripted_tags) {
+    auto terms = scripted_example();
+    terms.variables.push_back({"Strike", "Number", std::string("110")});
+    const auto trade = scripted_trade_builder(terms).build();
+    REQUIRE_FALSE(trade.has_value());
+    CHECK(trade.error().term == "Strike");
+}
+
 TEST_CASE("a_scripted_trade_with_no_library_inputs_is_refused", scripted_tags) {
     auto terms = scripted_example();
     terms.inputs.clear();

@@ -42,7 +42,6 @@ PAIRS = [
     ("EUR", "AUD", "PaSpot"),
     ("EUR", "CAD", "PaSpot"),
     ("EUR", "CHF", "PaSpot"),
-    ("EUR", "CZK", "PaFwd"),
     ("EUR", "DKK", "PaSpot"),
     ("EUR", "GBP", "Spot"),
     ("EUR", "JPY", "PaSpot"),
@@ -67,7 +66,6 @@ PAIRS = [
     ("USD", "KRW", "PaFwd"),
     ("USD", "MXN", "PaFwd"),
     ("USD", "SGD", "PaFwd"),
-    ("USD", "TRY", "PaFwd"),
     ("USD", "ZAR", "PaFwd"),
 ]
 

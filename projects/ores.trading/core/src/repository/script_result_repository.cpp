@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/script_result.hpp"
 #include "ores.trading.api/domain/script_result_json_io.hpp" // IWYU pragma: keep.
@@ -245,8 +246,10 @@ void script_result_repository::write(
 std::vector<domain::script_result> script_result_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_result_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("script_name"_c, "purpose"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<script_result_entity, domain::script_result>(
@@ -267,11 +270,12 @@ script_result_repository::read_latest(const context& ctx,
                                << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<script_result_entity>> |
-        query_builder::where("tenant_id"_c == tid && "script_name"_c == script_name &&
-                             "purpose"_c == purpose && "sequence_number"_c == sequence_number &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c == script_name && "purpose"_c == purpose &&
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<script_result_entity, domain::script_result>(
         ctx,
@@ -291,10 +295,12 @@ script_result_repository::read_all(const context& ctx,
                                << "script_name: " << script_name << " purpose: " << purpose
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<script_result_entity>> |
-        query_builder::where("tenant_id"_c == tid && "script_name"_c == script_name &&
-                             "purpose"_c == purpose && "sequence_number"_c == sequence_number) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c == script_name && "purpose"_c == purpose &&
+                             "sequence_number"_c == sequence_number) |
         query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<script_result_entity, domain::script_result>(
@@ -316,11 +322,12 @@ script_result_repository::read_at_version(const context& ctx,
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<script_result_entity>> |
-        query_builder::where("tenant_id"_c == tid && "script_name"_c == script_name &&
-                             "purpose"_c == purpose && "sequence_number"_c == sequence_number &&
-                             "version"_c == version) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c == script_name && "purpose"_c == purpose &&
+                             "sequence_number"_c == sequence_number && "version"_c == version) |
         query_builder::limit(1);
 
     const auto entities =
@@ -390,9 +397,10 @@ script_result_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest script results with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_result_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<script_result_entity, domain::script_result>(
         ctx,
@@ -410,8 +418,9 @@ script_result_repository::get_total_result_count(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active script result count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_result_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<script_result_entity>(
         ctx,
@@ -452,11 +461,12 @@ script_result_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<script_result_entity>> |
-        query_builder::where("tenant_id"_c == tid && "script_name"_c.in(script_names) &&
-                             "purpose"_c.in(purposes) && "sequence_number"_c.in(sequence_numbers) &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c.in(script_names) && "purpose"_c.in(purposes) &&
+                             "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<script_result_entity, domain::script_result>(
         ctx,
         query,

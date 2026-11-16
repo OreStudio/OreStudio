@@ -693,7 +693,7 @@ function ProgressBar({
             aria-valuemin={0}
             aria-valuemax={total}
             aria-valuenow={done}
-            className="mt-1 block h-1 w-48 max-w-full overflow-hidden rounded bg-surface-raised"
+            className="mt-1 block h-1 w-full overflow-hidden rounded bg-line"
         >
             <span
                 className="block h-1 rounded bg-accent"

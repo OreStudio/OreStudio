@@ -50,6 +50,7 @@ runs show only real defects.
 | [[id:D37CDA80-087B-481C-A79F-A8B1273E7B1C][Implement Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Initial task for: Hotfix: nightly CI failures |
 | [[id:4E41BCBD-394F-4E5F-983A-BA90728BC154][Fix the remaining nightly failures]] | DONE | | 2026-11-10 | Fix the Windows build, the macOS http client hang and the codegen drift that the nightly runs of 2026-11-10 show. |
 | [[id:B9BCB152-1A9B-40D9-87CB-3731BDE838B6][Clear the new nightly failures]] | DONE | 2026-11-15 | 2026-11-16 | Clear the failures the 2026-11-15 nightly reports after yesterday's fixes: the next -Wchanges-meaning, the synthetic export golden and the marketdata staleness case. |
+| [[id:8A487D47-1383-4EBD-9CB9-794D18802812][Clear the valgrind and GCC failures]] | DONE | 2026-11-16 | 2026-11-16 | Clear the memcheck defects the debug nightly reports and the -Wchanges-meaning the GCC build reports on the bond trade rows. |
 
 * Decisions
 

@@ -117,21 +117,25 @@ void canonical_dates(bond_instrument_data& data) {
     }
 }
 
-#define ORES_DIFF_MEMBER(prefix, a, b, m)                                      \
-    if (!((a).m == (b).m))                                                    \
-        out.push_back(std::string(prefix) + #m)
+#define ORES_DIFF_MEMBER(prefix, a, b, m) \
+    if (!((a).m == (b).m))                \
+    out.push_back(std::string(prefix) + #m)
 
-std::string shown(const std::string& v) { return "'" + v + "'"; }
+std::string shown(const std::string& v) {
+    return "'" + v + "'";
+}
 
-std::string shown(const std::optional<std::string>& v) { return v ? shown(*v) : "null"; }
+std::string shown(const std::optional<std::string>& v) {
+    return v ? shown(*v) : "null";
+}
 
 std::string shown(const std::optional<bool>& v) {
     return v ? (*v ? "true" : "false") : "null";
 }
 
-#define ORES_DIFF_RULE(m)                                                      \
-    if (!(a.m == b.m))                                                        \
-        out.push_back(prefix + #m + "=" + shown(a.m) + "|" + shown(b.m))
+#define ORES_DIFF_RULE(m) \
+    if (!(a.m == b.m))    \
+    out.push_back(prefix + #m + "=" + shown(a.m) + "|" + shown(b.m))
 
 /*
  * The fields of each schedule rule that differ, with both values, so a
@@ -202,8 +206,8 @@ std::vector<std::string> leg_differences(const std::string& prefix,
  * The members of two bonds that differ, a leg's members named under the leg,
  * so a failure says where a bond stops coming back whole.
  */
-std::vector<std::string> differences(const bond_instrument_data& a,
-                                     const bond_instrument_data& b) {
+std::vector<std::string> bond_differences(const bond_instrument_data& a,
+                                          const bond_instrument_data& b) {
     std::vector<std::string> out;
     ORES_DIFF_MEMBER("", a, b, instrument);
     ORES_DIFF_MEMBER("", a, b, issue);
@@ -218,20 +222,20 @@ std::vector<std::string> differences(const bond_instrument_data& a,
     if (a.option_data && b.option_data) {
         const auto& x = *a.option_data;
         const auto& y = *b.option_data;
-        for (const auto& [name, same] : {
-                 std::pair{"long_short", x.long_short == y.long_short},
-                 std::pair{"option_type", x.option_type == y.option_type},
-                 std::pair{"payoff_type", x.payoff_type == y.payoff_type},
-                 std::pair{"style", x.style == y.style},
-                 std::pair{"settlement", x.settlement == y.settlement},
-                 std::pair{"premium_amount", x.premium_amount == y.premium_amount},
-                 std::pair{"premium_pay_date", x.premium_pay_date == y.premium_pay_date},
-                 std::pair{"premiums", x.premiums == y.premiums},
-                 std::pair{"exercise_prices", x.exercise_prices == y.exercise_prices},
-                 std::pair{"exercise_fees", x.exercise_fees == y.exercise_fees},
-                 std::pair{"exercise_data", x.exercise_data == y.exercise_data},
-                 std::pair{"payment_data", x.payment_data == y.payment_data},
-                 std::pair{"settlement_data", x.settlement_data == y.settlement_data}})
+        for (const auto& [name, same] :
+             {std::pair{"long_short", x.long_short == y.long_short},
+              std::pair{"option_type", x.option_type == y.option_type},
+              std::pair{"payoff_type", x.payoff_type == y.payoff_type},
+              std::pair{"style", x.style == y.style},
+              std::pair{"settlement", x.settlement == y.settlement},
+              std::pair{"premium_amount", x.premium_amount == y.premium_amount},
+              std::pair{"premium_pay_date", x.premium_pay_date == y.premium_pay_date},
+              std::pair{"premiums", x.premiums == y.premiums},
+              std::pair{"exercise_prices", x.exercise_prices == y.exercise_prices},
+              std::pair{"exercise_fees", x.exercise_fees == y.exercise_fees},
+              std::pair{"exercise_data", x.exercise_data == y.exercise_data},
+              std::pair{"payment_data", x.payment_data == y.payment_data},
+              std::pair{"settlement_data", x.settlement_data == y.settlement_data}})
             if (!same)
                 out.push_back(std::string("option_data.") + name);
         if (out.empty() || !out.back().starts_with("option_data."))
@@ -306,7 +310,7 @@ TEST_CASE("every bond in the corpus comes back whole from its rows",
             ores::trading::domain::assemble_bond(rebuilt, rows.trade, rows.issue);
             if (!(rebuilt == original)) {
                 std::string members;
-                for (const auto& m : differences(original, rebuilt))
+                for (const auto& m : bond_differences(original, rebuilt))
                     members += " " + m;
                 differing.insert(entry.path().filename().string() + " (" + item.ore_id +
                                  "):" + members);

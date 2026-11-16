@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
+#include "ores.trading.api/builders/composite_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
@@ -2007,7 +2008,10 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityTaRF",
                                              "EquityTouchOption",
                                              "EquityVarianceSwap",
-                                             "EquityWorstOfBasketSwap"};
+                                             "EquityWorstOfBasketSwap",
+                                             "CompositeTrade",
+                                             "ContractForDifference",
+                                             "TotalReturnSwap"};
 /*
  * EquityOutperformanceOption stays out until it is modelled: the option row
  * holds its pair as one name and keeps neither initial price, so a generated
@@ -2092,8 +2096,9 @@ swap_choice underlying_index_of(const domain::trade_generation_scope& scope) {
     }
     throw trade_population_error("No swap convention of the tenant floats on an index in " +
                                  scope.currency_code +
-                                 ", so no risk participation agreement can state its "
-                                 "underlying swap.");
+                                 ", so no floating leg in it can be stated: a risk "
+                                 "participation agreement's swap and a total return swap's "
+                                 "funding need one.");
 }
 
 ores::trading::domain::instrument_batch
@@ -2839,6 +2844,148 @@ build_equity_trade(const domain::trade_generation_scope& scope,
 
 }
 
+namespace {
+
+boost::uuids::uuid structure_id_for(const boost::uuids::uuid& first_leg);
+
+bool is_container(std::string_view type) {
+    return type == "CompositeTrade" || type == "ContractForDifference" || type == "TotalReturnSwap";
+}
+
+ores::trading::domain::instrument_batch
+composite_batch_of(std::expected<ores::trading::domain::composite_instrument_data,
+                                 ores::trading::builders::build_error> built,
+                   const std::string& trade_type_code) {
+    if (!built)
+        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(batch,
+                                             ores::trading::domain::trade_instrument{*built});
+    return batch;
+}
+
+/*
+ * The equity a return is paid on: one quoted in the scope's currency, so the
+ * return and the funding leg need no FX terms to meet.
+ */
+const domain::equity_underlying_reference&
+local_equity_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
+    std::vector<const domain::equity_underlying_reference*> local;
+    for (const auto& underlying : scope.equity_underlyings)
+        if (underlying.currency == scope.currency_code)
+            local.push_back(&underlying);
+    if (local.empty())
+        throw trade_population_error("The tenant holds no equity quoted in " + scope.currency_code +
+                                     ", so no return on one can be paid in it.");
+    return *local[slot % local.size()];
+}
+
+/*
+ * A container books the trades it holds as trades of their own, joined to it
+ * by a structure of its template, the way an imported one is booked. A
+ * composite is a synthetic forward: a long call and a short put at one strike
+ * and expiry. A total return swap and a contract for difference pay the return
+ * on a position in an equity.
+ */
+void add_container(domain::trade_population_plan& plan,
+                   const domain::trade_generation_scope& scope,
+                   const ores::marketdata::conventions::convention_lookup& conventions,
+                   domain::trade_population_slot parent,
+                   year_month_day start,
+                   year_month_day end,
+                   double level) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
+    const auto money = [](double value) {
+        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
+    };
+    const auto& type = parent.trade_type_code;
+    const bool composite = type == "CompositeTrade";
+    const auto& underlying =
+        composite ? equity_for(scope, parent.slot) : local_equity_for(scope, parent.slot);
+    const auto structure_id = structure_id_for(parent.trade_id);
+
+    const auto child = [&](std::string child_type, int sequence) {
+        auto out = parent;
+        out.trade_type_code = std::move(child_type);
+        out.trade_id = named("trade:" + boost::uuids::to_string(parent.trade_id) +
+                             ":sub_trade:" + std::to_string(sequence));
+        out.internal_identifier = parent.internal_identifier + "-" + std::to_string(sequence);
+        out.structure_id = structure_id;
+        out.structure_role = "sub_trade";
+        out.structure_sequence = static_cast<std::uint32_t>(sequence);
+        out.instruments = {};
+        return out;
+    };
+
+    std::vector<domain::trade_population_slot> children;
+    if (composite) {
+        const auto currency =
+            underlying.currency.empty() ? std::string("USD") : underlying.currency;
+        const auto leg = [&](tb::option_kind kind, tb::option_position position, int sequence) {
+            auto out = child("EquityOption", sequence);
+            out.instruments = equity_batch_of(
+                tb::equity_option_builder({.underlying = equity_address_of(underlying.code),
+                                           .currency = currency,
+                                           .quantity = money(parent.notional / level),
+                                           .kind = kind,
+                                           .strike = money(level),
+                                           .expiry = end,
+                                           .position = position})
+                    .build(),
+                out.trade_type_code);
+            return out;
+        };
+        children.push_back(leg(tb::option_kind::call, tb::option_position::long_option, 1));
+        children.push_back(leg(tb::option_kind::put, tb::option_position::short_option, 2));
+        parent.instruments = composite_batch_of(
+            tb::composite_trade_builder(
+                {.currency = currency, .notional_calculation = std::string("Mean")})
+                .build(),
+            type);
+    } else {
+        auto position = child("EquityPosition", 1);
+        position.instruments =
+            build_equity_trade(scope, conventions, position, underlying, start, end, level);
+        children.push_back(std::move(position));
+        const tb::total_return_terms returns{.return_side = first_way(parent) ? tb::side::receive :
+                                                                                tb::side::pay,
+                                             .currency = scope.currency_code,
+                                             .start = start,
+                                             .end = end,
+                                             .initial_price = money(level)};
+        if (type == "ContractForDifference") {
+            parent.instruments =
+                composite_batch_of(tb::contract_for_difference_builder(returns).build(), type);
+        } else {
+            parent.instruments = composite_batch_of(
+                tb::total_return_swap_builder(conventions,
+                                              {.return_leg = returns,
+                                               .funding_notional = money(parent.notional),
+                                               .funding_index = underlying_index_of(scope).index})
+                    .build(),
+                type);
+        }
+    }
+
+    domain::trade_population_structure structure;
+    structure.structure_id = structure_id;
+    structure.counterparty_id = parent.counterparty_id;
+    structure.kind = "Typed";
+    structure.template_code = composite ? "CompositeTrade" : "TotalReturnSwap";
+    plan.structures.push_back(std::move(structure));
+
+    parent.structure_id = structure_id;
+    parent.structure_role = composite ? "composite" : "total_return_swap";
+    parent.structure_sequence = 1;
+    plan.slots.push_back(std::move(parent));
+    for (auto& entry : children)
+        plan.slots.push_back(std::move(entry));
+}
+
+}
+
 domain::trade_population_plan
 equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -2876,6 +3023,10 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto entry = common_slot(scope, slot, types.size());
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
+        if (is_container(type)) {
+            add_container(plan, scope, conventions, std::move(entry), start, end, level);
+            continue;
+        }
         entry.instruments =
             build_equity_trade(scope, conventions, entry, underlying, start, end, level);
         plan.slots.push_back(std::move(entry));
@@ -2915,6 +3066,8 @@ void group_into_structures(domain::trade_population_plan& plan, std::uint32_t st
         order[i] = i;
 
     std::vector<bool> grouped(plan.slots.size(), false);
+    for (std::size_t i = 0; i < plan.slots.size(); ++i)
+        grouped[i] = plan.slots[i].structure_id.has_value();
     for (std::uint32_t n = 0; n < structures_per_book; ++n) {
         std::optional<std::size_t> first;
         bool paired = false;

@@ -60,7 +60,7 @@
       </LegData>
     </EquitySwapData>
   </Trade>
-  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
     <TradeType>EquitySwap</TradeType>
     <EquitySwapData>
       <LegData>
@@ -70,12 +70,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>189880.89</Notional>
+          <Notional>7492174.07</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2027-10-02</EndDate>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2029-01-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -100,8 +100,8 @@
         <DayCounter>A360</DayCounter>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2027-10-02</EndDate>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2029-01-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -110,11 +110,11 @@
           </Rules>
         </ScheduleData>
         <EquityLegData>
-          <Quantity>167</Quantity>
+          <Quantity>1761</Quantity>
           <ReturnType>Price</ReturnType>
           <Underlying>
             <Type>Equity</Type>
-            <Name>RIC:DHER.DE</Name>
+            <Name>RIC:.STOXX50E</Name>
           </Underlying>
         </EquityLegData>
       </LegData>

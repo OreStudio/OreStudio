@@ -33,6 +33,9 @@ CommoditySwaption Trade/CommoditySwaptionData/OptionData/Premiums	optional: ORE'
 CommodityVarianceSwap Trade/CommodityVarianceSwapData/AddPastDividends	optional: ORE's schema gives AddPastDividends minOccurs 0 under CommodityVarianceSwapData
 CommodityVarianceSwap Trade/CommodityVarianceSwapData/MomentType	optional: ORE's schema gives MomentType minOccurs 0 under CommodityVarianceSwapData
 CommodityVarianceSwap Trade/CommodityVarianceSwapData/Underlying	ORE's underlyingTypes group takes Name or Underlying; the trade states Name
+ContractForDifference Trade/ContractForDifferenceData/ReturnData/ScheduleData/Dates	optional: ORE's schema gives Dates minOccurs 0 under ReturnData/ScheduleData; the generated return leg states its one period as Rules
+ContractForDifference Trade/ContractForDifferenceData/UnderlyingData/SubTrade/EquityPositionData/Underlying/IdentifierType	optional: ORE's schema gives IdentifierType minOccurs 0 under underlying
+ContractForDifference Trade/ContractForDifferenceData/UnderlyingData/SubTrade/EquityPositionData/Underlying/Weight	optional: ORE's schema gives Weight minOccurs 0 under underlying
 CreditLinkedSwap Trade/CreditLinkedSwapData/RecoveryPayments	optional: ORE's schema gives RecoveryPayments minOccurs 0 under CreditLinkedSwapData
 EquityAccumulator Trade/EquityAccumulatorData/PricingDates	optional: ORE's schema gives PricingDates minOccurs 0 under EquityAccumulatorData
 EquityAccumulator Trade/EquityAccumulatorData/SettlementCalendar	optional: ORE's schema gives SettlementCalendar minOccurs 0 under EquityAccumulatorData

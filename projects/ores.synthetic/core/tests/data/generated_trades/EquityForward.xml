@@ -11,15 +11,15 @@
       <Quantity>2905</Quantity>
     </EquityForwardData>
   </Trade>
-  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>EquityForward</TradeType>
     <EquityForwardData>
       <LongShort>Long</LongShort>
-      <Maturity>2027-08-02</Maturity>
-      <Name>RIC:DHER.DE</Name>
+      <Maturity>2028-11-02</Maturity>
+      <Name>RIC:.STOXX50E</Name>
       <Currency>EUR</Currency>
-      <Strike>4829.91</Strike>
-      <Quantity>140</Quantity>
+      <Strike>4264.72</Strike>
+      <Quantity>238</Quantity>
     </EquityForwardData>
   </Trade>
 </Portfolio>

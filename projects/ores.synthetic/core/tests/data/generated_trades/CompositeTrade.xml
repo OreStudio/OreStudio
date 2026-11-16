@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+    <TradeType>CompositeTrade</TradeType>
+    <Envelope>
+      <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
+    </Envelope>
+    <CompositeTradeData>
+      <Currency>USD</Currency>
+      <NotionalCalculation>Mean</NotionalCalculation>
+      <Components>
+        <SubTrade id="2508c76e-f649-58c4-ad6e-b97e33085170">
+          <SubTradeType>EquityOption</SubTradeType>
+          <EquityOptionData>
+            <OptionData>
+              <LongShort>Long</LongShort>
+              <OptionType>Call</OptionType>
+              <Style>European</Style>
+              <Settlement>Cash</Settlement>
+              <ExerciseDates>
+                <ExerciseDate>2033-09-02</ExerciseDate>
+              </ExerciseDates>
+            </OptionData>
+            <Name>RIC:.SPX</Name>
+            <Currency>USD</Currency>
+            <Quantity>2061.99</Quantity>
+            <Strike>4590.75</Strike>
+          </EquityOptionData>
+        </SubTrade>
+        <SubTrade id="ac4a1843-5b5f-5b87-9c74-73d55dec2d5a">
+          <SubTradeType>EquityOption</SubTradeType>
+          <EquityOptionData>
+            <OptionData>
+              <LongShort>Short</LongShort>
+              <OptionType>Put</OptionType>
+              <Style>European</Style>
+              <Settlement>Cash</Settlement>
+              <ExerciseDates>
+                <ExerciseDate>2033-09-02</ExerciseDate>
+              </ExerciseDates>
+            </OptionData>
+            <Name>RIC:.SPX</Name>
+            <Currency>USD</Currency>
+            <Quantity>2061.99</Quantity>
+            <Strike>4590.75</Strike>
+          </EquityOptionData>
+        </SubTrade>
+      </Components>
+    </CompositeTradeData>
+  </Trade>
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+    <TradeType>CompositeTrade</TradeType>
+    <Envelope>
+      <CounterParty>55555555-5555-5555-5555-555555555555</CounterParty>
+    </Envelope>
+    <CompositeTradeData>
+      <Currency>EUR</Currency>
+      <NotionalCalculation>Mean</NotionalCalculation>
+      <Components>
+        <SubTrade id="ff6e9d56-34e2-53cd-996b-5bb6c703e6e3">
+          <SubTradeType>EquityOption</SubTradeType>
+          <EquityOptionData>
+            <OptionData>
+              <LongShort>Long</LongShort>
+              <OptionType>Call</OptionType>
+              <Style>European</Style>
+              <Settlement>Cash</Settlement>
+              <ExerciseDates>
+                <ExerciseDate>2026-08-02</ExerciseDate>
+              </ExerciseDates>
+            </OptionData>
+            <Name>RIC:DHER.DE</Name>
+            <Currency>EUR</Currency>
+            <Quantity>889.5</Quantity>
+            <Strike>2753.31</Strike>
+          </EquityOptionData>
+        </SubTrade>
+        <SubTrade id="46ba02f6-bf11-5e08-9fb8-7de90073d8bb">
+          <SubTradeType>EquityOption</SubTradeType>
+          <EquityOptionData>
+            <OptionData>
+              <LongShort>Short</LongShort>
+              <OptionType>Put</OptionType>
+              <Style>European</Style>
+              <Settlement>Cash</Settlement>
+              <ExerciseDates>
+                <ExerciseDate>2026-08-02</ExerciseDate>
+              </ExerciseDates>
+            </OptionData>
+            <Name>RIC:DHER.DE</Name>
+            <Currency>EUR</Currency>
+            <Quantity>889.5</Quantity>
+            <Strike>2753.31</Strike>
+          </EquityOptionData>
+        </SubTrade>
+      </Components>
+    </CompositeTradeData>
+  </Trade>
+</Portfolio>

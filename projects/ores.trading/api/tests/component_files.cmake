@@ -106,6 +106,7 @@ set(files
     "booking_nature_type_protocol_codec_roundtrip_tests.cpp"
     "builders_bond_builders_tests.cpp"
     "builders_commodity_builders_tests.cpp"
+    "builders_composite_builders_tests.cpp"
     "builders_credit_builders_tests.cpp"
     "builders_equity_builders_tests.cpp"
     "builders_fx_builders_tests.cpp"

@@ -43,6 +43,7 @@
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/callable_swap_call_date_protocol.hpp"
 #include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-16
 #+updated: 2026-11-16
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -83,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+compass image has three subcommands: stage (fetch the binary list from the
+service registry, strip, partition into shared libraries plus one directory
+per service), build (base, library image, per-service images, NATS), and
+publish (tag every image as <registry>/<name>:<version>-<commit>, skip a tag
+the registry already holds, optional --alias moving tag, --dry-run to list).
+--engine selects docker or podman, --preset overrides ORES_PRESET and
+--from-stage builds without staging again.
+
+The nightly build calls compass image stage in the clang-release job, uploads
+build/docker-stage (625 MB of libraries plus 3.3 MB of binaries), and a new
+publish_images job downloads it and runs compass image publish --from-stage
+--engine docker --registry ghcr.io/orestudio --alias main with
+packages: write. Only the release configuration is published. A wrapper
+script was considered and rejected: the logic belongs in compass, where it
+is tested and where env deploy can reuse it.

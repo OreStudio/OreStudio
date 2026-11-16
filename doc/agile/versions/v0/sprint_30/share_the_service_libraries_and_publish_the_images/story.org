@@ -39,7 +39,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | [[id:8810BF09-8DCF-4369-A620-9A987523E371][Scaffold story: Share the service libraries and publish the images to GitHub Container Registry]] | STARTED | 2026-11-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:3B954E2A-EC2B-4A8F-9A20-9EB7356E4F7F][Share the libraries in one image instead of per service]] | DONE | 2026-11-16 | 2026-11-16 | Initial task for: Share the service libraries and publish the images to GitHub Container Registry |
 | [[id:8380C9CD-5A97-46B4-A757-DB31D6A04298][Strip the staged libraries with --strip-all]] | DONE | | 2026-11-16 | The staged libraries keep their symbol and string tables. Strip them with --strip-all before podman sees them. |
-| [[id:615C47EB-6E24-4206-9976-4D797AD42F34][Publish the images from the nightly release build]] | BACKLOG | | | Add compass image publish and a nightly job that publishes the release image hierarchy to ghcr.io, skipping a tag that is already published. |
+| [[id:615C47EB-6E24-4206-9976-4D797AD42F34][Publish the images from the nightly release build]] | DONE | | 2026-11-16 | Add compass image publish and a nightly job that publishes the release image hierarchy to ghcr.io, skipping a tag that is already published. |
 | [[id:15ECCA94-F279-400F-BAA1-2B0B1519390E][Pull the published images when deploying to a host]] | BACKLOG | | | Let compass env deploy pull the published images instead of transferring them, so pauli only fetches what it does not have. |
 
 * Decisions

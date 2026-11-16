@@ -41,6 +41,7 @@
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -48,6 +49,7 @@
 #include <chrono>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace {
@@ -214,10 +216,12 @@ void write_issue(const trade_population_slot& slot,
     CHECK(response.result.outcome == outcome::ok);
 }
 
-/// Resets a member to its default, when it has one.
+/// Resets a member to its default. A member with no default fails to compile.
 template <typename T>
 void reset(T& member) {
-    if constexpr (requires { member = T{}; })
+    if constexpr (std::is_same_v<T, ores::utility::uuid::tenant_id>)
+        member = ores::utility::uuid::tenant_id::system();
+    else
         member = T{};
 }
 
@@ -273,6 +277,45 @@ std::optional<boost::uuids::uuid> trade_of(const Row& row) {
         return std::nullopt;
 }
 
+/// The names of the fields that differ between two rows.
+template <typename Row>
+std::vector<std::string> differing_fields(const Row& a, const Row& b) {
+    std::vector<std::string> out;
+    ores::utility::codec::apply_fields(
+        [&](const auto&... fields) {
+            ((a.*(fields.member) == b.*(fields.member)
+                  ? void()
+                  : out.push_back(std::string(fields.name))),
+             ...);
+        },
+        wire_fields(std::type_identity<Row>{}));
+    return out;
+}
+
+/**
+ * @brief For each booked row with no equal row read back, the fields that
+ * differ from the closest row read back.
+ */
+template <typename Row>
+std::string describe_mismatch(const std::vector<Row>& expected, const std::vector<Row>& actual) {
+    std::string out;
+    for (const auto& row : expected) {
+        if (actual.empty() || std::ranges::find(actual, row) != actual.end())
+            continue;
+        std::vector<std::string> closest;
+        for (const auto& candidate : actual) {
+            auto fields = differing_fields(row, candidate);
+            if (closest.empty() || fields.size() < closest.size())
+                closest = std::move(fields);
+        }
+        out += " [";
+        for (std::size_t i = 0; i < closest.size(); ++i)
+            out += (i == 0 ? "" : ",") + closest[i];
+        out += "]";
+    }
+    return out;
+}
+
 /**
  * @brief Names each array of the batch whose rows for the trade differ
  * between what was booked and what the export reads back.
@@ -301,7 +344,8 @@ std::vector<std::string> differing_arrays(ores::trading::domain::instrument_batc
                         !std::is_permutation(expected.begin(), expected.end(), actual.begin()))
                         out.push_back(std::string(fields.name) + " (booked " +
                                       std::to_string(expected.size()) + ", read " +
-                                      std::to_string(actual.size()) + ")");
+                                      std::to_string(actual.size()) + ")" +
+                                      describe_mismatch(expected, actual));
                 }(),
                 ...);
         },

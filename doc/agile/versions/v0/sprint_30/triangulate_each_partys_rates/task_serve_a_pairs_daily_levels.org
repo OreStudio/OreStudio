@@ -95,6 +95,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: each request reads every series and identity of the tenant to find one party's sources | pair_levels_handler.hpp | Decline for now | The derived source asks once per pair per pass; its provisioning run in the next task measures the cost, and a cache keyed by tenant follows if it shows. |
 | 2 | Local review: the staleness comment in the composer is terse | pair_levels.cpp | Decline | The filter beside it states the rule: only days every leg was fixed on are replayed. |
+| 3 | Bot: a window naming one date twice could count as a second side | pair_levels.cpp | Accept | Fixed in 5485798e2e; df717adb96 states it and failed before the fix with the extra day in its diff. |
+| 4 | Bot: a value that is not a number is dropped without a trace | pair_levels.cpp | Decline | A fixing that is not a number is an ingest fault; a missing level is already the rule for a day without one. |
+| 5 | Bot: the one-day staleness bound is a literal | pair_levels.cpp | Decline | It is not derived from the replay's close; the comment says why one day keeps every replayed day fresh. |
+| 6 | Bot: name the direct includes | pair_levels.cpp | Accept | Fixed in 5485798e2e. |
+| 7 | Bot: list the refusal codes in the model | fixing_read_operations.org | Decline | The response's result comment names the refusals a caller acts on. |
+| 8 | Bot: no handler test of an unknown party | pair_levels_handler.hpp | Decline | One map lookup; a handler test needs the NATS fixture, and the rules live in the composition, which is tested. |
 
 * Result
 

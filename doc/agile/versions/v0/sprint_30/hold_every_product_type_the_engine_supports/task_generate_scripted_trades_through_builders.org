@@ -26,11 +26,11 @@ Every scripted trade type the generator books is built by its trade builder, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -92,3 +92,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scripted family is generated through builders, and the engine builds every
+type it books.
+
+- The scripted builders need no convention: a script reads its variables as the
+  trade states them, so convention_lookup answers them with no change.
+- scripted_trade_builder takes a library script, its inputs as the store holds
+  them and the trade's typed variables, and refuses a trade that leaves out an
+  input or states it in another type or shape. The double digital option, the
+  performance option and the autocallable each have a builder of their own.
+- The planner reads the library's inputs into the scope, draws values and calls
+  the builders. construct_scripted_batch, its row helpers and script_of are
+  deleted, and the four types leave the list awaiting builders.
+- Autocallable_01 is booked: the projection reads and writes its element, and a
+  class member that holds a ScheduleData is an event.
+- The scripted entries leave the known lists. The test recipe names its
+  equities as ORE's Products market holds their curves and volatilities, which
+  clears 23 equity-curve errors across the equity and scripted types. The
+  engine then reached three trade errors, which are fixed: the Ascot states one
+  exercise date, a convertible draws a share in the bond's currency, and the
+  autocallable fixes from a year after the anchor. EquitySwap's EquityLeg has
+  no engine configuration in the Products example and is listed as such.
+- The read of a class member asked every member for a child, which threw on a
+  scalar and emptied the double digital option's import. It now asks the
+  binding whether the member holds a schedule.
+- The corpus roundtrip reads every ORE sample of ScriptedTrade,
+  DoubleDigitalOption and PerformanceOption_01 with no known loss. ORE ships no
+  XML sample of Autocallable_01, so the projection test round-trips one.
+
+Verified: trading api 4640 cases, trading core 252, ORE core 545 and synthetic
+145 with the ORE engine, all passing.

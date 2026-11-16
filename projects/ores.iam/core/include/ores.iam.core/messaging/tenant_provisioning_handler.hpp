@@ -1518,9 +1518,11 @@ private:
      *
      * A curve is derived data, so it belongs to the party that bootstraps it and not to the
      * system. The party copies every blueprint the system tenant holds, and each pillar reads
-     * the party's own series of the same item from the same provider. The step waits up to three
-     * minutes for a party's quotes to reach its series, then publishes each curve the party has
-     * not published yet. Under the tenant's auto-approval the publish closes at once.
+     * the party's own series of the same item from the same provider. Every party is planned
+     * together and asked about again until all are ready, and the wait lasts while the work
+     * moves: three minutes with no new curve ready is when it stops. A wait counted per party,
+     * one after another, gave the first party the least time. The step then publishes each curve
+     * a party has not published yet. Under the tenant's auto-approval the publish closes at once.
      *
      * A curve that does not publish fails the step, named with its party. A second run writes no
      * row twice and publishes only the curves that are still missing.
@@ -1554,40 +1556,71 @@ private:
         provision_step_result result;
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
+
+        struct party_target {
+            std::string name;
+            boost::uuids::uuid id;
+            internal_request_client client;
+            party_curve_plan plan;
+        };
+        std::vector<party_target> targets;
+        targets.reserve(parties.size());
         for (const auto& party_name : parties) {
             const auto party = find_party(discover, party_name);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
-            auto party_client =
-                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+            targets.push_back({.name = party_name,
+                               .id = party->id,
+                               .client = make_step_client(
+                                   command.tenant_id, actor.account_id, party->id, actor.username),
+                               .plan = {}});
+        }
 
-            const auto started = std::chrono::steady_clock::now();
-            auto plan =
-                plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
-            while (!plan.waiting.empty() &&
-                   std::chrono::steady_clock::now() < started + quote_patience) {
-                const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
+        const auto plan_all = [&] {
+            std::size_t ready = 0;
+            std::size_t total = 0;
+            for (auto& target : targets) {
+                target.plan =
+                    plan_party_curves(system, read_party_curve_holdings(target.client, target.id));
+                ready += target.plan.ready.size();
+                total += target.plan.ready.size() + target.plan.waiting.size();
+            }
+            return std::pair{ready, total};
+        };
+        auto [ready, total] = plan_all();
+        auto last_moved = std::chrono::steady_clock::now();
+        while (ready < total && std::chrono::steady_clock::now() < last_moved + quote_patience) {
+            for (const auto& target : targets) {
+                if (target.plan.waiting.empty())
+                    continue;
+                const auto line = target.name + ": " + std::to_string(target.plan.waiting.size()) +
                                   " curve(s) wait for their quotes, asking again in " +
                                   std::to_string(retry_interval.count()) + "s";
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "publish_party_curves: " << line;
-                // The count ready moves only as quotes arrive, so waiting is
-                // seen to progress or to stand still.
-                wf.progress(party_name + ": curves with their quotes",
-                            static_cast<std::int64_t>(plan.ready.size()),
-                            static_cast<std::int64_t>(plan.ready.size() + plan.waiting.size()));
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = line,
                                     .context = {}});
-                std::this_thread::sleep_for(retry_interval);
-                plan =
-                    plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
             }
+            wf.progress("Curves with their quotes, over every party",
+                        static_cast<std::int64_t>(ready),
+                        static_cast<std::int64_t>(total));
+            std::this_thread::sleep_for(retry_interval);
+            const auto before = ready;
+            std::tie(ready, total) = plan_all();
+            if (ready > before)
+                last_moved = std::chrono::steady_clock::now();
+        }
+
+        for (auto& target : targets) {
+            const auto& party_name = target.name;
+            auto& party_client = target.client;
+            const auto& plan = target.plan;
             write_party_curve_plan(party_client, plan, party_name);
             for (const auto& waiting : plan.waiting)
                 result.curves_not_published.push_back(party_name + ": " + waiting);
 
-            const auto published = published_configs_of(party_client, party->id);
+            const auto published = published_configs_of(party_client, target.id);
             std::vector<std::pair<std::string, std::string>> curves;
             for (const auto& curve : plan.ready) {
                 const auto id = boost::uuids::to_string(curve.config_id);
@@ -1596,7 +1629,7 @@ private:
             }
             auto outcome = publish_curves(wf,
                                           party_client,
-                                          party->id,
+                                          target.id,
                                           curves,
                                           publish_reason,
                                           "publish_party_curves " + party_name,
@@ -1616,7 +1649,7 @@ private:
                 result.curves.push_back(party_name + ": " + line);
             for (auto& line : outcome.not_published)
                 result.curves_not_published.push_back(party_name + ": " + line);
-            result.parties.push_back(boost::uuids::to_string(party->id));
+            result.parties.push_back(boost::uuids::to_string(target.id));
         }
 
         for (const auto& not_published : result.curves_not_published)

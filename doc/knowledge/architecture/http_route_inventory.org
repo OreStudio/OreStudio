@@ -76,7 +76,7 @@ an API publishes no area, so it is counted under =(none)=.
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
-| reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 87 | composed view 19, resource 68 |
+| reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 88 | composed view 20, resource 68 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
@@ -101,7 +101,7 @@ change of its own, not part of the port.
 |------+--------------+-----------+-------+-------------+--------------|
 | a report configuration | GET /api/reporting/configurations/:id, GET /api/reporting/configurations/{id} | web/src/api/client.ts | ores.reporting | the configuration, the names of its type and parties, its analytics and their names, and its market data bindings, five reads | ETag on the whole view, stale after 60 s |
 | a run's files | GET /api/reporting/runs/{id}/files, GET /api/reporting/runs/{id}/files/{file}, GET /api/reporting/runs/{id}/files/{file}/info | no client calls it | ores.reporting | the run, the packages compute says it read and wrote, the entries storage says each input package holds, the files each accepted result's manifest names, and the ORE catalogue, so a read that fails leaves its part of the tree out | no cache: a run's files are read when a person opens the run, and the bytes of a file are served from the object as the socket asks for them |
-| an ORE schema's contents | GET /api/reporting/ore-files/:code/schema | web/src/api/client.ts | ores.reporting | the catalogue entry that is a schema with this code, and its stored contents at the engine version asked for, two reads | no cache: the schema is read from the store per request |
+| an ORE schema's contents | GET /api/reporting/ore-files/:code/schema, GET /api/reporting/ore-files/{code}/schema | web/src/api/client.ts | ores.reporting | the catalogue entry that is a schema with this code, and its stored contents at the engine version asked for, two reads | no cache: the schema is read from the store per request |
 | an item's fixing series | GET /api/marketdata/fixing-series | web/src/api/client.ts | ores.marketdata | the market series found by URI, with the providers, feeds, scopes, sessions and suppliers read beside it, then its fixings | ETag on the whole view, stale after 5 min |
 | one subject's story | GET /api/timeline | web/src/api/client.ts | ores.workflow | every component's rows for one subject, each source read under its owner's permission and a refused source reported as a gap | ETag on the whole view, stale after 30 s |
 | the approval inbox | GET /api/requests | web/src/api/client.ts | ores.workflow | every kind of request this person may decide, gathered into one queue with each kind's subject | ETag on the whole view, stale after 15 s |
@@ -154,13 +154,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
-| reporting | 44 | 43 | 1 |
+| reporting | 44 | 44 | 0 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 28 | 7 |
-| total | 328 | 251 | 77 |
+| total | 328 | 252 | 76 |
 
 * The pairing
 
@@ -366,7 +366,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | PUT =/api/reporting/engine-settings/:id/groups/:group= | PUT /api/reporting/engine-settings/{id}/groups/{group} |
 | GET =/api/reporting/engine-settings/:id/history= | GET /api/reporting/engine-settings/{id}/history |
 | GET =/api/reporting/engine-settings/documentation= | GET /api/reporting/engine-settings/documentation |
-| GET =/api/reporting/ore-files/:code/schema= | none |
+| GET =/api/reporting/ore-files/:code/schema= | GET /api/reporting/ore-files/{code}/schema |
 | GET =/api/reporting/pricing-engines= | GET /api/reporting/pricing-engines |
 | POST =/api/reporting/pricing-engines= | POST /api/reporting/pricing-engines |
 | DELETE =/api/reporting/pricing-engines/:id= | DELETE /api/reporting/pricing-engines/{id} |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1345 routes: 328 answered by the BFF and 1017 by ores.http.
+1346 routes: 328 answered by the BFF and 1018 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1108,6 +1108,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reporting | put | =/api/reporting/engine-settings/{id}/groups/{group}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:888 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/{id}/history= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:421 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | composed view | reporting | get | =/api/reporting/ore-files/:code/schema= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:677 | One schema of one engine version: the file catalogue names the schema and the stored versions supply its contents, so two collections are joined to answer. |
+| composed view | reporting | get | =/api/reporting/ore-files/{code}/schema= | ores.http | projects/ores.http/reporting/src/routes/reporting/ore_schema_zip.cpp:206 | One schema of one engine version: the file catalogue names the schema and the stored versions supply its contents, so two collections are joined to answer. |
 | resource | reporting | get | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:926 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | resource | reporting | get | =/api/reporting/pricing-engines= | ores.http | projects/ores.http/reporting/src/routes/reporting/pricing_engine_routes.cpp:180 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | resource | reporting | post | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1026 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |

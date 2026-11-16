@@ -27,6 +27,7 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
 #include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -102,7 +103,7 @@ std::string setting_json_of(const engine_setting_row& setting,
         member("column", json::write(setting.column)),
         member("ore", json::write(setting.ore)),
         member("changesNumbers", setting.changes_numbers ? "true" : "false")};
-    const auto values = value_set_rows::fields_members(fields);
+    const auto values = ores::http::routes::value_fields_members(fields);
     members.insert(members.end(), values.begin(), values.end());
     members.push_back(member("documented", documented != nullptr ? "true" : "false"));
     members.push_back(
@@ -143,7 +144,8 @@ std::string documentation_of(const http_request& req, nats_client& session) {
     }
 
     const value_set_reader reader(
-        value_set_rows::tables_of(req, session), [&req, &session](std::string_view relation) {
+        ores::http::routes::read_value_set_tables(req, session),
+        [&req, &session](std::string_view relation) {
             return value_set_rows::catalogue_choices_of(req, session, relation);
         });
 

@@ -32,6 +32,7 @@
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/json_shape.hpp"
+#include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
@@ -223,7 +224,7 @@ documentation documented_rows(const std::vector<ore_parameter>& parameters) {
 std::vector<std::string> vocabulary_values_of(const value_set_reader& reader,
                                               std::string_view scope,
                                               std::string_view name) {
-    return value_set_rows::fields_members(reader.fields_of(scope, name));
+    return ores::http::routes::value_fields_members(reader.fields_of(scope, name));
 }
 
 /// Every value set a setting links to, keyed by the scope and name the tables use.
@@ -240,7 +241,7 @@ std::string value_sets_json(const value_set_reader& reader,
 std::string vocabulary_json(const http_request& req, nats_client& session) {
     const auto rows = read_rows(req, session);
     const auto documented = documented_rows(rows.parameters);
-    const auto tables = value_set_rows::tables_of(req, session);
+    const auto tables = ores::http::routes::read_value_set_tables(req, session);
     const auto reader = value_set_reader(tables, [&req, &session](std::string_view relation) {
         return value_set_rows::catalogue_choices_of(req, session, relation);
     });

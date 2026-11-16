@@ -430,6 +430,33 @@ def _stream_images(project_root, host, images):
         _ssh(host, f"rm -rf {shlex.quote(remote_build_context)}", check=True)
 
 
+
+def _pull_images(project_root, host, registry, tag, names):
+    """Pull the published images on the remote host.
+
+    Each image is re-tagged under the local name remote-run.sh resolves, so
+    a pull deploy and a transfer deploy run the same remote script. The
+    registry holds one tag per commit, so a pull either gets the exact
+    build this checkout produced or fails; --image-tag selects a moving tag
+    such as main instead.
+    """
+    lines = [
+        "set -euo pipefail",
+        'export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"',
+        'echo "=== Pulling images from ${REGISTRY} ==="',
+    ]
+    for name in names:
+        lines += [
+            f'echo "  {name}"',
+            f'podman pull "${{REGISTRY}}/{name}:${{TAG}}"',
+            f'podman tag "${{REGISTRY}}/{name}:${{TAG}}" "localhost/{name}:${{TAG}}"',
+            f'podman tag "${{REGISTRY}}/{name}:${{TAG}}" "localhost/{name}:local"',
+        ]
+    lines.append('echo "  pull complete."')
+    _remote_script(host, "\n".join(lines) + "\n",
+                   {"REGISTRY": registry, "TAG": tag,
+                    "PULLED_NAMES": " ".join(names)})
+
 def _transfer_one_image(project_root, host, img):
     """Copy a single image to the remote host with the standard podman command.
 
@@ -530,9 +557,9 @@ def _transfer_compute(project_root, host, remote_root, env_path, keys_stage):
     _scp(project_root, host, env_path, f"{remote_env_dir}/compute.env")
 
 
-def _deploy_runtime(project_root, host, profile_env, remote_root):
+def _deploy_runtime(project_root, host, profile_env, remote_root, tag=None):
     label = _label(profile_env, project_root)
-    tag = _version_tag(project_root)
+    tag = tag or _version_tag(project_root)
     services = _runtime_services(project_root)
     print(f"=== Deploying runtime to {host} (label '{label}', tag '{tag}') ===")
     print(f"  Services: {len(services)}")
@@ -545,8 +572,8 @@ def _deploy_runtime(project_root, host, profile_env, remote_root):
                     "IMAGE_TAG": tag, "SERVICES": services_arg})
 
 
-def _deploy_compute(project_root, host, remote_root, label):
-    tag = _version_tag(project_root)
+def _deploy_compute(project_root, host, remote_root, label, tag=None):
+    tag = tag or _version_tag(project_root)
     print(f"=== Deploying compute node to {host} (label '{label}', "
           f"tag '{tag}') ===")
     script = (project_root / "docker" / "remote-run.sh").read_text(
@@ -713,6 +740,15 @@ def _cmd_deploy(argv, project_root):
                     help="Stop the remote containers instead of deploying")
     ap.add_argument("--purge", action="store_true",
                     help="With --stop: also remove the staged certs volume")
+    ap.add_argument("--pull", action="store_true",
+                    help="Pull the published images on the host instead of "
+                         "transferring the local ones")
+    ap.add_argument("--registry", type=str, default="ghcr.io/orestudio",
+                    help="Registry prefix the images are published to "
+                         "(with --pull; default: ghcr.io/orestudio)")
+    ap.add_argument("--image-tag", type=str, default=None,
+                    help="Tag to pull (with --pull; default: the version "
+                         "and commit this checkout would publish)")
     ap.add_argument("--setup-host", action="store_true",
                     help="One-time remote host prep (podman present, "
                          "linger, dbus.socket) and exit")
@@ -776,9 +812,11 @@ def _cmd_deploy(argv, project_root):
     _preflight(project_root, profile_path, args.role, profile_env)
     _require_podman(remote_host)
 
-    # Image build is a separate step — require it to have been run first.
+    # A transfer deploy needs the images built locally; a pull deploy fetches
+    # them from the registry instead.
     import image_build  # noqa: PLC0415
-    if not image_build.check_images_exist(project_root, args.role):
+    if not args.pull and not image_build.check_images_exist(project_root,
+                                                            args.role):
         return 1
 
     if args.role == "compute":
@@ -788,26 +826,35 @@ def _cmd_deploy(argv, project_root):
                 f"compute role requires {', '.join(missing)} in "
                 f"{profile_path} — add them (from the serving "
                 "environment's checkout) and re-run")
-        tag = _version_tag(project_root)
+        tag = args.image_tag or _version_tag(project_root)
         label = _compute_label(profile_env, project_root)
-        _stream_images(project_root, remote_host,
-                       [f"{IMAGE_COMPUTE}:{tag}"])
+        if args.pull:
+            _pull_images(project_root, remote_host, args.registry, tag,
+                         ["ores-compute-wrapper"])
+        else:
+            _stream_images(project_root, remote_host,
+                           [f"{IMAGE_COMPUTE}:{tag}"])
         env_path, keys_stage = _write_compute_env(
             project_root, profile_env, label, remote_root, remote_host)
         _transfer_compute(project_root, remote_host, remote_root, env_path,
                           keys_stage)
-        _deploy_compute(project_root, remote_host, remote_root, label)
+        _deploy_compute(project_root, remote_host, remote_root, label, tag)
         return 0
 
-    tag = _version_tag(project_root)
-    svc_images = [f"localhost/{s}:{tag}"
-                  for s in _runtime_services(project_root)]
-    _stream_images(project_root, remote_host,
-                   [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}", *svc_images,
-                    f"{IMAGE_NATS}:{tag}"])
+    tag = args.image_tag or _version_tag(project_root)
+    if args.pull:
+        _pull_images(project_root, remote_host, args.registry, tag,
+                     ["ores-service-base", "ores-service-libs", "ores-nats"]
+                     + _runtime_services(project_root))
+    else:
+        svc_images = [f"localhost/{s}:{tag}"
+                      for s in _runtime_services(project_root)]
+        _stream_images(project_root, remote_host,
+                       [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}",
+                        *svc_images, f"{IMAGE_NATS}:{tag}"])
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))
-    _deploy_runtime(project_root, remote_host, profile_env, remote_root)
+    _deploy_runtime(project_root, remote_host, profile_env, remote_root, tag)
     return 0
 
 

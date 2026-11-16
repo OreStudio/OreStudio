@@ -224,6 +224,27 @@ would be pushed.
 Only the release configuration is published: the debug build is several
 times larger and no host runs it.
 
+* Deploying from the published images
+
+A host that can reach GitHub Container Registry pulls the images instead
+of receiving a transfer:
+
+#+begin_src sh :results verbatim
+compass env deploy pauli --pull
+compass env deploy pauli --pull --image-tag main
+compass env deploy pauli --pull --registry ghcr.io/orestudio
+#+end_src
+
+Without =--image-tag= the deploy pulls the tag this checkout would
+publish — the version and the short commit — so the host runs the exact
+build of the working tree. =--image-tag main= takes the newest nightly
+instead. The pulled images are tagged under the local names
+=docker/remote-run.sh= resolves, so the rest of the deploy, including
+=--stop=, is the same as a transfer.
+
+A =--pull= deploy does not need =compass image build= on this machine and
+does not check that the local images exist.
+
 * See also
 
 - [[id:0168F066-BFA4-4CFE-8A61-A2C727D91D10][How do I use named env files?]] — the =--env <host>= registry this

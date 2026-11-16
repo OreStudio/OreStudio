@@ -300,7 +300,8 @@ def image_names(project_root: Path) -> list[str]:
     localhost/ prefix, so a service called ores.iam.service is published as
     ores.iam.service.
     """
-    names = ["ores-service-base", "ores-service-libs", "ores-nats"]
+    names = ["ores-service-base", "ores-service-libs", "ores-nats",
+             "ores-compute-wrapper"]
     names += runtime_services(project_root)
     return names
 

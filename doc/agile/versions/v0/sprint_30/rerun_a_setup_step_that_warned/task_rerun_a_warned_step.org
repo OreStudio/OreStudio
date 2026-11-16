@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: DE4C29C3-EB45-4014-BD38-596B2B7C1C34
+:END:
+#+title: Task: Re-run a setup step that ended with warnings
+#+description: The engine resumes only a stopped run, under the step's old idempotency key; add a re-run of one warned step of a finished run, and offer it in the setup report in the shell and the web.
+#+type: task
+#+level: s1
+#+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
+#+owner: marco
+#+branch: feature/derive-from-the-pairs-levels
+#+pr: 4790
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant administrator re-runs a step that ended with warnings from the setup report, and the step does only the work it did not finish.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] |
+| Now          | Engine re-run operation.               |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-16                               |
+
+* Acceptance
+
+- The engine re-runs a completed_with_warnings step that is not essential, of a finished run, under a new idempotency key, and records the new outcome; other steps and running runs are refused with their reason.
+- setup-report rerun STEP in the shell and a Re-run button on /setup-report start it and show its outcome.
+- Each of the nine steps that are not essential, re-run on a provisioned Acme tenant, adds nothing that was already there.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -31,7 +31,7 @@ namespace {
 
 namespace qm = analytics::quant::math;
 
-/// The pair's log level on each date, keyed by date so the legs align.
+/// The pair's log level on each date, oldest first.
 std::map<std::chrono::year_month_day, double> log_levels(const dated_series& series) {
     std::map<std::chrono::year_month_day, double> out;
     const auto n = std::min(series.dates.size(), series.values.size());
@@ -87,37 +87,8 @@ std::string fx_option_convention_id(const derived_fx_pair& pair) {
     return pair.base + "-" + pair.quote + "-FXOPTION";
 }
 
-std::string ecb_fixing_item(std::string_view currency) {
-    return "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=" + std::string(currency);
-}
-
-pair_legs ecb_legs_of(const derived_fx_pair& pair) {
-    pair_legs out;
-    if (pair.quote != "EUR")
-        out.plus = ecb_fixing_item(pair.quote);
-    if (pair.base != "EUR")
-        out.minus = ecb_fixing_item(pair.base);
-    return out;
-}
-
-std::expected<pair_returns, std::string>
-pair_log_returns(const std::optional<dated_series>& plus,
-                 const std::optional<dated_series>& minus) {
-    if (!plus && !minus)
-        return std::unexpected("a pair needs at least one leg");
-    std::map<std::chrono::year_month_day, double> level;
-    if (plus && minus) {
-        const auto up = log_levels(*plus);
-        const auto down = log_levels(*minus);
-        for (const auto& [date, value] : up)
-            if (const auto other = down.find(date); other != down.end())
-                level.emplace(date, value - other->second);
-    } else if (plus) {
-        level = log_levels(*plus);
-    } else {
-        for (const auto& [date, value] : log_levels(*minus))
-            level.emplace(date, -value);
-    }
+pair_returns pair_log_returns(const dated_series& levels) {
+    const auto level = log_levels(levels);
     pair_returns out;
     out.returns.reserve(level.empty() ? 0 : level.size() - 1);
     out.dates.reserve(out.returns.capacity());

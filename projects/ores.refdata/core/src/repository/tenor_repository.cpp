@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_json_io.hpp" // IWYU pragma: keep.
@@ -117,6 +118,21 @@ bool tenor_claim_reads_current(const ores::utility::domain::precondition& claim)
 using tenor_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::tenor>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::tenor> tenor_claim_rows(const ores::database::context& ctx,
+                                            std::vector<domain::tenor> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -131,7 +147,7 @@ tenor_rows_by_key tenor_current_rows(tenor_repository& repo,
         codes.push_back(row.code);
     }
     tenor_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes))
+    for (auto& item : tenor_claim_rows(ctx, repo.read_latest(ctx, codes)))
         current[std::make_tuple(item.code)].push_back(std::move(item));
     return current;
 }
@@ -191,7 +207,7 @@ domain::tenor tenor_apply_claim(const domain::tenor& v,
 }
 
 void tenor_repository::write(const context& ctx, const domain::tenor& v) {
-    write(ctx, v, tenor_replace_claim(read_latest(ctx, v.code)));
+    write(ctx, v, tenor_replace_claim(tenor_claim_rows(ctx, read_latest(ctx, v.code))));
 }
 
 void tenor_repository::write(const context& ctx, const std::vector<domain::tenor>& v) {
@@ -207,10 +223,11 @@ void tenor_repository::write(const context& ctx,
                              const domain::tenor& v,
                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor. " << "code: " << v.code;
-    const auto t = tenor_apply_claim(
-        v,
-        claim,
-        tenor_claim_reads_current(claim) ? read_latest(ctx, v.code) : std::vector<domain::tenor>{});
+    const auto t = tenor_apply_claim(v,
+                                     claim,
+                                     tenor_claim_reads_current(claim) ?
+                                         tenor_claim_rows(ctx, read_latest(ctx, v.code)) :
+                                         std::vector<domain::tenor>{});
     query_builder::execute_write_query(
         ctx, tenor_mapper::map(t), lg(), "Writing tenor to database.");
 }
@@ -238,8 +255,10 @@ void tenor_repository::write(const context& ctx,
 std::vector<domain::tenor> tenor_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<tenor_entity, domain::tenor>(
@@ -255,9 +274,10 @@ std::vector<domain::tenor> tenor_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<tenor_entity, domain::tenor>(
         ctx,
@@ -271,9 +291,11 @@ std::vector<domain::tenor> tenor_repository::read_latest(const context& ctx,
 std::vector<domain::tenor> tenor_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenor versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<tenor_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<tenor_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<tenor_entity, domain::tenor>(
         ctx,
@@ -289,10 +311,11 @@ std::optional<domain::tenor> tenor_repository::read_at_version(const context& ct
     BOOST_LOG_SEV(lg(), debug) << "Reading tenor at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<tenor_entity, domain::tenor>(
         ctx,
@@ -350,9 +373,10 @@ tenor_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenors with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<tenor_entity, domain::tenor>(
         ctx,
@@ -371,8 +395,9 @@ tenor_repository::get_total_tenor_count(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_entity>> | query_builder::where("tenant_id"_c == tid);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<tenor_entity>(
         ctx,
@@ -403,9 +428,10 @@ std::vector<domain::tenor> tenor_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<tenor_entity, domain::tenor>(
         ctx,
         query,

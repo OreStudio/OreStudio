@@ -33,7 +33,7 @@
 
 begin;
 
-select plan(5);
+select plan(7);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -83,11 +83,31 @@ select is(
     2,
     'the counterparty holds two live centres');
 
--- 4. The same centre written again is an upsert, not a third row.
-select lives_ok(
+-- 4. A create that collides with a live link is refused, the same way every
+-- other table refuses one: version zero states that no current row exists. The
+-- test asserted an upsert until the trigger was brought onto that rule.
+select throws_ok(
     $$select pg_temp.add_centre(
         'b0000000-0000-0000-0000-0000000000c1'::uuid, 'WRLD')$$,
-    'writing a centre the counterparty already deals through upserts it');
+    '23505',
+    NULL,
+    'writing a centre the counterparty already deals through is refused as a duplicate');
+
+-- 5. The same centre written with the version it read replaces the link, so the
+-- counterparty still deals through two centres and not three.
+select lives_ok(
+    $$insert into ores_refdata_counterparty_business_centres_tbl (
+          tenant_id, counterparty_id, business_centre_code, version,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      values (ores_utility_system_tenant_id_fn(),
+          'b0000000-0000-0000-0000-0000000000c1'::uuid, 'WRLD', 1,
+          current_user, current_user, 'system.new_record', 'test')$$,
+    'the same centre written with the version it read replaces the link');
+
+select is(
+    pg_temp.live_centre_count('b0000000-0000-0000-0000-0000000000c1'::uuid),
+    2,
+    'the replaced link leaves two live centres');
 
 -- 5. The single column is gone from the counterparty.
 select is(

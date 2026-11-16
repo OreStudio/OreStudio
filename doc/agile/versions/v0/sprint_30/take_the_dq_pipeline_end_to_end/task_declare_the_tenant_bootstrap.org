@@ -8,12 +8,12 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/declare-the-tenant-bootstrap
-#+pr:
+#+pr: 4736
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -50,7 +50,18 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| System tables the provisioner copies into each tenant | ~36 | `iam_tenant_provisioner_create.sql:232-873` | e050a2d239 |
+| Refdata tables the provisioner copied into each tenant | 34 of 36; =parties= and =business_centres= are created for the tenant and stay | `grep -o "insert into ores_refdata_[a-z_]*" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
+| Refdata vocabulary tables a tenant reads from the system tenant | 34, each with the shared-reference policy and `:system_tenant_visible:` | `grep -c rls_own_or_system_tenant_rows projects/ores.refdata/modeling/*.org` | 5cae6e2eb1 |
+| Other tables the provisioner copied | 24 statements when the refdata copies went: the DQ registries, IAM roles and permissions, the trading lookups, the marketdata series classification rules and =party_categories= | `grep -n -B12 "Copied from system tenant" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
+| Tables the provisioner still writes into a tenant | 5 statements: one creates the tenant, and four copy IAM permissions, roles, role-permission assignments and role-product-type grants | `grep -n "^    insert into ores_iam_" iam_tenant_provisioner_create.sql` | this commit |
+| Catalogue tables that took the shared-reference read | 54: 34 refdata vocabularies, 12 DQ registries, 6 trading lookups, the series classification rules and =party_categories= | `git diff origin/main...HEAD -- 'projects/*/modeling/*.org' \| grep -c '^+:rls_own_or_system_tenant_rows:'` gives 40 of them; the 12 DQ registries and =party_categories= state theirs by hand | this commit |
+| Rows the tenant bootstrap publishes into a new tenant | 144 badge definitions, 187 badge mappings, 6 badge severities, 49 code domains | `select * from ores_dq_tenant_bootstrap_fn('<tenant>')` | this commit |
+| pgTAP, the tenant bootstrap | 9 of 9 | `pg_prove -d <database> test/dq_tenant_bootstrap_test.sql` | this commit |
+| pgTAP, the shared-reference read on a vocabulary | 6 of 6: a tenant reads the shared rows, reads no other tenant's, moves none, closes none, writes none for the system tenant, and reads its own | `pg_prove -d <database> test/refdata_shared_catalogue_read_test.sql` | this commit |
+| Foreign keys that declare the shared reference | 12 across 12 models, plus 3 DQ validation functions that state =tenant_scope: both= | `grep -rn -B6 ':system_tenant_visible: true' projects/*/modeling/*.org \| grep -c ':table:'` gives 17 in the tree, of which this task added 12 | this commit |
+| pgTAP, every SQL test, on a recreated database | 92 files, 882 tests, all pass; =test.sql= is a loader with no plan | `projects/ores.sql/test/run_tests.sh` | this commit |
+| C++ suites, on a recreated database | 103 of 103 | `ctest -j 4` in the build tree | this commit |
+| The ticks smoke | passes: a tenant is provisioned and the reference feeds ingest | `compass smoke ticks --fresh` | this commit |
 
 * Notes
 
@@ -73,12 +84,134 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4736][#4736]] | [dq,refdata,codegen] Publish the reference data by level |
 
 * Review
 
+A standards review and a spec review were run over the branch, each against the
+diff from =origin/main=, and every finding is decided here.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A single =for all= policy that admits the system tenant's rows in its USING clause lets a tenant move or close a shared row; the read-across page requires one policy per command | both SQL create templates | Accepted | The shared read is a separate =for select= policy now and the write policy admits the caller's tenant alone. 74 generated files follow from the templates. =test/refdata_shared_catalogue_read_test.sql= proves a tenant moves no shared row and closes none. |
+| 2 | A relation-annotated link names =BA57E2D2= "The bundle and package catalogue"; the note is titled "Data classification by owner count" | the bundle-map page, task 1 | Accepted | Both occurrences renamed. |
+| 3 | The dataset-bundle model says a bundle carries a level and a scope, and the table has no column for either | =ores.dq.dataset_bundle.org= | Accepted | The prose says the level and scope decide the target and that the page holds the rule; the columns arrive with the task that enforces them. |
+| 4 | The tenant-or-system predicate, its =sys= declaration and the own-row filter repeat in every regenerated repository, so one rule touched 112 files | repository template | Declined | Extracting a =where= fragment and an own-rows helper is a cross-cutting change to every repository in the tree, and it belongs with the component clean-up rather than with this task. The repeat is generated, so one edit to the template closes it. |
+| 5 | The two publish loops differ only in what they do with a failure, and the first swallows its error | =dq_bootstrap_publish_create.sql= | Accepted | The retry keeps the first pass's order, so a held-back dataset is retried after the datasets that precede it. |
+| 6 | The publish function is chosen by building a name from a subject string, with a magic =+ 7= | =dq_bootstrap_publish_create.sql= | Declined | The derivation is the artefact type's contract, stated in the function's own docblock, and a subject that names no operation now raises instead of returning silently. A lookup table would move the same string arithmetic into data. |
+| 7 | A comment still says "Publishing base must not force…"; the bundle is =world= | bundle member populate | Accepted | Reworded. |
+| 8 | The same four-line rationale appears three times in every generated repository | repository template | Accepted | One rationale where the rule is introduced, and a one-line reference at the other two sites. |
+| 9 | A comment states future work with no marker | =dq_bootstrap_publish_create.sql= | Accepted | Removed. |
+| 10 | One page sentence runs to about 55 words, and "Neither name resolving is an error" reads ambiguously | the bundle-map page, the publisher docblock | Accepted | The publisher sentence is now "When neither name resolves the function raises". The page's sentence is signed off and left as it stands. |
+| 11 | The classification section re-poses the three questions another note owns | the bundle-map page | Declined | The classification is the page's subject; it answers the questions in its own terms and links the note that owns the reasoning. |
+| 12 | Every seed profile names the =world= bundle, so a demo tenant publishes the world catalogue into itself | =iam_seed_profiles_populate.sql= | Accepted as a finding, declined here | A provisioned demo tenant holds 61 calendars and 170 currencies of its own. Closing it needs the datasets that write a tenant's parties moved to a tenant-level bundle first, so it is recorded on [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] with its measurements. |
+| 13 | Thirty-two datasets are a member of more than one bundle, against the one-bundle rule | bundle member populate | Accepted as a finding, declined here | Recorded on the same task, which owns the bundle-level half of the defect. Twenty-four are the =crypto= bundle re-listing world members; the other seven are named in the note. |
+| 14 | The page says no tenant reads the deployment's registers, and the models share the application catalogue with every tenant | the bundle-map page | Accepted | The page names the application catalogue as the one register a tenant reads, and says why. |
+| 15 | =system_core= has members, a bring-up call and a row in the page's map, and no bundle row | bundle populate | Accepted | The row is added with the description the page states. |
+| 16 | Five claims in the task Results do not match the tree: the fallback count, the three publish calls in seed scripts, the provisioner grep, the existence-check count, and a test that claims every catalogue while listing twelve of the twenty tables | all three tasks | Accepted | Every number is remeasured: six fallbacks of 73 subjects, one populate script that calls a publish function, five provisioner inserts of which four copy, twelve foreign keys plus three validation functions, and the test now lists all twenty tables. |
+| 17 | The GLEIF datasets still sit at the world level although they write a tenant's parties | bundle map | Accepted as a finding, declined here | The page's rule classifies them as tenant datasets; moving them is part of the task the seed-profile finding names. |
+| 18 | A subject that is present but names no operation publishes nothing and says nothing | =dq_bootstrap_publish_create.sql= | Accepted | It raises now; a dataset with no subject still returns, because a terminal artefact type publishes nowhere. |
+| 19 | The read-across page requires a =shared= column on a table that holds tenant and shared rows, and these tables carry none | the 54 catalogues | Accepted as a finding, declined here | Recorded as a product backlog capture: the flag exists so the system tenant can keep a row no tenant reads, and every row these catalogues publish is meant to be read. |
 
 * Result
+
+The task is delivered in two halves, and the second half is this commit.
+
+The refdata vocabularies came first.
+
+- The 34 refdata vocabulary tables the provisioner copied are no longer copied.
+  Each one's model declares `:rls_own_or_system_tenant_rows:` and
+  `:system_tenant_visible:`, so its policy admits the system tenant's rows and
+  its repository reads them beside the caller's. The generated SQL, the C++ and
+  the ER diagrams follow from the models.
+- The validators already read the system tenant, so removing the copies changes
+  no check: a tenant's party type is validated against the system catalogue
+  whether or not the tenant holds a copy.
+- =parties= and =business_centres= stay, and they are not copies: the provisioner
+  creates the tenant's own system party and business centre with its own code
+  and identifier.
+- A recreate passed end to end with the policies and the shortened provisioner,
+  and `compass db status` reports the schema in sync.
+
+The catalogues and the bootstrap followed.
+
+- Twenty more catalogue tables are read from the system tenant and copied into
+  no tenant: the twelve DQ registries (artefact types, dataset bundles, data
+  domains, subject areas, coding schemes and their authority types, the three
+  dimensions, methodologies, change reasons and their categories), the six
+  trading lookups (trade identifier types, trade link types, activity types,
+  structure kinds, structure templates and their roles), the marketdata series
+  classification rules, and =party_categories=. Path and row-level security
+  follow the same rule as the vocabularies: a shared-reference read, and a write
+  path only in the caller's own tenant.
+- =party_categories= had no row-level security at all, so every session read
+  every tenant's categories. It takes the shared-reference policy now, stated by
+  hand in the refdata policies file because the table has no codegen model. Its
+  validator reads the platform's copy, so removing the tenant copy loses no
+  check.
+- A new tenant is seeded by =ores_dq_tenant_bootstrap_fn(uuid)=, the second
+  caller of the publish function. It names its bundles in one place, publishes
+  them into the tenant being created, and the provisioner holds no list of its
+  own. Today the list is =tenant_defaults=: 144 badge definitions, 187 badge
+  mappings, 6 badge severities and 49 code domains, every row carrying the
+  provenance of the dataset that produced it.
+- The bootstrap reads the dataset from the system tenant rather than from the
+  target. That is what removes the last reason a tenant needed a dataset row of
+  its own, and it is the same rule the page states: the staged artefacts and the
+  row that describes them are held in one copy.
+- The four IAM copies stay, because those rows are the tenant's own: its
+  members are granted its roles. The function's header says so, so the copy is
+  declared rather than implicit.
+- =test/dq_tenant_bootstrap_test.sql= asserts the seeded row counts, the
+  provenance, the absence of every copied catalogue, the reads that replace them
+  and a second bootstrap that inserts nothing. A recreate passed end to end and
+  the whole SQL suite passes, 882 tests in 92 files.
+
+The C++ side had to follow, and the compiler suite found it.
+
+- Twelve foreign keys and three validation functions read the caller's tenant
+  alone, so a tenant that named a platform code the system tenant publishes was
+  refused even though it can read the code. They read the caller's own catalogue
+  and the system tenant's now. The models state it — a foreign key that names a
+  platform vocabulary carries “system_tenant_visible”, and the three DQ registries
+  whose own validation function checks a code carry “tenant_scope: both” — so
+  the files the generator owns are not edited by hand and a regeneration keeps
+  the rule.
+- A repository read that admits the system tenant's rows returns them beside the
+  caller's, and a version claim that took the first row stated the system
+  tenant's version for a row the caller owns. The claim keeps the caller's own
+  rows now, which is what lets a tenant write a code the platform also holds;
+  every component's repositories are regenerated with the rule.
+- A convention's tenor resolutions are published into the system tenant, and the
+  repository filtered them to the caller's tenant, so a tenant resolved no tenor
+  and every curve republish stopped on its first pillar. Its model declares the
+  system tenant visible.
+- The compiler suite passes: 103 of 103 suites on a database recreated from the
+  tree, and the ticks smoke provisions a tenant and ingests on a fresh database.
+
+Three tests that this branch's earlier commits invalidated were repaired here:
+the currency groups test still named the =base= bundle, the conventions test
+asserted that the system tenant holds no convention, which the bring-up now
+publishes, and three trading fixtures wrote a business centre the published
+catalogue already holds. The conventions test now asserts provenance instead of
+absence, which is the property that distinguishes a published row from a seeded
+one.
+
+What remains is not this task's.
+
+- The IAM roles a tenant starts with are a copy of the system tenant's. Whether a
+  tenant's roles should be shared rows rather than copies is an IAM question, and
+  the copy is declared until it is answered.
+- =party_categories= still has no model, so its policy is stated by hand.
+- The publish functions rewrite their rows, so a second run reports =updated=
+  rather than =skipped=. The bootstrap leans on this being harmless, and
+  [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] owns the fix.
+- The badges are written both by a populate script, into the system tenant, and
+  by this bootstrap, into a tenant: the system tenant holds 138 badge definitions
+  and a tenant is seeded with the 144 the artefacts state.
+  [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] owns that.
+- Seven generated-artefact checks fail against a tree whose inputs are main's
+  own, so the generated files main holds are stale rather than the branch being
+  wrong. The evidence is captured as
+  =doc/agile/product_backlog/inbox/stale-generated-artefacts-on-main.org=, which
+  a regeneration and a commit closes.

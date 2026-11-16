@@ -119,6 +119,21 @@ bool hold_reason_claim_reads_current(const ores::utility::domain::precondition& 
 using hold_reason_rows_by_key = std::map<std::tuple<std::string>, std::vector<domain::hold_reason>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::hold_reason> hold_reason_claim_rows(const ores::database::context& ctx,
+                                                        std::vector<domain::hold_reason> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -133,7 +148,7 @@ hold_reason_rows_by_key hold_reason_current_rows(hold_reason_repository& repo,
         codes.push_back(row.code);
     }
     hold_reason_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, codes))
+    for (auto& item : hold_reason_claim_rows(ctx, repo.read_latest(ctx, codes)))
         current[std::make_tuple(item.code)].push_back(std::move(item));
     return current;
 }
@@ -194,7 +209,7 @@ domain::hold_reason hold_reason_apply_claim(const domain::hold_reason& v,
 }
 
 void hold_reason_repository::write(const context& ctx, const domain::hold_reason& v) {
-    write(ctx, v, hold_reason_replace_claim(read_latest(ctx, v.code)));
+    write(ctx, v, hold_reason_replace_claim(hold_reason_claim_rows(ctx, read_latest(ctx, v.code))));
 }
 
 void hold_reason_repository::write(const context& ctx, const std::vector<domain::hold_reason>& v) {
@@ -210,11 +225,12 @@ void hold_reason_repository::write(const context& ctx,
                                    const domain::hold_reason& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing hold reason. " << "code: " << v.code;
-    const auto t = hold_reason_apply_claim(v,
-                                           claim,
-                                           hold_reason_claim_reads_current(claim) ?
-                                               read_latest(ctx, v.code) :
-                                               std::vector<domain::hold_reason>{});
+    const auto t =
+        hold_reason_apply_claim(v,
+                                claim,
+                                hold_reason_claim_reads_current(claim) ?
+                                    hold_reason_claim_rows(ctx, read_latest(ctx, v.code)) :
+                                    std::vector<domain::hold_reason>{});
     query_builder::execute_write_query(
         ctx, hold_reason_mapper::map(t), lg(), "Writing hold reason to database.");
 }

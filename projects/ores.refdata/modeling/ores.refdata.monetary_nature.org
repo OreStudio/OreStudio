@@ -91,6 +91,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_monetary_natures_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -126,6 +127,7 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 :entity_plural_short:   types
 :entity_singular_words: monetary nature
 :entity_plural_words:   monetary natures
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

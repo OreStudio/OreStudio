@@ -129,6 +129,22 @@ using market_fixing_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::market_fixing>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::market_fixing>
+market_fixing_claim_rows(const ores::database::context& ctx,
+                         std::vector<domain::market_fixing> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -143,7 +159,7 @@ market_fixing_rows_by_key market_fixing_current_rows(market_fixing_repository& r
         ids.push_back(boost::uuids::to_string(row.id));
     }
     market_fixing_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, ids))
+    for (auto& item : market_fixing_claim_rows(ctx, repo.read_latest(ctx, ids)))
         current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
     return current;
 }
@@ -196,7 +212,10 @@ domain::market_fixing market_fixing_apply_claim(const domain::market_fixing& v,
 }
 
 void market_fixing_repository::write(const context& ctx, const domain::market_fixing& v) {
-    write(ctx, v, market_fixing_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+    write(ctx,
+          v,
+          market_fixing_replace_claim(
+              market_fixing_claim_rows(ctx, read_latest(ctx, boost::uuids::to_string(v.id)))));
 }
 
 void market_fixing_repository::insert(const context& ctx, const domain::market_fixing& v) {
@@ -226,11 +245,12 @@ void market_fixing_repository::write(const context& ctx,
                                      const domain::market_fixing& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market fixing. " << "id: " << v.id;
-    const auto t = market_fixing_apply_claim(v,
-                                             claim,
-                                             market_fixing_claim_reads_current(claim) ?
-                                                 read_latest(ctx, boost::uuids::to_string(v.id)) :
-                                                 std::vector<domain::market_fixing>{});
+    const auto t = market_fixing_apply_claim(
+        v,
+        claim,
+        market_fixing_claim_reads_current(claim) ?
+            market_fixing_claim_rows(ctx, read_latest(ctx, boost::uuids::to_string(v.id))) :
+            std::vector<domain::market_fixing>{});
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(t), lg(), "Writing market fixing to database.");
 }

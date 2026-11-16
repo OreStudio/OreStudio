@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/structure_template_role.hpp"
 #include "ores.trading.api/domain/structure_template_role_json_io.hpp" // IWYU pragma: keep.
@@ -102,6 +103,22 @@ using structure_template_role_rows_by_key =
     std::map<std::tuple<std::string, std::string>, std::vector<domain::structure_template_role>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::structure_template_role>
+structure_template_role_claim_rows(const ores::database::context& ctx,
+                                   std::vector<domain::structure_template_role> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -120,7 +137,8 @@ structure_template_role_current_rows(structure_template_role_repository& repo,
         roles.push_back(row.role);
     }
     structure_template_role_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, template_codes, roles))
+    for (auto& item :
+         structure_template_role_claim_rows(ctx, repo.read_latest(ctx, template_codes, roles)))
         current[std::make_tuple(item.template_code, item.role)].push_back(std::move(item));
     return current;
 }
@@ -184,7 +202,10 @@ structure_template_role_apply_claim(const domain::structure_template_role& v,
 
 void structure_template_role_repository::write(const context& ctx,
                                                const domain::structure_template_role& v) {
-    write(ctx, v, structure_template_role_replace_claim(read_latest(ctx, v.template_code, v.role)));
+    write(ctx,
+          v,
+          structure_template_role_replace_claim(
+              structure_template_role_claim_rows(ctx, read_latest(ctx, v.template_code, v.role))));
 }
 
 void structure_template_role_repository::write(
@@ -203,12 +224,12 @@ void structure_template_role_repository::write(const context& ctx,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure template role. "
                                << "template_code: " << v.template_code << " role: " << v.role;
-    const auto t =
-        structure_template_role_apply_claim(v,
-                                            claim,
-                                            structure_template_role_claim_reads_current(claim) ?
-                                                read_latest(ctx, v.template_code, v.role) :
-                                                std::vector<domain::structure_template_role>{});
+    const auto t = structure_template_role_apply_claim(
+        v,
+        claim,
+        structure_template_role_claim_reads_current(claim) ?
+            structure_template_role_claim_rows(ctx, read_latest(ctx, v.template_code, v.role)) :
+            std::vector<domain::structure_template_role>{});
     query_builder::execute_write_query(ctx,
                                        structure_template_role_mapper::map(t),
                                        lg(),
@@ -244,8 +265,10 @@ std::vector<domain::structure_template_role>
 structure_template_role_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("template_code"_c, "role"_c);
 
     return query_builder::execute_read_query<structure_template_role_entity,
@@ -263,10 +286,11 @@ std::vector<domain::structure_template_role> structure_template_role_repository:
                                << "template_code: " << template_code << " role: " << role;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<structure_template_role_entity>> |
-        query_builder::where("tenant_id"_c == tid && "template_code"_c == template_code &&
-                             "role"_c == role && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "template_code"_c == template_code &&
+                                            "role"_c == role && "valid_to"_c == max);
 
     return query_builder::execute_read_query<structure_template_role_entity,
                                              domain::structure_template_role>(
@@ -283,10 +307,11 @@ std::vector<domain::structure_template_role> structure_template_role_repository:
     BOOST_LOG_SEV(lg(), debug) << "Reading all structure template role versions. "
                                << "template_code: " << template_code << " role: " << role;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<structure_template_role_entity>> |
-        query_builder::where("tenant_id"_c == tid && "template_code"_c == template_code &&
-                             "role"_c == role) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "template_code"_c == template_code && "role"_c == role) |
         query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<structure_template_role_entity,
@@ -307,11 +332,12 @@ structure_template_role_repository::read_at_version(const context& ctx,
                                << "template_code: " << template_code << " role: " << role
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<structure_template_role_entity>> |
-        query_builder::where("tenant_id"_c == tid && "template_code"_c == template_code &&
-                             "role"_c == role && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "template_code"_c == template_code &&
+                                            "role"_c == role && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<structure_template_role_entity,
                                                             domain::structure_template_role>(
@@ -377,9 +403,10 @@ structure_template_role_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest structure template roles with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<structure_template_role_entity,
                                                      domain::structure_template_role>(
@@ -397,8 +424,9 @@ std::uint32_t structure_template_role_repository::get_total_template_role_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure template role count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<structure_template_role_entity>(
         ctx,
@@ -437,10 +465,11 @@ structure_template_role_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<structure_template_role_entity>> |
-        query_builder::where("tenant_id"_c == tid && "template_code"_c.in(template_codes) &&
-                             "role"_c.in(roles) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "template_code"_c.in(template_codes) &&
+                                            "role"_c.in(roles) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<structure_template_role_entity,
                                                     domain::structure_template_role>(
         ctx,

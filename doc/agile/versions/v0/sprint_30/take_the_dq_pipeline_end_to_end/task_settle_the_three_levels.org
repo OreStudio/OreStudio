@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. Task 2 may start. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -38,25 +38,33 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 **Documentation first.** No implementation starts until these documents answer
 every question below.
 
-- One knowledge page paints the whole publishing architecture in one picture:
-  every level, every artefact table, every dataset, every bundle, and what
-  publishes what into which tenant. It replaces the four partial answers, and
-  the pages it supersedes link to it rather than restating it.
-- The page carries UML for the parts a table cannot show, as =*.puml= beside it
-  in =doc/knowledge/=:
+- One knowledge page classifies a new kind of reference data by publication
+  level, and gives the decision a developer makes — the level, the tenant, the
+  bundle and the writer — with the map that follows from it. It is an atomic
+  note in the sense of
+  [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]: one rule, a dense
+  set of =id:= links, and nothing the pages it links already own.
+- It states the target state and no history: no defect list, no "today", no
+  retired path, no task table. What the tree still has to change is the story's
+  record and not the page's.
+- It does not restate what another page owns. The tiers stay in
+  [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]], the ownership
+  classes and policies in
+  [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
+  information flow]], the artefact and the publish function in
+  [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]], the provenance
+  fields in [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]], and the
+  atomicity of a bundle in
+  [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner
+  count]]. The page links each and says what each completes.
+- It carries UML for the parts a table cannot show, as =*.puml= beside it in
+  =doc/knowledge/=:
   - a component diagram of the publish path from request to published row;
   - a diagram of the levels, showing which tables each level writes and which
     readers look at each;
   - a sequence diagram for one bundle publish, including the dependency order.
-- The page states, in their own sections:
-  - *Provenance* — for a published row, the dataset and artefact row it came
-    from, and how a person finds that chain.
-  - *Methodology* — how a dataset is staged, declared, bundled and published,
-    as the canonical sequence an author follows.
-  - *Reproducibility* — what a blank database produces, what a recreate
-    reproduces, what depends on the outside world, and how an operator proves a
-    database matches its datasets.
-- Every question the investigation left open is answered on the page:
+- It answers the questions the investigation left open that a page of this
+  scope can answer, and it says where the others are answered:
   1. Which levels exist, what each is named, and what each holds?
   2. Which bundle publishes which datasets, into which tenant, once or per
      tenant?
@@ -64,15 +72,23 @@ every question below.
      security?
   4. Where do the coded vocabularies and catalogues live, and who owns them?
   5. What is the single canonical way to add a dataset, end to end?
-  6. What is legacy, and what retires it?
-  7. What does a recreated database contain, and what must an operator run?
-- The page is reviewed and signed off before task 2 starts.
+  6. What does a recreated database contain, and what must an operator run?
+  7. What is legacy, and what retires it? *Not this page's.* The story's
+     inventory of write paths and its tasks answer it.
+- It states what publication adds to provenance, and what a recreate produces
+  and how an operator proves it.
+- It is reviewed and signed off before task 2 starts.
 
 * Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Bundles that name a system-level publication | 0 (no bundle carries calendars, currencies, commodities or equity) | investigation, section 3.4 | e050a2d239 |
+| Bundles defined | 9 today, 10 in the model: =system_core=, =base= (=world=), =tenant_defaults= (new), =party_essentials=, =party_reporting=, =ore_samples=, =risk_management=, =crm_topology=, =lei_hierarchy=, =crypto= | =grep -o "upsert_fn(ores_utility_system_tenant_id_fn(), '[a-z_]*'," projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql | 9759e10ae4 |
+| Datasets in =base= | 57 | same command, =base= | 9759e10ae4 |
+| Datasets in =system_core= | 21 | same command, =system_core= | 9759e10ae4 |
+| Reference-data tables the tenant provisioner copies | 36, in 62 insert statements | =grep -o "insert into ores_refdata_[a-z_]*" projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql | 9759e10ae4 |
+| Refdata publish functions | 57 | =grep -c '^create or replace function ores_refdata_publish_' projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql | 9759e10ae4 |
 
 * Notes
 
@@ -82,6 +98,38 @@ a fifth partial page would repeat the defect, so this one has to be the single
 picture the others point at.
 
 Answers requirement 4, and unblocks every task below it. Defect D3.
+
+The decisions a reviewer has to accept, because every task below depends on
+them. All six are settled; the reasons are in the page and in the sign-off
+exchange.
+
+1. Three levels, named after the owner of the values: *platform*, *world*,
+   *tenant*. The name is *platform* and not *installation*, because
+   =data_tiers= gives "installation data" to a tenant's business entities and
+   the row-level security model gives "the installation" to the deployment's
+   registers. The deployment's registers sit outside the three levels: no
+   bundle carries them and no tenant reads them.
+2. One copy of a platform row and of a world row, in the system tenant. No
+   tenant holds a copy, and a tenant reads them through the shared-reference
+   policy and =:system_tenant_visible:=, both of which exist. A shared table
+   takes no tenant write path; the restriction is by permission and not by a
+   further policy shape.
+3. =base= becomes =world=. The tenant's own starting configuration in =base=
+   becomes =tenant_defaults=, and holds only what a tenant may change: the
+   badges, the badge mappings and the code domains. The ORE parameters and
+   their value domains move to =system_core=, because nothing shows a tenant
+   editing them and their per-tenant copy was a duplicate for readers.
+4. A dataset is a member of one bundle and no more. A given table in a given
+   tenant has one mechanism that writes it, which lets a populate script own
+   the system tenant's party rows while the publish function owns every other
+   tenant's.
+5. The bundle publication and the bring-up bootstrap are the two callers of one
+   publish function. The bring-up publish is part of database setup and runs
+   after every populate script.
+6. The bundle carries its level, and the level determines the target tenant; a
+   request does not name a target. A caller whose tenant the level does not
+   admit is refused, or a tenant administrator could publish a world bundle
+   into their own tenant and recreate the second copy by request.
 
 See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
 
@@ -109,3 +157,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The page is signed off and the names it settled are in the tree.
+
+- =dq_artefacts.org= became
+  [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]],
+  =data_tiers.org= became
+  [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]],
+  =bundle_catalogue.org= became
+  [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]],
+  and the new page is
+  [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]].
+  Every inbound =id:= label follows the new titles, and the stale HTML for the
+  old names is gone from the site output.
+- The bundle =base= is now =world=, in the bundle row, in the 53 memberships
+  and in the five seed profiles that named it.
+- =tenant_defaults= carries what a tenant may change: the badges, the badge
+  mappings, the code domains and nothing else. The ORE parameter datasets stay
+  in the world bundle because their readers do not admit the system tenant's
+  rows yet: the reporting tables keep a tenant-scoped read policy, so a tenant
+  still needs its own rows. Moving them to =system_core= is
+  [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]],
+  which owns the reads that replace a copy.
+- =dq_dataset_bundle_retire_base_cleanup.sql= removes the retired bundle and
+  its members from a database that predates the rename, so a second populate
+  leaves one bundle where the model has one.
+- The cleanup, the two populate scripts and the memberships were run against
+  the development database inside a transaction that was rolled back: no =base=
+  bundle, no =base= member, 53 =world= members and 4 =tenant_defaults= members.
+- The two models carry the level rule in their documentation and the generated
+  SQL, C++ and ER diagrams follow from them.
+
+Three items the page settles are other tasks', and each task states them:
+the level on the bundle row and the target it derives is
+[[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]];
+the per-tenant copy of the world catalogue and the reads that replace it are
+[[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]];
+and the GLEIF datasets, which publish a tenant's parties from a world record,
+move to the tenant level with the tenant bootstrap.

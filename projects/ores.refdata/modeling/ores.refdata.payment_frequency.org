@@ -151,6 +151,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_payment_frequencies_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -192,6 +193,7 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 :entity_plural_short:   payment_frequencies
 :entity_singular_words: payment frequency
 :entity_plural_words:   payment frequencies
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

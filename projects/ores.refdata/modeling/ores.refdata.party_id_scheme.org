@@ -129,6 +129,8 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_party_id_schemes_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -173,6 +175,7 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 :entity_plural_short:   schemes
 :entity_singular_words: party ID scheme
 :entity_plural_words:   party ID schemes
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

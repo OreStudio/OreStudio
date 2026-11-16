@@ -1,20 +1,22 @@
 :PROPERTIES:
 :ID: F19A6B98-1CAD-4206-913B-A4EAAED2DEAF
 :END:
-#+title: DQ artefacts
-#+description: The one way to stage an entity's data for DQ and publish it into its owning service: the owning model's artefact flag, the dataset, artefact type, bundle and dependencies, the publish subject and function, and the legacy patterns not to copy.
+#+title: From an entity model to a published row
+#+description: The one way to stage an entity's rows and publish them into the owning service: the owning model's artefact flag, the dataset, the artefact type, the bundle and dependencies, the publish subject and function, and the patterns not to copy.
 #+type: knowledge
 #+level: cross
 #+filetags: :dq:codegen:architecture:staging:
 #+created: 2026-10-12
-#+updated: 2026-10-14
+#+updated: 2026-11-14
 
 * Summary
 
-A DQ artefact is a staging table, =ores_dq_<plural>_artefact_tbl=, that holds
-an entity's rows by dataset until a publication writes them into the service
-that owns the entity. There is one way to make one: the entity's own model, in
-the component that owns the data, opts in with
+A published row travels from the model of the entity it describes to the table
+of the service that owns it, and it does so through one route. The route
+begins at a staging table, =ores_dq_<plural>_artefact_tbl=, which holds the
+entity's rows by dataset until a publication writes them onward. There is one
+way to make one: the entity's own model, in the component that owns the data,
+opts in with
 =:ores.sql.schema.domain_entity_artefact_create.enabled: true=, and codegen
 generates the table from that model. The model adds an =* Artefact columns=
 section only when the staging shape differs from the entity. A staging table
@@ -36,7 +38,7 @@ with the task that retires each.
 | /Owning model/ | The model of the entity the artefact stages, in the component that owns the published rows, such as =ores.refdata.book= |
 | /Dataset/ | One named, versioned set of artefact rows, registered in =ores_dq_datasets_tbl= with its artefact type |
 | /Artefact type/ | The row in =ores_dq_artefact_types_tbl= that names the artefact table, the target table and the publish subject |
-| /Bundle/ | A named list of datasets published together, such as =base= or =system_core= |
+| /Bundle/ | A named list of datasets published together, such as =world= or =system_core= |
 | /Publication/ | A workflow that publishes a bundle's datasets in dependency order, one step per dataset |
 
 ** The one way
@@ -77,9 +79,11 @@ shape, and the two cannot drift.
    =<component>.v1.ops.publish_<plural>_from_dq=. A new kind of data gets a new
    artefact type; data of an existing kind reuses its type.
 7. *Put the dataset in a bundle* with =ores_dq_dataset_bundle_members_upsert_fn=.
-   =system_core= holds the installation's own data and is published into the
-   system tenant once; every other bundle is published into each tenant a
-   profile names.
+   A bundle carries one level and one scope, and the level decides the target
+   tenant: =system_core= and =world= publish into the system tenant,
+   =tenant_defaults= into a tenant, and =party_essentials= into a party's
+   tenant. A dataset joins one bundle and no other. See
+   [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] for the levels and the whole bundle map.
 8. *Declare what it depends on* with =ores_dq_dataset_dependencies_upsert_fn=.
    The publication orders datasets by their dependencies and nothing else: the
    display order of a bundle member does not decide it. A dataset whose rows
@@ -124,11 +128,14 @@ returns table (action text, record_count bigint)
 - It closes a row with =clock_timestamp()=, as the tables' triggers and delete
   rules do, never with =current_timestamp=: a row written earlier in the same
   transaction would otherwise get a =valid_to= before its =valid_from=.
-- Installation data refuses any target but the system tenant. Reference data
-  that every tenant reads, such as the ORE parameters, is a member of both
-  =system_core= and =base=, so its function writes to the system tenant and to
-  each tenant. That doubles the data on purpose until readers use one source; see
-  [[id:A5B4097A-0FF4-4855-9BBE-D7461FC096F5][One source for reference data that the system and each tenant read]].
+- Platform data and world data are published into the system tenant, and
+  no tenant holds a copy of either. A tenant reads them through the
+  shared-reference policy, ~tenant_id = current or tenant_id = system~, and a
+  repository that declares =:system_tenant_visible:= admits them. A dataset
+  that publishes an installation or world row into a tenant is misclassified;
+  see
+  [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] and
+  [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]].
 - It reads =p_params= only for what the bundle publication passes, such as the
   party a party-scoped publish writes for.
 - It writes the owning tables directly, so it is listed in the entity-writes

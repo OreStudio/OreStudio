@@ -13,7 +13,8 @@ One service books trades. Every caller books through the same operations: the
 [[id:F7987581-7AED-499C-9EEA-000AFB1FA95A][trade booking journey]] in the UX, the REST gateway, the
 [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][ORE import]] and the synthetic generator. A caller prepares a request and
 sends it. It does not decide how the trade is stored. The trading service
-writes a trade and its parts in one [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][unit of work]], so a trade is whole or absent.
+writes a trade and its parts in one =unit_of_work=, so a trade is whole or
+absent; [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]] records the set as B7.
 A bond trade names a security. The security is a separate aggregate, created
 by its own operation before the trade. A structure groups trades that are
 already booked, and its booking is a design in progress.
@@ -132,7 +133,7 @@ activity type states whether it is required, and the
 A set of rows that one service owns is written in one =unit_of_work=: one
 connection, one transaction, one commit. A set that several services own is
 never one transaction. The sequence between the owners is the consistency
-mechanism. See the [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][bundle catalogue]], the
+mechanism. See the [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]], the
 [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][database per service]] pattern and the
 [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][rule that writes go through the repositories]].
 

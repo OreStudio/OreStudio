@@ -21,9 +21,9 @@
 /**
  * pgTAP tests for the currency groups and their members.
  *
- * Tests cover the seeded datasets and the base bundle that provisions a
+ * Tests cover the seeded datasets and the world bundle that provisions a
  * tenant:
- * - the base bundle holds both datasets, and the members need the groups
+ * - the world bundle holds both datasets, and the members need the groups
  * - the artefact tables hold the six groups and 37 memberships
  * - a publish into a tenant writes every group and every member
  *
@@ -36,11 +36,11 @@ select plan(10);
 
 select is(
     (select count(*)::int from ores_dq_dataset_bundle_members_tbl
-     where bundle_code = 'base'
+     where bundle_code = 'world'
        and dataset_code in ('refdata.currency_groups', 'refdata.currency_currency_groups')
        and valid_to = ores_utility_infinity_timestamp_fn()),
     2,
-    'base bundle: holds the groups and the members datasets'
+    'world bundle: holds the groups and the members datasets'
 );
 
 select is(

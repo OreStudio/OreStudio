@@ -143,8 +143,21 @@ create policy grid_samples_tbl_tenant_isolation_policy
 on ores_compute_grid_samples_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows. It must: a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists grid_samples_tbl_shared_reference_read_policy
+    on ores_compute_grid_samples_tbl;
+
+create policy grid_samples_tbl_shared_reference_read_policy
+on ores_compute_grid_samples_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );

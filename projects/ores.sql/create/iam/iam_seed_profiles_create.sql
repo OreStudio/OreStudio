@@ -34,7 +34,7 @@
  * and the first two rows are:
  *
  * - empty_operational: the production starting point. It publishes the
- *   base bundle, takes a counterparty count and a GLEIF root LEI to
+ *   world and tenant_defaults bundles, takes a counterparty count and a GLEIF root LEI to
  *   import, and creates no test data.
  * - acme_demo: the Acme Corporation holding group, with its staff, books
  *   and market data. Every test datum lives here.

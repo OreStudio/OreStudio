@@ -142,6 +142,22 @@ using market_data_mapping_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::market_data_mapping>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::market_data_mapping>
+market_data_mapping_claim_rows(const ores::database::context& ctx,
+                               std::vector<domain::market_data_mapping> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -157,7 +173,7 @@ market_data_mapping_current_rows(market_data_mapping_repository& repo,
         ids.push_back(boost::uuids::to_string(row.id));
     }
     market_data_mapping_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, ids))
+    for (auto& item : market_data_mapping_claim_rows(ctx, repo.read_latest(ctx, ids)))
         current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
     return current;
 }
@@ -221,8 +237,10 @@ market_data_mapping_apply_claim(const domain::market_data_mapping& v,
 
 void market_data_mapping_repository::write(const context& ctx,
                                            const domain::market_data_mapping& v) {
-    write(
-        ctx, v, market_data_mapping_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+    write(ctx,
+          v,
+          market_data_mapping_replace_claim(market_data_mapping_claim_rows(
+              ctx, read_latest(ctx, boost::uuids::to_string(v.id)))));
 }
 
 void market_data_mapping_repository::write(const context& ctx,
@@ -240,12 +258,12 @@ void market_data_mapping_repository::write(const context& ctx,
                                            const domain::market_data_mapping& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data mapping. " << "id: " << v.id;
-    const auto t =
-        market_data_mapping_apply_claim(v,
-                                        claim,
-                                        market_data_mapping_claim_reads_current(claim) ?
-                                            read_latest(ctx, boost::uuids::to_string(v.id)) :
-                                            std::vector<domain::market_data_mapping>{});
+    const auto t = market_data_mapping_apply_claim(
+        v,
+        claim,
+        market_data_mapping_claim_reads_current(claim) ?
+            market_data_mapping_claim_rows(ctx, read_latest(ctx, boost::uuids::to_string(v.id))) :
+            std::vector<domain::market_data_mapping>{});
     query_builder::execute_write_query(
         ctx, market_data_mapping_mapper::map(t), lg(), "Writing market data mapping to database.");
 }

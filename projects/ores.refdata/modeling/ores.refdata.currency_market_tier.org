@@ -91,6 +91,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_currency_market_tiers_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -126,6 +127,7 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 :entity_plural_short:   types
 :entity_singular_words: currency market tier
 :entity_plural_words:   currency market tiers
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

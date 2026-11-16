@@ -89,7 +89,7 @@ instance, and its steps are where the person reads what the run actually did.
    party reads are different numbers, and the screen shows both.
 5. *Read why the tenant kinds were there before the party was.* Of the four,
    two arrived differently from the rest and the person reads why.
-   - =currency_pair= is published into the tenant by the =base= bundle, which is
+   - =currency_pair= is published into the tenant by the =world= bundle, which is
      a tenant publication and not a party one, so its 179 rows exist before any
      party is provisioned.
    - =tenor='s 4 rows are not published at all. They are copied from the system
@@ -177,7 +177,7 @@ The two counts a party has, and why they are different:
 | Scope | Kinds | Rows | Written by |
 |-------+-------+------+-----------|
 | The party's own | 22 | 2,155 | =refdata.v1.ops.publish_conventions_from_dq=, once per party, inside =party_essentials= |
-| Shared with the tenant | 4 | 216 | =currency_pair= 179 by the =base= bundle; =overnight_index= 23 and =ibor_index= 10 by the first party's publish; =tenor= 4 by the tenant provisioner |
+| Shared with the tenant | 4 | 216 | =currency_pair= 179 by the =world= bundle; =overnight_index= 23 and =ibor_index= 10 by the first party's publish; =tenor= 4 by the tenant provisioner |
 
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
@@ -187,7 +187,7 @@ The two counts a party has, and why they are different:
 | =ibor_index_convention= | One of the two tenant kinds whose rows the first party's publish writes | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] |
 | =overnight_index_convention= | The other one | [[id:B72547F3-83B5-4F83-AA65-BBE16C191089][ores.refdata.overnight_index_convention]] |
 | =tenor_convention= | The kind no publish reaches, copied by the tenant provisioner | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
-| =currency_pair_convention= | The kind the =base= bundle publishes before any party exists | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+| =currency_pair_convention= | The kind the =world= bundle publishes before any party exists | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
 
 The party-scoped kinds are party-scoped by row-level security, so a party
 session reads its own rows and a tenant administrator reads the tenant's parties.
@@ -280,7 +280,7 @@ publish step's four counts.
 
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
 - [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the starting point, the operations and the party bundle
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the bundle member and the publish subject the plan's step resolves
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the bundle member and the publish subject the plan's step resolves
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the provenance a published row carries
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the conventions file the party's run writes
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index

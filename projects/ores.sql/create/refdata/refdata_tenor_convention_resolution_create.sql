@@ -199,10 +199,16 @@ do instead
   where tenant_id = old.tenant_id
   and convention_code = old.convention_code
   and tenor_code = old.tenor_code
+  -- A tenant reads the shared rows of the system tenant, so old can be one.
+  -- The rule runs with the owner's rights, which row-level security does not
+  -- bind, so the rule states the own-tenant limit itself.
+  and tenant_id = ores_iam_current_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Tenor Convention Resolution
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table "ores_refdata_tenor_convention_resolutions_tbl" enable row level security;
 
@@ -216,4 +222,18 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows, because a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists tenor_convention_resolutions_tbl_shared_reference_read_policy
+    on "ores_refdata_tenor_convention_resolutions_tbl";
+
+create policy tenor_convention_resolutions_tbl_shared_reference_read_policy
+on "ores_refdata_tenor_convention_resolutions_tbl"
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );

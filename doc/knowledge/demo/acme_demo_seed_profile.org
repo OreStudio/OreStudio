@@ -32,7 +32,7 @@ thinner book or a different feed changes a value rather than a build.
 | 5 | =system_provision= | publishes the system's own datasets into the system tenant, which every tenant reads as an overlay |
 | 6 | =publish_system_curves= | bootstraps and publishes each IR curve the system tenant holds a config for, from its synthetic quotes. These are the system's reference set: no tenant prices from them |
 | 8 | =start_auto_approval= | takes the run's provisioning grant for the publish kinds it raises, so the publishes below close without a person. Every screen says so while it is held |
-| 10 | =publish_bundle= | the =base= bundle, the =marketdata.reference_vintage_2026_05_05= bundle, the GLEIF counterparty set at the profile's chosen size, and the ORE counterparty aliases |
+| 10 | =publish_bundle= | the =world= and =tenant_defaults= bundles, the =marketdata.reference_vintage_2026_05_05= bundle, the GLEIF counterparty set at the profile's chosen size, and the ORE counterparty aliases |
 | 15 | =build_calendars= | the business days of every calendar a currency or a pair convention names, to 2060 |
 | 20 | =import_lei_hierarchy= | the Acme LEI hierarchy, whose root is =9695ACMEGROUP0000030=, as the tenant's four parties |
 | 30 | =provision_party= | each party's own reference data, from the =party_essentials= bundle |

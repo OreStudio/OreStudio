@@ -26,6 +26,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
@@ -238,8 +239,10 @@ std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest() {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("convention_code"_c, "tenor_code"_c);
 
     return query_builder::execute_read_query<tenor_convention_resolution_entity,
@@ -257,8 +260,10 @@ tenor_convention_resolution_repository::read_latest(std::uint32_t offset, std::u
                                << offset << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("convention_code"_c, "tenor_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -281,10 +286,11 @@ tenor_convention_resolution_repository::read_latest(const std::string& conventio
     const auto convention_code_str = convention_code;
     const auto tenor_code_str = tenor_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
-                             "tenor_code"_c == tenor_code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "convention_code"_c == convention_code &&
+                                            "tenor_code"_c == tenor_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<tenor_convention_resolution_entity,
                                              domain::tenor_convention_resolution>(
@@ -300,8 +306,10 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
         ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
@@ -317,10 +325,11 @@ tenor_convention_resolution_repository::read_latest_by_convention(
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "convention_code"_c == convention_code && "valid_to"_c == max) |
         query_builder::order_by("tenor_code"_c);
 
     auto rows = query_builder::execute_read_query<tenor_convention_resolution_entity,
@@ -341,9 +350,10 @@ tenor_convention_resolution_repository::read_latest_by_tenor(const std::string& 
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "tenor_code"_c == tenor_code &&
-                                            "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "tenor_code"_c == tenor_code && "valid_to"_c == max) |
                        query_builder::order_by("convention_code"_c);
 
     auto rows = query_builder::execute_read_query<tenor_convention_resolution_entity,
@@ -365,10 +375,11 @@ tenor_convention_resolution_repository::read_latest_by_convention(
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "convention_code"_c == convention_code && "valid_to"_c == max) |
         query_builder::order_by("tenor_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -391,10 +402,11 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "convention_code"_c == convention_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
         ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
@@ -410,9 +422,10 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "tenor_code"_c == tenor_code &&
-                                            "valid_to"_c == max);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "tenor_code"_c == tenor_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
         ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
@@ -428,10 +441,11 @@ tenor_convention_resolution_repository::read_all_by_convention(const std::string
         << convention_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code) |
-        query_builder::order_by("tenor_code"_c, "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "convention_code"_c == convention_code) |
+                       query_builder::order_by("tenor_code"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<tenor_convention_resolution_entity,
                                              tenor_convention_resolution_history_row>(

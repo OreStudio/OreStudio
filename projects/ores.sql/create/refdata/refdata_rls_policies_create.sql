@@ -21,10 +21,11 @@
 -- =============================================================================
 -- Row-Level Security Policies for Reference Data Tables
 -- =============================================================================
--- These policies enforce strict tenant isolation for reference data.
--- Each tenant maintains their own copy of reference data (currencies, countries,
--- etc.) and can only see and modify their own records. All tenants are fully
--- isolated, including the system tenant.
+-- A reference-data table takes one of two shapes. A table that holds a tenant's
+-- own rows keeps strict tenant isolation. A table whose author is the platform
+-- holds one row set in the system tenant, which every tenant reads. The second
+-- shape is the shared-reference read, stated in
+-- doc/knowledge/architecture/reference_data_classification_by_publication_level.org.
 
 -- -----------------------------------------------------------------------------
 -- Parties
@@ -655,3 +656,31 @@ as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Party categories
+-- A platform vocabulary: the system tenant holds the one copy and every tenant
+-- reads it there, so the policy takes the shared-reference shape. The table has
+-- no codegen model, which is why this policy is stated by hand rather than by a
+-- model flag.
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_categories_tbl enable row level security;
+
+drop policy if exists party_categories_shared_reference_read_policy
+    on ores_refdata_party_categories_tbl;
+
+create policy party_categories_shared_reference_read_policy
+on ores_refdata_party_categories_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+drop policy if exists party_categories_tenant_isolation_policy
+    on ores_refdata_party_categories_tbl;
+
+create policy party_categories_tenant_isolation_policy
+on ores_refdata_party_categories_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());

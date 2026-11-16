@@ -189,6 +189,7 @@ std::string("federalreserve.gov")
 :error_message:      Invalid diary_entry_type: %. No active diary entry type found with this code.
 :list_by:            true
 :list_by_as_of:      true
+:system_tenant_visible: true
 :END:
 
 * Insert trigger

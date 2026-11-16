@@ -96,6 +96,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_tenor_kinds_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -130,6 +131,7 @@ drop function if exists ores_refdata_validate_tenor_kind_fn;
 :entity_plural_short:   kinds
 :entity_singular_words: tenor kind
 :entity_plural_words:   tenor kinds
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

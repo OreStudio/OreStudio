@@ -434,6 +434,7 @@ nothing.
 :table:         ores_marketdata_market_series_tbl
 :nullable:      false
 :error_message: Invalid output_series_id: %. No active market series found.
+:system_tenant_visible: true
 :END:
 
 * C++

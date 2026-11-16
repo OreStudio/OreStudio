@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 293AEBDF-0883-43A4-9A36-8B5714580897
+:END:
+#+title: Seven generated-artefact checks fail on main, not on a branc…
+#+description: Seven generated-artefact checks fail on main, not on a branch: the ORE parameters seed, the parameter value sets, the parameter value sets only rule, the convention kind terms, the ORE element map, the conventions dataset populate and the XML benchmark row. Each generator reproduces an output that differs from the file main holds, while the inputs the generator reads are main's own: the conventions dataset, for example, generates HUF-BUBORON and ILS-TELBORON where the committed populate script states HUF-HUFONIA and ILS-SHIR, and no branch touched either file. The checks therefore report a stale generated tree that whoever last edited the ORE texts left behind; a regeneration and a commit of the results closes them.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

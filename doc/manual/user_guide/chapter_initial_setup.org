@@ -221,10 +221,11 @@ selection, described next.
 #+caption[Selecting a reference-data catalogue]: Selecting a reference-data catalogue — a pre-configured set of currencies, countries, and market standards.
 [[proj:assets/images/tenant_provisioner_select_catalogue.png]]
 
-A /catalogue/ is a ready-made bundle of reference data. The /Base System/
-catalogue provides industry-standard ISO and FpML data — country codes,
-currency codes, and financial-market standards — suitable for production
-use. Choose a catalogue and click *Next*.
+A /catalogue/ is a ready-made bundle of reference data. The /World/
+catalogue provides the data adopted from outside standards — country codes,
+currency codes and financial-market standards — suitable for production use,
+and the /Tenant Defaults/ catalogue provides the badges and code domains a
+tenant may change. Choose a catalogue and click *Next*.
 
 *** Choose a data source
 

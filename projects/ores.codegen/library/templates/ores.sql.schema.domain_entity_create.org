@@ -1185,13 +1185,28 @@ create policy {{domain_entity.rls_table_base}}_tbl_tenant_isolation_policy
 on {{domain_entity.sql_name_base}}_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn(){{#domain_entity.sql.rls_system_tenant_visible}}
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_system_tenant_visible}}{{#domain_entity.sql.rls_own_or_system_tenant_rows}}
-    or tenant_id = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_own_or_system_tenant_rows}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_system_tenant_visible}}
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn(){{#domain_entity.sql.rls_system_tenant_visible}}
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_system_tenant_visible}}
 );
+{{#domain_entity.sql.rls_own_or_system_tenant_rows}}
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows. It must: a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists {{domain_entity.rls_table_base}}_tbl_shared_reference_read_policy
+    on {{domain_entity.sql_name_base}}_tbl;
+
+create policy {{domain_entity.rls_table_base}}_tbl_shared_reference_read_policy
+on {{domain_entity.sql_name_base}}_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+{{/domain_entity.sql.rls_own_or_system_tenant_rows}}
 {{#domain_entity.sql.rls_service_read_role}}
 
 -- Cross-tenant read for one service role: a second, permissive, SELECT-only

@@ -349,7 +349,7 @@ and the search to the second.
 
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey opens
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the staging table the published rows came through
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the staging table the published rows came through
 - [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle that publishes a party's conventions
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements these tables correspond to
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the form and badge vocabulary this screen follows

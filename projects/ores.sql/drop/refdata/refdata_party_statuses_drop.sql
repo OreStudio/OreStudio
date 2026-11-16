@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists party_statuses_tbl_tenant_isolation_policy on "ores_refdata_party_statuses_tbl";
 drop rule if exists ores_refdata_party_statuses_delete_rule on "ores_refdata_party_statuses_tbl";
 drop trigger if exists ores_refdata_party_statuses_insert_trg on "ores_refdata_party_statuses_tbl";
 drop function if exists ores_refdata_party_statuses_insert_fn;

@@ -44,3 +44,4 @@ ingest loop. The only exception is the CRM hook in [[id:00D63182-C7FF-4AC9-8A83-
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] — completes: the seam these edits sit around.
 - [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: where the catalogue rows go.
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — completes: the level and the bundle those catalogue rows take.

@@ -40,7 +40,7 @@ namespace ores::dq::domain {
  *
  * Examples:
  * - Bundle "crypto" contains "iso.currencies", "crypto.small", etc.
- * - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
+ * - Bundle "world" contains "iso.countries", "iso.currencies", all FpML datasets
  */
 struct dataset_bundle_member final {
     /**

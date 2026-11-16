@@ -129,6 +129,7 @@ faker::number::integer(0, 100)
 :error_message:      Invalid seed_profile_id: %. No active seed profile found with this id.
 :list_by:            true
 :list_by_order_by:   display_order
+:system_tenant_visible: true
 :END:
 
 * C++

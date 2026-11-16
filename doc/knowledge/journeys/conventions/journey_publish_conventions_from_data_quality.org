@@ -84,10 +84,10 @@ client.
    travel in different bundles, and the difference decides who they land for.
    =refdata.conventions= is a member of =party_essentials=, which is published **once
    per party** with a ={"party_id": "..."}= parameter. =refdata.currency_pair_conventions=
-   and its calendars are members of =base=, which is published **once per
+   and its calendars are members of =world=, which is published **once per
    tenant**. The person reads this before publishing, because "publish the
    conventions" means one thing per party and another per tenant, and a person
-   who publishes =base= expecting party rows gets none.
+   who publishes =world= expecting party rows gets none.
 4. *Publish.* The person publishes. The operation is
    =dq.v1.ops.publish_bundle=, which the shell spells =bundles publish <bundle>
    --party-id <id> --wait=. The service starts a workflow instance and the
@@ -292,7 +292,7 @@ does not exist today.
    they are present, tenant-wide, and were written for someone else.
 7. *A tenant-scoped kind cannot be published per party even if a tenant wanted
    it.* =currency_pair='s function writes the whole tenant, and =currency_pair=
-   is in =base=, a tenant bundle. There is no way to give one party a different
+   is in =world=, a tenant bundle. There is no way to give one party a different
    pair convention, which is consistent with the 1:1 pair model and is a limit a
    reader should be told rather than discover.
 8. *The publish cannot be scoped to a kind.* One subject publishes 24 kinds
@@ -322,7 +322,7 @@ does not exist today.
 * Related knowledge
 
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the artefact table, the dataset, the artefact type, the bundle and the publish contract this journey follows
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the artefact table, the dataset, the artefact type, the bundle and the publish contract this journey follows
 - [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle a starting point publishes and the scope it publishes for
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — provenance, change reasons and the bitemporal store
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements the published rows export to

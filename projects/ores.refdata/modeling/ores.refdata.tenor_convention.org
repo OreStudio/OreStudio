@@ -158,6 +158,7 @@ std::nullopt
 :PROPERTIES:
 :tablename: ores_refdata_tenor_conventions_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Insert trigger
@@ -183,6 +184,7 @@ std::nullopt
 :entity_plural_short:   conventions
 :entity_singular_words: tenor convention
 :entity_plural_words:   tenor conventions
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

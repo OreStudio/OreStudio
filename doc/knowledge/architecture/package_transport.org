@@ -736,7 +736,7 @@ sandbox is what makes that limit safe.
   and the anti-type it replaces.
 - [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the form whose answers select
   this transport.
-- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — which rows a package carries, and the dataset or
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]] — which rows a package carries, and the dataset or
   seeder that delivers them.
 - [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — =ores.codegen.operation=,
   the pattern the manifest is declared with, and =ores.codegen.family=,

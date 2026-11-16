@@ -60,11 +60,6 @@ insert into ores_refdata_parties_tbl (
     'WRLD', null, 'Active', current_user, current_user,
     'system.test', 'ORE sample fixture');
 
-select count(*) from ores_refdata_publish_business_centres_from_dq_fn(
-    (select id from ores_dq_datasets_tbl where code = 'fpml.business_center'
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_utility_system_tenant_id_fn());
-
 select count(*) from ores_refdata_publish_lei_counterparties_from_dq_fn(
     (select id from ores_dq_datasets_tbl where code = 'ore.sample_counterparties'
        and valid_to = ores_utility_infinity_timestamp_fn()),

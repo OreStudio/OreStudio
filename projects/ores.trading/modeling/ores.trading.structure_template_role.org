@@ -111,6 +111,7 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :tablename: ores_trading_structure_template_roles_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -155,6 +156,7 @@ The template catalogue is system reference data.
 :entity_plural_short:   template_roles
 :entity_singular_words: structure template role
 :entity_plural_words:   structure template roles
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

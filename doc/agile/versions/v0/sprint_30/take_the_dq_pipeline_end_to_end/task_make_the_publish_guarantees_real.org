@@ -37,6 +37,9 @@ A bundle publish either reports the audit row it claims or no longer claims one.
 
 - A bundle publish writes the audit row it claims, or no longer claims one.
 - =atomic= either behaves, or leaves the request.
+- The bundle carries its level, the level decides the target tenant, and the
+  handler refuses a caller the level does not admit. Without it a tenant
+  administrator can publish a world bundle into their own tenant.
 - The calendars dependency no longer republishes coding schemes into every tenant.
 - =payment_frequencies= and =legal_entities= have a dataset, or are deleted.
 - The catalogue checks read the caller's tenant, not any tenant's row.
@@ -57,6 +60,13 @@ A bundle publish either reports the audit row it claims or no longer claims one.
 | Inserts into the bundle audit table | 0 | tree-wide grep | e050a2d239 |
 
 * Notes
+
+A repeat of the bring-up on a recreated database reported =updated= for 49
+datasets holding 2,270 rows, and one full replace of 512,186 rows, so most
+publish functions rewrite the rows they already wrote instead of comparing them
+and skipping. The contract says a repeat publish changes nothing; the tree
+proves otherwise. Closing it is part of this task: a function either compares
+and skips, or the contract stops claiming it does.
 
 Defects D2, D4, D6, D7. Each is a promise the code makes and does not keep.
 

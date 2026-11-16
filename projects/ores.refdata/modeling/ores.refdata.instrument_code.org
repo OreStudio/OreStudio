@@ -181,6 +181,7 @@ std::string("NONE")
 :PROPERTIES:
 :tablename: ores_refdata_instrument_codes_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -217,6 +218,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 :entity_plural_short:   instruments
 :entity_singular_words: instrument code
 :entity_plural_words:   instrument codes
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

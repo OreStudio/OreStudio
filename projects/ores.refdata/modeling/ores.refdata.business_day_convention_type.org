@@ -100,6 +100,8 @@ Ordinal position for dropdown/list display.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_business_day_convention_types_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Validation function
@@ -128,6 +130,7 @@ Ordinal position for dropdown/list display.
 :entity_plural_short:   types
 :entity_singular_words: business day convention type
 :entity_plural_words:   business day convention types
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

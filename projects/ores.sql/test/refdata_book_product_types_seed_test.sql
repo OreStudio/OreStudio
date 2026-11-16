@@ -59,14 +59,9 @@ select gen_random_uuid() as party_id,
 
 -- A party to publish to, and the portfolio the group book hangs from. The
 -- publish matches a book's portfolio by name, so the fixture repeats the name
--- the artefact states. A party and a book both name a business centre, and a
--- rebuilt database holds none until the FpML set is published, so the fixture
--- publishes it.
-select count(*) from ores_refdata_publish_business_centres_from_dq_fn(
-    (select id from ores_dq_datasets_tbl
-     where code = 'fpml.business_center'
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_utility_system_tenant_id_fn());
+-- the artefact states. A party and a book both name a business centre, and the
+-- bring-up publishes the FpML set into the system tenant, so the fixture
+-- publishes nothing and reads the catalogue where it lies.
 
 insert into ores_refdata_parties_tbl (
     id, tenant_id, version, short_code, full_name, codename,

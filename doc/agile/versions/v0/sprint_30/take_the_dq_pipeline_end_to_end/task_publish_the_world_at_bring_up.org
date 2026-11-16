@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A fresh database values what it books, and no test calls a publish function.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -51,7 +51,9 @@ A fresh database values what it books, and no test calls a publish function.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Populate scripts that call a publish function | 0 | `grep -rn publish_ projects/ores.sql/populate/` | e050a2d239 |
+| Populate scripts that call a publish function | 4: the three seeding dependencies, and the bring-up publish | `grep -rn "publish_.*_fn(" projects/ores.sql/populate/` | d47971b1c5 |
+| Rows a rolled-back bring-up wrote on a database whose three catalogues were emptied | 61 calendars, 11 equity underlyings, 160 currencies and 250 countries | `psql -f tmp/boot_proof2.sql` | d47971b1c5 |
+| Current rows in the system tenant after `compass db recreate` | 170 currencies, 61 calendars, 11 equity underlyings, 250 countries, 3,275 conventions, 213 business centres | `compass sql -- -c "select count(*) ..."` | 8d502ed029 |
 
 * Notes
 
@@ -83,3 +85,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A database leaves bring-up with its platform and world catalogues in place.
+
+- =ores_dq_bootstrap_publish_fn(text[])= publishes the bundles it is given into
+  the system tenant, without the bus. It orders the union of their members by
+  the dataset dependencies, skips the optional members and the terminal artefact
+  types, and calls each member's publish function with the system tenant as the
+  target. It refuses a bundle that has no members, and it warns when a member
+  has no dataset, which is what a seed script's typo looks like.
+- The function derives each publish function from the artefact type's subject,
+  with one fallback: DQ's own datasets are written by
+  =<component>_<artefact type>_publish_fn= and not by the subject's operation.
+  Six of the seventy-three distinct subjects need the fallback, and the function
+  fails loudly when neither name resolves.
+- =populate.sql= calls it last, once every artefact row is staged, and its
+  "reference data is NOT published here" block is gone.
+- One populate script calls a publish function: the images script, whose rows
+  are files the platform ships rather than a catalogue a dataset can stage. Every
+  other seed writes artefact rows and leaves publication to the bring-up, and the
+  tests that used to publish a business centre to make up for a missing catalogue
+  no longer do, because the bring-up publishes the FpML set.
+- Proof, on the development database inside a transaction that was rolled back:
+  the three catalogues were emptied in the system tenant, the renamed bundle map
+  was applied, and the bring-up wrote 61 calendars, 11 equity underlyings, 160
+  currencies and 250 countries.
+- The first full recreate failed, and the failure is the reason the function has
+  two parts. The conventions publish refused EUR because its validator reads the
+  currency catalogue, and no dependency edge declared it, so the conventions
+  sorted before the currencies. The graph now carries the edge, and the publisher
+  retries a dataset that fails once every other member has published, because a
+  validator may read a catalogue that no edge names. A dataset that fails twice
+  is raised with its own error.
+- A second recreate passed end to end: the system tenant holds 61 current
+  calendars, 250 countries, 170 currencies, 3,275 conventions and 213 business
+  centres, and `compass db status` reports the schema in sync.
+
+The tenant tier is untouched: a tenant's own rows are published when the tenant
+is created, which is the next task. The level on the bundle row, and the target
+it derives, remain with the publish guarantees.

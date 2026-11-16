@@ -193,6 +193,7 @@ A part reaches the central staging row by exactly that pair.
 :target_column: code
 :nullable:      false
 :error_message: Invalid kind_code: %. No active convention kind found with this code.
+:system_tenant_visible: true
 :END:
 
 * C++

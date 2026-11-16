@@ -39,15 +39,21 @@ select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
--- A recreated database carries the WRLD business centre alone, so the fixture
--- writes the GBLO one this suite names. The suite rolls it back.
+-- The bring-up publishes the FpML business centres into the system tenant, so
+-- the fixture writes GBLO only when the catalogue does not already hold it. The
+-- suite rolls back whatever it writes.
 insert into ores_refdata_business_centres_tbl (
     code, tenant_id, version, coding_scheme_code, source, description,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
-    'GBLO', ores_utility_system_tenant_id_fn(), 0, 'NONE', 'Internal',
+)
+select 'GBLO', ores_utility_system_tenant_id_fn(), 0, 'NONE', 'Internal',
     'London. Trading pgTAP fixture.',
-    current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+    current_user, current_user, 'system.test', 'Trading pgTAP fixture'
+where not exists (
+    select 1 from ores_refdata_business_centres_tbl
+    where tenant_id = ores_utility_system_tenant_id_fn()
+      and code = 'GBLO'
+      and valid_to = ores_utility_infinity_timestamp_fn());
 
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);

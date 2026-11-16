@@ -150,6 +150,11 @@ on delete to "ores_refdata_party_types_tbl" do instead (
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and code = OLD.code
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 
@@ -196,3 +201,36 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Party Type
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
+-- =============================================================================
+alter table ores_refdata_party_types_tbl enable row level security;
+
+drop policy if exists party_types_tbl_tenant_isolation_policy
+    on ores_refdata_party_types_tbl;
+
+create policy party_types_tbl_tenant_isolation_policy
+on ores_refdata_party_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows. It must: a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists party_types_tbl_shared_reference_read_policy
+    on ores_refdata_party_types_tbl;
+
+create policy party_types_tbl_shared_reference_read_policy
+on ores_refdata_party_types_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);

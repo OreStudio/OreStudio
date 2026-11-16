@@ -83,14 +83,22 @@ select is(
     (select families from t_catalogue),
     'a tenant session reads every product family');
 
--- The write half of the policy refuses a change to a row the session does not
--- own, even though the read half showed it the row.
-select throws_ok(
-    $$ update ores_trading_product_types_tbl
-       set display_order = display_order + 1
-       where code = 'Swap' $$,
-    '42501',
-    null,
+-- The write half of the policy admits the session's own rows alone, so an
+-- update that names a shared row matches nothing and changes nothing. It is a
+-- separate policy from the read, and not a branch of one: a single for-all
+-- policy that admitted the shared rows would let a tenant move one into its own
+-- scope by stating its own tenant.
+create temporary table t_changed on commit drop as
+with changed as (
+    update ores_trading_product_types_tbl
+    set display_order = display_order + 1
+    where code = 'Swap'
+    returning 1)
+select count(*)::int as n from changed;
+
+select is(
+    (select n from t_changed),
+    0,
     'a tenant session cannot change a shared product type');
 
 -- A delete from a tenant session closes nothing: the rule states the own-tenant

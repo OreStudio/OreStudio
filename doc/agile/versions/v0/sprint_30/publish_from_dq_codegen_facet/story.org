@@ -19,7 +19,7 @@ Generate the mechanical part of the DQ publish-from-dq pattern from the
 entity's own codegen model, and stop hand-writing it. The pattern is the
 =SECURITY DEFINER= =ores_<component>_publish_<plural>_from_dq_fn= that reads
 an artefact table and writes the owning service's tables.
-[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] states its contract;
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] states its contract;
 [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] has
 the end-to-end walkthrough and the codegen value assessment this story acts on.
 

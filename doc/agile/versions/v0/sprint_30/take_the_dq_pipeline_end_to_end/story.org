@@ -34,10 +34,11 @@ driven.
 
 * Acceptance
 
-- The publishing model is documented in **one** page, with UML where a table
-  cannot carry the meaning, and with provenance, methodology and reproducibility
-  sections: what a blank database holds, what a recreate publishes, what a
-  tenant is provisioned with, and in what order.
+- The publishing model is documented in **one** atomic page that answers where
+  new data goes, with UML where a table cannot carry the meaning. It states the
+  target state, links the pages that own the tiers, the policies, the artefact
+  and the provenance fields, and carries what a blank database holds, what a
+  recreate publishes, and how an operator proves a catalogue.
 - That page is signed off before any implementation task starts.
 - Every dataset is classified as base-system or ACME, with the reason stated.
 - No dataset is seeded and left unpublished, and no refdata table is populated
@@ -56,9 +57,9 @@ on being able to say which bucket a dataset lives in.
 
 | Level | Holds | Published | By |
 |-------+-------+-----------+----|
-| Installation | schema, system vocabulary, the system party, WRLD | at migration | populate |
-| World | calendars, currencies, commodity and equity underlyings, conventions | once, into the system tenant | one world bundle |
-| Tenant | the tenant's own rows, and its copies of what a party may override | per tenant, declared | the tenant bootstrap |
+| Platform | the system vocabulary, the system party, WRLD, the deployment's registers | at bring-up | populate, then =system_core= |
+| World | calendars, currencies, commodity and equity underlyings, conventions | once, into the system tenant | the =world= bundle |
+| Tenant | the tenant's own rows | per tenant, declared | =tenant_defaults=, then =party_essentials= |
 
 The sequence is deliberate: 1 settles the vocabulary, 2 makes bring-up complete,
 3 removes the silent copy that made the gap invisible, 4 collapses the doubling,
@@ -75,9 +76,9 @@ levels, so it can only be designed once 1 and 2 have an answer.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | BACKLOG | | | Level names and the world bundle. Blocks the rest. |
-| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | BACKLOG | | | Closes D1 and D12. |
-| [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | BACKLOG | | | Flow D, undocumented. |
+| [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | DONE | | 2026-11-14 | Level names and the world bundle. Blocks the rest. |
+| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | DONE | | 2026-11-14 | Closes D1 and D12. |
+| [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | DONE | | 2026-11-14 | Flow D, undocumented. |
 | [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | BACKLOG | | | Defect D5 and D14. |
 | [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | Defects D2, D4, D6, D7. |
 | [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | BACKLOG | | | Defects D8 and D9, plus the legacy catalogue. |

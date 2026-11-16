@@ -94,6 +94,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_currency_pair_classifications_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -129,6 +130,7 @@ drop function if exists ores_refdata_validate_currency_pair_classification_fn;
 :entity_plural_short:   classifications
 :entity_singular_words: currency pair classification
 :entity_plural_words:   currency pair classifications
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

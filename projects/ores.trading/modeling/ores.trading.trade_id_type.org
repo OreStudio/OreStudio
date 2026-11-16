@@ -62,6 +62,7 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :tablename: ores_trading_trade_id_types_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -82,6 +83,7 @@ drop function if exists ores_trading_validate_trade_id_type_fn;
 :entity_plural_short:   id_types
 :entity_singular_words: trade ID type
 :entity_plural_words:   trade ID types
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

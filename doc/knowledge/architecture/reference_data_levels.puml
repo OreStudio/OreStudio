@@ -1,0 +1,81 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The three levels: one copy of each row, and who reads it
+
+skinparam componentStyle rectangle
+
+package "Readers" {
+    [platform code] as r_inst
+    [validator\nsecurity definer] as r_val
+    [tenant screen\nrepository with\n:system_tenant_visible:] as r_tenant
+}
+
+node "System tenant" {
+    package "platform level\nwritten by system_core" as lvl_inst {
+        [coding schemes, images,\nproviders, adapters,\nORE parameters] as t_inst
+    }
+    package "world level\nwritten by world" as lvl_world {
+        [countries, currencies,\ncalendars, commodities,\nequity underlyings] as t_world
+    }
+}
+
+node "Tenant A" {
+    package "tenant level, tenant-wide\nwritten by tenant_defaults" as lvl_cfg {
+        [badges, value domains,\nparameter values] as t_cfg
+    }
+    package "tenant level, per party\nwritten by party_essentials" as lvl_party {
+        [conventions, CRM topology,\nreports, portfolios, books] as t_party
+    }
+}
+
+r_inst --> t_inst
+r_val --> t_inst
+r_val --> t_world
+r_tenant --> t_inst : shared-reference read
+r_tenant --> t_world : shared-reference read
+r_tenant --> t_cfg
+r_tenant --> t_party
+
+note bottom of r_tenant
+  The shared-reference read takes
+  the system tenant's own rows
+  beside the caller's.
+  Policy: tenant_id = current or
+  tenant_id = system.
+  The repository declares
+  :system_tenant_visible:.
+end note
+
+note bottom of t_world
+  One copy, in the system tenant.
+end note
+
+note bottom of t_party
+  Every row carries party_id.
+  No other tenant reads it.
+end note
+
+note bottom of lvl_inst
+  No tenant holds a copy of an
+  installation row or a world row.
+  A copy is how the rows drift.
+end note
+
+@enduml

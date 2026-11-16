@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/type-the-trade-vocabularies-and-convention-parts
-#+pr:
+#+pr: 4774
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -113,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4774][#4774]] | [codegen,trading,refdata] Type the trade vocabularies and check convention parts |
 
 * Review
 

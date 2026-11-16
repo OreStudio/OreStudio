@@ -2149,11 +2149,20 @@ ores::utility::domain::result
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
-    // two come to disagree.
+    // two come to disagree. A grouped row is stamped member by member, because
+    // stamp() reaches only a row's own fields.
+{{#central.stamp_members}}
+    stamp(out.{{member}}, ctx,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{/central.stamp_members}}
+{{^central.stamp_members}}
     stamp(out, ctx,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
               : intent.reason_code);
+{{/central.stamp_members}}
 {{#central.has_audit_columns}}
     out.{{central.commentary_member}} = intent.commentary;
 {{/central.has_audit_columns}}
@@ -2201,10 +2210,18 @@ ores::utility::domain::result
     case precondition_kind::any:
         break;
     }
+{{#stamp_members}}
+    stamp(out.{{member}}, ctx,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{/stamp_members}}
+{{^stamp_members}}
     stamp(out, ctx,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
               : intent.reason_code);
+{{/stamp_members}}
 {{#has_audit_columns}}
     out.{{commentary_member}} = intent.commentary;
 {{/has_audit_columns}}

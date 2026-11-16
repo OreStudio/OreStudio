@@ -3385,6 +3385,25 @@ def _group_prefixes(model):
     return prefixes
 
 
+def _family_stamp_members(model):
+    """The members of a grouped row that carry a field stamp() writes.
+
+    stamp() reaches a row's own fields only, so a row that groups its tenant,
+    party and audit into members is stamped member by member, as the entity
+    service stamps it. An ungrouped row has none and is stamped whole.
+    """
+    stamped = {"tenant_id", "party_id", "modified_by", "performed_by",
+               "change_reason_code"}
+    fields_of: dict[str, set] = {}
+    for field in model.get("domain_group_fields") or []:
+        member, _, name = field["name"].partition(".")
+        if name:
+            fields_of.setdefault(member, set()).add(name)
+    return [{"member": group["member"]}
+            for group in (model.get("domain_groups") or [])
+            if fields_of.get(group["member"], set()) & stamped]
+
+
 def _family_entity_view(model, role, owner):
     """The facts the family service reads for one central row or part.
 
@@ -3485,6 +3504,7 @@ def _family_entity_view(model, role, owner):
         "has_party_id": "party_id" in _declared_columns(model),
         "party_member": prefixes.get("party_id", "") + "party_id",
         "grouped_members": grouped_members,
+        "stamp_members": _family_stamp_members(model),
         "version_member": prefixes.get(
             "version" if has_audit else pk_column, "")
         + ("version" if has_audit else pk_column),

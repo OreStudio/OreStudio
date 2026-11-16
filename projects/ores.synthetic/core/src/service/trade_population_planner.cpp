@@ -995,6 +995,16 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                           .barrier_level = money(drawn.lower_barrier.value_or(0.0)),
                           .monitoring_start = start})
                          .build());
+    if (type == "CommodityWindowBarrierOption")
+        // The barrier is watched from the start to halfway to the expiry.
+        return built(tb::commodity_window_barrier_option_builder(
+                         {.option = option,
+                          .barrier = commodity_barrier_kind_of(drawn.barrier_type),
+                          .barrier_level = money(drawn.lower_barrier.value_or(0.0)),
+                          .window_start = start,
+                          .window_end = year_month_day{sys_days{start} +
+                                                       (sys_days{end} - sys_days{start}) / 2}})
+                         .build());
     if (type == "CommodityStrikeResettableOption") {
         // A call resets lower when the price falls, a put higher when it rises.
         const bool call = kind == tb::option_kind::call;
@@ -1139,17 +1149,11 @@ struct commodity_type final {
 };
 
 /*
- * The commodity codes the population books. Two are absent deliberately, each
- * for a reason the engine states:
- *
- * - CommodityPairwiseVarianceSwap: ORE's trade factory has no builder for it,
- *   so the trade is refused while the portfolio is parsed.
- * - CommodityWindowBarrierOption: ORE names the trade type in its schema and
- *   defines no data element for it, so the terms have nowhere to go and the
- *   parser finds no such node.
- *
- * A type ORE cannot carry leaves the generator rather than being booked into a
- * run that must fail.
+ * The commodity codes the population books. CommodityPairwiseVarianceSwap is
+ * absent: ORE's trade factory has no builder for it, so the catalogue tags it
+ * unsupported and the trade is refused while the portfolio is parsed. A type
+ * ORE cannot carry leaves the generator rather than being booked into a run
+ * that must fail.
  */
 constexpr commodity_type commodity_types[] = {
     {"CommodityForward", commodity_shape::forward},
@@ -1164,6 +1168,7 @@ constexpr commodity_type commodity_types[] = {
     {"CommodityDigitalAveragePriceOption", commodity_shape::average_price_option},
     {"CommodityOptionStrip", commodity_shape::option_strip},
     {"CommodityGenericBarrierOption", commodity_shape::barrier_option},
+    {"CommodityWindowBarrierOption", commodity_shape::barrier_option},
     {"CommodityAccumulator", commodity_shape::accumulator},
     {"CommodityTaRF", commodity_shape::target_redemption},
     {"CommoditySpreadOption", commodity_shape::spread_option},

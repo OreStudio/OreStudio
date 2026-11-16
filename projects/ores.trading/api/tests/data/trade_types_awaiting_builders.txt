@@ -2,8 +2,6 @@ Autocallable_01
 BondFutureOption
 CBO
 CashPosition
-CommodityPairwiseVarianceSwap
-CommodityWindowBarrierOption
 CompositeTrade
 ContractForDifference
 CreditDefaultSwapOption
@@ -22,7 +20,6 @@ EquityRainbowOption
 EquityStrikeResettableOption
 EquityWindowBarrierOption
 EuropeanOptionBarrier
-ForwardVolatilityAgreement
 FxAsianOption
 FxBasketOption
 FxBasketVarianceSwap

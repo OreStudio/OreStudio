@@ -88,22 +88,22 @@ auto commodity_instrument_projection_to_ore_date(
     return ores::platform::time::datetime::to_iso8601_date(*d);
 }
 
-auto commodity_instrument_projection_text_of(const record_reader& r,
-                                             std::string_view name) -> std::string {
+auto commodity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto commodity_instrument_projection_spelling_of(const record_reader& r,
-                                                 std::string_view name) -> std::string {
+auto commodity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
-auto optional_date_of(const record_reader& r,
-                      std::string_view name) -> std::optional<std::chrono::year_month_day> {
+auto optional_date_of(const record_reader& r, std::string_view name)
+    -> std::optional<std::chrono::year_month_day> {
     return commodity_instrument_projection_to_domain_date(
         commodity_instrument_projection_text_of(r, name));
 }
@@ -112,8 +112,8 @@ auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::
     return r.decimal(name);
 }
 
-auto commodity_instrument_projection_decimal_of(const record_reader& r,
-                                                std::string_view name) -> decimal {
+auto commodity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -616,6 +616,22 @@ auto read_commodity_generic_barrier_option(const record_reader& trade)
         if (const auto schedule = barriers->child("ScheduleData"))
             option_block::read_schedule(result, *schedule, "option", 1, "barrier_schedule");
     return result;
+}
+
+/// The window the barrier is watched in is the row's start date and window end.
+auto read_commodity_window_barrier_option(const record_reader& trade) -> commodity_instrument {
+    auto r = make_row("CommodityWindowBarrierOption");
+    const auto data = trade.child("CommodityWindowBarrierOptionData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.quantity = decimal_as_double(*data, "FixingAmount").value_or(0.0);
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    read_option_summary(r, data->child("OptionData"));
+    r.start_date = optional_date_of(*data, "StartDate");
+    r.window_end_date = optional_date_of(*data, "EndDate");
+    return r;
 }
 
 auto read_commodity_strike_resettable_option(const record_reader& trade) -> commodity_instrument {
@@ -1156,6 +1172,21 @@ void write_commodity_generic_barrier_option(record_writer& trade,
     }
 }
 
+void write_commodity_window_barrier_option(record_writer& trade,
+                                           const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityWindowBarrierOptionData");
+    set_decimal_from_double(data, "FixingAmount", v.quantity);
+    data.set_spelling("Currency", v.currency, "currency");
+    if (v.strike_price)
+        data.set_decimal("Strike", *v.strike_price);
+    write_scripted_underlying(data, carrier);
+    write_option_terms(data.child("OptionData"), v, v.maturity_date);
+    data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.start_date));
+    data.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.window_end_date));
+    barrier_block::write_kept_barriers(data, "", carrier, "barrier");
+}
+
 void write_commodity_strike_resettable_option(record_writer& trade,
                                               const commodity_instrument_data& carrier) {
     const auto& v = carrier.instrument;
@@ -1384,6 +1415,10 @@ constexpr commodity_product commodity_products[] = {
      read_commodity_generic_barrier_option,
      write_commodity_generic_barrier_option,
      true},
+    {"CommodityWindowBarrierOption",
+     commodity_row_only<read_commodity_window_barrier_option>,
+     write_commodity_window_barrier_option,
+     true},
     {"CommodityStrikeResettableOption",
      commodity_row_only<read_commodity_strike_resettable_option>,
      write_commodity_strike_resettable_option,
@@ -1454,6 +1489,7 @@ constexpr underlying_block::underlying_holder commodity_underlying_holders[] = {
     {"CommodityAccumulator", "", "Underlying", "underlying"},
     {"CommodityTaRF", "", "Underlying", "underlying"},
     {"CommodityGenericBarrierOption", "", "Underlying", "underlying"},
+    {"CommodityWindowBarrierOption", "", "Underlying", "underlying"},
     {"CommodityStrikeResettableOption", "", "Underlying", "underlying"},
     {"CommodityForwardVolatilityAgreement", "", "Underlying", "underlying"},
     {"CommodityBestEntryOption", "", "Underlying", "underlying"},
@@ -1464,6 +1500,7 @@ constexpr barrier_block::barrier_holder commodity_barrier_holders[] = {
     {"CommodityAccumulator", "Barriers", "barrier"},
     {"CommodityTaRF", "Barriers", "barrier"},
     {"CommodityGenericBarrierOption", "Barriers", "barrier"},
+    {"CommodityWindowBarrierOption", "", "barrier"},
 };
 
 /// The schedules a commodity product states on its own element.

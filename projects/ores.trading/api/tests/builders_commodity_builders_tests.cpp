@@ -557,6 +557,36 @@ TEST_CASE("a_commodity_generic_barrier_option_with_no_level_fails", commodity_ta
     CHECK(option.error().term == "barrier_level");
 }
 
+TEST_CASE("a_commodity_window_barrier_option_watches_its_barrier_in_its_window", commodity_tags) {
+    const auto option =
+        commodity_window_barrier_option_builder({.option = crude_call(),
+                                                 .barrier = barrier_kind::down_and_out,
+                                                 .barrier_level = amount("60"),
+                                                 .window_start = 2026y / 1 / 5,
+                                                 .window_end = 2026y / 4 / 5})
+            .build();
+    REQUIRE(option.has_value());
+    CHECK(option->instrument.identity.trade_type_code == "CommodityWindowBarrierOption");
+    CHECK(option->instrument.start_date == 2026y / 1 / 5);
+    CHECK(option->instrument.window_end_date == 2026y / 4 / 5);
+    REQUIRE(option->barriers.size() == 1);
+    CHECK(option->barriers[0].barrier_type == "DownAndOut");
+    CHECK(option->barrier_levels[0].level == amount("60"));
+}
+
+TEST_CASE("a_commodity_window_barrier_option_whose_window_outlives_the_expiry_fails",
+          commodity_tags) {
+    const auto option =
+        commodity_window_barrier_option_builder({.option = crude_call(),
+                                                 .barrier = barrier_kind::down_and_out,
+                                                 .barrier_level = amount("60"),
+                                                 .window_start = 2026y / 1 / 5,
+                                                 .window_end = 2035y / 1 / 5})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "window_end");
+}
+
 TEST_CASE("a_commodity_strike_resettable_option_keeps_its_trigger", commodity_tags) {
     const auto option = commodity_strike_resettable_option_builder(crude_resettable()).build();
     REQUIRE(option.has_value());

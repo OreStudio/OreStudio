@@ -727,6 +727,31 @@ commodity_result commodity_generic_barrier_option_builder::build() const {
     return out;
 }
 
+commodity_window_barrier_option_builder::commodity_window_barrier_option_builder(
+    commodity_window_barrier_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_window_barrier_option_builder::build() const {
+    const auto& option = terms_.option;
+    if (auto refusal = commodity_option_refusal(option))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.barrier_level.get() <= decimal{})
+        return std::unexpected(build_error{"barrier_level", "must be positive"});
+    if (auto refusal = refusals::period(terms_.window_start.get(), terms_.window_end.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.window_end.get() > option.expiry.get())
+        return std::unexpected(build_error{"window_end", "must not be after the expiry"});
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_option_row_of(trade_type, option);
+    out.instrument.start_date = terms_.window_start.get();
+    out.instrument.window_end_date = terms_.window_end.get();
+    out.options.push_back(commodity_option_row(option.position.get()));
+    commodity_add_barrier(
+        out, commodity_barrier_type_of(terms_.barrier.get()), terms_.barrier_level.get());
+    commodity_add_underlying(out, option.underlying.get());
+    return out;
+}
+
 commodity_strike_resettable_option_builder::commodity_strike_resettable_option_builder(
     commodity_strike_resettable_option_terms terms)
     : terms_(std::move(terms)) {}

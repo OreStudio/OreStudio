@@ -7837,18 +7837,19 @@ def _read_env_map() -> dict:
 
 
 def cmd_image(argv):
-    """compass image build — Build container images (base + overlays)."""
+    """compass image — stage, build and publish the container images."""
     import image_build
-    # argv[0] is "build" — the subcommand; pass the rest through.
-    if argv and argv[0] == "build":
-        # The staging script and podman read ORES_PRESET and the rest of
-        # .env from the process environment, so export it the way the
-        # shell pillar does. A missing preset would stage the wrong build.
+    # argv[0] is the subcommand; pass the rest through.
+    if argv and argv[0] in ("build", "stage", "publish"):
+        # The staging script and the container engine read ORES_PRESET and
+        # the rest of .env from the process environment, so export it the
+        # way the shell pillar does. A missing preset would stage the wrong
+        # build.
         os.environ.update(_read_env_map())
-        return image_build.run(argv[1:], PROJECT_ROOT)
+        # run() reads the subcommand off the front and dispatches on it.
+        return image_build.run(argv, PROJECT_ROOT)
     # Unknown subcommand or bare "compass image".
-    print("usage: compass image build [--base-only|--overlays-only|--nats|--compute]",
-          file=sys.stderr)
+    print("usage: compass image {build,stage,publish} [options]", file=sys.stderr)
     return 2
 
 

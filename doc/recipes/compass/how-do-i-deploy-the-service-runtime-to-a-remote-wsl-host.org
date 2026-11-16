@@ -195,6 +195,35 @@ podman keeps working after logout) and starts the user dbus socket
   on Newton day-to-day via =compass env deploy= is the story's
   end-to-end acceptance.
 
+* Published images
+
+The nightly build publishes the release image set to GitHub Container
+Registry, so a host can pull the images instead of receiving a transfer:
+
+#+begin_src sh :results verbatim
+# Inside the nightly build job, which has no container engine: stage the
+# tree and upload it.
+compass image stage --preset linux-clang-release-ninja
+
+# In the publish job, which has docker: build from the staged tree and push.
+compass image publish --from-stage --engine docker \
+    --registry ghcr.io/orestudio --alias main
+#+end_src
+
+Three commands do the work: =compass image stage= writes the shared
+libraries and one directory per service binary into =build/docker-stage=,
+=compass image build= turns that tree into the images, and
+=compass image publish= tags each image as
+=<registry>/<name>:<version>-<commit>= and pushes it. The image names are
+the repository names without a prefix (=ores-service-base=,
+=ores-service-libs=, =ores-nats=, and one per service such as
+=ores.iam.service=). A tag the registry already holds is skipped, so a
+rerun after a failed push only fills the gaps, and =--dry-run= lists what
+would be pushed.
+
+Only the release configuration is published: the debug build is several
+times larger and no host runs it.
+
 * See also
 
 - [[id:0168F066-BFA4-4CFE-8A61-A2C727D91D10][How do I use named env files?]] — the =--env <host>= registry this

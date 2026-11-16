@@ -310,6 +310,32 @@ jobs:
           fi
           ctest -VV --timeout ${timeout} --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Stage the release images
+        # Only the release build is published: the debug build is several
+        # times larger, and no host runs it. The runner's job container has
+        # no container engine, so this stages the tree and the publish job
+        # builds the images from it.
+        if: ${{ matrix.buildtype == 'release' && matrix.compiler == 'clang' }}
+        run: |
+          ./compass.sh image stage --preset ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
+      - name: Upload the staged images
+        if: ${{ matrix.buildtype == 'release' && matrix.compiler == 'clang' }}
+        uses: actions/upload-artifact@v7
+        with:
+          # The shared libraries are most of the payload. The service
+          # binaries are a few MB in total; the empty runtime directories are
+          # what the base image copies. build/docker-stage/bin is left out:
+          # it fed the library partition, which has already run.
+          name: image-stage
+          path: |
+            build/docker-stage/libs
+            build/docker-stage/services
+            build/docker-stage/log
+            build/docker-stage/run
+            build/docker-stage/storage
+          retention-days: 1
+
       - name: Check the compiler cache is worth saving
         id: sccache_worth
         # Restore takes the newest match, so a run that fails before it
@@ -491,3 +517,43 @@ jobs:
               [ -n "$id" ] && gh api --method DELETE \
                 "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
             done
+
+  publish_images:
+    name: publish-images
+    needs: [check_changes, image, build]
+    # One release image set per nightly run, whichever build matrix entry
+    # produced the staged tree. Every other entry skips the staging step, so
+    # this job fails loudly rather than silently publishing nothing if the
+    # artifact is missing.
+    if: ${{ needs.check_changes.outputs.should_run != 'false' && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Download the staged images
+        uses: actions/download-artifact@v8
+        with:
+          name: image-stage
+          path: build/docker-stage
+
+      - name: Log in to GitHub Container Registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and publish the images
+        # --from-stage builds from the downloaded tree instead of staging
+        # again, which this job cannot do: it has no build. A tag the registry
+        # already holds is skipped, so a rerun only fills the gaps.
+        run: |
+          ./compass.sh image publish \
+            --from-stage \
+            --engine docker \
+            --registry ghcr.io/orestudio \
+            --alias main

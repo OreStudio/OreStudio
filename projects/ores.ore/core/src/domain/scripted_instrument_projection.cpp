@@ -76,6 +76,7 @@ struct class_read_product {
 constexpr class_read_product class_read_products[] = {
     {"DoubleDigitalOption", "DoubleDigitalOptionData"},
     {"PerformanceOption_01", "PerformanceOption01Data"},
+    {"Autocallable_01", "Autocallable01Data"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -183,7 +184,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::*column;
+    std::optional<std::string> scripted_parameter::* column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -232,9 +233,8 @@ auto stated_value_of(const scripted_parameter& parameter, const std::string& val
     return names_an_index(parameter.declared_type) ? ore_name_of(value) : value;
 }
 
-auto make_parameter(scripted_instrument_data& data,
-                    std::string name,
-                    std::string type) -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
+    -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -346,8 +346,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data,
-               int parameter_sequence_number) -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
+    -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -512,6 +512,16 @@ auto states_a_leaf(const xml::field& member) -> bool {
     }
 }
 
+/// Whether the member states an event as a schedule, which the class reads as dates.
+auto holds_a_schedule(const xml::field& member) -> bool {
+    if (member.kind != xml::field_kind::nested || member.type == nullptr)
+        return false;
+    for (std::uint8_t i = 0; i < member.type->field_count; ++i)
+        if (member.type->fields[i].name == "ScheduleData")
+            return true;
+    return false;
+}
+
 /// The repeated Underlying block a member states, for a member that states a list.
 auto repeated_underlying_of(const xml::field& member) -> const xml::field* {
     if (member.kind != xml::field_kind::nested || member.type == nullptr)
@@ -544,6 +554,13 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
         const auto& f = type.fields[i];
         if (f.is_attribute || states_an_underlying(f) || repeated_underlying_of(f) != nullptr)
             continue;
+        if (holds_a_schedule(f)) {
+            if (product.has(f.name)) {
+                auto& parameter = make_parameter(data, std::string(f.name), "Event");
+                read_event(data, parameter, *product.child(f.name));
+            }
+            continue;
+        }
         // A member is a parameter only when it states a leaf, or a list of leaves.
         // Anything else is content the projection holds no row for, and reading it
         // as a leaf would refuse the document.
@@ -582,7 +599,10 @@ void write_class_members(xml::record_writer& product, const scripted_instrument_
     for (const auto* parameter : ordered_parameters(data)) {
         if (!product.declares(parameter->name))
             continue;
-        if (parameter->shape == "vector") {
+        if (parameter->shape == "schedule" || parameter->shape == "derived_schedule") {
+            auto holder = product.child(parameter->name);
+            write_event(holder, data, *parameter);
+        } else if (parameter->shape == "vector") {
             const auto* leaf = container_leaf_of(product.type(), parameter->name);
             if (leaf == nullptr)
                 continue;
@@ -617,8 +637,8 @@ void write_class_underlyings(xml::record_writer& product, const scripted_instrum
 }
 namespace {
 
-auto read_scripted_row(xml::record_reader trade,
-                       std::string_view trade_type) -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<scripted_instrument> {
     if (trade_type != "ScriptedTrade")
         return std::nullopt;
 

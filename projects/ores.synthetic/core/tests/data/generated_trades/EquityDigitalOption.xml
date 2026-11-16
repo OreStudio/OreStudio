@@ -15,7 +15,7 @@
       <Strike>1401.29</Strike>
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>5790664.33</PayoffAmount>
-      <Name>.SPX</Name>
+      <Name>RIC:.SPX</Name>
       <Quantity>4132.38</Quantity>
     </EquityDigitalOptionData>
   </Trade>
@@ -34,7 +34,7 @@
       <Strike>2098.35</Strike>
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>4187691.98</PayoffAmount>
-      <Name>.SPX</Name>
+      <Name>RIC:.SPX</Name>
       <Quantity>1995.71</Quantity>
     </EquityDigitalOptionData>
   </Trade>

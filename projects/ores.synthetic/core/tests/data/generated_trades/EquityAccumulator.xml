@@ -8,7 +8,7 @@
       <Strike>3569.3</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>.SPX</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
@@ -53,7 +53,7 @@
       <Strike>4590.75</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>.SPX</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>

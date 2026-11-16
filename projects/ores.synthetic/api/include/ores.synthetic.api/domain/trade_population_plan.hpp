@@ -30,6 +30,7 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
+#include "ores.trading.api/domain/script_input.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
@@ -176,6 +177,13 @@ struct trade_generation_scope final {
      * constituent it writes resolves against the catalogue that holds it.
      */
     std::vector<equity_underlying_reference> equity_underlyings;
+    /**
+     * @brief The inputs the script library holds for its scripts.
+     *
+     * A generic scripted trade names a library script, and its builder checks
+     * the trade states each input the script reads, as the library holds it.
+     */
+    std::vector<ores::trading::domain::script_input> script_inputs;
     /**
      * @brief The inflation indices the tenant holds a curve for.
      *

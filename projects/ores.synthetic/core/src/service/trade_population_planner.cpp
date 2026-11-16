@@ -28,6 +28,7 @@
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
+#include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
@@ -492,14 +493,23 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
             throw trade_population_error(
                 "A convertible bond states the share it may convert into, and the tenant holds no "
                 "equity underlying. Publish the equity catalogue first.");
+        /*
+         * ORE converts into a share of another currency only through an FX
+         * index the conversion data states, so the share is drawn from those
+         * in the bond's currency when the catalogue holds one.
+         */
+        std::vector<const domain::equity_underlying_reference*> candidates;
+        for (const auto& underlying : scope.equity_underlyings)
+            if (underlying.currency == entry.currency)
+                candidates.push_back(&underlying);
+        if (candidates.empty())
+            for (const auto& underlying : scope.equity_underlyings)
+                candidates.push_back(&underlying);
         const auto position_drawn = static_cast<std::size_t>(
-            draw(security_id, 10) * static_cast<double>(scope.equity_underlyings.size()));
+            draw(security_id, 10) * static_cast<double>(candidates.size()));
         return tb::convertible_bond_terms{
             .holding = holding,
-            .share = scope
-                         .equity_underlyings[std::min(position_drawn,
-                                                      scope.equity_underlyings.size() - 1)]
-                         .code,
+            .share = candidates[std::min(position_drawn, candidates.size() - 1)]->code,
             .conversion_ratio = std::round((5.0 + 10.0 * draw(security_id, 11)) * 100.0) / 100.0};
     };
 
@@ -2238,213 +2248,152 @@ ores::marketdata::datum::market_reference equity_address_of(const std::string& c
     return std::move(*reference);
 }
 
-/*
- * The scripted codes the population books, in the order the routing table
- * states them. Autocallable_01 is routed like the others and is left out
- * deliberately: the ORE projection has no writer for its data element, so a
- * trade of it would book and then export as an empty product.
- */
+/// The scripted codes the population books, in the order the routing table states them.
 constexpr std::string_view scripted_types[] = {
-    "ScriptedTrade", "DoubleDigitalOption", "PerformanceOption_01"};
+    "ScriptedTrade", "DoubleDigitalOption", "PerformanceOption_01", "Autocallable_01"};
 constexpr std::size_t scripted_type_count = std::size(scripted_types);
 
-/*
- * The script each code is written from. The document names the script the
- * engine runs, and the projection reads the code's element back into the same
- * name, so the two sides agree on what the trade is.
- */
-std::string_view script_of(std::string_view trade_type) {
-    if (trade_type == "ScriptedTrade")
-        return "AsianBasketOption";
-    if (trade_type == "DoubleDigitalOption")
-        return "DoubleDigitalOption";
-    return "PerformanceOption_01";
-}
-
-/// Adds one variable the script reads, in the order the document states them.
-void add_scripted_value(ores::trading::domain::instrument_batch& batch,
-                        std::string name,
-                        std::string declared_type,
-                        std::string value) {
-    namespace tdom = ores::trading::domain;
-    tdom::scripted_parameter row;
-    row.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
-    row.name = std::move(name);
-    row.declared_type = std::move(declared_type);
-    row.shape = "scalar";
-    row.value = std::move(value);
-    batch.scripted_parameters.push_back(std::move(row));
-}
-
-/// Adds one list variable, one value row per member.
-void add_scripted_list(ores::trading::domain::instrument_batch& batch,
-                       std::string name,
-                       std::string declared_type,
-                       const std::vector<std::string>& values) {
-    namespace tdom = ores::trading::domain;
-    tdom::scripted_parameter row;
-    row.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
-    row.name = std::move(name);
-    row.declared_type = std::move(declared_type);
-    row.shape = "vector";
-    const auto parameter_sequence_number = row.sequence_number;
-    batch.scripted_parameters.push_back(std::move(row));
-
-    int sequence_number = 0;
-    for (const auto& value : values) {
-        tdom::scripted_parameter_value member;
-        member.parameter_sequence_number = parameter_sequence_number;
-        member.sequence_number = ++sequence_number;
-        member.value = value;
-        batch.scripted_parameter_values.push_back(std::move(member));
-    }
-}
-
-/// Adds one event variable stated as a schedule of rules, one date a tenor.
-void add_scripted_schedule(ores::trading::domain::instrument_batch& batch,
-                           std::string name,
-                           const std::chrono::year_month_day& start,
-                           const std::chrono::year_month_day& end,
-                           std::string tenor) {
-    namespace tdom = ores::trading::domain;
-    tdom::scripted_parameter row;
-    row.sequence_number = static_cast<int>(batch.scripted_parameters.size()) + 1;
-    row.name = std::move(name);
-    row.declared_type = "Event";
-    row.shape = "schedule";
-    tdom::instrument_schedule schedule;
-    schedule.owner_role = "scripted";
-    schedule.owner_number = row.sequence_number;
-    schedule.schedule_role = "event";
-    schedule.sequence_number = 1;
-    schedule.schedule_kind = "rules";
-    schedule.start_date = start;
-    schedule.end_date = end;
-    schedule.tenor = std::move(tenor);
-    schedule.calendar = "TARGET";
-    schedule.convention = "F";
-    schedule.rule = "Forward";
-    batch.scripted_parameters.push_back(std::move(row));
-    batch.instrument_schedules.push_back(std::move(schedule));
-}
-
-/// Adds one Underlying block under the role the document states it in.
-void add_scripted_underlying(ores::trading::domain::instrument_batch& batch,
-                             std::string role,
-                             std::string underlying_type,
-                             std::string address) {
-    namespace tdom = ores::trading::domain;
-    int sequence_number = 0;
-    for (const auto& row : batch.instrument_underlyings)
-        if (row.underlying_role == role)
-            ++sequence_number;
-    tdom::instrument_underlying row;
-    row.underlying_role = std::move(role);
-    row.sequence_number = ++sequence_number;
-    row.underlying_type = std::move(underlying_type);
-    row.name = std::move(address);
-    batch.instrument_underlyings.push_back(std::move(row));
-}
 
 /*
- * The scripted family states its row here, where it draws it: the script body
- * is the only text the trade keeps, so the variables and the underlyings are
- * rows the plan carries beside it.
+ * The scripted family builds each trade through its builder. The generic form
+ * names a library script and states its variables, and its builder checks them
+ * against the inputs the library holds for that script; the class-read products
+ * each have a builder of their own.
  */
 ores::trading::domain::instrument_batch
-construct_scripted_batch(const domain::trade_generation_scope& scope,
-                         std::string_view trade_type,
-                         std::uint32_t slot,
-                         const std::chrono::year_month_day& end,
-                         double notional,
-                         double strike) {
-    namespace tdom = ores::trading::domain;
+build_scripted_trade(const domain::trade_generation_scope& scope,
+                     const domain::trade_population_slot& entry,
+                     const std::chrono::year_month_day& end,
+                     double notional,
+                     double strike) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
+    const auto money = [](double value) {
+        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
+    };
+    const auto level = [](double value) {
+        return decimal::from_double(std::round(value * 10000.0) / 10000.0).value();
+    };
 
     /*
      * The underlyings cycle the tenant's catalogue, so a population longer than
-     * the catalogue states every name it holds and none it does not.
-     *
-     * The two products that state a pair, the double digital and the
-     * performance option, take two names: their parameters name two types, and
-     * the engine reads one underlying for each. A trade given one name exports
-     * with no second underlying and the engine refuses it.
+     * the catalogue states every name it holds and none it does not. The double
+     * digital and the performance option observe a pair: a trade given one
+     * name exports with no second underlying and the engine refuses it.
      */
+    const auto slot = entry.slot;
     const auto& first = scope.equity_underlyings[slot % scope.equity_underlyings.size()];
     const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
-    const auto first_address = equity_address_of(first.code).uri();
-    const auto second_address = equity_address_of(second.code).uri();
+    const auto first_address = equity_address_of(first.code);
+    const auto second_address = equity_address_of(second.code);
+    const auto& type = entry.trade_type_code;
+    const auto position =
+        first_way(entry) ? tb::option_position::long_option : tb::option_position::short_option;
+    const auto settlement = add_months(end, 2);
 
-    tdom::scripted_instrument row;
-    row.identity.trade_type_code = std::string(trade_type);
-    row.script_name = std::string(script_of(trade_type));
-    row.description = "Generated scripted trade.";
-
-    tdom::instrument_batch batch;
-    batch.scripted_instruments.push_back(std::move(row));
-
-    const auto money = std::format("{:.2f}", notional);
-    const auto level = std::format("{:.4f}", strike);
-    const auto expiry = std::format("{:%Y-%m-%d}", end);
-    const auto settlement = std::format("{:%Y-%m-%d}", add_months(end, 2));
-
-    if (trade_type == "ScriptedTrade") {
-        /*
-         * The generic form of the script: the trade names the library script
-         * and states every variable it reads, as ORE's own AsianBasketOption
-         * example does. PutCall and LongShort are signs, 1 or -1. The index
-         * ones are addresses, so the projection writes the ORE names they
-         * resolve to.
-         */
-        add_scripted_value(batch, "Expiry", "Event", expiry);
-        add_scripted_value(batch, "Settlement", "Event", settlement);
-        add_scripted_schedule(batch, "ObservationDates", scope.as_of_date, end, "1M");
-        add_scripted_value(batch, "PutCall", "Number", "1");
-        add_scripted_value(batch, "LongShort", "Number", "1");
-        add_scripted_value(batch, "Notional", "Number", money);
-        add_scripted_value(batch, "Strike", "Number", level);
-        add_scripted_list(batch, "Underlyings", "Index", {first_address, second_address});
-        add_scripted_list(batch, "Weights", "Number", {"0.5", "0.5"});
-        add_scripted_value(batch, "PayCcy", "Currency", scope.currency_code);
+    const auto built = [&](tb::scripted_result result) {
+        if (!result)
+            throw trade_population_error("The " + type + " builder refuses the drawn " +
+                                         result.error().term + ": " + result.error().message);
+        ores::trading::domain::instrument_batch batch;
+        ores::trading::domain::append_instrument(
+            batch, ores::trading::domain::trade_instrument{std::move(*result)});
         return batch;
+    };
+
+    if (type == "ScriptedTrade") {
+        /*
+         * The generic form of the library's AsianBasketOption, stating every
+         * variable the script reads, as ORE's own example does. PutCall and
+         * LongShort are signs, 1 or -1, and the index ones are addresses, which
+         * the projection writes as the ORE names they resolve to.
+         */
+        std::vector<ores::trading::domain::script_input> inputs;
+        for (const auto& input : scope.script_inputs)
+            if (input.script_name == "AsianBasketOption")
+                inputs.push_back(input);
+        const auto sign = [](bool first_way) {
+            return std::string(first_way ? "1" : "-1");
+        };
+        return built(
+            tb::scripted_trade_builder(
+                {.script_name = std::string("AsianBasketOption"),
+                 .inputs = std::move(inputs),
+                 .variables = {{"Expiry", "Event", std::format("{:%Y-%m-%d}", end)},
+                               {"Settlement", "Event", std::format("{:%Y-%m-%d}", settlement)},
+                               {"ObservationDates",
+                                "Event",
+                                tb::scripted_schedule{scope.as_of_date, end, "1M"}},
+                               {"PutCall", "Number", sign(first_way(entry, 1))},
+                               {"LongShort", "Number", sign(first_way(entry))},
+                               {"Notional", "Number", money(notional).to_string()},
+                               {"Strike", "Number", level(strike).to_string()},
+                               {"Underlyings",
+                                "Index",
+                                std::vector<std::string>{first_address.uri(),
+                                                         second_address.uri()}},
+                               {"Weights", "Number", std::vector<std::string>{"0.5", "0.5"}},
+                               {"PayCcy", "Currency", scope.currency_code}}})
+                .build());
     }
 
-    if (trade_type == "DoubleDigitalOption") {
+    if (type == "DoubleDigitalOption")
+        return built(tb::double_digital_option_builder({.expiry = end,
+                                                        .settlement = settlement,
+                                                        .binary_payout = money(notional),
+                                                        .binary_level_1 = level(strike),
+                                                        .binary_level_2 = level(strike * 1.2),
+                                                        .kind_1 = tb::digital_kind::call,
+                                                        .kind_2 = tb::digital_kind::put,
+                                                        .position = position,
+                                                        .pay_currency = scope.currency_code,
+                                                        .underlying_1 = first_address,
+                                                        .underlying_2 = second_address})
+                         .build());
+
+    if (type == "Autocallable_01") {
         /*
-         * Type1 and Type2 are the option types, not the asset class: ORE reads
-         * them as Call, Put or Collar, and refuses 'Equity' before it prices
-         * anything. The underlying's kind is the block's own Type.
+         * The autocallable fixes once a year from a year after the anchor, and
+         * settles a month after each fixing; a fixing on the anchor has no path
+         * to observe. It accumulates one factor a fixing, capped at the last.
          */
-        add_scripted_value(batch, "Expiry", "text", expiry);
-        add_scripted_value(batch, "Settlement", "text", settlement);
-        add_scripted_value(batch, "BinaryPayout", "decimal", money);
-        add_scripted_value(batch, "BinaryLevel1", "decimal", level);
-        add_scripted_value(batch, "BinaryLevel2", "decimal", std::format("{:.4f}", strike * 1.2));
-        add_scripted_value(batch, "Type1", "text", "Call");
-        add_scripted_value(batch, "Type2", "text", "Put");
-        add_scripted_value(batch, "Position", "enumeration", "Long");
-        add_scripted_value(batch, "PayCcy", "enumeration", scope.currency_code);
-        add_scripted_underlying(batch, "underlying1", "Equity", first_address);
-        add_scripted_underlying(batch, "underlying2", "Equity", second_address);
-        return batch;
+        const auto years =
+            std::max(2, static_cast<int>(end.year()) - static_cast<int>(scope.as_of_date.year()));
+        std::vector<decimal> factors;
+        for (int year = 1; year <= years; ++year)
+            factors.push_back(level(0.05 * year));
+        const auto first_fixing = add_years(scope.as_of_date, 1);
+        const auto last_fixing = add_years(scope.as_of_date, years);
+        return built(tb::autocallable_builder(
+                         {.notional = money(notional),
+                          .determination_level = level(strike * 0.7),
+                          .trigger_level = level(strike),
+                          .underlying = first_address,
+                          .position = position,
+                          .pay_currency = scope.currency_code,
+                          .fixing_dates = tb::scripted_schedule{first_fixing, last_fixing, "1Y"},
+                          .settlement_dates = tb::scripted_schedule{add_months(first_fixing, 1),
+                                                                    add_months(last_fixing, 1),
+                                                                    "1Y"},
+                          .accumulation_factors = factors,
+                          .cap = level(0.05 * years)})
+                         .build());
     }
 
-    add_scripted_value(batch, "NotionalAmount", "decimal", money);
-    add_scripted_value(batch, "ParticipationRate", "decimal", "1.0");
-    add_scripted_value(batch, "ValuationDate", "text", expiry);
-    add_scripted_value(batch, "SettlementDate", "text", settlement);
-    add_scripted_list(
-        batch,
-        "StrikePrices",
-        "decimal",
-        {level, std::format("{:.4f}", strike * 1.1), std::format("{:.4f}", strike * 1.2)});
-    add_scripted_value(batch, "Strike", "decimal", level);
-    add_scripted_value(batch, "Position", "enumeration", "Long");
-    add_scripted_value(batch, "PayCcy", "enumeration", scope.currency_code);
-    add_scripted_underlying(batch, "underlying", "Equity", first_address);
-    add_scripted_underlying(batch, "underlying", "Equity", second_address);
-    return batch;
+    return built(
+        tb::performance_option_builder(
+            {.notional = money(notional),
+             .participation_rate = level(1.0),
+             .valuation_date = end,
+             .settlement_date = settlement,
+             .strike_prices =
+                 std::vector<decimal>{level(strike), level(strike * 1.1), level(strike * 1.2)},
+             .strike = level(strike),
+             .position = position,
+             .pay_currency = scope.currency_code,
+             .underlyings = std::vector{first_address, second_address}})
+            .build());
 }
-
 }
 
 std::string_view scripted_trade_planner::asset_class_code() const {
@@ -2491,7 +2440,7 @@ scripted_trade_planner::plan(const domain::trade_generation_scope& scope) const 
         auto entry = common_slot(scope, slot, types.size());
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
-        entry.instruments = construct_scripted_batch(scope, type, slot, end, notional, strike);
+        entry.instruments = build_scripted_trade(scope, entry, end, notional, strike);
 
         plan.slots.push_back(std::move(entry));
     }

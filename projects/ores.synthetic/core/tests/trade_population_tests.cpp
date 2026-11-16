@@ -177,6 +177,7 @@ domain::trade_generation_scope scripted_scope() {
                                     .code = "US0378331005", .kind = "share", .currency = "USD"},
                                 domain::equity_underlying_reference{
                                     .code = "DE0007164600", .kind = "share", .currency = "EUR"}};
+    scope.script_inputs = ores::synthetic::tests::asian_basket_option_inputs();
     return scope;
 }
 
@@ -1156,13 +1157,9 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
         types.insert(row.identity.trade_type_code);
     }
 
-    /*
-     * The three codes the projection writes an element for. The autocallable is
-     * routed and left out: the projection has no writer for its data element, so
-     * it would book and export as an empty product.
-     */
-    CHECK(types.size() == 3u);
-    CHECK_FALSE(types.contains("Autocallable_01"));
+    // The four codes the scripted family books, each through its builder.
+    CHECK(types.size() == 4u);
+    CHECK(types.contains("Autocallable_01"));
     CHECK(observed.size() > 1u);
 }
 

@@ -46,7 +46,7 @@
         </ConversionRatios>
         <Underlying>
           <Type>Equity</Type>
-          <Name>.STOXX50E</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
       </ConversionData>
     </ConvertibleBondData>
@@ -97,7 +97,7 @@
         </ConversionRatios>
         <Underlying>
           <Type>Equity</Type>
-          <Name>.STOXX50E</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
       </ConversionData>
     </ConvertibleBondData>

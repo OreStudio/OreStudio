@@ -18,7 +18,7 @@
           <Level>1163.13</Level>
         </Levels>
       </BarrierData>
-      <Name>.STOXX50E</Name>
+      <Name>RIC:.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>1292.37</Strike>
       <Quantity>4159.27</Quantity>
@@ -42,7 +42,7 @@
           <Level>3571.74</Level>
         </Levels>
       </BarrierData>
-      <Name>.STOXX50E</Name>
+      <Name>RIC:.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>3968.6</Strike>
       <Quantity>1037.72</Quantity>

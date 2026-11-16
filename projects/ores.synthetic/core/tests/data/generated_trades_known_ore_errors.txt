@@ -10,37 +10,16 @@
 engine_configuration	BondFuture	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type BondFuture
 engine_configuration	CommodityAsianOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type CommodityAsianOptionArithmeticPrice
 engine_configuration	FlexiSwap	Error building trade for context 'analytic/PRICING'	No EngineBuilder for LGM/Grid/FlexiSwap
-market_data	Ascot	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
-market_data	Ascot	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
 market_data	BalanceGuaranteedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'POP-0cd68b09-000006' of type cpr under configuration 'default' or 'default'
 market_data	BalanceGuaranteedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'POP-0cd68b09-000015' of type cpr under configuration 'default' or 'default'
 market_data	BondPosition	Error building trade for context 'analytic/PRICING'	Build failed for underlying Bond (POPWJZKDKJKR3): BondFactory: could not build bond 'POPWJZKDKJKR3': no reference data given or no suitable builder registered. Check if bond is set up in the reference data and that there is a builder for the reference data type.
 market_data	BondPosition	Error building trade for context 'analytic/PRICING'	Build failed for underlying Bond (POPZLGWDZBWA7): BondFactory: could not build bond 'POPZLGWDZBWA7': no reference data given or no suitable builder registered. Check if bond is set up in the reference data and that there is a builder for the reference data type.
 market_data	CallableBond	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:NG/COMM-NYMEX:CL in CorrelationCurves
-market_data	ConvertibleBond	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
 market_data	CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-market_data	DoubleDigitalOption	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
-market_data	DoubleDigitalOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
-market_data	EquityAccumulator	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
-market_data	EquityAsianOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
-market_data	EquityBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
-market_data	EquityCliquetOption	Error building trade for context 'analytic/PRICING'	did not find object 'GB0005405286' of type equity vol curve under configuration 'default' or 'default'
-market_data	EquityDigitalOption	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity spot under configuration 'default' or 'default'
-market_data	EquityDoubleBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
-market_data	EquityEuropeanBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
-market_data	EquityForward	Error building trade for context 'analytic/PRICING'	did not find object 'GB0005405286' of type equity curve under configuration 'default' or 'default'
-market_data	EquityOption	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
-market_data	EquityOptionPosition	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
-market_data	EquityPosition	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
-market_data	EquitySwap	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
-market_data	EquityTaRF	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
-market_data	EquityTouchOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity spot under configuration 'default' or 'default'
-market_data	EquityVarianceSwap	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
-market_data	EquityWorstOfBasketSwap	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
 market_data	IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 market_data	IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 market_data	IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
@@ -48,7 +27,6 @@ market_data	IndexCreditDefaultSwapOption	Error building trade for context 'analy
 market_data	InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'UKRPIX' of type zero inflation index under configuration 'default' or 'default'
 market_data	InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'USCPIA' of type zero inflation index under configuration 'default' or 'default'
 market_data	IntradayPowerForward	Error building trade for context 'analytic/PRICING'	did not find object 'NYMEX:NG' of type intraday power indices under configuration 'default' or 'default'
-market_data	PerformanceOption_01	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
 market_data	RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 market_data	RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
-market_data	ScriptedTrade	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
+engine_configuration	EquitySwap	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityLeg

@@ -183,7 +183,9 @@ TEST_CASE("an_ascot_recalls_against_a_floating_swap_leg", bond_tags) {
     CHECK(ascot->conversion_targets.size() == 1);
     REQUIRE(ascot->option_block.size() == 1);
     CHECK(ascot->option_block[0].style == "American");
-    CHECK(ascot->schedule_dates.size() == 2);
+    // ORE reads an American option's exercise as one date, the last it may be taken.
+    REQUIRE(ascot->schedule_dates.size() == 1);
+    CHECK(ascot->schedule_dates[0].sequence_number == 1);
 }
 
 TEST_CASE("a_bond_position_holds_its_security_as_a_bond_underlying", bond_tags) {

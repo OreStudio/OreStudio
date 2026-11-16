@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/script_calibration_strike.hpp"
 #include "ores.trading.api/domain/script_calibration_strike_json_io.hpp" // IWYU pragma: keep.
@@ -277,9 +278,11 @@ std::vector<domain::script_calibration_strike>
 script_calibration_strike_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<script_calibration_strike_entity>> |
-        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "valid_to"_c == max) |
         query_builder::order_by(
             "script_name"_c, "purpose"_c, "calibration_number"_c, "sequence_number"_c);
 
@@ -304,11 +307,13 @@ script_calibration_strike_repository::read_latest(const context& ctx,
                                << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<script_calibration_strike_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "script_name"_c == script_name &&
-                           "purpose"_c == purpose && "calibration_number"_c == calibration_number &&
-                           "sequence_number"_c == sequence_number && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<script_calibration_strike_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c == script_name && "purpose"_c == purpose &&
+                             "calibration_number"_c == calibration_number &&
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<script_calibration_strike_entity,
                                              domain::script_calibration_strike>(
@@ -331,12 +336,14 @@ script_calibration_strike_repository::read_all(const context& ctx,
                                << " calibration_number: " << calibration_number
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<script_calibration_strike_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "script_name"_c == script_name &&
-                           "purpose"_c == purpose && "calibration_number"_c == calibration_number &&
-                           "sequence_number"_c == sequence_number) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<script_calibration_strike_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c == script_name && "purpose"_c == purpose &&
+                             "calibration_number"_c == calibration_number &&
+                             "sequence_number"_c == sequence_number) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<script_calibration_strike_entity,
                                              domain::script_calibration_strike>(
@@ -360,12 +367,14 @@ script_calibration_strike_repository::read_at_version(const context& ctx,
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<script_calibration_strike_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "script_name"_c == script_name &&
-                           "purpose"_c == purpose && "calibration_number"_c == calibration_number &&
-                           "sequence_number"_c == sequence_number && "version"_c == version) |
-                       query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<script_calibration_strike_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c == script_name && "purpose"_c == purpose &&
+                             "calibration_number"_c == calibration_number &&
+                             "sequence_number"_c == sequence_number && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<script_calibration_strike_entity,
                                                             domain::script_calibration_strike>(
@@ -441,9 +450,10 @@ script_calibration_strike_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest script calibration strikes with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_calibration_strike_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<script_calibration_strike_entity,
                                                      domain::script_calibration_strike>(
@@ -462,8 +472,9 @@ std::uint32_t script_calibration_strike_repository::get_total_strike_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active script calibration strike count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_calibration_strike_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<script_calibration_strike_entity>(
         ctx,
@@ -510,10 +521,11 @@ std::vector<domain::script_calibration_strike> script_calibration_strike_reposit
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<script_calibration_strike_entity>> |
-        query_builder::where("tenant_id"_c == tid && "script_name"_c.in(script_names) &&
-                             "purpose"_c.in(purposes) &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "script_name"_c.in(script_names) && "purpose"_c.in(purposes) &&
                              "calibration_number"_c.in(calibration_numbers) &&
                              "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<script_calibration_strike_entity,

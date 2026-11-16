@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-scripted-trades-through-builders
+#+pr: 4779
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Every scripted trade type the generator books is built by its trade builder, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -83,12 +83,49 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4779][#4779]] | [synthetic,trading,ore] Generate scripted trades through their builders |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Extra or duplicated variables are not refused | scripted_builders.cpp | fix | The builder refuses a variable the script does not read and one stated twice; two tests cover them |
+| 2 | The factor count is not checked against the fixings | scripted_builders.cpp | fix | The message now says what is checked: a rules schedule states its fixings only once the calendar rolls it, so the caller matches the count |
+| 3 | A tenant row and a system row may share a key | trade_population_planner.cpp | decline | No tenant writes the script library; a duplicate input only repeats a check |
+| 4 | Paged reads have no order and no current-row filter | script_input_repository.cpp | decline | The read orders by script_name and sequence_number through execute_ordered_read_query, and valid_at with no as_of reads current rows |
+| 5 | Class-read builders name the trade type as script | scripted_builders.cpp | fix | A comment says ORE reads the product's own class |
+| 6 | Formatting-only changes in the projection | scripted_instrument_projection.cpp | decline | clang-format output on lines the change touched |
+| 7 | No check that a tenant reads but cannot change system rows | trading_script_library_visibility_test.sql | fix | New pgTAP test: a tenant reads the script, its inputs and variants; an update raises 42501; a delete closes nothing |
 
 * Result
+
+The scripted family is generated through builders, and the engine builds every
+type it books.
+
+- The scripted builders need no convention: a script reads its variables as the
+  trade states them, so convention_lookup answers them with no change.
+- scripted_trade_builder takes a library script, its inputs as the store holds
+  them and the trade's typed variables, and refuses a trade that leaves out an
+  input or states it in another type or shape. The double digital option, the
+  performance option and the autocallable each have a builder of their own.
+- The planner reads the library's inputs into the scope, draws values and calls
+  the builders. construct_scripted_batch, its row helpers and script_of are
+  deleted, and the four types leave the list awaiting builders.
+- Autocallable_01 is booked: the projection reads and writes its element, and a
+  class member that holds a ScheduleData is an event.
+- The scripted entries leave the known lists. The test recipe names its
+  equities as ORE's Products market holds their curves and volatilities, which
+  clears 23 equity-curve errors across the equity and scripted types. The
+  engine then reached three trade errors, which are fixed: the Ascot states one
+  exercise date, a convertible draws a share in the bond's currency, and the
+  autocallable fixes from a year after the anchor. EquitySwap's EquityLeg has
+  no engine configuration in the Products example and is listed as such.
+- The read of a class member asked every member for a child, which threw on a
+  scalar and emptied the double digital option's import. It now asks the
+  binding whether the member holds a schedule.
+- The corpus roundtrip reads every ORE sample of ScriptedTrade,
+  DoubleDigitalOption and PerformanceOption_01 with no known loss. ORE ships no
+  XML sample of Autocallable_01, so the projection test round-trips one.
+
+Verified: trading api 4640 cases, trading core 252, ORE core 545 and synthetic
+145 with the ORE engine, all passing.

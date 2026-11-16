@@ -6,7 +6,7 @@
       <StartDate>2025-11-02</StartDate>
       <EndDate>2027-11-02</EndDate>
       <Currency>EUR</Currency>
-      <Name>.STOXX50E</Name>
+      <Name>RIC:.STOXX50E</Name>
       <LongShort>Long</LongShort>
       <Strike>0.04</Strike>
       <Notional>6103286.3</Notional>
@@ -20,7 +20,7 @@
       <StartDate>2026-01-02</StartDate>
       <EndDate>2029-01-02</EndDate>
       <Currency>EUR</Currency>
-      <Name>.STOXX50E</Name>
+      <Name>RIC:.STOXX50E</Name>
       <LongShort>Long</LongShort>
       <Strike>0.04</Strike>
       <Notional>7492174.07</Notional>

@@ -6,7 +6,7 @@
       <Quantity>2489</Quantity>
       <Underlying>
         <Type>Equity</Type>
-        <Name>.STOXX50E</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
     </EquityPositionData>
   </Trade>
@@ -16,7 +16,7 @@
       <Quantity>238</Quantity>
       <Underlying>
         <Type>Equity</Type>
-        <Name>.STOXX50E</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
     </EquityPositionData>
   </Trade>

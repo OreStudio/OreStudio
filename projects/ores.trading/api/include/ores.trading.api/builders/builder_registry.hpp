@@ -26,6 +26,7 @@
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
+#include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include <set>
 #include <string_view>
@@ -115,7 +116,11 @@ using all_builders =
                commodity_rainbow_option_builder,
                commodity_basket_variance_swap_builder,
                commodity_best_entry_option_builder,
-               commodity_worst_of_basket_swap_builder>;
+               commodity_worst_of_basket_swap_builder,
+               scripted_trade_builder,
+               double_digital_option_builder,
+               performance_option_builder,
+               autocallable_builder>;
 
 namespace detail {
 

@@ -110,6 +110,7 @@ set(files
     "builders_equity_builders_tests.cpp"
     "builders_fx_builders_tests.cpp"
     "builders_rate_builders_tests.cpp"
+    "builders_scripted_builders_tests.cpp"
     "builders_vanilla_swap_builder_tests.cpp"
     "callable_swap_call_date_codec_roundtrip_tests.cpp"
     "callable_swap_call_date_protocol_codec_roundtrip_tests.cpp"

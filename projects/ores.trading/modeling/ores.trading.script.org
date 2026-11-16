@@ -78,6 +78,7 @@ std::optional<std::string>(std::string("Window barrier option"))
 :PROPERTIES:
 :tablename: ores_trading_scripts_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * C++
@@ -94,6 +95,7 @@ std::optional<std::string>(std::string("Window barrier option"))
 :entity_plural_short:   scripts
 :entity_singular_words: script
 :entity_plural_words:   scripts
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

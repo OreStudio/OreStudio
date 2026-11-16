@@ -22,27 +22,13 @@
 #include "ores.database/export.hpp"
 #include "ores.database/pq/connection_fwd.hpp"
 #include "ores.database/pq/result.hpp"
+#include "ores.database/pq/session_context.hpp"
 #include "ores.database/pq/statement.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <optional>
 #include <span>
 #include <string>
 #include <vector>
 
 namespace ores::database::pq {
-
-/**
- * @brief Who a transaction acts for. The policies of row-level security read
- * these settings, and the audit columns name the actor and the service.
- */
-struct session_context final {
-    utility::uuid::tenant_id tenant = utility::uuid::tenant_id::system();
-    std::optional<boost::uuids::uuid> party;
-    std::vector<boost::uuids::uuid> visible_parties;
-    std::string actor;
-    std::string service;
-};
 
 /**
  * @brief One statement of a round trip: what to prepare, what to send, and

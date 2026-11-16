@@ -27,13 +27,13 @@ namespace {
 
 using utility::decimal::decimal;
 
-domain::composite_instrument header_of(std::string_view trade_type) {
+domain::composite_instrument container_header_of(std::string_view trade_type) {
     domain::composite_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     return row;
 }
 
-std::optional<build_error> refusal_of(const total_return_terms& terms) {
+std::optional<build_error> return_leg_refusal_of(const total_return_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     if (terms.initial_price.get() <= decimal{})
@@ -47,7 +47,7 @@ std::optional<build_error> refusal_of(const total_return_terms& terms) {
  */
 domain::composite_instrument_data return_leg_of(std::string_view trade_type,
                                                 const total_return_terms& terms) {
-    domain::composite_instrument_data out{header_of(trade_type)};
+    domain::composite_instrument_data out{container_header_of(trade_type)};
     auto& row = out.instrument;
     row.return_payer = terms.return_side.get() == side::pay ? "true" : "false";
     row.return_currency = terms.currency.get();
@@ -80,7 +80,7 @@ composite_result composite_trade_builder::build() const {
         return std::unexpected(build_error{"currency", "must name a currency"});
     if (terms_.notional_calculation.get().empty())
         return std::unexpected(build_error{"notional_calculation", "must name a calculation"});
-    domain::composite_instrument_data out{header_of(trade_type)};
+    domain::composite_instrument_data out{container_header_of(trade_type)};
     out.instrument.currency = terms_.currency.get();
     out.instrument.notional_calculation = terms_.notional_calculation.get();
     return out;
@@ -90,7 +90,7 @@ contract_for_difference_builder::contract_for_difference_builder(total_return_te
     : terms_(std::move(terms)) {}
 
 composite_result contract_for_difference_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = return_leg_refusal_of(terms_))
         return std::unexpected(std::move(*refusal));
     return return_leg_of(trade_type, terms_);
 }
@@ -102,7 +102,7 @@ total_return_swap_builder::total_return_swap_builder(
 
 composite_result total_return_swap_builder::build() const {
     const auto& returns = terms_.return_leg;
-    if (auto refusal = refusal_of(returns))
+    if (auto refusal = return_leg_refusal_of(returns))
         return std::unexpected(std::move(*refusal));
 
     // The swap's fixed leg pays on the side that pays the return, so its

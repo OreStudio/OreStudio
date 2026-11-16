@@ -341,6 +341,9 @@ private:
                 << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
                 << population.planned << ", wrote " << population.written << ", already present "
                 << population.already_present << ", in " << seconds_since(entry_started) << "s";
+            wf.record(entry.name + " for " + entry.party + ": wrote " +
+                      std::to_string(population.written) + " trade(s), " +
+                      std::to_string(population.already_present) + " already present");
         }
 
         BOOST_LOG_SEV(lg(), ores::logging::info)

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :triangulate_each_partys_rates:sprint_30:v0:
 #+owner: marco
-#+branch: feature/surface-every-pair-out-to-ten-years
-#+pr: 4767
+#+pr: 4768
+#+branch: feature/take-each-pair-from-the-source-that-quotes-it
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A surface belongs to a party and reads the party's own series, so the quotes it 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -57,23 +57,41 @@ builds the leg URI itself (=ecb_fixing_item=) and decides the legs
 engine reading the fixings the store holds, whichever publisher ranks
 first, not from a constant in the adapter.
 
+**The plan was wrong in two places**
+
+Found before any of it was built, so the slices below replace the first
+draft rather than extend it.
+
+1. *A fixing series cannot be read over the wire.* The first draft opened
+   with a client method for =marketdata.v1.ops.list_series_identities=,
+   so that the adapter could read the party's fixing identities. That
+   list cannot carry a fixing: =series_identity_lister::list= keeps only
+   the identities whose =identity_kind= is =series=
+   (=series_identity_lister.cpp:131=), and a fixing series is the one
+   whose =identity_kind= is =index= (=fixing_sources.cpp:43=). The two
+   sets are disjoint, so the method would have returned nothing the
+   adapter needs.
+2. *One source for a party can never surface a pair only another publisher
+   quotes.* =topology_from_sources= chooses one publisher for the whole
+   party. The ECB ranks ahead of the IMF (20 against 21) and quotes no
+   CLP and no COP, so on a party holding both, the choice lands on the
+   ECB and USD/CLP stays underived however the adapter is written. The
+   choice has to be made once per pair.
+
 **The slices, in order**
 
-1. *Read the identity over the wire.* The service already answers
-   =marketdata.v1.ops.list_series_identities=, and the client does not
-   expose it. Add the client method. The adapter cannot work this out
-   from the series URI: the URI says =fx/EUR= for a publisher that
-   quotes against the dollar, which is the very fault the identity
-   table exists to end.
-2. *Choose the publisher and state the legs.* Read the identities, the
-   series and the provider ranks once per pass, group them into
-   =fixing_source=s, and call =topology_from_sources= to choose. Build
-   the star with =topology_builder= and read each leg's fixing window
-   through the existing =get_fixing_window=.
-3. *Hand the fixings to the engine.* Convert the leg windows into
-   =fixing_day=s and call =replay_fixings= for the pair, which is what
-   makes CRM the composer instead of the adapter. Difference the levels
-   into returns and leave =derive_grid= as it is.
+1. *Take each pair from the source that quotes it.* =sources_for_pairs=
+   chooses, for each pair, the lowest-ranked source whose star can
+   express both of its currencies, and reports the pairs no source can
+   express. This is done.
+2. *Serve the party's rate history.* The adapter holds no marketdata
+   table and reads no =oresmd_uri=, so the service that owns both the
+   identity and the topology serves the pair's daily levels: one
+   operation over =read_fixing_sources=, =sources_for_pairs=,
+   =topology_builder= and =replay_fixings=.
+3. *Hand the levels to the engine.* The adapter asks for the pair's
+   levels instead of reading two ECB item windows, and differences them
+   into returns. =derive_grid= is left as it is.
 4. *Delete the constants* and their tests: =fixing_provider=,
    =ecb_fixing_item=, =ecb_legs_of=, and the ECB wording in the header
    and the adapter's own documentation.
@@ -99,7 +117,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Identities the list answers with | `identity_kind == "series"` only, so no fixing | `grep -n 'identity_kind == "series"' projects/ores.marketdata/core/src/service/series_identity_lister.cpp` | 0e2470c87e |
+| Identities a fixing series carries | `identity_kind == "index"` and `asset_class == "fx"` | `grep -n 'identity_kind == "index"' projects/ores.marketdata/service/src/app/fixing_sources.cpp` | 0e2470c87e |
+| Provider rank of the ECB and the IMF | 20 and 21 | `compass sql -- -c "select code, precedence from ores_marketdata_providers_tbl order by precedence limit 8"` | 0e2470c87e |
 
 * Notes
 
@@ -118,6 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4768][#4768]] | [analytics] Take each pair from the source that quotes it |
 | [[https://github.com/OreStudio/OreStudio/pull/4767][#4767]] | [agile] Plan the move of the derivation onto the CRM |
 
 * Review
@@ -127,3 +148,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Slice 1 landed.* =sources_for_pairs= chooses the source each pair is read
+from, so a pair that only a second publisher quotes is read from that one
+instead of being left underived. This is what the arc was missing: with
+one source for the whole party the ECB, which ranks 20 to the IMF's 21
+and quotes neither CLP nor COP, decided every pair, so USD/CLP could not
+reach a surface however the adapter was written. A rate still never mixes
+two publishers, and a pair no source can express is reported rather than
+dropped.
+
+The rank order, the refusal of a source that states no base, and the set
+of currencies a source can express are helpers shared with
+=topology_from_sources=, so the two choices cannot drift apart. 11 new
+cases cover the pair-level rule, the rank, both sides of a direct edge, an
+unserved pair, and the same shape under names the code has never met.
+
+Also fixed: =fixing_sources.hpp= included the definition of
+=ores::database::context= to name it in one signature, which the
+forward-declarable check reports as a new offender. It carries that check
+red on =main= for any change that touches it, so the line is corrected
+here rather than added to the baseline.
+
+*What this does not do yet.* Nothing consumes =sources_for_pairs=.
+=derived_fx_vol_adapter= still names =fixing_provider = "ecb"=, builds
+its leg URIs with =ecb_fixing_item= and chooses its legs with
+=ecb_legs_of=; the surfaces for USD/CLP and USD/COP stay missing until
+slice 2 serves the pair's levels and slice 3 hands them to the engine.
+
+*Gate.*
+
+- =compass build= succeeded (0:02:31 on the last change, 0:10:27 on the
+  first).
+- =compass test run -- -R ores.analytics.quant.tests=: 750 cases, 0
+  failures, 12.53 s. The 11 new cases ran.
+- =compass test run -- -R ores.marketdata.service.tests=: passed, 93.38 s.
+- =compass check --exclude-heavy=: 25 of 25 checks passed.
+
+The heavy checks were skipped deliberately: this change compiles into
+libraries and test binaries only, so =db recreate=, the full =ctest= run
+and the smoke and step-consumer checks test nothing it can break. That
+choice is recorded here rather than presented as a full gate.

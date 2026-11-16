@@ -20,8 +20,8 @@
 #include "ores.http/routes/refdata/curve_amend_rules.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include <algorithm>
-#include <charconv>
 #include <cctype>
+#include <charconv>
 #include <regex>
 #include <string>
 #include <vector>
@@ -35,17 +35,15 @@ namespace ores::http::routes::refdata::amend {
  * one ORE refuses to read. The store's guard does not cover the curve tables yet,
  * so this boundary is where the refusal happens.
  */
-std::optional<std::string>
-refusal_of(const ores::http::routes::value_fields& fields,
-           const std::string& label,
-           bool required,
-           const document::cell& value) {
+std::optional<std::string> refusal_of(const ores::http::routes::value_fields& fields,
+                                      const std::string& label,
+                                      bool required,
+                                      const document::cell& value) {
     if (!value || value->empty())
         return required ? std::optional<std::string>(label + " is required.") : std::nullopt;
     if (!fields.choices.empty()) {
-        const auto matches = std::ranges::find_if(fields.choices, [&](const auto& choice) {
-            return choice.value == *value;
-        });
+        const auto matches = std::ranges::find_if(
+            fields.choices, [&](const auto& choice) { return choice.value == *value; });
         if (matches == fields.choices.end()) {
             std::string accepted;
             for (const auto& choice : fields.choices)
@@ -55,8 +53,7 @@ refusal_of(const ores::http::routes::value_fields& fields,
     }
     if (fields.minimum || fields.maximum) {
         double number = 0;
-        const auto read =
-            std::from_chars(value->data(), value->data() + value->size(), number);
+        const auto read = std::from_chars(value->data(), value->data() + value->size(), number);
         if (read.ec != std::errc())
             return label + " must be a number.";
         if (fields.minimum && number < *fields.minimum)
@@ -64,8 +61,7 @@ refusal_of(const ores::http::routes::value_fields& fields,
         if (fields.maximum && number > *fields.maximum)
             return label + " must be at most " + document::shortest_text(*fields.maximum) + ".";
     }
-    if (!fields.pattern.empty() &&
-        !std::regex_match(*value, std::regex(fields.pattern)))
+    if (!fields.pattern.empty() && !std::regex_match(*value, std::regex(fields.pattern)))
         return label + " must match " + fields.pattern + ".";
     return std::nullopt;
 }

@@ -41,7 +41,8 @@ namespace {
 namespace refdata_domain = ores::refdata::domain;
 namespace refdata_messaging = ores::refdata::messaging;
 
-const auto edit_definition_id = boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
+const auto edit_definition_id =
+    boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
 const auto other_edit_definition_id =
     boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000b");
 
@@ -78,12 +79,24 @@ TEST_CASE("a_curve_change_writes_one_column_of_the_row_it_names", "[curve_docume
     BOOST_LOG_SEV(lg, info) << "Testing the write of one leaf of one curve entry";
 
     auto document = two_curves();
-    CHECK(write_column(document, "yield_curves", "curve_definition_id",
-                       "00000000-0000-0000-0000-00000000000a", "currency", cell("GBP")));
-    CHECK(write_column(document, "definitions", "id",
-                       "00000000-0000-0000-0000-00000000000b", "description", cell("3M IBOR")));
-    CHECK(write_column(document, "definitions", "id",
-                       "00000000-0000-0000-0000-00000000000a", "position", cell("9")));
+    CHECK(write_column(document,
+                       "yield_curves",
+                       "curve_definition_id",
+                       "00000000-0000-0000-0000-00000000000a",
+                       "currency",
+                       cell("GBP")));
+    CHECK(write_column(document,
+                       "definitions",
+                       "id",
+                       "00000000-0000-0000-0000-00000000000b",
+                       "description",
+                       cell("3M IBOR")));
+    CHECK(write_column(document,
+                       "definitions",
+                       "id",
+                       "00000000-0000-0000-0000-00000000000a",
+                       "position",
+                       cell("9")));
 
     const auto read = cells(document);
     const auto& curves = read.at("yield_curves");
@@ -100,8 +113,12 @@ TEST_CASE("a_curve_change_unsets_a_column_it_states_as_nothing", "[curve_documen
     BOOST_LOG_SEV(lg, info) << "Testing the unset of one curve leaf";
 
     auto document = two_curves();
-    CHECK(write_column(document, "definitions", "id",
-                       "00000000-0000-0000-0000-00000000000a", "description", cell()));
+    CHECK(write_column(document,
+                       "definitions",
+                       "id",
+                       "00000000-0000-0000-0000-00000000000a",
+                       "description",
+                       cell()));
 
     const auto read = cells(document);
     CHECK_FALSE(cell_at(read.at("definitions").at(0), "description").has_value());
@@ -112,14 +129,29 @@ TEST_CASE("a_curve_change_answers_the_rows_it_cannot_write", "[curve_document_ed
     BOOST_LOG_SEV(lg, info) << "Testing the rows and columns a change cannot write";
 
     auto document = two_curves();
-    CHECK_FALSE(write_column(document, "yield_curves", "curve_definition_id",
-                             "00000000-0000-0000-0000-0000000000ff", "currency", cell("GBP")));
-    CHECK_FALSE(write_column(document, "yield_curves", "curve_definition_id",
-                             "00000000-0000-0000-0000-00000000000a", "no_such_column", cell("GBP")));
-    CHECK_FALSE(write_column(document, "no_such_vector", "id",
-                             "00000000-0000-0000-0000-00000000000a", "currency", cell("GBP")));
-    CHECK_THROWS_AS(write_column(document, "definitions", "id",
-                                 "00000000-0000-0000-0000-00000000000a", "position",
+    CHECK_FALSE(write_column(document,
+                             "yield_curves",
+                             "curve_definition_id",
+                             "00000000-0000-0000-0000-0000000000ff",
+                             "currency",
+                             cell("GBP")));
+    CHECK_FALSE(write_column(document,
+                             "yield_curves",
+                             "curve_definition_id",
+                             "00000000-0000-0000-0000-00000000000a",
+                             "no_such_column",
+                             cell("GBP")));
+    CHECK_FALSE(write_column(document,
+                             "no_such_vector",
+                             "id",
+                             "00000000-0000-0000-0000-00000000000a",
+                             "currency",
+                             cell("GBP")));
+    CHECK_THROWS_AS(write_column(document,
+                                 "definitions",
+                                 "id",
+                                 "00000000-0000-0000-0000-00000000000a",
+                                 "position",
                                  cell("many")),
                     std::invalid_argument);
 }

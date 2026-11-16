@@ -117,8 +117,8 @@ T number_of_text(const std::string& stated, std::string_view column) {
     T number{};
     const auto read = std::from_chars(stated.data(), stated.data() + stated.size(), number);
     if (read.ec != std::errc())
-        throw std::invalid_argument("The column \"" + std::string(column) + "\" holds \"" +
-                                    stated + "\", which is not a number.");
+        throw std::invalid_argument("The column \"" + std::string(column) + "\" holds \"" + stated +
+                                    "\", which is not a number.");
     return number;
 }
 

@@ -81,8 +81,7 @@ TEST_CASE("a_curve_document_row_is_read_by_the_column_it_states", "[curve_docume
     CHECK(text_of(document.header(), "name") == "ACME curves");
     CHECK(text_of(document.header(), "description") == "The curves the desk trades");
     CHECK(number_of(document.header(), "version") == 3);
-    CHECK(text_of(document.header(), "recorded_at") ==
-          "1970-01-01 00:00:00.000000Z");
+    CHECK(text_of(document.header(), "recorded_at") == "1970-01-01 00:00:00.000000Z");
 
     const auto* definitions = document.find("definitions");
     REQUIRE(definitions != nullptr);
@@ -96,8 +95,7 @@ TEST_CASE("a_curve_document_row_is_read_by_the_column_it_states", "[curve_docume
     REQUIRE(curves != nullptr);
     REQUIRE(curves->size() == 1);
     CHECK(text_of(curves->at(0), "currency") == "EUR");
-    CHECK(text_of(curves->at(0), "curve_definition_id") ==
-          "00000000-0000-0000-0000-00000000000a");
+    CHECK(text_of(curves->at(0), "curve_definition_id") == "00000000-0000-0000-0000-00000000000a");
 }
 
 TEST_CASE("a_curve_document_cell_is_absent_empty_or_stated", "[curve_document_cells]") {

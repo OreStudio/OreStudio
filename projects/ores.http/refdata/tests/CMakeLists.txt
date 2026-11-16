@@ -27,9 +27,13 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
+# The suite reads the value sets and the ORE parameter contract by the same units
+# the routes do, so it links what they read.
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.http.core.lib
+        ores.reporting.api.lib
         ores.testing.lib
         Catch2::Catch2
         ores.openssl_cleanup

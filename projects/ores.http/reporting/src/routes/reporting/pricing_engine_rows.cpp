@@ -22,10 +22,10 @@
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.http.api/domain/http_status.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
-#include "ores.http.api/net/json_shape.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/string_generator.hpp>

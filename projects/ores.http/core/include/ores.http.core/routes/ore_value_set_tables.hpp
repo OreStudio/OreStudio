@@ -36,9 +36,8 @@ namespace ores::http::routes {
  * reads the value sets for its own routes. This is where those rows come from,
  * so every part hands the reader the same four tables.
  */
-[[nodiscard]] ORES_HTTP_CORE_EXPORT value_set_tables
-read_value_set_tables(const ores::http::domain::http_request& req,
-                      ores::nats::service::nats_client& session);
+[[nodiscard]] ORES_HTTP_CORE_EXPORT value_set_tables read_value_set_tables(
+    const ores::http::domain::http_request& req, ores::nats::service::nats_client& session);
 
 /**
  * @brief The allowed values of one setting, as the JSON members a screen reads.

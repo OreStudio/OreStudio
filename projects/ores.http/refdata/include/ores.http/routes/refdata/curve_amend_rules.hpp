@@ -37,11 +37,10 @@ namespace ores::http::routes::refdata::amend {
  * The sentence names the leaf's words rather than its column, because the person
  * who reads it reads the screen and not the table.
  */
-[[nodiscard]] std::optional<std::string>
-refusal_of(const ores::http::routes::value_fields& fields,
-           const std::string& label,
-           bool required,
-           const document::cell& value);
+[[nodiscard]] std::optional<std::string> refusal_of(const ores::http::routes::value_fields& fields,
+                                                    const std::string& label,
+                                                    bool required,
+                                                    const document::cell& value);
 
 /**
  * @brief Whether a service's refusal says the row moved on since the caller read

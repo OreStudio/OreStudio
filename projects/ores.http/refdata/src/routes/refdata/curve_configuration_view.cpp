@@ -108,7 +108,7 @@ bool is_set(std::string_view value) {
 }
 
 /// One field of the contract entry, empty for a leaf no contract entry holds.
-std::string parameter_field(const ore_parameter* entry, std::string ore_parameter::*field) {
+std::string parameter_field(const ore_parameter* entry, std::string ore_parameter::* field) {
     return entry == nullptr ? std::string() : entry->*field;
 }
 
@@ -179,9 +179,8 @@ std::string quotes_json(const document::cells& document,
     for (const auto& row : document.at("quotes"))
         if (document::text_of(row, parent_key) == segment_id)
             found.push_back(&row);
-    std::ranges::stable_sort(found, {}, [](const document::row* row) {
-        return document::number_of(*row, "position");
-    });
+    std::ranges::stable_sort(
+        found, {}, [](const document::row* row) { return document::number_of(*row, "position"); });
     std::vector<std::string> quotes;
     quotes.reserve(found.size());
     for (const auto* row : found)
@@ -250,9 +249,8 @@ std::vector<std::string> collections_json(const document::cells& document,
     std::vector<std::string> collections;
     for (const auto& rule : section.collections) {
         const auto* rows = document.find(rule.vector);
-        const auto declared = std::ranges::find_if(section.blocks, [&](const auto& block) {
-            return block.element == rule.element;
-        });
+        const auto declared = std::ranges::find_if(
+            section.blocks, [&](const auto& block) { return block.element == rule.element; });
         if (declared == section.blocks.end() && (rows == nullptr || rows->empty()))
             continue;
         std::vector<std::string> written;
@@ -267,20 +265,25 @@ std::vector<std::string> collections_json(const document::cells& document,
                 }();
                 const auto row_id = document::text_of(row, "id");
                 std::vector<std::string> leaves;
-                for (auto& leaf : collection_leaves(
-                         document, section.section, section.entry_element, rule, kind, row_id,
-                         words)) {
+                for (auto& leaf : collection_leaves(document,
+                                                    section.section,
+                                                    section.entry_element,
+                                                    rule,
+                                                    kind,
+                                                    row_id,
+                                                    words)) {
                     ++counts.total;
                     counts.documented += leaf.documented ? 1 : 0;
                     leaves.push_back(std::move(leaf.json));
                 }
-                written.push_back(object(
-                    {member("id", json::write(row_id)),
-                     member("kind", json::write(kind)),
-                     member("leaves", rr::array_of(leaves)),
-                     member("quotes", rule.quote_parent.empty()
-                                          ? "[]"
-                                          : quotes_json(document, rule.quote_parent, row_id))}));
+                written.push_back(
+                    object({member("id", json::write(row_id)),
+                            member("kind", json::write(kind)),
+                            member("leaves", rr::array_of(leaves)),
+                            member("quotes",
+                                   rule.quote_parent.empty() ?
+                                       "[]" :
+                                       quotes_json(document, rule.quote_parent, row_id))}));
             }
         }
         collections.push_back(object({member("element", json::write(std::string(rule.element))),
@@ -302,9 +305,9 @@ std::string entry_json(const document::row& definition,
     std::vector<std::string> collections;
     if (section != nullptr) {
         for (const auto& parameter : section->parameters) {
-            const auto* source = parameter.entity == definition_entity
-                                     ? &definition
-                                     : row_named(rows, parameter.entity);
+            const auto* source = parameter.entity == definition_entity ?
+                                     &definition :
+                                     row_named(rows, parameter.entity);
             auto leaf = leaf_json(parameter.entity,
                                   parameter.column,
                                   parameter.ore,
@@ -343,16 +346,15 @@ ordered_sections(const std::vector<ores::refdata::domain::curve_section>& rows) 
     const auto order_of = [&](std::string_view code) -> std::size_t {
         const auto found = std::ranges::find_if(
             table, [&](const wiring::curve_section& section) { return section.section == code; });
-        return found == table.end() ? table.size()
-                                    : static_cast<std::size_t>(found - table.begin());
+        return found == table.end() ? table.size() :
+                                      static_cast<std::size_t>(found - table.begin());
     };
     std::vector<const ores::refdata::domain::curve_section*> ordered;
     ordered.reserve(rows.size());
     for (const auto& row : rows)
         ordered.push_back(&row);
-    std::ranges::stable_sort(ordered, {}, [&](const auto* row) {
-        return std::pair(order_of(row->code), row->code);
-    });
+    std::ranges::stable_sort(
+        ordered, {}, [&](const auto* row) { return std::pair(order_of(row->code), row->code); });
     return ordered;
 }
 
@@ -379,9 +381,9 @@ std::string view_json_of(const document::cells& document,
         for (const auto* definition : found)
             entries.push_back(entry_json(*definition, document, section, words, counts));
         const auto entry_element =
-            !section_row->entry_element.empty()
-                ? section_row->entry_element
-                : (section == nullptr ? std::string() : std::string(section->entry_element));
+            !section_row->entry_element.empty() ?
+                section_row->entry_element :
+                (section == nullptr ? std::string() : std::string(section->entry_element));
         drawn_sections.push_back(
             object({member("code", json::write(section_row->code)),
                     member("entryElement", json::write(entry_element)),

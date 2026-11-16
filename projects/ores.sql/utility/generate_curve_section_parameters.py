@@ -50,6 +50,7 @@ undocumented leaf is a gap the screen shows, not a mapping the script may drop.
 import argparse
 import os
 import re
+import subprocess
 import sys
 import textwrap
 
@@ -1036,30 +1037,65 @@ def cpp_array(kind, name, rows, render_row):
     return f"constexpr std::array<{kind}, {len(rows)}> {name}{{{{\n{lines}}}}};\n"
 
 
+def format_cpp(text):
+    """Hands the generated C++ to the tree's clang-format, which owns its layout.
+
+    The output is committed and the format gate holds every changed C++ file to
+    clang-format, so a generator that laid the table out by hand would be
+    reformatted by the first person who ran the formatter and the drift check
+    would then fail. A tree with no clang-format keeps the text as rendered.
+    """
+    try:
+        written = subprocess.run(["clang-format"],
+                                 input=text, text=True, capture_output=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return text
+    return written.stdout
+
+
+#: The widest braced initialiser that stays on one line: the tree's column limit of
+#: 100, less the four spaces of a row's indent and the comma that follows it.
+CPP_LINE = 95
+
+
+def cpp_braced(parts):
+    """One braced initialiser, on one line while it fits and one value a line otherwise.
+
+    The output is committed and the format check holds it to clang-format, so the
+    generator writes what clang-format leaves alone: a row too wide for the column
+    limit puts one value on each line, aligned under the first.
+    """
+    single = "{" + ", ".join(parts) + "}"
+    if len(single) <= CPP_LINE:
+        return single
+    return "{" + ",\n     ".join(parts) + "}"
+
+
+def cpp_structured(values):
+    return cpp_braced([cpp_quote(value) for value in values])
+
+
 def cpp_parameter(parameter):
-    return "{" + ", ".join(cpp_quote(parameter[key])
-                           for key in ("entity", "column", "ore", "xpath")) + "}"
+    return cpp_structured([parameter[key] for key in ("entity", "column", "ore", "xpath")])
 
 
 def cpp_entity(entity):
-    return "{" + ", ".join(cpp_quote(entity[key])
-                           for key in ("entity", "vector")) + "}"
+    return cpp_structured([entity[key] for key in ("entity", "vector")])
 
 
 def cpp_block(block):
-    return "{" + ", ".join(cpp_quote(block[key])
-                           for key in ("element", "presence", "presenceEntity")) + "}"
+    return cpp_structured([block[key] for key in ("element", "presence", "presenceEntity")])
 
 
 def cpp_section_tables(index, section):
     """The arrays one section's wiring reads, and the section itself after them."""
-    body = []
-    body.append(cpp_array("curve_entity", f"curve_entities_{index}",
-                          section["entities"], cpp_entity))
-    body.append(cpp_array("curve_parameter", f"curve_parameters_{index}",
-                          section["parameters"], cpp_parameter))
-    body.append(cpp_array("curve_block", f"curve_blocks_{index}",
-                          section["blocks"], cpp_block))
+    body = [
+        cpp_array("curve_entity", f"curve_entities_{index}", section["entities"],
+                  cpp_entity),
+        cpp_array("curve_parameter", f"curve_parameters_{index}", section["parameters"],
+                  cpp_parameter),
+        cpp_array("curve_block", f"curve_blocks_{index}", section["blocks"], cpp_block),
+    ]
     kinds = []
     collections = []
     for position, collection in enumerate(section["collections"]):
@@ -1067,35 +1103,42 @@ def cpp_section_tables(index, section):
             kinds.append(cpp_array(
                 "curve_collection_leaf",
                 f"curve_leaves_{index}_{position}_{kind_index}", kind["leaves"],
-                lambda leaf: "{" + ", ".join(
-                    cpp_quote(leaf[key]) for key in ("column", "ore", "entity", "vector")) + "}"))
+                lambda leaf: cpp_structured(
+                    [leaf[key] for key in ("column", "ore", "entity", "vector")])))
         kind_rows = "".join(
-            "    {" + cpp_quote(kind["kind"]) + f", curve_leaves_{index}_{position}_{kind_index}}},\n"
+            "    "
+            + cpp_braced([cpp_quote(kind["kind"]),
+                          f"curve_leaves_{index}_{position}_{kind_index}"])
+            + ",\n"
             for kind_index, kind in enumerate(collection["kinds"]))
         kinds.append(
             f"constexpr std::array<curve_collection_kind, {len(collection['kinds'])}>"
-            f" curve_kinds_{index}_{position}{{{{\n{kind_rows}}}}};\n")
+            f" curve_kinds_{index}_{position}"
+            + "{{\n" + kind_rows + "}};\n")
         collections.append(
-            "    {" + ", ".join(
+            "    "
+            + cpp_braced(
                 [cpp_quote(collection[key])
-                 for key in ("element", "entity", "vector", "parentKey",
-                             "kindColumn", "quoteParent", "partParent")])
-            + f", curve_kinds_{index}_{position}}}")
+                 for key in ("element", "entity", "vector", "parentKey", "kindColumn",
+                             "quoteParent", "partParent")]
+                + [f"curve_kinds_{index}_{position}"]))
     body.extend(kinds)
     if collections:
         rows = "".join(f"{row},\n" for row in collections)
         body.append(
             f"constexpr std::array<curve_collection, {len(collections)}>"
-            f" curve_collections_{index}{{{{\n{rows}}}}};\n")
+            f" curve_collections_{index}"
+            + "{{\n" + rows + "}};\n")
     else:
         body.append(
-            f"constexpr std::array<curve_collection, 0> curve_collections_{index}{{}};\n")
+            f"constexpr std::array<curve_collection, 0> curve_collections_{index}"
+            + "{};\n")
     body.append(
-        "    {" + ", ".join(
-            [cpp_quote(section["section"]), cpp_quote(section["entryElement"]),
-             cpp_quote(section["definitionKey"]),
-             f"curve_entities_{index}", f"curve_parameters_{index}", f"curve_blocks_{index}",
-             f"curve_collections_{index}"]) + "}")
+        "    "
+        + cpp_braced([cpp_quote(section["section"]), cpp_quote(section["entryElement"]),
+                      cpp_quote(section["definitionKey"]),
+                      f"curve_entities_{index}", f"curve_parameters_{index}",
+                      f"curve_blocks_{index}", f"curve_collections_{index}"]))
     return body
 
 
@@ -1107,15 +1150,16 @@ def render_cpp(sections):
         tables.extend(body[:-1])
         rows.append(body[-1])
     table_rows = "".join(f"{row},\n" for row in rows)
-    return (CPP_LICENCE + "#include \"ores.http/routes/refdata/curve_section_wiring.hpp\"\n"
+    return (CPP_LICENCE
+            + "#include \"ores.http/routes/refdata/curve_section_wiring.hpp\"\n"
             "#include <array>\n"
             "#include <span>\n"
             "#include <string_view>\n\n"
             "namespace ores::http::routes::refdata::wiring {\n\n"
             "namespace {\n\n"
             + "\n".join(tables) + "\n"
-            f"constexpr std::array<curve_section, {len(sections)}> curve_section_table{{{{\n"
-            + table_rows + "}};\n\n}\n\n" + CPP_FOOTER)
+            + f"constexpr std::array<curve_section, {len(sections)}> curve_section_table"
+            + "{{\n" + table_rows + "}};\n\n}\n\n" + CPP_FOOTER)
 
 
 FOOTER = """
@@ -1281,8 +1325,8 @@ def main():
         print("\n".join(problems), file=sys.stderr)
         return 1
     content = render(sections)
-    cpp_header = CPP_LICENCE + CPP_HEADER
-    cpp_source = render_cpp(sections)
+    cpp_header = format_cpp(CPP_LICENCE + CPP_HEADER)
+    cpp_source = format_cpp(render_cpp(sections))
     kinds, _ = kind_leaves(source())
     default_types, default_problems = default_curve_types(source())
     if default_problems:

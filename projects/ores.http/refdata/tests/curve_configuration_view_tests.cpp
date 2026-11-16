@@ -45,8 +45,10 @@ namespace refdata_domain = ores::refdata::domain;
 namespace refdata_messaging = ores::refdata::messaging;
 namespace reporting_domain = ores::reporting::domain;
 
-const auto view_definition_id = boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
-const auto view_segment_id = boost::uuids::string_generator()("00000000-0000-0000-0000-0000000000c1");
+const auto view_definition_id =
+    boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
+const auto view_segment_id =
+    boost::uuids::string_generator()("00000000-0000-0000-0000-0000000000c1");
 
 /// The document one yield curve needs: its definition, its row, and its segment.
 refdata_messaging::curve_configuration_document yield_curve_document(bool with_segment) {
@@ -143,9 +145,10 @@ TEST_CASE("a_curve_configuration_draws_its_sections_entries_and_leaves", "[curve
     const auto values = reader_with_no_sets();
     const std::map<std::string, std::string> kinds;
 
-    const auto answer = view_json_of(
-        document, "00000000-0000-0000-0000-000000000001",
-        {section_row("YieldCurves", "", "The yield curves")}, {parameters, values, kinds});
+    const auto answer = view_json_of(document,
+                                     "00000000-0000-0000-0000-000000000001",
+                                     {section_row("YieldCurves", "", "The yield curves")},
+                                     {parameters, values, kinds});
 
     CHECK(answer.find("\"name\":\"ACME curves\"") != std::string::npos);
     CHECK(answer.find("\"configurationId\":\"00000000-0000-0000-0000-000000000001\"") !=
@@ -177,9 +180,10 @@ TEST_CASE("a_curve_configurations_segments_draw_their_kind_and_quotes", "[curve_
     const auto values = reader_with_no_sets();
     const std::map<std::string, std::string> kinds{{"Deposit", "Simple"}};
 
-    const auto answer = view_json_of(
-        document, "00000000-0000-0000-0000-000000000001",
-        {section_row("YieldCurves", "", "The yield curves")}, {parameters, values, kinds});
+    const auto answer = view_json_of(document,
+                                     "00000000-0000-0000-0000-000000000001",
+                                     {section_row("YieldCurves", "", "The yield curves")},
+                                     {parameters, values, kinds});
 
     CHECK(answer.find("\"element\":\"Segments\"") != std::string::npos);
     CHECK(answer.find("\"kind\":\"Simple\"") != std::string::npos);
@@ -202,9 +206,10 @@ TEST_CASE("a_curve_configuration_lists_a_section_no_projection_maps", "[curve_vi
     const auto values = reader_with_no_sets();
     const std::map<std::string, std::string> kinds;
 
-    const auto answer = view_json_of(
-        document, "00000000-0000-0000-0000-000000000001",
-        {section_row("BondCurves", "BondCurve", "The bond curves")}, {parameters, values, kinds});
+    const auto answer = view_json_of(document,
+                                     "00000000-0000-0000-0000-000000000001",
+                                     {section_row("BondCurves", "BondCurve", "The bond curves")},
+                                     {parameters, values, kinds});
 
     CHECK(answer.find("\"code\":\"BondCurves\"") != std::string::npos);
     CHECK(answer.find("\"entryElement\":\"BondCurve\"") != std::string::npos);

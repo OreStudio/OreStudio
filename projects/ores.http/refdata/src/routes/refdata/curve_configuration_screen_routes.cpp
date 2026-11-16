@@ -99,21 +99,21 @@ std::vector<ores::http::routes::value_choice>
 curve_catalogue_choices(const http_request& req, nats_client& session, std::string_view relation) {
     if (relation == "ores_refdata_tenor_catalogue_v") {
         std::vector<ores::http::routes::value_choice> choices;
-        for (const auto& tenor : forwarding::forward_all(
-                 req,
-                 session,
-                 refdata_messaging::list_tenors_request{},
-                 &refdata_messaging::list_tenors_response::tenors))
+        for (const auto& tenor :
+             forwarding::forward_all(req,
+                                     session,
+                                     refdata_messaging::list_tenors_request{},
+                                     &refdata_messaging::list_tenors_response::tenors))
             choices.push_back({tenor.code, tenor.display_name});
         return choices;
     }
     if (relation == "ores_refdata_currency_catalogue_v") {
         std::vector<ores::http::routes::value_choice> choices;
-        for (const auto& currency : forwarding::forward_all(
-                 req,
-                 session,
-                 refdata_messaging::list_currencies_request{},
-                 &refdata_messaging::list_currencies_response::currencies))
+        for (const auto& currency :
+             forwarding::forward_all(req,
+                                     session,
+                                     refdata_messaging::list_currencies_request{},
+                                     &refdata_messaging::list_currencies_response::currencies))
             choices.push_back({currency.iso_code, currency.name});
         return choices;
     }
@@ -157,11 +157,11 @@ void fill_contract(const std::vector<ores::reporting::domain::ore_parameter>& pa
 /// The ORE element each segment type code is written as.
 std::map<std::string, std::string> segment_kinds_of(const http_request& req, nats_client& session) {
     std::map<std::string, std::string> kinds;
-    for (const auto& type :
-         forwarding::forward_all(req,
-                                 session,
-                                 refdata_messaging::list_curve_segment_types_request{},
-                                 &refdata_messaging::list_curve_segment_types_response::segment_types))
+    for (const auto& type : forwarding::forward_all(
+             req,
+             session,
+             refdata_messaging::list_curve_segment_types_request{},
+             &refdata_messaging::list_curve_segment_types_response::segment_types))
         kinds.emplace(type.code, type.segment_kind);
     return kinds;
 }
@@ -328,32 +328,36 @@ void curve_configuration_screen_routes::register_routes(
                     if (!answer.success)
                         rr::refuse(http_status::not_found,
                                    "not-found",
-                                   answer.message.empty()
-                                       ? "No curve configuration document fills the configuration "
-                                             "the address names."
-                                       : answer.message);
+                                   answer.message.empty() ?
+                                       "No curve configuration document fills the configuration "
+                                       "the address names." :
+                                       answer.message);
 
-                    const auto sections = forwarding::forward_all(
-                        req,
-                        session,
-                        refdata_messaging::list_curve_sections_request{},
-                        &refdata_messaging::list_curve_sections_response::sections);
-                    const auto parameters = forwarding::forward_all(
-                        req,
-                        session,
-                        ores::reporting::messaging::list_ore_parameters_request{},
-                        &ores::reporting::messaging::list_ore_parameters_response::parameters);
-                    curve_view::contract contract;
-                    fill_contract(parameters, contract);
-                    const auto kinds = segment_kinds_of(req, session);
-                    const auto values = value_set_reader(
-                        read_value_set_tables(req, session), [&req, &session](
-                                                                 std::string_view relation) {
-                            return curve_catalogue_choices(req, session, relation);
-                        });
-                    const auto flattened = document::cells(answer.document);
-                    return http_response::json(curve_view::view_json_of(
-                        flattened, msg.configuration_id, sections, {contract, values, kinds}));
+                    try {
+                        const auto sections = forwarding::forward_all(
+                            req,
+                            session,
+                            refdata_messaging::list_curve_sections_request{},
+                            &refdata_messaging::list_curve_sections_response::sections);
+                        const auto parameters = forwarding::forward_all(
+                            req,
+                            session,
+                            ores::reporting::messaging::list_ore_parameters_request{},
+                            &ores::reporting::messaging::list_ore_parameters_response::parameters);
+                        curve_view::contract contract;
+                        fill_contract(parameters, contract);
+                        const auto kinds = segment_kinds_of(req, session);
+                        const auto values = value_set_reader(
+                            read_value_set_tables(req, session),
+                            [&req, &session](std::string_view relation) {
+                                return curve_catalogue_choices(req, session, relation);
+                            });
+                        const auto flattened = document::cells(answer.document);
+                        return http_response::json(curve_view::view_json_of(
+                            flattened, msg.configuration_id, sections, {contract, values, kinds}));
+                    } catch (const value_set_error& e) {
+                        rr::refuse(http_status::internal_server_error, "internal-error", e.what());
+                    }
                 });
             }));
 
@@ -393,10 +397,10 @@ void curve_configuration_screen_routes::register_routes(
                         if (!stored.success)
                             rr::refuse(http_status::not_found,
                                        "not-found",
-                                       stored.message.empty()
-                                           ? "No curve configuration document fills the "
-                                             "configuration the address names."
-                                           : stored.message);
+                                       stored.message.empty() ?
+                                           "No curve configuration document fills the "
+                                           "configuration the address names." :
+                                           stored.message);
                         if (stored.document.config.version != statement.version)
                             rr::refuse(http_status::conflict,
                                        "conflict",
@@ -418,54 +422,58 @@ void curve_configuration_screen_routes::register_routes(
 
                         auto working = stored.document;
                         std::set<std::string, std::less<>> touched;
-                        for (const auto& change : statement.changes) {
-                            const auto* leaf = leaf_of(change.entity, change.column);
-                            if (leaf == nullptr)
-                                rr::invalid(change.entity + "." + change.column +
-                                            " is not a leaf of a curve configuration.");
-                            const auto found =
-                                contract.find("/" + std::string(leaf->xpath));
-                            const auto* parameter =
-                                found == contract.end() ? nullptr : found->second;
-                            auto fields = ores::http::routes::value_fields{};
-                            if (parameter != nullptr)
-                                fields = values.fields_of(parameter->scope, parameter->name);
-                            const auto label = parameter == nullptr || parameter->label.empty()
-                                                   ? std::string(leaf->ore)
-                                                   : parameter->label;
-                            const auto refusal = amend::refusal_of(
-                                fields,
-                                label,
-                                parameter != nullptr && parameter->is_required,
-                                change.value);
-                            if (refusal)
-                                rr::invalid(*refusal);
-                            const auto place = place_of(change.entity);
-                            if (!place)
-                                rr::invalid(change.entity +
-                                            " has no table in a curve configuration.");
-                            auto written = false;
-                            try {
-                                written = curve_document_edit::write_column(working,
-                                                                      place->vector,
-                                                                      place->key_column,
-                                                                      change.entry_id,
-                                                                      change.column,
-                                                                      change.value);
-                            } catch (const std::invalid_argument& e) {
-                                rr::invalid(e.what());
+                        try {
+                            for (const auto& change : statement.changes) {
+                                const auto* leaf = leaf_of(change.entity, change.column);
+                                if (leaf == nullptr)
+                                    rr::invalid(change.entity + "." + change.column +
+                                                " is not a leaf of a curve configuration.");
+                                const auto found = contract.find("/" + std::string(leaf->xpath));
+                                const auto* parameter =
+                                    found == contract.end() ? nullptr : found->second;
+                                auto fields = ores::http::routes::value_fields{};
+                                if (parameter != nullptr)
+                                    fields = values.fields_of(parameter->scope, parameter->name);
+                                const auto label =
+                                    parameter == nullptr || parameter->label.empty() ?
+                                        std::string(leaf->ore) :
+                                        parameter->label;
+                                const auto refusal = amend::refusal_of(fields,
+                                                                       label,
+                                                                       parameter != nullptr &&
+                                                                           parameter->is_required,
+                                                                       change.value);
+                                if (refusal)
+                                    rr::invalid(*refusal);
+                                const auto place = place_of(change.entity);
+                                if (!place)
+                                    rr::invalid(change.entity +
+                                                " has no table in a curve configuration.");
+                                auto written = false;
+                                try {
+                                    written = curve_document_edit::write_column(working,
+                                                                                place->vector,
+                                                                                place->key_column,
+                                                                                change.entry_id,
+                                                                                change.column,
+                                                                                change.value);
+                                } catch (const std::invalid_argument& e) {
+                                    rr::invalid(e.what());
+                                }
+                                if (!written)
+                                    rr::invalid("No " + change.entity + " row of the curve entry " +
+                                                change.entry_id + " is stored.");
+                                touched.emplace(place->vector);
                             }
-                            if (!written)
-                                rr::invalid("No " + change.entity + " row of the curve entry " +
-                                            change.entry_id + " is stored.");
-                            touched.emplace(place->vector);
+                        } catch (const value_set_error& e) {
+                            rr::refuse(
+                                http_status::internal_server_error, "internal-error", e.what());
                         }
 
                         refdata_messaging::save_curve_configuration_document_request save;
                         save.document.config = working.config;
                         for (const auto& vector : touched)
-                            if (!curve_document_edit::copy_vector(
-                                    working, vector, save.document))
+                            if (!curve_document_edit::copy_vector(working, vector, save.document))
                                 rr::invalid("The change names a table the document does not "
                                             "carry.");
                         save.reason_code = reason;
@@ -473,11 +481,10 @@ void curve_configuration_screen_routes::register_routes(
                         const auto answer = forwarding::forward(req, session, save);
                         if (!answer.success) {
                             const auto stale = amend::is_stale(answer.message);
-                            rr::refuse(stale ? http_status::conflict
-                                             : http_status::bad_request,
+                            rr::refuse(stale ? http_status::conflict : http_status::bad_request,
                                        stale ? "conflict" : "invalid-request",
-                                       answer.message.empty() ? "The change was refused."
-                                                              : answer.message);
+                                       answer.message.empty() ? "The change was refused." :
+                                                                answer.message);
                         }
                         return rr::no_content();
                     });

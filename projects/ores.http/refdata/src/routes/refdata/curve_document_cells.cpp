@@ -32,9 +32,9 @@
 #include "ores.refdata.api/domain/commodity_price_segment_codec.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config_codec.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config_codec.hpp"
+#include "ores.refdata.api/domain/curve_configuration_codec.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section_codec.hpp"
 #include "ores.refdata.api/domain/curve_correlation_config_codec.hpp"
-#include "ores.refdata.api/domain/curve_configuration_codec.hpp"
 #include "ores.refdata.api/domain/curve_definition_codec.hpp"
 #include "ores.refdata.api/domain/curve_global_report_codec.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile_codec.hpp"
@@ -167,7 +167,9 @@ cells::cells(const ores::refdata::messaging::curve_configuration_document& sourc
     flatten(rows_, "default_curve_cds_terms", source.default_curve_cds_terms);
     flatten(rows_, "default_curve_benchmarks", source.default_curve_benchmarks);
     flatten(rows_, "default_curve_transition_matrices", source.default_curve_transition_matrices);
-    flatten(rows_, "default_curve_yield_reinterpretations", source.default_curve_yield_reinterpretations);
+    flatten(rows_,
+            "default_curve_yield_reinterpretations",
+            source.default_curve_yield_reinterpretations);
     flatten(rows_, "inflation_seasonalities", source.inflation_seasonalities);
     flatten(rows_, "seasonality_factors", source.seasonality_factors);
     flatten(rows_, "securities", source.securities);

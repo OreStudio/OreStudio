@@ -35,8 +35,7 @@ namespace ores::http::routes::refdata::curve_view {
  * @brief The ORE parameter contract: the leaves of one schema, by the path the
  * wiring names.
  */
-using contract =
-    std::map<std::string, const ores::reporting::domain::ore_parameter*, std::less<>>;
+using contract = std::map<std::string, const ores::reporting::domain::ore_parameter*, std::less<>>;
 
 /**
  * @brief What a document is drawn against, besides its own rows.

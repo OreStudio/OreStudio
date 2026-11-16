@@ -18,8 +18,8 @@
  *
  */
 #include "ores.http/routes/reporting/pricing_engine_shapes.hpp"
-#include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.api/net/json_shape.hpp"
+#include "ores.http.api/net/record_routes.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <string>

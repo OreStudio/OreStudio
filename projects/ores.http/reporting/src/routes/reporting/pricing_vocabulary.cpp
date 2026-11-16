@@ -28,11 +28,11 @@
 #include "ores.analytics.api/messaging/sensitivity_template_protocol.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http.api/net/json_shape.hpp"
-#include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
@@ -92,7 +92,7 @@ const ore_parameter* documented_of(const documentation& documented,
 }
 
 /// One field of a documentation row, or nothing when the guide never lists it.
-std::string documented_field(const ore_parameter* doc, std::string ore_parameter::*field) {
+std::string documented_field(const ore_parameter* doc, std::string ore_parameter::* field) {
     return doc == nullptr ? std::string() : doc->*field;
 }
 

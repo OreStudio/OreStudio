@@ -22,12 +22,12 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/domain/http_status.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
-#include "ores.http.api/net/json_shape.hpp"
-#include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -143,11 +143,11 @@ std::string documentation_of(const http_request& req, nats_client& session) {
             documented.emplace(parameter.name, &parameter);
     }
 
-    const value_set_reader reader(
-        ores::http::routes::read_value_set_tables(req, session),
-        [&req, &session](std::string_view relation) {
-            return value_set_rows::catalogue_choices_of(req, session, relation);
-        });
+    const value_set_reader reader(ores::http::routes::read_value_set_tables(req, session),
+                                  [&req, &session](std::string_view relation) {
+                                      return value_set_rows::catalogue_choices_of(
+                                          req, session, relation);
+                                  });
 
     std::vector<std::string> group_json;
     group_json.reserve(groups.size());

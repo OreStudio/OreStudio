@@ -89,11 +89,14 @@ struct bond_trade_rows final {
     std::vector<instrument_option_exercise_price> option_exercise_prices;
     std::optional<instrument_strike> strike;
     std::optional<bond_forward> forward;
-    std::optional<bond_option> bond_option;
+    // Qualified: a member that shares its type's name changes that name's meaning
+    // in the class scope, which gcc refuses under -Wchanges-meaning.
+    std::optional<ores::trading::domain::bond_option> bond_option;
     std::optional<bond_trs> trs;
     std::optional<bond_repo> repo;
     std::optional<bond_future> future;
-    std::optional<ascot> ascot;
+    // Qualified for the same reason as bond_option above.
+    std::optional<ores::trading::domain::ascot> ascot;
     std::vector<instrument_underlying> underlyings;
 };
 

@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_APP_FIXING_SOURCES_HPP
 
 #include "ores.analytics.quant/service/topology_from_sources.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <expected>
 #include <map>

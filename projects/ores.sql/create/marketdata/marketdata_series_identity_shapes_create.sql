@@ -176,11 +176,18 @@ on delete to "ores_marketdata_series_identity_shapes_tbl" do instead (
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and asset_class = OLD.asset_class and series_subclass = OLD.series_subclass and index_family = OLD.index_family and field = OLD.field
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Series Identity Shape
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_marketdata_series_identity_shapes_tbl enable row level security;
 
@@ -194,4 +201,18 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows. It must: a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists series_identity_shapes_tbl_shared_reference_read_policy
+    on ores_marketdata_series_identity_shapes_tbl;
+
+create policy series_identity_shapes_tbl_shared_reference_read_policy
+on ores_marketdata_series_identity_shapes_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );

@@ -155,6 +155,7 @@ std::string("The currency the rate is quoted in.")
 :PROPERTIES:
 :tablename: ores_marketdata_series_identity_shapes_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -185,6 +186,7 @@ std::string("The currency the rate is quoted in.")
 :entity_plural_short:   shapes
 :entity_singular_words: series identity shape
 :entity_plural_words:   series identity shapes
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

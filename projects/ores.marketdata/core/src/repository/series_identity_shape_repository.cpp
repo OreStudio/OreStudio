@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape_json_io.hpp" // IWYU pragma: keep.
@@ -107,6 +108,22 @@ using series_identity_shape_rows_by_key =
              std::vector<domain::series_identity_shape>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::series_identity_shape>
+series_identity_shape_claim_rows(const ores::database::context& ctx,
+                                 std::vector<domain::series_identity_shape> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -131,7 +148,8 @@ series_identity_shape_current_rows(series_identity_shape_repository& repo,
         fields.push_back(row.field);
     }
     series_identity_shape_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, asset_classs, series_subclasss, index_familys, fields))
+    for (auto& item : series_identity_shape_claim_rows(
+             ctx, repo.read_latest(ctx, asset_classs, series_subclasss, index_familys, fields)))
         current[std::make_tuple(
                     item.asset_class, item.series_subclass, item.index_family, item.field)]
             .push_back(std::move(item));
@@ -200,8 +218,8 @@ void series_identity_shape_repository::write(const context& ctx,
                                              const domain::series_identity_shape& v) {
     write(ctx,
           v,
-          series_identity_shape_replace_claim(
-              read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field)));
+          series_identity_shape_replace_claim(series_identity_shape_claim_rows(
+              ctx, read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field))));
 }
 
 void series_identity_shape_repository::write(const context& ctx,
@@ -226,7 +244,8 @@ void series_identity_shape_repository::write(const context& ctx,
         v,
         claim,
         series_identity_shape_claim_reads_current(claim) ?
-            read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field) :
+            series_identity_shape_claim_rows(
+                ctx, read_latest(ctx, v.asset_class, v.series_subclass, v.index_family, v.field)) :
             std::vector<domain::series_identity_shape>{});
     query_builder::execute_write_query(ctx,
                                        series_identity_shape_mapper::map(t),
@@ -239,6 +258,9 @@ void series_identity_shape_repository::write(
     const std::vector<domain::series_identity_shape>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series identity shapes. Count: " << v.size();
+    if (claims.size() != v.size())
+        throw std::invalid_argument(
+            "series_identity_shape_repository::write: one claim is needed for each row");
     std::vector<domain::series_identity_shape> to_read;
     for (std::size_t i = 0; i < v.size(); ++i) {
         if (series_identity_shape_claim_reads_current(claims[i]))
@@ -260,9 +282,11 @@ std::vector<domain::series_identity_shape>
 series_identity_shape_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "valid_to"_c == max) |
         query_builder::order_by("asset_class"_c, "series_subclass"_c, "index_family"_c, "field"_c);
 
     return query_builder::execute_read_query<series_identity_shape_entity,
@@ -286,12 +310,13 @@ series_identity_shape_repository::read_latest(const context& ctx,
                                << " index_family: " << index_family << " field: " << field;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where("tenant_id"_c == tid && "asset_class"_c == asset_class &&
-                             "series_subclass"_c == series_subclass &&
-                             "index_family"_c == index_family && "field"_c == field &&
-                             "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "asset_class"_c == asset_class &&
+                                            "series_subclass"_c == series_subclass &&
+                                            "index_family"_c == index_family &&
+                                            "field"_c == field && "valid_to"_c == max);
 
     return query_builder::execute_read_query<series_identity_shape_entity,
                                              domain::series_identity_shape>(
@@ -314,9 +339,11 @@ series_identity_shape_repository::read_all(const context& ctx,
                                << " series_subclass: " << series_subclass
                                << " index_family: " << index_family << " field: " << field;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where("tenant_id"_c == tid && "asset_class"_c == asset_class &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "asset_class"_c == asset_class &&
                              "series_subclass"_c == series_subclass &&
                              "index_family"_c == index_family && "field"_c == field) |
         query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -343,13 +370,14 @@ series_identity_shape_repository::read_at_version(const context& ctx,
                                << " index_family: " << index_family << " field: " << field
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where("tenant_id"_c == tid && "asset_class"_c == asset_class &&
-                             "series_subclass"_c == series_subclass &&
-                             "index_family"_c == index_family && "field"_c == field &&
-                             "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "asset_class"_c == asset_class &&
+                                            "series_subclass"_c == series_subclass &&
+                                            "index_family"_c == index_family &&
+                                            "field"_c == field && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<series_identity_shape_entity,
                                                             domain::series_identity_shape>(
@@ -422,9 +450,10 @@ series_identity_shape_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series identity shapes with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<series_identity_shape_entity,
                                                      domain::series_identity_shape>(
@@ -444,8 +473,9 @@ series_identity_shape_repository::get_total_shape_count(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series identity shape count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<series_identity_shape_entity>(
         ctx,
@@ -490,12 +520,13 @@ series_identity_shape_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_identity_shape_entity>> |
-        query_builder::where("tenant_id"_c == tid && "asset_class"_c.in(asset_classs) &&
-                             "series_subclass"_c.in(series_subclasss) &&
-                             "index_family"_c.in(index_familys) && "field"_c.in(fields) &&
-                             "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "asset_class"_c.in(asset_classs) &&
+                                            "series_subclass"_c.in(series_subclasss) &&
+                                            "index_family"_c.in(index_familys) &&
+                                            "field"_c.in(fields) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<series_identity_shape_entity,
                                                     domain::series_identity_shape>(
         ctx,

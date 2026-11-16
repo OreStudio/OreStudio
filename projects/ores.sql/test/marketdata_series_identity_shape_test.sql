@@ -36,9 +36,9 @@
  * share a class and an index family and differ only by that name, which is why
  * the family is stated rather than inferred from the columns a row fills.
  *
- * A tenant reads the shapes of its own session, so the copy a new tenant gets is
- * asserted against a tenant this test provisions and rolls back, and not against
- * the system tenant's rows, which row-level security keeps out of reach.
+ * A tenant holds no copy of the shapes. It reads the system tenant's rows beside
+ * its own, so the shapes a new tenant sees are asserted against a tenant this
+ * test provisions and rolls back.
  *
  * Run as ORES_TEST_DB_USER, never as the owner role, which bypasses row-level
  * security: pg_prove -d <database> test/marketdata_series_identity_shape_test.sql
@@ -46,7 +46,7 @@
 
 begin;
 
-select plan(8);
+select plan(9);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -120,14 +120,12 @@ select is(
     'every IBOR fixing carries the index name that separates it from a swap fixing'
 );
 
--- The writer reads the shapes of the session's tenant, so a tenant provisioned
--- without a copy writes identities unguarded. Provision one here and let the
--- transaction take it away, so the suite owns its fixture.
+-- The writer reads the shapes the session can see, so a tenant that could not
+-- see the system's rows would write identities unguarded. Provision one here and
+-- let the transaction take it away, so the suite owns its fixture.
 --
--- The system tenant's rows are copied into a temporary table while the session
--- can still see them: row-level security answers for one tenant per session, and
--- a temporary table is not subject to it, so this is how the two sets are held
--- side by side.
+-- The system tenant's rows go into a temporary table first, which row-level
+-- security does not bind, so the two sets can be compared side by side.
 create temporary table t_system_shapes on commit drop as
 select asset_class, series_subclass, index_family, field, requirement
 from ores_marketdata_series_identity_shapes_tbl
@@ -139,7 +137,7 @@ select tenant_id as id from ores_iam_provision_tenant_fn(
     'test_identity_shape');
 
 select cmp_ok((select count(*) from t_system_shapes), '>', 0::bigint,
-    'the system tenant states some shape rows to copy');
+    'the system tenant states some shape rows');
 
 select set_config('app.current_tenant_id', (select id::text from t_other), true);
 
@@ -147,7 +145,7 @@ select is(
     (select count(*)::int from ores_marketdata_series_identity_shapes_tbl
      where valid_to = ores_utility_infinity_timestamp_fn()),
     (select count(*)::int from t_system_shapes),
-    'a provisioned tenant holds as many shapes as the system tenant states'
+    'a provisioned tenant reads as many shapes as the system tenant states'
 );
 
 select is(
@@ -164,9 +162,16 @@ select is(
          where valid_to = ores_utility_infinity_timestamp_fn()
          except
          select asset_class, series_subclass, index_family, field, requirement
-         from t_system_shapes)) copied),
+         from t_system_shapes)) seen),
     0,
-    'the copy states the same shape rows and no others'
+    'a provisioned tenant reads the same shape rows and no others'
+);
+
+select is(
+    (select count(*)::int from ores_marketdata_series_identity_shapes_tbl
+     where tenant_id = (select id from t_other)),
+    0,
+    'a provisioned tenant holds no copy of the shapes'
 );
 
 select is(

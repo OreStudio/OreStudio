@@ -48,7 +48,7 @@
       <UpfrontDate>2025-08-02</UpfrontDate>
       <UpfrontFee>0</UpfrontFee>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>Fixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>Following</PaymentConvention>

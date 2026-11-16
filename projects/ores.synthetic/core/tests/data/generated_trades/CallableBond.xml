@@ -4,7 +4,7 @@
     <TradeType>CallableBond</TradeType>
     <CallableBondData>
       <BondData>
-        <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
         <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
         <SecurityId>POPMRZYFF8XO9</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
@@ -73,7 +73,7 @@
     <TradeType>CallableBond</TradeType>
     <CallableBondData>
       <BondData>
-        <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
         <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
         <SecurityId>POPKD1ME6GH76</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>

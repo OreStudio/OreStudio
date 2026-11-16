@@ -346,7 +346,8 @@ equity_result equity_swap_builder::build() const {
     row.return_type = "Price";
     row.start_date = funding.start.get();
     row.maturity_date = funding.maturity.get();
-    row.long_short = "Long";
+    const bool long_equity = terms_.position.get() == option_position::long_option;
+    row.long_short = long_short_of(terms_.position.get());
 
     domain::equity_instrument_data out;
     // The floating leg is the funding swap's, renumbered first; the equity leg pays on its
@@ -354,7 +355,7 @@ equity_result equity_swap_builder::build() const {
     for (auto leg : swap->legs)
         if (leg.identity.leg_number == 2) {
             leg.identity.leg_number = 1;
-            leg.payer = false;
+            leg.payer = long_equity;
             row.payment_frequency_code = leg.payment_frequency_code;
             out.legs.push_back(std::move(leg));
         }
@@ -377,7 +378,7 @@ equity_result equity_swap_builder::build() const {
             equity.owner_number = 2;
             out.schedules.push_back(std::move(equity));
         }
-    auto equity_leg = rows::swap_leg(2, true, "Equity", funding.currency.get());
+    auto equity_leg = rows::swap_leg(2, !long_equity, "Equity", funding.currency.get());
     equity_leg.day_count_fraction_code = "A360";
     equity_leg.business_day_convention_code = "MF";
     equity_leg.payment_frequency_code = row.payment_frequency_code;

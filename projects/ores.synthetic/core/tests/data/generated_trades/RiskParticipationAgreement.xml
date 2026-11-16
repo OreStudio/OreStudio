@@ -89,7 +89,7 @@
       <SettlesAccrual>true</SettlesAccrual>
       <ProtectionFee>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Cashflow</LegType>
           <Currency>EUR</Currency>
           <CashflowData>

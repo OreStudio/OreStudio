@@ -4,7 +4,7 @@
     <TradeType>BondRepo</TradeType>
     <BondRepoData>
       <BondData>
-        <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
         <SecurityId>POPMKXYS6FUC6</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
@@ -73,7 +73,7 @@
     <TradeType>BondRepo</TradeType>
     <BondRepoData>
       <BondData>
-        <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+        <IssuerId>Export Bank One Plc</IssuerId>
         <SecurityId>POP9GXWDOD0J8</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>

@@ -179,9 +179,13 @@ private:
     bond_repo_terms terms_;
 };
 
+/// Whether the book receives the bond's total return and pays the funding, or the reverse.
+enum class return_side { receive, pay };
+
 /// The bond's price return against a quarterly fixed funding leg, whose rate may be negative.
 struct bond_trs_terms final {
     bond_holding holding;
+    required<return_side> side;
     required<utility::decimal::decimal> funding_rate;
     required<std::chrono::year_month_day> start;
     required<std::chrono::year_month_day> end;
@@ -251,6 +255,7 @@ private:
 struct ascot_terms final {
     convertible_bond_terms convertible;
     required<option_kind> kind;
+    required<option_position> position;
     required<marketdata::datum::market_reference> funding_index;
     required<utility::decimal::decimal> recall_spread;
     required<std::chrono::year_month_day> start;

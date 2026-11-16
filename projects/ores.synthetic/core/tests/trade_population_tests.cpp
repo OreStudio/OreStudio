@@ -20,6 +20,8 @@
 #include "ore_example_conventions.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -29,9 +31,12 @@
 #include <chrono>
 #include <format>
 #include <map>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -68,7 +73,7 @@ domain::trade_population_plan plan_of(const domain::trade_generation_scope& scop
 struct bond_view final {
     std::string security_id;
     boost::uuids::uuid issue_id;
-    boost::uuids::uuid issuer_id;
+    std::string issuer;
     std::chrono::year_month_day issue_date;
     std::chrono::year_month_day maturity_date;
     std::uint32_t tenor_years = 0;
@@ -80,7 +85,7 @@ bond_view bond_of(const domain::trade_population_slot& slot) {
     bond_view view;
     view.security_id = issue.security_id;
     view.issue_id = issue.issue_id;
-    view.issuer_id = boost::uuids::string_generator()(issue.issuer);
+    view.issuer = issue.issuer;
     view.issue_date = *issue.issue_date;
     view.maturity_date = *schedule.end_date;
     const auto days =
@@ -139,7 +144,8 @@ domain::trade_generation_scope bond_scope() {
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
-    scope.issuer_ids = {bank, second_bank};
+    scope.issuers = {{.id = bank, .name = "Bank One Plc"},
+                     {.id = second_bank, .name = "Bank Two Plc"}};
     scope.traders = {domain::trade_population_trader{trader_account, "trader.one"}};
     scope.currency_code = "EUR";
     return scope;
@@ -700,7 +706,7 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", "[trade_po
     CHECK_THROWS_AS(plan_of(no_counterparty), trade_population_error);
 
     auto no_issuer = bond_scope();
-    no_issuer.issuer_ids.clear();
+    no_issuer.issuers.clear();
     CHECK_THROWS_AS(plan_of(no_issuer), trade_population_error);
 
     auto no_trader = bond_scope();
@@ -1288,7 +1294,7 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", "[trade
         if (inserted)
             continue;
         REQUIRE(bond_of(slot).issue_id == bond_of(found->second).issue_id);
-        REQUIRE(bond_of(slot).issuer_id == bond_of(found->second).issuer_id);
+        REQUIRE(bond_of(slot).issuer == bond_of(found->second).issuer);
         REQUIRE(bond_of(slot).issue_date == bond_of(found->second).issue_date);
         REQUIRE(bond_of(slot).maturity_date == bond_of(found->second).maturity_date);
         REQUIRE(bond_of(slot).tenor_years == bond_of(found->second).tenor_years);
@@ -1375,8 +1381,9 @@ TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {
 
     const auto term = plan.slots.front();
     const auto& bond = bond_of(term);
-    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond", bond.issuer_id) !=
-            security_id_for(bond_scope(), bond.tenor_years, "CallableBond", bond.issuer_id));
+    const auto issuer = issuer_for(bond_scope(), bond.tenor_years).id;
+    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond", issuer) !=
+            security_id_for(bond_scope(), bond.tenor_years, "CallableBond", issuer));
 }
 
 TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_population]") {
@@ -1385,9 +1392,11 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_po
     auto dollar = bond_scope();
     dollar.currency_code = "USD";
 
-    const auto issuer = issuer_id_for(euro, 5);
-    REQUIRE(security_id_for(euro, 5, "Bond", issuer) != security_id_for(dollar, 5, "Bond", issuer));
-    REQUIRE(security_id_for(euro, 5, "Bond", issuer) == security_id_for(euro, 5, "Bond", issuer));
+    const auto issuer = issuer_for(euro, 5);
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer.id) !=
+            security_id_for(dollar, 5, "Bond", issuer.id));
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer.id) ==
+            security_id_for(euro, 5, "Bond", issuer.id));
 }
 
 TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
@@ -1402,9 +1411,9 @@ TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
     auto second = bond_scope();
     second.book_ids = {second_book};
 
-    const auto issuer = issuer_id_for(first, 5);
-    REQUIRE(security_id_for(first, 5, "Bond", issuer) ==
-            security_id_for(second, 5, "Bond", issuer));
+    const auto issuer = issuer_for(first, 5);
+    REQUIRE(security_id_for(first, 5, "Bond", issuer.id) ==
+            security_id_for(second, 5, "Bond", issuer.id));
 }
 
 TEST_CASE("a_security_is_named_by_its_issuer", "[trade_population]") {
@@ -1415,15 +1424,15 @@ TEST_CASE("a_security_is_named_by_its_issuer", "[trade_population]") {
      * one's issue, and the store refused it as stored with other terms.
      */
     auto first = bond_scope();
-    first.issuer_ids = {bank};
+    first.issuers = {{.id = bank, .name = "Bank One Plc"}};
     auto second = bond_scope();
-    second.issuer_ids = {second_bank};
+    second.issuers = {{.id = second_bank, .name = "Bank Two Plc"}};
 
-    const auto first_issuer = issuer_id_for(first, 5);
-    const auto second_issuer = issuer_id_for(second, 5);
-    REQUIRE(first_issuer != second_issuer);
-    REQUIRE(security_id_for(first, 5, "Bond", first_issuer) !=
-            security_id_for(second, 5, "Bond", second_issuer));
+    const auto first_issuer = issuer_for(first, 5);
+    const auto second_issuer = issuer_for(second, 5);
+    REQUIRE(first_issuer.id != second_issuer.id);
+    REQUIRE(security_id_for(first, 5, "Bond", first_issuer.id) !=
+            security_id_for(second, 5, "Bond", second_issuer.id));
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_population]") {
@@ -1465,16 +1474,16 @@ TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scope
     const auto wide = bond_scope();
     auto narrow = bond_scope();
     narrow.counterparty_ids = {second_bank};
-    std::ranges::reverse(narrow.issuer_ids);
+    std::ranges::reverse(narrow.issuers);
 
-    std::map<std::string, boost::uuids::uuid> issuer_of;
+    std::map<std::string, std::string> issuer_of;
     for (const auto& slot : plan_of(wide).slots)
-        issuer_of.emplace(bond_of(slot).security_id, bond_of(slot).issuer_id);
+        issuer_of.emplace(bond_of(slot).security_id, bond_of(slot).issuer);
 
     for (const auto& slot : plan_of(narrow).slots) {
         const auto found = issuer_of.find(bond_of(slot).security_id);
         if (found != issuer_of.end())
-            REQUIRE(bond_of(slot).issuer_id == found->second);
+            REQUIRE(bond_of(slot).issuer == found->second);
     }
 }
 
@@ -1551,4 +1560,177 @@ TEST_CASE("an_equity_swap_builds_its_funding_leg_when_two_conventions_name_the_i
 
     REQUIRE_FALSE(plan.slots.empty());
     CHECK(plan.slots.front().instruments.equity_swap_instruments.size() == 1u);
+}
+
+namespace {
+
+/// A closed either-or a row states, as the column the rows name it by.
+const std::set<std::string>& either_or_columns() {
+    static const std::set<std::string> columns{"long_short",
+                                               "option_type",
+                                               "payer",
+                                               "fixed_payer",
+                                               "fixed_side",
+                                               "protection_side",
+                                               "long_in_forward",
+                                               "cap_floor_kind",
+                                               "buy_sell"};
+    return columns;
+}
+
+/**
+ * @brief The either-ors a product fixes by its structure rather than draws.
+ *
+ * A bond's legs are the security's coupons, which the holder always receives;
+ * a cap, a floor or an option strip states its direction on the option, not on
+ * its leg; and the average forward's long_short is a label ORE does not read,
+ * whose direction is fixed_payer. The list is closed in both directions.
+ */
+const std::set<std::string>& structural_either_ors() {
+    static const std::set<std::string> columns{
+        "Ascot bond_legs.payer",
+        "BondRepo bond_legs.payer",
+        "BondTRS bond_legs.payer",
+        "CapFloor swap_legs.payer",
+        "CommodityOptionStrip swap_legs.payer",
+        "FxAverageForward fx_asian_forward_instruments.long_short"};
+    return columns;
+}
+
+template <typename T>
+std::optional<std::string> spelled(const T& value) {
+    if constexpr (std::is_same_v<T, std::string>)
+        return value.empty() ? std::nullopt : std::optional<std::string>(value);
+    else if constexpr (std::is_same_v<T, bool>)
+        return std::string(value ? "true" : "false");
+    else if constexpr (requires {
+                           value.has_value();
+                           *value;
+                       })
+        return value ? spelled(*value) : std::nullopt;
+    else
+        return std::nullopt;
+}
+
+/// Records the either-or columns one row states, under its type and array.
+template <typename Row>
+void collect_either_ors(const Row& row,
+                        const std::string& prefix,
+                        std::map<std::string, std::set<std::string>>& seen) {
+    if constexpr (requires { wire_fields(std::type_identity<Row>{}); }) {
+        const auto one = [&](const auto& field) {
+            const std::string name(field.name);
+            if (!either_or_columns().contains(name))
+                return;
+            if (const auto v = spelled(row.*(field.member)))
+                seen[prefix + name].insert(*v);
+        };
+        ores::utility::codec::apply_fields([&](const auto&... fields) { (one(fields), ...); },
+                                           wire_fields(std::type_identity<Row>{}));
+    }
+}
+
+/**
+ * @brief The values each (trade type, either-or column) takes over a plan.
+ */
+std::map<std::string, std::set<std::string>>
+either_or_values(const domain::trade_population_plan& plan) {
+    std::map<std::string, std::set<std::string>> seen;
+    for (const auto& slot : plan.slots) {
+        const auto one = [&](const auto& array) {
+            const auto prefix = slot.trade_type_code + " " + std::string(array.name) + ".";
+            for (const auto& row : slot.instruments.*(array.member))
+                collect_either_ors(row, prefix, seen);
+        };
+        ores::utility::codec::apply_fields(
+            [&](const auto&... arrays) { (one(arrays), ...); },
+            wire_fields(std::type_identity<ores::trading::domain::instrument_batch>{}));
+    }
+    return seen;
+}
+
+std::vector<domain::trade_generation_scope> every_class_scope() {
+    std::vector<domain::trade_generation_scope> scopes{bond_scope(),
+                                                       rate_scope(),
+                                                       scripted_scope(),
+                                                       inflation_scope(),
+                                                       fx_scope(),
+                                                       commodity_scope(),
+                                                       equity_scope(),
+                                                       credit_scope()};
+    for (auto& scope : scopes)
+        scope.trades_per_book = 64;
+    return scopes;
+}
+
+}
+
+TEST_CASE("every_trade_type_reaches_every_book", "[trade_population]") {
+    std::set<std::string> missing;
+    for (const auto& scope : every_class_scope()) {
+        const auto plan = plan_of(scope);
+        std::map<std::string, std::set<std::string>> books;
+        for (const auto& slot : plan.slots)
+            books[slot.trade_type_code].insert(boost::uuids::to_string(slot.book_id));
+        for (const auto& [type, reached] : books)
+            if (reached.size() != scope.book_ids.size())
+                missing.insert(type);
+    }
+    std::string listed;
+    for (const auto& type : missing)
+        listed += "\n  " + type;
+    if (!missing.empty())
+        FAIL_CHECK("these trade types do not reach every book:" + listed);
+}
+
+TEST_CASE("every_closed_either_or_is_drawn_both_ways", "[trade_population]") {
+    std::set<std::string> one_way;
+    std::set<std::string> structural_seen;
+    for (const auto& scope : every_class_scope())
+        for (const auto& [column, values] : either_or_values(plan_of(scope))) {
+            if (structural_either_ors().contains(column)) {
+                structural_seen.insert(column);
+                continue;
+            }
+            if (values.size() < 2)
+                one_way.insert(column + " = " + *values.begin());
+        }
+    std::string listed;
+    for (const auto& column : one_way)
+        listed += "\n  " + column;
+    if (!one_way.empty())
+        FAIL_CHECK("these either-ors are drawn one way only:" + listed);
+    CHECK(structural_seen == structural_either_ors());
+}
+
+TEST_CASE("a_bond_issue_names_its_issuer_by_its_legal_name", "[trade_population]") {
+    const auto plan = plan_of(bond_scope());
+    REQUIRE_FALSE(plan.slots.empty());
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.bond_issue.has_value());
+        INFO(slot.trade_type_code);
+        CHECK((slot.bond_issue->issuer == "Bank One Plc" ||
+               slot.bond_issue->issuer == "Bank Two Plc"));
+    }
+}
+
+TEST_CASE("a_cap_floor_population_states_every_kind_with_every_position", "[trade_population]") {
+    /*
+     * The kind and the position are two either-ors of one trade. Picked from
+     * one stream they move together, and every cap would be long and every
+     * floor short; each reads its own, so all four pairs occur.
+     */
+    auto scope = rate_scope();
+    scope.trade_type_codes = {"CapFloor"};
+    scope.trades_per_book = 16;
+
+    std::set<std::pair<std::string, std::string>> pairs;
+    for (const auto& slot : plan_of(scope).slots) {
+        const auto& instruments = slot.instruments;
+        REQUIRE(instruments.cap_floor_instruments.size() == 1u);
+        REQUIRE(instruments.instrument_strikes.size() == 1u);
+        pairs.emplace(instruments.instrument_strikes.front().strike_role,
+                      instruments.cap_floor_instruments.front().long_short.value_or(""));
+    }
+    CHECK(pairs.size() == 4u);
 }

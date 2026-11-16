@@ -363,7 +363,9 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     cp_req.limit = page;
     const auto counterparties = read(cp_req);
     for (const auto& counterparty : counterparties.counterparties)
-        scope.issuer_ids.push_back(counterparty.id);
+        scope.issuers.push_back({.id = counterparty.id,
+                                 .name = counterparty.full_name.empty() ? counterparty.short_code :
+                                                                          counterparty.full_name});
     for (const auto& counterparty_id : scope.counterparty_ids) {
         const auto known =
             std::ranges::any_of(counterparties.counterparties, [&](const auto& candidate) {

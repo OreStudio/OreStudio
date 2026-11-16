@@ -3,7 +3,7 @@
   <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
     <TradeType>CapFloor</TradeType>
     <CapFloorData>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>
@@ -33,15 +33,15 @@
           </Spreads>
         </FloatingLegData>
       </LegData>
-      <Floors>
-        <Floor>0.0116</Floor>
-      </Floors>
+      <Caps>
+        <Cap>0.0116</Cap>
+      </Caps>
     </CapFloorData>
   </Trade>
   <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
     <TradeType>CapFloor</TradeType>
     <CapFloorData>
-      <LongShort>Long</LongShort>
+      <LongShort>Short</LongShort>
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>

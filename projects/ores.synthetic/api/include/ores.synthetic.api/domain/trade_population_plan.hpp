@@ -97,6 +97,15 @@ struct equity_underlying_reference final {
     std::string currency;
 };
 
+/**
+ * @brief A counterparty that may issue a security: its id, which names the
+ * security, and the legal name a person reads as the issuer.
+ */
+struct issuer_reference final {
+    boost::uuids::uuid id;
+    std::string name;
+};
+
 struct trade_population_trader final {
     boost::uuids::uuid account_id;
     std::string username;
@@ -200,7 +209,7 @@ struct trade_generation_scope final {
      * security is drawn. A security belongs to the tenant and not to a config,
      * so its issuer cannot depend on the counterparties one config scopes.
      */
-    std::vector<boost::uuids::uuid> issuer_ids;
+    std::vector<issuer_reference> issuers;
     /**
      * @brief The netting set each counterparty of the scope is cleared under,
      * keyed by counterparty. Absent for a counterparty with no set, which is
@@ -312,6 +321,15 @@ struct commodity_terms final {
  */
 struct trade_population_slot final {
     std::uint32_t slot = 0;
+    /**
+     * @brief How many times the class's trade types have cycled before this slot.
+     *
+     * The slot's position picks its type, so anything else picked from the
+     * position alone repeats with the type: with two books and an even number
+     * of types, a type would only ever reach one book and only ever be long.
+     * The book is shifted by the turn and every either-or is picked from it.
+     */
+    std::uint32_t turn = 0;
     boost::uuids::uuid trade_id;
     boost::uuids::uuid book_id;
     boost::uuids::uuid counterparty_id;

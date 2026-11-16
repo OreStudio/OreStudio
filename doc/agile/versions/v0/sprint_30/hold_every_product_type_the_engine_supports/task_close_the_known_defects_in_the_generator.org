@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/close-the-known-defects-in-the-generator
+#+pr: 4776
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ The generator provisions Acme with every config the seed states, and draws each 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,11 @@ The generator provisions Acme with every config the seed states, and draws each 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Measure first: two tests plan every asset class at 64 trades per book and fail on a trade type that misses a book, or on an either-or column one type only ever states one way.
+2. Give each slot a turn, how many times the class's types have cycled before it; shift the book by the turn once per books' worth of turns, and pick every either-or from the turn.
+3. Draw the directions six products fixed as constants, adding the term to the builder where the builder fixed it.
+4. Carry each issuer's legal name beside its id, so a bond issue names its issuer by name while the id still names the security.
+5. For the int overflow and the two-configs collision, find the fix that already landed and its evidence; for the bad_alloc, run a stress test of the issue write.
 
 * Measurements
 
@@ -60,7 +62,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trade types missing a book, before | most types of every class but rates and credit | =ores.synthetic.core.tests every_trade_type_reaches_every_book= | 800c3a6d09 plus the new tests |
+| Either-or columns drawn one way, before | 15 (4 structural) | =ores.synthetic.core.tests every_closed_either_or_is_drawn_both_ways= | 800c3a6d09 plus the new tests |
+| Book formula holds: exact counts and full coverage | type counts 1 to 24, book counts 1 to 4 | grid check of =book_index= and =first_way= in the scratchpad | 8abe2f9113 |
+| Generated trade documents changed by direction | 15 files, 42 lines | =git show 8abe2f9113 --stat= | 8abe2f9113 |
+| Bond issue writes in the stress run | 1,486 written, 818 already stored, 0 refused | =ores.synthetic.core.tests a_stress_run_of_bond_populations_writes_every_issue= | bf914979e4 |
+| Synthetic suite with the ORE engine | 143 cases, 4,182 assertions | =ores.synthetic.core.tests= | 9b4c846e9e |
+| Generated trades ORE accepts | 819 assertions, 7 cases | =ores.synthetic.core.tests "[generated]"= | 9b4c846e9e |
+| Trading api suite | 4,432 cases, 16,408 assertions | =ores.trading.api.tests= | 8abe2f9113 |
 
 * Notes
 
@@ -74,6 +83,16 @@ Folded in on 2026-11-15; each capture is discarded with a pointer here.
 - [[id:0CF17FFD-9441-4E20-B7F3-9FB64CA5114A][Let the generators state both directions]]
 - [[id:3E7A9C15-6D42-4B80-9F13-5C28E0B7D461][The population writes a party id into the issuer]]
 - [[id:379BF273-79A4-43FA-B63E-2C125548F0EA][Two parties' bond configs name one security and mean two issues]]
+
+** What each named defect came to
+
+- *Product and book by position.* The type, the book and every either-or were read from the slot's position, so with two books and an even type count a type reached one book and stated one direction. Fixed by the turn. The first formula rounded the cycle up to a whole number of books, which cancelled the shift for an odd type count; the test caught it on the commodity class, and the grid check confirmed the corrected one.
+- *Directions fixed as constants.* The Ascot's option, the bond TRS's return side, the equity swap's position, the average forward's fixed payer, the commodity barrier and spread options' call or put, and the equity option position's option type were constants. The equity swap was worse than constant: it stated Long while its legs paid the equity's return. Each is now drawn, and the swap's legs follow its position.
+- *Structural either-ors.* A bond's legs, a cap's leg and an option strip's leg state the security's or the option's own direction, and the average forward's =long_short= is a label ORE does not read. The test holds them in a closed list with the reason.
+- *Int overflow.* Already fixed by =bde83272d4= on 2026-10-25 (=trades_per_book= is =int=, as its column is). The bad_alloc capture records a full provision on 2026-11-13 that wrote 6,541 trades through the same step.
+- *Two parties' configs, one security.* Already fixed by =fbc205fa74= on 2026-10-31, which names a security by its issuer; =a_security_is_named_by_its_issuer= and the tests beside it hold it.
+- *Issuer as a party id.* Fixed: the issue names its issuer by the counterparty's legal name.
+- *bad_alloc.* Not reproduced. The issue rows hold no uninitialised number, and the write sizes nothing from a drawn value. The stress run writes 2,304 issues of 24 populations with no failure. It runs in process, so it does not cross the NATS decode the failing request went through.
 
 * Test Scenarios
 
@@ -90,12 +109,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4776][#4776]] | [synthetic,trading] Close the known defects in the trade generator |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Either-ors of one trade flip together: every cap long, every floor short | trade_population_planner.cpp | accept | Each either-or reads its own stream, the stream-th bit of the turn; a test checks all four cap/floor and position pairs; grid-checked over 1-24 types and 1-4 books |
+| 2 | TRS doc comment sits above the new enum | bond_builders.hpp | accept | Moved back above bond_trs_terms |
+| 3 | Stream 6 may correlate with another draw | trade_population_planner.cpp | no change | In the commodity planner stream 6 is drawn only for the option type, one shape per slot |
+| 4 | Explain the turn/(books+1) term | trade_population_planner.cpp | no change | The term is gone with item 1; the comment states the streams |
+| 5 | Do not claim the bad_alloc closed | task notes | accept | The notes and the PR say it is not reproduced and the stress run does not cross the NATS decode |
 
 * Result
+
+The generator now draws each trade type into every book and each closed either-or both ways, with the book's trade count kept exact; six directions that were constants are drawn, and the equity swap's legs follow its position. A bond issue names its issuer by legal name. The overflow and the two-config collision were already fixed, with the commits and evidence in the notes, and a stress run of 2,304 issue writes shows no bad_alloc.
+
+Acceptance:
+
+- Product and book drawn independently, so every product reaches every book: met; =every_trade_type_reaches_every_book= failed before the fix.
+- A config of any size records without overflow: met before this task, by =bde83272d4=.
+- The bad_alloc is reproduced and fixed, or a stress run shows it no longer occurs: the stress run, with the limit stated in the notes.
+- A closed either-or is drawn both ways across a population: met; =every_closed_either_or_is_drawn_both_ways= failed before the fix on 11 columns.
+- An issuer is a readable legal entity, and two configs naming one security do not abort: met; the first here, the second by =fbc205fa74=.
+- A test for each named defect, or evidence it was fixed: met, as above.

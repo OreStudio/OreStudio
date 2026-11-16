@@ -4,7 +4,7 @@
     <TradeType>BondTRS</TradeType>
     <BondTRSData>
       <BondData>
-        <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
         <SecurityId>POPYCIFBVNCQ4</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
@@ -88,7 +88,7 @@
     <TradeType>BondTRS</TradeType>
     <BondTRSData>
       <BondData>
-        <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+        <IssuerId>Export Bank One Plc</IssuerId>
         <SecurityId>POP6MSBBKBV34</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
@@ -125,7 +125,7 @@
         <SubType>Fixed</SubType>
       </BondData>
       <TotalReturnData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <InitialPrice>100</InitialPrice>
         <PriceType>Clean</PriceType>
         <ScheduleData>
@@ -141,7 +141,7 @@
       </TotalReturnData>
       <FundingData>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>F</PaymentConvention>

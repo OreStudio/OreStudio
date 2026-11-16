@@ -220,6 +220,8 @@ struct fx_average_forward_terms final {
     /// The first observation; the last is the payment date.
     required<std::chrono::year_month_day> start;
     required<std::chrono::year_month_day> payment_date;
+    /// Whether the holder pays the settlement notional, as ORE's FixedPayer states it.
+    required<bool> fixed_payer;
 };
 
 class ORES_TRADING_API_EXPORT fx_average_forward_builder final {

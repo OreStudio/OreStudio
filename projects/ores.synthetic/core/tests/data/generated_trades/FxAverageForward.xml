@@ -14,7 +14,7 @@
           <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
-      <FixedPayer>false</FixedPayer>
+      <FixedPayer>true</FixedPayer>
       <ReferenceNotional>5790664.33</ReferenceNotional>
       <ReferenceCurrency>EUR</ReferenceCurrency>
       <SettlementNotional>4509769.38</SettlementNotional>

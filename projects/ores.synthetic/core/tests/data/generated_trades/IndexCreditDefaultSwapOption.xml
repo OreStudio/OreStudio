@@ -73,7 +73,7 @@
         <ProtectionStart>2026-04-03</ProtectionStart>
         <UpfrontFee>0</UpfrontFee>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>Following</PaymentConvention>

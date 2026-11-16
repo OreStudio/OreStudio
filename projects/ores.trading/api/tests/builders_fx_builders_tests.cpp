@@ -181,9 +181,11 @@ TEST_CASE("an_average_forward_observes_monthly_until_it_pays", fx_tags) {
                                                      .settlement_currency = std::string("USD"),
                                                      .settlement_notional = fx_amount("1100000"),
                                                      .start = 2026y / 1 / 5,
-                                                     .payment_date = 2027y / 1 / 5})
+                                                     .payment_date = 2027y / 1 / 5,
+                                                     .fixed_payer = true})
                              .build();
     REQUIRE(forward.has_value());
+    CHECK(forward->asian_forwards[0].fixed_payer == true);
     REQUIRE(forward->schedules.size() == 1);
     CHECK(forward->schedules[0].schedule_role == "observation_schedule");
     CHECK(forward->schedules[0].end_date == 2027y / 1 / 5);

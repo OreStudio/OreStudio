@@ -4,7 +4,7 @@
     <TradeType>BondOption</TradeType>
     <BondOptionData>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
@@ -17,7 +17,7 @@
       <PriceType>Clean</PriceType>
       <KnocksOut>false</KnocksOut>
       <BondData>
-        <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
         <SecurityId>POP0I8Z1XE0C6</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <VolatilityCurveId>BondOptionVols-EUR</VolatilityCurveId>
@@ -73,7 +73,7 @@
       <PriceType>Clean</PriceType>
       <KnocksOut>false</KnocksOut>
       <BondData>
-        <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
         <SecurityId>POPPD9V2UE1T1</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <VolatilityCurveId>BondOptionVols-EUR</VolatilityCurveId>

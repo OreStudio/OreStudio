@@ -261,6 +261,8 @@ private:
 struct equity_swap_terms final {
     required<marketdata::datum::market_reference> underlying;
     required<double> quantity;
+    /// Long receives the equity's return and pays the funding; short the reverse.
+    required<option_position> position;
     vanilla_swap_terms funding;
 };
 

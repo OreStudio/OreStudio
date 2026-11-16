@@ -142,7 +142,7 @@ fx_result fx_average_forward_builder::build() const {
     row.payment_date = terms_.payment_date.get();
     row.currency = terms_.settlement_currency.get();
     row.long_short = "Long";
-    row.fixed_payer = false;
+    row.fixed_payer = terms_.fixed_payer.get();
     domain::fx_instrument_data out{};
     out.asian_forwards.push_back(std::move(row));
     add_schedule(out, "observation_schedule", "1M", terms_.start.get(), terms_.payment_date.get());

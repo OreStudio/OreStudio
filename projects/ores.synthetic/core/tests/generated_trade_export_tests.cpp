@@ -111,7 +111,8 @@ domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
         trades_per_type * static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {book};
     scope.counterparty_ids = {export_bank, export_second_bank};
-    scope.issuer_ids = {export_bank, export_second_bank};
+    scope.issuers = {{.id = export_bank, .name = "Export Bank One Plc"},
+                     {.id = export_second_bank, .name = "Export Bank Two Plc"}};
     scope.traders = {domain::trade_population_trader{export_trader_account, "trader.one"}};
     return scope;
 }

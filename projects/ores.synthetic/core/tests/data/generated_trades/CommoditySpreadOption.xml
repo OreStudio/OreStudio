@@ -55,7 +55,7 @@
       </LegData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
       </OptionData>

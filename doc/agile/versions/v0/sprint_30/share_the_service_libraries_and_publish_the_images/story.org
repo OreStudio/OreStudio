@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 291B09A9-AF7D-4B8D-A012-6C021442120D
+:END:
+#+title: Story: Share the service libraries and publish the images to GitHub Container Registry
+#+description: Each service image today carries every library that is not in the 10-library intersection, so 19 images hold 6.6 GB of duplicated library payload. Put the libraries in one shared image, keep each service image to its own binary, and publish the hierarchy from the release nightly build so a test host pulls instead of receiving a transfer.
+#+type: story
+#+level: s2
+#+filetags: :devops:containers:ci:sprint_30:v0:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-16                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8810BF09-8DCF-4369-A620-9A987523E371][Scaffold story: Share the service libraries and publish the images to GitHub Container Registry]] | STARTED | 2026-11-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3B954E2A-EC2B-4A8F-9A20-9EB7356E4F7F][Share the libraries in one image instead of per service]] | STARTED | 2026-11-16 | | Initial task for: Share the service libraries and publish the images to GitHub Container Registry |
+| [[id:8380C9CD-5A97-46B4-A757-DB31D6A04298][Strip the staged libraries with --strip-all]] | BACKLOG | | | The staged libraries keep their symbol and string tables. Strip them with --strip-all before podman sees them. |
+| [[id:615C47EB-6E24-4206-9976-4D797AD42F34][Publish the images from the nightly release build]] | BACKLOG | | | Add compass image publish and a nightly job that publishes the release image hierarchy to ghcr.io, skipping a tag that is already published. |
+| [[id:15ECCA94-F279-400F-BAA1-2B0B1519390E][Pull the published images when deploying to a host]] | BACKLOG | | | Let compass env deploy pull the published images instead of transferring them, so pauli only fetches what it does not have. |
+
+* Decisions
+
+* Out of scope
+
+-

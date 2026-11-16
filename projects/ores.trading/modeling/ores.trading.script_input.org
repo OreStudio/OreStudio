@@ -148,6 +148,7 @@ The script the row belongs to.
 :PROPERTIES:
 :tablename: ores_trading_script_inputs_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -170,6 +171,7 @@ The script the row belongs to.
 :entity_plural_short:   inputs
 :entity_singular_words: script input
 :entity_plural_words:   script inputs
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

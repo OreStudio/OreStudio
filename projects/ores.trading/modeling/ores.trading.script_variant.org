@@ -104,6 +104,7 @@ The script the row belongs to.
 :PROPERTIES:
 :tablename: ores_trading_script_variants_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -127,6 +128,7 @@ The script the row belongs to.
 :entity_plural_short:   variants
 :entity_singular_words: script variant
 :entity_plural_words:   script variants
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

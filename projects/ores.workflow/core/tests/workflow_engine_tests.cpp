@@ -234,32 +234,31 @@ struct fixture {
         def.type_name = type;
         def.description = "engine fixture";
         def.on_failure = on_failure;
-        def.build_steps =
-            [names, timeout, optional](
-                const std::string& request, const std::string&, const std::string&) {
-                std::vector<workflow_step_def> steps;
-                steps.reserve(names.size());
-                for (const auto& name : names) {
-                    workflow_step_def s;
-                    s.name = name;
-                    s.description = name;
-                    s.command_subject = step_subject;
-                    s.timeout = timeout;
-                    s.essential = !optional.contains(name);
-                    s.compensation_subject = compensation_subject;
-                    if (!steps.empty())
-                        s.consumes = {steps.back().name};
-                    s.build_command = [request](const std::string&, const workflow_step_results&) {
-                        return request;
+        def.build_steps = [names, timeout, optional](
+                              const std::string& request, const std::string&, const std::string&) {
+            std::vector<workflow_step_def> steps;
+            steps.reserve(names.size());
+            for (const auto& name : names) {
+                workflow_step_def s;
+                s.name = name;
+                s.description = name;
+                s.command_subject = step_subject;
+                s.timeout = timeout;
+                s.essential = !optional.contains(name);
+                s.compensation_subject = compensation_subject;
+                if (!steps.empty())
+                    s.consumes = {steps.back().name};
+                s.build_command = [request](const std::string&, const workflow_step_results&) {
+                    return request;
+                };
+                s.build_compensation =
+                    [](const std::string&, const std::string&, const std::string& failure) {
+                        return R"({"failure":")" + failure + R"("})";
                     };
-                    s.build_compensation =
-                        [](const std::string&, const std::string&, const std::string& failure) {
-                            return R"({"failure":")" + failure + R"("})";
-                        };
-                    steps.push_back(std::move(s));
-                }
-                return steps;
-            };
+                steps.push_back(std::move(s));
+            }
+            return steps;
+        };
         registry->register_definition(std::move(def));
     }
 

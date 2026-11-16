@@ -86,6 +86,7 @@ package "workflow" #FFF8E1 {
         * command_subject : text
         * compensation_subject : text
         * timeout_seconds : integer
+        * essential : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

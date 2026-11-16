@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/barrier_types/barrier_type.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-barrier_types set __none__ __none__ system.new_record generated_script
+barrier_types set __none__ __none__ - system.new_record generated_script

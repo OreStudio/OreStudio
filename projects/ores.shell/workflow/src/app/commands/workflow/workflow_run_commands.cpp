@@ -292,9 +292,8 @@ std::size_t workflow_run_commands::print_run_warnings(std::ostream& out,
         const auto& run = runs->instances.front();
         if (!news_since.empty()) {
             using ores::platform::time::datetime;
-            if (!run.completed_at ||
-                datetime::from_iso8601_utc(*run.completed_at) <=
-                    datetime::from_iso8601_utc(news_since))
+            if (!run.completed_at || datetime::from_iso8601_utc(*run.completed_at) <=
+                                         datetime::from_iso8601_utc(news_since))
                 return 0;
         }
         const auto steps = fetch_steps(session, run.id);
@@ -304,7 +303,8 @@ std::size_t workflow_run_commands::print_run_warnings(std::ostream& out,
             if (step.status == "completed_with_warnings")
                 warned.push_back(step);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug) << "The latest " << run_type << " run was not read: " << e.what();
+        BOOST_LOG_SEV(lg(), debug)
+            << "The latest " << run_type << " run was not read: " << e.what();
         return 0;
     }
     if (warned.empty())

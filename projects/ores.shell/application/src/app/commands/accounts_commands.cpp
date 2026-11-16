@@ -235,11 +235,9 @@ void accounts_commands::print_setup_news(std::ostream& out,
 }
 
 void accounts_commands::process_setup_report(std::ostream& out, nats_client& session) {
-    if (workflow_run_commands::print_run_warnings(out,
-                                                  session,
-                                                  iam::workflow::tenant_setup_workflow_type,
-                                                  setup_report_heading,
-                                                  true) == 0)
+    if (workflow_run_commands::print_run_warnings(
+            out, session, iam::workflow::tenant_setup_workflow_type, setup_report_heading, true) ==
+        0)
         out << "✓ The tenant's setup has no step with warnings, or this account cannot read it."
             << std::endl;
 }

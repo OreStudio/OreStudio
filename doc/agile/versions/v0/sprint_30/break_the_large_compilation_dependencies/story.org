@@ -50,7 +50,7 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 | [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] | DONE | 2026-11-13 | | Pass the database context as a const reference, forward-declare it in every header that only passes it along, and keep libpq and the pool out of context.hpp. |
 | [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]] | DONE | 2026-11-14 | | Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect. |
 | [[id:291FE4D0-4B05-48BF-97A4-E39FD458DBA6][Split the context into its connection and request parts]] | BACKLOG | | | Give the 1305 services the per-request identity part only, so their headers stop parsing the connection part, and decide what a service stores. |
-| [[id:93457275-4215-44DE-B8B5-555A2F2E6909][Move the codec text forms out of line]] | STARTED | 2026-11-15 | | End the inline text forms the codec chain parses: text_form.hpp moves its definitions to a .cpp, and protocol_codec.hpp and json_codec.hpp stop reaching it. |
+| [[id:93457275-4215-44DE-B8B5-555A2F2E6909][Move the codec text forms out of line]] | DONE | 2026-11-15 | 2026-11-16 | End the inline text forms the codec chain parses: text_form.hpp moves its definitions to a .cpp, and protocol_codec.hpp and json_codec.hpp stop reaching it. |
 | [[id:AE2E77E7-5E09-436A-817E-66FB7064BA28][Delete the unused includes the analysis found]] | DONE | 2026-11-14 | 2026-11-14 | Remove the dead includes and the two inline functions that force them: the string generator in tenant_id.hpp, and the two magic_enum users in error_code.hpp. |
 | [[id:F185ECD2-FFD9-416E-9179-10E96BE8F634][Stop the pool and statement headers reaching the connection header]] | DONE | 2026-11-14 | 2026-11-15 | Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers. |
 | [[id:9C9D7D89-1114-4111-9A0B-DAFDF59E19F2][Split the unit of work header]] | BACKLOG | | | Separate pq::transaction from pq::session_context so unit_of_work.hpp takes the declaration and the forward-declaration check reaches zero. |
@@ -105,6 +105,16 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   stopped reading =libpq-fe.h=, which the analysis judged unreachable. The
   analysis's *Keep* for =result= did not survive: the statement layer calls
   =rows()= and =value()= on a result, so no declaration cuts that edge.
+- Inline definitions in a Codec header are the build's next-largest lever, and
+  moving them out of line is paid for in transitive includes rather than in
+  code: the cut exposed 540 generated event headers taking a uuid's stream
+  operators from the chain, seventeen hand-written files borrowing five other
+  headers, and the forms themselves being hidden because nothing exported them.
+  Each was a header using something it never included.
+- A model's =* Includes= block, not the archetype, is what renders the includes
+  of a generated protocol header. A header that carries =std::chrono= needs the
+  model to say so; four operation models did not, and the archetype edit that
+  looked like the fix reached none of them.
 - The rest of the header cost is parse time, in three shapes: the codec chain,
   =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
 

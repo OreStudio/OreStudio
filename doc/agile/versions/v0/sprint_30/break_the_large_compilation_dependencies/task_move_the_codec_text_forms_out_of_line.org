@@ -26,11 +26,11 @@ The codec chain parses the inline text forms in every translation unit that enco
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Built and measured; the record is written. |
+| Now          | Nothing. |
 | Waiting on   | The review of PR #4782.                |
-| Next         | Merge, then close the task.            |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                             |
 
 * Acceptance

@@ -203,6 +203,32 @@ notional's.
 
 When the premium is paid, when the document states it.
 
+* Foreign keys
+
+** option_type
+:PROPERTIES:
+:table:             ores_trading_option_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid option_type: %. No active option type found with this code.
+:END:
+
+A foreign key to =ores_trading_option_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long/short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags

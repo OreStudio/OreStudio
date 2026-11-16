@@ -232,6 +232,31 @@ is immutable.
     }
 #+end_src
 
+** price_type
+:PROPERTIES:
+:table:             ores_trading_price_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid price_type: %. No active price type found with this code.
+:END:
+
+A foreign key to =ores_trading_price_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** return_type
+:PROPERTIES:
+:table:             ores_trading_return_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid return_type: %. No active return type found with this code.
+:END:
+
+A foreign key to =ores_trading_return_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+
 * SQL
 
 ** Flags

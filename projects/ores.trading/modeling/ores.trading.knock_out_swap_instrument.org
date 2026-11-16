@@ -160,6 +160,19 @@ is immutable.
     }
 #+end_src
 
+** barrier_type
+:PROPERTIES:
+:table:             ores_trading_barrier_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid barrier_type: %. No active barrier type found with this code.
+:END:
+
+A foreign key to =ores_trading_barrier_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+
 * SQL
 
 ** Flags

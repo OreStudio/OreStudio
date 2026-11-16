@@ -26,11 +26,11 @@ Make the debug nightly free of valgrind defects and the GCC nightly free of -Wch
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -40,9 +40,10 @@ Make the debug nightly free of valgrind defects and the GCC nightly free of -Wch
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the debug nightly's Valgrind analysis and the GCC nightly's errors, trace
+each to its source, and fix it. The memcheck defects all share one stack, so one
+root cause is expected; the GCC errors are the =changes meaning= pattern the
+earlier sweep already met twice.
 
 * Measurements
 
@@ -56,7 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Valgrind defects, marketdata service tests | 21 uninitialised reads, 9 uninitialised conditionals | CDash build 4544383 | a04ad2a5c3 |
+| Distinct Valgrind stacks | 1 | The analysis log | a04ad2a5c3 |
+| GCC =-Wchanges-meaning= errors | 4 rows, 2 unique declarations | CDash build 4544363 | a04ad2a5c3 |
+| Windows link errors | 23 unresolved externals | CDash build 4544978 | 7aa4435e21 |
 
 * Notes
 
@@ -84,3 +88,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed on branch =hotfix/clear-the-valgrind-and-gcc-failures=, based on
+5ce3cd7e6c.
+
+The 30 Valgrind defects are one bug: =config::options= left =stale_seconds_ir=
+and =stale_seconds_fx= without an initialiser, and the config test streams a
+default-constructed options through the JSON codec into yyjson, which reads both
+integers. They now default to zero, the value that means the deployment's
+threshold answers for the kind.
+
+The GCC build's foured =-Wchanges-meaning= rows are two declarations:
+=bond_trade_rows::bond_option= and =::ascot= share their type's name. Their
+types are qualified, which is how the generated protocol headers already spell
+the same shape.
+
+Still open: the Windows nightly's 23 unresolved externals, led by
+=ores::synthetic::service::read_calibration_policy=. The free functions declared
+in =feed_kind_registry.hpp= carry no =ORES_SYNTHETIC_SERVICE_EXPORT=, so the
+tests' header-inline code cannot import them from the DLL. That is a separate
+change, and the full symbol list is not on CDash yet.

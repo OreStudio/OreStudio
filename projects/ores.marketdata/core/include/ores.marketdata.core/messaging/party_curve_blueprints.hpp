@@ -166,13 +166,14 @@ struct party_curve_plan {
         // derivation kind -- a curve bootstrap, not an observation -- and names the
         // party's own copy of the config that computes it. Labelling it observed
         // would say the party's curve was quoted by somebody rather than built from
-        // the quotes its subscriptions deliver.
+        // the quotes its subscriptions deliver. The copy of the config is new, so it is
+        // stored as version 1, and the series names that version.
         auto series = *output->second;
         series.version = 0;
         series.id = party_copy_id(party.party_id, "market_series", series.id);
         series.party_id = party.party_id;
         series.derivation_config_id = config_id;
-        series.derivation_config_version = 0;
+        series.derivation_config_version = 1;
         if (!own_ids.contains(series.id))
             plan.series_to_write.push_back(std::move(series));
 

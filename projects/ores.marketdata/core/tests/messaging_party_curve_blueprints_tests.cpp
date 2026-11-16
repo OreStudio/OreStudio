@@ -119,6 +119,9 @@ TEST_CASE("a party's copy of a curve reads its own series of the same item and p
     // kind and the party's config, never the observed label.
     CHECK(output.derivation_kind == "IR_CURVE_BOOTSTRAP");
     CHECK(output.derivation_config_id == config.id);
+    // The series table refuses a derived series that names version 0, and the party's
+    // config is new, so it is stored as version 1.
+    CHECK(output.derivation_config_version == 1);
     REQUIRE(plan.ready.size() == 1);
     CHECK(plan.ready.front().config_id == config.id);
 }
@@ -197,19 +200,13 @@ TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
-    // The system's output series is a bootstrap of its own config, as every curve's is,
-    // so the party's copy has a derivation to keep.
-    auto projection_output_series =
+    system.series.push_back(
         market_series_row(projection_output,
                           system_party,
                           "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
                           "&curve_id=EUR-EURIBOR-6M",
                           "ore",
-                          "yield");
-    projection_output_series.derivation_kind = "IR_CURVE_BOOTSTRAP";
-    projection_output_series.derivation_config_id = projection_config;
-    projection_output_series.derivation_config_version = 1;
-    system.series.push_back(projection_output_series);
+                          "yield"));
     system.series.push_back(
         market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
 
@@ -270,13 +267,19 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
-    system.series.push_back(
+    // The system's output series is a bootstrap of its own config, as every curve's is,
+    // so the party's copy has a derivation to keep.
+    auto projection_output_series =
         market_series_row(projection_output,
                           system_party,
                           "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
                           "&curve_id=AAA-EURIBOR-6M",
                           "ore",
-                          "yield"));
+                          "yield");
+    projection_output_series.derivation_kind = "IR_CURVE_BOOTSTRAP";
+    projection_output_series.derivation_config_id = projection_config;
+    projection_output_series.derivation_config_version = 1;
+    system.series.push_back(projection_output_series);
     system.series.push_back(
         market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
 
@@ -310,4 +313,5 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     CHECK(output->derivation_kind == "IR_CURVE_BOOTSTRAP");
     CHECK(output->derivation_config_id ==
           party_copy_id(acme_us, "ir_curve_bootstrap_config", projection_config));
+    CHECK(output->derivation_config_version == 1);
 }

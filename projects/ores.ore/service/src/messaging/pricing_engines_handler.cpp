@@ -77,8 +77,12 @@ std::optional<std::string> document_name_of(ores::nats::service::nats_client& ow
     rp::file_types_filter filter;
     filter.configuration_type_code = std::string(configuration_type_code);
     std::string error;
-    const auto reply =
-        nats_call(owners, rp::list_file_types_request{.limit = page, .filter = filter}, error);
+    // Named, not a temporary: gcc reads the defaulted order member of a
+    // designated-initialised request as uninitialised when it is destroyed.
+    rp::list_file_types_request request;
+    request.limit = page;
+    request.filter = filter;
+    const auto reply = nats_call(owners, request, error);
     if (!reply)
         throw std::runtime_error(error.empty() ? "the file types could not be read" : error);
     const auto* type =

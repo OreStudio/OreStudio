@@ -38,7 +38,7 @@ struct ORES_HTTP_API_EXPORT http_request final {
     /**
      * @brief HTTP method (GET, POST, etc.)
      */
-    http_method method;
+    http_method method = http_method::get;
 
     /**
      * @brief Request target/path.

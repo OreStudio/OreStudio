@@ -30,5 +30,4 @@ FxWindowBarrierOption
 FxWorstOfBasketSwap
 RateDigitalOption
 SwaptionStraddle
-SyntheticCDO
 TotalReturnSwap

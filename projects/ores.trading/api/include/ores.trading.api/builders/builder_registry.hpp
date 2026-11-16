@@ -42,6 +42,7 @@ using all_builders =
                index_credit_default_swap_option_builder,
                credit_linked_swap_builder,
                risk_participation_agreement_builder,
+               synthetic_cdo_builder,
                cross_currency_swap_builder,
                forward_rate_agreement_builder,
                cap_floor_builder,

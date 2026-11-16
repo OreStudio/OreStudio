@@ -50,12 +50,12 @@
       </IndexCreditDefaultSwapData>
     </IndexCreditDefaultSwapOptionData>
   </Trade>
-  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
     <TradeType>IndexCreditDefaultSwapOption</TradeType>
     <IndexCreditDefaultSwapOptionData>
       <Strike>1</Strike>
       <KnockOut>N</KnockOut>
-      <IndexTerm>7Y</IndexTerm>
+      <IndexTerm>2Y</IndexTerm>
       <StrikeType>Price</StrikeType>
       <OptionData>
         <LongShort>Short</LongShort>
@@ -67,7 +67,7 @@
         </ExerciseDates>
       </OptionData>
       <IndexCreditDefaultSwapData>
-        <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+        <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
         <SettlesAccrual>Y</SettlesAccrual>
         <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
         <ProtectionStart>2026-04-03</ProtectionStart>
@@ -79,12 +79,12 @@
           <PaymentConvention>Following</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>5817155.05</Notional>
+            <Notional>7675517.41</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
               <StartDate>2026-04-03</StartDate>
-              <EndDate>2033-04-03</EndDate>
+              <EndDate>2028-04-03</EndDate>
               <Tenor>3M</Tenor>
               <Calendar>WeekendsOnly</Calendar>
               <Convention>Following</Convention>
@@ -93,7 +93,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.01</Rate>
+              <Rate>0.05</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

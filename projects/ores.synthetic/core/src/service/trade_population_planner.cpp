@@ -2009,10 +2009,9 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityVarianceSwap",
                                              "EquityWorstOfBasketSwap"};
 /*
- * EquityOutperformanceOption is routed to the option table and that table's
- * check admits EquityOption and EquityCliquetOption only, so no outperformance
- * row can satisfy it. The type stays out until the check admits it, and the
- * gap is recorded rather than worked around by booking it as an option.
+ * EquityOutperformanceOption stays out until it is modelled: the option row
+ * holds its pair as one name and keeps neither initial price, so a generated
+ * trade would export prices of zero.
  */
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
@@ -2037,7 +2036,8 @@ constexpr std::string_view credit_types[] = {"CreditDefaultSwap",
                                              "IndexCreditDefaultSwap",
                                              "IndexCreditDefaultSwapOption",
                                              "CreditLinkedSwap",
-                                             "RiskParticipationAgreement"};
+                                             "RiskParticipationAgreement",
+                                             "SyntheticCDO"};
 
 constexpr std::size_t credit_type_count = std::size(credit_types);
 
@@ -2183,6 +2183,17 @@ build_credit_trade(const domain::trade_generation_scope& scope,
             .fee = money(std::round(entry.notional * 0.001 * 100.0) / 100.0),
             .convention = std::string(cds_convention_id)};
         return batch_of(tb::risk_participation_agreement_builder(conventions, terms).build(), type);
+    }
+    if (type == "SyntheticCDO") {
+        // The tranches cut the index at the standard points of the iTraxx and
+        // CDX tranches, so each trade is one a desk would quote.
+        constexpr std::pair<const char*, const char*> tranches[] = {
+            {"0", "0.03"}, {"0.03", "0.06"}, {"0.06", "0.12"}, {"0.12", "1"}};
+        const auto& [attachment, detachment] = tranches[entry.slot % std::size(tranches)];
+        const tb::synthetic_cdo_terms terms{.protection = protection(start),
+                                            .attachment_point = *decimal::from_string(attachment),
+                                            .detachment_point = *decimal::from_string(detachment)};
+        return batch_of(tb::synthetic_cdo_builder(conventions, terms).build(), type);
     }
     throw trade_population_error("The credit trade type " + type +
                                  " states no builder this planner knows.");

@@ -20,6 +20,7 @@
 #include "ores.utility/codec/sample.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <span>
 
 namespace ores::utility::codec_sample_probe {

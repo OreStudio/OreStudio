@@ -31,6 +31,7 @@
 #include "ores.workflow.api/messaging/workflow_step_protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <optional>
 #include <string>

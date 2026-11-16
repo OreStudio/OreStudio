@@ -31,6 +31,7 @@
 #include "ores.refdata.api/messaging/portfolio_right_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
 #include <cstddef>

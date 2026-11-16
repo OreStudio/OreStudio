@@ -29,6 +29,7 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #include <cstddef>
 #include <span>
 #include <string>

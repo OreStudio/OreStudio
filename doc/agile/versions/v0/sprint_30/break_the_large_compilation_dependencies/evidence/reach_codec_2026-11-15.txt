@@ -1,0 +1,12 @@
+objects 930, targets 224
+
+ objects  targets  header
+     648      130  ores.utility/codec/text_form.hpp
+     577      118  ores.utility/codec/text_form_fwd.hpp
+     577      118  ores.utility/domain/protocol_codec.hpp
+     559      115  ores.utility/codec/json_codec.hpp
+     499       88  ores.utility/decimal/decimal.hpp
+     277       51  ores.platform/time/datetime.hpp
+     182       57  boost/asio/ip/address.hpp
+     584      127  boost/lexical_cast.hpp
+     648      130  magic_enum/magic_enum.hpp

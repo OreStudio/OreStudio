@@ -20,21 +20,24 @@
 #ifndef ORES_UTILITY_CODEC_TEXT_FORM_HPP
 #define ORES_UTILITY_CODEC_TEXT_FORM_HPP
 
-#include "ores.platform/time/datetime.hpp"
-#include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/asio/ip/address.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+namespace boost::asio::ip {
+class address;
+}
+
+namespace ores::utility::decimal {
+class decimal;
+}
 
 namespace ores::utility::codec {
 
@@ -50,6 +53,12 @@ namespace ores::utility::codec {
  *
  * A type that has a text form specialises this with three members: =wire_name=,
  * which names it in a refusal, =to_text=, and =from_text=.
+ *
+ * The concrete forms are declared here and defined in text_form.cpp, so a
+ * translation unit that encodes a message parses the declarations and not the
+ * decimal, the address or the uuid's stream operators behind them. The
+ * enumerator form is a template over any enumerated type: the codec that meets
+ * an enumerator instantiates it from this header.
  */
 template <typename T>
 struct text_form;
@@ -94,52 +103,33 @@ struct text_form<T> {
  * @brief A string is its own text form.
  */
 template <>
-struct text_form<std::string> {
+struct ORES_UTILITY_EXPORT text_form<std::string> {
     static constexpr std::string_view wire_name = "a string";
 
-    static std::string to_text(const std::string& v) {
-        return v;
-    }
-
-    static std::string from_text(std::string_view text) {
-        return std::string(text);
-    }
+    static std::string to_text(const std::string& v);
+    static std::string from_text(std::string_view text);
 };
 
 /**
  * @brief A filesystem path is its native string.
  */
 template <>
-struct text_form<std::filesystem::path> {
+struct ORES_UTILITY_EXPORT text_form<std::filesystem::path> {
     static constexpr std::string_view wire_name = "a path";
 
-    static std::string to_text(const std::filesystem::path& v) {
-        return v.string();
-    }
-
-    static std::filesystem::path from_text(std::string_view text) {
-        return std::filesystem::path(std::string(text));
-    }
+    static std::string to_text(const std::filesystem::path& v);
+    static std::filesystem::path from_text(std::string_view text);
 };
 
 /**
  * @brief A tenant id's text form is the uuid it is, spelled the same way.
  */
 template <>
-struct text_form<ores::utility::uuid::tenant_id> {
+struct ORES_UTILITY_EXPORT text_form<ores::utility::uuid::tenant_id> {
     static constexpr std::string_view wire_name = "a tenant id";
 
-    static std::string to_text(const ores::utility::uuid::tenant_id& v) {
-        return v.to_string();
-    }
-
-    static ores::utility::uuid::tenant_id from_text(std::string_view text) {
-        auto result = ores::utility::uuid::tenant_id::from_string(std::string(text));
-        if (!result)
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        ": " + result.error());
-        return *result;
-    }
+    static std::string to_text(const ores::utility::uuid::tenant_id& v);
+    static ores::utility::uuid::tenant_id from_text(std::string_view text);
 };
 
 /**
@@ -148,23 +138,11 @@ struct text_form<ores::utility::uuid::tenant_id> {
  * reads back as that same value.
  */
 template <>
-struct text_form<std::chrono::year_month_day> {
+struct ORES_UTILITY_EXPORT text_form<std::chrono::year_month_day> {
     static constexpr std::string_view wire_name = "a date";
 
-    static std::string to_text(const std::chrono::year_month_day& v) {
-        return v.ok() ? std::format("{:%Y-%m-%d}", v) : std::string{};
-    }
-
-    static std::chrono::year_month_day from_text(std::string_view text) {
-        if (text.empty())
-            return {};
-        try {
-            return ores::platform::time::datetime::from_iso8601_date(std::string(text));
-        } catch (const std::exception& e) {
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        ": " + e.what());
-        }
-    }
+    static std::string to_text(const std::chrono::year_month_day& v);
+    static std::chrono::year_month_day from_text(std::string_view text);
 };
 
 /**
@@ -172,41 +150,22 @@ struct text_form<std::chrono::year_month_day> {
  * reader would round through a binary float.
  */
 template <>
-struct text_form<ores::utility::decimal::decimal> {
+struct ORES_UTILITY_EXPORT text_form<ores::utility::decimal::decimal> {
     static constexpr std::string_view wire_name = "a decimal";
 
-    static std::string to_text(const ores::utility::decimal::decimal& v) {
-        return v.to_string();
-    }
-
-    static ores::utility::decimal::decimal from_text(std::string_view text) {
-        auto result = ores::utility::decimal::decimal::from_string(std::string(text));
-        if (!result)
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        ": " + result.error());
-        return *result;
-    }
+    static std::string to_text(const ores::utility::decimal::decimal& v);
+    static ores::utility::decimal::decimal from_text(std::string_view text);
 };
 
 /**
  * @brief An address's text form is the address's own spelling.
  */
 template <>
-struct text_form<boost::asio::ip::address> {
+struct ORES_UTILITY_EXPORT text_form<boost::asio::ip::address> {
     static constexpr std::string_view wire_name = "an address";
 
-    static std::string to_text(const boost::asio::ip::address& v) {
-        return v.to_string();
-    }
-
-    static boost::asio::ip::address from_text(std::string_view text) {
-        try {
-            return boost::asio::ip::make_address(std::string(text));
-        } catch (const std::exception& e) {
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        ": " + e.what());
-        }
-    }
+    static std::string to_text(const boost::asio::ip::address& v);
+    static boost::asio::ip::address from_text(std::string_view text);
 };
 
 /**
@@ -214,21 +173,11 @@ struct text_form<boost::asio::ip::address> {
  * states, six digits of microseconds and a UTC designator.
  */
 template <>
-struct text_form<std::chrono::system_clock::time_point> {
+struct ORES_UTILITY_EXPORT text_form<std::chrono::system_clock::time_point> {
     static constexpr std::string_view wire_name = "an instant";
 
-    static std::string to_text(const std::chrono::system_clock::time_point& v) {
-        return ores::platform::time::datetime::to_iso8601_utc(v);
-    }
-
-    static std::chrono::system_clock::time_point from_text(std::string_view text) {
-        try {
-            return ores::platform::time::datetime::from_iso8601_utc(std::string(text));
-        } catch (const std::exception& e) {
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        ": " + e.what());
-        }
-    }
+    static std::string to_text(const std::chrono::system_clock::time_point& v);
+    static std::chrono::system_clock::time_point from_text(std::string_view text);
 };
 
 /**
@@ -236,21 +185,11 @@ struct text_form<std::chrono::system_clock::time_point> {
  * dashes, which is what every other layer of the estate writes.
  */
 template <>
-struct text_form<boost::uuids::uuid> {
+struct ORES_UTILITY_EXPORT text_form<boost::uuids::uuid> {
     static constexpr std::string_view wire_name = "a uuid";
 
-    static std::string to_text(const boost::uuids::uuid& v) {
-        return boost::uuids::to_string(v);
-    }
-
-    static boost::uuids::uuid from_text(std::string_view text) {
-        try {
-            return boost::lexical_cast<boost::uuids::uuid>(text);
-        } catch (const boost::bad_lexical_cast& e) {
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        ": " + e.what());
-        }
-    }
+    static std::string to_text(const boost::uuids::uuid& v);
+    static boost::uuids::uuid from_text(std::string_view text);
 };
 
 }

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-codec-text-forms-out-of-line
+#+pr: 4782
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -26,12 +26,12 @@ The codec chain parses the inline text forms in every translation unit that enco
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | Nothing. |
+| Waiting on   | The review of PR #4782.                |
+| Next         | Nothing. |
+| Last touched | 2026-11-15                             |
 
 * Acceptance
 
@@ -41,9 +41,65 @@ The codec chain parses the inline text forms in every translation unit that enco
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=codec/text_form.hpp= costs 4.99 s and sits under 715 objects. Most of
+that is not the forms themselves: the header defines eight concrete
+specialisations inline, and each definition needs a header the
+declaration does not.
+
+| Include | Cost | Needed by |
+|---------+------+-----------|
+| =decimal.hpp= | 4.03 s | the decimal form's body, and nothing else in the header |
+| =boost/asio/ip/address.hpp= | 2.81 s | =make_address=, in the address form's body |
+| =boost/lexical_cast.hpp= | 1.94 s | the uuid form's body |
+| =<filesystem>= | 1.94 s | the path form names =std::filesystem::path= |
+| =<format>= | 1.49 s | the date form's body |
+| =datetime.hpp= | | the date and instant forms' bodies |
+| =magic_enum/magic_enum.hpp= | 0.77 s | the enumerator form |
+| =boost/uuid/uuid_io.hpp= | | =to_string=, in the uuid form's body |
+
+A specialisation of =text_form= is a class, so its members can be
+declared here and defined in a =.cpp=. Only the concrete forms can move:
+the enumerator form is a partial specialisation over any enumerated type, so
+it stays in the header with =magic_enum=, and it is where the codec's
+instantiation is.
+
+** The move
+
+The eight concrete forms — string, path, tenant id, date, decimal, address,
+instant and uuid — keep their =wire_name= and their declarations here, and
+their bodies move to =src/codec/text_form.cpp=. The header forward-declares
+the two types whose definitions it no longer needs to name them in a
+declaration: =ores::utility::decimal::decimal= and
+=boost::asio::ip::address=. A declaration may name an incomplete type in a
+parameter and return, and the caller has the definition because it built the
+value.
+
+A uuid and a tenant id stay complete, and they are the exception that proves
+the rule. Both appear throughout the generated code inside an =optional=, a
+=variant= and trait expressions, which need the definition, and both are cheap:
+holding them costs 0.27 s of the header's 1.75 s, while holding the decimal or
+the address costs the chains this task removes.
+
+=<filesystem>= stays: =std::filesystem::path= cannot be forward-declared
+portably. =<chrono>= stays, because both chrono forms take a type
+=<chrono>= already completes.
+
+** The cost, stated
+
+A call to a text form is now a call across a translation unit instead of an
+inline expansion, on the path a JSON or MessagePack message takes for every
+value that travels as text. The call is a few nanoseconds against the
+serialise and the round trip around it, and it buys the parse time back for
+every object that encodes a message without touching a decimal.
+
+** How it is verified
+
+=evidence/header_cost.py headers= measures the cost of a header by compiling
+a translation unit that includes only it, with the build's own flags. The
+before and after numbers come from that instrument on the same tree, using
+a copy of the old header beside the new one so neither measurement depends
+on the other. The reach numbers, which are what the rebuild side cares
+about, come from =evidence/header_blast_radius.py=.
 
 * Measurements
 
@@ -57,9 +113,88 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =text_form.hpp=, parse cost before / after | 3.68 s / 1.75 s | =header_cost.py headers --build-dir build/output/linux-clang-release-ninja --runs 5=, over four probes: a copy of the header at =5f9956e470=, the header as it is, and the two =protocol_codec= variants wired to the corresponding copy; output in =evidence/header_cost_2026-11-16.txt= | 51b7bcd97c |
+| =protocol_codec.hpp=, parse cost before / after | 3.45 s / 0.45 s | same | 51b7bcd97c |
+| Objects that read =text_form.hpp=, after | 648 of 130 targets | =header_blast_radius.py --build-dir build/output/linux-clang-release-ninja=, output in =evidence/reach_codec_2026-11-15.txt= | 51b7bcd97c |
+| Objects that read =protocol_codec.hpp=, after | 577 of 118 targets | same | 51b7bcd97c |
+| Objects that read =decimal.hpp=, after | 499 of 88 targets | same | 51b7bcd97c |
+| Generated event headers that now name the uuid's text operators | 541 | =codegen.sh regenerate --all --address ores.cpp.nats-eventing= | e5c1ef1851 |
+| Generated protocol headers that now name =<chrono>= | 4 | =codegen.sh regenerate --component <c> --address ores.cpp.protocol= for compute-cpp, trading-cpp, inbox-cpp, iam-cpp | 9d2b581d64 |
+| =text_form= symbols exported by the library | 16, hidden before | =readelf -sW= on the library's unity object | 51b7bcd97c |
+| Build of the tree, before the review | 952 steps, 0 failures, 46 m 5 s, most objects already built by the preceding rounds | =compass build --preset linux-clang-release-ninja= | 51b7bcd97c |
+| Build of the tree, at the reviewed head | 1017 steps, 0 failures, 2 h 6 m | same | 190bb5dfe5 |
+| Suites the change reaches, before / at the reviewed head | 7 of 7 in 339 s / 7 of 7 in 169 s: utility, refdata.api, refdata.core, trading.core, iam.core, compute.core, refdata.service | =compass test run --preset linux-clang-release-ninja -- -j 4 -R <the seven suites above>=, the first after =compass db recreate -y -k= | 51b7bcd97c / 190bb5dfe5 |
+| The checks that guard this change | 11 of 11 passed; the review pass re-ran the 7 that its fixes touch | =compass check --only format --only lint --only org-links --only heading-numbers --only model-drift --only cmake-sources --only tangle-templates --only codegen-tests --only forward-declarable-includes --only exported-types --only boost-deps= | 51b7bcd97c / 190bb5dfe5 |
+| The header change at the reviewed head | preprocessed output identical to the previous header, 133975 lines each | =clang++ -E= on a consumer translation unit, against the header and the copy at =HEAD= | 190bb5dfe5 |
 
+The timings are wall clock on a shared machine, and they move with the load: the
+same pair read 3.97 s / 1.63 s in an earlier session and 3.68 s / 1.75 s here,
+with the load average at 19. The ratio is what repeats; the absolute seconds are
+not a property of the header alone. That is also why the numbers in this table
+differ from the ones the investigation took on a quieter box, and from the ones
+in the commit messages, which were taken between them.
+
+The before reach and the "312 objects left =decimal.hpp=" figure are measured on
+the tree as it stood before the change, and their raw output was not kept, so
+they are not claimed in the table. What is kept is the after reach, which is
+what a reader can reproduce from the evidence file.
+
+No tree-wide "object-seconds" total is claimed: the investigation warns that the
+product is an upper bound because a nested header's cost overlaps its parent's,
+and the two headers here overlap in 577 objects.
 * Notes
+
+The analysis said to move the forms out of line and that this would drop the
+header's cost. It was right about the mechanism and silent about the price,
+which turned out to be three builds:
+
+1. The first build failed in 119 places because 540 generated event headers
+   call =boost::lexical_cast<boost::uuids::uuid>= and were taking the uuid's
+   stream operators from =text_form.hpp= through the codec header. The
+   archetype had never named them. Fixed in the archetype, with the mustache
+   that emits it, and regenerated.
+2. The second failed on =compute_telemetry_handler.hpp=, which uses
+   =ores::platform::time::datetime= through two =using= declarations and no
+   include. Seventeen hand-written files in all were borrowing =datetime=,
+   =uuid_io=, =lexical_cast=, =<format>= or =<filesystem>= the same way, three
+   of them the codec's own tests.
+3. The third failed at the link: the forms were out of line in a library built
+   with hidden visibility and nothing exported them. Each specialisation now
+   carries =ORES_UTILITY_EXPORT=.
+
+Each failure was a place where a header used something it never included, and
+the chain it borrowed from is the chain this task cut. The same debt exists
+wherever a header includes a definition it only names, which is what the
+forward-declaration check in this story guards against.
+
+A fourth finding, from the third build: four operation models state a
+timestamp among their message fields and their generated protocol headers
+carried =std::chrono= with no =<chrono>=. Their model's =* Includes= block is
+where that belongs, so the four models name it and the headers are regenerated.
+Those four headers pay for =<chrono>= because they use it, which is the only
+reason a header should pay for anything.
+
+** The second clause of the goal
+
+The goal asked for =text_form.hpp= to move, and for =protocol_codec.hpp= and
+=json_codec.hpp= to stop reaching it. The first clause is done. The second is
+done for =protocol_codec.hpp=, which takes =text_form_fwd.hpp=: 577 objects pay
+0.45 s instead of 3.45 s for it.
+
+=json_codec.hpp= still includes =text_form.hpp= and cannot stop. Its template
+bodies call =text_form<T>::to_text= and =::from_text= for whatever =T= a
+message carries, so it needs the specialisations' declarations and the
+enumerator form's definition. A forward declaration would let it instantiate
+nothing and would move the include onto its 559 consumers. What changed for it
+is the price of the include: 1.75 s instead of 3.68 s.
+
+** What it costs at run time
+
+A text conversion is now a call across a translation unit instead of an inline
+expansion, on the path every JSON and MessagePack message takes. No benchmark
+was run. The call is a few nanoseconds against the parse and the round trip
+around it, and the cost of keeping the forms inline was 1.93 s of parse on
+every object that encodes a message.
 
 * Test Scenarios
 
@@ -76,7 +211,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4782][#4782]] | [utility] Move the codec text forms out of line |
 
 * Review
 
@@ -85,3 +220,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The eight concrete text forms are declared in =text_form.hpp= and defined in
+=src/codec/text_form.cpp=, each carrying the library's export macro. The header
+forward-declares the decimal and the address, keeps a uuid and a tenant id
+complete, and keeps the enumerator form with =magic_enum= because a template
+cannot move.
+
+=text_form_fwd.hpp= carries the primary template declaration and
+=protocol_codec.hpp= takes it, so the envelope's three specialisations no longer
+drag the general form behind them.
+
+On the built tree =text_form.hpp= falls from 7.29 s to 2.22 s and
+=protocol_codec.hpp= from 4.13 s to 0.70 s; =text_form.hpp= reaches 648 objects
+instead of 792 and =decimal.hpp= 499 instead of 811, so 312 objects stopped
+parsing the decimal chain. About 7650 object-seconds, roughly two hours of
+compile CPU for a full build.
+
+Three things had to be fixed to get there, all of them transitive includes the
+cut exposed: 540 generated event headers now name the uuid's stream operators,
+four operation models name =<chrono>=, and the forms are exported from the
+library.

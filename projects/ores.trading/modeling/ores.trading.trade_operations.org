@@ -51,6 +51,7 @@ generates no service handler.
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #+end_src
 
 * Messages

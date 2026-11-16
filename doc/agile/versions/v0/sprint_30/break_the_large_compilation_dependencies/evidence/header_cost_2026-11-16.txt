@@ -1,0 +1,36 @@
+The parse cost of the two headers this task changes, measured before and after in
+one session, on 2026-11-16 at a load average of 19.
+
+The two "before" probes are copies of the headers as they stood at 5f9956e470,
+placed beside the current ones so both are measured with the same flags in the
+same run. The protocol_codec "before" probe is wired to the text_form "before"
+probe, because before the change the former included the latter.
+
+    git show 5f9956e470:projects/ores.utility/include/ores.utility/codec/text_form.hpp \
+        > projects/ores.utility/include/ores.utility/codec/text_form_before.hpp
+    git show 5f9956e470:projects/ores.utility/include/ores.utility/domain/protocol_codec.hpp \
+        > projects/ores.utility/include/ores.utility/domain/protocol_codec_before.hpp
+    # then replace its text_form include with the before probe
+    python3 evidence/header_cost.py headers \
+        --build-dir build/output/linux-clang-release-ninja --runs 5 \
+        --header ores.utility/codec/text_form_before.hpp \
+        --header ores.utility/codec/text_form.hpp \
+        --header ores.utility/domain/protocol_codec_before.hpp \
+        --header ores.utility/domain/protocol_codec.hpp
+
+The probe files were removed afterwards; they are reproduced by the two git show
+commands above.
+
+A second run of the same command earlier the same hour read 3.97 / 1.63 and
+3.45 / 0.46. The ratio repeats and the absolute seconds follow the machine's
+load, which is why the task claims the ratio and the per-object delta rather
+than a tree-wide total.
+
+compiler : /usr/bin/clang++
+flags    : 123 include and define flags (union over the build)
+
+ wall_s  trace_s  header
+   3.68  3642.30  ores.utility/codec/text_form_before.hpp
+   1.75  1726.78  ores.utility/codec/text_form.hpp
+   3.45  3422.45  ores.utility/domain/protocol_codec_before.hpp
+   0.45   437.04  ores.utility/domain/protocol_codec.hpp

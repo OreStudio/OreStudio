@@ -855,6 +855,8 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql", "web", "cpp"),
         paths=(
             "projects/ores.web/packages/bff/src/curve-sections.generated.ts",
+            "projects/ores.http/refdata/include/ores.http/routes/refdata/curve_section_wiring.hpp",
+            "projects/ores.http/refdata/src/routes/refdata/curve_section_wiring.cpp",
             "projects/ores.sql/utility/generate_curve_section_parameters.py",
             "projects/ores.ore/core/src/domain/curve_configuration_projection.cpp",
             "external/ore/xsd/curveconfig.xsd",

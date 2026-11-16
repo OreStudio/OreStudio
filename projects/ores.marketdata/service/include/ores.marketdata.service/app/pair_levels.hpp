@@ -34,8 +34,9 @@ namespace ores::marketdata::service::app {
  * The answer is the fixing window the service already serves, so a refusal it carries,
  * such as a party the caller cannot see, is the refusal the pair's caller receives.
  */
-using fixing_window_reader = std::function<messaging::get_fixing_window_response(
-    const std::string& provider_code, const std::string& item)>;
+using fixing_window_reader =
+    std::function<::ores::marketdata::messaging::get_fixing_window_response(
+        const std::string& provider_code, const std::string& item)>;
 
 /**
  * @brief Composes a pair's daily levels from the fixings one party holds.
@@ -51,9 +52,9 @@ using fixing_window_reader = std::function<messaging::get_fixing_window_response
  * @param read How to read one fixing series over the window.
  * @return The levels, the provider and the pivot; or the refusal, naming the pair.
  */
-[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT messaging::get_pair_levels_response
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT ::ores::marketdata::messaging::get_pair_levels_response
 compose_pair_levels(const party_fixing_sources& party,
-                    const messaging::get_pair_levels_request& request,
+                    const ::ores::marketdata::messaging::get_pair_levels_request& request,
                     const fixing_window_reader& read);
 
 }

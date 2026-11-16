@@ -43,11 +43,13 @@ public:
      */
     static constexpr int max_days = 3'660;
 
-    static messaging::get_fixing_response latest(const ores::database::context& ctx,
-                                                 const messaging::get_fixing_request& request);
+    static ::ores::marketdata::messaging::get_fixing_response
+    latest(const ores::database::context& ctx,
+           const ::ores::marketdata::messaging::get_fixing_request& request);
 
-    static messaging::get_fixing_window_response
-    window(const ores::database::context& ctx, const messaging::get_fixing_window_request& request);
+    static ::ores::marketdata::messaging::get_fixing_window_response
+    window(const ores::database::context& ctx,
+           const ::ores::marketdata::messaging::get_fixing_window_request& request);
 };
 
 }

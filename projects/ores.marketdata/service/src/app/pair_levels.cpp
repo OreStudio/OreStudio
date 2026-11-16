@@ -52,11 +52,11 @@ std::optional<double> number_of(const std::string& text) {
 
 }
 
-messaging::get_pair_levels_response
+::ores::marketdata::messaging::get_pair_levels_response
 compose_pair_levels(const party_fixing_sources& party,
-                    const messaging::get_pair_levels_request& request,
+                    const ::ores::marketdata::messaging::get_pair_levels_request& request,
                     const fixing_window_reader& read) {
-    messaging::get_pair_levels_response response;
+    ::ores::marketdata::messaging::get_pair_levels_response response;
     const auto& base = request.base_currency_code;
     const auto& quote = request.quote_currency_code;
     const auto pair_name = base + "/" + quote;

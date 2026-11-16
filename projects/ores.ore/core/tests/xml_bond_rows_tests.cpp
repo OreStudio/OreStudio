@@ -18,13 +18,16 @@
  *
  */
 #include "ores.ore.core/xml/importer.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/bond_instrument_rows.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -48,9 +51,122 @@ bond_instrument_data header_of(const bond_instrument_data& data) {
     return out;
 }
 
+/*
+ * The store keeps a date, not its spelling, so a document's 20160203 comes
+ * back as 2016-02-03. Spell the original's dates the way the store does.
+ */
+void canonical_date(std::string& text) {
+    if (!text.empty())
+        text = ores::platform::time::datetime::to_iso8601_date(
+            ores::platform::time::datetime::from_iso8601_date(text));
+}
+
+// An empty optional date element states no date, which is what the store keeps.
+void canonical_date(std::optional<std::string>& text) {
+    if (text && text->empty())
+        text.reset();
+    else if (text)
+        canonical_date(*text);
+}
+
+void canonical_dates(ores::trading::domain::bond_schedule_data& schedule) {
+    for (auto& rule : schedule.rules) {
+        canonical_date(rule.start_date);
+        canonical_date(rule.end_date);
+        canonical_date(rule.first_date);
+        canonical_date(rule.last_date);
+    }
+    for (auto& dates : schedule.dates)
+        for (auto& date : dates.dates)
+            canonical_date(date);
+}
+
+void canonical_dates(ores::trading::domain::bond_leg_data& leg) {
+    canonical_dates(leg.schedule);
+    canonical_dates(leg.payment_schedule);
+    for (auto& date : leg.payment_dates)
+        canonical_date(date);
+    if (leg.rate && leg.rate->floating) {
+        canonical_dates(leg.rate->floating->fixing_schedule);
+        canonical_dates(leg.rate->floating->reset_schedule);
+    }
+}
+
+void canonical_dates(bond_instrument_data& data) {
+    for (auto& leg : data.bond_legs)
+        canonical_dates(leg);
+    canonical_dates(data.trs_funding_leg);
+    canonical_dates(data.repo_leg);
+    canonical_dates(data.ascot_swap_leg);
+    canonical_dates(data.trs_schedule);
+    if (data.option_exercise_schedule)
+        canonical_dates(*data.option_exercise_schedule);
+    for (auto& date : data.option_exercise_dates)
+        canonical_date(date);
+    if (auto& block = data.option_data) {
+        canonical_date(block->premium_pay_date);
+        for (auto& premium : block->premiums)
+            canonical_date(premium.pay_date);
+        for (auto& fee : block->exercise_fees)
+            canonical_date(fee.start_date);
+        if (block->exercise_data)
+            canonical_date(block->exercise_data->date);
+        if (block->payment_data)
+            for (auto& date : block->payment_data->dates)
+                canonical_date(date);
+    }
+}
+
 #define ORES_DIFF_MEMBER(prefix, a, b, m)                                      \
     if (!((a).m == (b).m))                                                    \
         out.push_back(std::string(prefix) + #m)
+
+std::string shown(const std::string& v) { return "'" + v + "'"; }
+
+std::string shown(const std::optional<std::string>& v) { return v ? shown(*v) : "null"; }
+
+std::string shown(const std::optional<bool>& v) {
+    return v ? (*v ? "true" : "false") : "null";
+}
+
+#define ORES_DIFF_RULE(m)                                                      \
+    if (!(a.m == b.m))                                                        \
+        out.push_back(prefix + #m + "=" + shown(a.m) + "|" + shown(b.m))
+
+/*
+ * The fields of each schedule rule that differ, with both values, so a
+ * failure says which spelling the store does not keep.
+ */
+std::vector<std::string> rule_differences(const std::string& prefix,
+                                          const ores::trading::domain::bond_schedule_data& x,
+                                          const ores::trading::domain::bond_schedule_data& y) {
+    std::vector<std::string> out;
+    if (x.rules.size() != y.rules.size()) {
+        out.push_back(prefix + "size");
+        return out;
+    }
+    for (std::size_t i = 0; i < x.rules.size(); ++i) {
+        const auto& a = x.rules[i];
+        const auto& b = y.rules[i];
+        ORES_DIFF_RULE(start_date);
+        ORES_DIFF_RULE(end_date);
+        ORES_DIFF_RULE(adjust_end_date_to_previous_month_end);
+        ORES_DIFF_RULE(tenor);
+        ORES_DIFF_RULE(calendar);
+        ORES_DIFF_RULE(convention);
+        ORES_DIFF_RULE(term_convention);
+        ORES_DIFF_RULE(rule);
+        ORES_DIFF_RULE(end_of_month);
+        ORES_DIFF_RULE(end_of_month_convention);
+        ORES_DIFF_RULE(first_date);
+        ORES_DIFF_RULE(last_date);
+        ORES_DIFF_RULE(remove_first_date);
+        ORES_DIFF_RULE(remove_last_date);
+    }
+    return out;
+}
+
+#undef ORES_DIFF_RULE
 
 std::vector<std::string> leg_differences(const std::string& prefix,
                                          const ores::trading::domain::bond_leg_data& a,
@@ -66,7 +182,10 @@ std::vector<std::string> leg_differences(const std::string& prefix,
     ORES_DIFF_MEMBER(prefix, a, b, last_period_day_counter);
     ORES_DIFF_MEMBER(prefix, a, b, notional_payment_lag);
     ORES_DIFF_MEMBER(prefix, a, b, strict_notional_dates);
-    ORES_DIFF_MEMBER(prefix, a, b, schedule.rules);
+    if (!(a.schedule.rules == b.schedule.rules)) {
+        const auto rules = rule_differences(prefix + "schedule.rules.", a.schedule, b.schedule);
+        out.insert(out.end(), rules.begin(), rules.end());
+    }
     ORES_DIFF_MEMBER(prefix, a, b, schedule.dates);
     ORES_DIFF_MEMBER(prefix, a, b, amortizations);
     ORES_DIFF_MEMBER(prefix, a, b, notionals);
@@ -96,7 +215,30 @@ std::vector<std::string> differences(const bond_instrument_data& a,
     ORES_DIFF_MEMBER("", a, b, future);
     ORES_DIFF_MEMBER("", a, b, ascot_row);
     ORES_DIFF_MEMBER("", a, b, option_exercise_dates);
-    ORES_DIFF_MEMBER("", a, b, option_data);
+    if (a.option_data && b.option_data) {
+        const auto& x = *a.option_data;
+        const auto& y = *b.option_data;
+        for (const auto& [name, same] : {
+                 std::pair{"long_short", x.long_short == y.long_short},
+                 std::pair{"option_type", x.option_type == y.option_type},
+                 std::pair{"payoff_type", x.payoff_type == y.payoff_type},
+                 std::pair{"style", x.style == y.style},
+                 std::pair{"settlement", x.settlement == y.settlement},
+                 std::pair{"premium_amount", x.premium_amount == y.premium_amount},
+                 std::pair{"premium_pay_date", x.premium_pay_date == y.premium_pay_date},
+                 std::pair{"premiums", x.premiums == y.premiums},
+                 std::pair{"exercise_prices", x.exercise_prices == y.exercise_prices},
+                 std::pair{"exercise_fees", x.exercise_fees == y.exercise_fees},
+                 std::pair{"exercise_data", x.exercise_data == y.exercise_data},
+                 std::pair{"payment_data", x.payment_data == y.payment_data},
+                 std::pair{"settlement_data", x.settlement_data == y.settlement_data}})
+            if (!same)
+                out.push_back(std::string("option_data.") + name);
+        if (out.empty() || !out.back().starts_with("option_data."))
+            ORES_DIFF_MEMBER("", a, b, option_data);
+    } else {
+        ORES_DIFF_MEMBER("", a, b, option_data);
+    }
     ORES_DIFF_MEMBER("", a, b, strike_data);
     ORES_DIFF_MEMBER("", a, b, option_exercise_schedule);
     ORES_DIFF_MEMBER("", a, b, option_redemption);
@@ -157,12 +299,14 @@ TEST_CASE("every bond in the corpus comes back whole from its rows",
                 continue;
             ++bonds;
 
-            const auto rows = ores::trading::domain::disassemble_bond(*bond);
-            auto rebuilt = header_of(*bond);
+            auto original = *bond;
+            canonical_dates(original);
+            const auto rows = ores::trading::domain::disassemble_bond(original);
+            auto rebuilt = header_of(original);
             ores::trading::domain::assemble_bond(rebuilt, rows.trade, rows.issue);
-            if (!(rebuilt == *bond)) {
+            if (!(rebuilt == original)) {
                 std::string members;
-                for (const auto& m : differences(*bond, rebuilt))
+                for (const auto& m : differences(original, rebuilt))
                     members += " " + m;
                 differing.insert(entry.path().filename().string() + " (" + item.ore_id +
                                  "):" + members);

@@ -21,12 +21,16 @@
 #include "ores.analytics.quant/domain/staleness_policy.hpp"
 #include "ores.analytics.quant/service/fixing_replay.hpp"
 #include "ores.analytics.quant/service/topology_builder.hpp"
+#include <algorithm>
 #include <charconv>
 #include <chrono>
+#include <cstddef>
 #include <exception>
 #include <format>
 #include <map>
 #include <optional>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -116,11 +120,14 @@ compose_pair_levels(const party_fixing_sources& party,
             return response;
         }
         const auto n = std::min(window.dates.size(), window.values.size());
+        std::set<std::chrono::sys_days> seen;
         for (std::size_t i = 0; i < n; ++i) {
             const auto value = number_of(window.values[i]);
             if (!value)
                 continue;
             const auto day = std::chrono::sys_days{window.dates[i]};
+            if (!seen.insert(day).second)
+                continue;
             by_day[day].push_back({.base_code = choice.pivot_code,
                                    .quote_code = leg,
                                    .rate = *value,

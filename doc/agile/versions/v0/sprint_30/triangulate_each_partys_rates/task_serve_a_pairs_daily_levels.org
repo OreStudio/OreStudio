@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-16
 #+updated: 2026-11-16
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A consumer asks the market data service for a pair's daily levels over a range o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -41,9 +41,19 @@ A consumer asks the market data service for a pair's daily levels over a range o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Slice 2 of the move onto the CRM, as [[id:C330DD6F-258B-4D41-930D-AE00FC60BF2E][the derive task]] laid it out: one operation over
+=read_fixing_sources=, =sources_for_pairs=, =topology_builder= and =replay_fixings=.
+
+- *Wire.* =marketdata.v1.ops.get_pair_levels= joins the fixing read model: a party, a pair, a
+  last date and a day count in; the provider, the pivot and parallel =dates= and =levels= out.
+- *Composition.* =compose_pair_levels= is a pure function of the party's sources, the request
+  and a window reader, so its rules are tested without a database. It chooses the source per
+  pair, reads each side that is not the pivot, replays only the days every side was fixed on,
+  and keeps the fresh levels.
+- *Entitlement.* The handler lends the composition =fixing_reader::window=, so each leg is read
+  under exactly the entitlement a fixing window already has.
+- *Leg lookup.* =read_fixing_sources= already read each fixing series' URI and dropped it; it
+  now keeps it by provider and currency, so nothing builds a URI from a publisher's name.
 
 * Measurements
 
@@ -57,7 +67,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Cases of the composition | 7 cases, 29 assertions, all pass | =ores.marketdata.service.tests "[pair_levels]"= with the environment loaded | 88370ac9f9 |
+| Service and API suites | pass | =compass test run -- -R ores.marketdata.service.tests=, =... ores.marketdata.api.tests= | 88370ac9f9 |
 
 * Notes
 
@@ -85,3 +96,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A consumer asks for a pair and a window and gets the pair's daily levels, composed from the
+party's own fixings through the source that quotes both sides. No consumer names a publisher,
+a leg or a pivot any more to read a history: the service chooses them from data.
+
+- *Acceptance.* The operation answers a party's pair over a range. The source is chosen per
+  pair by =sources_for_pairs=, and a pair no source expresses is refused with =pair_unserved=
+  and the pair's name. The levels come from =replay_fixings=; nothing new composes a rate.
+- *Tests.* Seven cases state the rules: a cross through the pivot each day, a pair against the
+  pivot read either way round, a day only one side was fixed on having no level, a pair only a
+  later-ranked source quotes being read from it, an unserved pair refused by name, a refusal of
+  the fixing read passed through as the pair's refusal, and a pair of one currency refused.
+  Two of them use invented currency codes, so nothing depends on a name the code knows.
+- *Found on the way.* =fixing_reader.hpp= named its protocol as =messaging::=, which inside
+  =ores::marketdata::service= resolves to the service library's own =messaging= namespace in a
+  unity batch that sees it. It compiled only because no service file included it. Both readers
+  now name the protocol from the root.
+
+*What this does not do.* Nothing calls the operation yet. The derived source still reads two ECB
+windows; the next task, "Derive the volatility quotes from the pair's levels", moves it onto this operation and deletes the ECB constants, and its
+provisioning run is the end-to-end proof of this handler.

@@ -53,8 +53,10 @@
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/bond_option_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/instrument_option_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
@@ -1011,28 +1013,39 @@ TEST_CASE("a_swap_trade_is_booked_with_its_header_and_its_legs", "[service]") {
     CHECK(legs.front().identity.trade_id == req.anchor.id);
 }
 
-TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", "[service]") {
+TEST_CASE("a_bond_row_is_booked_with_the_rows_its_product_states", "[service]") {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
-    req.instruments.bond_instruments.front().option.emplace();
+    req.anchor.trade_type = "BondOption";
+    auto& bond = req.instruments.bond_instruments.front();
+    bond.instrument.identity.trade_type_code = "BondOption";
+    ores::trading::domain::bond_option fact;
+    fact.option_type = "Call";
+    fact.option_strike = ores::utility::decimal::decimal::from_string("0.98").value();
+    fact.change_reason_code = "system.test";
+    bond.option = fact;
+    bond.option_redemption = "1";
+    ores::trading::domain::bond_option_data block;
+    block.long_short = "Long";
+    block.option_type = "Call";
+    block.style = "European";
+    bond.option_data = block;
+    bond.option_exercise_dates = {"2030-06-30"};
+    const auto id = boost::uuids::to_string(req.anchor.id);
 
     const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
 
-    CHECK(response.result.outcome == outcome::failed);
-    CHECK(response.result.code == "instrument_not_supported");
-    CHECK(response.result.message.contains("bond_instruments"));
-}
-
-TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_member", "[service]") {
-    fixture f;
-    auto req = f.bond_request(f.stored_issue());
-    req.instruments.bond_instruments.front().option_data.emplace();
-
-    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
-
-    CHECK(response.result.outcome == outcome::failed);
-    CHECK(response.result.code == "instrument_not_supported");
-    CHECK(response.result.message.contains("bond_instruments.option_data"));
+    // The container's fact row, its option block and its exercise date are the
+    // trade's own rows, so booking writes each of them beside the header.
+    REQUIRE(response.result.outcome == outcome::ok);
+    const auto facts = ores::trading::repository::bond_option_repository().read_latest(f.ctx, id);
+    REQUIRE(facts.size() == 1);
+    CHECK(facts.front().option_type == "Call");
+    CHECK(facts.front().redemption == std::optional<std::string>("1"));
+    const auto options =
+        ores::trading::repository::instrument_option_repository().read_latest(f.ctx, id);
+    REQUIRE(options.size() == 1);
+    CHECK(options.front().long_short == "Long");
 }
 
 TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_name", "[service]") {

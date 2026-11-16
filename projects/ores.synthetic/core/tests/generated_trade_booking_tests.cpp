@@ -37,12 +37,19 @@
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/domain/bond_instrument_rows.hpp"
+#include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace {
@@ -209,6 +216,165 @@ void write_issue(const trade_population_slot& slot,
     CHECK(response.result.outcome == outcome::ok);
 }
 
+/// Resets a member to its default. A member with no default fails to compile.
+template <typename T>
+void reset(T& member) {
+    if constexpr (std::is_same_v<T, ores::utility::uuid::tenant_id>)
+        member = ores::utility::uuid::tenant_id::system();
+    else
+        member = T{};
+}
+
+/**
+ * @brief Clears what the store, not the trade, states on a row: its keys, its
+ * version and its audit. What is left is what the trade's terms say.
+ */
+template <typename Row>
+void normalise(Row& row) {
+    if constexpr (requires { row.instrument; }) {
+        normalise(row.instrument);
+        // A bond's issue is the security's row, written before the trade and
+        // read back whole, so the trade's own terms are the header.
+        if constexpr (requires { row.issue; })
+            reset(row.issue);
+    }
+    if constexpr (requires { row.identity; })
+        normalise(row.identity);
+    if constexpr (requires { row.audit; })
+        reset(row.audit);
+    if constexpr (requires { row.version; })
+        reset(row.version);
+    if constexpr (requires { row.tenant_id; })
+        reset(row.tenant_id);
+    if constexpr (requires { row.party_id; })
+        reset(row.party_id);
+    if constexpr (requires { row.trade_id; })
+        reset(row.trade_id);
+    if constexpr (requires { row.trade_activity_id; })
+        reset(row.trade_activity_id);
+    if constexpr (requires { row.modified_by; })
+        reset(row.modified_by);
+    if constexpr (requires { row.performed_by; })
+        reset(row.performed_by);
+    if constexpr (requires { row.change_reason_code; })
+        reset(row.change_reason_code);
+    if constexpr (requires { row.change_commentary; })
+        reset(row.change_commentary);
+    if constexpr (requires { row.recorded_at; })
+        reset(row.recorded_at);
+}
+
+/// The trade a row belongs to, or nothing for a row keyed by something else.
+template <typename Row>
+std::optional<boost::uuids::uuid> trade_of(const Row& row) {
+    if constexpr (requires { row.instrument.identity.trade_id; })
+        return row.instrument.identity.trade_id;
+    else if constexpr (requires { row.identity.trade_id; })
+        return row.identity.trade_id;
+    else if constexpr (requires { row.trade_id; })
+        return row.trade_id;
+    else
+        return std::nullopt;
+}
+
+/// The names of the fields that differ between two rows.
+template <typename Row>
+std::vector<std::string> differing_fields(const Row& a, const Row& b) {
+    std::vector<std::string> out;
+    const auto one = [&](const auto& field) {
+        const auto& x = a.*(field.member);
+        const auto& y = b.*(field.member);
+        if (x == y)
+            return;
+        using Member = std::remove_cvref_t<decltype(x)>;
+        const std::string name(field.name);
+        if constexpr (requires { wire_fields(std::type_identity<Member>{}); }) {
+            for (const auto& inner : differing_fields(x, y))
+                out.push_back(name + "." + inner);
+        } else if constexpr (std::is_same_v<Member, std::string>) {
+            out.push_back(name + "=" + x + "|" + y);
+        } else if constexpr (std::is_arithmetic_v<Member>) {
+            out.push_back(name + "=" + std::to_string(x) + "|" + std::to_string(y));
+        } else {
+            out.push_back(name);
+        }
+    };
+    ores::utility::codec::apply_fields([&](const auto&... fields) { (one(fields), ...); },
+                                       wire_fields(std::type_identity<Row>{}));
+    return out;
+}
+
+/**
+ * @brief For each booked row with no equal row read back, the fields that
+ * differ from the closest row read back.
+ */
+template <typename Row>
+std::string describe_mismatch(const std::vector<Row>& expected, const std::vector<Row>& actual) {
+    std::string out;
+    for (const auto& row : expected) {
+        if (actual.empty() || std::ranges::find(actual, row) != actual.end())
+            continue;
+        std::vector<std::string> closest;
+        for (const auto& candidate : actual) {
+            auto fields = differing_fields(row, candidate);
+            if (closest.empty() || fields.size() < closest.size())
+                closest = std::move(fields);
+        }
+        out += " [";
+        for (std::size_t i = 0; i < closest.size(); ++i)
+            out += (i == 0 ? "" : ",") + closest[i];
+        out += "]";
+    }
+    return out;
+}
+
+/**
+ * @brief Names each array of the batch whose rows for the trade differ
+ * between what was booked and what the export reads back.
+ */
+std::vector<std::string> differing_arrays(ores::trading::domain::instrument_batch booked,
+                                          ores::trading::domain::instrument_batch exported,
+                                          const boost::uuids::uuid& trade_id) {
+    ores::trading::domain::split_bond_rows(booked);
+    ores::trading::domain::split_bond_rows(exported);
+    std::vector<std::string> out;
+    ores::utility::codec::apply_fields(
+        [&](const auto&... fields) {
+            (
+                [&] {
+                    auto expected = booked.*(fields.member);
+                    if (expected.empty() || !trade_of(expected.front()))
+                        return;
+                    auto actual = exported.*(fields.member);
+                    std::erase_if(actual,
+                                  [&](const auto& row) { return trade_of(row) != trade_id; });
+                    for (auto& row : expected)
+                        normalise(row);
+                    for (auto& row : actual)
+                        normalise(row);
+                    if (expected.size() != actual.size() ||
+                        !std::is_permutation(expected.begin(), expected.end(), actual.begin()))
+                        out.push_back(std::string(fields.name) + " (booked " +
+                                      std::to_string(expected.size()) + ", read " +
+                                      std::to_string(actual.size()) + ")" +
+                                      describe_mismatch(expected, actual));
+                }(),
+                ...);
+        },
+        wire_fields(std::type_identity<ores::trading::domain::instrument_batch>{}));
+    return out;
+}
+
+/**
+ * @brief Trade types whose export does not yet give back every row they were
+ * booked with. The list is closed in both directions: a type that stops
+ * differing fails the test until it leaves the list.
+ */
+const std::set<std::string>& known_rebook_differences() {
+    static const std::set<std::string> types{};
+    return types;
+}
+
 }
 
 TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
@@ -223,6 +389,7 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
     BOOST_LOG_SEV(lg, info) << "Booking one trade of every type, over " << asset_classes.size()
                             << " asset classes.";
 
+    std::vector<std::pair<std::string, book_trade_request>> booked;
     for (const auto code : asset_classes) {
         const std::string asset_class(code);
         const auto offered = planner_for(asset_class).code_count();
@@ -246,8 +413,10 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
             const auto response = books.book_trade(request, "");
             INFO("the database refused it: " << response.result.message);
             CHECK(response.result.outcome == outcome::ok);
-            if (response.result.outcome == outcome::ok)
+            if (response.result.outcome == outcome::ok) {
                 booked_types.insert(slot.trade_type_code);
+                booked.emplace_back(slot.trade_type_code, request);
+            }
         }
         // The scope states each code the class cycles, so a type the store
         // refused is a type the population cannot book.
@@ -256,4 +425,26 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
         BOOST_LOG_SEV(lg, info) << "Booked " << booked_types.size() << " type(s) of " << asset_class
                                 << ".";
     }
+
+    // Every booked trade is read back through the export and compared row by
+    // row with what was booked, apart from keys, version and audit, so a
+    // family whose writer or reader drops a column is named here.
+    ores::trading::domain::instrument_batch exported;
+    ores::trading::service::trade_export_service(f.ctx).export_books(
+        {boost::uuids::to_string(f.book_id)}, 0, 100000, exported);
+    std::set<std::string> differing;
+    std::string detail;
+    for (const auto& [type, request] : booked) {
+        const auto arrays = differing_arrays(request.instruments, exported, request.anchor.id);
+        if (arrays.empty())
+            continue;
+        if (differing.insert(type).second) {
+            detail += "\n  " + type + ":";
+            for (const auto& name : arrays)
+                detail += " " + name;
+        }
+    }
+    if (differing != known_rebook_differences())
+        FAIL_CHECK("the types whose export differs from what was booked are not the known ones:" +
+                   detail);
 }

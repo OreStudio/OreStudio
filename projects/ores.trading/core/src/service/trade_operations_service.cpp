@@ -22,6 +22,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.api/domain/bond_instrument_rows.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
@@ -110,40 +111,6 @@ void stamp_rows(std::vector<Row>& rows, const ores::database::context& ctx) {
         ores::service::messaging::stamp(row, ctx);
 }
 
-/**
- * @brief True when a member of a bond row holds data: an engaged optional or a
- * string or a vector that is not empty.
- */
-template <typename T>
-bool holds_data(const T& value) {
-    if constexpr (requires { value.has_value(); })
-        return value.has_value();
-    else if constexpr (requires { value.empty(); })
-        return !value.empty();
-    else
-        return false;
-}
-
-// Booking writes the header of a bond row. Every other member of the row that
-// can hold data, apart from the issue, which the caller has stored already,
-// belongs to a writer that does not exist yet, so the row names the member in a
-// refusal before anything is written.
-std::vector<std::string> unsupported_bond_parts(const domain::instrument_batch& batch) {
-    std::vector<std::string> names;
-    for (const auto& bond : batch.bond_instruments) {
-        bool refused = false;
-        ores::utility::codec::for_each_field(bond, [&](std::string_view name, const auto& member) {
-            if (name != "instrument" && name != "issue" && holds_data(member)) {
-                names.emplace_back("bond_instruments." + std::string(name));
-                refused = true;
-            }
-        });
-        if (refused)
-            break;
-    }
-    return names;
-}
-
 std::string join(const std::vector<std::string>& names) {
     std::string joined;
     for (const auto& name : names)
@@ -189,14 +156,6 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.code = "instrument_child_without_header";
         response.result.message =
             "The batch holds rows for " + join(orphans) + " and no instrument header.";
-        return response;
-    }
-    if (const auto unsupported = unsupported_bond_parts(request.instruments);
-        !unsupported.empty()) {
-        response.result.outcome = outcome::failed;
-        response.result.code = "instrument_not_supported";
-        response.result.message =
-            "Booking writes no instrument yet for: " + join(unsupported) + ".";
         return response;
     }
 
@@ -309,6 +268,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     }
 
     auto instruments = request.instruments;
+    domain::split_bond_rows(instruments);
     const service::instrument_keys keys{anchor.id, anchor.trade_type, activity.id};
     service::write_instrument_batch(
         ctx, instruments, keys, [&](auto& row) { stamp(row, ctx_); }, must_not_exist);

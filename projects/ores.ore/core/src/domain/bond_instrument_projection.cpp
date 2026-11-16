@@ -884,6 +884,11 @@ auto read_bond_option(const record_reader& trade) -> bond_instrument_data {
         result.option_price_type = bond_instrument_projection_text_of(*data, "PriceType");
     if (data->has("KnocksOut"))
         result.option_knocks_out = bond_spelling_of(*data, "KnocksOut");
+    // The fact row stores these three, so a bond read back states them on the
+    // row as well; state them there too, so both containers are the same.
+    result.option->redemption = result.option_redemption;
+    result.option->price_type = result.option_price_type;
+    result.option->knocks_out = result.option_knocks_out;
     return result;
 }
 
@@ -934,6 +939,11 @@ auto read_bond_trs(const record_reader& trade) -> bond_instrument_data {
         if (const auto schedule = total_return->child("ScheduleData"))
             result.trs_schedule = read_schedule(*schedule);
     }
+    // The fact row stores the return side, as it does the option's residue.
+    result.trs->payer = result.trs_payer;
+    result.trs->initial_price = result.trs_initial_price;
+    if (!result.trs_price_type.empty())
+        result.trs->price_type = result.trs_price_type;
     return result;
 }
 

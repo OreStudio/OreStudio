@@ -1570,6 +1570,7 @@ swap_batch_of(std::expected<ores::trading::domain::swap_instrument_data,
         throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
                                      built.error().term + ": " + built.error().message);
     built->header.description = std::move(description);
+    built->header.identity.trade_type_code = trade_type_code;
     ores::trading::domain::instrument_batch batch;
     ores::trading::domain::append_instrument(batch,
                                              ores::trading::domain::trade_instrument{*built});

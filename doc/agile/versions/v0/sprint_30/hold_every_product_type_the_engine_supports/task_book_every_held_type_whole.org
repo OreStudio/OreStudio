@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/book-every-held-type-whole
+#+pr: 4771
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ The ORE import books every family through =book_trade=, as the generator does, s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -43,9 +43,12 @@ The ORE import books every family through =book_trade=, as the generator does, s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Move the bond's pure assembly from the trading core to the trading api, so the import and the service can use it.
+2. Add its inverse, =disassemble_bond=, and =split_bond_rows=, which turns a booking's bond container into the rows the batch writer already writes.
+3. Make =book_trade= split a bond in place of refusing what was beyond the bond and its issue.
+4. In the import, settle the bond's issue first (adopt a held issue of the same terms, or write a new one whole through =put_bond_issue_composite=), then book the trade through =book_trade= as every other family is booked. Delete the hand-built bond requests.
+5. Close the bookings of embedded trades whose parent did not book.
+6. Prove the split with a pure corpus test over every bond in ORE's examples, and prove booking with an export-and-rebook test over every generated type.
 
 * Measurements
 
@@ -59,7 +62,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Lines removed from the import handler | about 1,340 | =git show edfbfbae71 --stat= | edfbfbae71 |
+| Generated types booked, exported and compared whole | all, 118 assertions | =ores.synthetic.core.tests every_generated_trade_type_books_through_the_database= | 6a029f2307 |
+| Corpus bonds that come back whole from their rows | all | =ores.ore.core.tests "[rows]"= | 6a029f2307 |
+| Generated trades ORE accepts | 819 assertions, 7 cases | =ores.synthetic.core.tests "[generated]"= with the ORE engine | 6a029f2307 |
+| Trading core suite | 248 cases, 1,598 assertions | =ores.trading.core.tests= | 6a029f2307 |
+| ORE core suite | 542 cases, 520,161 assertions | =ores.ore.core.tests "~[rows]"= | 6a029f2307 |
+| Synthetic suite without the engine | 133 cases, 3,329 assertions | =ores.synthetic.core.tests "~[generated]"= | 6a029f2307 |
+| ORE service suite | 10 cases, 54 assertions | =ores.ore.service.tests= | 6a029f2307 |
 
 * Notes
 
@@ -77,6 +87,17 @@ The generator books a bond as =put_bond_issue_composite= for the security plus t
 - [[id:AEF17C45-3FE6-4139-83BE-A264A9C5879F][Write the rest of a booked trade]]
 
 
+** The import cannot run end to end on a new tenant
+
+Every ORE import on a newly provisioned tenant is refused at step 6: "A change to this book needs the approval of a request". The import writes its books directly, and the book gate now wants an approved request. This holds for any family, not only bonds, and it breaks the round-trip recipe. [[id:DD150215-C89B-4DD7-9822-269ED4773F33][Raise requests from the ORE import for gated books]] owns the fix. Until it lands, the import's bond path and its embedded-trade rule have no end-to-end proof; the corpus test and the booking test stand in for the first.
+
+** Defects the round-trip tests found
+
+- The importer set a bond option's and a bond return swap's residue only on the container, while a bond read back carries it on the fact row too.
+- The planner left a rate instrument's trade type empty, and the service stamped it on write.
+- The generic barrier option's strike was a double ratio with more places than its =numeric(38, 12)= column.
+- The trade error fixes (PR #4758) left 17 planner tests failing: the bond scope stated no legal entity for the callable bond's credit curve, and the index check did not read a list's values.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -92,12 +113,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4771][#4771]] | [ore,trading,synthetic] Book every held trade type whole |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed trade leaves its new bond issue behind, against the comment | ore_import_execute_handler.cpp | accept | The issue stays as its security's on purpose; the comment now says so |
+| 2 | Parents matched by ORE id alone, which repeats across documents | ore_import_execute_handler.cpp | accept | The parent key is the document and the id |
+| 3a | A failed close still drops the trades from the saved list | ore_import_execute_handler.cpp | accept | Trades leave the list only once their bookings close; a failed close names each trade |
+| 3b | Skip embedded trades with no parent before booking | ore_import_execute_handler.cpp | decline | A second path for the same rule; the close after booking already holds it |
+| 4 | Unit tests beside the rows file | bond_instrument_rows.cpp | decline | The corpus test covers every bond in ORE's examples and the rebook test every generated type |
+| 5 | Stray blank lines; pre-split batches | bond_instrument_rows.cpp | accept | Blank lines removed; book_trade is the only caller of split_bond_rows |
 
 * Result
+
+
+=book_trade= now books a bond whole: it splits the container into the rows the export reads and writes them in the booking's transaction. The ORE import settles a bond's issue in one composite write and books the trade through =book_trade=, so its 30 or so hand-built bond requests are gone. The instrument writes the import has left are =book_trade= and =put_bond_issue_composite=, and the service stamps both from the caller's session. The import's trade writes now state its reason. An ORE trade id has no issuing party, so =issuing_party_id= stays empty by design.
+
+Acceptance:
+
+- Book a bond whole, and import through =book_trade=: met. The corpus test shows every bond in ORE's examples comes back whole from its rows, and the booking test books one trade of every generated type, exports it and compares every row.
+- Audit on every instrument row: met. The bond put requests that copied fields by hand are deleted.
+- A parent and its embedded trades as one unit: implemented, not proven end to end. The import closes the bookings of embedded trades whose parent did not book. The book gate blocks every import on a new tenant, see the notes.
+- The export-and-rebook round trip for every family: met, with no known differences.
+- A test for each named defect: met for the defects the tests found. The embedded-trade rule has no test; it waits on the gated-books task.

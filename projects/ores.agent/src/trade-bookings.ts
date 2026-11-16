@@ -77,7 +77,6 @@ const businessRefusals = new Set([
     'product_type_not_allowed',
     'instrument_not_routed',
     'instrument_child_without_header',
-    'instrument_not_supported',
 ]);
 
 function active(session: Session, signal: AbortSignal) {

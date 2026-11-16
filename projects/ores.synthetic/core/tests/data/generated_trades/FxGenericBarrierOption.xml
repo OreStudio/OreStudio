@@ -17,7 +17,7 @@
         </ExerciseDates>
       </OptionData>
       <Quantity>7675517.41</Quantity>
-      <Strike>1.0068000002100184</Strike>
+      <Strike>1.00680000021</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
@@ -55,7 +55,7 @@
         </ExerciseDates>
       </OptionData>
       <Quantity>5632565.12</Quantity>
-      <Strike>0.5399000003039468</Strike>
+      <Strike>0.539900000304</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>

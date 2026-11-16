@@ -44,6 +44,7 @@ set(files
     "results_text_value_reader_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
     "xml_binding_tests.cpp"
+    "xml_bond_rows_tests.cpp"
     "xml_calendaradjustment_roundtrip_tests.cpp"
     "xml_corpus_tests.cpp"
     "xml_credit_corpus_roundtrip_tests.cpp"

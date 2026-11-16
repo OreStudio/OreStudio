@@ -10,7 +10,7 @@
       </StrikeData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>MSFT.O</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
@@ -43,7 +43,7 @@
       </StrikeData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>MSFT.O</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>

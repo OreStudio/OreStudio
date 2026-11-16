@@ -24,6 +24,7 @@
 #include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include <chrono>
 #include <string>
+#include <vector>
 
 namespace ores::synthetic::tests {
 
@@ -96,6 +97,35 @@ inline marketdata::conventions::convention_set ore_example_conventions() {
 }
 
 /**
+ * @brief The inputs the script library holds for AsianBasketOption, the script
+ * the generic scripted trade names. A database test reads them from the store;
+ * the booking check refuses a trade whose inputs drift from the library's.
+ */
+inline std::vector<ores::trading::domain::script_input> asian_basket_option_inputs() {
+    std::vector<ores::trading::domain::script_input> out;
+    const auto add = [&](std::string name, std::string type, bool is_array) {
+        ores::trading::domain::script_input input;
+        input.script_name = "AsianBasketOption";
+        input.sequence_number = static_cast<int>(out.size()) + 1;
+        input.input_name = std::move(name);
+        input.data_type = std::move(type);
+        input.is_array = is_array;
+        out.push_back(std::move(input));
+    };
+    add("Underlyings", "Index", true);
+    add("Weights", "Number", true);
+    add("ObservationDates", "Event", true);
+    add("PutCall", "Number", false);
+    add("Strike", "Number", false);
+    add("LongShort", "Number", false);
+    add("Notional", "Number", false);
+    add("Expiry", "Event", false);
+    add("Settlement", "Event", false);
+    add("PayCcy", "Currency", false);
+    return out;
+}
+
+/**
  * @brief The part of a generation scope the trade tests state the same way.
  *
  * The bands, the anchor, the seed and every reference the planners draw on are
@@ -113,13 +143,16 @@ inline domain::trade_generation_scope trade_generation_scope_recipe() {
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
     scope.currency_code = "EUR";
+    // Every name is one the Products market holds an equity curve and a
+    // volatility for, spelled as the market spells it, so the engine prices
+    // each trade it is drawn into.
     scope.equity_underlyings = {
-        domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
-        domain::equity_underlying_reference{.code = "MSFT.O", .kind = "share", .currency = "USD"},
+        domain::equity_underlying_reference{.code = "RIC:.SPX", .kind = "index", .currency = "USD"},
+        domain::equity_underlying_reference{.code = "RIC:.NDX", .kind = "index", .currency = "USD"},
         domain::equity_underlying_reference{
-            .code = ".STOXX50E", .kind = "index", .currency = "EUR"},
+            .code = "RIC:.STOXX50E", .kind = "index", .currency = "EUR"},
         domain::equity_underlying_reference{
-            .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
+            .code = "RIC:DHER.DE", .kind = "share", .currency = "EUR"}};
     scope.commodities = {
         domain::commodity_reference{.code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
         domain::commodity_reference{
@@ -132,6 +165,7 @@ inline domain::trade_generation_scope trade_generation_scope_recipe() {
     // The curve a bond is discounted on, as a generation config names it; the
     // Products example builds this one.
     scope.reference_curve_id = "EUR-EURIBOR-6M";
+    scope.script_inputs = asian_basket_option_inputs();
     return scope;
 }
 

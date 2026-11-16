@@ -13,33 +13,33 @@
       <Position>Long</Position>
       <Underlying1>
         <Type>Equity</Type>
-        <Name>MSFT.O</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying1>
       <Underlying2>
         <Type>Equity</Type>
-        <Name>.STOXX50E</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying2>
       <PayCcy>EUR</PayCcy>
     </DoubleDigitalOptionData>
   </Trade>
-  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
     <TradeType>DoubleDigitalOption</TradeType>
     <DoubleDigitalOptionData>
-      <Expiry>2032-09-02</Expiry>
-      <Settlement>2032-11-02</Settlement>
-      <BinaryPayout>5790664.33</BinaryPayout>
-      <BinaryLevel1>0.9115</BinaryLevel1>
-      <BinaryLevel2>1.0938</BinaryLevel2>
+      <Expiry>2032-08-02</Expiry>
+      <Settlement>2032-10-02</Settlement>
+      <BinaryPayout>2962620.02</BinaryPayout>
+      <BinaryLevel1>1.009</BinaryLevel1>
+      <BinaryLevel2>1.2108</BinaryLevel2>
       <Type1>Call</Type1>
       <Type2>Put</Type2>
-      <Position>Long</Position>
+      <Position>Short</Position>
       <Underlying1>
         <Type>Equity</Type>
-        <Name>.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying1>
       <Underlying2>
         <Type>Equity</Type>
-        <Name>MSFT.O</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying2>
       <PayCcy>EUR</PayCcy>
     </DoubleDigitalOptionData>

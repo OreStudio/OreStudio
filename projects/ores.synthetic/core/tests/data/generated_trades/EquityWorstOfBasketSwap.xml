@@ -4,16 +4,16 @@
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
-      <Currency>USD</Currency>
+      <Currency>EUR</Currency>
       <Quantity>8284783.79</Quantity>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>.SPX</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>MSFT.O</Name>
+          <Name>RIC:.STOXX50E</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>
@@ -22,7 +22,7 @@
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
-          <Calendar>US,UK</Calendar>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-10-02</Date>
@@ -47,7 +47,7 @@
       </FloatingPeriodSchedule>
       <FloatingPayDates>
         <Dates>
-          <Calendar>US,UK</Calendar>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-10-02</Date>
@@ -107,7 +107,7 @@
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
       </FixedTriggerLevels>
       <FixedRate>0</FixedRate>
-      <FloatingIndex>USD-LIBOR-3M</FloatingIndex>
+      <FloatingIndex>EUR-EURIBOR-6M</FloatingIndex>
       <FloatingSpread>0</FloatingSpread>
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
@@ -116,16 +116,16 @@
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
-      <Currency>USD</Currency>
+      <Currency>EUR</Currency>
       <Quantity>5666887.39</Quantity>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>.SPX</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>MSFT.O</Name>
+          <Name>RIC:.STOXX50E</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>
@@ -134,7 +134,7 @@
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
-          <Calendar>US,UK</Calendar>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-12-02</Date>
@@ -163,7 +163,7 @@
       </FloatingPeriodSchedule>
       <FloatingPayDates>
         <Dates>
-          <Calendar>US,UK</Calendar>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-12-02</Date>
@@ -235,7 +235,7 @@
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
       </FixedTriggerLevels>
       <FixedRate>0</FixedRate>
-      <FloatingIndex>USD-LIBOR-3M</FloatingIndex>
+      <FloatingIndex>EUR-EURIBOR-6M</FloatingIndex>
       <FloatingSpread>0</FloatingSpread>
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>

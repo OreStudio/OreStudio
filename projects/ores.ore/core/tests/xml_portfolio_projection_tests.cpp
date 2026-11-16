@@ -3808,6 +3808,53 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     REQUIRE(performance_again.instrument_underlyings.size() == 2);
     CHECK(performance_again.instrument_underlyings[1].underlying_role == "underlying");
     CHECK(performance_again.instrument_underlyings[1].sequence_number == 2);
+
+    auto note = scripted_data("Autocallable_01", "Autocallable_01");
+    add_parameter(note, "NotionalAmount", "decimal", "1000000");
+    add_parameter(note, "DeterminationLevel", "decimal", "0.7");
+    add_parameter(note, "TriggerLevel", "decimal", "1.0");
+    add_parameter(note, "Position", "enumeration", "Long");
+    add_parameter(note, "PayCcy", "enumeration", "EUR");
+    {
+        ores::trading::domain::scripted_parameter fixings;
+        fixings.sequence_number = static_cast<int>(note.parameters.size()) + 1;
+        fixings.name = "FixingDates";
+        fixings.declared_type = "Event";
+        fixings.shape = "schedule";
+        note.parameters.push_back(fixings);
+        ores::trading::domain::instrument_schedule rules;
+        rules.owner_role = "scripted";
+        rules.owner_number = fixings.sequence_number;
+        rules.schedule_role = "event";
+        rules.sequence_number = 1;
+        rules.schedule_kind = "rules";
+        rules.start_date = std::chrono::year{2027} / 1 / 4;
+        rules.end_date = std::chrono::year{2029} / 1 / 4;
+        rules.tenor = "1Y";
+        rules.calendar = "TARGET";
+        rules.convention = "F";
+        rules.rule = "Forward";
+        note.schedules.push_back(rules);
+    }
+    add_list(note, "AccumulationFactors", "decimal", {"0.05", "0.1", "0.15"});
+    add_parameter(note, "Cap", "decimal", "0.15");
+    add_underlying(note, "underlying", "Equity", equity_address_of("RIC:.SPX"));
+    const auto note_again = rebuilt_data(std::move(note));
+    CHECK(note_again.instrument.script_name == "Autocallable_01");
+    const auto named = [&](const char* name) {
+        return std::ranges::find_if(note_again.parameters,
+                                    [&](const auto& parameter) { return parameter.name == name; });
+    };
+    REQUIRE(named("NotionalAmount") != note_again.parameters.end());
+    CHECK(named("NotionalAmount")->value == std::optional<std::string>("1000000"));
+    REQUIRE(named("FixingDates") != note_again.parameters.end());
+    CHECK(named("FixingDates")->shape == "schedule");
+    REQUIRE(note_again.schedules.size() == 1);
+    CHECK(note_again.schedules[0].tenor == "1Y");
+    REQUIRE(named("AccumulationFactors") != note_again.parameters.end());
+    CHECK(note_again.parameter_values.size() == 3);
+    REQUIRE(named("Cap") != note_again.parameters.end());
+    REQUIRE(note_again.instrument_underlyings.size() == 1);
 }
 
 TEST_CASE("a_named_product_names_its_index_variable_by_address",

@@ -35,8 +35,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>EQ-.SPX</Value>
-            <Value>EQ-MSFT.O</Value>
+            <Value>EQ-RIC:.SPX</Value>
+            <Value>EQ-RIC:.NDX</Value>
           </Values>
         </Index>
         <Event>
@@ -63,7 +63,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>AsianBasketOption</ScriptName>
@@ -74,15 +74,15 @@
         </Number>
         <Number>
           <Name>LongShort</Name>
-          <Value>1</Value>
+          <Value>-1</Value>
         </Number>
         <Number>
           <Name>Notional</Name>
-          <Value>6765247.42</Value>
+          <Value>5790664.33</Value>
         </Number>
         <Number>
           <Name>Strike</Name>
-          <Value>0.8130</Value>
+          <Value>0.9115</Value>
         </Number>
         <Number>
           <Name>Weights</Name>
@@ -98,24 +98,24 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>EQ-GB0005405286</Value>
-            <Value>EQ-.SPX</Value>
+            <Value>EQ-RIC:.SPX</Value>
+            <Value>EQ-RIC:.NDX</Value>
           </Values>
         </Index>
         <Event>
           <Name>Expiry</Name>
-          <Value>2028-10-02</Value>
+          <Value>2032-09-02</Value>
         </Event>
         <Event>
           <Name>Settlement</Name>
-          <Value>2028-12-02</Value>
+          <Value>2032-11-02</Value>
         </Event>
         <Event>
           <Name>ObservationDates</Name>
           <ScheduleData>
             <Rules>
               <StartDate>2026-01-02</StartDate>
-              <EndDate>2028-10-02</EndDate>
+              <EndDate>2032-09-02</EndDate>
               <Tenor>1M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>

@@ -1,11 +1,9 @@
-Autocallable_01
 BondFutureOption
 CBO
 CashPosition
 CompositeTrade
 ContractForDifference
 CreditDefaultSwapOption
-DoubleDigitalOption
 EquityAutoDeltaHedgedOption
 EquityBasketOption
 EquityBasketVarianceSwap
@@ -30,9 +28,7 @@ FxRainbowOption
 FxStrikeResettableOption
 FxWindowBarrierOption
 FxWorstOfBasketSwap
-PerformanceOption_01
 RateDigitalOption
-ScriptedTrade
 SwaptionStraddle
 SyntheticCDO
 TotalReturnSwap

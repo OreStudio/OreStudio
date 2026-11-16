@@ -47,7 +47,7 @@
           </ConversionRatios>
           <Underlying>
             <Type>Equity</Type>
-            <Name>MSFT.O</Name>
+            <Name>RIC:.STOXX50E</Name>
           </Underlying>
         </ConversionData>
       </ConvertibleBondData>
@@ -57,7 +57,6 @@
         <Style>American</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-01-02</ExerciseDate>
           <ExerciseDate>2031-07-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
@@ -138,7 +137,7 @@
           </ConversionRatios>
           <Underlying>
             <Type>Equity</Type>
-            <Name>.SPX</Name>
+            <Name>RIC:.STOXX50E</Name>
           </Underlying>
         </ConversionData>
       </ConvertibleBondData>
@@ -148,7 +147,6 @@
         <Style>American</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-01-02</ExerciseDate>
           <ExerciseDate>2026-07-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>

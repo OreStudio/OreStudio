@@ -44,6 +44,7 @@
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
+#include "ores.trading.api/messaging/script_input_protocol.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
@@ -299,6 +300,11 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
      * refuses a code its kind's catalogue does not hold. An empty catalogue is
      * the planner's to refuse, as with the lists above.
      */
+    // The library is the system tenant's reference data, which every session reads.
+    ores::trading::messaging::list_script_inputs_request script_inputs_req;
+    script_inputs_req.limit = page;
+    scope.script_inputs = read(script_inputs_req).inputs;
+
     ores::refdata::messaging::list_equity_underlyings_request underlying_req;
     underlying_req.limit = page;
     for (const auto& underlying : read(underlying_req).equity_underlyings)

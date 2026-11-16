@@ -463,7 +463,8 @@ bond_result ascot_builder::build() const {
     ascot.ascot_option_type = option_type_of(terms_.kind.get());
     product->ascots.push_back(std::move(ascot));
 
-    // The holder may recall the bond on any day from the start to the end.
+    // The holder may recall the bond on any day to the end, which ORE states as
+    // the one exercise date of an American option.
     domain::instrument_option block{};
     block.long_short = long_short_of(terms_.position.get());
     block.option_type = option_type_of(terms_.kind.get());
@@ -477,17 +478,14 @@ bond_result ascot_builder::build() const {
     exercise.sequence_number = 1;
     exercise.schedule_kind = "dates";
     product->schedules.push_back(std::move(exercise));
-    int number = 0;
-    for (const auto when : {terms_.start.get(), terms_.end.get()}) {
-        domain::instrument_schedule_date date{};
-        date.owner_role = "option";
-        date.owner_number = 1;
-        date.schedule_role = "exercise_dates";
-        date.schedule_sequence_number = 1;
-        date.sequence_number = ++number;
-        date.schedule_date = when;
-        product->schedule_dates.push_back(std::move(date));
-    }
+    domain::instrument_schedule_date date{};
+    date.owner_role = "option";
+    date.owner_number = 1;
+    date.schedule_role = "exercise_dates";
+    date.schedule_sequence_number = 1;
+    date.sequence_number = 1;
+    date.schedule_date = terms_.end.get();
+    product->schedule_dates.push_back(std::move(date));
     // The holder recalls the bond against the swap's floating leg plus the spread.
     const auto& holding = terms_.convertible.holding;
     add_trade_leg(*product,

@@ -5,8 +5,8 @@
     <EquityForwardData>
       <LongShort>Long</LongShort>
       <Maturity>2032-12-02</Maturity>
-      <Name>GB0005405286</Name>
-      <Currency>GBP</Currency>
+      <Name>RIC:DHER.DE</Name>
+      <Currency>EUR</Currency>
       <Strike>2002.58</Strike>
       <Quantity>2905</Quantity>
     </EquityForwardData>
@@ -16,8 +16,8 @@
     <EquityForwardData>
       <LongShort>Long</LongShort>
       <Maturity>2027-08-02</Maturity>
-      <Name>GB0005405286</Name>
-      <Currency>GBP</Currency>
+      <Name>RIC:DHER.DE</Name>
+      <Currency>EUR</Currency>
       <Strike>4829.91</Strike>
       <Quantity>140</Quantity>
     </EquityForwardData>

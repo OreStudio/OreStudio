@@ -10,11 +10,11 @@
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>.STOXX50E</Name>
+          <Name>RIC:.STOXX50E</Name>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>GB0005405286</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
       </Underlyings>
       <StrikePrices>
@@ -27,30 +27,30 @@
       <PayCcy>EUR</PayCcy>
     </PerformanceOption01Data>
   </Trade>
-  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
     <TradeType>PerformanceOption_01</TradeType>
     <PerformanceOption01Data>
-      <NotionalAmount>2962620.02</NotionalAmount>
+      <NotionalAmount>3051825.57</NotionalAmount>
       <ParticipationRate>1</ParticipationRate>
-      <ValuationDate>2032-08-02</ValuationDate>
-      <SettlementDate>2032-10-02</SettlementDate>
+      <ValuationDate>2029-01-02</ValuationDate>
+      <SettlementDate>2029-03-02</SettlementDate>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>MSFT.O</Name>
+          <Name>RIC:.STOXX50E</Name>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>.STOXX50E</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
       </Underlyings>
       <StrikePrices>
-        <StrikePrice>1.009</StrikePrice>
-        <StrikePrice>1.1099</StrikePrice>
-        <StrikePrice>1.2108</StrikePrice>
+        <StrikePrice>1.0251</StrikePrice>
+        <StrikePrice>1.1276</StrikePrice>
+        <StrikePrice>1.2301</StrikePrice>
       </StrikePrices>
-      <Strike>1.009</Strike>
-      <Position>Long</Position>
+      <Strike>1.0251</Strike>
+      <Position>Short</Position>
       <PayCcy>EUR</PayCcy>
     </PerformanceOption01Data>
   </Trade>

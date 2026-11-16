@@ -9,7 +9,7 @@
       <Strike>4679.28</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>.SPX</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
@@ -54,7 +54,7 @@
       <Strike>2442.99</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>.SPX</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <ScheduleData>
         <Rules>

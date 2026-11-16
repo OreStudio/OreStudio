@@ -19,7 +19,7 @@
           <Level>2878.37</Level>
         </Levels>
       </BarrierData>
-      <Name>MSFT.O</Name>
+      <Name>RIC:.NDX</Name>
       <Currency>USD</Currency>
       <Strike>2616.7</Strike>
       <Quantity>1132.2</Quantity>
@@ -44,7 +44,7 @@
           <Level>2041.8</Level>
         </Levels>
       </BarrierData>
-      <Name>MSFT.O</Name>
+      <Name>RIC:.NDX</Name>
       <Currency>USD</Currency>
       <Strike>1856.18</Strike>
       <Quantity>4727</Quantity>

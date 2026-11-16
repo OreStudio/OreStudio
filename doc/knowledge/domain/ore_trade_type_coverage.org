@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 90 types name an instrument table, and the generator records 84.
+- 90 types name an instrument table, and the generator records 85.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -97,7 +97,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | Type | ORE form | Catalogue form | Data element | Table | Generated | Library scripts | Match | Closed by |
 |-
 | =Ascot= | native | native | =AscotData= | =bond_instrument= | yes | - | - | - |
-| =Autocallable_01= | scripted | scripted | =Autocallable01Data= | =scripted_instrument= | no | - | - | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] |
+| =Autocallable_01= | scripted | scripted | =Autocallable01Data= | =scripted_instrument= | yes | - | - | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] |
 | =BalanceGuaranteedSwap= | native | native | =BalanceGuaranteedSwapData= | =rate_instrument= | yes | - | - | - |
 | =Bond= | native | native | =BondData= | =bond_instrument= | yes | - | - | - |
 | =BondFuture= | native | native | =BondFutureData= | =bond_instrument= | yes | - | - | - |

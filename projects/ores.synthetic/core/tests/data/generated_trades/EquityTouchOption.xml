@@ -16,11 +16,11 @@
           <Level>3865.42</Level>
         </Levels>
       </BarrierData>
-      <Name>MSFT.O</Name>
+      <Name>RIC:.NDX</Name>
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>5709785.78</PayoffAmount>
       <Calendar>TARGET</Calendar>
-      <EQIndex>EQ-MSFT.O</EQIndex>
+      <EQIndex>EQ-RIC:.NDX</EQIndex>
     </EquityTouchOptionData>
   </Trade>
   <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
@@ -39,11 +39,11 @@
           <Level>2131.5</Level>
         </Levels>
       </BarrierData>
-      <Name>MSFT.O</Name>
+      <Name>RIC:.NDX</Name>
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>3658095.79</PayoffAmount>
       <Calendar>TARGET</Calendar>
-      <EQIndex>EQ-MSFT.O</EQIndex>
+      <EQIndex>EQ-RIC:.NDX</EQIndex>
     </EquityTouchOptionData>
   </Trade>
 </Portfolio>

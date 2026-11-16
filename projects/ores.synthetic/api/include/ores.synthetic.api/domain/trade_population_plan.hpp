@@ -97,6 +97,15 @@ struct equity_underlying_reference final {
     std::string currency;
 };
 
+/**
+ * @brief A counterparty that may issue a security: its id, which names the
+ * security, and the legal name a person reads as the issuer.
+ */
+struct issuer_reference final {
+    boost::uuids::uuid id;
+    std::string name;
+};
+
 struct trade_population_trader final {
     boost::uuids::uuid account_id;
     std::string username;
@@ -200,7 +209,7 @@ struct trade_generation_scope final {
      * security is drawn. A security belongs to the tenant and not to a config,
      * so its issuer cannot depend on the counterparties one config scopes.
      */
-    std::vector<boost::uuids::uuid> issuer_ids;
+    std::vector<issuer_reference> issuers;
     /**
      * @brief The netting set each counterparty of the scope is cleared under,
      * keyed by counterparty. Absent for a counterparty with no set, which is

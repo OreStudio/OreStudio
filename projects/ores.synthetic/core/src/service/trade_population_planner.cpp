@@ -628,9 +628,9 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
 
         const auto tenor_years = std::clamp(drawn, min_years, max_years);
-        const auto issuer_id = issuer_id_for(scope, tenor_years);
+        const auto issuer = issuer_for(scope, tenor_years);
         const auto security_id =
-            security_id_for(scope, tenor_years, *types[slot % types.size()], issuer_id);
+            security_id_for(scope, tenor_years, *types[slot % types.size()], issuer.id);
         const auto issue_id = issue_id_for_security(security_id);
         const auto issue_date = add_months(scope.as_of_date, -security_age_months);
         const auto maturity = add_years(issue_date, static_cast<int>(tenor_years));
@@ -643,7 +643,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto security = ores::trading::builders::bond_issue_builder(
                             {.issue_id = issue_id,
                              .security_id = security_id,
-                             .issuer = boost::uuids::to_string(issuer_id),
+                             .issuer = issuer.name,
                              .currency = entry.currency,
                              .face_value = tdom::decimal::from_double(security_face_value).value(),
                              .coupon_rate = tdom::decimal::from_double(coupon_rate).value(),
@@ -1561,12 +1561,12 @@ std::string security_id_for(const domain::trade_generation_scope& scope,
     return without_check + static_cast<char>('0' + check);
 }
 
-boost::uuids::uuid issuer_id_for(const domain::trade_generation_scope& scope,
-                                 std::uint32_t tenor_years) {
-    if (scope.issuer_ids.empty())
+domain::issuer_reference issuer_for(const domain::trade_generation_scope& scope,
+                                    std::uint32_t tenor_years) {
+    if (scope.issuers.empty())
         throw trade_population_error("An issuer needs the tenant's counterparties.");
-    auto issuers = scope.issuer_ids;
-    std::ranges::sort(issuers);
+    auto issuers = scope.issuers;
+    std::ranges::sort(issuers, {}, &domain::issuer_reference::id);
     return issuers[tenor_years % issuers.size()];
 }
 

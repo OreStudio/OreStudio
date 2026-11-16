@@ -72,7 +72,7 @@ domain::trade_population_plan plan_of(const domain::trade_generation_scope& scop
 struct bond_view final {
     std::string security_id;
     boost::uuids::uuid issue_id;
-    boost::uuids::uuid issuer_id;
+    std::string issuer;
     std::chrono::year_month_day issue_date;
     std::chrono::year_month_day maturity_date;
     std::uint32_t tenor_years = 0;
@@ -84,7 +84,7 @@ bond_view bond_of(const domain::trade_population_slot& slot) {
     bond_view view;
     view.security_id = issue.security_id;
     view.issue_id = issue.issue_id;
-    view.issuer_id = boost::uuids::string_generator()(issue.issuer);
+    view.issuer = issue.issuer;
     view.issue_date = *issue.issue_date;
     view.maturity_date = *schedule.end_date;
     const auto days =
@@ -143,7 +143,8 @@ domain::trade_generation_scope bond_scope() {
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
-    scope.issuer_ids = {bank, second_bank};
+    scope.issuers = {{.id = bank, .name = "Bank One Plc"},
+                     {.id = second_bank, .name = "Bank Two Plc"}};
     scope.traders = {domain::trade_population_trader{trader_account, "trader.one"}};
     scope.currency_code = "EUR";
     return scope;
@@ -704,7 +705,7 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", "[trade_po
     CHECK_THROWS_AS(plan_of(no_counterparty), trade_population_error);
 
     auto no_issuer = bond_scope();
-    no_issuer.issuer_ids.clear();
+    no_issuer.issuers.clear();
     CHECK_THROWS_AS(plan_of(no_issuer), trade_population_error);
 
     auto no_trader = bond_scope();
@@ -1292,7 +1293,7 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", "[trade
         if (inserted)
             continue;
         REQUIRE(bond_of(slot).issue_id == bond_of(found->second).issue_id);
-        REQUIRE(bond_of(slot).issuer_id == bond_of(found->second).issuer_id);
+        REQUIRE(bond_of(slot).issuer == bond_of(found->second).issuer);
         REQUIRE(bond_of(slot).issue_date == bond_of(found->second).issue_date);
         REQUIRE(bond_of(slot).maturity_date == bond_of(found->second).maturity_date);
         REQUIRE(bond_of(slot).tenor_years == bond_of(found->second).tenor_years);
@@ -1379,8 +1380,9 @@ TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {
 
     const auto term = plan.slots.front();
     const auto& bond = bond_of(term);
-    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond", bond.issuer_id) !=
-            security_id_for(bond_scope(), bond.tenor_years, "CallableBond", bond.issuer_id));
+    const auto issuer = issuer_for(bond_scope(), bond.tenor_years).id;
+    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond", issuer) !=
+            security_id_for(bond_scope(), bond.tenor_years, "CallableBond", issuer));
 }
 
 TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_population]") {
@@ -1389,9 +1391,11 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_po
     auto dollar = bond_scope();
     dollar.currency_code = "USD";
 
-    const auto issuer = issuer_id_for(euro, 5);
-    REQUIRE(security_id_for(euro, 5, "Bond", issuer) != security_id_for(dollar, 5, "Bond", issuer));
-    REQUIRE(security_id_for(euro, 5, "Bond", issuer) == security_id_for(euro, 5, "Bond", issuer));
+    const auto issuer = issuer_for(euro, 5);
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer.id) !=
+            security_id_for(dollar, 5, "Bond", issuer.id));
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer.id) ==
+            security_id_for(euro, 5, "Bond", issuer.id));
 }
 
 TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
@@ -1406,9 +1410,9 @@ TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
     auto second = bond_scope();
     second.book_ids = {second_book};
 
-    const auto issuer = issuer_id_for(first, 5);
-    REQUIRE(security_id_for(first, 5, "Bond", issuer) ==
-            security_id_for(second, 5, "Bond", issuer));
+    const auto issuer = issuer_for(first, 5);
+    REQUIRE(security_id_for(first, 5, "Bond", issuer.id) ==
+            security_id_for(second, 5, "Bond", issuer.id));
 }
 
 TEST_CASE("a_security_is_named_by_its_issuer", "[trade_population]") {
@@ -1419,15 +1423,15 @@ TEST_CASE("a_security_is_named_by_its_issuer", "[trade_population]") {
      * one's issue, and the store refused it as stored with other terms.
      */
     auto first = bond_scope();
-    first.issuer_ids = {bank};
+    first.issuers = {{.id = bank, .name = "Bank One Plc"}};
     auto second = bond_scope();
-    second.issuer_ids = {second_bank};
+    second.issuers = {{.id = second_bank, .name = "Bank Two Plc"}};
 
-    const auto first_issuer = issuer_id_for(first, 5);
-    const auto second_issuer = issuer_id_for(second, 5);
-    REQUIRE(first_issuer != second_issuer);
-    REQUIRE(security_id_for(first, 5, "Bond", first_issuer) !=
-            security_id_for(second, 5, "Bond", second_issuer));
+    const auto first_issuer = issuer_for(first, 5);
+    const auto second_issuer = issuer_for(second, 5);
+    REQUIRE(first_issuer.id != second_issuer.id);
+    REQUIRE(security_id_for(first, 5, "Bond", first_issuer.id) !=
+            security_id_for(second, 5, "Bond", second_issuer.id));
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_population]") {
@@ -1469,16 +1473,16 @@ TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scope
     const auto wide = bond_scope();
     auto narrow = bond_scope();
     narrow.counterparty_ids = {second_bank};
-    std::ranges::reverse(narrow.issuer_ids);
+    std::ranges::reverse(narrow.issuers);
 
-    std::map<std::string, boost::uuids::uuid> issuer_of;
+    std::map<std::string, std::string> issuer_of;
     for (const auto& slot : plan_of(wide).slots)
-        issuer_of.emplace(bond_of(slot).security_id, bond_of(slot).issuer_id);
+        issuer_of.emplace(bond_of(slot).security_id, bond_of(slot).issuer);
 
     for (const auto& slot : plan_of(narrow).slots) {
         const auto found = issuer_of.find(bond_of(slot).security_id);
         if (found != issuer_of.end())
-            REQUIRE(bond_of(slot).issuer_id == found->second);
+            REQUIRE(bond_of(slot).issuer == found->second);
     }
 }
 
@@ -1696,4 +1700,15 @@ TEST_CASE("every_closed_either_or_is_drawn_both_ways", "[trade_population]") {
     if (!one_way.empty())
         FAIL_CHECK("these either-ors are drawn one way only:" + listed);
     CHECK(structural_seen == structural_either_ors());
+}
+
+TEST_CASE("a_bond_issue_names_its_issuer_by_its_legal_name", "[trade_population]") {
+    const auto plan = plan_of(bond_scope());
+    REQUIRE_FALSE(plan.slots.empty());
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.bond_issue.has_value());
+        INFO(slot.trade_type_code);
+        CHECK((slot.bond_issue->issuer == "Bank One Plc" ||
+               slot.bond_issue->issuer == "Bank Two Plc"));
+    }
 }

@@ -4,7 +4,7 @@
     <TradeType>ForwardBond</TradeType>
     <ForwardBondData>
       <BondData>
-        <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+        <IssuerId>Export Bank One Plc</IssuerId>
         <SecurityId>POPRBFLQ0BQU2</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
@@ -54,7 +54,7 @@
     <TradeType>ForwardBond</TradeType>
     <ForwardBondData>
       <BondData>
-        <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+        <IssuerId>Export Bank One Plc</IssuerId>
         <SecurityId>POPZ28FHJFPL9</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>

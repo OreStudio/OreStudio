@@ -5,7 +5,7 @@
     <AscotData>
       <ConvertibleBondData>
         <BondData>
-          <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+          <IssuerId>Export Bank One Plc</IssuerId>
           <SecurityId>POPXMIZYWCP90</SecurityId>
           <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>
@@ -96,7 +96,7 @@
     <AscotData>
       <ConvertibleBondData>
         <BondData>
-          <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
+          <IssuerId>Export Bank Two Plc</IssuerId>
           <SecurityId>POPQ97VJQHMZ2</SecurityId>
           <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>

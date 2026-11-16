@@ -187,7 +187,7 @@ trade_generation_scope booking_scope_of(const fixture& f, const std::string& ass
     scope.trades_per_book = static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {f.book_id};
     scope.counterparty_ids = {f.counterparty_id};
-    scope.issuer_ids = {f.counterparty_id};
+    scope.issuers = {{.id = f.counterparty_id, .name = "Booking Bank Plc"}};
     scope.traders = {ores::synthetic::domain::trade_population_trader{f.account_id, f.username}};
     return scope;
 }

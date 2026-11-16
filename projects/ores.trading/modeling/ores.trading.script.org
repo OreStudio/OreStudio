@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 833F8F79-7FF0-42B0-8C52-E3ED6596843E
+:END:
+#+title: ores.trading.script
+#+description: One payoff script of ORE's script library.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One payoff script of ORE's script library, named as scripted trades name it.
+#+entity_singular: script
+#+entity_plural: scripts
+#+entity_title: Script
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+One script of ORE's script library. A scripted trade names a script by
+its library name, and the library states its code once for every trade of it.
+The rows are the system tenant's reference data, mined from the library ORE
+ships (=external/ore/examples/Products/Input/scriptlibrary.xml=).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The library name of the script, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("WindowBarrierOption")
+#+end_src
+
+** product_tag
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:economic: true
+:END:
+
+The product tag ORE files the script's trades under, such as =SingleAssetOption({AssetClass})=; absent where the library states none.
+
+#+begin_src cpp :name generator
+std::optional<std::string>(std::string("SingleAssetOption({AssetClass})"))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:economic: true
+:END:
+
+The first line of the library's comment block for the script, when it states one.
+
+#+begin_src cpp :name generator
+std::optional<std::string>(std::string("Window barrier option"))
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_scripts_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: script
+:entity_plural_short:   scripts
+:entity_singular_words: script
+:entity_plural_words:   scripts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: scr
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| name | Name |
+| product_tag | Product Tag |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

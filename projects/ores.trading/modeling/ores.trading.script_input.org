@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: F08D458F-B694-4B2F-A945-E22544A9222F
+:END:
+#+title: ores.trading.script_input
+#+description: One input a library script reads from its trade.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One input a library script reads: its name, type, whether it is an array, and its value rule.
+#+entity_singular: script_input
+#+entity_plural: script_inputs
+#+entity_title: Script Input
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+One input a library script reads from its trade: a variable the code uses
+and does not declare. The type is the one ORE's scripted trade states for it
+(Number, Event, Index, Currency or DayCounter), and an array input states a list.
+A value rule, where the library states one, says which values the script accepts.
+The rows are mined from the code, not typed by hand.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** script_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The library name of the script, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("WindowBarrierOption")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+Ordinal of the row within its owner, in the library's order.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** input_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The input variable, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("Strike")
+#+end_src
+
+** data_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The type ORE reads the input as: Number, Event, Index, Currency or DayCounter.
+
+#+begin_src cpp :name generator
+std::string("Number")
+#+end_src
+
+** is_array
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable:    false
+:economic: true
+:END:
+
+Whether the input is a list rather than one value.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** value_rule
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:economic: true
+:END:
+
+The rule a valid value follows, from the script's REQUIRE statements, when it states one.
+
+#+begin_src cpp :name generator
+std::optional<std::string>(std::string("BarrierType == 1"))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:economic: true
+:END:
+
+The library comment's line for the input, when it states one.
+
+#+begin_src cpp :name generator
+std::optional<std::string>(std::string("option strike"))
+#+end_src
+
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_script_inputs_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "data_type" in ('Number', 'Event', 'Index', 'Currency', 'DayCounter') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: input
+:entity_plural_short:   inputs
+:entity_singular_words: script input
+:entity_plural_words:   script inputs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sci
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| script_name | Script |
+| input_name | Input |
+| data_type | Type |
+| is_array | Array |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

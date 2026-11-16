@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: A2BE6361-0489-4A63-A1B7-6B07BB3F6000
+:END:
+#+title: ores.trading.script_variant
+#+description: One variant of a library script, for a purpose.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The code, NPV variable and purpose of one variant of a library script.
+#+entity_singular: script_variant
+#+entity_plural: script_variants
+#+entity_title: Script Variant
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+One variant of a library script. Every script has a default variant, and
+a few add one for another purpose, such as a finite-difference engine. The
+variant holds the payoff code and the variable the NPV is read from.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** script_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The library name of the script, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("WindowBarrierOption")
+#+end_src
+
+** purpose
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The purpose the variant serves: =default= for the one a trade runs unless the engine asks for another, else ORE's =purpose= attribute, such as =FD=.
+
+#+begin_src cpp :name generator
+std::string("default")
+#+end_src
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The payoff code, in ORE's scripting language.
+
+#+begin_src cpp :name generator
+std::string("Option = 0;")
+#+end_src
+
+** npv_variable
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The script variable the NPV is read from.
+
+#+begin_src cpp :name generator
+std::string("Option")
+#+end_src
+
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_script_variants_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "code" <> '' |
+| "npv_variable" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: variant
+:entity_plural_short:   variants
+:entity_singular_words: script variant
+:entity_plural_words:   script variants
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: scv
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| script_name | Script |
+| purpose | Purpose |
+| npv_variable | NPV |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

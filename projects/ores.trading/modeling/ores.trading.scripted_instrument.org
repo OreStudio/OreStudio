@@ -251,6 +251,18 @@ the delete rule closes them with the instrument.
 :column: trade_id
 :END:
 
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
 * SQL
 
 ** Flags

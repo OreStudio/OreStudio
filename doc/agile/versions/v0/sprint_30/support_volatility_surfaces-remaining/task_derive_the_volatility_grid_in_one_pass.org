@@ -109,8 +109,8 @@ building this, but the task should end with one so the numbers become facts.
 
 **What it unblocks**
 
-[[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][Surface every pair the ladder carries, out to ten
-years]] cannot provision today: the blueprint step waits minutes while the derived source derives
+[[id:9191CDB0-3876-4CC1-8704-B0B42D34F75D][Publish every pair out to the horizon its data
+allows]] cannot provision today: the blueprint step waits minutes while the derived source derives
 ten years of history for its tenant. See
 [[id:002F8F0F-2429-4838-864D-5B29DB571CBF][the captured blocker]]. This task is the fix.
 

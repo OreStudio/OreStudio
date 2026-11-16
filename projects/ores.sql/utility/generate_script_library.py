@@ -75,7 +75,8 @@ def call_arguments(toks, start):
             current = []
             continue
         current.append(tok)
-    return args
+    # An unbalanced call keeps what it gathered, and the seed check shows it.
+    return args + [current]
 
 
 def bare(arg):
@@ -203,15 +204,15 @@ def load(path):
                                 for e in variant.findall("ScheduleCoarsening/EligibleSchedule")],
             })
         # A trade states the inputs of every variant it may run, so the inputs
-        # are the union over the variants, the default's first. A variable the
-        # code assigns, such as the one its NPV is read from, is the script's to
-        # write and not the trade's to state; one it only reads, even when it is
-        # reported as a result, is an input.
-        outputs = set().union(*(assigned(v["code"]) for v in variants))
+        # are the union over the variants, the default's first. A variable a
+        # variant assigns, such as the one its NPV is read from, is that
+        # variant's to write and not the trade's to state; one it only reads,
+        # even when it is reported as a result, is an input.
         rules, seen, inputs = {}, set(), []
         for variant in sorted(variants, key=lambda v: v["purpose"] != "default"):
             for key, rule in value_rules(variant["code"]).items():
                 rules.setdefault(key, rule)
+            outputs = assigned(variant["code"])
             for n, t, a in infer(variant["code"]):
                 if n not in seen and n not in outputs:
                     seen.add(n)
@@ -348,6 +349,9 @@ def main():
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--compare", action="store_true")
     args = parser.parse_args()
+    if not LIBRARY.exists():
+        print(f"{LIBRARY.relative_to(ROOT)} is missing; check out the external/ore submodule")
+        return 1
     if args.compare:
         return compare()
     text = seed(load(LIBRARY))

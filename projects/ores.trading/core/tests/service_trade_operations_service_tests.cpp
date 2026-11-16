@@ -1320,3 +1320,24 @@ TEST_CASE("a_scripted_trade_that_states_every_input_of_its_script_passes_the_che
     INFO(response.result.message);
     CHECK(response.result.code != "script_input_mismatch");
 }
+
+TEST_CASE("a_scripted_trade_that_states_a_variable_its_script_never_reads_passes_the_check",
+          "[service]") {
+    fixture f;
+    auto req = window_barrier_request(f);
+    // ORE ignores a variable the script does not read, so the check does too.
+    ores::trading::domain::scripted_parameter extra;
+    extra.trade_id = req.anchor.id;
+    extra.sequence_number = static_cast<int>(req.instruments.scripted_parameters.size()) + 1;
+    extra.name = "ObservationDates";
+    extra.declared_type = "Event";
+    extra.shape = "scalar";
+    extra.value = std::string("2027-01-05");
+    extra.change_reason_code = "system.test";
+    req.instruments.scripted_parameters.push_back(extra);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    INFO(response.result.message);
+    CHECK(response.result.code != "script_input_mismatch");
+}

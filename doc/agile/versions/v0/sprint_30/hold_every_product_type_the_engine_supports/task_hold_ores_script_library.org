@@ -100,7 +100,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The union over variants may refuse a trade ORE would take | generate_script_library.py | keep | A trade must state what every variant it may run reads; no input of ORE's library is read by only some variants |
+| 2 | A variable one variant assigns drops out even where another reads it | generate_script_library.py | accept | Outputs are now per variant; no such variable exists in ORE's library, and the seed is unchanged |
+| 3 | The seed does nothing on conflict | trading_script_library_populate.sql | note | Every environment is recreated from the schema, so a changed library reaches the store through a recreate |
+| 4 | A missing submodule gives a traceback | generate_script_library.py | accept | The script names the missing library and the submodule |
+| 5 | The check reads the whole input table | trade_operations_service.cpp | decline | One read per booking, of 750 rows |
+| 6 | No test that an extra variable is not refused | service_trade_operations_service_tests.cpp | accept | Test added |
+| 7 | Every non-scalar shape counts as a list | trade_operations_service.cpp | no change | The shapes are scalar, vector, schedule and derived_schedule; all three non-scalar ones are lists |
+| 8 | An unbalanced call drops its last argument | generate_script_library.py | accept | It keeps what it gathered |
 
 * Result
 

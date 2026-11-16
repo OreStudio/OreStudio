@@ -63,6 +63,7 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
                          .value();
     r.averaging_start_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
     r.averaging_end_date = std::chrono::year_month_day{std::chrono::year{2025} / 6 / 15};
+    r.window_end_date = std::chrono::year_month_day{std::chrono::year{2025} / 9 / 15};
     r.spread_amount = ores::utility::decimal::decimal::from_string(
                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                           .value();

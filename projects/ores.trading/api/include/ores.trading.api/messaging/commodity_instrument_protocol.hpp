@@ -66,6 +66,7 @@ struct commodity_instrument_write {
     std::string average_type;
     std::optional<std::chrono::year_month_day> averaging_start_date;
     std::optional<std::chrono::year_month_day> averaging_end_date;
+    std::optional<std::chrono::year_month_day> window_end_date;
     std::string spread_commodity_code;
     std::optional<ores::utility::decimal::decimal> spread_amount;
     std::string strip_frequency_code;
@@ -455,6 +456,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.commodity_instrum
                               &commodity_instrument_write::averaging_start_date},
         utility::codec::field{"averaging_end_date",
                               &commodity_instrument_write::averaging_end_date},
+        utility::codec::field{"window_end_date", &commodity_instrument_write::window_end_date},
         utility::codec::field{"spread_commodity_code",
                               &commodity_instrument_write::spread_commodity_code},
         utility::codec::field{"spread_amount", &commodity_instrument_write::spread_amount},

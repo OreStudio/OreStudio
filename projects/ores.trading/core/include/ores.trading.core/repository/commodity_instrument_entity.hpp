@@ -70,6 +70,7 @@ struct commodity_instrument_entity {
     std::optional<std::string> average_type;
     std::optional<std::chrono::year_month_day> averaging_start_date;
     std::optional<std::chrono::year_month_day> averaging_end_date;
+    std::optional<std::chrono::year_month_day> window_end_date;
     std::optional<std::string> spread_commodity_code;
     std::optional<ores::utility::decimal::decimal> spread_amount;
     std::optional<std::string> strip_frequency_code;
@@ -141,6 +142,7 @@ struct commodity_instrument_entity {
                query_builder::bind("average_type", &e::average_type) |
                query_builder::bind("averaging_start_date", &e::averaging_start_date) |
                query_builder::bind("averaging_end_date", &e::averaging_end_date) |
+               query_builder::bind("window_end_date", &e::window_end_date) |
                query_builder::bind("spread_commodity_code", &e::spread_commodity_code) |
                query_builder::bind("spread_amount", &e::spread_amount) |
                query_builder::bind("strip_frequency_code", &e::strip_frequency_code) |

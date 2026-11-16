@@ -89,7 +89,7 @@ public:
     /**
      * @brief add <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> <currency>
      * <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price>
-     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
+     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date> <window_end_date>
      * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
      * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
@@ -107,7 +107,7 @@ public:
     /**
      * @brief set <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> <currency>
      * <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price>
-     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
+     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date> <window_end_date>
      * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
      * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
@@ -126,10 +126,10 @@ public:
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <commodity_code>
      * <currency> <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type>
      * <strike_price> <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
-     * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
-     * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
-     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar>
-     * <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
+     * <window_end_date> <spread_commodity_code> <spread_amount> <strip_frequency_code>
+     * <variance_strike> <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier>
+     * <upper_barrier> <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date>
+     * <calendar> <moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency>
      * <delivery_roll_days> <future_month_offset> <include_period_end> <position> <delivery_date>
      * <delivery_start> <delivery_end> <fva_date> <premium_date> <settlement_date>
      * <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> <premium_amount>

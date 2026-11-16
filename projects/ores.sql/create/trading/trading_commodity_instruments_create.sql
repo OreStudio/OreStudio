@@ -58,6 +58,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "average_type" text null,
     "averaging_start_date" date null,
     "averaging_end_date" date null,
+    "window_end_date" date null,
     "spread_commodity_code" text null,
     "spread_amount" numeric(38, 12) null,
     "strip_frequency_code" text null,

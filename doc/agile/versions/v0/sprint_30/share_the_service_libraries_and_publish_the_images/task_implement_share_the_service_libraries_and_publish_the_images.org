@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -83,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The image hierarchy is now ores-service-base -> ores-service-libs ->
+per-service image. library_partition computes the union of the libraries
+the services load (compute_shared_libraries) and stages them once under
+build/docker-stage/libs/, and stage_for_build gives each service only its
+binary, build record and entrypoint. docker/service-libs.Dockerfile is the
+new middle image; service-runtime.Dockerfile builds FROM it. stage-runtime.sh
+takes the binary list from the service registry (--services), which is how
+ores.marketdata.official was being missed: it does not match the
+ores.*.service glob.
+
+Measured on the release preset: base 12.1 MB, library image 667 MB,
+19 service images whose unique layers total 3.3 MB, NATS 18 MB, against
+6.6 GB of duplicated library payload before the change. All 19 enabled
+native services build an image and ores.trading.service runs
+(--version reports v0.0.30).

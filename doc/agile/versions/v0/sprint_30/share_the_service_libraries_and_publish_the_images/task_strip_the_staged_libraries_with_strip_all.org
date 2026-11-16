@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-16
 #+updated: 2026-11-16
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+stage-runtime.sh now strips every staged binary and library with
+strip --strip-all, and skips the files that are not object files (the build
+manifest sits in bin/). The previous strip --strip-debug command failed on
+that manifest, and its error was discarded, so the files were never stripped:
+the staged libraries were 841 MB. With --strip-all they are 625 MB and the
+library image is 667 MB instead of 895 MB. A failed strip now aborts the
+staging instead of shipping unstripped files.

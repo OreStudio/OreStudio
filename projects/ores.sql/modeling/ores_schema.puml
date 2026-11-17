@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-776 tables in 21 groups.
+781 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -591,6 +591,7 @@ entity "trading" as trading {
   ores_trading_callable_swap_call_dates_tbl
   ores_trading_callable_swap_instruments_tbl
   ores_trading_cap_floor_instruments_tbl
+  ores_trading_cash_position_instruments_tbl
   ores_trading_cds_instruments_tbl
   ores_trading_commodity_basket_constituents_tbl
   ores_trading_commodity_instruments_tbl
@@ -611,6 +612,7 @@ entity "trading" as trading {
   ores_trading_equity_instruments_tbl
   ores_trading_equity_option_instruments_tbl
   ores_trading_equity_outperformance_options_tbl
+  ores_trading_equity_pairwise_var_swap_instruments_tbl
   ores_trading_equity_position_instruments_tbl
   ores_trading_equity_position_option_underlyings_tbl
   ores_trading_equity_swap_instruments_tbl
@@ -623,9 +625,11 @@ entity "trading" as trading {
   ores_trading_fra_instruments_tbl
   ores_trading_fx_accumulator_instruments_tbl
   ores_trading_fx_asian_forward_instruments_tbl
+  ores_trading_fx_asian_option_instruments_tbl
   ores_trading_fx_barrier_option_instruments_tbl
   ores_trading_fx_digital_option_instruments_tbl
   ores_trading_fx_forward_instruments_tbl
+  ores_trading_fx_pairwise_variance_swap_instruments_tbl
   ores_trading_fx_vanilla_option_instruments_tbl
   ores_trading_fx_variance_swap_instruments_tbl
   ores_trading_index_cds_instruments_tbl
@@ -697,7 +701,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-136 tables — ores_schema.trading.puml
+140 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -850,6 +854,7 @@ entity "marketdata" as marketdata {
   ores_marketdata_series_axes_tbl
   ores_marketdata_series_axis_values_tbl
   ores_marketdata_series_classification_rules_tbl
+  ores_marketdata_series_identity_shapes_tbl
   ores_marketdata_sessions_tbl
   ores_marketdata_subscription_intervals_tbl
   ores_marketdata_subscriptions_tbl
@@ -859,7 +864,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-36 tables — ores_schema.marketdata.puml
+37 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {

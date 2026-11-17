@@ -147,10 +147,11 @@ tenor_convention_resolution_repository::read_current(
         const std::vector<std::string> lefts(left_set.begin(), left_set.end());
         const std::vector<std::string> rights(right_set.begin(), right_set.end());
         const auto tid = ctx_.tenant_id().to_string();
-        const auto query =
-            query_builder::read<std::vector<tenor_convention_resolution_entity>> |
-            query_builder::where("tenant_id"_c == tid && "convention_code"_c.in(lefts) &&
-                                 "tenor_code"_c.in(rights) && "valid_to"_c == max);
+        static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+        const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                           query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                                "convention_code"_c.in(lefts) &&
+                                                "tenor_code"_c.in(rights) && "valid_to"_c == max);
         auto rows = query_builder::execute_read_query<tenor_convention_resolution_entity,
                                                       domain::tenor_convention_resolution>(
             ctx_,

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/cash_position_instruments/cash_position_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cash_position_instruments list --limit 1

@@ -105,6 +105,22 @@ using script_calibration_rows_by_key = std::map<std::tuple<std::string, std::str
                                                 std::vector<domain::script_calibration>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::script_calibration>
+script_calibration_claim_rows(const ores::database::context& ctx,
+                              std::vector<domain::script_calibration> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -126,7 +142,8 @@ script_calibration_current_rows(script_calibration_repository& repo,
         sequence_numbers.push_back(std::to_string(row.sequence_number));
     }
     script_calibration_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, script_names, purposes, sequence_numbers))
+    for (auto& item : script_calibration_claim_rows(
+             ctx, repo.read_latest(ctx, script_names, purposes, sequence_numbers)))
         current[std::make_tuple(
                     item.script_name, item.purpose, std::to_string(item.sequence_number))]
             .push_back(std::move(item));
@@ -194,8 +211,8 @@ script_calibration_apply_claim(const domain::script_calibration& v,
 void script_calibration_repository::write(const context& ctx, const domain::script_calibration& v) {
     write(ctx,
           v,
-          script_calibration_replace_claim(
-              read_latest(ctx, v.script_name, v.purpose, std::to_string(v.sequence_number))));
+          script_calibration_replace_claim(script_calibration_claim_rows(
+              ctx, read_latest(ctx, v.script_name, v.purpose, std::to_string(v.sequence_number)))));
 }
 
 void script_calibration_repository::write(const context& ctx,
@@ -219,7 +236,9 @@ void script_calibration_repository::write(const context& ctx,
         v,
         claim,
         script_calibration_claim_reads_current(claim) ?
-            read_latest(ctx, v.script_name, v.purpose, std::to_string(v.sequence_number)) :
+            script_calibration_claim_rows(
+                ctx,
+                read_latest(ctx, v.script_name, v.purpose, std::to_string(v.sequence_number))) :
             std::vector<domain::script_calibration>{});
     query_builder::execute_write_query(
         ctx, script_calibration_mapper::map(t), lg(), "Writing script calibration to database.");

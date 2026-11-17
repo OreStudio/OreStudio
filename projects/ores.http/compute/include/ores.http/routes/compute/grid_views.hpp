@@ -75,6 +75,16 @@ boost::uuids::uuid id_of(const ores::http::domain::http_request& req);
 page page_of(const ores::http::domain::http_request& req, std::string_view sentence);
 
 /**
+ * @brief Whether the caller's token is scoped to the system tenant.
+ *
+ * Two permissions state themselves through this one fact today: reading the
+ * node a run ran on, and writing the compute catalogue. Each is a question of
+ * its own and each keeps its own predicate above this one, so a day that parts
+ * them changes one predicate and not the other.
+ */
+bool is_system_tenant(const ores::http::domain::http_request& req);
+
+/**
  * @brief Whether the caller may read the node a run ran on.
  *
  * The node belongs to the installation, so the operator alone reads it until the

@@ -111,9 +111,13 @@ page page_of(const http_request& req, std::string_view sentence) {
     return out;
 }
 
-bool may_read_host(const http_request& req) {
+bool is_system_tenant(const http_request& req) {
     const auto& claims = req.authenticated_user;
     return claims && claims->tenant_id && *claims->tenant_id == rr::system_tenant_id;
+}
+
+bool may_read_host(const http_request& req) {
+    return is_system_tenant(req);
 }
 
 std::map<std::string, std::string> party_names(const http_request& req, nats_client& session) {

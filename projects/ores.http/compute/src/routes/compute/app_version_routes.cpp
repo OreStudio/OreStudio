@@ -115,7 +115,7 @@ struct page final {
 
 /// Whether the caller may write the catalogue.
 bool may_write(const http_request& req) {
-    return grid::may_read_host(req);
+    return grid::is_system_tenant(req);
 }
 
 /// The name of the app a build belongs to, or nothing when no app carries it.

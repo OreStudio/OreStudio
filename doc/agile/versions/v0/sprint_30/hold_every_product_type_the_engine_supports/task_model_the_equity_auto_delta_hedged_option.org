@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-the-equity-auto-delta-hedged-option
-#+pr:
+#+pr: 4813
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4813][#4813]] | [trading,ore,synthetic] Hold the equity auto delta hedged option |
 
 * Review
 

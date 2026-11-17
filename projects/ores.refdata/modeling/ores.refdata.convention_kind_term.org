@@ -141,6 +141,7 @@ writes it.
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: term
 :entity_plural_short:   terms
 :entity_singular_words: convention kind term

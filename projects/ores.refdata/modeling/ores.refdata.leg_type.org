@@ -93,6 +93,7 @@ std::optional<std::string>("ibor")
 :PROPERTIES:
 :tablename: ores_refdata_leg_types_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -110,6 +111,7 @@ std::optional<std::string>("ibor")
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: type
 :entity_plural_short:   types
 :entity_singular_words: leg type

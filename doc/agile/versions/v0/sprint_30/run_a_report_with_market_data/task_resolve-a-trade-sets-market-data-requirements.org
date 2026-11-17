@@ -5,7 +5,7 @@
 #+description: gather_market_data exports every series the tenant holds, at whatever the database happens to contain now, because no one can say which market data a set of trades actually needs. Resolve it, for one trade set: from its trades to the market data requirements they imply, expressed as oresmd, and from those requirements to the series, observations and fixings that answer them. The as-of is the set's.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:sprint_30:v0:
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -34,7 +34,7 @@ observations and fixings that answer them. The as-of is the set's.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]] |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Partition a run's trade population into trade sets]], which produces the batch keys this reads. |
 | Next         | Begin implementation.                  |

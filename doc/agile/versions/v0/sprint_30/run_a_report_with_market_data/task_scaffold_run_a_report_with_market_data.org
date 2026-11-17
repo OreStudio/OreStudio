@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 746AC903-8811-4011-96B7-15DCDB669611
+:END:
+#+title: Task: Scaffold story: Run a report on the generated trades with the market data they need
+#+description: Form the story from the eight that held the market data path, move their open tasks into it in arc order, and close the stories it empties.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/run-reports-with-market-data
+#+pr: 4795
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One story owns the path from an empty market to a priced run, and its tasks read as one arc.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The story states its goal, acceptance, decisions, dependencies and scope.
+- The open BACKLOG tasks on the path are in it, in arc order, UUIDs intact.
+- Every source story records what moved and where.
+
+* Plan
+
+Read every sprint 30 story that touches market data or report runs, and the
+backlog captures on the same subject. Keep a task in the arc when the path from
+an empty market to a priced run needs it. Move BACKLOG tasks only. Leave
+STARTED work where it is and list it as a dependency.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4795][#4795]] | [agile] Gather the market data path into one story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: two links named the wrong story IDs | story.org | Accept | Fixed before commit. Every link title now matches its target. |
+| 2 | Local review: the two new tasks named the story branch | task_*.org | Accept | Cleared, so each task gets its own branch. |
+| 3 | PR #4795 review: the moved valuation task kept its 2026-11-09 dates though this PR edits it | task_value_the_generated_trades_in_a_report.org | Accept | Dates bumped to 2026-11-17. |
+| 4 | PR #4795 review: the moved task still names jolly_knuth as its environment | task_value_the_generated_trades_in_a_report.org | Decline | The environment records where the work happens; compass task start sets it when the task is picked up. |
+| 5 | PR #4795 review: the story's Now reads "Not yet started" beside a done scaffold task | story.org | Accept | Now says the scaffold is done and no work task has started. |
+| 6 | PR #4795 review: ABANDONED is the nearest state for a story whose work moved | */story.org | Decline | The todo keywords have no superseded state, and the closed-into precedent of 2026-11-15 uses ABANDONED. |
+
+* Result
+
+The story holds ten tasks: this one and nine in arc order. Seven moved in from
+five stories with their UUIDs intact, and two are new: the diagnosis of the
+empty market and the generation of historical fixings. Three stories closed
+into it, and three record what moved. PR #4708 was found on the valuation
+task. It already gave every product type a pricing engine, so the story
+records that the remaining errors are market data.

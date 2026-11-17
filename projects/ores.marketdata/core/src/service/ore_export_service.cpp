@@ -133,6 +133,42 @@ ores::ore::market::fixing to_fixing(const std::string& index_name, const domain:
 ore_export_service::ore_export_service(const context& ctx)
     : ctx_(ctx) {}
 
+namespace {
+
+bool is_fixing_series(const std::string& uri) {
+    return !datum::oresmd_uri_codec::read(uri) && datum::oresmd_uri_codec::read_index(uri);
+}
+
+}
+
+std::vector<const domain::market_series*>
+series_to_export(const std::vector<domain::market_series>& series,
+                 const utility::uuid::tenant_id& tenant,
+                 const std::optional<boost::uuids::uuid>& party) {
+    std::vector<const domain::market_series*> out;
+    if (!party) {
+        for (const auto& s : series)
+            if (s.tenant_id == tenant)
+                out.push_back(&s);
+        return out;
+    }
+    std::set<std::string> held;
+    for (const auto& s : series)
+        if (s.party_id == *party && is_fixing_series(s.oresmd_uri))
+            held.insert(s.oresmd_uri);
+    std::set<std::string> world;
+    for (const auto& s : series) {
+        if (s.party_id == *party) {
+            out.push_back(&s);
+            continue;
+        }
+        if (s.tenant_id.is_system() && !held.contains(s.oresmd_uri) &&
+            is_fixing_series(s.oresmd_uri) && world.insert(s.oresmd_uri).second)
+            out.push_back(&s);
+    }
+    return out;
+}
+
 ore_export_result ore_export_service::write_all(const std::optional<std::string>& valuation_date,
                                                 const std::optional<int>& max_age_days) const {
     if (max_age_days && *max_age_days < 0)
@@ -203,15 +239,14 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     // raw quotes share their keys, and ORE must read one value for each.
     std::set<std::string> surface_pairs;
     std::vector<ores::ore::market::market_datum> surface_points;
-    // A run prices for one party, and every party holds its own series of each item it receives
-    // or derives. A session that sees several parties would otherwise write each party's copy of
-    // one key, and ORE would read several values for it.
-    const auto party = ctx_.party_id();
-    int exported_series = 0;
-    for (const auto& s : series) {
-        if (party && s.party_id != *party)
-            continue;
-        ++exported_series;
+    // The fixings are read once for each tenant and party that holds them, after the loop,
+    // because a read for each series pays a query for each of them.
+    std::map<boost::uuids::uuid, std::string> index_names;
+    std::map<std::pair<std::string, boost::uuids::uuid>, std::vector<std::string>> fixing_series;
+    const auto exported = series_to_export(series, ctx_.tenant_id(), ctx_.party_id());
+    const auto exported_series = static_cast<int>(exported.size());
+    for (const auto* sp : exported) {
+        const auto& s = *sp;
         // A quote series has a URI the datum codec reads and a fixing series one
         // the index codec reads. A series neither reads is a data-integrity error
         // and names both reasons.
@@ -223,9 +258,9 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                     "market data export: series " + boost::uuids::to_string(s.id) + " carries '" +
                     s.oresmd_uri + "', which is no quote series (" + quote_series.error() +
                     ") and no fixing series (" + index.error() + ")");
-            const auto index_name = datum::ore_index_codec::write(*index);
-            for (const auto& f : fixings_repo.read_latest_for_series(ctx_, s.id))
-                fixings.push_back(to_fixing(index_name, f));
+            index_names[s.id] = datum::ore_index_codec::write(*index);
+            fixing_series[{s.tenant_id.to_string(), s.party_id}].push_back(
+                boost::uuids::to_string(s.id));
             continue;
         }
         auto observations = std::move(latest[s.id]);
@@ -296,6 +331,14 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         }
         for (const auto& o : observations)
             data.push_back(to_datum(o, std::nullopt));
+    }
+    for (const auto& [owner, ids] : fixing_series) {
+        const auto tenant = utility::uuid::tenant_id::from_string(owner.first);
+        if (!tenant)
+            throw std::runtime_error("market data export: a series names tenant '" + owner.first +
+                                     "', which is no tenant id: " + tenant.error());
+        for (const auto& f : fixings_repo.read_latest_for_series(ctx_, *tenant, owner.second, ids))
+            fixings.push_back(to_fixing(index_names.at(f.series_id), f));
     }
     std::erase_if(data, [&](const ores::ore::market::market_datum& d) {
         return d.key.starts_with("FX_OPTION/") && surface_pairs.contains(pair_prefix_of(d.key));

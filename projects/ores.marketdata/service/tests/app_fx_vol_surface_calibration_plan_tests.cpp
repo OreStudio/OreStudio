@@ -138,7 +138,7 @@ TEST_CASE("each expiry reads its market from the forward set and its convention 
           "[app][fx_vol_surface_calibration_plan]") {
     const auto recipe = eur_usd_recipe();
     const auto prepared = prepare_calibration(
-        recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), 0.001);
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), 0.001, 3);
     REQUIRE(prepared);
     const auto& expiries = prepared->request.expiries;
     REQUIRE(expiries.size() == 3);
@@ -175,7 +175,7 @@ TEST_CASE("a ladder's settlement run-up does not reach the pair's market",
 
     const auto recipe = eur_usd_recipe();
     const auto prepared =
-        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001, 3);
     REQUIRE(prepared);
     // The discounts come from the ladder's own points at and after spot, unchanged.
     const auto& expiries = prepared->request.expiries;
@@ -202,7 +202,7 @@ TEST_CASE("an expiry discounts to the ladder's value date, not to one of its own
 
     const auto recipe = eur_usd_recipe();
     const auto prepared =
-        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001, 3);
     REQUIRE(prepared);
     const auto& expiries = prepared->request.expiries;
     REQUIRE(expiries.size() == 3);
@@ -220,7 +220,7 @@ TEST_CASE("a tenor the ladder does not carry is refused, naming it",
 
     const auto recipe = eur_usd_recipe();
     const auto prepared =
-        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001, 3);
     REQUIRE_FALSE(prepared);
     CHECK(prepared.error().contains("6M"));
     CHECK(prepared.error().contains("no row"));
@@ -242,7 +242,7 @@ TEST_CASE("a pillar's quote is each contributor's at its weight",
     quotes[broker.market_series_id][{"1Y", "ATM"}] = 0.12;
 
     const auto prepared =
-        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 3);
     REQUIRE(prepared);
     const auto& pillars = prepared->request.expiries[1].pillars;
     const auto atm = std::ranges::find(pillars, std::string("1Y/ATM"), &qs::ssvi_pillar::point_id);
@@ -252,32 +252,68 @@ TEST_CASE("a pillar's quote is each contributor's at its weight",
     CHECK(prepared->sources_by_point.at("1Y/ATM").size() == 2);
 }
 
-TEST_CASE("an unquoted pillar is reported, and an expiry it leaves short is refused",
+TEST_CASE("an unquoted pillar is reported, and an expiry it leaves short is not fitted",
           "[app][fx_vol_surface_calibration_plan]") {
     auto recipe = eur_usd_recipe({"ATM", "25RR", "25BF", "10RR", "10BF"});
     auto quotes = flat_smile_quotes();
     quotes[derived_quotes_series][{"1M", "10RR"}] = 0.0;
 
     const auto prepared =
-        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 3);
     REQUIRE(prepared);
     CHECK(prepared->missing.size() == 5);
     CHECK(prepared->missing.front().point == "1M/10BF");
     CHECK(prepared->missing.front().series_ids == std::vector{derived_quotes_series});
+    CHECK(prepared->unfitted_expiries.empty());
 
+    // 1Y without its 25 delta butterfly is short of what SSVI needs: it is left out and named,
+    // and the other two expiries still make a surface.
     quotes[derived_quotes_series].erase({"1Y", "25BF"});
+    const auto short_one =
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 2);
+    REQUIRE(short_one);
+    REQUIRE(short_one->unfitted_expiries.size() == 1);
+    CHECK(short_one->unfitted_expiries.front().starts_with("1Y: "));
+    REQUIRE(short_one->request.expiries.size() == 2);
+    CHECK(short_one->request.expiries[0].expiry_id == "1M");
+    CHECK(short_one->request.expiries[1].expiry_id == "2Y");
+
+    // Below the minimum the surface is refused, naming how many it fitted and why the rest
+    // were left out.
     const auto refused =
-        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 3);
     REQUIRE_FALSE(refused);
-    CHECK(refused.error().contains("expiry 1Y"));
-    CHECK(refused.error().contains("1Y/25BF"));
+    CHECK(refused.error().contains("fits 2 expiry(ies), fewer than the 3"));
+    CHECK(refused.error().contains("1Y: "));
+}
+
+TEST_CASE("a surface whose longest expiry has no quote fits the rest and stops its grid there",
+          "[app][fx_vol_surface_calibration_plan]") {
+    const auto recipe = eur_usd_recipe();
+    auto quotes = flat_smile_quotes();
+    std::erase_if(quotes[derived_quotes_series],
+                  [](const auto& entry) { return entry.first.first == "2Y"; });
+
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 2);
+    REQUIRE(prepared);
+    REQUIRE(prepared->unfitted_expiries.size() == 1);
+    CHECK(prepared->unfitted_expiries.front() == "2Y: no pillar quoted");
+    REQUIRE(prepared->request.expiries.size() == 2);
+    CHECK(prepared->request.expiries.back().expiry_id == "1Y");
+    // The grid is 1M, 6M and 2Y; 2Y is past the fit, so the output carries 1M and 6M only.
+    REQUIRE(prepared->request.grid_expiries.size() == 2);
+    CHECK(prepared->request.grid_expiries[0].expiry_id == "1M");
+    CHECK(prepared->request.grid_expiries[1].expiry_id == "6M");
+    const auto fit = qs::calibrate_ssvi(prepared->request);
+    REQUIRE(fit);
 }
 
 TEST_CASE("a flat market calibrates to a flat surface on the grid",
           "[app][fx_vol_surface_calibration_plan]") {
     const auto recipe = eur_usd_recipe();
     const auto prepared = prepare_calibration(
-        recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), 0.001);
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), 0.001, 3);
     REQUIRE(prepared);
     const auto fit = qs::calibrate_ssvi(prepared->request);
     REQUIRE(fit);
@@ -303,7 +339,7 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
     forwards.points.pop_back();
     const auto recipe = eur_usd_recipe();
     const auto prepared =
-        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001, 3);
     REQUIRE_FALSE(prepared);
     CHECK(prepared.error().contains("expiry 2Y"));
     CHECK(prepared.error().contains("ends at"));

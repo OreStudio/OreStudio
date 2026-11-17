@@ -26,26 +26,43 @@ A surface should reach as far as its party's market data reaches and no further,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
 
 - The ladder a pair is quoted at is published data; no C++ array or duplicated list decides it.
-- An expiry's length comes from the expiry-date rule the ladder and the feed already share; no years table survives.
-- A surface's reach is computed from the party's sample, so a shorter sample shortens the surface instead of voiding it.
-- A surface records the expiries it could not fit and is refused only below a configured minimum.
-- Each party's surface is built by that party's own configuration, copied with its blueprints.
+- The derived source serves the same quotes it served before: 35 pairs, 13 expiries, 2275 ids.
+- (The story's other bullets belong to its later tasks.)
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The ladder was stated three times: the C++ array =derived_fx_expiries=, a cross join of
+thirteen literals in =marketdata_derived_catalogue_populate.sql=, and =EXPIRIES= in the
+blueprint dataset's generator. The blueprint dataset is already a data-quality artefact: each
+blueprint's pillars name the expiry and label it reads, and each pillar's source names the
+derived contributor. Every derived quote is such a pillar (35 pairs x 65 pillars = 2275, the
+universe the adapter announces), so the ladder is published already; the work is to make the
+other two read it rather than restate it. No new artefact is added.
+
+- *The catalogue.* The vendor instruments, mappings and scopes move to
+  =marketdata_derived_inventory_populate.sql=, which builds them from the pillars the derived
+  contributor serves, and runs after the refdata layer stages the blueprints. The provider,
+  feed, subscription and route stay where they were, because refdata scripts name the provider.
+- *The source.* The array is gone. The feed takes each pair's expiries from the vendor ids in
+  its universe, ordered by length; =derive_missing_days= and the live refresh take that ladder.
+  An expiry's length is a parse of its tenor (W, M, Y) until "Take an expiry's length from the
+  expiry-date rule" replaces it.
+- *The generator* keeps =EXPIRIES=: it is the dataset's author, and its methodology now says
+  the source's inventory is read from it.
+
+Also on this branch: main added =FxWorstOfBasketSwap=, which asks for a second pair, without
+listing it among the products on two pairs, so the GBP book's regression test failed again. It
+is listed, and the second pair now refuses a type the list does not name.
 
 * Measurements
 
@@ -59,7 +76,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Derived instruments, mappings and scopes after a recreate | 2275 each; 35 pairs, 13 expiries | a count over the three tables | b88a6b3de3 |
+| Places that state the ladder | 1 (the blueprint generator), was 3 | =grep= for the thirteen labels | b88a6b3de3 |
+| Synthetic suites | 3 of 3 passed, with the ladder case | =compass test run -- -R ores.synthetic= | b88a6b3de3 |
 
 * Notes
 
@@ -87,3 +106,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The ladder is stated once, in the blueprint dataset, which is a data-quality artefact: the
+derived source's 2275 instruments, mappings and scopes are built from the pillars its blueprints
+read, and the source derives each pair at the expiries its vendor ids name. The C++ array and the
+SQL cross join are gone. A fresh database holds the same 35 pairs and 13 expiries, and a fresh
+Acme setup gave every party its 35 blueprints with their quotes and published 30 of 35 surfaces,
+as before. Adding an expiry to the generator's ladder now reaches the source with no code change;
+its length comes from its tenor until the next task takes it from the expiry-date rule.
+
+The run also ended generate_trades with a warning that is not this change's: the default
+population no longer covers the bond codes main added. It is filed as the capture "The Acme
+trade population is too small for the bond codes it cycles".

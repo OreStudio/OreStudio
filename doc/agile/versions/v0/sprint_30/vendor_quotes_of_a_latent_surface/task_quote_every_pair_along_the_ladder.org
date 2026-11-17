@@ -8,7 +8,7 @@
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
 #+branch: feature/quote-every-pair-along-the-ladder
-#+pr:
+#+pr: 4819
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4819][#4819]] | [synthetic,sql] Publish a latent FX vol surface for every pair the run quotes |
 
 * Review
 

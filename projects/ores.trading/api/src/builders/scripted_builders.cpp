@@ -322,6 +322,7 @@ scripted_result build_basket_option(std::string_view trade_type,
     domain::instrument_option option;
     option.long_short = long_short_of(terms.position.get());
     option.payoff_type = payoff;
+    // An asset-or-cash payoff pays the best or worst member, so it has no call or put.
     if (payoff == "Vanilla" || payoff == "MaxRainbow" || payoff == "MinRainbow")
         option.option_type = option_type_of(terms.kind.get());
     out.option(std::move(option), terms.expiry.get());

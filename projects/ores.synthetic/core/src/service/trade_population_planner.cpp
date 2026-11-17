@@ -1872,6 +1872,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
             throw trade_population_error("An FX basket names two pairs in one quote currency, and "
                                          "the tenant holds no second pair quoted in " +
                                          pair.quote + ".");
+        // Two unit weights put the basket near twice one member, so the strike sits there.
         const tb::basket_option_terms basket{
             .currency = pair.quote,
             .notional = money(notional),
@@ -2751,6 +2752,7 @@ build_equity_trade(const domain::trade_generation_scope& scope,
     };
     if (type == "EquityBasketOption" || type == "EquityRainbowOption") {
         const auto [first, second] = same_currency_pair();
+        // Two unit weights put the basket near twice one member, so the strike sits there.
         const tb::basket_option_terms basket{
             .currency = first->currency.empty() ? std::string("USD") : first->currency,
             .notional = money(notional / level),

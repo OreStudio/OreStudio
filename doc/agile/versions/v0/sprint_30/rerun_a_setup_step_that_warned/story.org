@@ -26,7 +26,7 @@ A tenant whose setup left work undone is one click from finishing it: the tenant
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
-| Last touched  | 2026-11-17                               |
+| Last touched  | 2026-11-17 |
 
 * Acceptance
 
@@ -41,6 +41,9 @@ A tenant whose setup left work undone is one click from finishing it: the tenant
 |------+-------+-------+-----+-------------|
 | [[id:DE4C29C3-EB45-4014-BD38-596B2B7C1C34][Re-run a setup step that ended with warnings]] | DONE | 2026-11-16 | 2026-11-17 | The engine resumes only a stopped run, under the step's old idempotency key; add a re-run of one warned step of a finished run, and offer it in the setup report in the shell and the web. |
 | [[id:8963E1FA-769E-4FFC-AD53-F439E946B1C2][Alert on the tenant dashboard while setup warnings stand]] | DONE |  | 2026-11-17 | The setup report notice can be dismissed; while any setup step stands with warnings the tenant dashboard shows an alert that links to the report, and it goes once none does. |
+| [[id:051A063B-CC4D-4595-9370-6D45F7A5075A][Refuse a forward set that cannot be built before reading its calendars]] | DONE | 2026-11-17 | 2026-11-17 | Re-running publish_party_forwards took 8 minutes to publish nothing: each of 560 unbuildable party-pairs read every calendar date and a discount curve before the funding-curve check refused it. |
+| [[id:1DB859E4-9604-46EA-BAD3-3810393F4BBE][Book an FX basket in a book whose currency no second pair quotes]] | DONE | 2026-11-17 | 2026-11-17 | A fresh Acme setup ended generate_trades with warnings: a basket slot of the UK book drew EUR/GBP, the only pair quoted in GBP, so it had no partner and the book's population was refused. |
+| [[id:512E1028-BD72-4535-8288-D5BC24CA7303][Publish a re-run step's answer under its attempt]] | DONE | 2026-11-17 | 2026-11-17 | A re-run sent within two minutes of the step's last answer hung: the service published its answer under the step id, so the stream dropped it as a repeat of the first answer. |
 
 * Decisions
 

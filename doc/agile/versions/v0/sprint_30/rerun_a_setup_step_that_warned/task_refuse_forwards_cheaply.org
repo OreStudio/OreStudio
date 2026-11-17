@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 051A063B-CC4D-4595-9370-6D45F7A5075A
+:END:
+#+title: Task: Refuse a forward set that cannot be built before reading its calendars
+#+description: Re-running publish_party_forwards took 8 minutes to publish nothing: each of 560 unbuildable party-pairs read every calendar date and a discount curve before the funding-curve check refused it.
+#+type: task
+#+level: s1
+#+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
+#+owner: marco
+#+branch: feature/refuse-forwards-cheaply
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A forward set a party cannot build is refused by the cheap checks, so the forwards step costs what its buildable pairs cost.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The forward build checks the spots and both funding curve configs before it reads the expiry rule or a curve.
+- A re-run of publish_party_forwards on a provisioned Acme tenant takes a fraction of the 8 minutes it took, measured.
+
+* Plan
+
+The marketdata log of the slow re-run showed a refusal such as "No funding curve is configured
+for PLN" arriving 1 to 3 seconds after its request: the build read the pair's expiry rule, which
+reads every calendar date (13515 rows, 270 to 816 ms a read), and the base currency's whole
+discount curve before it looked for the quote currency's funding curve. 560 of the 716
+party-pairs (179 pairs, 4 parties) cannot be built, and every run asks for each of them.
+
+The build now reads the convention, the spots and both funding curve configs first, and the
+expiry rule and the curves only for a pair that passed them. The refusal a pair gets is the
+same, except where the expiry rule itself refuses.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| publish_party_forwards, fresh Acme setup | 29 s (was 3 min 11 s) | step times of the tenant_setup_workflow run | feature/refuse-forwards-cheaply over 558bf9f78f |
+| publish_party_forwards, re-run | 3.9 s (was 8 min) | =setup-rerun publish_party_forwards= | feature/refuse-forwards-cheaply over 558bf9f78f |
+| Unbuildable party-pairs | 560 of 716 | the step log's skipped lines | 3854e115f0 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The forward build reads the convention, the spots and both funding curve configs before the
+expiry rule and the curves, so a pair a party cannot build is refused before the calendars are
+read. On a fresh Acme setup the forwards step took 29 seconds instead of 3 minutes 11, and a
+re-run 3.9 seconds instead of 8 minutes (see the Measurements). ores.marketdata.service.tests
+passed.

@@ -21,19 +21,23 @@ A rate a firm does not observe, it triangulates: the driver pairs are the ones i
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Every task is done; the derived source still writes under the system party. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Add a task so each party's derived quotes are written under that party. |
-| Last touched  | 2026-11-16                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-17 |
 
 * Acceptance
 
 - A CRM topology is built from series identity and provider precedence, and no driver pair is hand-written.
 - A publisher's pivot is a root vertex, so a pair whose leg is the pivot composes without a series.
 - The rate engine serves a pair's daily levels over a date range, from a publisher's fixings, and the streaming path is unchanged.
-- Each party derives its own volatility quotes; the derived source names no currency, publisher or transform.
+- The derived volatility source names no currency, publisher or transform: it reads each pair's
+  levels from the fixing publisher that ranks first. It is a shared publisher, derived once from
+  the system's fixings, and each party receives its quotes through its subscription to it.
+  (Revised at close; the first draft read "Each party derives its own volatility quotes". See
+  the Decisions.)
 - When no provider can compose a pair the refusal names the provider and the date its fixing stopped.
 
 * Tasks
@@ -50,6 +54,16 @@ A rate a firm does not observe, it triangulates: the driver pairs are the ones i
 | [[id:655BB6F8-D16E-49DE-B912-85240B490A93][Derive the volatility quotes from the pair's levels]] | DONE | | 2026-11-16 | The derived volatility source reads two ECB fixing windows and composes the pair itself; ask the market data service for the pair's levels instead, and delete the constants that name the ECB. |
 
 * Decisions
+
+- *The derived source is a vendor, not a firm.* It stands in for the volatility quotes a vendor
+  would publish, which are the same for every subscriber, so it derives once from the system's
+  fixings and parties receive the quotes by subscription, as from any other provider. The
+  firm's own choices sit downstream of it, where they already are: the CRM builds each party's
+  topology from the series it holds and the rank of its providers, and each party calibrates
+  and publishes its own surfaces from the quotes it receives. The first draft's "each party
+  derives its own volatility quotes" applied the firm's rule to the vendor's stand-in; measured
+  at close, no tenant party holds an FX fixing series (the system party holds BoC 27, ECB 36,
+  IMF 48 and TCMB 21), so a per-party derivation would have had nothing to read.
 
 * Out of scope
 

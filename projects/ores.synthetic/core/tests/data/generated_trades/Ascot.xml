@@ -90,18 +90,18 @@
       </ReferenceSwapData>
     </AscotData>
   </Trade>
-  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
     <TradeType>Ascot</TradeType>
     <AscotData>
       <ConvertibleBondData>
         <BondData>
           <IssuerId>Export Bank Two Plc</IssuerId>
-          <SecurityId>POPQ97VJQHMZ2</SecurityId>
+          <SecurityId>POP83OD85C0U4</SecurityId>
           <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>
           <Calendar>TARGET</Calendar>
           <IssueDate>2025-07-02</IssueDate>
-          <BondNotional>4191327.35</BondNotional>
+          <BondNotional>4187691.98</BondNotional>
           <PriceType>Clean</PriceType>
           <LegData>
             <Payer>false</Payer>
@@ -115,7 +115,7 @@
             <ScheduleData>
               <Rules>
                 <StartDate>2025-07-02</StartDate>
-                <EndDate>2026-07-02</EndDate>
+                <EndDate>2028-07-02</EndDate>
                 <Tenor>1Y</Tenor>
                 <Calendar>TARGET</Calendar>
                 <Convention>F</Convention>
@@ -133,21 +133,21 @@
         </BondData>
         <ConversionData>
           <ConversionRatios>
-            <ConversionRatio>12.1</ConversionRatio>
+            <ConversionRatio>7.93</ConversionRatio>
           </ConversionRatios>
           <Underlying>
             <Type>Equity</Type>
-            <Name>RIC:.STOXX50E</Name>
+            <Name>RIC:DHER.DE</Name>
           </Underlying>
         </ConversionData>
       </ConvertibleBondData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>American</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-07-02</ExerciseDate>
+          <ExerciseDate>2028-07-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ReferenceSwapData>
@@ -158,12 +158,12 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>4191327.35</Notional>
+            <Notional>4187691.98</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
               <StartDate>2026-01-02</StartDate>
-              <EndDate>2026-07-02</EndDate>
+              <EndDate>2028-07-02</EndDate>
               <Tenor>3M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>

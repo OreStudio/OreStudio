@@ -14,16 +14,16 @@
       <MomentType>Variance</MomentType>
     </EquityVarianceSwapData>
   </Trade>
-  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
     <TradeType>EquityVarianceSwap</TradeType>
     <EquityVarianceSwapData>
-      <StartDate>2025-12-02</StartDate>
-      <EndDate>2032-12-02</EndDate>
-      <Currency>EUR</Currency>
-      <Name>RIC:DHER.DE</Name>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2033-11-02</EndDate>
+      <Currency>USD</Currency>
+      <Name>RIC:.SPX</Name>
       <LongShort>Long</LongShort>
       <Strike>0.04</Strike>
-      <Notional>9919657.76</Notional>
+      <Notional>6145432.04</Notional>
       <Calendar>USD</Calendar>
       <MomentType>Variance</MomentType>
     </EquityVarianceSwapData>

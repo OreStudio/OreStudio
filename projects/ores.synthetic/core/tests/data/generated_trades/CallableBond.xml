@@ -69,18 +69,18 @@
       </CallData>
     </CallableBondData>
   </Trade>
-  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
     <TradeType>CallableBond</TradeType>
     <CallableBondData>
       <BondData>
-        <IssuerId>Export Bank Two Plc</IssuerId>
+        <IssuerId>Export Bank One Plc</IssuerId>
         <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
-        <SecurityId>POPKD1ME6GH76</SecurityId>
+        <SecurityId>POP951M0D8XM9</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
-        <BondNotional>6592217.61</BondNotional>
+        <BondNotional>4118292.15</BondNotional>
         <PriceType>Clean</PriceType>
         <LegData>
           <Payer>false</Payer>
@@ -94,7 +94,7 @@
           <ScheduleData>
             <Rules>
               <StartDate>2025-07-02</StartDate>
-              <EndDate>2030-07-02</EndDate>
+              <EndDate>2027-07-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>
@@ -114,8 +114,8 @@
         <ScheduleData>
           <Dates>
             <Dates>
-              <Date>2028-07-02</Date>
-              <Date>2029-07-02</Date>
+              <Date>2025-07-02</Date>
+              <Date>2026-07-02</Date>
             </Dates>
           </Dates>
         </ScheduleData>

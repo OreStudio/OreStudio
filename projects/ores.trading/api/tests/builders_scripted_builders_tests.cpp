@@ -680,3 +680,52 @@ TEST_CASE("an_fx_worst_of_basket_swap_refuses_level_lists_that_miss_a_period", s
     REQUIRE_FALSE(built.has_value());
     CHECK(built.error().term == "pay_dates");
 }
+
+TEST_CASE("an_equity_future_option_states_its_future_expiry_and_its_option_block", scripted_tags) {
+    const auto built = equity_future_option_builder({.underlying = scripted_equity(".SPX"),
+                                                     .currency = std::string("USD"),
+                                                     .quantity = scripted_amount("17000"),
+                                                     .strike = scripted_amount("2147.56"),
+                                                     .kind = option_kind::call,
+                                                     .position = option_position::long_option,
+                                                     .expiry = 2027y / 1 / 5,
+                                                     .future_expiry = 2027y / 3 / 19})
+                           .build();
+    REQUIRE(built.has_value());
+    const auto future = std::ranges::find_if(
+        built->parameters, [](const auto& p) { return p.name == "FutureExpiryDate"; });
+    REQUIRE(future != built->parameters.end());
+    CHECK(future->value == "2027-03-19");
+    REQUIRE(built->options.size() == 1);
+    CHECK(built->options[0].style == "European");
+}
+
+TEST_CASE("an_equity_future_option_refuses_a_future_that_expires_first", scripted_tags) {
+    const auto built = equity_future_option_builder({.underlying = scripted_equity(".SPX"),
+                                                     .currency = std::string("USD"),
+                                                     .quantity = scripted_amount("17000"),
+                                                     .strike = scripted_amount("2147.56"),
+                                                     .kind = option_kind::call,
+                                                     .position = option_position::long_option,
+                                                     .expiry = 2027y / 1 / 5,
+                                                     .future_expiry = 2026y / 12 / 18})
+                           .build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "future_expiry");
+}
+
+TEST_CASE("a_bond_future_option_names_its_contract", scripted_tags) {
+    const auto built = bond_future_option_builder({.contract = std::string("FGBL"),
+                                                   .contract_notional = scripted_amount("100000"),
+                                                   .strike = scripted_amount("128.5"),
+                                                   .kind = option_kind::put,
+                                                   .position = option_position::short_option,
+                                                   .expiry = 2026y / 2 / 20})
+                           .build();
+    REQUIRE(built.has_value());
+    const auto contract = std::ranges::find_if(
+        built->parameters, [](const auto& p) { return p.name == "ContractName"; });
+    REQUIRE(contract != built->parameters.end());
+    CHECK(contract->value == "FGBL");
+    CHECK(built->options[0].long_short == "Short");
+}

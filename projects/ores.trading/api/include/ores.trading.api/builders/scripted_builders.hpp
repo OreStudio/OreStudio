@@ -595,6 +595,57 @@ private:
     fx_worst_of_basket_swap_terms terms_;
 };
 
+
+/**
+ * @brief A European option on an equity future, which expires on or after the
+ * option does.
+ */
+struct equity_future_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> future_expiry;
+};
+
+class ORES_TRADING_API_EXPORT equity_future_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityFutureOption";
+    explicit equity_future_option_builder(equity_future_option_terms terms);
+    [[nodiscard]] scripted_result build() const;
+
+private:
+    equity_future_option_terms terms_;
+};
+
+/**
+ * @brief A European option on a bond future, exercised into the future.
+ *
+ * The contract names the future as the bond future reference data holds it,
+ * such as FGBL.
+ */
+struct bond_future_option_terms final {
+    required<std::string> contract;
+    required<utility::decimal::decimal> contract_notional;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> expiry;
+};
+
+class ORES_TRADING_API_EXPORT bond_future_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "BondFutureOption";
+    explicit bond_future_option_builder(bond_future_option_terms terms);
+    [[nodiscard]] scripted_result build() const;
+
+private:
+    bond_future_option_terms terms_;
+};
+
 }
 
 #endif

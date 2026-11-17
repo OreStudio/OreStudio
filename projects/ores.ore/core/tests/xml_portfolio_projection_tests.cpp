@@ -3452,6 +3452,81 @@ TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows
     check_worst_of(rebuild(items[1]));
 }
 
+TEST_CASE("an_option_on_an_equity_future_and_on_a_bond_future_hold_their_terms_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="EquityFutureOption#1">
+    <TradeType>EquityFutureOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityFutureOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Cash</Settlement>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
+        <ExerciseDates><ExerciseDate>2022-03-01</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Strike>2147.56</Strike>
+      <Quantity>17000</Quantity>
+      <FutureExpiryDate>2022-03-18</FutureExpiryDate>
+    </EquityFutureOptionData>
+  </Trade>
+  <Trade id="BondFutureOption#1">
+    <TradeType>BondFutureOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <BondFutureOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <ExerciseDates><ExerciseDate>2026-04-10</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <ContractName>TYM26</ContractName>
+      <ContractNotional>1000000</ContractNotional>
+      <Strike>1.1175</Strike>
+    </BondFutureOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) -> std::string {
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    const auto check_equity = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "Name") == "RIC:.SPX");
+        CHECK(value_of(*data, "FutureExpiryDate") == "2022-03-18");
+        CHECK(value_of(*data, "Quantity") == "17000");
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].style == std::optional<std::string>("American"));
+        CHECK(data->options[0].pay_off_at_expiry.has_value());
+    };
+    const auto check_bond = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "ContractName") == "TYM26");
+        CHECK(value_of(*data, "Strike") == "1.1175");
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].long_short == "Short");
+        CHECK(ores::ore::domain::option_block::exercise_dates_of(*data).size() == 1u);
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_equity(items[0]);
+    check_equity(rebuild(items[0]));
+    check_bond(items[1]);
+    check_bond(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

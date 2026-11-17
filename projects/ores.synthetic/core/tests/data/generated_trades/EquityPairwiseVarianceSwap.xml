@@ -33,28 +33,28 @@
       <PayCcy>EUR</PayCcy>
     </EquityPairwiseVarianceSwapData>
   </Trade>
-  <Trade id="f8bbf0a7-ea59-58ea-830a-e02a820d688f">
+  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
     <TradeType>EquityPairwiseVarianceSwap</TradeType>
     <EquityPairwiseVarianceSwapData>
       <LongShort>Short</LongShort>
       <Underlyings>
-        <Value>EQ-RIC:.SPX</Value>
         <Value>EQ-RIC:.NDX</Value>
+        <Value>EQ-RIC:.SPX</Value>
       </Underlyings>
       <UnderlyingStrikes>
         <Value>0.2</Value>
         <Value>0.2</Value>
       </UnderlyingStrikes>
       <UnderlyingNotionals>
-        <Value>19840.92</Value>
-        <Value>19840.92</Value>
+        <Value>34351.5</Value>
+        <Value>34351.5</Value>
       </UnderlyingNotionals>
-      <BasketNotional>39681.85</BasketNotional>
+      <BasketNotional>68703.01</BasketNotional>
       <BasketStrike>0.2</BasketStrike>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2026-11-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2027-10-02</EndDate>
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -62,7 +62,7 @@
           <Rule>Forward</Rule>
         </Rules>
       </ValuationSchedule>
-      <SettlementDate>2026-11-07</SettlementDate>
+      <SettlementDate>2027-10-07</SettlementDate>
       <PayCcy>USD</PayCcy>
     </EquityPairwiseVarianceSwapData>
   </Trade>

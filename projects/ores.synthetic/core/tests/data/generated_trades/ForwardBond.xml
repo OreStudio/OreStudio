@@ -41,8 +41,8 @@
         <SubType>Fixed</SubType>
       </BondData>
       <SettlementData>
-        <ForwardMaturityDate>2027-01-02</ForwardMaturityDate>
-        <ForwardSettlementDate>2027-01-02</ForwardSettlementDate>
+        <ForwardMaturityDate>2026-10-02</ForwardMaturityDate>
+        <ForwardSettlementDate>2026-10-02</ForwardSettlementDate>
         <Settlement>Cash</Settlement>
         <LockRate>0.0232</LockRate>
         <SettlementDirty>false</SettlementDirty>
@@ -50,17 +50,17 @@
       <LongInForward>true</LongInForward>
     </ForwardBondData>
   </Trade>
-  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
+  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
     <TradeType>ForwardBond</TradeType>
     <ForwardBondData>
       <BondData>
-        <IssuerId>Export Bank One Plc</IssuerId>
-        <SecurityId>POPZ28FHJFPL9</SecurityId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
+        <SecurityId>POPS2F972HUT9</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
-        <BondNotional>3895254.25</BondNotional>
+        <BondNotional>5709785.78</BondNotional>
         <PriceType>Clean</PriceType>
         <LegData>
           <Payer>false</Payer>
@@ -74,7 +74,7 @@
           <ScheduleData>
             <Rules>
               <StartDate>2025-07-02</StartDate>
-              <EndDate>2035-07-02</EndDate>
+              <EndDate>2026-07-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>
@@ -91,10 +91,10 @@
         <SubType>Fixed</SubType>
       </BondData>
       <SettlementData>
-        <ForwardMaturityDate>2027-01-02</ForwardMaturityDate>
-        <ForwardSettlementDate>2027-01-02</ForwardSettlementDate>
+        <ForwardMaturityDate>2026-04-02</ForwardMaturityDate>
+        <ForwardSettlementDate>2026-04-02</ForwardSettlementDate>
         <Settlement>Cash</Settlement>
-        <LockRate>0.0346</LockRate>
+        <LockRate>0.024</LockRate>
         <SettlementDirty>false</SettlementDirty>
       </SettlementData>
       <LongInForward>false</LongInForward>

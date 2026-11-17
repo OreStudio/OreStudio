@@ -151,6 +151,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::credit_instrument;
     if (trade_type == "CreditLinkedSwap")
         return instrument_table::credit_instrument;
+    if (trade_type == "BondFutureOption")
+        return instrument_table::scripted_instrument;
     if (trade_type == "Bond")
         return instrument_table::bond_instrument;
     if (trade_type == "ForwardBond")
@@ -175,6 +177,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityOption")
         return instrument_table::equity_option_instrument;
+    if (trade_type == "EquityFutureOption")
+        return instrument_table::scripted_instrument;
     if (trade_type == "EquityAsianOption")
         return instrument_table::equity_asian_option_instrument;
     if (trade_type == "EquityBarrierOption")

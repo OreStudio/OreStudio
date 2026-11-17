@@ -466,10 +466,43 @@ constexpr std::string_view bond_types[] = {"Bond",
                                            "BondPosition",
                                            "CallableBond",
                                            "ConvertibleBond",
-                                           "Ascot"};
+                                           "Ascot",
+                                           "BondFutureOption"};
 constexpr std::size_t bond_type_count = sizeof(bond_types) / sizeof(bond_types[0]);
 
 constexpr std::string_view bond_futures[] = {"FGBL", "FGBM", "ZN", "ZB"};
+
+/*
+ * An option on a bond future is read through a class of its own, so it is a
+ * scripted batch rather than a bond product. It expires a month out, before
+ * any listed contract's delivery.
+ */
+ores::trading::domain::instrument_batch
+build_bond_future_option(const domain::trade_generation_scope& scope,
+                         const domain::trade_population_slot& entry) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
+    const auto name = slot_name(scope, entry.slot);
+    const auto money = [](double value) {
+        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
+    };
+    auto built = tb::bond_future_option_builder(
+                     {.contract = std::string(bond_futures[entry.slot % 4]),
+                      .contract_notional = money(100000.0),
+                      .strike = money(100.0 + 30.0 * draw(name, 6)),
+                      .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
+                      .position = first_way(entry) ? tb::option_position::long_option :
+                                                     tb::option_position::short_option,
+                      .expiry = add_months(scope.as_of_date, 1)})
+                     .build();
+    if (!built)
+        throw trade_population_error("The BondFutureOption builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(
+        batch, ores::trading::domain::trade_instrument{std::move(*built)});
+    return batch;
+}
 
 ores::trading::domain::bond_product bond_product_of(
     std::expected<ores::trading::domain::bond_product, ores::trading::builders::build_error> built,
@@ -562,14 +595,21 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
                  .expiry = add_years(scope.as_of_date, 1),
                  .position = position})
                 .build());
-    if (type == "ForwardBond")
-        // A forward on the bond matures a year out, well before the bond does.
+    if (type == "ForwardBond") {
+        /*
+         * A forward on the bond matures a year out, or halfway to the bond's
+         * maturity when the bond matures sooner: ORE prices no forward past it.
+         */
+        const auto halfway = year_month_day{sys_days{scope.as_of_date} +
+                                            (sys_days{maturity} - sys_days{scope.as_of_date}) / 2};
+        const auto forward = std::min(add_years(scope.as_of_date, 1), halfway);
         return built(tb::forward_bond_builder({.holding = holding,
                                                .long_in_forward = first_way(entry),
-                                               .forward_maturity = add_years(scope.as_of_date, 1),
-                                               .settlement = add_years(scope.as_of_date, 1),
+                                               .forward_maturity = forward,
+                                               .settlement = forward,
                                                .lock_rate = rate(0.02, 0.03, 7)})
                          .build());
+    }
     if (type == "BondFuture")
         return built(tb::bond_future_builder({.holding = holding,
                                               .contract = std::string(bond_futures[slot % 4]),
@@ -690,7 +730,15 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         if (!security)
             throw trade_population_error("The bond issue builder refuses the drawn " +
                                          security.error().term + ": " + security.error().message);
-        auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
+        /*
+         * An option on a bond future names a contract rather than the slot's
+         * security, so its batch is scripted; the slot states the security as
+         * every bond slot does.
+         */
+        const bool future_option = entry.trade_type_code == "BondFutureOption";
+        auto product = future_option ?
+                           ores::trading::domain::bond_product{} :
+                           build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
         /*
          * ORE prices a bond option on the yield volatility its bond names, and
          * refuses the trade when the bond names none. The name follows the
@@ -708,12 +756,19 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             throw trade_population_error(
                 "The tenant holds no legal entity, so no callable bond can name a credit "
                 "curve. Publish the LEI dataset first.");
-        if (entry.trade_type_code == "CallableBond")
+        /*
+         * The curve follows the security, not the slot: slots that hold one
+         * security state one issue, and the store refuses an issue restated
+         * with another curve.
+         */
+        if (entry.trade_type_code == "CallableBond") {
+            const auto& entities = scope.credit_reference_entities;
+            const auto drawn = static_cast<std::size_t>(draw(security_id, 12) *
+                                                        static_cast<double>(entities.size()));
             security->issue.credit_curve_id =
-                credit_curve_of(
-                    scope.credit_reference_entities[slot % scope.credit_reference_entities.size()],
-                    entry.currency)
+                credit_curve_of(entities[std::min(drawn, entities.size() - 1)], entry.currency)
                     .uri();
+        }
         entry.bond_issue = std::move(security->issue);
         entry.bond_issue_legs = std::move(security->legs);
         entry.bond_issue_leg_amounts = std::move(security->amounts);
@@ -721,7 +776,10 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.bond_issue_leg_schedules = std::move(security->schedules);
         entry.bond_issue_call_dates = product.call_dates;
         entry.bond_issue_conversion_targets = product.conversion_targets;
-        append(entry.instruments, std::move(product));
+        if (future_option)
+            entry.instruments = build_bond_future_option(scope, entry);
+        else
+            append(entry.instruments, std::move(product));
 
         plan.slots.push_back(std::move(entry));
     }
@@ -2272,7 +2330,8 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityGenericBarrierOption",
                                              "EquityBasketVarianceSwap",
                                              "EquityPairwiseVarianceSwap",
-                                             "EquityForwardVolatilityAgreement"};
+                                             "EquityForwardVolatilityAgreement",
+                                             "EquityFutureOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -3129,6 +3188,19 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                 .build(),
             type);
     }
+    if (type == "EquityFutureOption")
+        // The future expires a month after the option does.
+        return scripted_batch_of(
+            tb::equity_future_option_builder({.underlying = address,
+                                              .currency = currency,
+                                              .quantity = money(notional / level),
+                                              .strike = money(level),
+                                              .kind = kind,
+                                              .position = position,
+                                              .expiry = end,
+                                              .future_expiry = add_months(end, 1)})
+                .build(),
+            type);
     if (type == "EquityForwardVolatilityAgreement") {
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =

@@ -145,6 +145,24 @@ if __name__ == "__main__":
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CODEGEN_DIR = REPO_ROOT / "projects" / "ores.codegen"
+
+
+# A render is about 200 MB, too much for the tmpfs the fleet shares, so it goes
+# to the git common directory: on disk and outside every worktree. prettier
+# silently skips files under git-ignored paths and dot directories.
+def _render_root() -> Path:
+    common = subprocess.run(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        cwd=REPO_ROOT, check=True, capture_output=True, text=True).stdout.strip()
+    return Path(common) / "codegen-drift"
+
+
+def _render_dir(prefix: str) -> tempfile.TemporaryDirectory:
+    root = _render_root()
+    root.mkdir(parents=True, exist_ok=True)
+    return tempfile.TemporaryDirectory(prefix=prefix, dir=root)
+
+
 SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CODEGEN_DIR / "src"))
 sys.path.insert(0, str(SCRIPTS_DIR))
@@ -388,7 +406,7 @@ def _render_components(components: list, address: str, tmp_root: Path,
 
 def _dry_run(components: list, address: str, verbose: bool) -> int:
     """The safe mode: render to a temporary root, report, write nothing."""
-    with tempfile.TemporaryDirectory(prefix="ores-codegen-dry-run-") as tmpdir:
+    with _render_dir("ores-codegen-dry-run-") as tmpdir:
         tmp_root = Path(tmpdir)
         _seed_clang_format(tmp_root)
         rc = _render_components(components, address, tmp_root)
@@ -541,7 +559,7 @@ def _sweep(base: str, verbose: bool) -> int:
     print(f"Sweeping {len(components)} of {len(catalogue)} catalogue component(s) "
           f"against {base[:12]} (renders only, no writes)...")
 
-    with tempfile.TemporaryDirectory(prefix="ores-codegen-sweep-") as tmpdir:
+    with _render_dir("ores-codegen-sweep-") as tmpdir:
         tmp_root = Path(tmpdir)
         _seed_clang_format(tmp_root)
         rc = _render_components(components, "ores", tmp_root,

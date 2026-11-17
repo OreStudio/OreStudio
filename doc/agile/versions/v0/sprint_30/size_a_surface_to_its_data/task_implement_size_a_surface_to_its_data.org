@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-size-a-surface-to-its-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A surface should reach as far as its party's market data reaches and no further,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

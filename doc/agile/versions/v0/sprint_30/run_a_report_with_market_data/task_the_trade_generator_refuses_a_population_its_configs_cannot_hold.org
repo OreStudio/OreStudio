@@ -37,11 +37,11 @@ and the planner's refusal is the guard that finds the next such drift.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -100,6 +100,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The seeded total is eleven hundred, so four per cent of it is the forty-four
+trades the four bond configs need to book one trade per code. The knob fixture
+now carries the bond count the generator cycles, which is what let this drift
+reach main: the fixture said ten codes while the catalogue routed eleven, so the
+rule the planner enforces was never exercised at the real count.
+
+The fix takes effect on a recreated database, because the seeded defaults are
+rows rather than code. A fresh provision is the proof, and the story's proof
+task recreates one anyway.
+
+Found while verifying the story: no report could run on the generated trades
+because the trade step refused before booking any. Fixed here rather than in the
+generator story, which closed before the option on a bond future joined the
+cycle.
 
 * Promoted from capture
 

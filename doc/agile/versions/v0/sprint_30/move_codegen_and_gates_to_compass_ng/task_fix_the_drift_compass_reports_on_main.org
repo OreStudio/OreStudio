@@ -85,7 +85,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the generators no longer fill the two retyped nullable fields | equity_position_*_generator.cpp | Declined | The template leaves every std::optional<double> unset; the sibling optional doubles behave the same. |
+| 2 | Local review: misspell-fixer on the changed files | all | Accepted | Clean; the exit 1 over the whole tree comes from files this branch does not touch. |
+| 3 | Gate: pgtap trading_script_library_visibility expected the old 42501 refusal | trading_script_library_visibility_test.sql | Accepted | The split policy matches no system row; the test asserts the update changes none (e63b1b6b58). |
+| 4 | Gate: codegen-tests, drift tests outside a git checkout and two RLS template tests | check_component_drift.py, test_rls_own_or_system_tenant_rows.py | Accepted | Fixed (e21296d146, fab4b4d91b); two failures already on main are captured. |
 
 * Result
 

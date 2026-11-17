@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/quote-through-the-vendor-contributors
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A party meets its volatility quotes from the vendors it meets its rates from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -40,9 +40,32 @@ A party meets its volatility quotes from the vendors it meets its rates from.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*What is there.* The surface feed publishes raw market ticks under =source_name.contributor=,
+addressed by oresmd URI: an older path. The spot and curve feeds instead run through the
+simulator adapter: an adapter of each provider is offered the generators whose vendor ids its
+notation writes, and starts one when the market data service demands one of those ids. Three
+pieces are missing for a surface to take that path:
+
+1. *A vendor id for an FX option quote.* =quote_description= is =fx_spot_quote= or
+   =ir_curve_pillar=; no provider's notation writes or parses an id for a volatility point.
+2. *Offers for a surface.* =system_generator_offers= offers spot and curve generators only.
+3. *One latent path for every contributor.* Each adapter has its own generator runner, so a
+   surface offered to the bloomberg, ice and tradeweb adapters would be three generators on
+   three latent paths, and the vendors would quote three different markets. The contributors
+   must observe one surface.
+
+*Plan, in slices.*
+
+1. Add =fx_option_quote= (pair, expiry, strike label) to =quote_description=, and teach each
+   provider's notation to write and read it; the catalogue gains each contributor's vendor
+   instruments, mapped to the fx_option items the blueprints read.
+2. Hold one surface generator per feed in the fleet, shared by the adapters: the first adapter
+   whose ids are demanded starts it, each adapter publishes only its own contributor's points
+   through its own targets, and the surface stops when no adapter demands it.
+3. Offer the surface's points to each contributor's adapter, and add the vendors the curves use
+   (ice, tradeweb) and a clean contributor no tenant subscribes to, in the dataset.
+4. Prove a subscribed party receives its vendors' volatility quotes on the routes it receives
+   its rates on.
 
 * Measurements
 

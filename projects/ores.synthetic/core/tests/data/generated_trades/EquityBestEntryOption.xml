@@ -63,46 +63,58 @@
       </Underlying>
     </EquityBestEntryOptionData>
   </Trade>
-  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
+  <Trade id="0f1cabb4-b764-579f-8437-c726066494c7">
     <TradeType>EquityBestEntryOption</TradeType>
     <EquityBestEntryOptionData>
       <LongShort>Short</LongShort>
-      <Currency>EUR</Currency>
-      <Notional>3698285.51</Notional>
+      <Currency>USD</Currency>
+      <Notional>9441681.11</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.06</Cap>
       <Strike>0.85</Strike>
       <TriggerLevel>0.95</TriggerLevel>
       <ResetMinimum>0.85</ResetMinimum>
       <Premium>0</Premium>
-      <ExpiryDate>2029-09-02</ExpiryDate>
-      <StrikeDate>2025-09-02</StrikeDate>
-      <PremiumDate>2025-09-02</PremiumDate>
-      <SettlementDate>2029-09-02</SettlementDate>
+      <ExpiryDate>2033-01-02</ExpiryDate>
+      <StrikeDate>2026-01-02</StrikeDate>
+      <PremiumDate>2026-01-02</PremiumDate>
+      <SettlementDate>2033-01-02</SettlementDate>
       <StrikeObservationDates>
         <Dates>
           <Dates>
-            <Date>2025-12-02</Date>
-            <Date>2026-03-02</Date>
-            <Date>2026-06-02</Date>
-            <Date>2026-09-02</Date>
-            <Date>2026-12-02</Date>
-            <Date>2027-03-02</Date>
-            <Date>2027-06-02</Date>
-            <Date>2027-09-02</Date>
-            <Date>2027-12-02</Date>
-            <Date>2028-03-02</Date>
-            <Date>2028-06-02</Date>
-            <Date>2028-09-04</Date>
-            <Date>2028-12-04</Date>
-            <Date>2029-03-02</Date>
-            <Date>2029-06-04</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-04</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-04</Date>
+            <Date>2028-01-03</Date>
+            <Date>2028-04-03</Date>
+            <Date>2028-07-03</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+            <Date>2030-01-02</Date>
+            <Date>2030-04-02</Date>
+            <Date>2030-07-02</Date>
+            <Date>2030-10-02</Date>
+            <Date>2031-01-02</Date>
+            <Date>2031-04-02</Date>
+            <Date>2031-07-02</Date>
+            <Date>2031-10-02</Date>
+            <Date>2032-01-02</Date>
+            <Date>2032-04-02</Date>
+            <Date>2032-07-02</Date>
+            <Date>2032-10-04</Date>
           </Dates>
         </Dates>
       </StrikeObservationDates>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
     </EquityBestEntryOptionData>
   </Trade>

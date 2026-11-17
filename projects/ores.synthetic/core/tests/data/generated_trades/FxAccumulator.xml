@@ -45,12 +45,12 @@
       </Barriers>
     </FxAccumulatorData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>FxAccumulator</TradeType>
     <FxAccumulatorData>
       <Currency>USD</Currency>
-      <FixingAmount>4253585.58</FixingAmount>
-      <Strike>0.7235</Strike>
+      <FixingAmount>2449079.16</FixingAmount>
+      <Strike>1.0498</Strike>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
@@ -59,11 +59,11 @@
         <LongShort>Short</LongShort>
         <PayoffType>Accumulator</PayoffType>
       </OptionData>
-      <StartDate>2025-09-02</StartDate>
+      <StartDate>2025-08-02</StartDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-09-02</StartDate>
-          <EndDate>2026-09-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2026-08-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </ObservationDates>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>0.7235</RangeTo>
+          <RangeTo>1.0498</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>0.7235</RangeFrom>
+          <RangeFrom>1.0498</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>0.7959</Level>
+            <Level>1.1548</Level>
           </Levels>
         </BarrierData>
       </Barriers>

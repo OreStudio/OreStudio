@@ -67,17 +67,17 @@
       </FundingData>
     </TotalReturnSwapData>
   </Trade>
-  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
     <TradeType>TotalReturnSwap</TradeType>
     <Envelope>
       <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <SubTrade id="f8953170-ae41-5c4f-8d18-a68dc04b58cc">
+        <SubTrade id="5d6f435c-86a6-5a41-b89f-ed5cc18e047e">
           <SubTradeType>EquityPosition</SubTradeType>
           <EquityPositionData>
-            <Quantity>1833</Quantity>
+            <Quantity>15465</Quantity>
             <Underlying>
               <Type>Equity</Type>
               <Name>RIC:.STOXX50E</Name>
@@ -90,15 +90,15 @@
         <Currency>EUR</Currency>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-01-02</StartDate>
-            <EndDate>2027-01-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2033-11-02</EndDate>
             <Tenor>0D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
-        <InitialPrice>2997.8</InitialPrice>
+        <InitialPrice>397.38</InitialPrice>
         <InitialPriceCurrency>EUR</InitialPriceCurrency>
       </ReturnData>
       <FundingData>
@@ -109,12 +109,12 @@
           <PaymentConvention>MF</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>5495701.01</Notional>
+            <Notional>6145432.04</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2026-01-02</StartDate>
-              <EndDate>2027-01-02</EndDate>
+              <StartDate>2025-11-02</StartDate>
+              <EndDate>2033-11-02</EndDate>
               <Tenor>6M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>MF</Convention>

@@ -23,27 +23,27 @@
       <EQIndex>EQ-RIC:.NDX</EQIndex>
     </EquityTouchOptionData>
   </Trade>
-  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
     <TradeType>EquityTouchOption</TradeType>
     <EquityTouchOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
-          <ExerciseDate>2030-12-02</ExerciseDate>
+          <ExerciseDate>2031-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>UpAndIn</Type>
         <Levels>
-          <Level>4656.1</Level>
+          <Level>3512.78</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.NDX</Name>
-      <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>482126.28</PayoffAmount>
+      <Name>RIC:DHER.DE</Name>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <PayoffAmount>4607772.6</PayoffAmount>
       <Calendar>TARGET</Calendar>
-      <EQIndex>EQ-RIC:.NDX</EQIndex>
+      <EQIndex>EQ-RIC:DHER.DE</EQIndex>
     </EquityTouchOptionData>
   </Trade>
 </Portfolio>

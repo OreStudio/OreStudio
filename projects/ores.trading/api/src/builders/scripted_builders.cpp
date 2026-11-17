@@ -110,6 +110,42 @@ public:
         out_.schedule_dates.push_back(std::move(date));
     }
 
+    /// One BarrierData block with its one level, under the role.
+    void barrier(const std::string& role, const scripted_barrier& terms) {
+        int sequence = 0;
+        for (const auto& row : out_.barriers)
+            if (row.barrier_role == role)
+                ++sequence;
+        domain::instrument_barrier row;
+        row.barrier_role = role;
+        row.sequence_number = sequence + 1;
+        row.barrier_type = terms.type;
+        out_.barriers.push_back(std::move(row));
+        domain::instrument_barrier_level level;
+        level.barrier_role = role;
+        level.barrier_sequence_number = sequence + 1;
+        level.sequence_number = 1;
+        level.level = terms.level;
+        out_.barrier_levels.push_back(std::move(level));
+    }
+
+    /// A schedule of the product's own, stated as a rule every @p tenor.
+    void rules_schedule(std::string role, const ymd& start, const ymd& end, std::string tenor) {
+        domain::instrument_schedule row;
+        row.owner_role = "option";
+        row.owner_number = 1;
+        row.schedule_role = std::move(role);
+        row.sequence_number = 1;
+        row.schedule_kind = "rules";
+        row.start_date = start;
+        row.end_date = end;
+        row.tenor = std::move(tenor);
+        row.calendar = "TARGET";
+        row.convention = "F";
+        row.rule = "Forward";
+        out_.schedules.push_back(std::move(row));
+    }
+
     /// A schedule of the product's own, stated as a list of dates.
     void dated_schedule(std::string role, const std::vector<ymd>& dates) {
         domain::instrument_schedule schedule;
@@ -449,6 +485,97 @@ scripted_result build_strike_resettable_option(std::string_view trade_type,
     out.value("PremiumDate", "text", scripted_date(terms.premium_date.get()));
     out.underlying("underlying", terms.underlying.get(), std::string(underlying_type));
     out.dated_schedule("observationdates", dates);
+    return out.take();
+}
+
+namespace {
+
+/// Refuses a barrier whose type ORE does not read or whose level is not positive.
+std::optional<build_error> barrier_refusal(const scripted_barrier& barrier) {
+    static constexpr std::string_view types[] = {"UpAndOut", "UpAndIn", "DownAndOut", "DownAndIn"};
+    if (std::ranges::find(types, barrier.type) == std::ranges::end(types))
+        return build_error{"barrier", "must be UpAndOut, UpAndIn, DownAndOut or DownAndIn"};
+    return positive_amount("barrier", barrier.level);
+}
+
+}
+
+scripted_result build_window_barrier_option(std::string_view trade_type,
+                                            std::string_view underlying_type,
+                                            const window_barrier_option_terms& terms) {
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (auto refusal = positive_amount("fixing_amount", terms.fixing_amount.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = barrier_refusal(terms.barrier.get()))
+        return std::unexpected(std::move(*refusal));
+    if (!(terms.window_start.get() < terms.window_end.get()) ||
+        terms.expiry.get() < terms.window_end.get())
+        return std::unexpected(
+            build_error{"window_end", "must be after the window start and by the expiry"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("Currency", "enumeration", terms.currency.get());
+    out.value("FixingAmount", "decimal", scripted_text(terms.fixing_amount.get()));
+    out.value("Strike", "text", scripted_text(terms.strike.get()));
+    out.value("StartDate", "text", scripted_date(terms.window_start.get()));
+    out.value("EndDate", "text", scripted_date(terms.window_end.get()));
+    out.underlying("underlying", terms.underlying.get(), std::string(underlying_type));
+    domain::instrument_option option;
+    option.long_short = long_short_of(terms.position.get());
+    option.option_type = option_type_of(terms.kind.get());
+    out.option(std::move(option), terms.expiry.get());
+    out.barrier("barrier", terms.barrier.get());
+    return out.take();
+}
+
+equity_generic_barrier_option_builder::equity_generic_barrier_option_builder(
+    generic_barrier_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result equity_generic_barrier_option_builder::build() const {
+    const auto& terms = terms_;
+    if (terms.pay_currency.get().empty())
+        return std::unexpected(build_error{"pay_currency", "must name a currency"});
+    if (auto refusal = positive_amount("quantity", terms.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+    const auto& barriers = terms.barriers.get();
+    if (barriers.empty())
+        return std::unexpected(build_error{"barriers", "must name at least one barrier"});
+    for (const auto& barrier : barriers)
+        if (auto refusal = barrier_refusal(barrier))
+            return std::unexpected(std::move(*refusal));
+    if (terms.kiko_type) {
+        static constexpr std::string_view kikos[] = {"KoAlways", "KoBeforeKi", "KoAfterKi"};
+        if (std::ranges::find(kikos, *terms.kiko_type) == std::ranges::end(kikos))
+            return std::unexpected(
+                build_error{"kiko_type", "must be KoAlways, KoBeforeKi or KoAfterKi"});
+    }
+    if (!(terms.monitoring_start.get() < terms.expiry.get()))
+        return std::unexpected(build_error{"monitoring_start", "must be before the expiry"});
+    if (terms.settlement.get() < terms.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("PayCurrency", "enumeration", terms.pay_currency.get());
+    out.value("Quantity", "decimal", scripted_text(terms.quantity.get()));
+    out.value("Strike", "decimal", scripted_text(terms.strike.get()));
+    out.value("SettlementDate", "text", scripted_date(terms.settlement.get()));
+    if (terms.kiko_type)
+        out.value("Barriers.KikoType", "enumeration", *terms.kiko_type);
+    out.underlying("underlying", terms.underlying.get(), "Equity");
+    domain::instrument_option option;
+    option.long_short = long_short_of(terms.position.get());
+    option.payoff_type = "Vanilla";
+    option.option_type = option_type_of(terms.kind.get());
+    out.option(std::move(option), terms.expiry.get());
+    out.rules_schedule("barrier_schedule", terms.monitoring_start.get(), terms.expiry.get(), "1D");
+    for (const auto& barrier : barriers)
+        out.barrier("barrier", barrier);
     return out.take();
 }
 

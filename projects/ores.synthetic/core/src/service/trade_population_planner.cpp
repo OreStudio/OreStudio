@@ -1742,7 +1742,8 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxBasketOption",
                                          "FxRainbowOption",
                                          "FxBestEntryOption",
-                                         "FxStrikeResettableOption"};
+                                         "FxStrikeResettableOption",
+                                         "FxWindowBarrierOption"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
 /*
@@ -1883,6 +1884,26 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
     const auto built = [&](auto result) {
         return fx_batch_of(std::move(result), type);
     };
+    if (type == "FxWindowBarrierOption") {
+        // The barrier is watched from the start to halfway to the expiry, a tenth away.
+        const bool call = kind == tb::option_kind::call;
+        return scripted_batch_of(
+            tb::window_barrier_option_builder<tb::scripted_family::fx>(
+                {.underlying = index,
+                 .currency = pair.quote,
+                 .fixing_amount = money(notional),
+                 .strike = level(rate),
+                 .kind = kind,
+                 .position = position,
+                 .expiry = end,
+                 .window_start = start,
+                 .window_end =
+                     year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2},
+                 .barrier = tb::scripted_barrier{.type = call ? "DownAndOut" : "UpAndOut",
+                                                 .level = level(rate * (call ? 0.9 : 1.1))}})
+                .build(),
+            type);
+    }
     if (type == "FxBestEntryOption")
         return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::fx>(
                                      {.underlying = index,
@@ -2138,7 +2159,9 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityBasketOption",
                                              "EquityRainbowOption",
                                              "EquityBestEntryOption",
-                                             "EquityStrikeResettableOption"};
+                                             "EquityStrikeResettableOption",
+                                             "EquityWindowBarrierOption",
+                                             "EquityGenericBarrierOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -2848,6 +2871,43 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                 tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build(), type);
         return scripted_batch_of(
             tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build(), type);
+    }
+    if (type == "EquityWindowBarrierOption" || type == "EquityGenericBarrierOption") {
+        // A call knocks out a tenth below the level, a put a tenth above it.
+        const bool call = kind == tb::option_kind::call;
+        const tb::scripted_barrier knock_out{.type = call ? "DownAndOut" : "UpAndOut",
+                                             .level = money(level * (call ? 0.9 : 1.1))};
+        if (type == "EquityWindowBarrierOption")
+            return scripted_batch_of(
+                tb::window_barrier_option_builder<tb::scripted_family::equity>(
+                    {.underlying = address,
+                     .currency = currency,
+                     .fixing_amount = money(notional / level),
+                     .strike = money(level),
+                     .kind = kind,
+                     .position = position,
+                     .expiry = end,
+                     .window_start = start,
+                     .window_end =
+                         year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2},
+                     .barrier = knock_out})
+                    .build(),
+                type);
+        return scripted_batch_of(tb::equity_generic_barrier_option_builder(
+                                     {.underlying = address,
+                                      .pay_currency = currency,
+                                      .quantity = money(notional / level),
+                                      .strike = money(level),
+                                      .kind = kind,
+                                      .position = position,
+                                      .expiry = end,
+                                      // ORE rolls an expiry on a holiday forward.
+                                      .settlement = year_month_day{sys_days{end} + days{5}},
+                                      .monitoring_start = start,
+                                      .barriers = std::vector<tb::scripted_barrier>{knock_out},
+                                      .kiko_type = std::nullopt})
+                                     .build(),
+                                 type);
     }
     if (type == "EquityBestEntryOption")
         return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::equity>(

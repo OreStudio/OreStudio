@@ -23,14 +23,14 @@
       <FXIndex>FX-TR20H-EUR-USD</FXIndex>
     </FxAverageForwardData>
   </Trade>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
     <TradeType>FxAverageForward</TradeType>
     <FxAverageForwardData>
-      <PaymentDate>2035-01-02</PaymentDate>
+      <PaymentDate>2029-12-02</PaymentDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2026-01-02</StartDate>
-          <EndDate>2035-01-02</EndDate>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2029-12-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -39,9 +39,9 @@
         </Rules>
       </ObservationDates>
       <FixedPayer>true</FixedPayer>
-      <ReferenceNotional>5632565.12</ReferenceNotional>
+      <ReferenceNotional>8737435.82</ReferenceNotional>
       <ReferenceCurrency>EUR</ReferenceCurrency>
-      <SettlementNotional>3041021.91</SettlementNotional>
+      <SettlementNotional>6701613.27</SettlementNotional>
       <SettlementCurrency>USD</SettlementCurrency>
       <FXIndex>FX-TR20H-EUR-USD</FXIndex>
     </FxAverageForwardData>

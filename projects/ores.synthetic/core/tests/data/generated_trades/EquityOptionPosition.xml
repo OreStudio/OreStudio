@@ -22,14 +22,14 @@
       </Underlying>
     </EquityOptionPositionData>
   </Trade>
-  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>EquityOptionPosition</TradeType>
     <EquityOptionPositionData>
-      <Quantity>1165</Quantity>
+      <Quantity>890</Quantity>
       <Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
         <OptionData>
           <LongShort>Short</LongShort>
@@ -37,10 +37,10 @@
           <Style>European</Style>
           <Settlement>Cash</Settlement>
           <ExerciseDates>
-            <ExerciseDate>2031-10-02</ExerciseDate>
+            <ExerciseDate>2026-08-02</ExerciseDate>
           </ExerciseDates>
         </OptionData>
-        <Strike>1484.73</Strike>
+        <Strike>2753.31</Strike>
       </Underlying>
     </EquityOptionPositionData>
   </Trade>

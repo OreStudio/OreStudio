@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 684B4233-F5A7-4E16-B6B2-31C2251406B2
+:END:
+#+title: Task: Compare compass-ng with the Python gates on main
+#+description: Initial task for: Move codegen and the gates to compass-ng
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass-ng generates the code and runs the build-free gates for every environment, for CI and for external developers. ores.codegen regeneration and the ported Python gates are removed only after the two tools give the same verdicts on the same commit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- A recorded comparison lists every disagreement between compass check and local_checks.py on one commit, with its cause and which side is right.
+- compass check reports nothing on main: the real drift is regenerated, and each baseline entry is an inline exception.
+- ./compass.sh check runs compass check for the ported gates, and runs Python only for the gates compass does not cover.
+- compass generate replaces regenerate --all and the ores.codegen regeneration verbs.
+- CI runs compass check --ratchet from a pinned compass release, and the ported Python CI workflows are removed.
+- Every environment and every external developer installs a pinned compass release with one documented command, and bearings reports a missing or out-of-date binary.
+- The Python gates and generators that compass replaces are deleted, together with their baseline files.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

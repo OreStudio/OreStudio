@@ -14,71 +14,155 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Opens and closes the public HTTPS view of the web service on a deployed host.
+# Opens and closes the public HTTPS view of the web service on a deployed host,
+# through the host's own address.
 #
-# The exposure goes through Tailscale Funnel rather than the host firewall, and
-# that is deliberate: Funnel terminates TLS with a certificate for the node's
-# tailnet name, reaches the service over loopback, and needs no inbound port at
-# all. Opening 443 in nftables would instead require a certificate for an
-# address the host does not own and a TLS terminator in front of a plain HTTP
-# service, and would leave the port open for as long as the rule stayed.
+# The host terminates TLS with Caddy, which obtains and renews a Let's Encrypt
+# certificate for the name it is given and reverse-proxies to the BFF bound to
+# loopback. While closed the machine accepts no traffic at all from the
+# internet: the rule that opens 443 lives in a table of its own, so closing
+# deletes it in one operation and never edits the host's main ruleset, and
+# Caddy is stopped rather than left listening.
 #
-# What Funnel publishes is public: anyone with the URL reaches the service. The
-# service authenticates its users, so the exposure is the login page; the point
-# of the script is that the window is opened deliberately and closed again.
+# Only 443 is opened. The certificate is validated with TLS-ALPN-01, which
+# happens on 443, so port 80 is never needed.
 #
-# Funnel has to be allowed for the tailnet once, in the Tailscale admin
-# console. On a tailnet that has not enabled it, `on` prints the URL that
-# enables it.
+# The name must resolve to the host's public address before `on`.
 #
 # Usage:
-#   build/scripts/expose-web.sh <ssh-host> on
+#   build/scripts/expose-web.sh <ssh-host> setup <hostname>
+#   build/scripts/expose-web.sh <ssh-host> on [--for 2h]
 #   build/scripts/expose-web.sh <ssh-host> off
 #   build/scripts/expose-web.sh <ssh-host> status
 #
 # Environment:
-#   WEB_PORT     port the BFF listens on locally (default 21402)
-#   HTTPS_PORT   public HTTPS port Funnel serves on (default 443)
+#   WEB_PORT   port the BFF listens on locally (default 21402)
 set -euo pipefail
 
-host="${1:?usage: expose-web.sh <ssh-host> <on|off|status>}"
-action="${2:-status}"
+host="${1:?usage: expose-web.sh <ssh-host> <setup|on|off|status> [args]}"
+action="${2:?usage: expose-web.sh <ssh-host> <setup|on|off|status> [args]}"
 web_port="${WEB_PORT:-21402}"
-https_port="${HTTPS_PORT:-443}"
-target="http://127.0.0.1:${web_port}"
+helper="/usr/local/bin/ores-web-close"
+
+# One rule, inserted at the head of the host's own input chain, and removed by
+# the handle nftables gives it. A separate table does not work here: every base
+# chain on a hook sees the packet, so an accept in a chain of its own is
+# followed by the host's chain and its drop policy, and the packet is dropped
+# anyway. The handle is kept in a runtime file so the close — and the scheduled
+# close — remove exactly the rule that was added.
+handle_file="/run/ores-web-expose.handle"
+
+open_rules() {
+    ssh "$host" "
+        nft delete rule inet filter input handle \$(cat ${handle_file} 2>/dev/null) 2>/dev/null || true
+        nft insert rule inet filter input tcp dport 443 accept
+        nft -a list chain inet filter input \
+            | awk '/tcp dport 443/ {print \$NF}' | tail -1 > ${handle_file}
+        cat ${handle_file}
+    "
+}
+
+close_rules() {
+    ssh "$host" "
+        if [ -s ${handle_file} ]; then
+            nft delete rule inet filter input handle \$(cat ${handle_file}) 2>/dev/null || true
+            rm -f ${handle_file}
+        fi
+    "
+}
+
+# The same close, runnable on the host by a timer, so an exposure that is
+# forgotten ends by itself.
+install_helper() {
+    ssh "$host" "cat > ${helper} <<'EOF'
+#!/bin/sh
+# Written by build/scripts/expose-web.sh. Ends a scheduled exposure.
+systemctl stop caddy >/dev/null 2>&1 || true
+if [ -s ${handle_file} ]; then
+    nft delete rule inet filter input handle \$(cat ${handle_file}) 2>/dev/null || true
+    rm -f ${handle_file}
+fi
+EOF
+chmod 755 ${helper}"
+}
+
+write_caddyfile() {
+    ssh "$host" "cat > /etc/caddy/Caddyfile <<'EOF'
+{
+	# No admin endpoint: the configuration is written here, not over HTTP.
+	admin off
+}
+
+${hostname} {
+	tls {
+		# 443 is the only port the exposure opens, and TLS-ALPN-01 is the
+		# challenge that runs on it.
+		issuer acme {
+			disable_http_challenge
+		}
+	}
+
+	header {
+		Strict-Transport-Security \"max-age=31536000\"
+		X-Content-Type-Options \"nosniff\"
+		X-Frame-Options \"DENY\"
+		Referrer-Policy \"strict-origin-when-cross-origin\"
+	}
+
+	reverse_proxy 127.0.0.1:${web_port}
+}
+EOF
+caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1 || {
+    echo 'Caddyfile is invalid:' >&2
+    caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >&2
+    exit 1
+}"
+}
 
 case "$action" in
+    setup)
+        hostname="${3:?setup needs the hostname the certificate is issued for}"
+        ssh "$host" "command -v caddy >/dev/null 2>&1 || DEBIAN_FRONTEND=noninteractive apt-get install -y caddy >/dev/null"
+        write_caddyfile
+        # Closed is the default, so the service must not start with the machine.
+        ssh "$host" "systemctl disable caddy >/dev/null 2>&1 || true; systemctl stop caddy >/dev/null 2>&1 || true"
+        install_helper
+        echo "Caddy is configured for ${hostname}; open it with: $0 ${host} on"
+        ;;
     on)
-        # --bg leaves the funnel running after the ssh session ends, which is
-        # what makes an explicit `off` meaningful.
-        if output=$(ssh "$host" \
-            "timeout 25 tailscale funnel --bg --https=${https_port} ${target} 2>&1"); then
-            printf '%s\n' "$output"
-            echo "Open to the internet on https://<node>.<tailnet>.ts.net/"
-            echo "Close it with: $0 $host off"
-        else
-            printf '%s\n' "$output" >&2
-            echo "Funnel is not available; the message above says how to enable it." >&2
-            exit 1
+        shift 2
+        duration=""
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --for) duration="${2:?--for needs a duration, e.g. 2h}"; shift 2 ;;
+                *) echo "unknown argument: $1" >&2; exit 2 ;;
+            esac
+        done
+        open_rules
+        ssh "$host" "systemctl start caddy"
+        ssh "$host" "systemctl stop ores-web-close.service 2>/dev/null || true"
+        if [[ -n "$duration" ]]; then
+            install_helper
+            ssh "$host" "systemd-run --on-active='${duration}' --unit=ores-web-close ${helper} >/dev/null 2>&1 || true"
         fi
+        hostname="$(ssh "$host" "awk '\$2 == \"{\" {print \$1; exit}' /etc/caddy/Caddyfile")"
+        echo "Open on https://${hostname}/"
+        [[ -n "$duration" ]] && echo "It closes itself in ${duration}."
+        echo "Close it now with: $0 ${host} off"
         ;;
     off)
-        # Closing a funnel that is not open waits for a confirmation that
-        # never comes, so the status decides whether there is anything to
-        # close — and, unlike the close itself, it answers at once.
-        if ssh "$host" "timeout 10 tailscale funnel status 2>/dev/null" \
-                | grep -q 'https://'; then
-            ssh "$host" "timeout 20 tailscale funnel --https=${https_port} off"
-        else
-            echo "Nothing was being served on ${https_port}."
-        fi
-        echo "The web service is no longer reachable from the internet."
+        ssh "$host" "systemctl stop caddy >/dev/null 2>&1 || true"
+        close_rules
+        ssh "$host" "systemctl stop ores-web-close.service 2>/dev/null || true"
+        echo "Caddy stopped and port 443 closed."
         ;;
     status)
-        ssh "$host" "tailscale funnel status"
+        printf 'caddy      : %s\n' "$(ssh "$host" "systemctl is-active caddy 2>/dev/null || true")"
+        printf 'firewall   : %s\n' "$(ssh "$host" "nft list chain inet filter input 2>/dev/null | grep -q 'tcp dport 443' && echo 'open (443)' || echo closed")"
+        printf 'certificate: %s\n' "$(ssh "$host" "ls -1 /var/lib/caddy/.local/share/caddy/certificates/*/*.crt 2>/dev/null | head -2 | tr '\n' ' ' || true")"
         ;;
     *)
-        echo "unknown action: ${action} (expected on, off or status)" >&2
+        echo "unknown action: ${action} (expected setup, on, off or status)" >&2
         exit 2
         ;;
 esac

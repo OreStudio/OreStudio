@@ -77,8 +77,8 @@ select set_eq(
     'each entity reads the surface of every quoted pair it builds both curves for, and no other');
 
 select is(
-    (select count(*)::int from t_expected), 22,
-    'the entities read 22 surfaces: three, ten, six and three');
+    (select count(*)::int from t_expected), 54,
+    'the entities read 54 surfaces: four for the group, thirty for the UK, eleven for the US and nine for Hong Kong');
 
 select is(
     (select count(*)::int from t_volatility v

@@ -498,12 +498,23 @@
     "company_code": "acme_group",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "fcc901cc-9cfe-55cc-9166-8721c73d4898",
+    "curve_configuration_id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURGBP",
+    "description": "EUR/GBP volatility surface, read from the published EURGBP_SSVI grid",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
     "id": "16ce9212-664b-56e5-8fb3-1da6d6dca302",
     "curve_configuration_id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
     "section_code": "FXVolatilities",
     "curve_id": "EURUSD",
     "description": "EUR/USD volatility surface, read from the published EURUSD_SSVI grid",
-    "position": 0
+    "position": 1
   },
   {
     "company_code": "acme_group",
@@ -514,61 +525,61 @@
     "section_code": "FXVolatilities",
     "curve_id": "GBPUSD",
     "description": "GBP/USD volatility surface, read from the published GBPUSD_SSVI grid",
-    "position": 1
+    "position": 2
   },
   {
     "company_code": "acme_group",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "fcc901cc-9cfe-55cc-9166-8721c73d4898",
+    "id": "72ad8ff1-ddd6-5012-bdff-5fcfe232f60c",
     "curve_configuration_id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
     "section_code": "FXVolatilities",
-    "curve_id": "EURGBP",
-    "description": "EUR/GBP volatility surface, read from the published EURGBP_SSVI grid",
-    "position": 2
+    "curve_id": "USDHKD",
+    "description": "USD/HKD volatility surface, read from the published USDHKD_SSVI grid",
+    "position": 3
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "d2069938-42f8-57ae-b5cd-ca49988e882c",
+    "id": "5e98fc39-ec53-53cc-b657-dbc0072eb1f2",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "EURUSD",
-    "description": "EUR/USD volatility surface, read from the published EURUSD_SSVI grid",
+    "curve_id": "AUDCAD",
+    "description": "AUD/CAD volatility surface, read from the published AUDCAD_SSVI grid",
     "position": 0
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "3b0c8179-7c12-5848-b31d-f11c105196ec",
+    "id": "0d26c720-151f-54f4-b403-73eaf10a01da",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "GBPUSD",
-    "description": "GBP/USD volatility surface, read from the published GBPUSD_SSVI grid",
+    "curve_id": "AUDCHF",
+    "description": "AUD/CHF volatility surface, read from the published AUDCHF_SSVI grid",
     "position": 1
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "b343c6e0-66b6-5b32-8c87-36e043d8fff2",
+    "id": "40336791-b923-5acf-b464-14277caa61f1",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "USDJPY",
-    "description": "USD/JPY volatility surface, read from the published USDJPY_SSVI grid",
+    "curve_id": "AUDJPY",
+    "description": "AUD/JPY volatility surface, read from the published AUDJPY_SSVI grid",
     "position": 2
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "00861984-f286-5594-af2f-3928fe8d397c",
+    "id": "5d2aa84f-b80c-5610-a795-cd8ed971b3ad",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "USDCHF",
-    "description": "USD/CHF volatility surface, read from the published USDCHF_SSVI grid",
+    "curve_id": "AUDNZD",
+    "description": "AUD/NZD volatility surface, read from the published AUDNZD_SSVI grid",
     "position": 3
   },
   {
@@ -586,44 +597,44 @@
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "83f6c9e0-24e8-55a2-9855-21b1e2a7419f",
+    "id": "d5871e36-5823-5631-b04d-b81a4af27da2",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "USDCAD",
-    "description": "USD/CAD volatility surface, read from the published USDCAD_SSVI grid",
+    "curve_id": "CADJPY",
+    "description": "CAD/JPY volatility surface, read from the published CADJPY_SSVI grid",
     "position": 5
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "b20b0b52-a8a8-5ae0-b8a3-8813933c313f",
+    "id": "a5f82579-ddbb-55a3-aa95-b8810b9b364d",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "NZDUSD",
-    "description": "NZD/USD volatility surface, read from the published NZDUSD_SSVI grid",
+    "curve_id": "CHFJPY",
+    "description": "CHF/JPY volatility surface, read from the published CHFJPY_SSVI grid",
     "position": 6
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "8b69b2b3-015d-53c8-9662-1eb41a39bb9f",
+    "id": "895e6d44-44a4-517c-a6f5-a41209cca140",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "EURGBP",
-    "description": "EUR/GBP volatility surface, read from the published EURGBP_SSVI grid",
+    "curve_id": "EURAUD",
+    "description": "EUR/AUD volatility surface, read from the published EURAUD_SSVI grid",
     "position": 7
   },
   {
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "1b6f8d56-6cfc-5f58-811e-b7aedbb3f6ef",
+    "id": "865a1dc5-17c2-54a3-ab3f-7b4cca2ee4ae",
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
-    "curve_id": "EURJPY",
-    "description": "EUR/JPY volatility surface, read from the published EURJPY_SSVI grid",
+    "curve_id": "EURCAD",
+    "description": "EUR/CAD volatility surface, read from the published EURCAD_SSVI grid",
     "position": 8
   },
   {
@@ -638,48 +649,246 @@
     "position": 9
   },
   {
-    "company_code": "acme_us",
+    "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "b200b8df-02e0-5a55-a070-d2394aba6b76",
-    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "id": "4b4a6957-6261-5e4b-93c1-8dd1073981b2",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURDKK",
+    "description": "EUR/DKK volatility surface, read from the published EURDKK_SSVI grid",
+    "position": 10
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "8b69b2b3-015d-53c8-9662-1eb41a39bb9f",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURGBP",
+    "description": "EUR/GBP volatility surface, read from the published EURGBP_SSVI grid",
+    "position": 11
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "1b6f8d56-6cfc-5f58-811e-b7aedbb3f6ef",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURJPY",
+    "description": "EUR/JPY volatility surface, read from the published EURJPY_SSVI grid",
+    "position": 12
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6f23c3c9-93b4-551a-8c47-421de28b9e52",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURNZD",
+    "description": "EUR/NZD volatility surface, read from the published EURNZD_SSVI grid",
+    "position": 13
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "88c282aa-d505-5bf1-b566-8ecfa641dc2e",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURSEK",
+    "description": "EUR/SEK volatility surface, read from the published EURSEK_SSVI grid",
+    "position": 14
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7a592a6b-e5fd-512c-9b9e-6f88ab80ed15",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURTRY",
+    "description": "EUR/TRY volatility surface, read from the published EURTRY_SSVI grid",
+    "position": 15
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d2069938-42f8-57ae-b5cd-ca49988e882c",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "FXVolatilities",
     "curve_id": "EURUSD",
     "description": "EUR/USD volatility surface, read from the published EURUSD_SSVI grid",
+    "position": 16
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7b458120-d57a-516d-84ed-b35b8c50a2be",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPAUD",
+    "description": "GBP/AUD volatility surface, read from the published GBPAUD_SSVI grid",
+    "position": 17
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "2d81f6e0-b3b7-5b40-823e-2cfaa1168ff6",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPCAD",
+    "description": "GBP/CAD volatility surface, read from the published GBPCAD_SSVI grid",
+    "position": 18
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3a326f9c-eac2-5fd1-98fa-8d27941af744",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPCHF",
+    "description": "GBP/CHF volatility surface, read from the published GBPCHF_SSVI grid",
+    "position": 19
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f4407b84-1093-50d4-b371-3bdd5f79009f",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPJPY",
+    "description": "GBP/JPY volatility surface, read from the published GBPJPY_SSVI grid",
+    "position": 20
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "e1825e4b-ce3e-56ad-9cbb-dc0a4a050788",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPNZD",
+    "description": "GBP/NZD volatility surface, read from the published GBPNZD_SSVI grid",
+    "position": 21
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "3b0c8179-7c12-5848-b31d-f11c105196ec",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPUSD",
+    "description": "GBP/USD volatility surface, read from the published GBPUSD_SSVI grid",
+    "position": 22
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "84bc61ba-1e7b-5939-b4c4-fdb530a288fd",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "NZDJPY",
+    "description": "NZD/JPY volatility surface, read from the published NZDJPY_SSVI grid",
+    "position": 23
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b20b0b52-a8a8-5ae0-b8a3-8813933c313f",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "NZDUSD",
+    "description": "NZD/USD volatility surface, read from the published NZDUSD_SSVI grid",
+    "position": 24
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "83f6c9e0-24e8-55a2-9855-21b1e2a7419f",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDCAD",
+    "description": "USD/CAD volatility surface, read from the published USDCAD_SSVI grid",
+    "position": 25
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "00861984-f286-5594-af2f-3928fe8d397c",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDCHF",
+    "description": "USD/CHF volatility surface, read from the published USDCHF_SSVI grid",
+    "position": 26
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "7c739ca8-f1af-5f6f-b921-9672b0874a8d",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDCZK",
+    "description": "USD/CZK volatility surface, read from the published USDCZK_SSVI grid",
+    "position": 27
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b343c6e0-66b6-5b32-8c87-36e043d8fff2",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDJPY",
+    "description": "USD/JPY volatility surface, read from the published USDJPY_SSVI grid",
+    "position": 28
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "f453697e-ee45-5c77-88a9-6c55cd8ad1e6",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDZAR",
+    "description": "USD/ZAR volatility surface, read from the published USDZAR_SSVI grid",
+    "position": 29
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "c69e0c45-8f85-5998-a53f-e0d7c07ae1d1",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "CADJPY",
+    "description": "CAD/JPY volatility surface, read from the published CADJPY_SSVI grid",
     "position": 0
   },
   {
     "company_code": "acme_us",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "5c37124b-2316-5058-89fe-8466dbfd6f61",
+    "id": "0279a272-fd8a-56c4-8078-aec779ee29d2",
     "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
     "section_code": "FXVolatilities",
-    "curve_id": "GBPUSD",
-    "description": "GBP/USD volatility surface, read from the published GBPUSD_SSVI grid",
+    "curve_id": "EURCAD",
+    "description": "EUR/CAD volatility surface, read from the published EURCAD_SSVI grid",
     "position": 1
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "39fb0cd9-ad27-5aae-85d6-cbc230ac2500",
-    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
-    "section_code": "FXVolatilities",
-    "curve_id": "USDJPY",
-    "description": "USD/JPY volatility surface, read from the published USDJPY_SSVI grid",
-    "position": 2
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "ba88f1a8-17ba-5b9b-ad31-8ce6e79f435e",
-    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
-    "section_code": "FXVolatilities",
-    "curve_id": "USDCAD",
-    "description": "USD/CAD volatility surface, read from the published USDCAD_SSVI grid",
-    "position": 3
   },
   {
     "company_code": "acme_us",
@@ -690,7 +899,7 @@
     "section_code": "FXVolatilities",
     "curve_id": "EURGBP",
     "description": "EUR/GBP volatility surface, read from the published EURGBP_SSVI grid",
-    "position": 4
+    "position": 2
   },
   {
     "company_code": "acme_us",
@@ -701,18 +910,106 @@
     "section_code": "FXVolatilities",
     "curve_id": "EURJPY",
     "description": "EUR/JPY volatility surface, read from the published EURJPY_SSVI grid",
+    "position": 3
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b200b8df-02e0-5a55-a070-d2394aba6b76",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "EURUSD",
+    "description": "EUR/USD volatility surface, read from the published EURUSD_SSVI grid",
+    "position": 4
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d32628e1-755a-5827-bf12-d13282948fc3",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPCAD",
+    "description": "GBP/CAD volatility surface, read from the published GBPCAD_SSVI grid",
     "position": 5
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "805ed687-3ab9-5b80-9f52-a728a1dce190",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPJPY",
+    "description": "GBP/JPY volatility surface, read from the published GBPJPY_SSVI grid",
+    "position": 6
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "5c37124b-2316-5058-89fe-8466dbfd6f61",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "GBPUSD",
+    "description": "GBP/USD volatility surface, read from the published GBPUSD_SSVI grid",
+    "position": 7
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "ba88f1a8-17ba-5b9b-ad31-8ce6e79f435e",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDCAD",
+    "description": "USD/CAD volatility surface, read from the published USDCAD_SSVI grid",
+    "position": 8
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "39fb0cd9-ad27-5aae-85d6-cbc230ac2500",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDJPY",
+    "description": "USD/JPY volatility surface, read from the published USDJPY_SSVI grid",
+    "position": 9
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "6d9947eb-f45a-51eb-a615-2e4ef2efcd90",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDMXN",
+    "description": "USD/MXN volatility surface, read from the published USDMXN_SSVI grid",
+    "position": 10
   },
   {
     "company_code": "acme_hk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "22b9540d-7f85-50d8-8762-a24c5983d02a",
+    "id": "5d1a92a5-9cb3-5f4e-af1a-5a93f25858f5",
     "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
     "section_code": "FXVolatilities",
-    "curve_id": "USDJPY",
-    "description": "USD/JPY volatility surface, read from the published USDJPY_SSVI grid",
+    "curve_id": "AUDJPY",
+    "description": "AUD/JPY volatility surface, read from the published AUDJPY_SSVI grid",
     "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "b962736b-9f4e-5c35-ad17-8bd9af6a83fa",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "FXVolatilities",
+    "curve_id": "AUDNZD",
+    "description": "AUD/NZD volatility surface, read from the published AUDNZD_SSVI grid",
+    "position": 1
   },
   {
     "company_code": "acme_hk",
@@ -723,7 +1020,18 @@
     "section_code": "FXVolatilities",
     "curve_id": "AUDUSD",
     "description": "AUD/USD volatility surface, read from the published AUDUSD_SSVI grid",
-    "position": 1
+    "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "861b7511-8933-5629-9019-fae8cc76bf38",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "FXVolatilities",
+    "curve_id": "NZDJPY",
+    "description": "NZD/JPY volatility surface, read from the published NZDJPY_SSVI grid",
+    "position": 3
   },
   {
     "company_code": "acme_hk",
@@ -734,6 +1042,50 @@
     "section_code": "FXVolatilities",
     "curve_id": "NZDUSD",
     "description": "NZD/USD volatility surface, read from the published NZDUSD_SSVI grid",
-    "position": 2
+    "position": 4
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "58a3492d-a7e8-51da-b0eb-ba1df30c5d0e",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDHKD",
+    "description": "USD/HKD volatility surface, read from the published USDHKD_SSVI grid",
+    "position": 5
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "57b61a1f-9423-5e5c-b65f-2b2a7c35b01a",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDINR",
+    "description": "USD/INR volatility surface, read from the published USDINR_SSVI grid",
+    "position": 6
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "22b9540d-7f85-50d8-8762-a24c5983d02a",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDJPY",
+    "description": "USD/JPY volatility surface, read from the published USDJPY_SSVI grid",
+    "position": 7
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "cf1a2299-53d5-5eb2-8239-ea302db1f1af",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "FXVolatilities",
+    "curve_id": "USDSGD",
+    "description": "USD/SGD volatility surface, read from the published USDSGD_SSVI grid",
+    "position": 8
   }
 ]

@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/export-one-convention-for-each-index-id
-#+pr:
+#+pr: 4807
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4807][#4807]] | [refdata,seeder] Export one convention for each index id |
 
 * Review
 

@@ -308,6 +308,7 @@
 \ir ./trading_trade_bookings_notify_trigger_drop.sql
 \ir ./trading_trade_bookings_drop.sql
 \ir ./trading_basket_constituent_functions_drop.sql
+\ir ./trading_market_references_functions_drop.sql
 \ir ./trading_party_visibility_functions_drop.sql
 
 \ir ./trading_trade_components_functions_drop.sql

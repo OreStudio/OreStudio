@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/resolve-a-trade-sets-market-data-requirements
 #+pr:
 #+blocked_on: The batcher, whose batch keys name the trade set this reads.
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-11-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ observations and fixings that answer them. The as-of is the set's.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Partition a run's trade population into trade sets]], which produces the batch keys this reads. |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The story treats a run's whole population as its one trade set, so this does not wait on the partition. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 
@@ -75,6 +75,35 @@ needed, because a portfolio's instruments need curves and the curves need
 quotes. The investigation should state which entity answers an oresmd
 requirement today, because if none does, that entity is part of this task.
 
+* Decisions
+
+- *The resolution lives in SQL, in two functions, one for each owner.*
+  =ores_trading_market_references_fn= reads a set of trades and returns
+  each oresmd address its instrument rows hold, with the column that holds
+  it. =ores_marketdata_requirement_coverage_fn= takes a party and a list of
+  addresses and returns, for each, the party's series with that address and
+  its latest point at the date. The grammar does not move: an address is
+  the identity of the series that answers it, so matching is equality on
+  the stored address and no codec is restated in SQL. Trading owns the
+  first half and marketdata the second, so each service calls its own.
+- *The trades are read at a system time and the market at a business date.*
+  A trade's rows are read as they stood at the as-of, so an amended trade
+  resolves as it was. A series is read as it stands now and its points
+  are filtered by fixing date or observation time, because a series
+  written today may hold points about an earlier day. A null as-of reads
+  the current trade rows.
+- *The column list is one array in the trading function.* No declaration in
+  the schema says which columns hold addresses, so the list came from
+  scanning every trading text column for one (=evidence/oresmd_columns_query.txt=).
+  The capture /Audit every field that holds an oresmd URI/ owns making the
+  list complete by construction.
+- *Only explicit references are requirements here.* What a trade implies
+  without naming it, a discount curve for each currency and an FX rate to
+  the reporting currency, belongs to the market configuration, which is
+  [[id:EB839A7A-0EB6-4FD2-85E8-9847CA0D8634][Name every market object the generated trades use in the party's market configuration]].
+- *Wiring the functions into a run is not this task.* The export narrows
+  to the requirements in [[id:86994A25-E1C5-41AF-BE1D-E13F0667EFB1][Export the market data a trade set requires]].
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -87,9 +116,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading columns that hold an oresmd address | 29, in 26 tables | =evidence/oresmd_columns_query.txt= | 4e6e99f2e1 data, this branch |
+| ACCOUK trades that resolve to a requirement | 445 of 460 | =evidence/accouk_requirements_query.txt= | this branch |
+| ACCOUK requirement rows, distinct addresses | 643 rows, 109 addresses | same | this branch |
+| Addresses ACCOUK's series answer | 0 of 109: 108 have no series, 1 has a series with no point | same | this branch |
+| Addresses the system party's series answer | 0 of 109 | same | this branch |
+| Gaps by asset class | credit 61, ir 27, equity 11, commodity 6, inflation 3, security 1 | same | this branch |
+| Trade types that resolve to nothing | CompositeTrade 5, ContractForDifference 5, EquityOptionPosition 5 | same | this branch |
+| pgTAP | 9 of 9 pass (4 trading, 5 marketdata) | =run_tests.sh= on the two new files | this branch |
 
 * Notes
+
+No address resolves, even under the system party, which holds 301,650
+fixings. The trades name term SONIA (=name=SONIA&tenor=3M=), while the
+public SONIA series is the overnight index (=name=SONIA=, no tenor). They
+also name ceased LIBOR, equities, commodities, inflation indices and
+credit curves, and no series exists for any of them. The three types that
+resolve to nothing hold bare ORE names, so their builders do not yet write
+addresses.
 
 * Test Scenarios
 
@@ -112,6 +156,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: coverage read series and points at a system time, so a run about an earlier day missed a series written today | marketdata_requirement_coverage_functions_create.sql | Accept | The date is a business date over the current rows; a pgTAP case covers it. |
+| 2 | Local review: a default as-of of now() missed a trade row written earlier in the same transaction, because the trigger stamps the clock time | trading_market_references_functions_create.sql | Accept | A null as-of reads the current rows. |
+| 3 | Local gate: the ER diagram, three codegen tests and the trading drift were red on main | ores_schema.dq_datasets.puml, inbox | Accept | The diagram is regenerated here; the rest is filed as captures. |
 
 * Result
+
+A set of trades now resolves to the oresmd addresses it needs, and a
+party's series answer them or report a gap. Two SQL functions do it, one
+in trading and one in marketdata, and nine pgTAP cases cover them. On
+ACCOUK, 445 of 460 trades resolve to 109 addresses, and none is answered
+yet: that list is what the later tasks of the story fill.

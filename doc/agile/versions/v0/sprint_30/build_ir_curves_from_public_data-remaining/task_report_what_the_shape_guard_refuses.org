@@ -8,7 +8,7 @@
 #+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
 #+owner: marco
 #+branch: feature/hold-the-shape-guard-to-what-it-reports
-#+pr:
+#+pr: 4834
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -134,7 +134,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4834][#4834]] | [marketdata] Report the rows the shape guard refuses |
 
 * Review
 

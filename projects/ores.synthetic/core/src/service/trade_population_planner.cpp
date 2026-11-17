@@ -1903,7 +1903,11 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                                      .build(),
                                  type);
     if (type == "FxStrikeResettableOption") {
-        // A call resets lower when the rate falls, a put higher when it rises.
+        /*
+         * A call resets lower when the rate falls, a put higher when it rises. A
+         * rate moves less than an equity price, so the trigger and the reset sit
+         * closer to the strike than the equity case's.
+         */
         const bool call = kind == tb::option_kind::call;
         const auto reset = level(rate * (call ? 0.98 : 1.02));
         return scripted_batch_of(

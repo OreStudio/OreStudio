@@ -428,6 +428,7 @@ scripted_result build_strike_resettable_option(std::string_view trade_type,
     if (terms.premium.get() < decimal{})
         return std::unexpected(build_error{"premium", "must not be negative"});
     const auto& dates = terms.observation_dates.get();
+    // The element states no start date, so an observation may fall at any time before expiry.
     if (auto refusal = dates_within("observation_dates", dates, std::nullopt, terms.expiry.get()))
         return std::unexpected(std::move(*refusal));
     if (terms.settlement.get() < terms.expiry.get())

@@ -243,10 +243,10 @@ private:
         // duplicate guard remains the second line, because the stream's window
         // is finite.
         try {
-            nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject,
-                             data,
-                             ores::nats::headers::publish_identity_headers(
-                                 attempt.empty() ? step_id : attempt));
+            nats->js_publish(
+                ores::workflow::messaging::step_completed_event::nats_subject,
+                data,
+                ores::nats::headers::publish_identity_headers(attempt.empty() ? step_id : attempt));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg, error) << "Step " << step_id << " could not publish its answer ("
                                      << said << "): " << e.what();

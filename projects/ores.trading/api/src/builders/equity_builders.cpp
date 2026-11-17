@@ -373,6 +373,7 @@ equity_result equity_auto_delta_hedged_option_builder::build() const {
                 "batches", "a batch must expire between the observation start and the payment"});
     }
 
+    // The quantities are the batches'; the position row states none of its own.
     domain::equity_position_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.underlying_name = batches.front().underlying.uri();

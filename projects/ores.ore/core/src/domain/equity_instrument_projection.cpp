@@ -657,6 +657,9 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
  * @brief Batches of equity options under a delta hedge: the hedge's terms are
  * the position row's, and each batch is a row of the option underlyings, with
  * its own currency, strike currency and quantity.
+ *
+ * A batch is European and ORE requires one premium on it, so a batch's first
+ * exercise date and first premium are its only ones.
  */
 auto read_equity_auto_delta_hedged_option(const record_reader& trade) -> equity_instrument_data {
     auto inst = equity_instrument_projection_make_row<equity_position_instrument>(

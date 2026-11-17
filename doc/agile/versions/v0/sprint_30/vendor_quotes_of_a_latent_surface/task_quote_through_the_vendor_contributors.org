@@ -26,11 +26,11 @@ A party meets its volatility quotes from the vendors it meets its rates from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -79,7 +79,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bloomberg volatility vendor instruments, each mapped to its own fx_option item | 910 instruments, 910 items | =compass sql -f q_vol_inst.sql= after =db recreate= | 14ab79cf6e |
+| Ids the bloomberg-a adapter announces | 1272 (362 spot and curve, 910 surface) | synthetic service log, "Announced 'bloomberg-a'" | working tree on 14ab79cf6e |
+| Volatility ticks stored under the bloomberg-a feed in 15 minutes | 975 ticks over 845 items | =compass sql -f q_vol_ticks.sql= | working tree on 14ab79cf6e |
+| System tenant calendar days built at the first refdata start, then at a restart | 81090, then 0 | refdata service log, "Built the system tenant's calendars" | working tree on 14ab79cf6e |
 
 * Notes
 
@@ -107,3 +110,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Slices 1 and 2 of the plan shipped, with the offer half of slice 3. Slice 3's other vendors and
+clean contributor, and slice 4's proof at the party, moved to
+[[file:task_quote_through_ice_and_tradeweb.org][Quote the latent surfaces through ice and tradeweb, and prove a party receives them]].
+
+- *A vendor id for a volatility point.* =fx_option_quote= (pair, expiry, strike label) is a
+  =quote_description=. Bloomberg's notation writes and reads it as =EURUSDV1Y Curncy= and
+  =EURUSD25R1Y Curncy=, field =PX_LAST=; the other notations refuse it. The vendor catalogue
+  tool writes each surface contributor's ids into a seed of their own, which runs after the
+  surfaces are staged: 910 Bloomberg instruments, each mapped to its fx_option item.
+- *The surfaces through the adapters.* A surface is offered to the adapter of each contributor's
+  provider, for that contributor's points. The fleet holds one surface per feed, shared by the
+  adapters: the first adapter whose ids are demanded starts it, each adapter publishes its own
+  contributor's points under its vendor ids, and the last one to go stops it. A surface no
+  adapter holds, such as a manual run, still publishes market ticks.
+- *Dates for the system tenant.* Provisioning builds each tenant's calendars, but nothing built
+  the system tenant's, so every surface failed to date its expiries. ores.refdata now builds the
+  system tenant's in-use calendars at startup; a restart writes nothing.
+- *A failed start is retried.* A generator whose start threw stayed registered and was never
+  started again. The next demand now builds it again, so a surface that starts before the
+  calendars are built recovers within a demand round.

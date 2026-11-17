@@ -39,6 +39,7 @@ IMAGE_BASE = "localhost/ores-service-base"
 IMAGE_LIBS = "localhost/ores-service-libs"
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
+IMAGE_WEB = "localhost/ores-web"
 
 # The compute wrapper is a supervised binary but not a runtime service: it
 # ships its own image, yet it shares the library image with the services and
@@ -104,6 +105,48 @@ def runtime_services(project_root: Path) -> list:
             if s.get("enabled")
             and s["name"] != "ores.compute.wrapper"
             and s.get("runtime", "native") != "node"]
+
+
+def web_services(project_root: Path) -> list:
+    """Enabled services that run on Node instead of a compiled binary.
+
+    They ship a bundle, so their images are built from the compiled
+    TypeScript rather than from publish/.
+    """
+    from systemd_generate import load_service_registry  # noqa: PLC0415
+    raw = load_service_registry(project_root)
+    return [s["name"] for s in raw
+            if s.get("enabled") and s.get("runtime") == "node"]
+
+
+def stage_web(project_root: Path) -> bool:
+    """Stage the web service's built output. Returns False when it is not
+    built, so a checkout that never built the bundle still stages the
+    compiled services rather than failing outright.
+    """
+    if not web_services(project_root):
+        return False
+    print("=== Staging the web service ===")
+    result = _run(["bash", "docker/stage-web.sh"], project_root, check=False)
+    if result.returncode != 0:
+        print("  warning: web bundle not built, skipping the web image")
+        return False
+    return True
+
+
+def build_web(project_root: Path, tag: str | None = None) -> str | None:
+    """Build the web image, if the bundle was staged. Returns its tag."""
+    if not (project_root / "build" / "docker-stage" / "web").is_dir():
+        return None
+    if tag is None:
+        tag = _version_tag(project_root)
+    print(f"=== Building web image: {IMAGE_WEB}:{tag} ===")
+    _run(_build_args([
+          "-t", f"{IMAGE_WEB}:local",
+          "-t", f"{IMAGE_WEB}:{tag}",
+          "-f", "docker/service-web.Dockerfile", "."]),
+         project_root)
+    return tag
 
 
 def build_base(project_root: Path, tag: str | None = None) -> str:
@@ -218,7 +261,10 @@ def build_all(project_root: Path, tag: str | None = None,
     build_compute(project_root, tag)
     build_overlays(project_root, tag, services)
 
-    # 5. NATS.
+    # 5. The web service, when its bundle was staged.
+    build_web(project_root, tag)
+
+    # 6. NATS.
     build_nats(project_root, tag)
 
     return tag
@@ -267,6 +313,9 @@ def missing_images(project_root: Path, role: str, tag: str) -> list[str]:
                 missing.append(img)
         if not _image_exists(f"{IMAGE_NATS}:{tag}"):
             missing.append(f"{IMAGE_NATS}:{tag}")
+        if web_services(project_root) and not _image_exists(
+                f"{IMAGE_WEB}:{tag}"):
+            missing.append(f"{IMAGE_WEB}:{tag}")
     return missing
 
 
@@ -305,6 +354,7 @@ def stage_only(project_root: Path) -> list[str]:
     print("=== Staging for build (library + per-service dirs) ===")
     stage_for_build(stage_dir, stage_dir / "bin", stage_dir / "lib",
                     staged, shared_libs)
+    stage_web(project_root)
     return services
 
 
@@ -316,7 +366,7 @@ def image_names(project_root: Path) -> list[str]:
     ores.iam.service.
     """
     names = ["ores-service-base", "ores-service-libs", "ores-nats",
-             "ores-compute-wrapper"]
+             "ores-compute-wrapper", "ores-web"]
     names += runtime_services(project_root)
     return names
 
@@ -353,6 +403,10 @@ def publish(project_root: Path, registry: str, tag: str | None = None,
             print(f"  would publish {ref}" + (f" and {registry}/{name}:{alias}"
                                               if alias else ""))
             pushed += 1
+            continue
+        if not _image_exists(f"localhost/{name}:{tag}"):
+            print(f"  {name} is not built locally, skipping it")
+            skipped += 1
             continue
         if not force and _published(ref):
             print(f"  {ref} is already published")

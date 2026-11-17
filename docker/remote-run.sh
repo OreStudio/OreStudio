@@ -313,6 +313,30 @@ for svc in $SERVICES; do
     fi
 done
 
+# The web service is Node, so it takes no service arguments: its entrypoint
+# reads the same environment the compiled services read. The document root in
+# the profile points at the checkout, which the container does not have, so it
+# is dropped and the agile and scenario runners stay off.
+if [[ "${WEB_ENABLED:-0}" == "1" ]]; then
+    web_image="localhost/ores-web:${IMAGE_TAG}"
+    web_container="ores-web-${label}"
+    web_env="$REMOTE_ROOT/docker/.env.web"
+    grep -v '^ORES_WEB_DOC_ROOT=' "$env_file" > "$web_env"
+    echo -n "  ores.web.service ... "
+    if web_cid=$(podman run -d --network=host --userns=keep-id \
+        --name "$web_container" \
+        --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
+        --env-file "$web_env" \
+        -v "$certs_volume:$keys_dir:ro" \
+        "$web_image" 2>/dev/null); then
+        echo "running ($web_cid)"
+        ((running += 1))
+    else
+        echo "FAILED"
+        ((failed += 1))
+    fi
+fi
+
 echo
 echo "=== ${ROLE} containers started: ${running} running, ${failed} failed ==="
 echo "  Logs (NATS) : podman logs -f $nats_container"

@@ -69,6 +69,7 @@ IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_BASE = "localhost/ores-service-base"
 IMAGE_LIBS = "localhost/ores-service-libs"
+IMAGE_WEB = "localhost/ores-web"
 
 _COMPUTE_REQUIRED = (
     "ORES_COMPUTE_TENANT_ID",
@@ -177,6 +178,14 @@ def _version_tag(project_root: Path) -> str:
         cwd=project_root, capture_output=True, text=True)
     commit = result.stdout.strip() if result.returncode == 0 else "unknown"
     return f"{version}-{commit}"
+
+
+def _web_services(project_root: Path) -> list:
+    """Enabled services that run on Node, and therefore ship their own image
+    rather than a binary. Delegates to image_build for the same reason the
+    compiled list does."""
+    import image_build  # noqa: PLC0415
+    return image_build.web_services(project_root)
 
 
 def _runtime_services(project_root: Path) -> list:
@@ -368,17 +377,20 @@ def _stream_images(project_root, host, images):
     libs_images = [i for i in images if "ores-service-libs" in i]
     nats_images = [i for i in images if "ores-nats" in i]
     compute_images = [i for i in images if "ores-compute-wrapper" in i]
+    # The web image is standalone: it carries its own Node runtime, so it is
+    # transferred whole rather than built on the host.
+    web_images = [i for i in images if "ores-web" in i]
     # Everything else is a per-service image (localhost/<service_name>).
     overlay_images = [i for i in images
                       if i not in base_images + libs_images
-                      + nats_images + compute_images]
+                      + nats_images + compute_images + web_images]
 
     # -- Phase 1: Transfer base and library images (once) -----------------
     for img in base_images + libs_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 2: Transfer standalone images (NATS, compute) --------------
-    for img in nats_images + compute_images:
+    for img in nats_images + compute_images + web_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 3: Remote-build per-service overlays -----------------------
@@ -569,7 +581,8 @@ def _deploy_runtime(project_root, host, profile_env, remote_root, tag=None):
         encoding="utf-8")
     _remote_script(host, script,
                    {"REMOTE_ROOT": remote_root, "ROLE": "runtime",
-                    "IMAGE_TAG": tag, "SERVICES": services_arg})
+                    "IMAGE_TAG": tag, "SERVICES": services_arg,
+                    "WEB_ENABLED": "1" if _web_services(project_root) else "0"})
 
 
 def _deploy_compute(project_root, host, remote_root, label, tag=None):
@@ -843,9 +856,11 @@ def _cmd_deploy(argv, project_root):
 
     tag = args.image_tag or _version_tag(project_root)
     if args.pull:
-        _pull_images(project_root, remote_host, args.registry, tag,
-                     ["ores-service-base", "ores-service-libs", "ores-nats"]
-                     + _runtime_services(project_root))
+        pulled = ["ores-service-base", "ores-service-libs", "ores-nats"]
+        pulled += _runtime_services(project_root)
+        if _web_services(project_root):
+            pulled.append("ores-web")
+        _pull_images(project_root, remote_host, args.registry, tag, pulled)
     else:
         svc_images = [f"localhost/{s}:{tag}"
                       for s in _runtime_services(project_root)]

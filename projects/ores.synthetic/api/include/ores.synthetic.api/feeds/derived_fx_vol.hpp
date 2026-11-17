@@ -63,27 +63,26 @@ struct derived_fx_pair final {
 
 /// An expiry the derived source quotes: its tenor label and its length in years.
 ///
-/// The list is the grid a surface may name, and every one of them needs a window of daily
-/// returns as long as its own length, so the fixing history the source reads bounds how far
-/// this list can reach.
+/// Every expiry needs a window of daily returns as long as its own length, so the fixing
+/// history the source reads bounds how far a pair's ladder can reach.
 struct derived_fx_expiry final {
-    std::string_view label;
+    std::string label;
     double years;
+
+    friend bool operator==(const derived_fx_expiry&, const derived_fx_expiry&) = default;
 };
 
-inline constexpr std::array<derived_fx_expiry, 13> derived_fx_expiries{{{"1W", 7.0 / 365.0},
-                                                                        {"1M", 1.0 / 12.0},
-                                                                        {"2M", 2.0 / 12.0},
-                                                                        {"3M", 0.25},
-                                                                        {"6M", 0.5},
-                                                                        {"9M", 0.75},
-                                                                        {"1Y", 1.0},
-                                                                        {"18M", 1.5},
-                                                                        {"2Y", 2.0},
-                                                                        {"3Y", 3.0},
-                                                                        {"5Y", 5.0},
-                                                                        {"7Y", 7.0},
-                                                                        {"10Y", 10.0}}};
+/// The length in years of a tenor label, such as 1W, 18M or 10Y, or nothing for a label that
+/// is not one.
+ORES_SYNTHETIC_API_EXPORT std::optional<double> derived_fx_expiry_years(std::string_view label);
+
+/// A pair's ladder: the expiries its quotes name, shortest first.
+///
+/// The ladder is data: the source serves one quote for each pillar a published blueprint
+/// reads from it, so the expiries of a pair are the ones its vendor ids name. A label that is
+/// not a tenor is left out.
+ORES_SYNTHETIC_API_EXPORT std::vector<derived_fx_expiry>
+derived_fx_ladder(const std::set<std::string>& labels);
 
 /// The labels of an expiry's quotes, the strike_label of their fx_option items.
 inline constexpr std::array<std::string_view, 5> derived_fx_labels{
@@ -192,6 +191,7 @@ struct derived_history final {
 
 ORES_SYNTHETIC_API_EXPORT std::expected<derived_history, std::string>
 derive_missing_days(const derived_fx_pair& pair,
+                    std::span<const derived_fx_expiry> ladder,
                     const pair_returns& returns,
                     const refdata::domain::fx_option_convention& convention,
                     const std::set<std::chrono::year_month_day>& stored,

@@ -8,7 +8,7 @@
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/implement-size-a-surface-to-its-data
-#+pr:
+#+pr: 4804
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4804][#4804]] | [synthetic,sql] Read the derived source's ladder from the published blueprints |
 
 * Review
 

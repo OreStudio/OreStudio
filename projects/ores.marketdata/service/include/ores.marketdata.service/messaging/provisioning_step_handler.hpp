@@ -1447,24 +1447,6 @@ private:
         }
     }
 
-    /// The surface blueprints one party holds, one page at a time.
-    static std::vector<ores::refdata::domain::fx_vol_surface_blueprint>
-    read_party_blueprints(const ores::database::context& ctx, const boost::uuids::uuid& party_id) {
-        constexpr std::uint32_t page_size = 1000;
-        std::vector<ores::refdata::domain::fx_vol_surface_blueprint> blueprints;
-        for (std::uint32_t offset = 0;; offset += page_size) {
-            const auto page =
-                ores::refdata::repository::fx_vol_surface_blueprint_repository{}.read_latest(
-                    ctx, offset, page_size);
-            for (const auto& blueprint : page)
-                if (blueprint.party_id == party_id)
-                    blueprints.push_back(blueprint);
-            if (page.size() < page_size)
-                break;
-        }
-        return blueprints;
-    }
-
     /// What one surface of a party came to, in the step's own terms.
     struct surface_outcome {
         enum class state { published, already_published, held_back, not_published } how;
@@ -1482,12 +1464,15 @@ private:
      * tick ingest and the sweep, which is what the step spent most of its time
      * doing.
      */
-    static surface_outcome
-    fit_and_publish_surface(const ores::database::context& ctx,
-                            const ores::refdata::domain::fx_vol_surface_blueprint& blueprint,
-                            std::string_view publish_reason) {
+    static surface_outcome fit_and_publish_surface(
+        const ores::database::context& ctx,
+        const ores::marketdata::service::app::surface_calibration_recipe& recipe,
+        const std::map<boost::uuids::uuid, ores::marketdata::service::app::surface_series_quotes>&
+            quotes,
+        std::chrono::system_clock::time_point as_of,
+        std::string_view publish_reason) {
+        const auto& blueprint = recipe.blueprint;
         const auto id = boost::uuids::to_string(blueprint.id);
-        const auto as_of = std::chrono::system_clock::now();
 
         // The read answers the newest published surface at or before the as-of,
         // so a surface an earlier run published is found by a later one, even
@@ -1507,8 +1492,8 @@ private:
         calibrate.blueprint_id = id;
         calibrate.as_of = as_of;
         const auto calibrated =
-            ores::marketdata::service::app::fx_vol_surface_calibration_service::calibrate(
-                ctx, calibrate);
+            ores::marketdata::service::app::fx_vol_surface_calibration_service::calibrate_from(
+                ctx, recipe, quotes, calibrate);
         if (!calibrated.success)
             return {.how = surface_outcome::state::not_published,
                     .name = blueprint.name,
@@ -1556,11 +1541,14 @@ private:
      */
     static surface_outcome fit_and_publish_surface_with_retry(
         const ores::database::context& ctx,
-        const ores::refdata::domain::fx_vol_surface_blueprint& blueprint,
+        const ores::marketdata::service::app::surface_calibration_recipe& recipe,
+        const std::map<boost::uuids::uuid, ores::marketdata::service::app::surface_series_quotes>&
+            quotes,
+        std::chrono::system_clock::time_point as_of,
         std::string_view publish_reason) {
         for (int attempt = 1;; ++attempt) {
             try {
-                return fit_and_publish_surface(ctx, blueprint, publish_reason);
+                return fit_and_publish_surface(ctx, recipe, quotes, as_of, publish_reason);
             } catch (const ores::database::pq::store_error& e) {
                 if (!e.retryable() || attempt >= surface_attempts)
                     throw;
@@ -1583,31 +1571,34 @@ private:
     std::vector<surface_outcome> run_party_surfaces(
         ores::service::messaging::workflow_step_context& wf,
         const ores::database::context& party_ctx,
-        const std::vector<ores::refdata::domain::fx_vol_surface_blueprint>& blueprints,
+        const std::vector<ores::marketdata::service::app::surface_calibration_recipe>& recipes,
+        const std::map<boost::uuids::uuid, ores::marketdata::service::app::surface_series_quotes>&
+            quotes,
+        std::chrono::system_clock::time_point as_of,
         std::string_view publish_reason,
         const std::string& party_name) const {
         constexpr std::size_t lanes = 4;
-        const auto lane_count = std::min(lanes, blueprints.size());
-        const auto total = static_cast<std::int64_t>(blueprints.size());
-        std::vector<surface_outcome> outcomes(blueprints.size());
+        const auto lane_count = std::min(lanes, recipes.size());
+        const auto total = static_cast<std::int64_t>(recipes.size());
+        std::vector<surface_outcome> outcomes(recipes.size());
         std::atomic<std::size_t> next{0};
         std::atomic<std::int64_t> done{0};
 
         const auto lane = [&] {
             for (;;) {
                 const auto i = next.fetch_add(1);
-                if (i >= blueprints.size())
+                if (i >= recipes.size())
                     return;
                 try {
                     outcomes[i] = fit_and_publish_surface_with_retry(
-                        party_ctx, blueprints[i], publish_reason);
+                        party_ctx, recipes[i], quotes, as_of, publish_reason);
                 } catch (const std::exception& e) {
                     outcomes[i] = {.how = surface_outcome::state::not_published,
-                                   .name = blueprints[i].name,
+                                   .name = recipes[i].blueprint.name,
                                    .detail = e.what()};
                 }
                 const auto finished = done.fetch_add(1) + 1;
-                wf.progress(party_name + ": " + blueprints[i].name, finished, total);
+                wf.progress(party_name + ": " + recipes[i].blueprint.name, finished, total);
             }
         };
 
@@ -1666,15 +1657,19 @@ private:
             result.parties.push_back(party_text);
 
             const auto party_ctx = context_for_party(service_ctx, party->id);
-            const auto blueprints = read_party_blueprints(party_ctx, party->id);
-            if (blueprints.empty()) {
+            const auto as_of = std::chrono::system_clock::now();
+            const auto recipes = ores::marketdata::service::app::
+                fx_vol_surface_calibration_service::read_party_recipes(party_ctx);
+            if (recipes.empty()) {
                 result.surfaces_not_published.push_back(party_name +
                                                         ": the party holds no surface blueprint");
                 continue;
             }
 
-            const auto outcomes =
-                run_party_surfaces(wf, party_ctx, blueprints, publish_reason, party_name);
+            const auto quotes = ores::marketdata::service::app::fx_vol_surface_calibration_service::
+                read_party_quotes(party_ctx, as_of);
+            const auto outcomes = run_party_surfaces(
+                wf, party_ctx, recipes, quotes, as_of, publish_reason, party_name);
             std::size_t published = 0;
             for (const auto& outcome : outcomes) {
                 const auto line = party_name + ": " + outcome.name;
@@ -1696,9 +1691,9 @@ private:
             }
             BOOST_LOG_SEV(lg(), ores::logging::info)
                 << "publish_party_surfaces: " << party_name << ": published " << published << " of "
-                << blueprints.size() << " surface(s)";
+                << recipes.size() << " surface(s)";
             wf.record(party_name + ": published " + std::to_string(published) + " of " +
-                      std::to_string(blueprints.size()) + " surface(s)");
+                      std::to_string(recipes.size()) + " surface(s)");
         }
 
         for (const auto& held : result.surfaces_held_back)

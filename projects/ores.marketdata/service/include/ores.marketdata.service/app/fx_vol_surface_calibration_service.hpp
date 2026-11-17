@@ -21,9 +21,12 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <map>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
@@ -54,6 +57,42 @@ public:
     /// The fewest expiries a surface is published with: below this its term structure is too
     /// thin to read, and the calibration is refused.
     static constexpr std::size_t minimum_expiries = 3;
+
+    /**
+     * @brief The recipes of every blueprint the party holds.
+     *
+     * One read of the party's blueprints, one of their pillars, one of the
+     * pillars' sources and one of the conventions they name: the catalogue a
+     * party's surfaces are fitted from, read once for the party rather than
+     * once for each of its surfaces.
+     */
+    [[nodiscard]] static std::vector<surface_calibration_recipe>
+    read_party_recipes(const ores::database::context& ctx);
+
+    /**
+     * @brief The party's quotes at one instant, in one statement.
+     *
+     * Every series the party sees, each giving the latest point of each datum at
+     * or before @p as_of. A surface reads the series its own pillars name out of
+     * this snapshot, so a party's surfaces share one read of the market.
+     */
+    [[nodiscard]] static std::map<boost::uuids::uuid, surface_series_quotes>
+    read_party_quotes(const ores::database::context& ctx,
+                      std::chrono::system_clock::time_point as_of);
+
+    /**
+     * @brief Calibrates a recipe the caller has already read.
+     *
+     * @param ctx     The party's context.
+     * @param recipe  The blueprint's recipe, with its pillars, sources and convention.
+     * @param quotes  The party's quote snapshot, as @c read_party_quotes gives it.
+     * @param request Names the blueprint to calibrate and the as-of to calibrate at.
+     */
+    [[nodiscard]] static ores::marketdata::messaging::calibrate_fx_vol_surface_response
+    calibrate_from(const ores::database::context& ctx,
+                   const surface_calibration_recipe& recipe,
+                   const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
+                   const ores::marketdata::messaging::calibrate_fx_vol_surface_request& request);
 
     [[nodiscard]] static ores::marketdata::messaging::calibrate_fx_vol_surface_response
     calibrate(const ores::database::context& ctx,

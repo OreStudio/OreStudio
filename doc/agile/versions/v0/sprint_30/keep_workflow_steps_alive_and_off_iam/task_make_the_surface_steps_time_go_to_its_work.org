@@ -93,6 +93,8 @@ task and name that file in the Command column.
 | Lineage statements per surface | 1, from 65 (about 9,000 in the run, one per grid point) | =read_latest_for_points= replaces the per-point =read_latest_by_observation= | =branch= |
 | The preparation's scan | the blueprint's pillars and sources are indexed once, from 325 x 325 comparisons per expiry (6.9 million per surface) | =prepare_calibration= | =branch= |
 | Surfaces fitted at once | 4 | =run_party_surfaces= | =branch= |
+| Reads per party for the catalogue and the market | 5: the party's blueprints, their pillars, their sources and their conventions, then one as-of snapshot of the party's quotes, where it was 9 per surface (about 1,200 a run) | =read_party_recipes= and =read_party_quotes= | =branch= |
+| The instant a party's surfaces are calibrated at | one, taken before the gather, where each surface took its own | =publish_party_surfaces= | =branch= |
 | =ores.marketdata.service.tests= | passed, 118 s | =ctest -R ores.marketdata.service.tests= | =branch= |
 | The step's wall clock | not measured: the host ran at a load average of 45 to 56 (other worktrees building) and two of the three runs had incomplete market data (the derived source quoted 2,978 of 3,888 ids), so the step had a fraction of its work to do | =./compass.sh smoke ticks --fresh=, =uptime= | =branch= |
 
@@ -120,6 +122,14 @@ task and name that file in the Command column.
 - The old path retried a transient failure because the NATS client did; calling
   the service in process took that layer away, and this is where it had to be
   put back.
+- A party's snapshot holds every series the party sees, not only the ones a
+  surface quotes, and only a surface point carries an expiry and a strike. The
+  read therefore asks a datum whether it holds the field before it asks for its
+  value: asking a TWD overnight swap for an expiry is the error the first run
+  of this shape reported, =IR_SWAP does not hold expiry=.
+- One instant per party is a behaviour change worth naming: the party's surfaces
+  are one reading of the market, so they are calibrated at the instant the
+  snapshot was taken rather than at the instant each surface came round.
 
 * Test Scenarios
 

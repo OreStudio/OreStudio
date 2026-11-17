@@ -158,8 +158,10 @@ function emptyBatch(): InstrumentBatch {
         bond_repos: [],
         bond_trs: [],
         cash_position_instruments: [],
+        cbo_instruments: [],
         equity_pairwise_variance_swap_instruments: [],
         fx_asian_option_instruments: [],
+        rate_digital_option_instruments: [],
         fx_pairwise_variance_swap_instruments: [],
     };
 } /** The intent every write of a booking carries. */

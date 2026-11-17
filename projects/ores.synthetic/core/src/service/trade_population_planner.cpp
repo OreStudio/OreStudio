@@ -1810,7 +1810,8 @@ constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 /// The products on two pairs in one quote currency, which they pay in.
 bool needs_second_pair(std::string_view type) {
     return type == "FxBasketOption" || type == "FxRainbowOption" ||
-           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap";
+           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap" ||
+           type == "FxWorstOfBasketSwap";
 }
 
 /// Whether a pair can stand beside another in a product on two pairs: quoted in the same

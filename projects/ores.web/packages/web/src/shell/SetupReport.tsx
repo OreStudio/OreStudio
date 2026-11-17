@@ -19,7 +19,7 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import type { WorkflowProgress } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
@@ -31,6 +31,8 @@ import { Button, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 /** One step of the setup that ended with warnings, and what it warned of. */
 export interface WarnedStep {
     readonly id: string;
+    /** The name the engine knows the step by, which a re-run names. */
+    readonly name: string;
     readonly label: string;
     readonly warnings: readonly string[];
 }
@@ -47,6 +49,7 @@ export function warnedSteps(progress: WorkflowProgress): WarnedStep[] {
         .sort((a, b) => a.step_index - b.step_index)
         .map((step) => ({
             id: step.id,
+            name: step.name,
             label: step.label !== '' ? step.label : step.name,
             warnings: step.log
                 .filter((entry) => entry.level === 'warn' || entry.level === 'error')
@@ -134,17 +137,73 @@ export function SetupReportNotice(): ReactNode {
     );
 }
 
-/** What the tenant's setup did not finish, step by step, then the whole run. */
+/**
+ * Says on the tenant's dashboard that its setup left work undone, for as long
+ * as any step stands with warnings. Unlike the notice it cannot be dismissed:
+ * it goes when a re-run leaves no step with warnings.
+ */
+export function SetupWarningsAlert(): ReactNode {
+    const { t } = useTranslation();
+    const report = useSetupReport();
+    if (report.steps.length === 0) return null;
+    return (
+        <Notice tone="warn">
+            <span className="block">
+                {t('journey.tenantSetup.report.alert', { count: report.steps.length })}
+            </span>
+            <span className="mt-2 flex">
+                <LinkButton to="/setup-report" size="sm" variant="secondary">
+                    {t('journey.tenantSetup.report.read')}
+                </LinkButton>
+            </span>
+        </Notice>
+    );
+}
+
+/**
+ * What the tenant's setup did not finish, step by step, then the whole run.
+ *
+ * Each step that ended with warnings can be run again. The run below is then
+ * mounted afresh, because it stops asking once a run is settled, and a re-run
+ * opens the run again.
+ */
 export function SetupReportPage(): ReactNode {
     const { t, text } = useTranslation();
     const report = useSetupReport();
     const server = useJourneyServer();
+    const queryClient = useQueryClient();
+    const [round, setRound] = useState(0);
+    const [note, setNote] = useState<string>();
+
+    const rerun = async (step: WarnedStep): Promise<void> => {
+        setNote(undefined);
+        try {
+            const answer = await api.retryProvisionTenant(report.instanceId, step.name);
+            setNote(
+                answer.success
+                    ? t('journey.tenantSetup.report.rerunning', { step: text(step.label) })
+                    : answer.message,
+            );
+            if (answer.success) {
+                setRound((value) => value + 1);
+                await queryClient.invalidateQueries({ queryKey: ['setup-report'] });
+            }
+        } catch (error) {
+            setNote(error instanceof Error ? error.message : String(error));
+        }
+    };
+
     return (
         <div>
             <PageHeader
                 title={t('journey.tenantSetup.report.title')}
                 description={t('journey.tenantSetup.report.lead')}
             />
+            {note !== undefined && (
+                <div className="mb-4">
+                    <Notice tone="info">{note}</Notice>
+                </div>
+            )}
             {report.unavailable ? (
                 <Notice tone="info">{t('journey.tenantSetup.report.unavailable')}</Notice>
             ) : report.loading ? (
@@ -155,7 +214,18 @@ export function SetupReportPage(): ReactNode {
                 <ul className="card divide-y divide-line p-0">
                     {report.steps.map((step) => (
                         <li key={step.id} className="p-4">
-                            <h2 className="text-sm font-semibold text-warn">{text(step.label)}</h2>
+                            <div className="flex items-start justify-between gap-4">
+                                <h2 className="text-sm font-semibold text-warn">
+                                    {text(step.label)}
+                                </h2>
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => void rerun(step)}
+                                >
+                                    {t('journey.tenantSetup.report.rerun')}
+                                </Button>
+                            </div>
                             <ul className="mt-2 space-y-1 text-sm">
                                 {step.warnings.map((warning, index) => (
                                     <li key={index} className="break-words">
@@ -173,9 +243,12 @@ export function SetupReportPage(): ReactNode {
                         {t('journey.tenantSetup.report.run')}
                     </h2>
                     <RunProgress
+                        key={round}
                         server={server}
                         instanceId={report.instanceId}
-                        onCompleted={() => undefined}
+                        onCompleted={() =>
+                            void queryClient.invalidateQueries({ queryKey: ['setup-report'] })
+                        }
                     />
                 </div>
             )}

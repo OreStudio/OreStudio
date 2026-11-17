@@ -41,6 +41,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
 #include <cli/cli.h>
 #include <functional>
 #include <iomanip>
@@ -137,6 +138,14 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
         "setup-report",
         [&session](std::ostream& out) { process_setup_report(std::ref(out), std::ref(session)); },
         "Show what the tenant's setup did not finish: each step that ended with warnings");
+
+    ores::shell::app::claim_name(root_menu, "setup-rerun");
+    root_menu.Insert(
+        "setup-rerun",
+        [&session](std::ostream& out, std::string step) {
+            process_setup_rerun(std::ref(out), std::ref(session), std::move(step));
+        },
+        "Run again a step of the tenant's setup that ended with warnings, by its name");
 
     ores::shell::app::claim_name(root_menu, "logout");
     root_menu.Insert(
@@ -240,6 +249,21 @@ void accounts_commands::process_setup_report(std::ostream& out, nats_client& ses
         0)
         out << "✓ The tenant's setup has no step with warnings, or this account cannot read it."
             << std::endl;
+    else
+        out << "  Run 'setup-rerun <name>' to run a step again; the name is in brackets."
+            << std::endl;
+}
+
+void accounts_commands::process_setup_rerun(std::ostream& out,
+                                            nats_client& session,
+                                            std::string step) {
+    // A step that ended with warnings had a deadline of its own, and the
+    // re-run may wait the same long while for quotes to arrive.
+    constexpr std::chrono::minutes patience{20};
+    if (!workflow_run_commands::rerun_latest_step(
+            out, session, iam::workflow::tenant_setup_workflow_type, step, patience))
+        return;
+    process_setup_report(out, session);
 }
 
 void accounts_commands::process_logout(std::ostream& out, nats_client& session) {

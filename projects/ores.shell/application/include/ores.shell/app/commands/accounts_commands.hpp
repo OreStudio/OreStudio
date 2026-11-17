@@ -106,6 +106,16 @@ public:
     static void process_setup_report(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
+     * @brief Runs again a step of the tenant's setup that ended with warnings,
+     * waits for it, and prints what still has warnings.
+     *
+     * @param step The step's name, as the setup report's run lists it.
+     */
+    static void process_setup_rerun(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    std::string step);
+
+    /**
      * @brief Process a logout request.
      *
      * Logs out the currently logged-in user.

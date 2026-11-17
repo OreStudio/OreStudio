@@ -323,11 +323,73 @@ std::size_t workflow_run_commands::print_run_warnings(std::ostream& out,
             out << ": " << warnings.size() << " warning(s)" << std::endl;
             continue;
         }
-        out << std::endl;
+        out << " (" << step.name << ")" << std::endl;
         for (const auto& warning : warnings)
             out << "      " << warning << std::endl;
     }
     return warned.size();
+}
+
+bool workflow_run_commands::rerun_latest_step(std::ostream& out,
+                                              nats_client& session,
+                                              std::string_view run_type,
+                                              const std::string& step_name,
+                                              std::chrono::seconds timeout) {
+    std::string run_id;
+    try {
+        workflow::messaging::list_workflow_instance_summaries_request list;
+        list.limit = 1;
+        list.type_filter = std::string(run_type);
+        const auto runs = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::list_workflow_instance_summaries_response>(
+            session, std::string(list.nats_subject), list);
+        if (!runs || !runs->success || runs->instances.empty()) {
+            fail(out) << "No " << run_type << " run that this account can read." << std::endl;
+            return false;
+        }
+        run_id = runs->instances.front().id;
+
+        workflow::messaging::retry_workflow_instance_request retry;
+        retry.workflow_instance_id = run_id;
+        retry.step_name = step_name;
+        const auto answer = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::retry_workflow_instance_response>(
+            session, std::string(retry.nats_subject), retry);
+        if (!answer) {
+            fail(out) << "The step was not run again: " << answer.error().what() << std::endl;
+            return false;
+        }
+        if (!answer->success) {
+            fail(out) << "The step was not run again: " << answer->message << std::endl;
+            return false;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << "The step was not run again: " << e.what() << std::endl;
+        return false;
+    }
+    out << "Running '" << step_name << "' again." << std::endl;
+
+    // Only the step that runs again is reported: the rest of the run is as it
+    // was, and printing it would bury the one answer the person asked for.
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    while (std::chrono::steady_clock::now() < deadline) {
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        const auto reply = fetch_steps(session, run_id);
+        if (!reply || !reply->success)
+            continue;
+        const auto step = std::ranges::find(
+            reply->steps, step_name, &workflow::messaging::workflow_step_summary::name);
+        if (step == reply->steps.end() || !is_step_complete(*step) ||
+            reply->status == "in_progress")
+            continue;
+        out << "  " << (step->label.empty() ? step->name : step->label) << ": " << step->status
+            << std::endl;
+        for (const auto& entry : step->log)
+            out << "      " << entry.message << std::endl;
+        return reply->status == "completed";
+    }
+    fail(out) << "The step did not finish within " << timeout.count() << "s." << std::endl;
+    return false;
 }
 
 bool workflow_run_commands::wait_for_instance(std::ostream& out,

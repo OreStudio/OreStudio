@@ -3069,6 +3069,7 @@ export const en: SourceCatalogue = {
             noRun: "This tenant's setup has not been started. The deployment administrator has to start it.",
             enter: 'Go to the application',
             report: {
+                alert: "{count} step(s) of your tenant's setup ended with warnings. Read the setup report to run them again.",
                 notice: "Your tenant's setup finished, but {count} step(s) ended with warnings. The system is usable; some market data, trades or reports may be missing.",
                 read: 'Read the setup report',
                 dismiss: 'Dismiss',
@@ -3078,6 +3079,8 @@ export const en: SourceCatalogue = {
                 unavailable:
                     "The setup report is not available. Only the tenant's administrator can read it.",
                 run: 'The whole run',
+                rerun: 'Run again',
+                rerunning: 'Running {step} again. The run below shows its progress.',
             },
         },
 

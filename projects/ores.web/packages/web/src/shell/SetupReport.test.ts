@@ -74,6 +74,8 @@ describe('the setup report', () => {
         );
 
         expect(report.map((s) => s.label)).toEqual(['step_2', "Publish each party's curves"]);
+        // The name is what a re-run sends, whatever the label reads.
+        expect(report.map((s) => s.name)).toEqual(['step_2', 'step_3']);
         expect(report[0]?.warnings).toEqual([]);
         expect(report[1]?.warnings).toEqual(['SEK-SWESTR: no series']);
     });

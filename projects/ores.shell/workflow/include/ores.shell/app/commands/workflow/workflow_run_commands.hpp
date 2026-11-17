@@ -108,6 +108,21 @@ public:
                                           const std::string& news_since = {});
 
     /**
+     * @brief Runs again a step of the latest run of a type that ended with
+     * warnings, and waits for the run to complete again.
+     *
+     * The engine refuses a step that did not end with warnings, or one the run
+     * cannot do without, and the refusal is printed as it came.
+     *
+     * @return true when the run completed again.
+     */
+    static bool rerun_latest_step(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  std::string_view run_type,
+                                  const std::string& step_name,
+                                  std::chrono::seconds timeout);
+
+    /**
      * @brief How a command's work ended when a run may hand some of it on.
      */
     enum class follow_result {

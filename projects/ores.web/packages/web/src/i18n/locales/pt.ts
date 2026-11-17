@@ -3097,6 +3097,7 @@ const pt: SourceCatalogue = {
             noRun: 'A configuração deste inquilino ainda não foi iniciada. O administrador da instalação tem de a iniciar.',
             enter: 'Ir para a aplicação',
             report: {
+                alert: '{count} passo(s) da configuração do seu inquilino terminaram com avisos. Leia o relatório da configuração para os executar de novo.',
                 notice: 'A configuração do seu inquilino terminou, mas {count} passo(s) terminaram com avisos. O sistema pode ser usado; podem faltar alguns dados de mercado, transações ou relatórios.',
                 read: 'Ler o relatório da configuração',
                 dismiss: 'Fechar',
@@ -3106,6 +3107,8 @@ const pt: SourceCatalogue = {
                 unavailable:
                     'O relatório da configuração não está disponível. Só o administrador do inquilino o pode ler.',
                 run: 'A execução completa',
+                rerun: 'Executar de novo',
+                rerunning: 'A executar {step} de novo. A execução abaixo mostra o progresso.',
             },
         },
 

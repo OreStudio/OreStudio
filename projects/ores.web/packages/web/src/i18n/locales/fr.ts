@@ -3106,6 +3106,7 @@ const fr: SourceCatalogue = {
             noRun: "La configuration de ce locataire n'a pas été lancée. L'administrateur du déploiement doit la lancer.",
             enter: "Accéder à l'application",
             report: {
+                alert: '{count} étape(s) de la configuration de votre locataire se sont terminées avec des avertissements. Lisez le rapport de configuration pour les relancer.',
                 notice: 'La configuration de votre locataire est terminée, mais {count} étape(s) se sont terminées avec des avertissements. Le système est utilisable ; des données de marché, des transactions ou des rapports peuvent manquer.',
                 read: 'Lire le rapport de configuration',
                 dismiss: 'Fermer',
@@ -3115,6 +3116,8 @@ const fr: SourceCatalogue = {
                 unavailable:
                     "Le rapport de configuration n'est pas disponible. Seul l'administrateur du locataire peut le lire.",
                 run: "L'exécution complète",
+                rerun: 'Relancer',
+                rerunning: "{step} est relancée. L'exécution ci-dessous montre sa progression.",
             },
         },
 

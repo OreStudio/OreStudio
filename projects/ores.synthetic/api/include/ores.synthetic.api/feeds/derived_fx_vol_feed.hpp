@@ -132,6 +132,14 @@ public:
         return failures_;
     }
 
+    /**
+     * @brief What the last refresh left unquoted by design rather than by fault: a pair whose
+     * sample does not reach its longest expiries, with what each needs.
+     */
+    [[nodiscard]] const std::vector<std::string>& notices() const {
+        return notices_;
+    }
+
 private:
     /// The ticks of the ids of a pair not yet sent for its latest day, and that day.
     std::expected<std::vector<marketdata::messaging::adapter_tick>, std::string>
@@ -149,6 +157,7 @@ private:
     /** The day each vendor id was last sent for, so an id demanded later is sent at once. */
     std::map<std::string, std::chrono::year_month_day> last_sent_;
     std::vector<std::string> failures_;
+    std::vector<std::string> notices_;
     std::uint64_t sequence_ = 0;
     std::optional<derived_fx_store> store_;
     /** The series and the days held of each pair kept so far, by pair. */

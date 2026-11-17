@@ -169,6 +169,40 @@ TEST_CASE("a_ladder_is_the_tenors_its_labels_name_shortest_first", derived_tags)
     CHECK(ties[1].label == "1Y");
 }
 
+TEST_CASE("a_pair_reaches_the_expiries_its_returns_cover_and_names_the_rest", derived_tags) {
+    // 400 returns cover 18M, whose window is 378, and not 2Y, whose window is 504.
+    const qm::fx_derivation_settings settings{};
+    const auto reach = derived_fx_reach_of(test_ladder, 400, settings);
+    REQUIRE_FALSE(reach.reached.empty());
+    CHECK(reach.reached.back().label == "18M");
+    REQUIRE(reach.unreached.size() == 5);
+    CHECK(reach.unreached.front().expiry.label == "2Y");
+    CHECK(reach.unreached.front().needs == 504);
+    CHECK(reach.unreached.back().expiry.label == "10Y");
+    CHECK(reach.unreached.back().needs == 2520);
+    CHECK(describe_reach({.base = "USD", .quote = "CLP"}, reach, 400) ==
+          "USDCLP reaches 18M with 400 returns; 2Y needs 504, 3Y needs 756, 5Y needs 1260, "
+          "7Y needs 1764, 10Y needs 2520");
+
+    // Too short a sample for even the shortest window reaches nothing, and says so.
+    const auto none = derived_fx_reach_of(test_ladder, 10, settings);
+    CHECK(none.reached.empty());
+    CHECK(describe_reach({.base = "USD", .quote = "CLP"}, none, 10)
+              .starts_with("USDCLP reaches no expiry with 10 returns; 1W needs 21"));
+}
+
+TEST_CASE("a_pair_whose_sample_doubles_never_reaches_less", derived_tags) {
+    const qm::fx_derivation_settings settings{};
+    for (std::size_t n = 0; n <= 3000; n += 7) {
+        const auto once = derived_fx_reach_of(test_ladder, n, settings);
+        const auto twice = derived_fx_reach_of(test_ladder, 2 * n, settings);
+        INFO("returns " << n);
+        REQUIRE(twice.reached.size() >= once.reached.size());
+        for (std::size_t i = 0; i < once.reached.size(); ++i)
+            CHECK(twice.reached[i] == once.reached[i]);
+    }
+}
+
 TEST_CASE("a_pair_returns_the_change_of_its_log_level_and_skips_a_level_that_is_not_positive",
           derived_tags) {
     const dated_series levels{.dates = {derived_start,

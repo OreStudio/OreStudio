@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compute-how-far-a-surface-reaches
+#+pr: 4808
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A ten year expiry needs 2520 returns. The derived source should quote the expiri
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,19 @@ A ten year expiry needs 2520 returns. The derived source should quote the expiri
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *What was already true.* The derivation already reads each expiry's level over a window of
+  =max(21, years x 252)= returns, and an expiry past the sample fails inside
+  =realised_volatility= with "the sample is shorter than the window". So the reach was already
+  the sample's, but implicit: it surfaced as one error per expiry, and nothing named it.
+- *The rule, once.* =fx_derivation_window= is the one rule for how many returns an expiry
+  needs; =derive_fx_quotes= and =derive_grid= read it, so the reach the source reports and the
+  window its quotes are read over cannot disagree.
+- *The reach.* =derived_fx_reach_of= splits a pair's ladder into the expiries its returns cover
+  and the ones they do not, each with what it needs. The live refresh derives only the reached
+  ones and names the rest in one line, such as "USDCLP reaches 7Y with 2345 returns; 10Y needs
+  2520". The history path keeps =derive_grid=, which judges each day by the returns up to it.
+- *The property.* A test walks samples from 0 to 3000 returns and checks that doubling one
+  never reaches less, and reaches the same expiries first.
 
 * Measurements
 
@@ -57,7 +67,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reach of 400 returns on the 13-expiry ladder | 18M; 2Y needs 504 ... 10Y needs 2520 | the synthetic api test | this branch over origin/main |
+| Doubled samples from 0 to 3000 returns | never reach less | the property test | this branch over origin/main |
+| Derived quotes after a restart on the provisioned tenant | 2275 sent; no pair short of 10Y | the synthetic service log | this branch over origin/main |
 
 * Notes
 
@@ -76,12 +88,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4808][#4808]] | [analytics,synthetic] Report how far a pair's sample reaches |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Claude review: the grid's two-return floor is not in the window rule | fx_vol_derivation.cpp | Accept | The floor moved into fx_derivation_window, and the grid reads it. |
+| 2 | Claude review: unusable expiry lengths count as reached | derived_fx_vol.cpp | Decline | A ladder label is a tenor fx_vol_tenor_years accepts, which is positive and at most two digits. |
+| 3 | Claude review: a short pair is reported as a failure | derived_fx_vol_feed.cpp | Accept | The reach line is a notice, cleared with the refresh and logged at info. |
+| 4 | Claude review: no feed test of a short pair | derived_fx_vol_feed.cpp | Decline | The reach is tested; the feed only filters by it. |
+| 5 | Claude review: small test points | feeds_derived_fx_vol_tests.cpp | Decline | The struct compares by value; the zero case is harmless. |
 
 * Result
+
+A pair's reach is the expiries its returns cover, read through =fx_derivation_window=, the one
+rule the quotes' windows are read by too. The live source derives only those and names the rest
+in one line, with what each needs; a doubled sample never reaches less. Every pair the catalogue
+holds today reaches 10Y, so the 2275 quotes are unchanged; the reach is what lets a shorter pair
+such as USD/CLP join the catalogue, once the calibration fits the expiries it has.

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 08035698-916F-4134-8D93-B89D2C284BE4
 :END:
-#+title: Task: Regenerate the output that drifted from its models
-#+description: Two checks are red on main because generated files no longer match the models they are generated from: 26 files differ across the component set, and the BFF list request descriptor table is stale. Neither is a hand-edit gone wrong that needs reading; both are what the generators produce when they are run.
+#+title: Task: Publish the new trade tables to the web, and read the rest of the drift
+#+description: The BFF list request descriptor table is stale, and the same four new trade tables are the cause it was before. The wider drift the component-drift check reports is not stale output: regenerating it removes work, so that half has to be read rather than re-run.
 #+type: task
 #+level: s1
 #+filetags: :keep_main_green:sprint_30:v0:
@@ -20,24 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Make the component-drift and bff-list-requests checks pass on main by regenerating the files they read, so a branch raised from main does not inherit a red gate.
+Make the bff-list-requests check pass on main, and find out whether the component-drift check can be cleared the same way. It cannot, and the reason is worth recording: what the generator would write back deletes hand-written work.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
 
-- check_component_drift.py --all reports that no file would change.
-- check_bff_list_requests.py reports that the descriptor table is current.
-- No file is hand-edited to satisfy a check; the change is what the generators wrote.
+- check_bff_list_requests.py reports that every hand-written list request agrees with the protocol and that the descriptor table is current.
+- The two tables the four new instrument tables needed are in the descriptor table beside the other instruments' tables.
+- The component-drift finding is written down with the three files that show it, so the next reader does not run the regeneration and lose them.
 
 * Plan
 
@@ -57,7 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| List descriptors missing | 8: a list and a versions-list for each of 4 tables, 40 lines | `regenerate_list_request_descriptors.py --check` | 31367addf5 |
+| List requests read after the seed | 1286 written, 1284 checked | `regenerate_list_request_descriptors.py` | 31367addf5 |
+| Files the component generator would rewrite | 26 | `check_component_drift.py --all` | 31367addf5 |
+| Files of those 26 that lose work | at least 3: `pugixml::pugixml` from the ores.ore test link, the `= 0` on two staleness seconds, a party-scoped fixing read | `git diff` after `--all --write` | 31367addf5 |
 
 * Notes
 
@@ -85,3 +88,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*The descriptor table is current, and the wider drift is not stale output.*
+
+The table was missing eight entries, a list and a versions-list for each of
+the four instrument tables that landed without their row-level security and
+their permissions. It is the same omission seen from the web side: the
+tables reached the schema and the C++ and nothing in the browser knew they
+were listable. =regenerate_list_request_descriptors.py= wrote them beside
+the other instruments, and the check now reads 1284 requests and finds every
+one agreeing with the C++ protocol.
+
+*The component generator is not safe to run.* The check says 26 files differ
+from their models and suggests regenerating. I ran it into a scratch tree and
+read what it would write. It removes:
+- =pugixml::pugixml= from the =ores.ore/core/tests= link, though
+  =domain_script_library_projection_tests.cpp= includes =<pugixml.hpp>= and
+  is built by that target, so the build breaks;
+- the = 0= on =stale_seconds_ir= and =stale_seconds_fx=, leaving two
+  members of a hand-written configuration struct with no value until the
+  parser fills them;
+- a party-scoped =market_fixing_repository::read_latest_for_series= that
+  takes a tenant, a party and a set of series.
+
+None of those is generated output that drifted. They are work added to
+files the generator also owns, and the model does not describe them. Running
+the generator would delete the work and pass the check. So the drift is a
+model gap, one member at a time, and it needs the models changed rather than
+the generator run.
+
+*Gate.* =check_bff_list_requests.py= passes. The heavy checks were not run:
+the change is one generated TypeScript table, and the suites do not read it.
+
+*What is still red.* =component-drift= for the reason above, and
+=money-decimal-columns= and =codegen-tests=, each of which needs a decision
+about which side is right rather than a rerun.

@@ -478,7 +478,8 @@ auto read_fx_average_forward(const record_reader& trade) -> fx_asian_forward_ins
     return r;
 }
 
-// The strike is a bare value or, in the newer form, a StrikeData block.
+// The strike is a bare value or, in the newer form, a StrikeData block. The
+// write states the bare value, which ORE reads the same way.
 auto read_fx_asian_option(const record_reader& trade) -> fx_asian_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_asian_option_instrument>("FxAsianOption");
     const auto data = trade.child("FxAsianOptionData");

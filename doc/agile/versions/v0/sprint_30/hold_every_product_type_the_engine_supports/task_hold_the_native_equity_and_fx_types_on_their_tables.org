@@ -132,7 +132,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =std::stoi= on an imported lag can throw | pairwise_variance_swap_projection.hpp | accept | parsed with =from_chars=; a lag that is not a whole number refuses the trade, as ORE does, rather than dropping it |
+| 2 | a bad settlement date becomes 0000-00-00 | pairwise_variance_swap_projection.hpp | accept | a missing or unparsable date refuses the trade; so does a list without exactly two members |
+| 3 | reformatting noise in the FX projection | fx_instrument_projection.cpp | decline | main's copy was not formatted, and the format check covers whole changed files |
+| 4 | no check that a future option states its future expiry | equity option model | decline | ORE's schema makes =FutureExpiryDate= optional (=minOccurs="0"=), so the check would refuse valid trades |
+| 5 | FX Asian strike read in two forms, written in one | fx_instrument_projection.cpp | accept | a comment says the write states the bare value, which ORE reads the same way |
+| 6 | no malformed-input tests | xml_portfolio_projection_tests.cpp | accept | a test refuses a decimal lag, an unparsable date and a one-member list, and accepts the valid form; a non-numeric lag is already refused by the schema |
+| 7 | size, mostly generated | - | no change | the codegen defect is captured |
 
 * Result
 

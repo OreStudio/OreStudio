@@ -24,7 +24,9 @@
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include <charconv>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -97,34 +99,44 @@ inline void append_decimals(xml::record_writer& data,
 
 }
 
-/// Reads the element's terms into the row. A list with fewer than two members
-/// leaves the missing member empty, which the table's checks refuse.
+/**
+ * @brief Reads the element's terms into the row.
+ *
+ * ORE refuses an element whose lists do not hold exactly two members, or whose
+ * settlement date or accrual lag does not parse, so the read refuses it too
+ * rather than keep a value the document did not state.
+ */
 template <typename Row>
 void read(const xml::record_reader& data, Row& r) {
     r.long_short = detail::free_text(data, "LongShort").value_or("");
     const auto underlyings = detail::values_of(data, "Underlyings");
     const auto strikes = detail::decimals_of(data, "UnderlyingStrikes");
     const auto notionals = detail::decimals_of(data, "UnderlyingNotionals");
-    if (!underlyings.empty())
-        r.first_underlying = address_of(underlyings[0]);
-    if (underlyings.size() > 1)
-        r.second_underlying = address_of(underlyings[1]);
-    if (!strikes.empty())
-        r.first_strike = strikes[0];
-    if (strikes.size() > 1)
-        r.second_strike = strikes[1];
-    if (!notionals.empty())
-        r.first_notional = notionals[0];
-    if (notionals.size() > 1)
-        r.second_notional = notionals[1];
+    if (underlyings.size() != 2 || strikes.size() != 2 || notionals.size() != 2)
+        throw std::invalid_argument(
+            "A pairwise variance swap states exactly two underlyings, strikes and notionals.");
+    r.first_underlying = address_of(underlyings[0]);
+    r.second_underlying = address_of(underlyings[1]);
+    r.first_strike = strikes[0];
+    r.second_strike = strikes[1];
+    r.first_notional = notionals[0];
+    r.second_notional = notionals[1];
     r.basket_notional = detail::decimal_of(detail::free_text(data, "BasketNotional").value_or(""));
     r.basket_strike = detail::decimal_of(detail::free_text(data, "BasketStrike").value_or(""));
     r.currency = detail::free_text(data, "PayCcy").value_or("");
-    if (const auto settlement = detail::free_text(data, "SettlementDate"))
-        r.settlement_date = option_block::to_optional_domain_date(*settlement)
-                                .value_or(std::chrono::year_month_day{});
-    if (const auto lag = detail::free_text(data, "AccrualLag"))
-        r.accrual_lag = std::stoi(*lag);
+    const auto settlement = option_block::to_optional_domain_date(
+        detail::free_text(data, "SettlementDate").value_or(""));
+    if (!settlement)
+        throw std::invalid_argument("A pairwise variance swap states a settlement date.");
+    r.settlement_date = *settlement;
+    if (const auto lag = detail::free_text(data, "AccrualLag")) {
+        int value = 0;
+        const auto [end, error] = std::from_chars(lag->data(), lag->data() + lag->size(), value);
+        if (error != std::errc{} || end != lag->data() + lag->size())
+            throw std::invalid_argument(
+                "A pairwise variance swap's accrual lag is a whole number.");
+        r.accrual_lag = value;
+    }
     r.payoff_limit = detail::optional_decimal(data, "PayoffLimit");
     r.cap = detail::optional_decimal(data, "Cap");
     r.floor = detail::optional_decimal(data, "Floor");

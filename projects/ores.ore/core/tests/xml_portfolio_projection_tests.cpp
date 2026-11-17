@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <format>
 #include <map>
 #include <optional>
 #include <string>
@@ -3950,6 +3951,59 @@ TEST_CASE("an_fx_pairwise_variance_swap_holds_its_two_members_on_its_table",
     REQUIRE(items.size() == 1);
     check(items[0]);
     check(rebuild(items[0]));
+}
+
+TEST_CASE("a_pairwise_variance_swap_with_a_term_ore_refuses_is_refused",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto trade =
+        [](std::string_view underlyings, std::string_view settlement, std::string_view lag) {
+            return std::format(R"(<Portfolio>
+  <Trade id="Pairwise#1">
+    <TradeType>FxPairwiseVarianceSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxPairwiseVarianceSwapData>
+      <LongShort>Long</LongShort>
+      <Underlyings>{}</Underlyings>
+      <UnderlyingStrikes><Value>0.08</Value><Value>0.09</Value></UnderlyingStrikes>
+      <UnderlyingNotionals><Value>1000</Value><Value>1200</Value></UnderlyingNotionals>
+      <BasketNotional>2000</BasketNotional>
+      <BasketStrike>0.085</BasketStrike>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2026-01-05</StartDate>
+          <EndDate>2027-01-05</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <AccrualLag>{}</AccrualLag>
+      <SettlementDate>{}</SettlementDate>
+      <PayCcy>USD</PayCcy>
+    </FxPairwiseVarianceSwapData>
+  </Trade>
+</Portfolio>)",
+                               underlyings,
+                               lag,
+                               settlement);
+        };
+    const auto two = "<Value>FX-ECB-EUR-USD</Value><Value>FX-ECB-GBP-USD</Value>";
+    const auto mapped = [](const std::string& text) {
+        const auto items = portfolio_projection::map(portfolio_projection::read(text));
+        REQUIRE(items.size() == 1);
+        return items[0];
+    };
+
+    CHECK(std::holds_alternative<ores::trading::domain::fx_instrument_data>(
+        mapped(trade(two, "2027-01-08", "2")).instrument));
+    CHECK(
+        std::holds_alternative<std::monostate>(mapped(trade(two, "2027-01-08", "2.5")).instrument));
+    CHECK(std::holds_alternative<std::monostate>(mapped(trade(two, "the eighth", "2")).instrument));
+    CHECK(std::holds_alternative<std::monostate>(
+        mapped(trade("<Value>FX-ECB-EUR-USD</Value>", "2027-01-08", "2")).instrument));
 }
 
 TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",

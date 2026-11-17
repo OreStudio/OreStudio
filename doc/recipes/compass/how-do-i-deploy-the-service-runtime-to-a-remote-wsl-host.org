@@ -216,8 +216,8 @@ libraries and one directory per service binary into =build/docker-stage=,
 =compass image publish= tags each image as
 =<registry>/<name>:<version>-<commit>= and pushes it. The image names are
 the repository names without a prefix (=ores-service-base=,
-=ores-service-libs=, =ores-nats=, and one per service such as
-=ores.iam.service=). A tag the registry already holds is skipped, so a
+=ores-service-libs=, =ores-nats=, =ores-web= for the Node service, and one
+per compiled service such as =ores.iam.service=). A tag the registry already holds is skipped, so a
 rerun after a failed push only fills the gaps, and =--dry-run= lists what
 would be pushed.
 
@@ -257,6 +257,28 @@ Two ways a pull deploy fails before anything starts:
   a deploy then fails on the first =mkdir= into a directory the remote
   user cannot write. Regenerate the profile, or rewrite the old prefix
   in =.env.<host>=.
+
+* The web service image
+
+=ores.web.service= runs on Node, so it is packaged differently from the
+compiled services: =docker/stage-web.sh= stages the compiled BFF, the
+browser bundle, the site configuration and the pruned dependencies, and
+=docker/service-web.Dockerfile= runs them on Alpine's =nodejs=. The host
+needs no Node installation — the image carries its own.
+
+Three choices keep the image at 143 MB rather than 486 MB:
+
+- =npm prune --omit=dev= on the staged copy, which drops the compiler and
+  the test runner from =node_modules= (207 MB to 60 MB).
+- No =*.map= files: they are for a debugger, and they were 28 MB.
+- Alpine plus =apk add nodejs= rather than the official node image, which
+  carries npm, corepack and native-addon headers a runtime image never
+  uses (171 MB against about 60 MB).
+
+The container starts after the compiled services, takes no service
+arguments, and gets a copy of the profile with =ORES_WEB_DOC_ROOT= removed:
+that path is the checkout, which the container does not have, and without it
+the agile and scenario runners stay off.
 
 * The database stays on the host
 

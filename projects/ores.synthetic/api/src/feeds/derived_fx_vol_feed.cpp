@@ -152,7 +152,7 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     const auto ladder = derived_fx_ladder(owed_expiries);
     const auto reach = derived_fx_reach_of(ladder, returns.returns.size(), settings_);
     if (!reach.unreached.empty())
-        failures_.push_back(describe_reach(pair, reach, returns.returns.size()));
+        notices_.push_back(describe_reach(pair, reach, returns.returns.size()));
     for (const auto& e : reach.reached) {
         const auto at = convention_at(*convention, e.label);
         if (!at)
@@ -301,6 +301,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
 std::size_t derived_fx_vol_feed::refresh(std::chrono::year_month_day today,
                                          const publish_fn& publish) {
     failures_.clear();
+    notices_.clear();
     std::map<std::string, std::pair<derived_fx_pair, std::set<std::string>>> pairs;
     for (const auto& id : demanded_)
         if (const auto quote = parse_derived_fx_external_id(id)) {

@@ -50,7 +50,7 @@ struct fx_derivation_settings final {
 
 /**
  * @brief The returns an expiry's level is read over: its length in trading days, and never
- * fewer than the settings' minimum window.
+ * fewer than the settings' minimum window, or than the two a sample variance needs.
  *
  * The one rule for how much history an expiry needs, so the reach a source reports and the
  * window its quotes are read over cannot disagree.

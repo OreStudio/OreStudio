@@ -35,8 +35,10 @@ constexpr double maximum_years = 50.0;
 }
 
 int fx_derivation_window(double years, const fx_derivation_settings& settings) {
-    return std::max(settings.minimum_window,
-                    static_cast<int>(std::lround(years * settings.trading_days_per_year)));
+    // A level is a sample variance, which needs two returns whatever the settings say.
+    return std::max({2,
+                     settings.minimum_window,
+                     static_cast<int>(std::lround(years * settings.trading_days_per_year))});
 }
 
 std::expected<fx_derivation, std::string>
@@ -109,7 +111,7 @@ std::expected<void, std::string> derive_grid(std::span<const double> returns,
     for (const auto& expiry : expiries) {
         const auto days = expiry.years * settings.trading_days_per_year;
         const auto count = fx_derivation_window(expiry.years, settings);
-        windows.push_back({.returns = static_cast<std::size_t>(std::max(count, 2)),
+        windows.push_back({.returns = static_cast<std::size_t>(count),
                            .days = days,
                            .usable = expiry.years > 0.0 && expiry.years <= maximum_years});
     }

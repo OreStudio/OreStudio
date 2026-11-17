@@ -402,6 +402,8 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
             });
             for (const auto& failure : feed_.failures())
                 BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
+            for (const auto& notice : feed_.notices())
+                BOOST_LOG_SEV(lg(), info) << "The derived source's reach: " << notice;
             if (sent > 0)
                 BOOST_LOG_SEV(lg(), info)
                     << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";

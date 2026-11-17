@@ -463,3 +463,114 @@ TEST_CASE("a_generic_barrier_option_refuses_no_barrier_and_an_unknown_kiko_type"
     REQUIRE_FALSE(built.has_value());
     CHECK(built.error().term == "kiko_type");
 }
+
+namespace {
+
+basket_variance_swap_terms spx_and_ndx_variance() {
+    return {.members = std::vector<basket_option_member>{{.underlying = scripted_equity(".SPX"),
+                                                          .currency = std::nullopt,
+                                                          .weight = scripted_amount("0.5")},
+                                                         {.underlying = scripted_equity(".NDX"),
+                                                          .currency = std::nullopt,
+                                                          .weight = scripted_amount("0.5")}},
+            .currency = std::string("USD"),
+            .notional = scripted_amount("1000"),
+            .strike = scripted_amount("0.2"),
+            .squared_payoff = false,
+            .start = 2026y / 1 / 5,
+            .end = 2027y / 1 / 5,
+            .settlement = 2027y / 1 / 7,
+            .position = option_position::short_option};
+}
+
+pairwise_variance_swap_terms spx_and_ndx_pairwise() {
+    return {.first = pairwise_member{.underlying = scripted_equity(".SPX"),
+                                     .strike = scripted_amount("0.34"),
+                                     .notional = scripted_amount("577")},
+            .second = pairwise_member{.underlying = scripted_equity(".NDX"),
+                                      .strike = scripted_amount("0.39"),
+                                      .notional = scripted_amount("603")},
+            .basket_notional = scripted_amount("1339"),
+            .basket_strike = scripted_amount("0.32"),
+            .pay_currency = std::string("USD"),
+            .start = 2026y / 1 / 5,
+            .end = 2027y / 1 / 5,
+            .settlement = 2027y / 1 / 7,
+            .position = option_position::long_option};
+}
+
+forward_volatility_agreement_terms spx_fva() {
+    return {.underlying = scripted_equity(".SPX"),
+            .pay_currency = std::string("USD"),
+            .quantity = scripted_amount("1000"),
+            .implied_vol_strike = scripted_amount("0.2"),
+            .fva_date = 2026y / 7 / 6,
+            .option_expiry = 2027y / 1 / 5,
+            .premium_date = 2026y / 7 / 8,
+            .settlement = 2027y / 1 / 7,
+            .position = option_position::long_option};
+}
+
+}
+
+TEST_CASE("a_basket_variance_swap_states_its_weighted_members_and_its_valuation_schedule",
+          scripted_tags) {
+    const auto built =
+        basket_variance_swap_builder<scripted_family::fx>(spx_and_ndx_variance()).build();
+    REQUIRE(built.has_value());
+    CHECK(built->instrument.identity.trade_type_code == "FxBasketVarianceSwap");
+    REQUIRE(built->instrument_underlyings.size() == 2);
+    CHECK(built->instrument_underlyings[1].weight == 0.5);
+    REQUIRE(built->schedules.size() == 1);
+    CHECK(built->schedules[0].schedule_role == "valuationschedule");
+    CHECK(built->schedules[0].tenor == "1D");
+}
+
+TEST_CASE("a_pairwise_variance_swap_states_its_legs_as_three_lists", scripted_tags) {
+    const auto built =
+        pairwise_variance_swap_builder<scripted_family::equity>(spx_and_ndx_pairwise()).build();
+    REQUIRE(built.has_value());
+    const auto underlyings = std::ranges::find_if(
+        built->parameters, [](const auto& p) { return p.name == "Underlyings"; });
+    REQUIRE(underlyings != built->parameters.end());
+    CHECK(underlyings->declared_type == "Index");
+    CHECK(underlyings->shape == "vector");
+    std::vector<std::string> strikes;
+    const auto strike_list = std::ranges::find_if(
+        built->parameters, [](const auto& p) { return p.name == "UnderlyingStrikes"; });
+    REQUIRE(strike_list != built->parameters.end());
+    for (const auto& value : built->parameter_values)
+        if (value.parameter_sequence_number == strike_list->sequence_number)
+            strikes.push_back(value.value);
+    CHECK(strikes == std::vector<std::string>{"0.34", "0.39"});
+}
+
+TEST_CASE("a_pairwise_variance_swap_refuses_one_underlying_named_twice", scripted_tags) {
+    auto terms = spx_and_ndx_pairwise();
+    auto second = terms.second.get();
+    second.underlying = scripted_equity(".SPX");
+    terms.second = second;
+    const auto built = pairwise_variance_swap_builder<scripted_family::fx>(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "second");
+}
+
+TEST_CASE("a_forward_volatility_agreement_states_its_dates_and_its_strike", scripted_tags) {
+    const auto built =
+        forward_volatility_agreement_builder<scripted_family::equity>(spx_fva()).build();
+    REQUIRE(built.has_value());
+    CHECK(built->instrument.identity.trade_type_code == "EquityForwardVolatilityAgreement");
+    const auto fva =
+        std::ranges::find_if(built->parameters, [](const auto& p) { return p.name == "FvaDate"; });
+    REQUIRE(fva != built->parameters.end());
+    CHECK(fva->value == "2026-07-06");
+    REQUIRE(built->instrument_underlyings.size() == 1);
+}
+
+TEST_CASE("a_forward_volatility_agreement_refuses_an_expiry_before_its_fva_date", scripted_tags) {
+    auto terms = spx_fva();
+    terms.option_expiry = 2026y / 7 / 1;
+    const auto built = forward_volatility_agreement_builder<scripted_family::fx>(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "option_expiry");
+}

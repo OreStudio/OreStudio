@@ -3,16 +3,10 @@ CBO
 CashPosition
 CreditDefaultSwapOption
 EquityAutoDeltaHedgedOption
-EquityBasketVarianceSwap
 EquityDoubleTouchOption
-EquityForwardVolatilityAgreement
 EquityFutureOption
-EquityPairwiseVarianceSwap
 EuropeanOptionBarrier
 FxAsianOption
-FxBasketVarianceSwap
-FxForwardVolatilityAgreement
-FxPairwiseVarianceSwap
 FxWorstOfBasketSwap
 RateDigitalOption
 SwaptionStraddle

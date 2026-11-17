@@ -38,7 +38,7 @@
       </Barriers>
     </FxGenericBarrierOptionData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
     <TradeType>FxGenericBarrierOption</TradeType>
     <FxGenericBarrierOptionData>
       <PayCurrency>EUR</PayCurrency>
@@ -48,19 +48,19 @@
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2031-08-02</ExerciseDate>
+          <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Quantity>3658095.79</Quantity>
-      <Strike>0.886300000362</Strike>
+      <Quantity>3117528.29</Quantity>
+      <Strike>1.018199998435</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
-            <EndDate>2031-08-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
@@ -70,7 +70,7 @@
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>0.9749</Level>
+            <Level>1.12</Level>
           </Levels>
         </BarrierData>
       </Barriers>

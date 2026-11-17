@@ -89,6 +89,12 @@ constexpr class_read_product class_read_products[] = {
     {"EquityWindowBarrierOption", "EquityWindowBarrierOptionData"},
     {"FxWindowBarrierOption", "FxWindowBarrierOptionData"},
     {"EquityGenericBarrierOption", "EquityGenericBarrierOptionData"},
+    {"EquityBasketVarianceSwap", "EquityBasketVarianceSwapData"},
+    {"FxBasketVarianceSwap", "FxBasketVarianceSwapData"},
+    {"EquityPairwiseVarianceSwap", "EquityPairwiseVarianceSwapData"},
+    {"FxPairwiseVarianceSwap", "FxPairwiseVarianceSwapData"},
+    {"EquityForwardVolatilityAgreement", "EquityForwardVolatilityAgreementData"},
+    {"FxForwardVolatilityAgreement", "FxForwardVolatilityAgreementData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -499,6 +505,9 @@ auto container_leaf_of(const xml::record_type& type, std::string_view member) ->
 
 /// The type a member of such a product's element states, which the schema gives it.
 auto declared_type_of(const xml::field& member) -> std::string {
+    // A list of indices is an Index list, which holds each as an address.
+    if (member.type != nullptr && member.type->name == "stFreeStyleIndexVector")
+        return "Index";
     if (const auto* leaf = container_leaf_of(member))
         return std::string(leaf_kind_name(leaf->scalar));
     return std::string(member_kind_name(member.kind));
@@ -520,6 +529,25 @@ auto states_option_data(const xml::field& member) -> bool {
 auto states_a_schedule(const xml::field& member) -> bool {
     return member.kind == xml::field_kind::nested && member.type != nullptr &&
            member.type->name == "scheduleData";
+}
+
+/**
+ * @brief Whether the member is a free style scalar: an element whose value is
+ * its own text, beside an optional type attribute.
+ */
+auto states_a_free_style_scalar(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           member.type->name.starts_with("stFreeStyle") &&
+           xml::find_field(*member.type, "Value", false) == nullptr &&
+           xml::find_field(*member.type, "ScheduleData", false) == nullptr;
+}
+
+/// The type a free style scalar declares: its type attribute, or the name its schema type gives.
+auto free_style_type_of(const xml::field& member, const xml::record_reader& element)
+    -> std::string {
+    if (const auto stated = element.text("type"); stated && !stated->empty())
+        return *stated;
+    return std::string(member.type->name.substr(std::string_view("stFreeStyle").size()));
 }
 
 /// Whether the member is one BarrierData block, which the barrier rows hold.
@@ -706,6 +734,15 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
         // A member is a parameter only when it states a leaf, or a list of leaves.
         // Anything else is content the projection holds no row for, and reading it
         // as a leaf would refuse the document.
+        if (states_a_free_style_scalar(f)) {
+            if (const auto element = product.child(f.name)) {
+                auto& parameter =
+                    make_parameter(data, std::string(f.name), free_style_type_of(f, *element));
+                if (const auto value = element->own_text())
+                    parameter.value = stored_value_of(parameter, *value);
+            }
+            continue;
+        }
         const auto* leaf = container_leaf_of(f);
         if (leaf == nullptr && !states_a_leaf(f))
             continue;
@@ -750,9 +787,14 @@ void write_class_members(xml::record_writer& product, const scripted_instrument_
                 continue;
             auto container = product.child(parameter->name);
             for (const auto& value : values_of(data, parameter->sequence_number))
-                append_leaf(container, leaf->name, value);
+                append_leaf(container, leaf->name, stated_value_of(*parameter, value));
         } else if (parameter->value) {
-            set_scalar_text(product, parameter->name, *parameter->value);
+            const auto* f = field_named(product, parameter->name);
+            if (f != nullptr && states_a_free_style_scalar(*f))
+                product.child(parameter->name)
+                    .set_own_text(stated_value_of(*parameter, *parameter->value));
+            else
+                set_scalar_text(product, parameter->name, *parameter->value);
         }
     }
 }

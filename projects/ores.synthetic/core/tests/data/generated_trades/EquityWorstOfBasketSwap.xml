@@ -112,32 +112,31 @@
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
-  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
       <Currency>USD</Currency>
-      <Quantity>1298135.3</Quantity>
+      <Quantity>6145432.04</Quantity>
       <Underlyings>
-        <Underlying>
-          <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
-        </Underlying>
         <Underlying>
           <Type>Equity</Type>
           <Name>RIC:.SPX</Name>
         </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.NDX</Name>
+        </Underlying>
       </Underlyings>
       <InitialPrices>
-        <InitialPrice>2272.91</InitialPrice>
-        <InitialPrice>2500.2</InitialPrice>
+        <InitialPrice>397.38</InitialPrice>
+        <InitialPrice>437.12</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
           <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-08-02</Date>
             <Date>2025-11-02</Date>
             <Date>2026-02-02</Date>
             <Date>2026-05-02</Date>
@@ -171,9 +170,6 @@
             <Date>2033-05-02</Date>
             <Date>2033-08-02</Date>
             <Date>2033-11-02</Date>
-            <Date>2034-02-02</Date>
-            <Date>2034-05-02</Date>
-            <Date>2034-08-02</Date>
           </Dates>
         </Dates>
       </FloatingPeriodSchedule>
@@ -182,7 +178,6 @@
           <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-08-02</Date>
             <Date>2025-11-02</Date>
             <Date>2026-02-02</Date>
             <Date>2026-05-02</Date>
@@ -216,9 +211,6 @@
             <Date>2033-05-02</Date>
             <Date>2033-08-02</Date>
             <Date>2033-11-02</Date>
-            <Date>2034-02-02</Date>
-            <Date>2034-05-02</Date>
-            <Date>2034-08-02</Date>
           </Dates>
         </Dates>
       </FloatingPayDates>
@@ -255,16 +247,8 @@
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
       </KnockOutLevels>
       <FixedTriggerLevels>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>

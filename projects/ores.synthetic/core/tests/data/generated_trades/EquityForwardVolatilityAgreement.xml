@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
+    <TradeType>EquityForwardVolatilityAgreement</TradeType>
+    <EquityForwardVolatilityAgreementData>
+      <FvaDate>2026-03-03</FvaDate>
+      <OptionExpiry>2026-09-02</OptionExpiry>
+      <PremiumDate>2026-03-05</PremiumDate>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+      </Underlying>
+      <LongShort>Long</LongShort>
+      <ImpliedVolStrike>0.2</ImpliedVolStrike>
+      <Quantity>1965.51</Quantity>
+      <PayCcy>USD</PayCcy>
+      <SettlementDate>2026-09-07</SettlementDate>
+    </EquityForwardVolatilityAgreementData>
+  </Trade>
+  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
+    <TradeType>EquityForwardVolatilityAgreement</TradeType>
+    <EquityForwardVolatilityAgreementData>
+      <FvaDate>2026-10-02</FvaDate>
+      <OptionExpiry>2027-10-02</OptionExpiry>
+      <PremiumDate>2026-10-04</PremiumDate>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.NDX</Name>
+      </Underlying>
+      <LongShort>Short</LongShort>
+      <ImpliedVolStrike>0.2</ImpliedVolStrike>
+      <Quantity>7485.13</Quantity>
+      <PayCcy>USD</PayCcy>
+      <SettlementDate>2027-10-07</SettlementDate>
+    </EquityForwardVolatilityAgreementData>
+  </Trade>
+</Portfolio>

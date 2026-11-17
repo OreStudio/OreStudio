@@ -29,12 +29,12 @@
       <Settlement>2033-09-02</Settlement>
     </FxBasketOptionData>
   </Trade>
-  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
+  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
     <TradeType>FxBasketOption</TradeType>
     <FxBasketOptionData>
       <Currency>USD</Currency>
-      <Notional>482126.28</Notional>
-      <Strike>2.6926</Strike>
+      <Notional>8812586.99</Notional>
+      <Strike>1.7346</Strike>
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
@@ -52,10 +52,10 @@
         <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2030-12-02</ExerciseDate>
+          <ExerciseDate>2027-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Settlement>2030-12-02</Settlement>
+      <Settlement>2027-09-02</Settlement>
     </FxBasketOptionData>
   </Trade>
 </Portfolio>

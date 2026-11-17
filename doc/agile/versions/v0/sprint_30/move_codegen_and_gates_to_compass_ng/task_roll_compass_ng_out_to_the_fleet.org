@@ -39,6 +39,7 @@ Every environment on the machine runs the same pinned compass-ng, and an environ
 - bearings reports a missing compass-ng, or one older than the pin, with the command that fixes it.
 - A recipe covers the first full check in a new worktree, compass gc, and the fallback to Python when the binary is missing or crashes.
 - compass gc runs on a schedule or from a documented command; the pilot store reached 12 GB before a gc.
+- The recipe checks the store's file count (find <git common dir>/compass | wc -l) as well as its size: after one day of the pilot it held 188,697 files, 858 MB of data and 1.5 GB on disk, and compass gc removed nothing. compass-ng keeps one file per cached result until its D8 fix packs them.
 - The fleet broadcast names the change and the date the Python gates stop.
 
 * Plan

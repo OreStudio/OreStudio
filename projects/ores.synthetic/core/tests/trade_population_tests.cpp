@@ -1049,8 +1049,9 @@ TEST_CASE("a_basket_in_a_book_whose_currency_no_second_pair_quotes_is_still_plan
           "[trade_population]") {
     /*
      * The UK book's currency is GBP, and EUR/GBP is the only pair quoted in it,
-     * so a basket slot that drew EUR/GBP had no partner and refused the whole
-     * population. A basket slot now draws from the pairs that have one.
+     * so a slot of a product on two pairs that drew EUR/GBP had no partner and
+     * refused the whole population. Such a slot now draws from the pairs that
+     * have one.
      */
     auto scope = fx_scope();
     scope.currency_code = "GBP";
@@ -1064,6 +1065,8 @@ TEST_CASE("a_basket_in_a_book_whose_currency_no_second_pair_quotes_is_still_plan
     const auto codes = codes_of(plan);
     CHECK(codes.contains("FxBasketOption"));
     CHECK(codes.contains("FxRainbowOption"));
+    CHECK(codes.contains("FxBasketVarianceSwap"));
+    CHECK(codes.contains("FxPairwiseVarianceSwap"));
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {

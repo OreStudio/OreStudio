@@ -1749,8 +1749,14 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxForwardVolatilityAgreement"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
-/// Whether the tenant holds a second pair quoted in the same currency, which a basket of two
-/// pairs needs: the option pays in that currency.
+/// The products on two pairs in one quote currency, which they pay in.
+bool needs_second_pair(std::string_view type) {
+    return type == "FxBasketOption" || type == "FxRainbowOption" ||
+           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap";
+}
+
+/// Whether the tenant holds a second pair quoted in the same currency, which a product on two
+/// pairs needs.
 bool has_basket_partner(const domain::trade_generation_scope& scope,
                         const domain::currency_pair_reference& pair) {
     return std::ranges::any_of(scope.currency_pairs, [&](const auto& candidate) {
@@ -1762,13 +1768,13 @@ bool has_basket_partner(const domain::trade_generation_scope& scope,
  * The pair a slot trades. A desk books what it quotes, so the pairs that name
  * the book's own currency come first; a tenant holding none of those trades the
  * whole catalogue rather than refusing, because a pair in another currency is
- * still a pair it holds. A basket slot draws only from the pairs that have a
- * partner in their quote currency, so a book whose own currency is quoted in no
- * second pair still books its baskets.
+ * still a pair it holds. A slot of a product on two pairs draws only from the
+ * pairs that have a partner in their quote currency, so a book whose own
+ * currency is quoted in no second pair still books those products.
  */
 const domain::currency_pair_reference&
 pair_for(const domain::trade_generation_scope& scope, std::uint32_t slot, std::string_view type) {
-    const bool basket = type == "FxBasketOption" || type == "FxRainbowOption";
+    const bool basket = needs_second_pair(type);
     const auto fits = [&](const domain::currency_pair_reference& pair) {
         return !basket || has_basket_partner(scope, pair);
     };

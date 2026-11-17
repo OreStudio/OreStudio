@@ -420,6 +420,15 @@ TEST_CASE("a_bloomberg_volatility_ticker_names_its_pair_expiry_and_label_and_rou
         sut.write(vendor::quote_description{vendor::fx_option_quote{"EUR", "EUR", "1Y", "ATM"}}));
     CHECK_FALSE(sut.read(
         {.id_scheme = "bbg_ticker", .external_id = "EURUSDV1Y Curncy", .field = "PX_BID"}));
+    // An expiry is a count of days, weeks, months or years from one up: no overnight, no zero.
+    for (const auto* tenor : {"ON", "0M"}) {
+        CHECK_FALSE(sut.write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", tenor, "ATM"}}));
+        const auto read = sut.read({.id_scheme = "bbg_ticker",
+                                    .external_id = std::string("EURUSDV") + tenor + " Curncy",
+                                    .field = "PX_LAST"});
+        CHECK_FALSE((read && std::holds_alternative<vendor::fx_option_quote>(*read)));
+    }
     // Another notation does not write a volatility point.
     CHECK_FALSE(vendor::notation_of("lseg")->write(
         vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "ATM"}}));

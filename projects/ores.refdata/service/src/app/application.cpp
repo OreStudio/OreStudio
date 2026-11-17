@@ -83,12 +83,15 @@ void build_system_calendars(const ores::database::context& ctx) {
     using ores::database::service::tenant_context;
     const auto system = tenant_context::with_system_tenant(ctx);
     const auto acting = system.with_tenant(system.tenant_id(), system.service_account());
+    const auto started = std::chrono::steady_clock::now();
     try {
         ores::refdata::service::calendar_materialisation_service calendars(acting);
         const auto rows = calendars.regenerate_in_use(std::chrono::year{
             ores::refdata::messaging::provisioning_step_handler::last_generated_holiday_year});
+        const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - started);
         BOOST_LOG_SEV(log, info) << "Built the system tenant's calendars: wrote " << rows
-                                 << " day(s).";
+                                 << " day(s) in " << took.count() << " ms.";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(log, error) << "The system tenant's calendars were not built: " << e.what();
     }

@@ -18,10 +18,12 @@
  *
  */
 #include "../src/generator_fleet.hpp"
+#include "../src/shared_surfaces.hpp"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <functional>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -119,6 +121,41 @@ private:
     std::string name_;
     std::vector<std::string> series_;
 };
+
+// A surface that records what is done to it: how many adapters it serves, and whether one was
+// attached before it started.
+class recording_surface final {
+public:
+    using point_targets = std::map<std::string, std::string>;
+
+    void attach(const std::string& adapter_id, const std::string&, point_targets) {
+        adapters_[adapter_id] = true;
+    }
+    std::size_t detach(const std::string& adapter_id) {
+        adapters_.erase(adapter_id);
+        return adapters_.size();
+    }
+    void start() {
+        ++starts;
+        attached_at_start = adapters_.size();
+    }
+    void stop() {
+        ++stops;
+    }
+    std::uint64_t publish_count() const {
+        return 0;
+    }
+
+    int starts = 0;
+    int stops = 0;
+    std::size_t attached_at_start = 0;
+
+private:
+    std::map<std::string, bool> adapters_;
+};
+
+using recording_surfaces = ores::synthetic::service::basic_shared_surfaces<recording_surface>;
+using recording_hold = ores::synthetic::service::basic_shared_surface_hold<recording_surface>;
 
 // One offer: the id it answers and the feed, by source name, that it builds.
 generator_offer offer_of(const std::string& pair, const std::string& source_name) {
@@ -242,4 +279,58 @@ TEST_CASE("a generator whose start threw is built again by the next demand", "[g
     // A generator that runs is kept, not built a third time.
     CHECK(runner.apply({pair_id("EUR/USD")}).started == 0);
     CHECK(builds->load() == 2);
+}
+
+TEST_CASE("two adapters on one surface share one latent path", "[shared_surfaces]") {
+    recording_surfaces surfaces;
+    int builds = 0;
+    std::shared_ptr<recording_surface> built;
+    const auto make = [&builds, &built] {
+        ++builds;
+        built = std::make_shared<recording_surface>();
+        return built;
+    };
+    recording_hold bloomberg(
+        surfaces, "feed-1", "bloomberg-a", "c-bbg", "synthetic.vol.eurusd.bloomberg", {}, make);
+    recording_hold ice(surfaces, "feed-1", "ice-a", "c-ice", "synthetic.vol.eurusd.ice", {}, make);
+
+    bloomberg.start();
+    ice.start();
+    CHECK(builds == 1);
+    REQUIRE(built);
+    CHECK(built->starts == 1);
+    // The first adapter was attached before the surface started, so no tick went out unrouted.
+    CHECK(built->attached_at_start == 1);
+    CHECK(surfaces.running_count() == 1);
+
+    // One adapter going leaves the surface quoting for the other.
+    bloomberg.stop();
+    CHECK(built->stops == 0);
+    CHECK(surfaces.running_count() == 1);
+
+    ice.stop();
+    CHECK(built->stops == 1);
+    CHECK(surfaces.running_count() == 0);
+
+    // A hold stopped twice, or never started, detaches nothing.
+    ice.stop();
+    CHECK(built->stops == 1);
+}
+
+TEST_CASE("a surface built again after its last adapter left is a new path", "[shared_surfaces]") {
+    recording_surfaces surfaces;
+    int builds = 0;
+    const auto make = [&builds] {
+        ++builds;
+        return std::make_shared<recording_surface>();
+    };
+    {
+        recording_hold first(surfaces, "feed-1", "bloomberg-a", "c-bbg", "a", {}, make);
+        first.start();
+    }
+    CHECK(surfaces.running_count() == 0);
+    recording_hold again(surfaces, "feed-1", "bloomberg-a", "c-bbg", "a", {}, make);
+    again.start();
+    CHECK(builds == 2);
+    CHECK(surfaces.running_count() == 1);
 }

@@ -107,7 +107,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unsynchronised surface_ in the hold | shared_surfaces.hpp | Accepted | A mutex guards it. |
+| 2 | Legacy ticks before the first attach | shared_surfaces.hpp | Accepted | The first adapter attaches before the surface starts. |
+| 3 | Publishing under the sink lock | fx_vol_surface_feed.cpp | Accepted | Sinks are copy-on-write; a tick publishes without the lock. |
+| 4 | Back off a failed start | generator_runner.hpp | Declined | Demand comes about once a minute, so a permanent failure rebuilds and logs once a minute: a visible signal, not a loop. |
+| 5 | Lifetime of the make lambda's references | simulator_offers.hpp | Confirmed | The adapter fleet is declared after the registry, the build context and the generator fleet, so it goes first. |
+| 6 | Time the calendar build | refdata application.cpp | Accepted | |
+| 7 | Loose ticker length guard | bloomberg_notation.cpp | Accepted | |
+| 8 | Test two adapters on one surface; refuse ON and 0M | tests | Accepted | The shared surfaces are templated over the surface, so a fake drives them. |
 
 * Result
 

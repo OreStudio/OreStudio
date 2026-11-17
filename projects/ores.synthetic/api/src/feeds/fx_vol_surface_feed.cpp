@@ -30,6 +30,7 @@
 #include <chrono>
 #include <format>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -309,14 +310,18 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     const auto now = context.observed_at;
     std::size_t sent = 0;
     const auto per_contributor = emitter_.points_per_contributor();
-    const std::lock_guard lock(sinks_mu_);
+    std::shared_ptr<const sink_map> sinks;
+    {
+        const std::lock_guard lock(sinks_mu_);
+        sinks = sinks_;
+    }
     for (std::size_t c = 0; c < emitter_.contributor_count(); ++c) {
         const auto& who = emitter_.contributor_name(c);
         for (std::size_t i = 0; i < per_contributor; ++i) {
             const auto& point = points[c * per_contributor + i];
             if (!point.value)
                 continue;
-            if (sinks_.empty()) {
+            if (sinks->empty()) {
                 ores::marketdata::messaging::market_tick shown;
                 shown.oresmd_uri = series_uris_[i];
                 shown.value = std::format("{}", *point.value);
@@ -329,7 +334,7 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
             // Each adapter that serves this contributor gets the point under the vendor's id, as
             // an adapter of a live vendor sends it; the service finds the parties from the id.
             const auto key = std::pair{emitter_.points()[i].expiry_id, emitter_.points()[i].label};
-            for (const auto& [adapter, sink] : sinks_) {
+            for (const auto& [adapter, sink] : *sinks) {
                 if (sink.contributor != who)
                     continue;
                 const auto target = sink.targets.find(key);
@@ -355,14 +360,18 @@ void fx_vol_surface_feed::attach(const std::string& adapter_id,
                                  const std::string& contributor,
                                  point_targets targets) {
     const std::lock_guard lock(sinks_mu_);
-    sinks_.insert_or_assign(adapter_id,
-                            sink{.contributor = contributor, .targets = std::move(targets)});
+    auto next = std::make_shared<sink_map>(*sinks_);
+    next->insert_or_assign(adapter_id,
+                           sink{.contributor = contributor, .targets = std::move(targets)});
+    sinks_ = std::move(next);
 }
 
 std::size_t fx_vol_surface_feed::detach(const std::string& adapter_id) {
     const std::lock_guard lock(sinks_mu_);
-    sinks_.erase(adapter_id);
-    return sinks_.size();
+    auto next = std::make_shared<sink_map>(*sinks_);
+    next->erase(adapter_id);
+    sinks_ = std::move(next);
+    return sinks_->size();
 }
 
 void fx_vol_surface_feed::stop() {

@@ -36,6 +36,7 @@
 #include <cstdint>
 #include <expected>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -244,8 +245,10 @@ private:
         std::string contributor;
         point_targets targets;
     };
+    using sink_map = std::map<std::string, sink>;
+    /// Replaced, never changed, so a tick reads its sinks without holding the lock to publish.
     mutable std::mutex sinks_mu_;
-    std::map<std::string, sink> sinks_;
+    std::shared_ptr<const sink_map> sinks_ = std::make_shared<const sink_map>();
 };
 
 }

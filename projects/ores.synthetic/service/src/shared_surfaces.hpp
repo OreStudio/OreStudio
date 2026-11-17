@@ -22,6 +22,7 @@
 
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -29,6 +30,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -42,30 +44,36 @@ namespace ores::synthetic::service {
  * quote different markets. So a surface is held here, by its feed, started when the first adapter
  * attaches to it and stopped when the last one detaches.
  */
-class shared_surfaces final {
+template <typename Surface>
+class basic_shared_surfaces final {
 public:
-    using surface_ptr = std::shared_ptr<feed::fx_vol_surface_feed>;
+    using surface_ptr = std::shared_ptr<Surface>;
+    using point_targets = typename Surface::point_targets;
 
     /**
      * @brief Attaches an adapter to a surface, building and starting the surface first if no
      * adapter holds it, and answers the surface.
+     *
+     * The adapter is attached before the surface starts, so no tick of a surface the adapters
+     * hold goes out in the form of one no adapter holds.
      */
     surface_ptr attach(const std::string& feed_id,
                        const std::string& adapter_id,
                        const std::string& contributor,
-                       feed::fx_vol_surface_feed::point_targets targets,
+                       point_targets targets,
                        const std::function<surface_ptr()>& make) {
         const std::lock_guard lock(mu_);
-        auto found = surfaces_.find(feed_id);
-        if (found == surfaces_.end()) {
-            auto surface = make();
-            if (!surface)
-                throw std::runtime_error("the surface of feed " + feed_id + " was not built");
-            surface->start();
-            found = surfaces_.emplace(feed_id, std::move(surface)).first;
+        if (const auto found = surfaces_.find(feed_id); found != surfaces_.end()) {
+            found->second->attach(adapter_id, contributor, std::move(targets));
+            return found->second;
         }
-        found->second->attach(adapter_id, contributor, std::move(targets));
-        return found->second;
+        auto surface = make();
+        if (!surface)
+            throw std::runtime_error("the surface of feed " + feed_id + " was not built");
+        surface->attach(adapter_id, contributor, std::move(targets));
+        surface->start();
+        surfaces_.emplace(feed_id, surface);
+        return surface;
     }
 
     /// Detaches an adapter from a surface, and stops the surface when no adapter holds it.
@@ -80,27 +88,39 @@ public:
         }
     }
 
+    /// How many surfaces run.
+    [[nodiscard]] std::size_t running_count() const {
+        const std::lock_guard lock(mu_);
+        return surfaces_.size();
+    }
+
 private:
-    std::mutex mu_;
+    mutable std::mutex mu_;
     std::map<std::string, surface_ptr> surfaces_;
 };
+
+using shared_surfaces = basic_shared_surfaces<feed::fx_vol_surface_feed>;
 
 /**
  * @brief An adapter's hold on a shared surface, as the generator it runs.
  *
  * The runner starts and stops it as it would any generator; starting attaches the adapter's
  * contributor to the surface and stopping detaches it. Its name is the surface's with the
- * contributor's provider, so each adapter's hold runs under a name of its own.
+ * contributor's provider, so each adapter's hold runs under a name of its own. The runner starts
+ * it on a thread of its own and stops it from another, so the surface it holds is guarded.
  */
-class shared_surface_hold final : public ores::marketdata::domain::i_feed {
+template <typename Surface>
+class basic_shared_surface_hold final : public ores::marketdata::domain::i_feed {
 public:
-    shared_surface_hold(shared_surfaces& surfaces,
-                        std::string feed_id,
-                        std::string adapter_id,
-                        std::string contributor,
-                        std::string source_name,
-                        feed::fx_vol_surface_feed::point_targets targets,
-                        std::function<shared_surfaces::surface_ptr()> make)
+    using surfaces_type = basic_shared_surfaces<Surface>;
+
+    basic_shared_surface_hold(surfaces_type& surfaces,
+                              std::string feed_id,
+                              std::string adapter_id,
+                              std::string contributor,
+                              std::string source_name,
+                              typename surfaces_type::point_targets targets,
+                              std::function<typename surfaces_type::surface_ptr()> make)
         : surfaces_(surfaces)
         , feed_id_(std::move(feed_id))
         , adapter_id_(std::move(adapter_id))
@@ -109,52 +129,61 @@ public:
         , targets_(std::move(targets))
         , make_(std::move(make)) {}
 
-    ~shared_surface_hold() override {
+    ~basic_shared_surface_hold() override {
         stop();
     }
+
+    basic_shared_surface_hold(const basic_shared_surface_hold&) = delete;
+    basic_shared_surface_hold& operator=(const basic_shared_surface_hold&) = delete;
 
     const std::string& source_name() const override {
         return source_name_;
     }
     const std::vector<std::string>& series_uris() const override {
-        return surface_ ? surface_->series_uris() : empty_;
+        return empty_;
     }
     const std::string& role() const override {
         return role_;
     }
     const std::string& nats_subject() const override {
-        return surface_ ? surface_->nats_subject() : empty_name_;
+        return empty_name_;
     }
     std::string_view kind() const override {
         return feed::fx_vol_surface_feed_kind;
     }
     void start() override {
+        const std::lock_guard lock(mu_);
         if (!surface_)
             surface_ = surfaces_.attach(feed_id_, adapter_id_, contributor_, targets_, make_);
     }
     void stop() override {
+        const std::lock_guard lock(mu_);
         if (surface_) {
             surfaces_.detach(feed_id_, adapter_id_);
             surface_.reset();
         }
     }
     std::uint64_t publish_count() const override {
+        const std::lock_guard lock(mu_);
         return surface_ ? surface_->publish_count() : 0;
     }
 
 private:
-    shared_surfaces& surfaces_;
+    surfaces_type& surfaces_;
     std::string feed_id_;
     std::string adapter_id_;
     std::string contributor_;
     std::string source_name_;
-    feed::fx_vol_surface_feed::point_targets targets_;
-    std::function<shared_surfaces::surface_ptr()> make_;
-    shared_surfaces::surface_ptr surface_;
+    typename surfaces_type::point_targets targets_;
+    std::function<typename surfaces_type::surface_ptr()> make_;
+    mutable std::mutex mu_;
+    typename surfaces_type::surface_ptr surface_;
     std::string role_ = "fx_vol_surface";
     std::string empty_name_;
     std::vector<std::string> empty_;
 };
+
+using shared_surface_hold = basic_shared_surface_hold<feed::fx_vol_surface_feed>;
 
 }
 

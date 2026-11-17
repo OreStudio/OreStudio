@@ -96,7 +96,8 @@ bool is_option_tenor(std::string_view tenor) {
 // nothing for a ticker of another form.
 std::optional<fx_option_quote> option_of(std::string_view ticker) {
     const auto suffix = std::string(" ") + std::string(yellow_key);
-    if (ticker.size() <= suffix.size() + 7 || !ticker.ends_with(suffix))
+    // The shortest body is a pair, a one-letter word and a two-letter tenor, as EURUSDV1D.
+    if (ticker.size() < suffix.size() + 9 || !ticker.ends_with(suffix))
         return std::nullopt;
     const auto body = ticker.substr(0, ticker.size() - suffix.size());
     const auto upper = [](std::string_view w) {

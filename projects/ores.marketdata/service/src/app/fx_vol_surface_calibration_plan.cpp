@@ -403,11 +403,13 @@ prepare_calibration(const surface_calibration_recipe& recipe,
         // An expiry the quotes cannot fit is left out and named, rather than voiding the
         // surface: the expiries that do have their pillars still make a surface.
         if (!ssvi_has_enough(atm, risk_reversals, butterflies)) {
+            std::string why;
+            for (const auto& point : unquoted)
+                why += (why.empty() ? "" : ", ") + point;
             out.unfitted_expiries.push_back(expiry.code +
                                             (quoted.pillars.empty() ?
                                                  ": no pillar quoted" :
-                                                 ": " + std::to_string(unquoted.size()) +
-                                                     " pillar(s) unquoted, too few left for SSVI"));
+                                                 ": too few pillars for SSVI without " + why));
             unfitted.insert(expiry.code);
             continue;
         }
@@ -415,9 +417,8 @@ prepare_calibration(const surface_calibration_recipe& recipe,
         out.request.expiries.push_back(std::move(quoted));
     }
     if (out.request.expiries.size() < minimum_expiries) {
-        std::string what = "the surface fits " + std::to_string(out.request.expiries.size()) +
-                           " expiry(ies), fewer than the " + std::to_string(minimum_expiries) +
-                           " it needs";
+        std::string what = std::to_string(out.request.expiries.size()) + " expiries fitted, " +
+                           std::to_string(minimum_expiries) + " needed";
         for (const auto& u : out.unfitted_expiries)
             what += "; " + u;
         return std::unexpected(what);

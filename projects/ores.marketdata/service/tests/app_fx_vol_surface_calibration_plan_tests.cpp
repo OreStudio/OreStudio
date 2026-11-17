@@ -273,17 +273,27 @@ TEST_CASE("an unquoted pillar is reported, and an expiry it leaves short is not 
         prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 2);
     REQUIRE(short_one);
     REQUIRE(short_one->unfitted_expiries.size() == 1);
-    CHECK(short_one->unfitted_expiries.front().starts_with("1Y: "));
+    // The reason names every point 1Y lacks: its 25 delta butterfly, and the 10 delta points the
+    // flat quotes never held.
+    CHECK(short_one->unfitted_expiries.front().starts_with(
+        "1Y: too few pillars for SSVI without 1Y/25BF"));
+    CHECK(std::ranges::contains(
+        short_one->missing, std::string("1Y/25BF"), &missing_surface_pillar::point));
+    // Two fitted at a minimum of two is enough.
     REQUIRE(short_one->request.expiries.size() == 2);
     CHECK(short_one->request.expiries[0].expiry_id == "1M");
     CHECK(short_one->request.expiries[1].expiry_id == "2Y");
+    // 6M lies between the fitted 1M and 2Y, so the grid keeps it: the term structure reads
+    // across the gap 1Y left, as it reads between any two fitted expiries.
+    REQUIRE(short_one->request.grid_expiries.size() == 3);
+    CHECK(short_one->request.grid_expiries[1].expiry_id == "6M");
 
     // Below the minimum the surface is refused, naming how many it fitted and why the rest
     // were left out.
     const auto refused =
         prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001, 3);
     REQUIRE_FALSE(refused);
-    CHECK(refused.error().contains("fits 2 expiry(ies), fewer than the 3"));
+    CHECK(refused.error().contains("2 expiries fitted, 3 needed"));
     CHECK(refused.error().contains("1Y: "));
 }
 

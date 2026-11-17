@@ -69,6 +69,10 @@ enum class instrument_table {
 instrument_table_for(std::string_view trade_type) {
     if (trade_type == "CompositeTrade")
         return instrument_table::composite_instrument;
+    if (trade_type == "RateDigitalOption")
+        return instrument_table::scripted_instrument;
+    if (trade_type == "SwaptionStraddle")
+        return instrument_table::rate_instrument;
     if (trade_type == "Swap")
         return instrument_table::rate_instrument;
     if (trade_type == "CrossCurrencySwap")

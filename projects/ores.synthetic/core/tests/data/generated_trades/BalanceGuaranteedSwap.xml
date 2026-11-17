@@ -81,22 +81,22 @@
       </LegData>
     </BalanceGuaranteedSwapData>
   </Trade>
-  <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
+  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
     <TradeType>BalanceGuaranteedSwap</TradeType>
     <BalanceGuaranteedSwapData>
-      <ReferenceSecurity>POP-0cd68b09-000015</ReferenceSecurity>
+      <ReferenceSecurity>POP-0cd68b09-000017</ReferenceSecurity>
       <Tranches>
         <Tranche>
-          <SecurityId>POP-0cd68b09-000015</SecurityId>
+          <SecurityId>POP-0cd68b09-000017</SecurityId>
           <Seniority>1</Seniority>
           <Notionals>
-            <Notional>8284783.79</Notional>
+            <Notional>6592217.61</Notional>
           </Notionals>
         </Tranche>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2029-10-02</EndDate>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2030-08-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -112,12 +112,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>8284783.79</Notional>
+          <Notional>6592217.61</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2029-10-02</EndDate>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2030-08-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -127,7 +127,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0159</Rate>
+            <Rate>0.0561</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -138,12 +138,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>8284783.79</Notional>
+          <Notional>6592217.61</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2029-10-02</EndDate>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2030-08-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>

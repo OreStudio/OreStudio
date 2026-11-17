@@ -60,7 +60,7 @@
       </LegData>
     </SwapData>
   </Trade>
-  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
     <TradeType>Swap</TradeType>
     <SwapData>
       <LegData>
@@ -70,12 +70,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>3614264.98</Notional>
+          <Notional>2269142.01</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2031-10-02</EndDate>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2028-08-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -85,7 +85,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0539</Rate>
+            <Rate>0.0568</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -96,12 +96,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>3614264.98</Notional>
+          <Notional>2269142.01</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2031-10-02</EndDate>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2028-08-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>

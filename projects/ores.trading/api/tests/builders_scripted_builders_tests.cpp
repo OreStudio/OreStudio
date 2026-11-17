@@ -751,3 +751,36 @@ TEST_CASE("an_fx_asian_option_averages_daily_and_weights_its_one_underlying", sc
     REQUIRE(observed != built->schedules.end());
     CHECK(observed->tenor == "1D");
 }
+
+TEST_CASE("a_rate_digital_option_fixes_on_its_index_and_pays_later", scripted_tags) {
+    const auto built = rate_digital_option_builder({.index = std::string("EUR-EURIBOR-6M"),
+                                                    .strike = scripted_amount("0.02"),
+                                                    .payoff_amount = scripted_amount("10000"),
+                                                    .payoff_currency = std::string("EUR"),
+                                                    .kind = option_kind::call,
+                                                    .position = option_position::long_option,
+                                                    .fixing_date = 2027y / 6 / 18,
+                                                    .payment_date = 2027y / 6 / 20})
+                           .build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->schedule_dates.size() == 1);
+    CHECK(built->schedule_dates[0].schedule_date == 2027y / 6 / 18);
+    const auto index =
+        std::ranges::find_if(built->parameters, [](const auto& p) { return p.name == "Index"; });
+    REQUIRE(index != built->parameters.end());
+    CHECK(index->value == "EUR-EURIBOR-6M");
+}
+
+TEST_CASE("a_rate_digital_option_refuses_a_payment_before_its_fixing", scripted_tags) {
+    const auto built = rate_digital_option_builder({.index = std::string("EUR-EURIBOR-6M"),
+                                                    .strike = scripted_amount("0.02"),
+                                                    .payoff_amount = scripted_amount("10000"),
+                                                    .payoff_currency = std::string("EUR"),
+                                                    .kind = option_kind::put,
+                                                    .position = option_position::long_option,
+                                                    .fixing_date = 2027y / 6 / 18,
+                                                    .payment_date = 2027y / 6 / 1})
+                           .build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "payment_date");
+}

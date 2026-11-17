@@ -59,8 +59,8 @@ absent: it is a placeholder, not a product.
 | code | name | family | construction | markets | has_options | has_extension | instrument |
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 | CompositeTrade | Composite Trade |   | container |  | false | false | composite_instrument |
-| RateDigitalOption | Rate Digital Option | option | native | interest_rates! | true | false |  |
-| SwaptionStraddle | Swaption Straddle |   | native | interest_rates! | true | false |  |
+| RateDigitalOption | Rate Digital Option | option | native | interest_rates! | true | false | scripted_instrument |
+| SwaptionStraddle | Swaption Straddle |   | native | interest_rates! | true | false | rate_instrument |
 | ForwardVolatilityAgreement | Forward Volatility Agreement |   | native | interest_rates! | true | false |  |
 | Swap | Interest Rate Swap | swap | native | interest_rates! | false | false | rate_instrument |
 | CrossCurrencySwap | Cross Currency Swap |   | native | interest_rates!,fx | false | false | rate_instrument |

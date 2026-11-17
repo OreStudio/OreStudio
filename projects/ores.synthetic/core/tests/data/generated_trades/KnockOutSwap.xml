@@ -67,7 +67,7 @@
       </LegData>
     </KnockOutSwapData>
   </Trade>
-  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
     <TradeType>KnockOutSwap</TradeType>
     <KnockOutSwapData>
       <BarrierData>
@@ -76,7 +76,7 @@
           <Level>0.08</Level>
         </Levels>
       </BarrierData>
-      <BarrierStartDate>2025-08-02</BarrierStartDate>
+      <BarrierStartDate>2025-12-02</BarrierStartDate>
       <LegData>
         <Payer>true</Payer>
         <LegType>Fixed</LegType>
@@ -84,12 +84,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>6592217.61</Notional>
+          <Notional>4191327.35</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
-            <EndDate>2030-08-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2026-12-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -99,7 +99,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0561</Rate>
+            <Rate>0.0232</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -110,12 +110,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>6592217.61</Notional>
+          <Notional>4191327.35</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
-            <EndDate>2030-08-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2026-12-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>

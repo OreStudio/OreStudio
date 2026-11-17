@@ -2,5 +2,3 @@ CBO
 CashPosition
 CreditDefaultSwapOption
 EquityAutoDeltaHedgedOption
-RateDigitalOption
-SwaptionStraddle

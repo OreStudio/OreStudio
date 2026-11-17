@@ -136,6 +136,23 @@ private:
     swaption_terms terms_;
 };
 
+/**
+ * @brief A payer and a receiver swaption on the same swap, expiry and strike,
+ * bought or sold as one trade. ORE states it in a swaption's element under its
+ * own name, so it builds as a swaption does.
+ */
+class ORES_TRADING_API_EXPORT swaption_straddle_builder final {
+public:
+    static constexpr std::string_view trade_type = "SwaptionStraddle";
+    swaption_straddle_builder(conventions_ref conventions, swaption_terms terms);
+    swaption_straddle_builder(marketdata::conventions::convention_lookup&&,
+                              swaption_terms) = delete;
+    [[nodiscard]] swap_result build() const;
+
+private:
+    swaption_builder swaption_;
+};
+
 /// A swap one side may cancel once a year, from the first call date on.
 struct callable_swap_terms final {
     vanilla_swap_terms swap;

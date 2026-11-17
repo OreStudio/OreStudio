@@ -1567,7 +1567,9 @@ constexpr std::string_view rate_types[] = {"Swap",
                                            "FlexiSwap",
                                            "BalanceGuaranteedSwap",
                                            "CallableSwap",
-                                           "KnockOutSwap"};
+                                           "KnockOutSwap",
+                                           "SwaptionStraddle",
+                                           "RateDigitalOption"};
 constexpr std::size_t rate_type_count = sizeof(rate_types) / sizeof(rate_types[0]);
 
 }
@@ -1678,21 +1680,44 @@ build_rate_trade(const domain::trade_generation_scope& scope,
                                                                           tb::cap_floor_kind::floor,
                                             .position = position})
                          .build());
-    if (type == "Swaption") {
+    if (type == "Swaption" || type == "SwaptionStraddle") {
         /*
          * An option is exercised after the population is written, and the
          * swap it opens starts two days after its expiry.
          */
         const auto expiry = add_years(scope.as_of_date, 1);
         const auto swap_start = year_month_day{sys_days{expiry} + days{2}};
-        return built(
-            tb::swaption_builder(
-                conventions,
-                {.swap = swap_from(swap_start, add_years(swap_start, static_cast<int>(years))),
-                 .expiry = expiry,
+        const tb::swaption_terms terms{
+            .swap = swap_from(swap_start, add_years(swap_start, static_cast<int>(years))),
+            .expiry = expiry,
+            .position = position,
+            .settles = tb::settlement::cash};
+        if (type == "Swaption")
+            return built(tb::swaption_builder(conventions, terms).build());
+        return built(tb::swaption_straddle_builder(conventions, terms).build());
+    }
+    if (type == "RateDigitalOption") {
+        // The digital fixes on the domestic index a year out and pays two days later.
+        const auto& index = domestic[slot % domestic.size()].index;
+        const auto fixing = add_years(scope.as_of_date, 1);
+        auto digital =
+            tb::rate_digital_option_builder(
+                {.index = index.index() != nullptr ? index.index()->subject() : index.uri(),
+                 .strike = fixed_rate,
+                 .payoff_amount = money(std::round(entry.notional / 100.0)),
+                 .payoff_currency = scope.currency_code,
+                 .kind = first_way(entry, 2) ? tb::option_kind::call : tb::option_kind::put,
                  .position = position,
-                 .settles = tb::settlement::cash})
-                .build());
+                 .fixing_date = fixing,
+                 .payment_date = year_month_day{sys_days{fixing} + days{2}}})
+                .build();
+        if (!digital)
+            throw trade_population_error("The RateDigitalOption builder refuses the drawn " +
+                                         digital.error().term + ": " + digital.error().message);
+        ores::trading::domain::instrument_batch batch;
+        ores::trading::domain::append_instrument(
+            batch, ores::trading::domain::trade_instrument{std::move(*digital)});
+        return batch;
     }
     if (type == "CallableSwap")
         return built(tb::callable_swap_builder(

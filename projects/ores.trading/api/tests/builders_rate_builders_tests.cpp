@@ -333,3 +333,18 @@ TEST_CASE("a_swaption_may_expire_on_the_day_its_swap_starts", rate_tags) {
     CHECK(swaption->options[0].settlement == "Physical");
     CHECK_FALSE(swaption->options[0].settlement_method.has_value());
 }
+
+TEST_CASE("a_swaption_straddle_builds_as_a_swaption_under_its_own_type", rate_tags) {
+    const conv::convention_lookup lookup(rate_conventions());
+    const auto straddle = swaption_straddle_builder(lookup,
+                                                    {.swap = swap_terms(),
+                                                     .expiry = 2026y / 1 / 1,
+                                                     .position = option_position::short_option,
+                                                     .settles = settlement::cash})
+                              .build();
+    REQUIRE(straddle.has_value());
+    CHECK(straddle->header.identity.trade_type_code == "SwaptionStraddle");
+    CHECK(std::holds_alternative<ores::trading::domain::swaption_instrument>(straddle->facts));
+    REQUIRE(straddle->options.size() == 1);
+    CHECK(straddle->options[0].long_short == "Short");
+}

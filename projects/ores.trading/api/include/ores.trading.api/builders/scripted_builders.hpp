@@ -672,6 +672,32 @@ private:
     fx_asian_option_terms terms_;
 };
 
+/**
+ * @brief A fixed payout on an interest rate fixing above (call) or below (put)
+ * the strike.
+ */
+struct rate_digital_option_terms final {
+    /// The index as ORE names it, such as EUR-EURIBOR-6M.
+    required<std::string> index;
+    required<utility::decimal::decimal> strike;
+    required<utility::decimal::decimal> payoff_amount;
+    required<std::string> payoff_currency;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> fixing_date;
+    required<std::chrono::year_month_day> payment_date;
+};
+
+class ORES_TRADING_API_EXPORT rate_digital_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "RateDigitalOption";
+    explicit rate_digital_option_builder(rate_digital_option_terms terms);
+    [[nodiscard]] scripted_result build() const;
+
+private:
+    rate_digital_option_terms terms_;
+};
+
 }
 
 #endif

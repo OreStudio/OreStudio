@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: DE836AD8-09BF-4AF6-8BF6-5D4CEF227A6E
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ores.cpp.http-route.web_records_header.enabled: true
 :ores.cpp.http-route.web_records_implementation.enabled: true
@@ -367,6 +368,133 @@ The curvature the surface starts at, and the level the curvature driver reverts 
 #+begin_src cpp :name generator
 0.8
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+The synthetic feed import carries one row per FX volatility surface feed. The parent
+generation config, the folder and the source name are made when the row publishes, so the
+import carries the row's own id, which its expiries and contributor links name.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** base_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** provider_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** ticks_per_hour
+:PROPERTIES:
+:type: integer
+:END:
+
+** enabled
+:PROPERTIES:
+:type: boolean
+:END:
+
+** auto_start
+:PROPERTIES:
+:type: boolean
+:END:
+
+** arrival_mode
+:PROPERTIES:
+:type: text
+:END:
+
+** branching_ratio
+:PROPERTIES:
+:type: double precision
+:END:
+
+** decay
+:PROPERTIES:
+:type: double precision
+:END:
+
+** sensitivity
+:PROPERTIES:
+:type: double precision
+:END:
+
+** skew_reversion
+:PROPERTIES:
+:type: double precision
+:END:
+
+** skew_volatility
+:PROPERTIES:
+:type: double precision
+:END:
+
+** curvature_reversion
+:PROPERTIES:
+:type: double precision
+:END:
+
+** curvature_volatility
+:PROPERTIES:
+:type: double precision
+:END:
+
+** spot_variance_correlation
+:PROPERTIES:
+:type: double precision
+:END:
+
+** spot_skew_correlation
+:PROPERTIES:
+:type: double precision
+:END:
+
+** segment_correlation
+:PROPERTIES:
+:type: double precision
+:END:
+
+** start_skew
+:PROPERTIES:
+:type: double precision
+:END:
+
+** start_curvature
+:PROPERTIES:
+:type: double precision
+:END:
+
+* Artefact indexes
+
+** base_currency_code
+:PROPERTIES:
+:columns: base_currency_code
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:columns: quote_currency_code
+:END:
 
 * SQL
 

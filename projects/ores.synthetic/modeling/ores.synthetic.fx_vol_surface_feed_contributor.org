@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 158E2637-5025-47F3-8CAC-C4B6DF308E1B
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ores.cpp.http-route.web_records_header.enabled: true
 :ores.cpp.http-route.web_records_implementation.enabled: true
@@ -87,6 +88,46 @@ The =fx_vol_contributor= that quotes it.
 #+begin_src cpp :name generator
 ctx.generate_uuid()
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+One row per feed and contributor that quotes it, naming the imported rows' ids, which the
+publish maps to the rows it creates.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** feed_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** contributor_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+* Artefact indexes
+
+** feed_id
+:PROPERTIES:
+:columns: feed_id
+:END:
+
+** contributor_id
+:PROPERTIES:
+:columns: contributor_id
+:END:
 
 * SQL
 

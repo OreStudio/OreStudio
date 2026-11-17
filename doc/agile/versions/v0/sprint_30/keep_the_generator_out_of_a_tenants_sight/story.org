@@ -35,6 +35,8 @@ What a tenant sees of the generator stays only if it adds something for the tena
 
 - No tenant-side process (provisioning, bootstrapping, calibration, forwards, pricing, reports)
   reads a synthetic table; a check fails the gate if one starts to.
+- No tenant session can write the system tenant's generator rows: the row policies apply to
+  every command, so a tenant administrator's write is to be shown refused, or made so.
 - What a tenant session shows of the generator is either removed or kept with the reason it
   helps the tenant.
 
@@ -42,8 +44,8 @@ What a tenant sees of the generator stays only if it adds something for the tena
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0A4D7B25-1E75-4D0D-89C4-2C7404DB972E][Prove no tenant-side process reads the generator's data]] | BACKLOG | | | Sixteen synthetic row policies admit any tenant to the system tenant's rows; Acme's tenant administrator listed the Vasicek processes behind its curves. Admit a tenant only to its own rows, and the system tenant to all. |
-| [[id:131D7D77-3FF8-4836-8849-E721B24A3ADE][Decide what a tenant sees of the generator, and hide what adds nothing]] | BACKLOG | | | The Synthetic card is gated by synthetic read permissions, which a tenant administrator holds through its wildcard; offer the screen, its card and the synthetic verbs only to a system session. |
+| [[id:0A4D7B25-1E75-4D0D-89C4-2C7404DB972E][Prove no tenant-side process reads the generator's data]] | BACKLOG | | | A search finds the synthetic tables read only by the synthetic service, its HTTP routes, its shell commands and its SQL tests; encode that as a check, so a tenant-side process that starts to read the generator fails the gate. |
+| [[id:131D7D77-3FF8-4836-8849-E721B24A3ADE][Decide what a tenant sees of the generator, and hide what adds nothing]] | BACKLOG | | | A tenant administrator's Synthetic card lists the system's generator configurations, which a tenant does not use (whether it can change them is the other task's to show); decide whether any of it helps a tenant, keep that with its reason, and offer the rest only in a system session. |
 
 * Decisions
 

@@ -46,6 +46,14 @@ Correlations are market data like any other: the system quotes them as a vendor 
 
 * Decisions
 
+- *Correlations are the party's own market data.* The system quotes them as a vendor would; each
+  party receives, holds and maintains its own, as it does its curves and surfaces.
+- *A real vendor replaces the simulator with no change.* Nothing a party does with a correlation
+  reads the simulator; only the quotes it receives.
+- *Design first.* The flow is designed and recorded before any of it is built; the quotes and the
+  party tables wait on the design, and their use waits on the tables.
+
 * Out of scope
 
--
+- Building a feed from a real vendor.
+- Changing the simulator's factor model beyond publishing the correlations it already has.

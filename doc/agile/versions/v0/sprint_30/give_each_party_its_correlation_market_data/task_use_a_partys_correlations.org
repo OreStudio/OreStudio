@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 48A82366-AD5C-44E6-B6C3-777EC54B9DB8
+#+blocked_since: 2026-11-17
 #+created: 2026-11-17
 #+updated: 2026-11-17
 #+environment: bright_faraday

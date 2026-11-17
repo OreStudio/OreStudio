@@ -37,6 +37,8 @@ Nothing a party builds or prices can come to depend on the generator unnoticed.
 
 - A local check lists every reader of a synthetic table or the synthetic service's read verbs outside the generator's own components, and fails on a new one.
 - The provisioning, bootstrapping, calibration and forward paths are shown, by that check, to read none.
+- A tenant administrator's write to a system generator row, by the service and by SQL, is shown
+  refused; the row policies apply to every command, so this is checked, not assumed.
 
 * Plan
 

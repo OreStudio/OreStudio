@@ -2,7 +2,7 @@
 :ID: 131D7D77-3FF8-4836-8849-E721B24A3ADE
 :END:
 #+title: Task: Decide what a tenant sees of the generator, and hide what adds nothing
-#+description: A tenant administrator's Synthetic card lists the system's generator configurations, which a tenant cannot change and does not use; decide whether any of it helps a tenant, keep that with its reason, and offer the rest only in a system session.
+#+description: A tenant administrator's Synthetic card lists the system's generator configurations, which a tenant does not use (whether it can change them is the other task's to show); decide whether any of it helps a tenant, keep that with its reason, and offer the rest only in a system session.
 #+type: task
 #+level: s1
 #+filetags: :keep_the_generator_out_of_a_tenants_sight:sprint_30:v0:

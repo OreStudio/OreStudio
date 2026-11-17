@@ -30,7 +30,7 @@ One recorded design for how a correlation is quoted, received, held, maintained 
 | Parent story | [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Begin the design.                      |
 | Last touched | 2026-11-17                               |
 
 * Acceptance

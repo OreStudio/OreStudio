@@ -315,9 +315,18 @@ jobs:
         # times larger, and no host runs it. The runner's job container has
         # no container engine, so this stages the tree and the publish job
         # builds the images from it.
+        #
+        # The web bundle is part of the fleet, so a stage without it would
+        # silently publish every image but ores-web. The build wires npm into
+        # CMake, so its absence means the TypeScript build broke and the run
+        # should say so rather than ship a fleet without the browser.
         if: ${{ matrix.buildtype == 'release' && matrix.compiler == 'clang' }}
         run: |
           ./compass.sh image stage --preset ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          if [[ ! -d build/docker-stage/web ]]; then
+            echo "::error::the web bundle was not staged, so ores-web would not be published"
+            exit 1
+          fi
 
       - name: Upload the staged images
         if: ${{ matrix.buildtype == 'release' && matrix.compiler == 'clang' }}
@@ -331,6 +340,7 @@ jobs:
           path: |
             build/docker-stage/libs
             build/docker-stage/services
+            build/docker-stage/web
             build/docker-stage/log
             build/docker-stage/run
             build/docker-stage/storage
@@ -525,7 +535,11 @@ jobs:
     # produced the staged tree. Every other entry skips the staging step, so
     # this job fails loudly rather than silently publishing nothing if the
     # artifact is missing.
-    if: ${{ needs.check_changes.outputs.should_run != 'false' && needs.build.result == 'success' }}
+    # Publishing needs one artifact, not a green matrix: the stage step runs in
+    # the clang-release job only, so a failure in another variant must not hold
+    # the images back. A missing artifact fails the download below, which is
+    # where the absence belongs.
+    if: ${{ !cancelled() && needs.check_changes.outputs.should_run != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:

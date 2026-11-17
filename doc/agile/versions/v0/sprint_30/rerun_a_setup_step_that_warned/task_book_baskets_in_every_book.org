@@ -68,6 +68,7 @@ task and name that file in the Command column.
 | The same test with the fix | passes; the suite passes | the same | feature/refuse-forwards-cheaply over 558bf9f78f |
 | Trades the first run never wrote | 487: UK FX 63; US 10 + 140 + 62; HK 10 + 140 + 62 | the re-run's log | feature/refuse-forwards-cheaply over 558bf9f78f |
 | =setup-rerun generate_trades= on the warned tenant | completed; wrote the missing books, 0 of every book already written | =compass shell -f= | feature/refuse-forwards-cheaply over 558bf9f78f |
+| A fresh Acme setup on main with #4797, which added the basket and pairwise variance swaps | all 17 steps completed, generate_trades in 54 s with no warnings | the provisioning recipe, then the step times | 2c60e67187 |
 
 * Notes
 

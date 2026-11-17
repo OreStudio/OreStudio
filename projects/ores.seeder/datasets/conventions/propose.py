@@ -28,7 +28,7 @@ them the dataset lacks, and each whose terms differ from the dataset's row.
 propose_decisions.tsv, beside it, states why the dataset keeps a row of its own;
 a difference it names is not reported.
 
-It also checks the table itself: each (kind, id) is one row, each row names its
+It also checks the table itself: each id is one row, of one kind, each row names its
 source, and each Ibor or overnight index a convention names is defined by an
 index convention of the table, matched by its address without the tenor, as the
 convention lookup matches it.
@@ -104,15 +104,19 @@ def ore_conventions() -> list[tuple[str, str, str, str]]:
 
 
 def table_problems(rows: list[dict]) -> list[str]:
+    # ORE holds every convention in one map keyed by its id, and refuses the
+    # second of two with one id whatever their kinds. The one it keeps is the
+    # first it reads, so a convention that names the id then reads the wrong kind.
     problems = []
-    seen = set()
+    kinds_of = {}
     for r in rows:
-        key = (r["kind"], r["id"])
-        if key in seen:
-            problems.append(f"{r['kind']} {r['id']}: more than one row")
-        seen.add(key)
+        kinds_of.setdefault(r["id"], []).append(r["kind"])
         if not r.get("source", "").strip():
             problems.append(f"{r['kind']} {r['id']}: names no source")
+    for cid, kinds in kinds_of.items():
+        if len(kinds) > 1:
+            problems.append(f"{cid}: {len(kinds)} rows ({', '.join(kinds)}), "
+                            "and ORE holds one convention for each id")
     return problems
 
 

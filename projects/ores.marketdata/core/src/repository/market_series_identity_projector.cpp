@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -27,7 +28,6 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -47,7 +47,8 @@ namespace {
 using datum::field;
 
 auto& projector_lg() {
-    static auto instance = make_logger("ores.marketdata.repository.market_series_identity_projector");
+    static auto instance =
+        make_logger("ores.marketdata.repository.market_series_identity_projector");
     return instance;
 }
 

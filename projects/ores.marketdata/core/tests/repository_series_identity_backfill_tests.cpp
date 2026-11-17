@@ -167,11 +167,11 @@ TEST_CASE("a_series_the_shape_refuses_is_counted_and_left_unprojected",
     // A fixing URI with a series subclass a fixing never carries: the identity kind
     // refuses it before a family is looked up, so the backfill must count it and leave
     // the series without an identity rather than write a row it cannot state.
-    const auto refused = insert_without_identity(
-        h.context(),
-        party,
-        "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M",
-        "yield");
+    const auto refused =
+        insert_without_identity(h.context(),
+                                party,
+                                "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M",
+                                "yield");
 
     const auto done = market_series_identity_projector::project_missing(h.context());
 
@@ -189,11 +189,11 @@ TEST_CASE("a_series_in_a_family_no_shape_states_is_projected_and_counted",
     // lets the catalogue grow: the row is projected and the count says it was unguarded.
     // The quote is not the USD one the import test counts by URI, so the two fixtures
     // stay apart in a tenant they share.
-    const auto unguarded = insert_without_identity(
-        h.context(),
-        party,
-        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=SEK",
-        "basis");
+    const auto unguarded =
+        insert_without_identity(h.context(),
+                                party,
+                                "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=SEK",
+                                "basis");
 
     const auto done = market_series_identity_projector::project_missing(h.context());
 

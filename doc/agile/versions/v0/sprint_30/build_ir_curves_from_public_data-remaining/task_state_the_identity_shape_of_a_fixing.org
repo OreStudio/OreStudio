@@ -90,7 +90,7 @@ task and name that file in the Command column.
 | Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | 964e4593b8 |
 | Stated shapes, Acme after provisioning | 0 rows of its own; it reads the system's 29 | per-tenant count over =ores_marketdata_series_identity_shapes_tbl=, and =series_identity_shapes list= as =tenant_admin@acme_corporation= | 67c0a4645d |
 | Identities that contradict a stated shape, Acme provisioned | 0 of 4,992 field checks: 920 Acme identities and 328 system ones | the =shape_scan= query of =marketdata_series_identity_shape_test.sql=, joined to the system tenant's shapes | 67c0a4645d |
-| Market data core suite | 432 test cases, 27,599 assertions, pass, with the review's unknown-field test | `compass build test_ores.marketdata.core.tests` | d4cece231b |
+| Market data core suite | 445 test cases, 27,693 assertions, pass, after the second rebase and the review fixes | `compass build test_ores.marketdata.core.tests` | 76426a9247 |
 | Market data service suite | 309 test cases, 2,698 assertions, pass | `compass build test_ores.marketdata.service.tests` | 67c0a4645d |
 | IAM core suite | 306 test cases, 1,436 assertions, pass | `compass build test_ores.iam.core.tests` | 67c0a4645d |
 | Shell market data suite | 441 test cases, 1,209 assertions, pass | `compass build test_ores.shell.marketdata.tests` | 67c0a4645d |
@@ -157,6 +157,12 @@ via its "Verifies task" field.
 | 4 | Minor: the backfill projects each missing series twice, once to judge it and once in =project= | =market_series_identity_projector.cpp= | Decline | A repair path that runs rarely; one projection would need =project= to take projected rows |
 | 5 | Minor: a tenant row on a system key adds to the system's shape and cannot relax it | =series_identity_shape_check.cpp= | Decline | Intended: the shared catalogue is the floor; a tenant that needs a different shape is a design question for the screen task |
 | 6 | Minor: misspell check | branch files | Accept | Clean on every file the branch changes |
+| 7 | PR #4821 review 1: the backfill counts a shape row that names an unknown field as refused series, and hides the cause | =market_series_identity_projector.cpp= | Accept | A catalogue fault throws =std::logic_error=, which the backfill's =invalid_argument= catch does not take; the test asserts it is not an =invalid_argument= |
+| 8 | PR #4821 review 2: the family map is built per row, and the backfill reads the shape table twice | =series_identity_shape_check.cpp= | Accept | =identity_shape_book= groups the shapes once per batch; the backfill writes the rows it checked and no longer calls =project= (this also settles item 4) |
+| 9 | PR #4821 review 3: =text_of= walks every field on each call | =series_identity_shape_check.cpp= | Decline | 29 rows; the reviewer marks it optional |
+| 10 | PR #4821 review 4: a family with no shape passes unguarded, and coverage can drift | story | Accept as a task | [[id:AECE7F12-9EFB-4F3E-AFEF-0D61BEB8E811][Check every family in use has a shape]] |
+| 11 | PR #4821 review 5: the PR is large and mixes concerns | PR | Decline | Each concern is its own commit, so the history bisects |
+| 12 | PR #4821 review 6: confirm the failing checks are main's, and the shared policy | PR | Accept | The create script ends with =series_identity_shapes_tbl_shared_reference_read_policy=; bright_faraday owns the FX vol suites and the resend |
 
 * Result
 

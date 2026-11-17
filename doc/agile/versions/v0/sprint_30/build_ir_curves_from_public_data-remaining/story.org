@@ -52,6 +52,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]] | BACKLOG | | | The synthetic market series generator fabricates an oresmd URI that nothing can read, so every fixture built on it writes a series with no family. |
 | [[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]] | BACKLOG | | | A person can read, change and see the history of the identity shapes in the web client, and the oresmd editor marks the fields a family requires or forbids. |
 | [[id:D37ED209-460F-458B-B84B-2D728C6E28AE][Bootstrap every IBOR curve]] | DONE | 2026-11-13 | 2026-11-14 | Every IBOR feed gets a bootstrap config, its quote series and its bootstrapped output series, with the currency's overnight curve as its discount curve, so an IBOR curve builds from IBOR quotes and publishes like an overnight curve. |
+| [[id:AECE7F12-9EFB-4F3E-AFEF-0D61BEB8E811][Check every family in use has a shape]] | BACKLOG | | | A check finds each family the stored identities use that no shape row states, so a family the taxonomy gains cannot go unguarded without anyone seeing it. |
 
 * Decisions
 

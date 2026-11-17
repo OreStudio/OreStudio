@@ -157,6 +157,11 @@ on delete to "ores_refdata_business_centres_tbl" do instead (
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and code = OLD.code
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 
@@ -164,7 +169,7 @@ on delete to "ores_refdata_business_centres_tbl" do instead (
 -- Validation function for business_centre
 -- Validates that a code exists in the business_centres table.
 -- Returns the validated value, or default if null/empty.
--- Validates against the tenant's own data only.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_business_centre_fn(
     p_tenant_id uuid,
@@ -176,26 +181,27 @@ begin
         perform ores_outcome_raise_fn('missing_field', 'business_centre');
     end if;
 
-    -- Allow pass-through if this tenant has no active business_centres yet.
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active business_centres yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
 
-    -- Validate against this tenant's values.
+    -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid business_centre: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by code)
             from ores_refdata_business_centres_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
@@ -206,6 +212,8 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Business Centre
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_refdata_business_centres_tbl enable row level security;
 
@@ -219,4 +227,18 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows. It must: a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists business_centres_tbl_shared_reference_read_policy
+    on ores_refdata_business_centres_tbl;
+
+create policy business_centres_tbl_shared_reference_read_policy
+on ores_refdata_business_centres_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );

@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
@@ -132,6 +133,22 @@ using calendar_exception_rows_by_key =
     std::map<std::tuple<std::string>, std::vector<domain::calendar_exception>>;
 
 /**
+ * @brief The rows a claim states: the caller's own, and none of the shared ones.
+ *
+ * The read admits the system tenant's rows beside the caller's. A claim is about
+ * the row this write replaces, and that row is one the caller owns; taking the
+ * system tenant's version would make the store refuse a write the caller is
+ * entitled to make.
+ */
+std::vector<domain::calendar_exception>
+calendar_exception_claim_rows(const ores::database::context& ctx,
+                              std::vector<domain::calendar_exception> rows) {
+    const auto tid = ctx.tenant_id();
+    std::erase_if(rows, [&](const auto& row) { return row.tenant_id != tid; });
+    return rows;
+}
+
+/**
  * @brief The current rows the objects name, by the text form of their key.
  *
  * One batch read for the set, so a batch checks its claims against one read
@@ -147,7 +164,7 @@ calendar_exception_current_rows(calendar_exception_repository& repo,
         ids.push_back(boost::uuids::to_string(row.id));
     }
     calendar_exception_rows_by_key current;
-    for (auto& item : repo.read_latest(ctx, ids))
+    for (auto& item : calendar_exception_claim_rows(ctx, repo.read_latest(ctx, ids)))
         current[std::make_tuple(boost::uuids::to_string(item.id))].push_back(std::move(item));
     return current;
 }
@@ -210,8 +227,10 @@ calendar_exception_apply_claim(const domain::calendar_exception& v,
 }
 
 void calendar_exception_repository::write(const context& ctx, const domain::calendar_exception& v) {
-    write(
-        ctx, v, calendar_exception_replace_claim(read_latest(ctx, boost::uuids::to_string(v.id))));
+    write(ctx,
+          v,
+          calendar_exception_replace_claim(
+              calendar_exception_claim_rows(ctx, read_latest(ctx, boost::uuids::to_string(v.id)))));
 }
 
 void calendar_exception_repository::write(const context& ctx,
@@ -229,12 +248,12 @@ void calendar_exception_repository::write(const context& ctx,
                                           const domain::calendar_exception& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar exception. " << "id: " << v.id;
-    const auto t =
-        calendar_exception_apply_claim(v,
-                                       claim,
-                                       calendar_exception_claim_reads_current(claim) ?
-                                           read_latest(ctx, boost::uuids::to_string(v.id)) :
-                                           std::vector<domain::calendar_exception>{});
+    const auto t = calendar_exception_apply_claim(
+        v,
+        claim,
+        calendar_exception_claim_reads_current(claim) ?
+            calendar_exception_claim_rows(ctx, read_latest(ctx, boost::uuids::to_string(v.id))) :
+            std::vector<domain::calendar_exception>{});
     query_builder::execute_write_query(
         ctx, calendar_exception_mapper::map(t), lg(), "Writing calendar exception to database.");
 }
@@ -268,8 +287,10 @@ std::vector<domain::calendar_exception>
 calendar_exception_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
@@ -285,9 +306,10 @@ calendar_exception_repository::read_latest(const context& ctx, const std::string
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exception. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_exception_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
         ctx,
@@ -302,9 +324,11 @@ std::vector<domain::calendar_exception>
 calendar_exception_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all calendar exception versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<calendar_exception_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
         ctx,
@@ -319,10 +343,11 @@ std::optional<domain::calendar_exception> calendar_exception_repository::read_at
     BOOST_LOG_SEV(lg(), debug) << "Reading calendar exception at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_exception_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
@@ -348,10 +373,11 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
                                << calendar_code << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<calendar_exception_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<calendar_exception_entity,
@@ -374,10 +400,11 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count_
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<calendar_exception_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max);
 
     return query_builder::execute_count_query<calendar_exception_entity>(
         ctx,
@@ -399,11 +426,12 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_by_c
     const auto vf(valid_from_bound);
     const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_exception_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_from"_c < vt && "valid_to"_c > vf) |
-        query_builder::order_by("id"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "calendar_code"_c == calendar_code &&
+                                            "valid_from"_c < vt && "valid_to"_c > vf) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
         ctx,
@@ -457,9 +485,10 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exceptions with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<calendar_exception_entity,
                                                      domain::calendar_exception>(
@@ -480,8 +509,9 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar exception count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<calendar_exception_entity>(
         ctx,
@@ -514,9 +544,10 @@ calendar_exception_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_exception_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c.in(ids) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
             ctx,

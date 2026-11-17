@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists ore_parameter_value_domains_tbl_tenant_isolation_policy on "ores_reporting_ore_parameter_value_domains_tbl";
 drop rule if exists ores_reporting_ore_parameter_value_domains_delete_rule on "ores_reporting_ore_parameter_value_domains_tbl";
 drop trigger if exists ores_reporting_ore_parameter_value_domains_insert_trg on "ores_reporting_ore_parameter_value_domains_tbl";
 drop function if exists ores_reporting_ore_parameter_value_domains_insert_fn;

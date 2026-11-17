@@ -383,6 +383,7 @@ The ISO import carries =holiday_calendar=, which =refdata_currency_calendars_see
 :PROPERTIES:
 :tablename: ores_refdata_currencies_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -416,6 +417,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: currency
 :entity_plural_short:   currencies
 :entity_singular_words: currency

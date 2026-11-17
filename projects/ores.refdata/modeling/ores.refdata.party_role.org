@@ -135,6 +135,7 @@ The import carries the FpML codelist: the code, its source and description, and 
 :PROPERTIES:
 :tablename: ores_refdata_party_roles_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Indexes
@@ -145,7 +146,7 @@ The import carries the FpML codelist: the code, its source and description, and 
 
 * Validation function
 :PROPERTIES:
-:tenant_scope: tenant
+:tenant_scope: both
 :order_by:     code
 :END:
 
@@ -167,6 +168,7 @@ The import carries the FpML codelist: the code, its source and description, and 
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: role
 :entity_plural_short:   roles
 :entity_singular_words: party role

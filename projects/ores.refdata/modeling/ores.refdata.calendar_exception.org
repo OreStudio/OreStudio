@@ -134,6 +134,7 @@ std::string("Test exception")
 :PROPERTIES:
 :tablename: ores_refdata_calendar_exceptions_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Foreign keys
@@ -165,6 +166,7 @@ std::string("Test exception")
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: calendar_exception
 :entity_plural_short:   calendar_exceptions
 :entity_singular_words: calendar exception

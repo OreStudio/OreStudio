@@ -182,6 +182,7 @@ and it leaves the city and the country, which the scheme does not carry, empty.
 :PROPERTIES:
 :tablename: ores_refdata_business_centres_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -192,7 +193,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 
 * Validation function
 :PROPERTIES:
-:tenant_scope: tenant
+:tenant_scope: both
 :order_by:     code
 :END:
 
@@ -214,6 +215,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: centre
 :entity_plural_short:   centres
 :entity_singular_words: business centre

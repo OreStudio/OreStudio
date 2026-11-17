@@ -21,9 +21,10 @@
 -- =============================================================================
 -- Row-Level Security Policies for Assets Tables
 -- =============================================================================
--- These policies enforce strict tenant isolation for asset data.
--- Each tenant can only see and modify their own images, tags, and image-tag
--- associations. All tenants are fully isolated, including the system tenant.
+-- The country flags and the default avatars are world data: the system tenant
+-- holds them and every tenant reads them where they lie, through the read
+-- policy below. A tenant's own images -- a party logo, a staff photograph --
+-- stay its own, and the write policies bind every write to the caller's rows.
 
 -- -----------------------------------------------------------------------------
 -- Images
@@ -38,6 +39,18 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's, so a tenant
+-- draws the shared flags and avatars. The policy above still binds every write
+-- to the caller's own rows; a single for-all policy that admitted the system
+-- tenant would let a tenant change or remove a shared image.
+drop policy if exists images_tbl_shared_reference_read_policy on ores_assets_images_tbl;
+
+create policy images_tbl_shared_reference_read_policy on ores_assets_images_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------

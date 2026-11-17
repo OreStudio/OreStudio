@@ -82,6 +82,8 @@ example ores.refdata.currency. Empty when the value stands alone.
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_ore_parameter_value_domains_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * C++
@@ -93,6 +95,7 @@ example ores.refdata.currency. Empty when the value stands alone.
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: domain
 :entity_plural_short:   domains
 :entity_singular_words: ore parameter value domain

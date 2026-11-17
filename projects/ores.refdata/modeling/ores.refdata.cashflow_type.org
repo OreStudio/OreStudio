@@ -136,6 +136,7 @@ description, and the coding scheme.
 :PROPERTIES:
 :tablename: ores_refdata_cashflow_types_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Indexes
@@ -146,7 +147,7 @@ description, and the coding scheme.
 
 * Validation function
 :PROPERTIES:
-:tenant_scope: tenant
+:tenant_scope: both
 :order_by:     code
 :END:
 
@@ -168,6 +169,7 @@ description, and the coding scheme.
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: type
 :entity_plural_short:   types
 :entity_singular_words: cashflow type

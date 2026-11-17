@@ -21,26 +21,26 @@ A tenant whose setup left work undone is one click from finishing it: the tenant
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Re-run a setup step that ended with warnings. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The dashboard alert. |
-| Last touched  | 2026-11-16                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-17                               |
 
 * Acceptance
 
 - Each setup step that is not essential leaves the tenant as it found it when run a second time over finished work, shown by a re-run of every such step on a provisioned tenant.
 - The engine re-runs one step of a finished run that ended with warnings, under a new idempotency key, and records the new outcome on that step; an essential step, a step that completed cleanly, or a run that is still going is refused with its reason.
-- The setup report, in the web and in the shell (setup-report rerun STEP), offers the re-run beside each step with warnings and shows its progress and outcome.
+- The setup report, in the web and in the shell (setup-rerun STEP), offers the re-run beside each step with warnings and shows its progress and outcome.
 - While any setup step stands with warnings the tenant dashboard shows an alert that links to the setup report; the alert goes once no step has warnings, and dismissing the notice does not hide it.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DE4C29C3-EB45-4014-BD38-596B2B7C1C34][Re-run a setup step that ended with warnings]] | STARTED | 2026-11-16 | | The engine resumes only a stopped run, under the step's old idempotency key; add a re-run of one warned step of a finished run, and offer it in the setup report in the shell and the web. |
-| [[id:8963E1FA-769E-4FFC-AD53-F439E946B1C2][Alert on the tenant dashboard while setup warnings stand]] | BACKLOG |  | | The setup report notice can be dismissed; while any setup step stands with warnings the tenant dashboard shows an alert that links to the report, and it goes once none does. |
+| [[id:DE4C29C3-EB45-4014-BD38-596B2B7C1C34][Re-run a setup step that ended with warnings]] | DONE | 2026-11-16 | 2026-11-17 | The engine resumes only a stopped run, under the step's old idempotency key; add a re-run of one warned step of a finished run, and offer it in the setup report in the shell and the web. |
+| [[id:8963E1FA-769E-4FFC-AD53-F439E946B1C2][Alert on the tenant dashboard while setup warnings stand]] | DONE |  | 2026-11-17 | The setup report notice can be dismissed; while any setup step stands with warnings the tenant dashboard shows an alert that links to the report, and it goes once none does. |
 
 * Decisions
 
@@ -51,9 +51,12 @@ A tenant whose setup left work undone is one click from finishing it: the tenant
   holds and says a rerun is safe; photos skip an account or party that has an image; reports
   skip a definition that holds a scheduler job; trades count what is already present; the
   subscription step skips a subscription or route the party holds. The re-run task proves each.
-- *A re-run needs a new idempotency key.* The step handlers answer a step id they hold a
-  terminal record of from that record, and retry_instance re-sends under the same id, so it
-  would replay the warned answer. It also resumes only a stopped run.
+- *A re-run is a new attempt of the same step.* A service answers a step id from its record only
+  while the step is settled, so the re-run puts the step back to work and keeps its id. The new
+  idempotency key is for the stream: commands now send it as =Nats-Msg-Id=, so a re-run inside
+  the duplicate window is not dropped.
+- *The retry message carries the re-run.* Naming a warned step of a completed run runs it again;
+  no new message or permission.
 
 * Out of scope
 

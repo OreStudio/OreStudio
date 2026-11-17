@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/derive-from-the-pairs-levels
+#+pr: 4790
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-16
@@ -26,11 +26,11 @@ A tenant administrator who dismissed the notice still sees, on the tenant dashbo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -84,3 +84,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tenant dashboard shows an alert, with a link to the setup report, while the latest setup run
+has a step with warnings. It has no dismiss, so dismissing the notice does not hide it, and it
+goes when a re-run leaves no step with warnings. The person checked it in the browser, through a
+re-run that cleared it.

@@ -1056,7 +1056,15 @@ begin
             left join ores_synthetic_fx_vol_surface_feed_expiries_tbl existing
                 on existing.tenant_id = p_target_tenant_id and existing.id = r.id
                and existing.valid_to = ores_utility_infinity_timestamp_fn()
-            where not (p_mode = 'insert_only' and existing.id is not null);
+            where not (p_mode = 'insert_only' and existing.id is not null)
+            returning version into v_new_version;
+            if not found then
+                v_skipped := v_skipped + 1;
+            elsif v_new_version = 1 then
+                v_inserted := v_inserted + 1;
+            else
+                v_updated := v_updated + 1;
+            end if;
         end loop;
 
         for r in
@@ -1076,7 +1084,15 @@ begin
             left join ores_synthetic_fx_vol_surface_feed_contributors_tbl existing
                 on existing.tenant_id = p_target_tenant_id and existing.id = r.id
                and existing.valid_to = ores_utility_infinity_timestamp_fn()
-            where not (p_mode = 'insert_only' and existing.id is not null);
+            where not (p_mode = 'insert_only' and existing.id is not null)
+            returning version into v_new_version;
+            if not found then
+                v_skipped := v_skipped + 1;
+            elsif v_new_version = 1 then
+                v_inserted := v_inserted + 1;
+            else
+                v_updated := v_updated + 1;
+            end if;
         end loop;
     end if;
 

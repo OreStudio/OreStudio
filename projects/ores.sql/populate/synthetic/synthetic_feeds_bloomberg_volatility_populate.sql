@@ -29,10 +29,14 @@
  * for the task that quotes crosses consistently with their legs.
  *
  * Each surface starts at its pair's spot volatility: the primary component of
- * the pair's spot mixture has a per-tick stdev of the annual vol / 3970.9
- * (synthetic_feeds_bloomberg_populate.sql), so every expiry's starting ATM vol
- * is that stdev times 3970.9, and the surface and the spot it is struck against
- * start from one level. The dynamics are the models' documented defaults.
+ * the pair's spot mixture has a per-tick stdev of the annual vol over the square
+ * root of the ticks in a year, read from the spot feed's own ticks per hour, so
+ * every expiry's starting ATM vol is that stdev times that root, and the surface
+ * and the spot it is struck against start from one level.
+ *
+ * The blueprints are read across datasets, because they live in the refdata
+ * dataset; there is one blueprint per pair, so a pair's expiries are its one
+ * blueprint's pillars. The dynamics are the models' documented defaults.
  *
  * One contributor quotes the surfaces for now, as the provider the dataset
  * stands for; the vendors the curves are quoted by, and a clean contributor no
@@ -73,7 +77,7 @@ begin
     insert into t_vol_pairs (base, quote, feed_id, atm_vol)
     select distinct b.base_currency_code, b.quote_currency_code,
            md5('synthetic.feeds.bloomberg|fx_vol_surface_feed|' || b.base_currency_code || b.quote_currency_code)::uuid,
-           g.stdev * 3970.9
+           g.stdev * sqrt(f.ticks_per_hour * 24.0 * 365.0)
     from ores_dq_fx_vol_surface_blueprints_artefact_tbl b
     join ores_dq_fx_spot_generation_configs_artefact_tbl f
       on f.dataset_id = v_dataset_id

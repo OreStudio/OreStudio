@@ -2,17 +2,17 @@
 :ID: B55B55AE-1F27-402A-86F4-92419A2A6E38
 :END:
 #+title: Task: Serve the reference data reads this story moved here
-#+description: Five routes the story's Acceptance moves from the reference data and pick-list tasks: two convention documents and three curve configurations, through the value set reader.
+#+description: Three routes the story's Acceptance moves here: a party's curve configurations, through the value set reader. The two convention documents split off into their own task.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-moved-reference-data-reads
+#+pr: 4791
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
+#+updated: 2026-11-16
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,27 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Serve the five reference data routes that read the ORE value sets, which the
-story's Acceptance moved here from the reference data and pick-list tasks. Two
-answer a convention document and its terms; three answer a party's curve
-configurations.
+Serve the three curve-configuration routes that read the ORE value sets, which
+the story's Acceptance moved here from the reference data and pick-list tasks.
+The two convention documents this task first carried split off into
+[[id:9796EE15-7695-4999-B00C-F872F84B2763][Serve the convention documents this
+story moved here]], because their machinery is the convention family registry and
+not the value set reader.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-16                               |
 
 * Acceptance
 
-- The C++ server answers =GET /api/conventions/:family/documents/:id=,
-  =PUT /api/conventions/:family/documents/:id/terms=,
-  =GET /api/refdata/curve-configurations=,
+- The C++ server answers =GET /api/refdata/curve-configurations=,
   =GET /api/refdata/curve-configurations/:id= and
   =PUT /api/refdata/curve-configurations/:id= at the BFF's member names and
   status codes.
@@ -82,9 +82,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The gateway's routes in the inventory | 1349 routes, 1021 answered by ores.http, 255 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | 4367a4fa09 |
+| The reference data area's pairs | 28 of 30, the two convention documents being the gap | =python3 build/scripts/route_inventory.py --check= | 4367a4fa09 |
+| The curve screen's wiring | 19 sections, 247 parameters, 31 blocks | =python3 projects/ores.sql/utility/generate_curve_section_parameters.py --check= | 4367a4fa09 |
+| The reference data part's suite | 516 test cases, 3112 assertions, all pass | =ctest -R ores.http.refdata.tests= | 4367a4fa09 |
 
 * Notes
+
+** The task split in two, as its own plan allowed**
+
+The plan said that if the convention document routes proved as large as the
+machinery they need, this task would split. They did: a convention document is
+found through the family registry, and its terms come off the held form of a
+family's own entity, so neither route reads a value set for its own sake. Those
+two routes are [[id:9796EE15-7695-4999-B00C-F872F84B2763][their own task]] now,
+and this one carries the three curve-configuration routes, which are the ones
+that read the value sets.
 
 * Test Scenarios
 
@@ -101,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4791][#4791]] | [http] Serve the curve configuration routes the BFF answered |
 
 * Review
 
@@ -110,3 +123,59 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. The reference data part answers all three curve-configuration routes at the
+BFF's paths, member names and status codes.
+
+** The three routes
+
+- =GET /api/refdata/curve-configurations= answers a party's configurations in
+  name order, each with the count of curves it holds and the sections those curves
+  name.
+- =GET /api/refdata/curve-configurations/{id}= answers the document a reporting
+  configuration is filled by, drawn as the sections the ORE schema declares: each
+  section with its entries, every entry's leaves joined to the words the ORE
+  parameter contract gives them and the values the value sets accept, the child
+  elements the entry states, and the segments it holds with their kind and their
+  quotes. A configuration no document fills is a 404.
+- =PUT /api/refdata/curve-configurations/{id}= reads the stored document, checks
+  each change against the contract and the value sets, writes the columns it names
+  into the rows they belong to, and saves only the tables it touched. A version
+  that moved on is a 409; a value outside its set is a 400.
+
+** What the branch adds
+
+- The curve section wiring as a C++ table, from the same generator that writes the
+  BFF's TypeScript: one read of the projection, two surfaces, and the drift check
+  compares the pair.
+- The document flattened into the cells the wiring names. The document arrives
+  typed, so its rows become cells by their own fields, and a column a row does not
+  carry stays absent rather than empty text.
+- The value set tables read in =ores.http.core=, beside the reader, so the
+  reporting part and the reference data part hand it the same four tables; and the
+  JSON shape helper moved to the gateway's own part for the same reason.
+- The page drawn from the wiring and the contract, and the amendment that writes
+  one column of one row in the row's own type.
+
+** Two departures from the BFF, both stated at their site
+
+- The BFF read a pattern off the ORE parameter contract, which has no such column,
+  so a regex value set was never enforced. The route enforces the set's own
+  pattern, which is the rule the data states.
+- A value set the data states in a way this build cannot read is a 500 with the
+  sentence, as the reporting part already answers one, rather than a page drawn
+  with half its controls unchecked.
+
+** What is not proved
+
+The routes are proved against a client that is not connected, so their refusals
+are covered and their happy paths are not exercised against a live estate. The
+view and the amendment are proved against documents the tests build, which is
+where their joins and counts are checked.
+
+** What remains, and where it went
+
+The two convention documents this task once carried are
+[[id:9796EE15-7695-4999-B00C-F872F84B2763][their own task]], and they are the
+reference data area's last two unpaired routes.
+

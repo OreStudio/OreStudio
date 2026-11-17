@@ -57,7 +57,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/cut_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/engine_settings_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/engine_settings_rows.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/json_shape.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/ore_schema_zip.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/ore_value_set_rows.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/pricing_engine_import.hpp"

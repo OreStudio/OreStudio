@@ -39,9 +39,11 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.logging.lib
     PRIVATE
+        ores.http.core.lib
         ores.http.nats.lib
         ores.ore.api.lib
         ores.refdata.api.lib
+        ores.reporting.api.lib
         ores.utility.lib)
 
 if(NOT WIN32)

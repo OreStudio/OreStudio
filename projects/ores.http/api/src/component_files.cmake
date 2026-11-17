@@ -59,6 +59,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_server_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_session.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/image_answer.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/json_shape.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/rate_limiter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/record_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/router.hpp"

@@ -59,6 +59,7 @@
 #include "ores.http/routes/refdata/currency_pair_web_routes.hpp"
 #include "ores.http/routes/refdata/currency_routes.hpp"
 #include "ores.http/routes/refdata/currency_web_routes.hpp"
+#include "ores.http/routes/refdata/curve_configuration_screen_routes.hpp"
 #include "ores.http/routes/refdata/instrument_code_web_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_config_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_config_web_routes.hpp"
@@ -201,6 +202,7 @@ void refdata_routes::register_routes(
     // The counterparty onboarding screen's own reads and writes.
     counterparty_screen_routes::register_routes(router, registry, session);
     convention_screen_routes::register_routes(router, registry, session);
+    curve_configuration_screen_routes::register_routes(router, registry, session);
     tenor_screen_routes::register_routes(router, registry, session);
     calendar_screen_routes::register_routes(router, registry, session);
     currency_ore_document_routes::register_routes(router, registry, session);

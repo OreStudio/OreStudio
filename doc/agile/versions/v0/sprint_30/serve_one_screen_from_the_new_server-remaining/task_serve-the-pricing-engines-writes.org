@@ -32,9 +32,9 @@ service behaves.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | All three writes are served.           |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request and merge it.    |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance

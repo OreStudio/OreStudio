@@ -22,11 +22,11 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/domain/http_status.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.core/routes/history_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
-#include "ores.http/routes/reporting/json_shape.hpp"
 #include "ores.http/routes/reporting/pricing_engine_rows.hpp"
 #include "ores.http/routes/reporting/pricing_engine_shapes.hpp"
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
@@ -51,8 +51,8 @@ using ores::http::domain::http_request;
 using ores::http::domain::http_response;
 using ores::http::domain::http_status;
 using pricing_engine_shapes::summary_json_of;
-using shape::member;
-using shape::object;
+using ores::http::net::shape::member;
+using ores::http::net::shape::object;
 using ores::nats::service::nats_client;
 
 /// One record whose versions the history tab draws, and the name it states.

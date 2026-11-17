@@ -17,21 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_ROUTES_REPORTING_JSON_SHAPE_HPP
-#define ORES_HTTP_ROUTES_REPORTING_JSON_SHAPE_HPP
+#ifndef ORES_HTTP_API_NET_JSON_SHAPE_HPP
+#define ORES_HTTP_API_NET_JSON_SHAPE_HPP
 
 #include "ores.http.api/net/record_routes.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace ores::http::routes::reporting::shape {
+namespace ores::http::net::shape {
 
 /**
  * @brief One member of a JSON object, its value already rendered.
  *
  * A page here is a dozen small objects, so the members are listed and joined
- * rather than built one string at a time.
+ * rather than built one string at a time. Every part of the gateway draws its
+ * pages this way, so the shape of an object is written once.
  */
 [[nodiscard]] inline std::string member(std::string_view name, std::string_view value) {
     return "\"" + std::string(name) + "\":" + std::string(value);

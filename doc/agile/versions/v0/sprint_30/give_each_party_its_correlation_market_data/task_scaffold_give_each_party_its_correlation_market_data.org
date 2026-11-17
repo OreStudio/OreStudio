@@ -8,7 +8,7 @@
 #+filetags: :give_each_party_its_correlation_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/correlation-and-generator-stories
-#+pr:
+#+pr: 4816
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4816][#4816]] | [agile] Plan correlations end to end; re-scope the generator story |
 
 * Review
 

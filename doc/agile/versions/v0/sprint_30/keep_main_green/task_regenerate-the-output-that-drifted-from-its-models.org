@@ -117,8 +117,16 @@ the generator would delete the work and pass the check. So the drift is a
 model gap, one member at a time, and it needs the models changed rather than
 the generator run.
 
-*Gate.* =check_bff_list_requests.py= passes. The heavy checks were not run:
-the change is one generated TypeScript table, and the suites do not read it.
+*Gate.* =compass check --exclude-heavy= ran 11 checks and passed 10, and
+=check_bff_list_requests.py= is one of them. The eleventh, =web=, hit its own
+900 second limit: it opens with =npm ci=, a full reinstall, before it reaches
+a single test. Run one at a time on the tree the check leaves behind, the
+three things it stands for all pass:
+
+- =prettier --check= on the regenerated table: all files use Prettier style.
+- =npm run typecheck= across the workspaces: no error.
+- The tests that read the table: =@ores/wire-protocol= 225 passed,
+  =@ores/bff= 1301 passed.
 
 *What is still red.* =component-drift= for the reason above, and
 =money-decimal-columns= and =codegen-tests=, each of which needs a decision

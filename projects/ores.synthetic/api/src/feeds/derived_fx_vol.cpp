@@ -25,6 +25,7 @@
 #include <format>
 #include <map>
 #include <ranges>
+#include <tuple>
 
 namespace ores::synthetic::feed {
 
@@ -73,7 +74,11 @@ std::vector<derived_fx_expiry> derived_fx_ladder(const std::set<std::string>& la
     for (const auto& label : labels)
         if (const auto years = derived_fx_expiry_years(label))
             ladder.push_back({.label = label, .years = *years});
-    std::ranges::sort(ladder, {}, &derived_fx_expiry::years);
+    // Two labels of one length, such as 12M and 1Y, are ordered by label, so the ladder does
+    // not depend on the order of the set it was read from.
+    std::ranges::sort(ladder, [](const derived_fx_expiry& a, const derived_fx_expiry& b) {
+        return std::tie(a.years, a.label) < std::tie(b.years, b.label);
+    });
     return ladder;
 }
 

@@ -148,6 +148,11 @@ TEST_CASE("a_ladder_is_the_tenors_its_labels_name_shortest_first", derived_tags)
     CHECK_FALSE(derived_fx_expiry_years("ATM"));
     CHECK_FALSE(derived_fx_expiry_years("0Y"));
     CHECK_FALSE(derived_fx_expiry_years("Y"));
+    CHECK_FALSE(derived_fx_expiry_years(""));
+    CHECK_FALSE(derived_fx_expiry_years("0M"));
+    CHECK_FALSE(derived_fx_expiry_years("1.5Y"));
+    CHECK_FALSE(derived_fx_expiry_years("3D"));
+    CHECK_FALSE(derived_fx_expiry_years("-1Y"));
 
     // A set orders its labels as text, so 10Y would come before 1Y; the ladder orders them by
     // length, and leaves out a label that is not a tenor.
@@ -157,6 +162,11 @@ TEST_CASE("a_ladder_is_the_tenors_its_labels_name_shortest_first", derived_tags)
     CHECK(ladder[1].label == "1Y");
     CHECK(ladder[2].label == "18M");
     CHECK(ladder[3].label == "10Y");
+
+    const auto ties = derived_fx_ladder({"1Y", "12M"});
+    REQUIRE(ties.size() == 2);
+    CHECK(ties[0].label == "12M");
+    CHECK(ties[1].label == "1Y");
 }
 
 TEST_CASE("a_pair_returns_the_change_of_its_log_level_and_skips_a_level_that_is_not_positive",

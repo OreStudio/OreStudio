@@ -52,6 +52,14 @@ join ores_dq_fx_vol_surface_pillar_sources_artefact_tbl s
   on s.dataset_id = p.dataset_id and s.pillar_id = p.id
 where s.contributor_code = 'derived';
 
+do $$
+begin
+    if not exists (select 1 from t_derived_inventory) then
+        raise exception 'No blueprint pillar reads the derived source, so it would serve no quote. '
+                        'The FX volatility surface blueprints must be staged first.';
+    end if;
+end $$;
+
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
     modified_by, performed_by, change_reason_code, change_commentary

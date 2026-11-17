@@ -60,7 +60,7 @@ population answers the same question.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Each party's run writes the public fixings the system tenant stores, so the overnight SONIA history resolves. Five more IBOR curves are bootstrapped, and ORE builds 32 of ACCOUK's trades where it built none. |
+| Now           | A fresh provision books 808 of the 1100 trades the mix states, and every one of the eleven bond codes is among them. The two interest rate configs are refused by the forward rate agreement builder, which draws an overnight index for a product that needs an IBOR; captured. |
 | Waiting on    | Nothing for the first task. See Dependencies for the later ones. |
 | Next          | [[id:06886D23-1A52-4BBC-B305-4609D606EEA7][Generate the historical fixings the generated trades need]]. |
 | Last touched  | 2026-11-17 |

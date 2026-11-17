@@ -17,21 +17,21 @@
       <SettlementDate>2026-09-07</SettlementDate>
     </EquityForwardVolatilityAgreementData>
   </Trade>
-  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
+  <Trade id="218774a5-e3e4-54a7-a1a9-4d27d7aed44b">
     <TradeType>EquityForwardVolatilityAgreement</TradeType>
     <EquityForwardVolatilityAgreementData>
-      <FvaDate>2026-10-02</FvaDate>
-      <OptionExpiry>2027-10-02</OptionExpiry>
-      <PremiumDate>2026-10-04</PremiumDate>
+      <FvaDate>2029-03-03</FvaDate>
+      <OptionExpiry>2032-09-02</OptionExpiry>
+      <PremiumDate>2029-03-05</PremiumDate>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
       <LongShort>Short</LongShort>
       <ImpliedVolStrike>0.2</ImpliedVolStrike>
-      <Quantity>7485.13</Quantity>
-      <PayCcy>USD</PayCcy>
-      <SettlementDate>2027-10-07</SettlementDate>
+      <Quantity>721.2</Quantity>
+      <PayCcy>EUR</PayCcy>
+      <SettlementDate>2032-09-07</SettlementDate>
     </EquityForwardVolatilityAgreementData>
   </Trade>
 </Portfolio>

@@ -106,7 +106,7 @@ absent: it is a placeholder, not a product.
 | SyntheticCDO | Synthetic CDO |   | native | credit! | false | false | credit_instrument |
 | CreditLinkedSwap | Credit Linked Swap | swap | native | credit! | false | false | credit_instrument |
 | CBO | Collateralised Bond Obligation |   | native | credit! | false | false |  |
-| BondFutureOption | Bond Future Option |   | native | bond! | true | false |  |
+| BondFutureOption | Bond Future Option |   | native | bond! | true | false | scripted_instrument |
 | Bond | Fixed Income Bond | security | native | bond! | false | false | bond_instrument |
 | ForwardBond | Forward Bond | forward | native | bond! | false | false | bond_instrument |
 | BondFuture | Bond Future | future | native | bond! | false | true | bond_instrument |
@@ -120,7 +120,7 @@ absent: it is a placeholder, not a product.
 | EquityAutoDeltaHedgedOption | Equity Auto Delta Hedged Option | option | native | equity! | true | false |  |
 | EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement |   | scripted | equity! | true | false | scripted_instrument |
 | EquityOption | Equity Option | option | native | equity! | true | false | equity_option_instrument |
-| EquityFutureOption | Equity Future Option | option | native | equity! | true | false |  |
+| EquityFutureOption | Equity Future Option | option | native | equity! | true | false | scripted_instrument |
 | EquityAsianOption | Equity Asian Option | option | native | equity! | true | true | equity_asian_option_instrument |
 | EquityBarrierOption | Equity Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |
 | EquityDoubleBarrierOption | Equity Double Barrier Option | option | native | equity! | true | false | equity_barrier_option_instrument |

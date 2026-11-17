@@ -25,29 +25,29 @@
       <Quantity>1132.2</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>EquityDoubleBarrierOption</TradeType>
     <EquityDoubleBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2026-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>1012.66</Level>
-          <Level>1237.7</Level>
+          <Level>2477.98</Level>
+          <Level>3028.64</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.STOXX50E</Name>
+      <Name>RIC:DHER.DE</Name>
       <Currency>EUR</Currency>
-      <Strike>1125.18</Strike>
-      <Quantity>3780.36</Quantity>
+      <Strike>2753.31</Strike>
+      <Quantity>889.5</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
 </Portfolio>

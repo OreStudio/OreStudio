@@ -35,32 +35,48 @@
       </ObservationDates>
     </EquityStrikeResettableOptionData>
   </Trade>
-  <Trade id="06ac4b98-591b-5627-8744-f749d53ac7ca">
+  <Trade id="c1d59ae5-996a-5563-bbca-8ef8c71aaec2">
     <TradeType>EquityStrikeResettableOption</TradeType>
     <EquityStrikeResettableOptionData>
       <LongShort>Short</LongShort>
       <OptionType>Call</OptionType>
       <Currency>USD</Currency>
-      <Strike>772.34</Strike>
-      <ResetStrike>695.11</ResetStrike>
-      <Quantity>8711.82</Quantity>
+      <Strike>1953.12</Strike>
+      <ResetStrike>1757.81</ResetStrike>
+      <Quantity>4262.71</Quantity>
       <TriggerType>Down</TriggerType>
-      <TriggerPrice>695.11</TriggerPrice>
+      <TriggerPrice>1757.81</TriggerPrice>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
-      <ExpiryDate>2026-09-02</ExpiryDate>
-      <SettlementDate>2026-09-02</SettlementDate>
+      <ExpiryDate>2030-08-02</ExpiryDate>
+      <SettlementDate>2030-08-02</SettlementDate>
       <Premium>0</Premium>
-      <PremiumDate>2025-09-02</PremiumDate>
+      <PremiumDate>2025-08-02</PremiumDate>
       <ObservationDates>
         <Dates>
           <Dates>
-            <Date>2025-12-02</Date>
-            <Date>2026-03-02</Date>
-            <Date>2026-06-02</Date>
-            <Date>2026-09-02</Date>
+            <Date>2025-11-03</Date>
+            <Date>2026-02-02</Date>
+            <Date>2026-05-04</Date>
+            <Date>2026-08-03</Date>
+            <Date>2026-11-02</Date>
+            <Date>2027-02-02</Date>
+            <Date>2027-05-03</Date>
+            <Date>2027-08-02</Date>
+            <Date>2027-11-02</Date>
+            <Date>2028-02-02</Date>
+            <Date>2028-05-02</Date>
+            <Date>2028-08-02</Date>
+            <Date>2028-11-02</Date>
+            <Date>2029-02-02</Date>
+            <Date>2029-05-02</Date>
+            <Date>2029-08-02</Date>
+            <Date>2029-11-02</Date>
+            <Date>2030-02-04</Date>
+            <Date>2030-05-02</Date>
+            <Date>2030-08-02</Date>
           </Dates>
         </Dates>
       </ObservationDates>

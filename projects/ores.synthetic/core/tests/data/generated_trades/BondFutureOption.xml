@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
+    <TradeType>BondFutureOption</TradeType>
+    <BondFutureOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2026-02-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <ContractName>ZN</ContractName>
+      <ContractNotional>100000</ContractNotional>
+      <Strike>116.99</Strike>
+    </BondFutureOptionData>
+  </Trade>
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
+    <TradeType>BondFutureOption</TradeType>
+    <BondFutureOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2026-02-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <ContractName>FGBM</ContractName>
+      <ContractNotional>100000</ContractNotional>
+      <Strike>102.82</Strike>
+    </BondFutureOptionData>
+  </Trade>
+</Portfolio>

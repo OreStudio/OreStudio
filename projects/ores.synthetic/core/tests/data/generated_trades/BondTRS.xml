@@ -84,17 +84,17 @@
       </FundingData>
     </BondTRSData>
   </Trade>
-  <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>BondTRS</TradeType>
     <BondTRSData>
       <BondData>
         <IssuerId>Export Bank One Plc</IssuerId>
-        <SecurityId>POP6MSBBKBV34</SecurityId>
+        <SecurityId>POPU44SA9CTM0</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
-        <BondNotional>8284783.79</BondNotional>
+        <BondNotional>9466062.35</BondNotional>
         <PriceType>Clean</PriceType>
         <LegData>
           <Payer>false</Payer>
@@ -108,7 +108,7 @@
           <ScheduleData>
             <Rules>
               <StartDate>2025-07-02</StartDate>
-              <EndDate>2029-07-02</EndDate>
+              <EndDate>2033-07-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>
@@ -147,7 +147,7 @@
           <PaymentConvention>F</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>8284783.79</Notional>
+            <Notional>9466062.35</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
@@ -161,7 +161,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0289</Rate>
+              <Rate>0.0237</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

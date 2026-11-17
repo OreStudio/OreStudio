@@ -18,22 +18,22 @@
       <Strike>2538.69</Strike>
     </EquityOptionData>
   </Trade>
-  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
+  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
     <TradeType>EquityOption</TradeType>
     <EquityOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2030-12-02</ExerciseDate>
+          <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>RIC:.NDX</Name>
-      <Currency>USD</Currency>
-      <Quantity>113.9</Quantity>
-      <Strike>4232.82</Strike>
+      <Name>RIC:.STOXX50E</Name>
+      <Currency>EUR</Currency>
+      <Quantity>1455.31</Quantity>
+      <Strike>4993.67</Strike>
     </EquityOptionData>
   </Trade>
 </Portfolio>

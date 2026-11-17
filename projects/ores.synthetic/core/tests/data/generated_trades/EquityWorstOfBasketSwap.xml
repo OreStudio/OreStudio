@@ -112,64 +112,60 @@
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
-  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
       <Currency>USD</Currency>
-      <Quantity>6145432.04</Quantity>
+      <Quantity>2621254.1</Quantity>
       <Underlyings>
-        <Underlying>
-          <Type>Equity</Type>
-          <Name>RIC:.SPX</Name>
-        </Underlying>
         <Underlying>
           <Type>Equity</Type>
           <Name>RIC:.NDX</Name>
         </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.SPX</Name>
+        </Underlying>
       </Underlyings>
       <InitialPrices>
-        <InitialPrice>397.38</InitialPrice>
-        <InitialPrice>437.12</InitialPrice>
+        <InitialPrice>814.14</InitialPrice>
+        <InitialPrice>895.55</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
           <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-11-02</Date>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-02</Date>
-            <Date>2026-08-02</Date>
-            <Date>2026-11-02</Date>
-            <Date>2027-02-02</Date>
-            <Date>2027-05-02</Date>
-            <Date>2027-08-02</Date>
-            <Date>2027-11-02</Date>
-            <Date>2028-02-02</Date>
-            <Date>2028-05-02</Date>
-            <Date>2028-08-02</Date>
-            <Date>2028-11-02</Date>
-            <Date>2029-02-02</Date>
-            <Date>2029-05-02</Date>
-            <Date>2029-08-02</Date>
-            <Date>2029-11-02</Date>
-            <Date>2030-02-02</Date>
-            <Date>2030-05-02</Date>
-            <Date>2030-08-02</Date>
-            <Date>2030-11-02</Date>
-            <Date>2031-02-02</Date>
-            <Date>2031-05-02</Date>
-            <Date>2031-08-02</Date>
-            <Date>2031-11-02</Date>
-            <Date>2032-02-02</Date>
-            <Date>2032-05-02</Date>
-            <Date>2032-08-02</Date>
-            <Date>2032-11-02</Date>
-            <Date>2033-02-02</Date>
-            <Date>2033-05-02</Date>
-            <Date>2033-08-02</Date>
-            <Date>2033-11-02</Date>
+            <Date>2025-10-02</Date>
+            <Date>2026-01-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-02</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-02</Date>
+            <Date>2028-01-02</Date>
+            <Date>2028-04-02</Date>
+            <Date>2028-07-02</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+            <Date>2030-01-02</Date>
+            <Date>2030-04-02</Date>
+            <Date>2030-07-02</Date>
+            <Date>2030-10-02</Date>
+            <Date>2031-01-02</Date>
+            <Date>2031-04-02</Date>
+            <Date>2031-07-02</Date>
+            <Date>2031-10-02</Date>
+            <Date>2032-01-02</Date>
+            <Date>2032-04-02</Date>
+            <Date>2032-07-02</Date>
+            <Date>2032-10-02</Date>
           </Dates>
         </Dates>
       </FloatingPeriodSchedule>
@@ -178,39 +174,35 @@
           <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-11-02</Date>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-02</Date>
-            <Date>2026-08-02</Date>
-            <Date>2026-11-02</Date>
-            <Date>2027-02-02</Date>
-            <Date>2027-05-02</Date>
-            <Date>2027-08-02</Date>
-            <Date>2027-11-02</Date>
-            <Date>2028-02-02</Date>
-            <Date>2028-05-02</Date>
-            <Date>2028-08-02</Date>
-            <Date>2028-11-02</Date>
-            <Date>2029-02-02</Date>
-            <Date>2029-05-02</Date>
-            <Date>2029-08-02</Date>
-            <Date>2029-11-02</Date>
-            <Date>2030-02-02</Date>
-            <Date>2030-05-02</Date>
-            <Date>2030-08-02</Date>
-            <Date>2030-11-02</Date>
-            <Date>2031-02-02</Date>
-            <Date>2031-05-02</Date>
-            <Date>2031-08-02</Date>
-            <Date>2031-11-02</Date>
-            <Date>2032-02-02</Date>
-            <Date>2032-05-02</Date>
-            <Date>2032-08-02</Date>
-            <Date>2032-11-02</Date>
-            <Date>2033-02-02</Date>
-            <Date>2033-05-02</Date>
-            <Date>2033-08-02</Date>
-            <Date>2033-11-02</Date>
+            <Date>2025-10-02</Date>
+            <Date>2026-01-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-02</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-02</Date>
+            <Date>2028-01-02</Date>
+            <Date>2028-04-02</Date>
+            <Date>2028-07-02</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+            <Date>2030-01-02</Date>
+            <Date>2030-04-02</Date>
+            <Date>2030-07-02</Date>
+            <Date>2030-10-02</Date>
+            <Date>2031-01-02</Date>
+            <Date>2031-04-02</Date>
+            <Date>2031-07-02</Date>
+            <Date>2031-10-02</Date>
+            <Date>2032-01-02</Date>
+            <Date>2032-04-02</Date>
+            <Date>2032-07-02</Date>
+            <Date>2032-10-02</Date>
           </Dates>
         </Dates>
       </FloatingPayDates>
@@ -243,16 +235,8 @@
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
-        <KnockOutLevel>1</KnockOutLevel>
       </KnockOutLevels>
       <FixedTriggerLevels>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
-        <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>

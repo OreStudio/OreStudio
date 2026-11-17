@@ -40,30 +40,30 @@
       </Barriers>
     </EquityGenericBarrierOptionData>
   </Trade>
-  <Trade id="85a4cda1-faea-5845-bc9c-b97dc2482179">
+  <Trade id="68ca7fb7-d3e6-55d8-b185-04e6a3193ab8">
     <TradeType>EquityGenericBarrierOption</TradeType>
     <EquityGenericBarrierOptionData>
       <PayCurrency>EUR</PayCurrency>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2030-01-02</ExerciseDate>
+          <ExerciseDate>2027-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <SettlementDate>2030-01-07</SettlementDate>
-      <Quantity>1717.78</Quantity>
-      <Strike>4348.95</Strike>
+      <SettlementDate>2027-12-07</SettlementDate>
+      <Quantity>2886.28</Quantity>
+      <Strike>2749.49</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-01-02</StartDate>
-            <EndDate>2030-01-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2027-12-02</EndDate>
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
@@ -72,9 +72,9 @@
           </Rules>
         </ScheduleData>
         <BarrierData>
-          <Type>UpAndOut</Type>
+          <Type>DownAndOut</Type>
           <Levels>
-            <Level>4783.85</Level>
+            <Level>2474.54</Level>
           </Levels>
         </BarrierData>
       </Barriers>

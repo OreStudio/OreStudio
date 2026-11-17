@@ -51,17 +51,17 @@
       </ConversionData>
     </ConvertibleBondData>
   </Trade>
-  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
     <TradeType>ConvertibleBond</TradeType>
     <ConvertibleBondData>
       <BondData>
-        <IssuerId>Export Bank One Plc</IssuerId>
-        <SecurityId>POPCVF3EEHX34</SecurityId>
+        <IssuerId>Export Bank Two Plc</IssuerId>
+        <SecurityId>POP0QL0YVFO78</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
-        <BondNotional>4118292.15</BondNotional>
+        <BondNotional>4191327.35</BondNotional>
         <PriceType>Clean</PriceType>
         <LegData>
           <Payer>false</Payer>
@@ -75,7 +75,7 @@
           <ScheduleData>
             <Rules>
               <StartDate>2025-07-02</StartDate>
-              <EndDate>2027-07-02</EndDate>
+              <EndDate>2026-07-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>
@@ -93,7 +93,7 @@
       </BondData>
       <ConversionData>
         <ConversionRatios>
-          <ConversionRatio>8.7</ConversionRatio>
+          <ConversionRatio>12.08</ConversionRatio>
         </ConversionRatios>
         <Underlying>
           <Type>Equity</Type>

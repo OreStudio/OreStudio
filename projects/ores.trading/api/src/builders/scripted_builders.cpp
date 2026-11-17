@@ -818,6 +818,60 @@ scripted_result fx_worst_of_basket_swap_builder::build() const {
     return out.take();
 }
 
+equity_future_option_builder::equity_future_option_builder(equity_future_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result equity_future_option_builder::build() const {
+    const auto& terms = terms_;
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (auto refusal = positive_amount("quantity", terms.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms.future_expiry.get() < terms.expiry.get())
+        return std::unexpected(
+            build_error{"future_expiry", "must not be before the option expires"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("Currency", "enumeration", terms.currency.get());
+    out.value("Strike", "decimal", scripted_text(terms.strike.get()));
+    out.value("Quantity", "decimal", scripted_text(terms.quantity.get()));
+    out.value("FutureExpiryDate", "text", scripted_date(terms.future_expiry.get()));
+    out.underlying("underlying", terms.underlying.get(), "Equity");
+    domain::instrument_option option;
+    option.long_short = long_short_of(terms.position.get());
+    option.option_type = option_type_of(terms.kind.get());
+    option.style = "European";
+    option.settlement = "Cash";
+    out.option(std::move(option), terms.expiry.get());
+    return out.take();
+}
+
+bond_future_option_builder::bond_future_option_builder(bond_future_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result bond_future_option_builder::build() const {
+    const auto& terms = terms_;
+    if (terms.contract.get().empty())
+        return std::unexpected(build_error{"contract", "must name a bond future contract"});
+    if (auto refusal = positive_amount("contract_notional", terms.contract_notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("ContractName", "text", terms.contract.get());
+    out.value("ContractNotional", "decimal", scripted_text(terms.contract_notional.get()));
+    out.value("Strike", "text", scripted_text(terms.strike.get()));
+    domain::instrument_option option;
+    option.long_short = long_short_of(terms.position.get());
+    option.option_type = option_type_of(terms.kind.get());
+    option.style = "European";
+    out.option(std::move(option), terms.expiry.get());
+    return out.take();
+}
+
 autocallable_builder::autocallable_builder(autocallable_terms terms)
     : terms_(std::move(terms)) {}
 

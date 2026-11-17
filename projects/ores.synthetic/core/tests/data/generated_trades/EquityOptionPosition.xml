@@ -22,25 +22,25 @@
       </Underlying>
     </EquityOptionPositionData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
     <TradeType>EquityOptionPosition</TradeType>
     <EquityOptionPositionData>
-      <Quantity>1455</Quantity>
+      <Quantity>1443</Quantity>
       <Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.STOXX50E</Name>
+          <Name>RIC:DHER.DE</Name>
         </Underlying>
         <OptionData>
           <LongShort>Short</LongShort>
-          <OptionType>Put</OptionType>
+          <OptionType>Call</OptionType>
           <Style>European</Style>
           <Settlement>Cash</Settlement>
           <ExerciseDates>
-            <ExerciseDate>2027-11-02</ExerciseDate>
+            <ExerciseDate>2031-10-02</ExerciseDate>
           </ExerciseDates>
         </OptionData>
-        <Strike>4993.67</Strike>
+        <Strike>3193.44</Strike>
       </Underlying>
     </EquityOptionPositionData>
   </Trade>

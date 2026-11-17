@@ -63,51 +63,35 @@
       </Underlying>
     </EquityBestEntryOptionData>
   </Trade>
-  <Trade id="bb13d6bb-0c5c-514a-8171-ef3bcba65cde">
+  <Trade id="06ac4b98-591b-5627-8744-f749d53ac7ca">
     <TradeType>EquityBestEntryOption</TradeType>
     <EquityBestEntryOptionData>
       <LongShort>Short</LongShort>
-      <Currency>EUR</Currency>
-      <Notional>8333490.93</Notional>
+      <Currency>USD</Currency>
+      <Notional>6728487.81</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.06</Cap>
       <Strike>0.85</Strike>
       <TriggerLevel>0.95</TriggerLevel>
       <ResetMinimum>0.85</ResetMinimum>
       <Premium>0</Premium>
-      <ExpiryDate>2030-10-02</ExpiryDate>
-      <StrikeDate>2025-10-02</StrikeDate>
-      <PremiumDate>2025-10-02</PremiumDate>
-      <SettlementDate>2030-10-02</SettlementDate>
+      <ExpiryDate>2026-09-02</ExpiryDate>
+      <StrikeDate>2025-09-02</StrikeDate>
+      <PremiumDate>2025-09-02</PremiumDate>
+      <SettlementDate>2026-09-02</SettlementDate>
       <StrikeObservationDates>
         <Dates>
           <Dates>
-            <Date>2026-01-02</Date>
-            <Date>2026-04-02</Date>
-            <Date>2026-07-02</Date>
-            <Date>2026-10-02</Date>
-            <Date>2027-01-04</Date>
-            <Date>2027-04-02</Date>
-            <Date>2027-07-02</Date>
-            <Date>2027-10-04</Date>
-            <Date>2028-01-03</Date>
-            <Date>2028-04-03</Date>
-            <Date>2028-07-03</Date>
-            <Date>2028-10-02</Date>
-            <Date>2029-01-02</Date>
-            <Date>2029-04-02</Date>
-            <Date>2029-07-02</Date>
-            <Date>2029-10-02</Date>
-            <Date>2030-01-02</Date>
-            <Date>2030-04-02</Date>
-            <Date>2030-07-02</Date>
-            <Date>2030-10-02</Date>
+            <Date>2025-12-02</Date>
+            <Date>2026-03-02</Date>
+            <Date>2026-06-02</Date>
+            <Date>2026-09-02</Date>
           </Dates>
         </Dates>
       </StrikeObservationDates>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
     </EquityBestEntryOptionData>
   </Trade>

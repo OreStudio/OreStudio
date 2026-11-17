@@ -431,7 +431,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 29;
+    wide.trades_per_book = 30;
 
     const auto plan = plan_of(wide);
 
@@ -444,15 +444,15 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     }
 
     /*
-     * Twenty-nine codes, twenty-six products and three containers, and the
-     * planner cycles through them, so one book of twenty-nine reaches every one. The
+     * Thirty codes, twenty-seven products and three containers, and the
+     * planner cycles through them, so one book of thirty reaches every one. The
      * composite holds two options and each return swap one position, which
      * are trades of their own.
      */
-    REQUIRE(types.size() == 29u);
+    REQUIRE(types.size() == 30u);
     const auto books = wide.book_ids.size();
     CHECK(held == 4u * books);
-    CHECK(plan.slots.size() == 33u * books);
+    CHECK(plan.slots.size() == 34u * books);
     CHECK(plan.structures.size() == 3u * books);
 }
 
@@ -629,6 +629,12 @@ TEST_CASE("a_bond_slot_states_its_instrument_and_its_security", "[trade_populati
     const auto plan = plan_of(bond_scope());
 
     for (const auto& slot : plan.slots) {
+        // An option on a bond future names a contract, so its batch is scripted.
+        if (slot.trade_type_code == "BondFutureOption") {
+            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            CHECK(slot.bond_issue.has_value());
+            continue;
+        }
         /*
          * A bond states a security before it states a trade, so the plan carries
          * the issue with the rows the composite write takes, beside the batch.
@@ -774,11 +780,12 @@ TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_popu
     /*
      * Recorded from the planner as it stood before the envelope was extracted,
      * so this case fails if the extraction changed anything a slot states. The
-     * value moved once since, deliberately: the bond planner now draws every
+     * value moved twice since, deliberately: the bond planner draws every
      * code the catalogue routes rather than a plain Bond alone, and the trade
-     * type is part of the envelope.
+     * type is part of the envelope; then the option on a bond future joined
+     * the cycle.
      */
-    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 15911127303722676035ULL);
+    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 5144697870441103994ULL);
 }
 
 TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_population]") {
@@ -1313,6 +1320,22 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", "[trade
         REQUIRE(bond_of(slot).maturity_date == bond_of(found->second).maturity_date);
         REQUIRE(bond_of(slot).tenor_years == bond_of(found->second).tenor_years);
     }
+}
+
+TEST_CASE("a_forward_bond_matures_before_its_bond_does", "[trade_population]") {
+    auto scope = bond_scope();
+    scope.trades_per_book = 64;
+    std::size_t forwards = 0;
+    for (const auto& slot : plan_of(scope).slots) {
+        for (const auto& forward : slot.instruments.bond_forwards) {
+            REQUIRE(forward.forward_maturity_date.has_value());
+            const auto bond_maturity = std::format("{:%Y-%m-%d}", bond_of(slot).maturity_date);
+            INFO("forward " << *forward.forward_maturity_date << " bond " << bond_maturity);
+            CHECK(*forward.forward_maturity_date < bond_maturity);
+            ++forwards;
+        }
+    }
+    CHECK(forwards > 0u);
 }
 
 TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", "[trade_population]") {

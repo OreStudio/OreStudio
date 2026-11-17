@@ -33,7 +33,7 @@
       <PayCcy>USD</PayCcy>
     </FxPairwiseVarianceSwapData>
   </Trade>
-  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
+  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
     <TradeType>FxPairwiseVarianceSwap</TradeType>
     <FxPairwiseVarianceSwapData>
       <LongShort>Short</LongShort>
@@ -46,15 +46,15 @@
         <Value>0.2</Value>
       </UnderlyingStrikes>
       <UnderlyingNotionals>
-        <Value>18491.43</Value>
-        <Value>18491.43</Value>
+        <Value>39294.45</Value>
+        <Value>39294.45</Value>
       </UnderlyingNotionals>
-      <BasketNotional>36982.86</BasketNotional>
+      <BasketNotional>78588.9</BasketNotional>
       <BasketStrike>0.2</BasketStrike>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-09-02</StartDate>
-          <EndDate>2029-09-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2032-08-02</EndDate>
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -62,7 +62,7 @@
           <Rule>Forward</Rule>
         </Rules>
       </ValuationSchedule>
-      <SettlementDate>2029-09-07</SettlementDate>
+      <SettlementDate>2032-08-07</SettlementDate>
       <PayCcy>USD</PayCcy>
     </FxPairwiseVarianceSwapData>
   </Trade>

@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 107 types name an instrument table, and the generator records 107.
+- 109 types name an instrument table, and the generator records 109.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -172,7 +172,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =EquityVarianceSwap= | native | native | =EquityVarianceSwapData= | =equity_variance_swap_instrument= | yes | - | - | - |
 | =EquityWindowBarrierOption= | scripted | scripted | =EquityWindowBarrierOptionData= | =scripted_instrument= | yes | =WindowBarrierOption= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]] |
 | =EquityWorstOfBasketSwap= | scripted | scripted | =EquityWorstOfBasketSwapData= | =equity_swap_instrument= | yes | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
-| =EuropeanOptionBarrier= | scripted | scripted | =EuropeanOptionBarrierData= | - | no | - | - | [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
+| =EuropeanOptionBarrier= | scripted | scripted | =EuropeanOptionBarrierData= | =scripted_instrument= | yes | - | - | [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
 | =FlexiSwap= | native | native | =FlexiSwapData= | =rate_instrument= | yes | - | - | - |
 | =ForwardBond= | native | native | =ForwardBondData= | =bond_instrument= | yes | - | - | - |
 | =ForwardRateAgreement= | native | native | =ForwardRateAgreementData= | =rate_instrument= | yes | - | - | - |
@@ -202,7 +202,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =FxTouchOption= | native | native | =FxTouchOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
 | =FxVarianceSwap= | native | native | =FxVarianceSwapData= | =fx_variance_swap_instrument= | yes | - | - | - |
 | =FxWindowBarrierOption= | scripted | scripted | =FxWindowBarrierOptionData= | =scripted_instrument= | yes | =WindowBarrierOption= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]] |
-| =FxWorstOfBasketSwap= | scripted | scripted | =FxWorstOfBasketSwapData= | - | no | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
+| =FxWorstOfBasketSwap= | scripted | scripted | =FxWorstOfBasketSwapData= | =scripted_instrument= | yes | =WorstOfBasketSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
 | =IndexCreditDefaultSwap= | native | native | =IndexCreditDefaultSwapData= | =credit_instrument= | yes | - | - | - |
 | =IndexCreditDefaultSwapOption= | native | native | =IndexCreditDefaultSwapOptionData= | =credit_instrument= | yes | - | - | - |
 | =InflationSwap= | native | native | =InflationSwapData= | =rate_instrument= | yes | - | - | - |

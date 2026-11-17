@@ -147,14 +147,38 @@ public:
         out_.schedules.push_back(std::move(row));
     }
 
+    /// A schedule of the product's own, derived from another by a shift.
+    void derived_schedule(std::string role,
+                          std::string base,
+                          std::string shift,
+                          std::string calendar,
+                          std::string convention) {
+        domain::instrument_schedule row;
+        row.owner_role = "option";
+        row.owner_number = 1;
+        row.schedule_role = std::move(role);
+        row.sequence_number = 1;
+        row.schedule_kind = "derived";
+        row.base_schedule = std::move(base);
+        row.shift = std::move(shift);
+        row.calendar = std::move(calendar);
+        row.convention = std::move(convention);
+        out_.schedules.push_back(std::move(row));
+    }
+
     /// A schedule of the product's own, stated as a list of dates.
-    void dated_schedule(std::string role, const std::vector<ymd>& dates) {
+    void dated_schedule(std::string role,
+                        const std::vector<ymd>& dates,
+                        std::optional<std::string> calendar = std::nullopt,
+                        std::optional<std::string> convention = std::nullopt) {
         domain::instrument_schedule schedule;
         schedule.owner_role = "option";
         schedule.owner_number = 1;
         schedule.schedule_role = role;
         schedule.sequence_number = 1;
         schedule.schedule_kind = "dates";
+        schedule.calendar = std::move(calendar);
+        schedule.convention = std::move(convention);
         out_.schedules.push_back(std::move(schedule));
         int sequence = 0;
         for (const auto& date : dates) {
@@ -683,6 +707,114 @@ build_forward_volatility_agreement(std::string_view trade_type,
     out.value("PayCcy", "enumeration", terms.pay_currency.get());
     out.value("SettlementDate", "text", scripted_date(terms.settlement.get()));
     out.underlying("underlying", terms.underlying.get(), std::string(underlying_type));
+    return out.take();
+}
+
+european_option_barrier_builder::european_option_barrier_builder(
+    european_option_barrier_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result european_option_barrier_builder::build() const {
+    const auto& terms = terms_;
+    if (terms.pay_currency.get().empty() || terms.premium_currency.get().empty())
+        return std::unexpected(build_error{"pay_currency", "must name a currency"});
+    if (auto refusal = positive_amount("quantity", terms.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms.premium_amount.get() < decimal{})
+        return std::unexpected(build_error{"premium_amount", "must not be negative"});
+    if (auto refusal = barrier_refusal(terms.barrier.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms.settlement.get() < terms.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+
+    const std::string underlying_type =
+        terms.family.get() == scripted_family::equity ? "Equity" : "FX";
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("Quantity", "decimal", scripted_text(terms.quantity.get()));
+    out.value("PutCall", "text", option_type_of(terms.kind.get()));
+    out.value("LongShort", "enumeration", long_short_of(terms.position.get()));
+    out.value("Strike", "decimal", scripted_text(terms.strike.get()));
+    out.value("PremiumAmount", "decimal", scripted_text(terms.premium_amount.get()));
+    out.value("PremiumCurrency", "enumeration", terms.premium_currency.get());
+    out.value("PremiumDate", "text", scripted_date(terms.premium_date.get()));
+    out.value("OptionExpiry", "text", scripted_date(terms.expiry.get()));
+    out.value("BarrierLevel", "decimal", scripted_text(terms.barrier.get().level));
+    out.value("BarrierType", "text", terms.barrier.get().type);
+    out.value("BarrierStyle", "text", "European");
+    out.value("SettlementDate", "text", scripted_date(terms.settlement.get()));
+    out.value("PayCcy", "enumeration", terms.pay_currency.get());
+    out.underlying("optionunderlying", terms.option_underlying.get(), underlying_type);
+    out.underlying("barrierunderlying", terms.barrier_underlying.get(), underlying_type);
+    return out.take();
+}
+
+fx_worst_of_basket_swap_builder::fx_worst_of_basket_swap_builder(
+    fx_worst_of_basket_swap_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result fx_worst_of_basket_swap_builder::build() const {
+    const auto& terms = terms_;
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (terms.floating_index.get().empty())
+        return std::unexpected(build_error{"floating_index", "must name an index"});
+    if (auto refusal = positive_amount("quantity", terms.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    const auto& members = terms.members.get();
+    if (members.size() < 2)
+        return std::unexpected(build_error{"members", "a basket names at least two pairs"});
+    for (std::size_t i = 0; i < members.size(); ++i) {
+        if (auto refusal = positive_amount("initial_price", members[i].initial_price))
+            return std::unexpected(std::move(*refusal));
+        for (std::size_t j = 0; j < i; ++j)
+            if (members[j].underlying.uri() == members[i].underlying.uri())
+                return std::unexpected(build_error{"members", "names a pair twice"});
+    }
+    const auto& periods = terms.period_dates.get();
+    if (periods.size() < 2)
+        return std::unexpected(build_error{"period_dates", "must bound at least one period"});
+    for (std::size_t i = 1; i < periods.size(); ++i)
+        if (!(periods[i - 1] < periods[i]))
+            return std::unexpected(build_error{"period_dates", "must be in increasing order"});
+    const auto count = periods.size() - 1;
+    const auto& pays = terms.pay_dates.get();
+    if (pays.size() != count)
+        return std::unexpected(build_error{"pay_dates", "must state one date a period"});
+    for (std::size_t i = 0; i < count; ++i)
+        if (pays[i] < periods[i + 1])
+            return std::unexpected(build_error{"pay_dates", "must not be before the period ends"});
+    if (terms.knock_out_levels.get().size() != count ||
+        terms.fixed_trigger_levels.get().size() != count)
+        return std::unexpected(
+            build_error{"knock_out_levels", "the level lists must state one level a period"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("LongShort", "enumeration", long_short_of(terms.position.get()));
+    out.value("Currency", "enumeration", terms.currency.get());
+    out.value("Quantity", "decimal", scripted_text(terms.quantity.get()));
+    out.value("InitialFixedRate", "decimal", scripted_text(terms.initial_fixed_rate.get()));
+    std::vector<decimal> initial_prices;
+    for (const auto& member : members)
+        initial_prices.push_back(member.initial_price);
+    out.list("InitialPrices", "decimal", scripted_text(initial_prices));
+    out.list("KnockOutLevels", "decimal", scripted_text(terms.knock_out_levels.get()));
+    out.list("FixedTriggerLevels", "decimal", scripted_text(terms.fixed_trigger_levels.get()));
+    out.value("FixedRate", "decimal", scripted_text(terms.fixed_rate.get()));
+    out.value("BermudanKnockIn", "text", "false");
+    out.value("KnockInLevel", "decimal", scripted_text(terms.knock_in_level.get()));
+    out.value("AccumulatingFixedCoupons", "text", "false");
+    out.value("AccruingFixedCoupons", "text", "false");
+    out.value("FloatingIndex", "text", terms.floating_index.get());
+    out.value("FloatingSpread", "decimal", scripted_text(terms.floating_spread.get()));
+    out.value("FloatingDayCountFraction", "text", terms.floating_day_count.get());
+    out.value("Strike", "decimal", scripted_text(terms.strike.get()));
+    for (const auto& member : members)
+        out.underlying("underlying", member.underlying, "FX");
+    out.dated_schedule("floatingperiodschedule", periods, "TARGET", "MF");
+    out.dated_schedule("floatingpaydates", pays, "TARGET", "MF");
+    out.derived_schedule("floatingfixingschedule", "FloatingPeriodSchedule", "-2D", "TARGET", "P");
     return out.take();
 }
 

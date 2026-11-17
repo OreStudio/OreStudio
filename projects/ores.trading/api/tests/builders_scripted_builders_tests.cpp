@@ -584,3 +584,99 @@ TEST_CASE("a_basket_variance_swap_refuses_a_member_named_twice", scripted_tags) 
     REQUIRE_FALSE(built.has_value());
     CHECK(built.error().term == "members");
 }
+
+namespace {
+
+european_option_barrier_terms spx_on_ndx_barrier() {
+    return {.family = scripted_family::equity,
+            .option_underlying = scripted_equity(".SPX"),
+            .barrier_underlying = scripted_equity(".NDX"),
+            .quantity = scripted_amount("1000"),
+            .kind = option_kind::call,
+            .position = option_position::long_option,
+            .strike = scripted_amount("4000"),
+            .premium_amount = scripted_amount("0"),
+            .premium_currency = std::string("USD"),
+            .premium_date = 2026y / 1 / 7,
+            .expiry = 2027y / 1 / 5,
+            .barrier = scripted_barrier{.type = "DownAndOut", .level = scripted_amount("15000")},
+            .settlement = 2027y / 1 / 7,
+            .pay_currency = std::string("USD")};
+}
+
+fx_worst_of_basket_swap_terms spx_and_ndx_worst_of() {
+    return {
+        .members =
+            std::vector<worst_of_member>{
+                {.underlying = scripted_equity(".SPX"), .initial_price = scripted_amount("1.1")},
+                {.underlying = scripted_equity(".NDX"), .initial_price = scripted_amount("0.8")}},
+        .currency = std::string("USD"),
+        .quantity = scripted_amount("1000000"),
+        .initial_fixed_rate = scripted_amount("0.02"),
+        .period_dates = std::vector<year_month_day>{2026y / 1 / 5, 2026y / 7 / 6, 2027y / 1 / 5},
+        .pay_dates = std::vector<year_month_day>{2026y / 7 / 8, 2027y / 1 / 7},
+        .floating_index = std::string("USD-SOFR"),
+        .floating_spread = scripted_amount("0"),
+        .floating_day_count = std::string("A360"),
+        .knock_out_levels = std::vector<decimal>{scripted_amount("1"), scripted_amount("1")},
+        .fixed_trigger_levels =
+            std::vector<decimal>{scripted_amount("0.75"), scripted_amount("0.75")},
+        .fixed_rate = scripted_amount("0.05"),
+        .knock_in_level = scripted_amount("0.75"),
+        .strike = scripted_amount("1"),
+        .position = option_position::long_option};
+}
+
+}
+
+TEST_CASE("a_european_option_barrier_names_its_option_and_its_barrier_underlying", scripted_tags) {
+    const auto built = european_option_barrier_builder(spx_on_ndx_barrier()).build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->instrument_underlyings.size() == 2);
+    CHECK(built->instrument_underlyings[0].underlying_role == "optionunderlying");
+    CHECK(built->instrument_underlyings[1].underlying_role == "barrierunderlying");
+    CHECK(built->instrument_underlyings[0].underlying_type == "Equity");
+    const auto style = std::ranges::find_if(built->parameters,
+                                            [](const auto& p) { return p.name == "BarrierStyle"; });
+    REQUIRE(style != built->parameters.end());
+    CHECK(style->value == "European");
+}
+
+TEST_CASE("a_european_option_barrier_refuses_a_settlement_before_its_expiry", scripted_tags) {
+    auto terms = spx_on_ndx_barrier();
+    terms.settlement = 2027y / 1 / 1;
+    const auto built = european_option_barrier_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "settlement");
+}
+
+TEST_CASE("an_fx_worst_of_basket_swap_states_its_schedules_and_its_level_lists", scripted_tags) {
+    const auto built = fx_worst_of_basket_swap_builder(spx_and_ndx_worst_of()).build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->schedules.size() == 3);
+    const auto fixing = std::ranges::find_if(built->schedules, [](const auto& s) {
+        return s.schedule_role == "floatingfixingschedule";
+    });
+    REQUIRE(fixing != built->schedules.end());
+    CHECK(fixing->schedule_kind == "derived");
+    CHECK(fixing->base_schedule == "FloatingPeriodSchedule");
+    CHECK(built->schedule_dates.size() == 5u);
+    const auto levels = std::ranges::find_if(
+        built->parameters, [](const auto& p) { return p.name == "KnockOutLevels"; });
+    REQUIRE(levels != built->parameters.end());
+    CHECK(levels->shape == "vector");
+}
+
+TEST_CASE("an_fx_worst_of_basket_swap_refuses_level_lists_that_miss_a_period", scripted_tags) {
+    auto terms = spx_and_ndx_worst_of();
+    terms.knock_out_levels = std::vector<decimal>{scripted_amount("1")};
+    auto built = fx_worst_of_basket_swap_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "knock_out_levels");
+
+    terms = spx_and_ndx_worst_of();
+    terms.pay_dates = std::vector<year_month_day>{2026y / 7 / 1, 2027y / 1 / 7};
+    built = fx_worst_of_basket_swap_builder(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "pay_dates");
+}

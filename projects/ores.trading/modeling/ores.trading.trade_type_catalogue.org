@@ -94,7 +94,7 @@ absent: it is a placeholder, not a product.
 | FxBasketVarianceSwap | FX Basket Variance Swap |   | scripted | fx! | false | false | scripted_instrument |
 | FxAccumulator | FX Accumulator | forward | scripted | fx! | false | false | fx_accumulator_instrument |
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
-| FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false |  |
+| FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false | scripted_instrument |
 | FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | scripted_instrument |
 | FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | scripted_instrument |
 | FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | scripted_instrument |
@@ -177,7 +177,7 @@ absent: it is a placeholder, not a product.
 | ScriptedTrade | Scripted Trade (ORE generic payoff engine) |   | script |  | false | false | scripted_instrument |
 | Autocallable_01 | Autocallable (variant 01) |   | scripted |  | false | false | scripted_instrument |
 | DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | scripted_instrument |
-| EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false |  |
+| EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false | scripted_instrument |
 | PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | scripted_instrument |
 
 * Unsupported trade types

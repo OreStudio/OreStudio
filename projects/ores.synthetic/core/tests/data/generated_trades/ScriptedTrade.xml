@@ -63,7 +63,7 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
-  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
       <ScriptName>AsianBasketOption</ScriptName>
@@ -78,11 +78,11 @@
         </Number>
         <Number>
           <Name>Notional</Name>
-          <Value>5790664.33</Value>
+          <Value>2962620.02</Value>
         </Number>
         <Number>
           <Name>Strike</Name>
-          <Value>0.9115</Value>
+          <Value>1.009</Value>
         </Number>
         <Number>
           <Name>Weights</Name>
@@ -98,24 +98,24 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>EQ-RIC:.SPX</Value>
             <Value>EQ-RIC:.NDX</Value>
+            <Value>EQ-RIC:.STOXX50E</Value>
           </Values>
         </Index>
         <Event>
           <Name>Expiry</Name>
-          <Value>2032-09-02</Value>
+          <Value>2032-08-02</Value>
         </Event>
         <Event>
           <Name>Settlement</Name>
-          <Value>2032-11-02</Value>
+          <Value>2032-10-02</Value>
         </Event>
         <Event>
           <Name>ObservationDates</Name>
           <ScheduleData>
             <Rules>
               <StartDate>2026-01-02</StartDate>
-              <EndDate>2032-09-02</EndDate>
+              <EndDate>2032-08-02</EndDate>
               <Tenor>1M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>

@@ -22,26 +22,26 @@
       <PayoffAmount>1036903.28</PayoffAmount>
     </FxTouchOptionData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>FxTouchOption</TradeType>
     <FxTouchOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2026-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>UpAndIn</Type>
         <Levels>
-          <Level>0.7959</Level>
+          <Level>1.1548</Level>
         </Levels>
       </BarrierData>
       <ForeignCurrency>EUR</ForeignCurrency>
       <DomesticCurrency>USD</DomesticCurrency>
       <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>4253585.58</PayoffAmount>
+      <PayoffAmount>2449079.16</PayoffAmount>
     </FxTouchOptionData>
   </Trade>
 </Portfolio>

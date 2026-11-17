@@ -26,7 +26,7 @@
       <DomesticCurrency>USD</DomesticCurrency>
     </FxDigitalBarrierOptionData>
   </Trade>
-  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
     <TradeType>FxDigitalBarrierOption</TradeType>
     <FxDigitalBarrierOptionData>
       <OptionData>
@@ -35,18 +35,18 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2030-01-02</ExerciseDate>
+          <ExerciseDate>2030-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>UpAndOut</Type>
         <Levels>
-          <Level>1.5588</Level>
+          <Level>1.4809</Level>
         </Levels>
       </BarrierData>
       <FXIndex>FX-TR20H-EUR-USD</FXIndex>
-      <Strike>1.4171</Strike>
-      <PayoffAmount>3196000.35</PayoffAmount>
+      <Strike>1.3463</Strike>
+      <PayoffAmount>482126.28</PayoffAmount>
       <PayoffCurrency>USD</PayoffCurrency>
       <ForeignCurrency>EUR</ForeignCurrency>
       <DomesticCurrency>USD</DomesticCurrency>

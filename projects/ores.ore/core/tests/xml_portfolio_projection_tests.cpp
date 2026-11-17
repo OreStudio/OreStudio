@@ -3327,6 +3327,131 @@ TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_term
     check_fva(rebuild(items[2]));
 }
 
+TEST_CASE("a_european_option_barrier_and_an_fx_worst_of_hold_their_terms_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="SCRIPTED_EOB">
+    <TradeType>EuropeanOptionBarrier</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EuropeanOptionBarrierData>
+      <Quantity>1000000</Quantity>
+      <PutCall>Call</PutCall>
+      <LongShort>Long</LongShort>
+      <Strike>1.08</Strike>
+      <PremiumAmount>0</PremiumAmount>
+      <PremiumCurrency>USD</PremiumCurrency>
+      <PremiumDate>2022-02-02</PremiumDate>
+      <OptionExpiry>2023-01-31</OptionExpiry>
+      <OptionUnderlying><Type>FX</Type><Name>ECB-EUR-USD</Name></OptionUnderlying>
+      <BarrierUnderlying><Type>FX</Type><Name>ECB-GBP-USD</Name></BarrierUnderlying>
+      <BarrierLevel>0.98</BarrierLevel>
+      <BarrierType>DownAndOut</BarrierType>
+      <BarrierStyle>European</BarrierStyle>
+      <SettlementDate>2023-02-02</SettlementDate>
+      <PayCcy>USD</PayCcy>
+    </EuropeanOptionBarrierData>
+  </Trade>
+  <Trade id="SCRIPTED_WOBS_FX">
+    <TradeType>FxWorstOfBasketSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxWorstOfBasketSwapData>
+      <LongShort>Long</LongShort>
+      <Currency>EUR</Currency>
+      <Quantity>1000000</Quantity>
+      <InitialFixedRate>0.02</InitialFixedRate>
+      <Underlyings>
+        <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name></Underlying>
+        <Underlying><Type>FX</Type><Name>ECB-EUR-GBP</Name></Underlying>
+      </Underlyings>
+      <InitialPrices><InitialPrice>1.115</InitialPrice><InitialPrice>0.835</InitialPrice></InitialPrices>
+      <FloatingPeriodSchedule>
+        <Dates>
+          <Dates><Date>2022-01-31</Date><Date>2022-07-29</Date><Date>2023-01-31</Date></Dates>
+          <Calendar>TARGET</Calendar>
+          <Convention>MF</Convention>
+        </Dates>
+      </FloatingPeriodSchedule>
+      <FloatingPayDates>
+        <Dates>
+          <Dates><Date>2022-08-02</Date><Date>2023-02-02</Date></Dates>
+          <Calendar>TARGET</Calendar>
+          <Convention>MF</Convention>
+        </Dates>
+      </FloatingPayDates>
+      <FloatingIndex>EUR-EURIBOR-3M</FloatingIndex>
+      <FloatingSpread>0.0</FloatingSpread>
+      <FloatingDayCountFraction>Actual/360</FloatingDayCountFraction>
+      <FloatingFixingSchedule>
+        <DerivedSchedule>
+          <BaseSchedule>FloatingPeriodSchedule</BaseSchedule>
+          <Shift>-2D</Shift>
+          <Calendar>TARGET</Calendar>
+          <Convention>P</Convention>
+        </DerivedSchedule>
+      </FloatingFixingSchedule>
+      <KnockOutLevels><KnockOutLevel>1.0</KnockOutLevel><KnockOutLevel>1.0</KnockOutLevel></KnockOutLevels>
+      <FixedTriggerLevels><FixedTriggerLevel>0.75</FixedTriggerLevel><FixedTriggerLevel>0.75</FixedTriggerLevel></FixedTriggerLevels>
+      <FixedRate>0.05</FixedRate>
+      <BermudanKnockIn>false</BermudanKnockIn>
+      <KnockInLevel>0.75</KnockInLevel>
+      <AccumulatingFixedCoupons>false</AccumulatingFixedCoupons>
+      <AccruingFixedCoupons>false</AccruingFixedCoupons>
+      <Strike>1.0</Strike>
+    </FxWorstOfBasketSwapData>
+  </Trade>
+</Portfolio>)");
+    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) -> std::string {
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    const auto count_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) {
+        std::size_t n = 0;
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                for (const auto& v : data.parameter_values)
+                    if (v.parameter_sequence_number == p.sequence_number)
+                        ++n;
+        return n;
+    };
+    const auto check_barrier = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "BarrierStyle") == "European");
+        CHECK(value_of(*data, "BarrierLevel") == "0.98");
+        REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(data->instrument_underlyings[0].underlying_role == "optionunderlying");
+        CHECK(data->instrument_underlyings[1].underlying_role == "barrierunderlying");
+    };
+    const auto check_worst_of = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(count_of(*data, "InitialPrices") == 2u);
+        CHECK(count_of(*data, "KnockOutLevels") == 2u);
+        CHECK(value_of(*data, "FloatingIndex") == "EUR-EURIBOR-3M");
+        CHECK(value_of(*data, "BermudanKnockIn") == "false");
+        CHECK(data->instrument_underlyings.size() == 2u);
+        const auto fixing = std::ranges::find_if(data->schedules, [](const auto& s) {
+            return s.schedule_role == "floatingfixingschedule";
+        });
+        REQUIRE(fixing != data->schedules.end());
+        CHECK(fixing->shift == std::optional<std::string>("-2D"));
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "floatingpaydates"));
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_barrier(items[0]);
+    check_barrier(rebuild(items[0]));
+    check_worst_of(items[1]);
+    check_worst_of(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

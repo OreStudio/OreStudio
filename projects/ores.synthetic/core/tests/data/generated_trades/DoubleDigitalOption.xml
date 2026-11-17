@@ -22,24 +22,24 @@
       <PayCcy>EUR</PayCcy>
     </DoubleDigitalOptionData>
   </Trade>
-  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
     <TradeType>DoubleDigitalOption</TradeType>
     <DoubleDigitalOptionData>
-      <Expiry>2032-08-02</Expiry>
-      <Settlement>2032-10-02</Settlement>
-      <BinaryPayout>2962620.02</BinaryPayout>
-      <BinaryLevel1>1.009</BinaryLevel1>
-      <BinaryLevel2>1.2108</BinaryLevel2>
+      <Expiry>2029-01-02</Expiry>
+      <Settlement>2029-03-02</Settlement>
+      <BinaryPayout>3051825.57</BinaryPayout>
+      <BinaryLevel1>1.0251</BinaryLevel1>
+      <BinaryLevel2>1.2301</BinaryLevel2>
       <Type1>Call</Type1>
       <Type2>Put</Type2>
       <Position>Short</Position>
       <Underlying1>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying1>
       <Underlying2>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying2>
       <PayCcy>EUR</PayCcy>
     </DoubleDigitalOptionData>

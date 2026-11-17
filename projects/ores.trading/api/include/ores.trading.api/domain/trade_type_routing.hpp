@@ -131,6 +131,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::fx_accumulator_instrument;
     if (trade_type == "FxTaRF")
         return instrument_table::fx_asian_forward_instrument;
+    if (trade_type == "FxWorstOfBasketSwap")
+        return instrument_table::scripted_instrument;
     if (trade_type == "FxBestEntryOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "FxBasketOption")
@@ -278,6 +280,8 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "Autocallable_01")
         return instrument_table::scripted_instrument;
     if (trade_type == "DoubleDigitalOption")
+        return instrument_table::scripted_instrument;
+    if (trade_type == "EuropeanOptionBarrier")
         return instrument_table::scripted_instrument;
     if (trade_type == "PerformanceOption_01")
         return instrument_table::scripted_instrument;

@@ -74,6 +74,8 @@ using all_builders =
                pairwise_variance_swap_builder<scripted_family::fx>,
                forward_volatility_agreement_builder<scripted_family::equity>,
                forward_volatility_agreement_builder<scripted_family::fx>,
+               european_option_barrier_builder,
+               fx_worst_of_basket_swap_builder,
                fx_forward_builder,
                fx_swap_builder,
                fx_option_builder,

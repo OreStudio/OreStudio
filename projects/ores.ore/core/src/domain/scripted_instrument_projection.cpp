@@ -95,6 +95,8 @@ constexpr class_read_product class_read_products[] = {
     {"FxPairwiseVarianceSwap", "FxPairwiseVarianceSwapData"},
     {"EquityForwardVolatilityAgreement", "EquityForwardVolatilityAgreementData"},
     {"FxForwardVolatilityAgreement", "FxForwardVolatilityAgreementData"},
+    {"EuropeanOptionBarrier", "EuropeanOptionBarrierData"},
+    {"FxWorstOfBasketSwap", "FxWorstOfBasketSwapData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {

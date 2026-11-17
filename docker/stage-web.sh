@@ -83,6 +83,16 @@ done
 # alone are 28 MB of the staged tree, and the image serves only compiled code.
 find "$stage" -name '*.map' -delete
 
+# The image carries the packages without the declaration that names the
+# release, so the staged tree states it and the service heartbeat reports the
+# release it was built from instead of reporting nothing.
+release="$(sed -n 's/^project([^ ]* VERSION \([0-9][0-9.]*\).*/\1/p' "$root/CMakeLists.txt" | head -1)"
+if [[ -z "$release" ]]; then
+    echo "Error: $root/CMakeLists.txt declares no release" >&2
+    exit 1
+fi
+printf '%s\n' "$release" > "$stage/version"
+
 echo "Staged web service:"
 du -sh "$stage" "$stage/node_modules" "$stage/packages/bff/dist" \
     "$stage/packages/web/dist" 2>/dev/null

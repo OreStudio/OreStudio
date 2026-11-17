@@ -153,4 +153,22 @@ describe('the release the heartbeat reports', () => {
     it('says unknown when the tree declares none', () => {
         expect(releaseVersion(mkdtempSync(join(tmpdir(), 'release-')))).toBe('unknown');
     });
+
+    it('reads the release a staged tree carries in its version file', () => {
+        const staged = mkdtempSync(join(tmpdir(), 'release-'));
+        writeFileSync(join(staged, 'version'), '0.0.30\n');
+
+        expect(releaseVersion(staged)).toBe('0.0.30');
+    });
+
+    it('prefers the staged release over a declaration beside it', () => {
+        const staged = mkdtempSync(join(tmpdir(), 'release-'));
+        writeFileSync(join(staged, 'version'), '0.0.30\n');
+        writeFileSync(
+            join(staged, 'CMakeLists.txt'),
+            'project(OreStudio VERSION 9.9.9 LANGUAGES CXX)\n',
+        );
+
+        expect(releaseVersion(staged)).toBe('0.0.30');
+    });
 });

@@ -28,11 +28,11 @@ imported back unchanged.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -49,9 +49,22 @@ imported back unchanged.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The option rows hold one block a trade, and this product states one a batch,
+so the batches need rows of their own. The equity position option underlyings
+already hold an option position's entries, the same shape less a few terms,
+so both product kinds share them.
+
+- =equity_position_instrument= gains =volatility=, =drift_rate=,
+  =observation_start_date= and =payment_date=, all optional.
+- =equity_position_option_underlying= gains =currency=, =strike_currency=,
+  =quantity=, =premium_amount=, =premium_currency= and =premium_pay_date=, all
+  optional. ORE requires exactly one premium a batch.
+- The codegen regenerates both entities across SQL, domain, mappers,
+  repositories, services, shell commands and wire types.
+- The projection reads a batch's premium from =Premiums= or from the legacy
+  =PremiumAmount= form, and writes =Premiums=.
+- =equity_auto_delta_hedged_option_builder=; the equity planner books a call
+  and a put at the level on the slot's equity.
 
 * Measurements
 
@@ -65,7 +78,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4692 cases pass | =./ores.trading.api.tests= | this branch |
+| trading core tests | 252 cases pass | =./ores.trading.core.tests= | this branch |
+| shell trading tests | 1330 cases pass | =./ores.shell.trading.tests= | this branch |
+| ore core tests | 561 cases pass | =./ores.ore.core.tests= | this branch |
+| synthetic tests, not generated | 140 cases pass | =./ores.synthetic.core.tests "~[generated]"= | this branch |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | this branch |
 
 * Notes
 
@@ -97,3 +115,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+EquityAutoDeltaHedgedOption is held natively: the hedge's terms on the equity
+position row, each batch a row with its option terms, name, currency, strike,
+strike currency, quantity and premium. The round-trip test reads the user
+guide's example, with both premium forms and an optional strike currency, and
+writes it back. The type has a builder, the catalogue routes it, and the
+generator books one trade of it. The ORE engine builds the recorded trades with
+no error of the trade kind; it raises an engine configuration error, because
+ORE's Products example configuration names no engine for it, which the known
+list holds and the valuation story owns.
+
+The first engine run refused the trades for want of a premium a batch, which
+the premium columns answer.

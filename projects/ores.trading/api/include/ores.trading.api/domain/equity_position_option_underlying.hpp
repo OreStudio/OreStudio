@@ -183,7 +183,7 @@ struct equity_position_option_underlying final {
      * it; an option position's entries leave it null, as the position states one quantity for all
      * of them.
      */
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
 
     /**
      * @brief The premium paid for the entry's options, as its option's premium states it. ORE

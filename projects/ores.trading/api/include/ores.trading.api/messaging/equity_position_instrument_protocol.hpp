@@ -57,7 +57,7 @@ struct equity_position_instrument_write {
     std::string currency;
     double quantity{};
     std::optional<ores::utility::decimal::decimal> price;
-    std::optional<ores::utility::decimal::decimal> volatility;
+    std::optional<double> volatility;
     std::optional<ores::utility::decimal::decimal> drift_rate;
     std::optional<std::chrono::year_month_day> observation_start_date;
     std::optional<std::chrono::year_month_day> payment_date;

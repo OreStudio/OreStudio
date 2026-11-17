@@ -67,7 +67,7 @@ struct equity_position_option_underlying_entity {
     std::optional<std::chrono::year_month_day> exercise_date;
     std::optional<std::string> currency;
     std::optional<std::string> strike_currency;
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
     std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<std::string> premium_currency;
     std::optional<std::chrono::year_month_day> premium_pay_date;

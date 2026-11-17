@@ -48,7 +48,7 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     "currency" text null,
     "quantity" double precision not null,
     "price" numeric(38, 12) null,
-    "volatility" numeric(38, 12) null,
+    "volatility" double precision null,
     "drift_rate" numeric(38, 12) null,
     "observation_start_date" date null,
     "payment_date" date null,

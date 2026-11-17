@@ -85,7 +85,7 @@ struct equity_position_instrument final {
      * @brief The volatility an auto delta hedged option's hedge is run at, as its Volatility states
      * it; other positions leave it null.
      */
-    std::optional<ores::utility::decimal::decimal> volatility;
+    std::optional<double> volatility;
 
     /**
      * @brief The drift an auto delta hedged option's hedge assumes, as its DriftRate states it.

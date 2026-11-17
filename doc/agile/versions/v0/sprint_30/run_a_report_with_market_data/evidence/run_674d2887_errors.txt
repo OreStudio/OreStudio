@@ -23,4 +23,4 @@ total                                          |    416 |    416 |
 # The indices the "index not in the market" rows name, with their error counts:
 # GBP-LIBOR-3M/6M 47, GBP-SONIA-3M/6M 45, GBP-LIBOR-1W 15, EUR-EURIBOR-3M/6M 13,
 # USD-LIBOR-3M/6M 8, GBP-SONIA (yield curve / ibor index) 5. 70 of the 148 name a
-# ceased LIBOR index.
+# LIBOR index, which the system generates; see the task's notes for the causes.

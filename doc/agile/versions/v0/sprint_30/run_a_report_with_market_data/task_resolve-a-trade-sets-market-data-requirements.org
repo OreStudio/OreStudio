@@ -130,7 +130,7 @@ task and name that file in the Command column.
 No address resolves, even under the system party, which holds 301,650
 fixings. The trades name term SONIA (=name=SONIA&tenor=3M=), while the
 public SONIA series is the overnight index (=name=SONIA=, no tenor). They
-also name ceased LIBOR, equities, commodities, inflation indices and
+also name LIBOR tenors the bootstrap does not build, equities, commodities, inflation indices and
 credit curves, and no series exists for any of them. The three types that
 resolve to nothing hold bare ORE names, so their builders do not yet write
 addresses.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/calibrate-the-expiries-a-surface-has
+#+pr: 4809
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The calibration refuses a surface the moment one expiry lacks the pillars SSVI n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,18 @@ The calibration refuses a surface the moment one expiry lacks the pillars SSVI n
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *Where the surface was voided.* =prepare_calibration= refused the whole surface as soon as one
+  expiry was short of the pillars SSVI needs, unquoted pillars included. A pair whose sample did
+  not reach 10Y had no surface at all.
+- *Fit what has quotes.* An expiry short of its pillars is now left out of the fit and named in
+  =unfitted_expiries=, with why; its pillars stay in =missing=, which the calibration record
+  writes as =missing_pillars=.
+- *Refuse below a minimum.* A surface that fits fewer than =minimum_expiries= is refused, naming
+  how many it fitted and why the others were left out. The minimum is a named setting of the
+  calibration service, three, beside =pillar_tolerance=; "Give each party the configuration its
+  surface is built with" moves both into the party's configuration.
+- *The output carries only what was fitted.* The grid leaves out an unfitted expiry and any
+  expiry past the longest fitted one, so a surface never quotes past its data.
 
 * Measurements
 
@@ -57,7 +66,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A 1M/1Y/2Y recipe with 1Y short of a butterfly, minimum 2 | fits 1M and 2Y, names 1Y | the plan test | this branch over origin/main |
+| The same with minimum 3 | refused: "fits 2 expiry(ies), fewer than the 3", naming 1Y | the plan test | this branch over origin/main |
+| A recipe whose 2Y has no quote | fits 1M and 1Y; the grid 1M, 6M, 2Y carries 1M and 6M; SSVI calibrates | the plan test | this branch over origin/main |
+| Marketdata service suite | passed | =compass test run -- -R ores.marketdata.service.tests= | this branch over origin/main |
 
 * Notes
 
@@ -76,12 +88,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4809][#4809]] | [marketdata] Calibrate the expiries a surface has and name the rest |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Claude review: the reason no longer names the unquoted points | fx_vol_surface_calibration_plan.cpp | Accept | It names them, such as "1Y: too few pillars for SSVI without 1Y/25BF". |
+| 2 | Claude review: no test of a grid expiry inside a gap | plan tests | Accept | The short-1Y case keeps 6M, between the fitted 1M and 2Y. |
+| 3 | Claude review: check the fit's reach before reading a grid expiry's terms | fx_vol_surface_calibration_plan.cpp | Decline | The reach is compared on the expiry's years, which come from its terms. |
+| 4 | Claude review: a minimum of zero leaves an empty grid | fx_vol_surface_calibration_service.hpp | Decline | The minimum is 3; noted on the configuration task, which must refuse below 1. |
+| 5 | Claude review: "expiry(ies)" reads awkwardly | fx_vol_surface_calibration_plan.cpp | Accept | "2 expiries fitted, 3 needed". |
+| 6 | Claude review: test missing after a skip, and the boundary | plan tests | Accept | missing holds 1Y/25BF; two fitted at a minimum of two passes. |
 
 * Result
+
+A surface fits the expiries that have their pillars and names the rest: an expiry short of what
+SSVI needs is left out and listed in =unfitted_expiries=, its pillars in =missing_pillars=, and
+the output grid stops at the longest expiry the fit covers. A surface is refused only below the
+minimum of three fitted expiries, naming how many it had and why the others went. With the
+reach task, a pair whose sample stops short of 10Y can now have a surface out to where it stops.

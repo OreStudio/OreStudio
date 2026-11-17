@@ -51,6 +51,10 @@ public:
     /// The largest error of a pillar, in volatility, that is not reported: a tenth of a point.
     static constexpr double pillar_tolerance = 0.001;
 
+    /// The fewest expiries a surface is published with: below this its term structure is too
+    /// thin to read, and the calibration is refused.
+    static constexpr std::size_t minimum_expiries = 3;
+
     [[nodiscard]] static ores::marketdata::messaging::calibrate_fx_vol_surface_response
     calibrate(const ores::database::context& ctx,
               const ores::marketdata::messaging::calibrate_fx_vol_surface_request& request);

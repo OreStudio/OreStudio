@@ -317,7 +317,8 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                     const checked_recipe& checked,
                     const surface_forward_set& forwards,
                     const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
-                    double pillar_tolerance) {
+                    double pillar_tolerance,
+                    std::size_t minimum_expiries) {
     if (!(forwards.spot > 0.0))
         return std::unexpected("the forward set " + forwards.publish_id + " has no spot");
     // A forward ladder carries the settlement run-up as well as the discounts: an overnight or
@@ -338,6 +339,8 @@ prepare_calibration(const surface_calibration_recipe& recipe,
 
     prepared_surface_calibration out;
     out.request.pillar_tolerance = pillar_tolerance;
+    std::set<std::string> unfitted;
+    double longest_fitted = 0.0;
     for (const auto& expiry : checked.expiries) {
         const auto terms = terms_at(recipe, forwards, by_date, expiry.code, expiry.period);
         if (!terms)
@@ -397,23 +400,38 @@ prepare_calibration(const surface_calibration_recipe& recipe,
             out.sources_by_point.emplace(point, std::move(used));
             quoted.pillars.push_back(std::move(fit));
         }
+        // An expiry the quotes cannot fit is left out and named, rather than voiding the
+        // surface: the expiries that do have their pillars still make a surface.
         if (!ssvi_has_enough(atm, risk_reversals, butterflies)) {
-            std::string what = "expiry " + expiry.code +
-                               " lacks the pillars SSVI needs once the unquoted ones are left out";
-            for (const auto& m : out.missing)
-                if (std::ranges::find(unquoted, m.point) != unquoted.end()) {
-                    what += "; " + m.point + " had no quote from";
-                    for (const auto& id : m.series_ids)
-                        what += " " + boost::uuids::to_string(id);
-                }
-            return std::unexpected(what);
+            std::string why;
+            for (const auto& point : unquoted)
+                why += (why.empty() ? "" : ", ") + point;
+            out.unfitted_expiries.push_back(expiry.code +
+                                            (quoted.pillars.empty() ?
+                                                 ": no pillar quoted" :
+                                                 ": too few pillars for SSVI without " + why));
+            unfitted.insert(expiry.code);
+            continue;
         }
+        longest_fitted = std::max(longest_fitted, quoted.years);
         out.request.expiries.push_back(std::move(quoted));
     }
+    if (out.request.expiries.size() < minimum_expiries) {
+        std::string what = std::to_string(out.request.expiries.size()) + " expiries fitted, " +
+                           std::to_string(minimum_expiries) + " needed";
+        for (const auto& u : out.unfitted_expiries)
+            what += "; " + u;
+        return std::unexpected(what);
+    }
     for (const auto& grid : checked.grid_expiries) {
+        if (unfitted.contains(grid.code))
+            continue;
         const auto terms = terms_at(recipe, forwards, by_date, grid.code, grid.period);
         if (!terms)
             return std::unexpected(terms.error());
+        // The grid reaches no further than the longest expiry the fit covers.
+        if (terms->years > longest_fitted)
+            continue;
         out.request.grid_expiries.push_back({.expiry_id = grid.code,
                                              .years = terms->years,
                                              .market = terms->market,

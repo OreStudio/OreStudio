@@ -61,6 +61,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- From the review of #4809: the minimum of fitted expiries must be refused below 1 when it
+  becomes the party's setting; at 0 the grid would be empty.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

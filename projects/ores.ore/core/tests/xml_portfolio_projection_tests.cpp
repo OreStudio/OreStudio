@@ -3279,16 +3279,6 @@ TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_term
                 return p.value.value_or("");
         return "<absent>";
     };
-    const auto list_of = [](const ores::trading::domain::scripted_instrument_data& data,
-                            std::string_view name) {
-        std::vector<std::string> values;
-        for (const auto& p : data.parameters)
-            if (p.name == name)
-                for (const auto& v : data.parameter_values)
-                    if (v.parameter_sequence_number == p.sequence_number)
-                        values.push_back(v.value);
-        return values;
-    };
     const auto check_basket = [&](const ores::ore::xml::trade_import_item& item) {
         const auto* data = scripted_data_of(item.instrument);
         REQUIRE(data != nullptr);

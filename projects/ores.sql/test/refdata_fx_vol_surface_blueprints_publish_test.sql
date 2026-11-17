@@ -73,7 +73,7 @@ from ores_refdata_fx_vol_surface_pillar_sources_tbl s
 join t_pillars p on p.id = s.pillar_id
 where s.valid_to = ores_utility_infinity_timestamp_fn();
 
-select is((select count(*)::int from t_derived_pairs), 10, 'the derived source quotes ten pairs');
+select is((select count(*)::int from t_derived_pairs), 35, 'the derived source quotes thirty-five pairs');
 
 select set_eq(
     $$select base, quote from t_derived_pairs$$,
@@ -89,9 +89,9 @@ select is(
 
 select is(
     (select count(*)::int from t_blueprints b
-     where (select count(*) from t_pillars p where p.blueprint_id = b.id) <> 35),
+     where (select count(*) from t_pillars p where p.blueprint_id = b.id) <> 65),
     0,
-    'every blueprint has 35 pillars');
+    'every blueprint has 65 pillars: five labels at each of thirteen expiries');
 
 select is(
     (select count(*)::int from (
@@ -178,13 +178,13 @@ insert into ores_marketdata_market_series_tbl (
 values (
     'b1a5e0c3-9f2d-4c8e-a6b7-0d1e2f3a4b5c', ores_utility_system_tenant_id_fn(), 0,
     (select id from t_party),
-    'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=SEK',
+    'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=PLN',
     'volatility', 'derived', 'FX_VOL_DERIVATION', 'fefdf018-d882-5c4e-bd27-2aeedfcad9c9', 1,
     current_user, current_user, 'system.new_record', 'The series the derived feed wrote first');
 
 select is(
     (select quotes_series_id from ores_marketdata_publish_surface_series_fn(
-        ores_utility_system_tenant_id_fn(), (select id from t_party), 'EUR', 'SEK', 'EURSEK_SSVI')),
+        ores_utility_system_tenant_id_fn(), (select id from t_party), 'EUR', 'PLN', 'EURPLN_SSVI')),
     'b1a5e0c3-9f2d-4c8e-a6b7-0d1e2f3a4b5c'::uuid,
     'a blueprint names the series the derived feed created first');
 

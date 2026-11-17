@@ -28,32 +28,32 @@
       <KnockInPrice>1388.65</KnockInPrice>
     </EquityOutperformanceOptionData>
   </Trade>
-  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>EquityOutperformanceOption</TradeType>
     <EquityOutperformanceOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2032-12-02</ExerciseDate>
+          <ExerciseDate>2032-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Currency>EUR</Currency>
-      <Notional>9919657.76</Notional>
+      <Currency>USD</Currency>
+      <Notional>2621254.1</Notional>
       <Underlying1>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying1>
       <Underlying2>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying2>
-      <InitialPrice1>4404.18</InitialPrice1>
-      <InitialPrice2>4844.6</InitialPrice2>
+      <InitialPrice1>814.14</InitialPrice1>
+      <InitialPrice2>895.55</InitialPrice2>
       <StrikeReturn>0.01</StrikeReturn>
-      <KnockInPrice>4624.39</KnockInPrice>
+      <KnockInPrice>854.85</KnockInPrice>
     </EquityOutperformanceOptionData>
   </Trade>
 </Portfolio>

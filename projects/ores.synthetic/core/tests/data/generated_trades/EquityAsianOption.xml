@@ -33,17 +33,17 @@
       </ObservationDates>
     </EquityAsianOptionData>
   </Trade>
-  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
     <TradeType>EquityAsianOption</TradeType>
     <EquityAsianOptionData>
-      <Currency>USD</Currency>
-      <Quantity>6508.96</Quantity>
+      <Currency>EUR</Currency>
+      <Quantity>166.76</Quantity>
       <StrikeData>
-        <Value>1342.37</Value>
+        <Value>1138.67</Value>
       </StrikeData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
@@ -51,13 +51,13 @@
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
         <ExerciseDates>
-          <ExerciseDate>2029-12-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-12-02</StartDate>
-          <EndDate>2029-12-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2027-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>

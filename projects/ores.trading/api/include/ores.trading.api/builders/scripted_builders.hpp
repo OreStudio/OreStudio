@@ -322,6 +322,80 @@ private:
     strike_resettable_option_terms terms_;
 };
 
+
+/// One barrier: its type as ORE spells it, such as DownAndOut, and its level.
+struct scripted_barrier final {
+    std::string type;
+    utility::decimal::decimal level;
+};
+
+/// An option whose barrier is watched only between two dates.
+struct window_barrier_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> fixing_amount;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> window_start;
+    required<std::chrono::year_month_day> window_end;
+    required<scripted_barrier> barrier;
+};
+
+/// Builds the product's rows; the underlying type is the family's, Equity or FX.
+ORES_TRADING_API_EXPORT scripted_result
+build_window_barrier_option(std::string_view trade_type,
+                            std::string_view underlying_type,
+                            const window_barrier_option_terms& terms);
+
+template <scripted_family Family>
+class window_barrier_option_builder final {
+public:
+    static constexpr std::string_view trade_type =
+        Family == scripted_family::equity ? "EquityWindowBarrierOption" : "FxWindowBarrierOption";
+    explicit window_barrier_option_builder(window_barrier_option_terms terms)
+        : terms_(std::move(terms)) {}
+    [[nodiscard]] scripted_result build() const {
+        return build_window_barrier_option(
+            trade_type, Family == scripted_family::equity ? "Equity" : "FX", terms_);
+    }
+
+private:
+    window_barrier_option_terms terms_;
+};
+
+/**
+ * @brief A vanilla option on an equity with barriers watched on a schedule.
+ *
+ * The barriers are monitored daily from the monitoring start to the expiry.
+ * The kiko type says how a knock-in and a knock-out interact, and is stated
+ * when the barriers hold both.
+ */
+struct generic_barrier_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> pay_currency;
+    required<utility::decimal::decimal> quantity;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+    required<std::chrono::year_month_day> monitoring_start;
+    required<std::vector<scripted_barrier>> barriers;
+    std::optional<std::string> kiko_type;
+};
+
+class ORES_TRADING_API_EXPORT equity_generic_barrier_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityGenericBarrierOption";
+    explicit equity_generic_barrier_option_builder(generic_barrier_option_terms terms);
+    [[nodiscard]] scripted_result build() const;
+
+private:
+    generic_barrier_option_terms terms_;
+};
+
 }
 
 #endif

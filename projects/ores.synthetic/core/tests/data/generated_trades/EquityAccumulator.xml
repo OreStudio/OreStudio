@@ -45,25 +45,25 @@
       </Barriers>
     </EquityAccumulatorData>
   </Trade>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>EquityAccumulator</TradeType>
     <EquityAccumulatorData>
-      <Currency>USD</Currency>
-      <FixingAmount>26926.88</FixingAmount>
-      <Strike>209.18</Strike>
+      <Currency>EUR</Currency>
+      <FixingAmount>237.84</FixingAmount>
+      <Strike>4264.72</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayoffType>Accumulator</PayoffType>
       </OptionData>
-      <StartDate>2026-01-02</StartDate>
+      <StartDate>2025-11-02</StartDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2026-01-02</StartDate>
-          <EndDate>2035-01-02</EndDate>
+          <StartDate>2025-11-02</StartDate>
+          <EndDate>2028-11-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </ObservationDates>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>209.18</RangeTo>
+          <RangeTo>4264.72</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>209.18</RangeFrom>
+          <RangeFrom>4264.72</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>230.1</Level>
+            <Level>4691.19</Level>
           </Levels>
         </BarrierData>
       </Barriers>

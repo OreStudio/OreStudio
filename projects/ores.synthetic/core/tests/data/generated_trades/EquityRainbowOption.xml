@@ -29,21 +29,21 @@
       <Settlement>2027-10-02</Settlement>
     </EquityRainbowOptionData>
   </Trade>
-  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
+  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
     <TradeType>EquityRainbowOption</TradeType>
     <EquityRainbowOptionData>
-      <Currency>USD</Currency>
-      <Notional>3219.66</Notional>
-      <Strike>1628.28</Strike>
+      <Currency>EUR</Currency>
+      <Notional>1879.19</Notional>
+      <Strike>8364.14</Strike>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:DHER.DE</Name>
           <Weight>1</Weight>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.SPX</Name>
+          <Name>RIC:.STOXX50E</Name>
           <Weight>1</Weight>
         </Underlying>
       </Underlyings>
@@ -52,10 +52,10 @@
         <OptionType>Put</OptionType>
         <PayoffType>MaxRainbow</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2032-10-02</ExerciseDate>
+          <ExerciseDate>2032-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Settlement>2032-10-02</Settlement>
+      <Settlement>2032-08-02</Settlement>
     </EquityRainbowOptionData>
   </Trade>
 </Portfolio>

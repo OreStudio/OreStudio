@@ -7,15 +7,12 @@ EquityBasketVarianceSwap
 EquityDoubleTouchOption
 EquityForwardVolatilityAgreement
 EquityFutureOption
-EquityGenericBarrierOption
 EquityPairwiseVarianceSwap
-EquityWindowBarrierOption
 EuropeanOptionBarrier
 FxAsianOption
 FxBasketVarianceSwap
 FxForwardVolatilityAgreement
 FxPairwiseVarianceSwap
-FxWindowBarrierOption
 FxWorstOfBasketSwap
 RateDigitalOption
 SwaptionStraddle

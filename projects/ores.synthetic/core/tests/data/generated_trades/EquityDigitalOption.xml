@@ -19,23 +19,23 @@
       <Quantity>4132.38</Quantity>
     </EquityDigitalOptionData>
   </Trade>
-  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
     <TradeType>EquityDigitalOption</TradeType>
     <EquityDigitalOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2029-01-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>2442.99</Strike>
-      <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>4801709.49</PayoffAmount>
-      <Name>RIC:.SPX</Name>
-      <Quantity>1965.51</Quantity>
+      <Strike>4255.09</Strike>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <PayoffAmount>7492174.07</PayoffAmount>
+      <Name>RIC:.STOXX50E</Name>
+      <Quantity>1760.76</Quantity>
     </EquityDigitalOptionData>
   </Trade>
 </Portfolio>

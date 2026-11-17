@@ -45,21 +45,21 @@
       </Barriers>
     </FxTaRFData>
   </Trade>
-  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
     <TradeType>FxTaRF</TradeType>
     <FxTaRFData>
       <Currency>USD</Currency>
-      <FixingAmount>2449079.16</FixingAmount>
-      <TargetAmount>244907.92</TargetAmount>
-      <Strike>1.0498</Strike>
+      <FixingAmount>3196000.35</FixingAmount>
+      <TargetAmount>319600.04</TargetAmount>
+      <Strike>1.4171</Strike>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2026-08-02</EndDate>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2030-01-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>1.0498</RangeTo>
+          <RangeTo>1.4171</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>1.0498</RangeFrom>
+          <RangeFrom>1.4171</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>244907.92</Level>
+            <Level>319600.04</Level>
           </Levels>
         </BarrierData>
       </Barriers>

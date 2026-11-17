@@ -35,33 +35,49 @@
       </Underlying>
     </FxBestEntryOptionData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
     <TradeType>FxBestEntryOption</TradeType>
     <FxBestEntryOptionData>
       <LongShort>Short</LongShort>
       <Currency>USD</Currency>
-      <Notional>7267341.12</Notional>
+      <Notional>4607772.6</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.2</Cap>
       <Strike>1</Strike>
       <TriggerLevel>0.98</TriggerLevel>
       <ResetMinimum>0.95</ResetMinimum>
       <Premium>0</Premium>
-      <ExpiryDate>2027-11-02</ExpiryDate>
-      <StrikeDate>2025-11-02</StrikeDate>
-      <PremiumDate>2025-11-02</PremiumDate>
-      <SettlementDate>2027-11-02</SettlementDate>
+      <ExpiryDate>2031-10-02</ExpiryDate>
+      <StrikeDate>2025-10-02</StrikeDate>
+      <PremiumDate>2025-10-02</PremiumDate>
+      <SettlementDate>2031-10-02</SettlementDate>
       <StrikeObservationDates>
         <Dates>
           <Dates>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-04</Date>
-            <Date>2026-08-03</Date>
-            <Date>2026-11-02</Date>
-            <Date>2027-02-02</Date>
-            <Date>2027-05-03</Date>
-            <Date>2027-08-02</Date>
-            <Date>2027-11-02</Date>
+            <Date>2026-01-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-04</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-04</Date>
+            <Date>2028-01-03</Date>
+            <Date>2028-04-03</Date>
+            <Date>2028-07-03</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+            <Date>2030-01-02</Date>
+            <Date>2030-04-02</Date>
+            <Date>2030-07-02</Date>
+            <Date>2030-10-02</Date>
+            <Date>2031-01-02</Date>
+            <Date>2031-04-02</Date>
+            <Date>2031-07-02</Date>
+            <Date>2031-10-02</Date>
           </Dates>
         </Dates>
       </StrikeObservationDates>

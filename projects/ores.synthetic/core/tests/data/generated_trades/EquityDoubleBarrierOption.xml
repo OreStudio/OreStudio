@@ -25,29 +25,29 @@
       <Quantity>1132.2</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
     <TradeType>EquityDoubleBarrierOption</TradeType>
     <EquityDoubleBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2031-08-02</ExerciseDate>
+          <ExerciseDate>2030-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>1743.96</Level>
-          <Level>2131.5</Level>
+          <Level>2250.78</Level>
+          <Level>2750.96</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.NDX</Name>
-      <Currency>USD</Currency>
-      <Strike>1937.73</Strike>
-      <Quantity>1887.83</Quantity>
+      <Name>RIC:DHER.DE</Name>
+      <Currency>EUR</Currency>
+      <Strike>2500.87</Strike>
+      <Quantity>2265.97</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
 </Portfolio>

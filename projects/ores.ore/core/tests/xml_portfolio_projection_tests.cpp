@@ -3062,6 +3062,131 @@ TEST_CASE("a_best_entry_and_a_strike_resettable_hold_their_terms_and_observation
     check_strike_resettable(rebuild(items[1]));
 }
 
+TEST_CASE("a_window_and_a_generic_barrier_hold_their_barriers_schedule_and_kiko_type_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="SCRIPTED_WBO_FX">
+    <TradeType>FxWindowBarrierOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxWindowBarrierOptionData>
+      <FixingAmount>1000000</FixingAmount>
+      <Currency>USD</Currency>
+      <Strike>1.08</Strike>
+      <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name></Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates><ExerciseDate>2023-01-31</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <StartDate>2022-04-29</StartDate>
+      <EndDate>2022-10-31</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels><Level>0.98</Level></Levels>
+      </BarrierData>
+    </FxWindowBarrierOptionData>
+  </Trade>
+  <Trade id="GenericBarrier#1">
+    <TradeType>EquityGenericBarrierOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityGenericBarrierOptionData>
+      <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      <PayCurrency>USD</PayCurrency>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayoffType>Vanilla</PayoffType>
+        <OptionType>Call</OptionType>
+        <ExerciseDates><ExerciseDate>2023-06-06</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <SettlementDate>2023-06-08</SettlementDate>
+      <Quantity>1000</Quantity>
+      <Strike>4000</Strike>
+      <Barriers>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2021-07-10</StartDate>
+            <EndDate>2023-06-06</EndDate>
+            <Tenor>1D</Tenor>
+            <Calendar>TGT,US</Calendar>
+            <Convention>F</Convention>
+            <TermConvention>F</TermConvention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <BarrierData>
+          <Type>DownAndOut</Type>
+          <Levels><Level>3600</Level></Levels>
+          <Rebate>1000000</Rebate>
+          <RebateCurrency>USD</RebateCurrency>
+          <RebatePayTime>atExpiry</RebatePayTime>
+          <StrictComparison>1</StrictComparison>
+        </BarrierData>
+        <BarrierData>
+          <Type>UpAndIn</Type>
+          <Levels><Level>4400</Level></Levels>
+        </BarrierData>
+        <KikoType>KoAfterKi</KikoType>
+      </Barriers>
+      <TransatlanticBarrier>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels><Level>4400</Level></Levels>
+          <Rebate>2000000</Rebate>
+        </BarrierData>
+      </TransatlanticBarrier>
+    </EquityGenericBarrierOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) -> std::string {
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    const auto barriers_in = [](const ores::trading::domain::scripted_instrument_data& data,
+                                std::string_view role) {
+        std::vector<const ores::trading::domain::instrument_barrier*> rows;
+        for (const auto& b : data.barriers)
+            if (b.barrier_role == role)
+                rows.push_back(&b);
+        return rows;
+    };
+    const auto check_window = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "StartDate") == "2022-04-29");
+        CHECK(value_of(*data, "EndDate") == "2022-10-31");
+        REQUIRE(data->options.size() == 1);
+        const auto barriers = barriers_in(*data, "barrier");
+        REQUIRE(barriers.size() == 1);
+        CHECK(barriers[0]->barrier_type == "DownAndOut");
+        REQUIRE(data->barrier_levels.size() == 1);
+    };
+    const auto check_generic = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "Barriers.KikoType") == "KoAfterKi");
+        CHECK(value_of(*data, "SettlementDate") == "2023-06-08");
+        const auto barriers = barriers_in(*data, "barrier");
+        REQUIRE(barriers.size() == 2);
+        CHECK(barriers[0]->rebate_currency == std::optional<std::string>("USD"));
+        CHECK(barriers[1]->barrier_type == "UpAndIn");
+        CHECK(barriers_in(*data, "transatlantic").size() == 1u);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "barrier_schedule"));
+        REQUIRE(data->instrument_underlyings.size() == 1);
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_window(items[0]);
+    check_window(rebuild(items[0]));
+    check_generic(items[1]);
+    check_generic(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

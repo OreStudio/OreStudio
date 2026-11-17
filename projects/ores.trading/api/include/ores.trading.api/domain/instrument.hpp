@@ -186,6 +186,11 @@ struct scripted_instrument_data {
     std::vector<instrument_option_exercise_fee> option_exercise_fees;
     std::vector<instrument_option_payment_date> option_payment_dates;
     std::vector<instrument_option_exercise_price> option_exercise_prices;
+    /**
+     * @brief The BarrierData blocks of a product whose fixed element states them.
+     */
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
 };
 
 // A commodity basket states a constituent collection beside the instrument
@@ -752,6 +757,8 @@ inline void stamp_ids(scripted_instrument_data& data,
     stamp_one(data.option_exercise_fees);
     stamp_one(data.option_payment_dates);
     stamp_one(data.option_exercise_prices);
+    stamp_one(data.barriers);
+    stamp_one(data.barrier_levels);
 }
 
 inline void stamp_ids(commodity_instrument_data& data,

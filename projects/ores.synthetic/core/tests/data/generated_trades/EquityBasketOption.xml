@@ -29,21 +29,21 @@
       <Settlement>2028-11-02</Settlement>
     </EquityBasketOptionData>
   </Trade>
-  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
     <TradeType>EquityBasketOption</TradeType>
     <EquityBasketOptionData>
-      <Currency>USD</Currency>
-      <Notional>15464.88</Notional>
-      <Strike>794.76</Strike>
+      <Currency>EUR</Currency>
+      <Notional>1798.12</Notional>
+      <Strike>4113.5</Strike>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.SPX</Name>
+          <Name>RIC:.STOXX50E</Name>
           <Weight>1</Weight>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:DHER.DE</Name>
           <Weight>1</Weight>
         </Underlying>
       </Underlyings>
@@ -52,10 +52,10 @@
         <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2033-11-02</ExerciseDate>
+          <ExerciseDate>2029-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Settlement>2033-11-02</Settlement>
+      <Settlement>2029-09-02</Settlement>
     </EquityBasketOptionData>
   </Trade>
 </Portfolio>

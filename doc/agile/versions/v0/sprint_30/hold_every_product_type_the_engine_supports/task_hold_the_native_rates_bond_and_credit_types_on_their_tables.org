@@ -28,11 +28,11 @@ stated inline is the split-out task's.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Done. The three types hold their own rows, the suites pass, and the ORE engine reads and builds every recorded trade. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. The work is committed; the PR and its review follow. |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance

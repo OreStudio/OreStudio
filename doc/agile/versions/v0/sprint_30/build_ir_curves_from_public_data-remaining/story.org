@@ -47,7 +47,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | DONE | 2026-11-13 | 2026-11-13 | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
 | [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]] | BACKLOG | | | A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR. |
 | [[id:0A87FC5F-F15E-40D8-8CF6-572D24A203EE][Make the ICE and Tradeweb feeds tick]] | DONE | 2026-11-13 | 2026-11-13 | ICE and Tradeweb have no provider notation and no feed route, so their LIBOR and EURIBOR quotes are published as internal ticks and dropped before ingest. Implement both notations, seed their catalogue feeds, routes and subscriptions, and prove a LIBOR quote lands in a series. |
-| [[id:BF673434-ABA7-473E-8550-FC0E7EDD9399][State the identity shape of a fixing]] | STARTED | 2026-11-15 | | State, as data beside the series classification rules, which fields each market series family requires and which it forbids, and hold the identity writer to it. |
+| [[id:BF673434-ABA7-473E-8550-FC0E7EDD9399][State the identity shape of a fixing]] | DONE | 2026-11-15 | 2026-11-17 | State, as data beside the series classification rules, which fields each market series family requires and which it forbids, and hold the identity writer to it. |
 | [[id:ABFE5452-57B4-4621-86A4-011CF2B03E6A][Write a series and its identity in one act]] | BACKLOG | | | Take the identity projection before the series is stored, so a series the shape refuses leaves nothing behind. |
 | [[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]] | BACKLOG | | | The synthetic market series generator fabricates an oresmd URI that nothing can read, so every fixture built on it writes a series with no family. |
 | [[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]] | BACKLOG | | | A person can read, change and see the history of the identity shapes in the web client, and the oresmd editor marks the fields a family requires or forbids. |
@@ -78,6 +78,13 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
   are term curves: the publisher gives every =libor= or =euribor= feed the role =projection=,
   so no consumer takes an IBOR curve for a discount curve, and the automatic calibration never
   starts one from a public overnight fixing because their price source is =fixed=.
+- The identity of a market series is held to a shape, on 2026-11-17. The fields each
+  family requires and forbids are data in =series_identity_shapes=, beside the
+  classification rules, keyed by asset class, series subclass and index family,
+  because an IBOR fixing and a swap fixing share a class and a subclass but are named
+  by different fields. The identity projector enforces the shape and fails closed. The
+  shapes are a shared catalogue: a tenant reads the system tenant's rows and holds no
+  copy.
 - No public rate is stored for SHIR or HUFONIA, so the two feeds keep their synthetic level,
   as the calibration already does for a currency with no source. The conventions carry the
   two indices; the ACME discount curves name them. The ORE sample artefacts (northwind,

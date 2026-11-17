@@ -26,12 +26,12 @@ Every family the market data ingest writes states the fields its identity requir
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Rebased on main and rebuilt. The market data core and service suites, the iam core suite and the SQL shape suite pass, and Acme provisions end to end. |
-| Waiting on   | Nothing. |
-| Next         | Try the screens, then push and raise the PR. |
-| Last touched | 2026-11-16                               |
+| Now          | Nothing. |
+| Waiting on   | Review of the PR. |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -62,13 +62,13 @@ nobody has declared yet would stop an ingest over a gap in the catalogue, so the
 seed states the families the curve and fixing work already creates, and the rest
 wait for the family's own task.
 
-A tenant is provisioned with the system tenant's shapes and rules, once, guarded
-by =not exists= on the same key, so a tenant that is provisioned again neither
-fails on a duplicate nor drifts from the system tenant.
+A tenant holds no copy of the shapes. It reads the system tenant's rows beside its
+own, as it reads the classification rules, so a tenant cannot drift from the system
+tenant and a provisioning run has nothing to copy.
 
 A party's curve output is the party's own computation from its own subscriptions,
-so it keeps the derivation kind of the system's series and names the party's copy
-of the config that computes it; it is never =OBSERVED=.
+so it is labelled =IR_CURVE_BOOTSTRAP= and names the party's copy of the config
+that computes it, at version 1; it is never =OBSERVED=.
 
 * Measurements
 
@@ -86,13 +86,15 @@ task and name that file in the Command column.
 | Identities that contradict a stated shape | 0 | the =shape_scan= query in =projects/ores.sql/test/marketdata_series_identity_shape_test.sql=, against the 1,374 identity rows of 16 tenants the database held before the rebuild of 2026-11-15 20:19 | 5f052db062 |
 | Rules keyed by an index, per tenant | 1 in each of 17 tenants | `select tenant_id, count(*) from ores_marketdata_series_classification_rules_tbl where key_kind = 'index' and valid_to = ores_utility_infinity_timestamp_fn() group by 1` | 5f052db062 |
 | Identity guard unit tests | 9 assertions in 5 test cases, pass | `./publish/bin/ores.marketdata.core.tests "[series_identity][shape]"` | 5f052db062 |
-| Shape test suite | 8 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | 964e4593b8 |
+| Shape test suite | 9 tests, pass | `projects/ores.sql/test/run_tests.sh projects/ores.sql/test/marketdata_series_identity_shape_test.sql` | 3363d12929 |
 | Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | 964e4593b8 |
-| Stated shapes, Acme after provisioning | 29 rows over 7 families, the same as the system tenant | per-tenant count over =ores_marketdata_series_identity_shapes_tbl= | 74bdcba5f4 |
-| Identities that contradict a stated shape, Acme provisioned | 0 of 4,712 field checks over 1,178 identities | the =shape_scan= query of =marketdata_series_identity_shape_test.sql= | 74bdcba5f4 |
-| Market data core suite | 431 test cases, 27,655 assertions, pass | `compass build test_ores.marketdata.core.tests` | 80141bca5a |
-| Market data service suite | 309 test cases, 3,776 assertions, pass | `compass build test_ores.marketdata.service.tests` | 80141bca5a |
-| IAM core suite | 306 test cases, 1,425 assertions, pass | `compass build test_ores.iam.core.tests` | 74bdcba5f4 |
+| Stated shapes, Acme after provisioning | 0 rows of its own; it reads the system's 29 | per-tenant count over =ores_marketdata_series_identity_shapes_tbl=, and =series_identity_shapes list= as =tenant_admin@acme_corporation= | 67c0a4645d |
+| Identities that contradict a stated shape, Acme provisioned | 0 of 4,992 field checks: 920 Acme identities and 328 system ones | the =shape_scan= query of =marketdata_series_identity_shape_test.sql=, joined to the system tenant's shapes | 67c0a4645d |
+| Market data core suite | 431 test cases, 27,534 assertions, pass | `compass build test_ores.marketdata.core.tests` | 67c0a4645d |
+| Market data service suite | 309 test cases, 2,698 assertions, pass | `compass build test_ores.marketdata.service.tests` | 67c0a4645d |
+| IAM core suite | 306 test cases, 1,436 assertions, pass | `compass build test_ores.iam.core.tests` | 67c0a4645d |
+| Shell market data suite | 441 test cases, 1,209 assertions, pass | `compass build test_ores.shell.marketdata.tests` | 67c0a4645d |
+| Documentation checks and shape entity drift | 40 components pass; 44 generated files current | `projects/ores.codegen/validate_docs.sh`, `compass codegen entity show series_identity_shape` | 67c0a4645d |
 
 * Notes
 
@@ -152,3 +154,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped:
+
+- =series_identity_shapes=, a catalogue of the fields each series family requires
+  and forbids, keyed by asset class, series subclass and index family, seeded with
+  29 rows over 7 families: FX spot, forward, volatility and fixing, IR yield, and
+  the IBOR and swap fixings.
+- The identity projector refuses a row that misses a required field or carries a
+  forbidden one, and names the family and the field. It also refuses an index
+  identity whose series subclass is not =index_fixing=. The backfill counts the
+  rows it refuses instead of stopping.
+- The shapes are a shared catalogue: a tenant reads the system tenant's rows and
+  holds no copy. Shape changes raise events, and the shell has the
+  =series_identity_shapes= commands.
+- A party's curve output is labelled =IR_CURVE_BOOTSTRAP= at config version 1, so
+  Acme provisions its curves.
+
+Every acceptance bullet is met; the Measurements table holds the evidence.
+
+The Acme provisioning run on 2026-11-16 stopped at =give_party_surface_blueprints=
+for a reason outside this task. It is filed as
+[[id:2659F47C-2C7D-48B4-9FA0-46BBE1214485][Send the derived FX vol quotes to a party that subscribes late]].
+A screen for the shapes is the task
+[[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]].

@@ -43,15 +43,15 @@
       <Cap>0.1</Cap>
     </Autocallable01Data>
   </Trade>
-  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
     <TradeType>Autocallable_01</TradeType>
     <Autocallable01Data>
-      <NotionalAmount>5817155.05</NotionalAmount>
-      <DeterminationLevel>0.6718</DeterminationLevel>
-      <TriggerLevel>0.9597</TriggerLevel>
+      <NotionalAmount>7675517.41</NotionalAmount>
+      <DeterminationLevel>0.7019</DeterminationLevel>
+      <TriggerLevel>1.0027</TriggerLevel>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <Position>Short</Position>
       <PayCcy>EUR</PayCcy>
@@ -59,7 +59,7 @@
         <ScheduleData>
           <Rules>
             <StartDate>2027-01-02</StartDate>
-            <EndDate>2032-01-02</EndDate>
+            <EndDate>2028-01-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
@@ -71,7 +71,7 @@
         <ScheduleData>
           <Rules>
             <StartDate>2027-02-02</StartDate>
-            <EndDate>2032-02-02</EndDate>
+            <EndDate>2028-02-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
@@ -82,12 +82,8 @@
       <AccumulationFactors>
         <Factor>0.05</Factor>
         <Factor>0.1</Factor>
-        <Factor>0.15</Factor>
-        <Factor>0.2</Factor>
-        <Factor>0.25</Factor>
-        <Factor>0.3</Factor>
       </AccumulationFactors>
-      <Cap>0.3</Cap>
+      <Cap>0.1</Cap>
     </Autocallable01Data>
   </Trade>
 </Portfolio>

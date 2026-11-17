@@ -5,8 +5,6 @@ CreditDefaultSwapOption
 EquityAutoDeltaHedgedOption
 EquityDoubleTouchOption
 EquityFutureOption
-EuropeanOptionBarrier
 FxAsianOption
-FxWorstOfBasketSwap
 RateDigitalOption
 SwaptionStraddle

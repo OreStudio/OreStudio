@@ -33,37 +33,37 @@
       <SoldAmount>4983709.98</SoldAmount>
     </FxKIKOBarrierOptionData>
   </Trade>
-  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
     <TradeType>FxKIKOBarrierOption</TradeType>
     <FxKIKOBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2031-10-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Barriers>
         <BarrierData>
           <Type>DownAndIn</Type>
           <Levels>
-            <Level>0.716</Level>
+            <Level>0.6512</Level>
           </Levels>
         </BarrierData>
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>0.8751</Level>
+            <Level>0.7959</Level>
           </Levels>
         </BarrierData>
       </Barriers>
       <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>1729322.52</BoughtAmount>
+      <BoughtAmount>4253585.58</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>1375676.06</SoldAmount>
+      <SoldAmount>3077469.17</SoldAmount>
     </FxKIKOBarrierOptionData>
   </Trade>
 </Portfolio>

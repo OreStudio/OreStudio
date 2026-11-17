@@ -17,21 +17,21 @@
       <SettlementDate>2027-08-07</SettlementDate>
     </FxForwardVolatilityAgreementData>
   </Trade>
-  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
+  <Trade id="0f1cabb4-b764-579f-8437-c726066494c7">
     <TradeType>FxForwardVolatilityAgreement</TradeType>
     <FxForwardVolatilityAgreementData>
-      <FvaDate>2029-01-31</FvaDate>
-      <OptionExpiry>2032-08-02</OptionExpiry>
-      <PremiumDate>2029-02-02</PremiumDate>
+      <FvaDate>2029-07-03</FvaDate>
+      <OptionExpiry>2033-01-02</OptionExpiry>
+      <PremiumDate>2029-07-05</PremiumDate>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <LongShort>Short</LongShort>
       <ImpliedVolStrike>0.1</ImpliedVolStrike>
-      <Quantity>7858889.55</Quantity>
+      <Quantity>9441681.11</Quantity>
       <PayCcy>USD</PayCcy>
-      <SettlementDate>2032-08-07</SettlementDate>
+      <SettlementDate>2033-01-07</SettlementDate>
     </FxForwardVolatilityAgreementData>
   </Trade>
 </Portfolio>

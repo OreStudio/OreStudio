@@ -194,7 +194,7 @@ domain::trade_generation_scope inflation_scope() {
 }
 
 /*
- * A scope of the FX family. The routed types are twenty-four here, and the
+ * A scope of the FX family. The routed types are twenty-five here, and the
  * catalogue carries one pair of the book's currency and one that names neither
  * side of it, so the preference is testable.
  */
@@ -203,6 +203,7 @@ domain::trade_generation_scope fx_scope() {
     scope.asset_class_code = "fx";
     scope.currency_code = "EUR";
     scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
+    scope.floating_index_codes = {"EUR-ESTR", "USD-SOFR"};
     return scope;
 }
 
@@ -986,27 +987,27 @@ TEST_CASE("a month_end_anchor_still_dates_every_fx_trade", "[trade_population]")
 
 TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto scope = fx_scope();
-    scope.trades_per_book = 24;
+    scope.trades_per_book = 25;
     const auto plan = plan_of(scope);
 
     std::set<std::string> types;
     for (const auto& slot : plan.slots)
         types.insert(slot.trade_type_code);
 
-    CHECK(types.size() == 24);
+    CHECK(types.size() == 25);
 }
 
 TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
           "[trade_population]") {
     /*
-     * The fx planner cycles twenty-four routed codes. A config of eight slots never
+     * The fx planner cycles twenty-five routed codes. A config of eight slots never
      * reaches the variance swap or the accumulator, which is what a tenant held
      * before the seeded configs stated one trade per code.
      */
     auto wide = fx_scope();
     wide.trades_per_book = 64;
     const auto routed = codes_of(plan_of(wide));
-    REQUIRE(routed.size() == 24);
+    REQUIRE(routed.size() == 25);
 
     auto seeded = fx_scope();
     seeded.book_ids = {bond_book};
@@ -1171,8 +1172,8 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
         types.insert(row.identity.trade_type_code);
     }
 
-    // The four codes the scripted family books, each through its builder.
-    CHECK(types.size() == 4u);
+    // The five codes the scripted family books, each through its builder.
+    CHECK(types.size() == 5u);
     CHECK(types.contains("Autocallable_01"));
     CHECK(observed.size() > 1u);
 }
@@ -1202,6 +1203,7 @@ TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade
 
     CHECK(names_by_type["DoubleDigitalOption"] == 2u);
     CHECK(names_by_type["PerformanceOption_01"] == 2u);
+    CHECK(names_by_type["EuropeanOptionBarrier"] == 2u);
     CHECK(names_by_type["ScriptedTrade"] == 0u);
 }
 
@@ -1509,7 +1511,7 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
     auto scope = fx_scope();
     scope.min_tenor_code = "1M";
     scope.max_tenor_code = "2Y";
-    scope.trades_per_book = 24;
+    scope.trades_per_book = 25;
     scope.seed = 44;
     /*
      * The day a run anchors on is the day the population draws its months back
@@ -1529,7 +1531,7 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
             CHECK(row.end_date > row.start_date);
         }
     }
-    /* One per book: twenty-four types in the cycle, two books in the scope. */
+    /* One per book: twenty-five types in the cycle, two books in the scope. */
     CHECK(swaps == 2);
 }
 

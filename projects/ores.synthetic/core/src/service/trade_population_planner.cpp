@@ -1746,7 +1746,8 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxWindowBarrierOption",
                                          "FxBasketVarianceSwap",
                                          "FxPairwiseVarianceSwap",
-                                         "FxForwardVolatilityAgreement"};
+                                         "FxForwardVolatilityAgreement",
+                                         "FxWorstOfBasketSwap"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
 /*
@@ -2001,6 +2002,53 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                  .start = start,
                  .end = end,
                  .settlement = year_month_day{sys_days{end} + days{5}},
+                 .position = position})
+                .build(),
+            type);
+    }
+    if (type == "FxWorstOfBasketSwap") {
+        /*
+         * Half-yearly periods over the trade's life, each paying two days after
+         * it ends. The coupons depend on each pair's performance, a ratio, so the
+         * swap pays in its floating index's currency: the quote currency's index
+         * when the tenant holds one, else the first index it holds.
+         */
+        if (scope.floating_index_codes.empty())
+            throw trade_population_error(
+                "An FxWorstOfBasketSwap floats on an index, and the tenant holds none.");
+        std::string floating_index = scope.floating_index_codes.front();
+        for (const auto& code : scope.floating_index_codes)
+            if (code.starts_with(pair.quote + "-")) {
+                floating_index = code;
+                break;
+            }
+        const auto pay_currency = floating_index.substr(0, floating_index.find('-'));
+        std::vector<year_month_day> periods;
+        for (int months = 0; add_months(start, months) <= end; months += 6)
+            periods.push_back(add_months(start, months));
+        std::vector<year_month_day> pays;
+        for (std::size_t i = 1; i < periods.size(); ++i)
+            pays.emplace_back(sys_days{periods[i]} + days{2});
+        const auto count = pays.size();
+        return scripted_batch_of(
+            tb::fx_worst_of_basket_swap_builder(
+                {.members =
+                     std::vector<tb::worst_of_member>{
+                         {.underlying = index, .initial_price = level(rate)},
+                         {.underlying = fx_index_of(second_pair()), .initial_price = level(rate)}},
+                 .currency = pay_currency,
+                 .quantity = money(notional),
+                 .initial_fixed_rate = level(0.02),
+                 .period_dates = periods,
+                 .pay_dates = pays,
+                 .floating_index = floating_index,
+                 .floating_spread = level(0.0),
+                 .floating_day_count = std::string("A360"),
+                 .knock_out_levels = std::vector<decimal>(count, level(1.0)),
+                 .fixed_trigger_levels = std::vector<decimal>(count, level(0.75)),
+                 .fixed_rate = level(0.05),
+                 .knock_in_level = level(0.75),
+                 .strike = level(1.0),
                  .position = position})
                 .build(),
             type);
@@ -2473,8 +2521,11 @@ ores::marketdata::datum::market_reference equity_address_of(const std::string& c
 }
 
 /// The scripted codes the population books, in the order the routing table states them.
-constexpr std::string_view scripted_types[] = {
-    "ScriptedTrade", "DoubleDigitalOption", "PerformanceOption_01", "Autocallable_01"};
+constexpr std::string_view scripted_types[] = {"ScriptedTrade",
+                                               "DoubleDigitalOption",
+                                               "PerformanceOption_01",
+                                               "Autocallable_01",
+                                               "EuropeanOptionBarrier"};
 constexpr std::size_t scripted_type_count = std::size(scripted_types);
 
 
@@ -2574,6 +2625,27 @@ build_scripted_trade(const domain::trade_generation_scope& scope,
                                                         .underlying_1 = first_address,
                                                         .underlying_2 = second_address})
                          .build());
+
+    if (type == "EuropeanOptionBarrier")
+        // The option is on the first name and knocks out on the second's level.
+        return built(
+            tb::european_option_barrier_builder(
+                {.family = tb::scripted_family::equity,
+                 .option_underlying = first_address,
+                 .barrier_underlying = second_address,
+                 .quantity = money(notional / strike),
+                 .kind = first_way(entry, 1) ? tb::option_kind::call : tb::option_kind::put,
+                 .position = position,
+                 .strike = level(strike),
+                 .premium_amount = money(0.0),
+                 .premium_currency = scope.currency_code,
+                 .premium_date = scope.as_of_date,
+                 .expiry = end,
+                 .barrier =
+                     tb::scripted_barrier{.type = "DownAndOut", .level = level(strike * 0.9)},
+                 .settlement = settlement,
+                 .pay_currency = scope.currency_code})
+                .build());
 
     if (type == "Autocallable_01") {
         /*

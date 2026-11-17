@@ -27,29 +27,29 @@
       <PayCcy>EUR</PayCcy>
     </PerformanceOption01Data>
   </Trade>
-  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
     <TradeType>PerformanceOption_01</TradeType>
     <PerformanceOption01Data>
-      <NotionalAmount>3051825.57</NotionalAmount>
+      <NotionalAmount>5817155.05</NotionalAmount>
       <ParticipationRate>1</ParticipationRate>
-      <ValuationDate>2029-01-02</ValuationDate>
-      <SettlementDate>2029-03-02</SettlementDate>
+      <ValuationDate>2032-12-02</ValuationDate>
+      <SettlementDate>2033-02-02</SettlementDate>
       <Underlyings>
-        <Underlying>
-          <Type>Equity</Type>
-          <Name>RIC:.STOXX50E</Name>
-        </Underlying>
         <Underlying>
           <Type>Equity</Type>
           <Name>RIC:DHER.DE</Name>
         </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.SPX</Name>
+        </Underlying>
       </Underlyings>
       <StrikePrices>
-        <StrikePrice>1.0251</StrikePrice>
-        <StrikePrice>1.1276</StrikePrice>
-        <StrikePrice>1.2301</StrikePrice>
+        <StrikePrice>0.9597</StrikePrice>
+        <StrikePrice>1.0557</StrikePrice>
+        <StrikePrice>1.1516</StrikePrice>
       </StrikePrices>
-      <Strike>1.0251</Strike>
+      <Strike>0.9597</Strike>
       <Position>Short</Position>
       <PayCcy>EUR</PayCcy>
     </PerformanceOption01Data>

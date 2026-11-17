@@ -55,8 +55,9 @@ std::vector<country> own_rows(const std::vector<country>& rows,
                               const ores::database::context& ctx) {
     std::vector<country> own;
     own.reserve(rows.size());
-    std::ranges::copy_if(
-        rows, std::back_inserter(own), [&](const country& c) { return c.tenant_id == ctx.tenant_id(); });
+    std::ranges::copy_if(rows, std::back_inserter(own), [&](const country& c) {
+        return c.tenant_id == ctx.tenant_id();
+    });
     return own;
 }
 
@@ -75,7 +76,8 @@ TEST_CASE("write_single_country", "[repository]") {
     country_repository repo;
     repo.write(h.context(), cntry);
 
-    const auto read_countries = own_rows(repo.read_latest(h.context(), cntry.alpha2_code), h.context());
+    const auto read_countries =
+        own_rows(repo.read_latest(h.context(), cntry.alpha2_code), h.context());
     REQUIRE(read_countries.size() == 1);
     CHECK(read_countries[0].name == cntry.name);
 }

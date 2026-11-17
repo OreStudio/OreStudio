@@ -198,9 +198,8 @@ TEST_CASE("read_latest_currency_countries_by_country", "[repository][currency_co
     // The country is a shared catalogue, so the read lists the system tenant's
     // pairings for it beside the caller's own.
     REQUIRE(read_ccs.size() >= 1);
-    CHECK(std::ranges::any_of(read_ccs, [&](const auto& r) {
-        return r.currency_iso_code == currencies[4].iso_code;
-    }));
+    CHECK(std::ranges::any_of(
+        read_ccs, [&](const auto& r) { return r.currency_iso_code == currencies[4].iso_code; }));
 }
 
 TEST_CASE("remove_currency_country", "[repository][currency_country]") {

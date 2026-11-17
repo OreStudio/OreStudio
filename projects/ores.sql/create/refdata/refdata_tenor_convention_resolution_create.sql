@@ -172,7 +172,8 @@ begin
     if new.schedule_code is not null then
         if not exists (
             select 1 from ores_refdata_tenor_schedules_tbl
-            where tenant_id = new.tenant_id
+            where (tenant_id = new.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
               and code = new.schedule_code
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then

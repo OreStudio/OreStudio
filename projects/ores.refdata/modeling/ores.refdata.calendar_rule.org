@@ -247,6 +247,7 @@ std::nullopt
 ** calendar_code
 :PROPERTIES:
 :table:              ores_refdata_calendars_tbl
+:system_tenant_visible: true
 :target_column:      code
 :parent_entity:      calendar
 :nullable:           false

@@ -176,6 +176,7 @@ std::nullopt
 ** schedule_code
 :PROPERTIES:
 :table:         ores_refdata_tenor_schedules_tbl
+:system_tenant_visible: true
 :target_column: code
 :nullable:      true
 :error_message: Invalid schedule_code: %. No active tenor schedule found with this code.

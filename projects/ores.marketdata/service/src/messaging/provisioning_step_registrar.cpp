@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/messaging/provisioning_step_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.marketdata.service/messaging/provisioning_step_handler.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"

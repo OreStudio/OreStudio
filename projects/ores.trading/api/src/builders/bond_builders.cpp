@@ -42,6 +42,35 @@ std::optional<build_error> holding_refusal(const bond_holding& holding) {
     return std::nullopt;
 }
 
+/// The option block of a European option, with its one exercise date.
+void add_european_option(domain::bond_product& product,
+                         option_kind kind,
+                         option_position position,
+                         std::chrono::year_month_day expiry) {
+    domain::instrument_option block{};
+    block.long_short = long_short_of(position);
+    block.option_type = option_type_of(kind);
+    block.style = "European";
+    block.settlement = "Cash";
+    product.option_block.push_back(std::move(block));
+
+    domain::instrument_schedule exercise{};
+    exercise.owner_role = "option";
+    exercise.owner_number = 1;
+    exercise.schedule_role = "exercise_dates";
+    exercise.sequence_number = 1;
+    exercise.schedule_kind = "dates";
+    product.schedules.push_back(std::move(exercise));
+    domain::instrument_schedule_date date{};
+    date.owner_role = "option";
+    date.owner_number = 1;
+    date.schedule_role = "exercise_dates";
+    date.schedule_sequence_number = 1;
+    date.sequence_number = 1;
+    date.schedule_date = expiry;
+    product.schedule_dates.push_back(std::move(date));
+}
+
 domain::bond_product product_of(std::string_view trade_type, const bond_holding& holding) {
     domain::bond_product product{};
     auto& instrument = product.row.instrument;
@@ -254,28 +283,7 @@ bond_result bond_option_builder::build() const {
     option.knocks_out = "false";
     product.options.push_back(std::move(option));
 
-    domain::instrument_option block{};
-    block.long_short = long_short_of(terms_.position.get());
-    block.option_type = option_type_of(terms_.kind.get());
-    block.style = "European";
-    block.settlement = "Cash";
-    product.option_block.push_back(std::move(block));
-
-    domain::instrument_schedule exercise{};
-    exercise.owner_role = "option";
-    exercise.owner_number = 1;
-    exercise.schedule_role = "exercise_dates";
-    exercise.sequence_number = 1;
-    exercise.schedule_kind = "dates";
-    product.schedules.push_back(std::move(exercise));
-    domain::instrument_schedule_date date{};
-    date.owner_role = "option";
-    date.owner_number = 1;
-    date.schedule_role = "exercise_dates";
-    date.schedule_sequence_number = 1;
-    date.sequence_number = 1;
-    date.schedule_date = terms_.expiry.get();
-    product.schedule_dates.push_back(std::move(date));
+    add_european_option(product, terms_.kind.get(), terms_.position.get(), terms_.expiry.get());
     return product;
 }
 
@@ -320,6 +328,32 @@ bond_result bond_future_builder::build() const {
     future.apply_conversion_factor = true;
     future.use_future_price = true;
     product.futures.push_back(std::move(future));
+    return product;
+}
+
+bond_future_option_builder::bond_future_option_builder(bond_future_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+bond_result bond_future_option_builder::build() const {
+    if (auto refusal = holding_refusal(terms_.holding))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.contract.get().empty())
+        return std::unexpected(build_error{"contract", "must not be empty"});
+    if (terms_.contract_notional.get() <= decimal{})
+        return std::unexpected(build_error{"contract_notional", "must be positive"});
+    if (terms_.strike.get() <= decimal{})
+        return std::unexpected(build_error{"strike", "must be positive"});
+    auto product = product_of(trade_type, terms_.holding);
+    domain::bond_future future{};
+    future.contract_name = terms_.contract.get();
+    future.contract_notional = terms_.contract_notional.get();
+    future.long_short = long_short_of(terms_.position.get());
+    product.futures.push_back(std::move(future));
+    domain::bond_option option{};
+    option.option_type = option_type_of(terms_.kind.get());
+    option.option_strike = terms_.strike.get();
+    product.options.push_back(std::move(option));
+    add_european_option(product, terms_.kind.get(), terms_.position.get(), terms_.expiry.get());
     return product;
 }
 

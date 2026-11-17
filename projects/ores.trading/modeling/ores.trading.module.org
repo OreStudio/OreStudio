@@ -50,6 +50,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:6D933E48-EAB7-4D82-BD66-4EB822CE5CD4][ores.trading.index_credit_default_swap_instrument]] | Index credit default swap facts. |
 | [[id:67BF3288-E3E7-4342-B680-7C0F7DB4F19E][ores.trading.index_credit_default_swap_option_instrument]] | Index credit default swap option facts. |
 | [[id:50831295-C7FD-4114-89AC-4E7A42820245][ores.trading.synthetic_cdo_instrument]] | Synthetic CDO facts. |
+| [[id:1119CA97-770A-47F8-A4E1-261311FE7B21][ores.trading.cbo_instrument]] | CBO investment facts. |
 | [[id:CDA8F77D-FE68-4C75-8A14-3C9A65C28F63][ores.trading.credit_linked_swap_instrument]] | Credit linked swap facts. |
 | [[id:C9C480E3-EF4A-48DA-A428-D7D0F39635C9][ores.trading.risk_participation_agreement_instrument]] | Risk participation agreement facts. |
 | [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] | Scripted instrument economics for the AMC script-based product types. |
@@ -61,6 +62,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:FFE4182F-0FA0-4F7C-B7F9-8DFD59141493][ores.trading.flexi_swap_instrument]] | Flexi swap instrument: a swap whose owner may vary the notional between a lower bound and the leg notional. |
 | [[id:BF079887-725E-4BB5-94C1-7462AB8BB198][ores.trading.swaption_instrument]] | Swaption (option on an interest rate swap) instrument. |
 | [[id:2446DB5D-CDEF-46C8-A8F8-0829CBB733E2][ores.trading.cap_floor_instrument]] | Interest rate cap or floor instrument. |
+| [[id:14F37EA6-5222-4A12-8D00-5F388263FD11][ores.trading.rate_digital_option_instrument]] | Rate digital option facts. |
 | [[id:104DDBF1-12E8-435F-90F0-A701AAD9078F][ores.trading.fra_instrument]] | Forward Rate Agreement (FRA) instrument. |
 | [[id:40DDDC9B-1913-4B8C-A313-E2D694C5B156][ores.trading.leg_type]] | ORE leg type code (e.g. Fixed, Floating, OIS, CMS, CPI). |
 | [[id:C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9][ores.trading.floating_index_type]] | ORE floating rate index code (e.g. EUR-EURIBOR-6M, USD-SOFR, GBP-SONIA). |

@@ -3534,13 +3534,18 @@ TEST_CASE("an_option_on_an_equity_future_and_on_a_bond_future_hold_their_terms_a
         CHECK(data->options[0].pay_off_at_expiry.has_value());
     };
     const auto check_bond = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::bond_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        CHECK(value_of(*data, "ContractName") == "TYM26");
-        CHECK(value_of(*data, "Strike") == "1.1175");
-        REQUIRE(data->options.size() == 1);
-        CHECK(data->options[0].long_short == "Short");
-        CHECK(ores::ore::domain::option_block::exercise_dates_of(*data).size() == 1u);
+        CHECK(data->instrument.identity.trade_type_code == "BondFutureOption");
+        REQUIRE(data->future.has_value());
+        CHECK(data->future->contract_name == "TYM26");
+        CHECK(data->future->contract_notional == decimal_of("1000000"));
+        CHECK(data->future->long_short == "Short");
+        REQUIRE(data->option.has_value());
+        CHECK(data->option->option_type == "Call");
+        CHECK(data->option->option_strike == decimal_of("1.1175"));
+        CHECK(data->option_exercise_dates.size() == 1u);
     };
 
     const auto items = portfolio_projection::map(document);
@@ -3748,15 +3753,22 @@ TEST_CASE("a_swaption_straddle_and_a_rate_digital_option_hold_their_terms_as_row
         CHECK(data->options[0].settlement == std::optional<std::string>("Cash"));
     };
     const auto check_digital = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::swap_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        std::string index;
-        for (const auto& p : data->parameters)
-            if (p.name == "Index")
-                index = p.value.value_or("");
-        CHECK(index == "EUR-EURIBOR-6M");
+        CHECK(data->header.identity.trade_type_code == "RateDigitalOption");
+        const auto* fact =
+            std::get_if<ores::trading::domain::rate_digital_option_instrument>(&data->facts);
+        REQUIRE(fact != nullptr);
+        CHECK(fact->index_name != "");
+        CHECK(fact->strike == decimal_of("0.02"));
+        CHECK(fact->payoff_amount == decimal_of("10000"));
+        CHECK(fact->payoff_currency == "EUR");
+        CHECK(fact->fixing_date == std::chrono::year{2027} / 6 / 18);
+        CHECK(fact->payment_date == std::optional(std::chrono::year{2027} / 6 / 20));
         REQUIRE(data->options.size() == 1);
         CHECK(data->options[0].option_type == std::optional<std::string>("Call"));
+        CHECK(ores::ore::domain::option_block::exercise_dates_of(*data).size() == 1u);
     };
 
     const auto items = portfolio_projection::map(document);
@@ -3846,14 +3858,15 @@ TEST_CASE("a_single_name_cds_option_and_a_cbo_hold_their_terms_as_rows",
         REQUIRE(data->options.size() == 1);
     };
     const auto check_cbo = [&](const ores::ore::xml::trade_import_item& item) {
-        const auto* data = scripted_data_of(item.instrument);
+        const auto* data =
+            std::get_if<ores::trading::domain::credit_instrument_data>(&item.instrument);
         REQUIRE(data != nullptr);
-        std::map<std::string, std::string> values;
-        for (const auto& p : data->parameters)
-            values[p.name] = p.value.value_or("");
-        CHECK(values["CBOInvestment.TrancheName"] == "JuniorNote");
-        CHECK(values["CBOInvestment.Notional"].starts_with("1802750.2"));
-        CHECK(values["CBOInvestment.StructureId"] == "Pegasus");
+        CHECK(data->instrument.identity.trade_type_code == "CBO");
+        REQUIRE(data->cbo_instruments.size() == 1);
+        const auto& fact = data->cbo_instruments.front();
+        CHECK(fact.tranche_name == "JuniorNote");
+        CHECK(fact.notional == decimal_of("1802750.20"));
+        CHECK(fact.structure_id == "Pegasus");
     };
 
     const auto items = portfolio_projection::map(document);
@@ -4004,6 +4017,35 @@ TEST_CASE("a_pairwise_variance_swap_with_a_term_ore_refuses_is_refused",
     CHECK(std::holds_alternative<std::monostate>(mapped(trade(two, "the eighth", "2")).instrument));
     CHECK(std::holds_alternative<std::monostate>(
         mapped(trade("<Value>FX-ECB-EUR-USD</Value>", "2027-01-08", "2")).instrument));
+}
+
+TEST_CASE("a_cbo_that_states_its_structure_inline_is_refused", "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(R"(<Portfolio>
+  <Trade id="CBO#2">
+    <TradeType>CBO</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>JuniorNote</TrancheName>
+        <Notional>1000000</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+      <CBOStructure>
+        <DayCounter>A360</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <Currency>EUR</Currency>
+        <SeniorFee>0.01</SeniorFee>
+        <SubordinatedFee>0.02</SubordinatedFee>
+        <EquityKicker>0.2</EquityKicker>
+        <FeeDayCounter>A360</FeeDayCounter>
+      </CBOStructure>
+    </CBOData>
+  </Trade>
+</Portfolio>)"));
+    REQUIRE(items.size() == 1);
+    CHECK(std::holds_alternative<std::monostate>(items[0].instrument));
 }
 
 TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",

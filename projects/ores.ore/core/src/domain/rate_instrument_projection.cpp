@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
@@ -46,6 +47,7 @@ using trading::domain::balance_guaranteed_swap_tranche_notional;
 using trading::domain::callable_swap_call_date;
 using trading::domain::callable_swap_instrument;
 using trading::domain::cap_floor_instrument;
+using trading::domain::rate_digital_option_instrument;
 using trading::domain::flexi_swap_instrument;
 using trading::domain::flexi_swap_lower_notional;
 using trading::domain::fra_instrument;
@@ -85,7 +87,7 @@ constexpr bool is_rate_trade_type(std::string_view type) {
     return type == "Swap" || type == "CrossCurrencySwap" || type == "ForwardRateAgreement" ||
            type == "CapFloor" || type == "Swaption" || type == "SwaptionStraddle" ||
            type == "CallableSwap" || type == "KnockOutSwap" || type == "InflationSwap" ||
-           type == "FlexiSwap" || type == "BalanceGuaranteedSwap";
+           type == "FlexiSwap" || type == "BalanceGuaranteedSwap" || type == "RateDigitalOption";
 }
 
 void rate_instrument_projection_stamp(trading::domain::swap_leg& row) {
@@ -422,6 +424,30 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
 }
 
 // A straddle states a swaption's element under its own name, so both read here.
+auto read_rate_digital_option(const record_reader& trade) -> swap_instrument_data {
+    swap_instrument_data result;
+    result.header = rate_instrument_projection_make_header("RateDigitalOption");
+    result.facts = rate_digital_option_instrument{};
+    const auto data = trade.child("RateDigitalOptionData");
+    if (!data)
+        return result;
+    auto& fact = std::get<rate_digital_option_instrument>(result.facts);
+    const auto text = [&](std::string_view element) {
+        return scalar_terms::read_text(*data, element).value_or("");
+    };
+    fact.index_name = address_of(text("Index"));
+    fact.strike = decimal::from_string(text("Strike")).value_or(decimal{});
+    fact.payoff_amount = decimal::from_string(text("PayoffAmount")).value_or(decimal{});
+    fact.payoff_currency = text("PayoffCurrency");
+    fact.fixing_date = rate_instrument_projection_to_domain_date(text("FixingDate"));
+    if (data->has("PaymentDate"))
+        fact.payment_date = rate_instrument_projection_to_domain_date(text("PaymentDate"));
+    result.header.maturity_date = fact.payment_date.value_or(fact.fixing_date);
+    if (const auto option = data->child("OptionData"))
+        option_block::read_option_block(result, *option);
+    return result;
+}
+
 auto read_swaption(const record_reader& trade,
                    std::string_view trade_type) -> swap_instrument_data {
     swap_instrument_data result;
@@ -748,6 +774,22 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     }
 }
 
+void write_rate_digital_option(record_writer& trade, const swap_instrument_data& v) {
+    const auto& fact = std::get<rate_digital_option_instrument>(v.facts);
+    auto data = trade.child("RateDigitalOptionData");
+    auto option = data.child("OptionData");
+    option_block::write_option_block(option, v);
+    scalar_terms::write_text(data, "Index", ore_name_of(fact.index_name));
+    scalar_terms::write_text(data, "Strike", fact.strike.to_string());
+    scalar_terms::write_text(data, "PayoffAmount", fact.payoff_amount.to_string());
+    scalar_terms::write_text(data, "PayoffCurrency", fact.payoff_currency);
+    scalar_terms::write_text(
+        data, "FixingDate", rate_instrument_projection_to_ore_date(fact.fixing_date));
+    if (fact.payment_date)
+        scalar_terms::write_text(
+            data, "PaymentDate", rate_instrument_projection_to_ore_date(*fact.payment_date));
+}
+
 void write_swaption(record_writer& trade,
                     std::string_view trade_type,
                     const swap_instrument_data& v) {
@@ -891,6 +933,8 @@ auto read_rate_instrument(xml::record_reader trade, std::string_view trade_type)
         return trading::domain::trade_instrument{read_fra(trade)};
     if (trade_type == "CapFloor")
         return trading::domain::trade_instrument{read_capfloor(trade)};
+    if (trade_type == "RateDigitalOption")
+        return trading::domain::trade_instrument{read_rate_digital_option(trade)};
     if (trade_type == "Swaption" || trade_type == "SwaptionStraddle")
         return trading::domain::trade_instrument{read_swaption(trade, trade_type)};
     if (trade_type == "CallableSwap")
@@ -918,6 +962,8 @@ auto write_rate_instrument(xml::record_writer& trade,
         write_fra(trade, *v);
     else if (trade_type == "CapFloor")
         write_capfloor(trade, *v);
+    else if (trade_type == "RateDigitalOption")
+        write_rate_digital_option(trade, *v);
     else if (trade_type == "Swaption" || trade_type == "SwaptionStraddle")
         write_swaption(trade, trade_type, *v);
     else if (trade_type == "CallableSwap")

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/index_reference.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
@@ -89,7 +90,8 @@ constexpr std::string_view change_commentary = "Imported from ORE XML";
 constexpr bool is_bond_trade_type(std::string_view type) {
     return type == "Bond" || type == "ForwardBond" || type == "CallableBond" ||
            type == "ConvertibleBond" || type == "BondOption" || type == "BondTRS" ||
-           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" || type == "Ascot";
+           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" || type == "Ascot" ||
+           type == "BondFutureOption";
 }
 
 template <typename Row>
@@ -1014,6 +1016,39 @@ auto read_bond_future(const record_reader& trade) -> bond_instrument_data {
     return result;
 }
 
+// An option on a bond future: the future's contract is the future fact, and the
+// option, its strike and its exercise are the bond option's rows.
+auto read_bond_future_option(const record_reader& trade) -> bond_instrument_data {
+    auto result = make_base("BondFutureOption");
+    mint_issue(result);
+    const auto data = trade.child("BondFutureOptionData");
+    if (!data)
+        return result;
+    const auto text = [&](const record_reader& r, std::string_view element) {
+        return scalar_terms::read_text(r, element).value_or("");
+    };
+    bond_future future;
+    future.contract_name = text(*data, "ContractName");
+    future.contract_notional =
+        decimal_from_text(text(*data, "ContractNotional")).value_or(decimal{});
+    bond_option option;
+    if (const auto od = data->child("OptionData")) {
+        future.long_short = text(*od, "LongShort");
+        option.option_type = text(*od, "OptionType");
+        read_exercise_dates(*od, result);
+        result.option_data = read_option_data(*od);
+    }
+    if (data->has("Strike"))
+        option.option_strike = decimal_from_text(text(*data, "Strike")).value_or(decimal{});
+    if (const auto strike = data->child("StrikeData"))
+        result.strike_data = read_strike_data(*strike);
+    stamp_row(future);
+    stamp_row(option);
+    result.future = std::move(future);
+    result.option = std::move(option);
+    return result;
+}
+
 auto read_ascot(const record_reader& trade) -> bond_instrument_data {
     auto result = make_base("Ascot");
     const auto data = trade.child("AscotData");
@@ -1720,6 +1755,28 @@ void write_bond_future(record_writer trade,
         d.set_text("UseFuturePrice", flag_text(*row.use_future_price));
 }
 
+void write_bond_future_option(record_writer trade, const bond_instrument_data& data) {
+    auto d = trade.child("BondFutureOptionData");
+    auto option = d.child("OptionData");
+    if (data.option_data)
+        write_option_data(option, *data.option_data);
+    else {
+        option.set_text("LongShort", data.future ? data.future->long_short : "");
+        if (data.option && !data.option->option_type.empty())
+            option.set_text("OptionType", data.option->option_type);
+    }
+    write_exercise_dates(option, data.option_exercise_dates, data.option_exercise_schedule);
+    if (data.future) {
+        scalar_terms::write_text(d, "ContractName", data.future->contract_name);
+        scalar_terms::write_text(
+            d, "ContractNotional", format_number(data.future->contract_notional.to_double()));
+    }
+    if (data.strike_data)
+        write_strike_data(d.child("StrikeData"), *data.strike_data);
+    else if (data.option)
+        scalar_terms::write_text(d, "Strike", format_number(data.option->option_strike.to_double()));
+}
+
 void write_ascot(record_writer trade,
                  const bond_instrument_data& data,
                  const std::optional<std::string>& reference_curve) {
@@ -1786,6 +1843,8 @@ auto read_bond_instrument(xml::record_reader trade, std::string_view trade_type)
         return trading::domain::trade_instrument{read_bond_repo(trade)};
     if (trade_type == "BondFuture")
         return trading::domain::trade_instrument{read_bond_future(trade)};
+    if (trade_type == "BondFutureOption")
+        return trading::domain::trade_instrument{read_bond_future_option(trade)};
     if (trade_type == "BondPosition")
         return trading::domain::trade_instrument{read_bond_position(trade)};
     return trading::domain::trade_instrument{read_ascot(trade)};
@@ -1826,6 +1885,8 @@ auto write_bond_instrument(xml::record_writer& trade,
         write_bond_repo(trade, *data, reference_curve);
     else if (trade_type == "BondFuture")
         write_bond_future(trade, *data, reference_curve);
+    else if (trade_type == "BondFutureOption")
+        write_bond_future_option(trade, *data);
     else if (trade_type == "BondPosition")
         write_bond_position(trade, *data);
     else

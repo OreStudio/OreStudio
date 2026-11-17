@@ -392,6 +392,12 @@ widening them.
 :column: trade_id
 :END:
 
+** cbo_instruments
+:PROPERTIES:
+:table:  ores_trading_cbo_instruments_tbl
+:column: trade_id
+:END:
+
 * SQL
 
 ** Flags

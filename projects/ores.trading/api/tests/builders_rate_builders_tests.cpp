@@ -348,3 +348,36 @@ TEST_CASE("a_swaption_straddle_builds_as_a_swaption_under_its_own_type", rate_ta
     REQUIRE(straddle->options.size() == 1);
     CHECK(straddle->options[0].long_short == "Short");
 }
+
+TEST_CASE("a_rate_digital_option_is_its_fact_with_an_option_exercised_at_the_fixing", rate_tags) {
+    rate_digital_option_terms terms{.index = std::string("EUR-EURIBOR-6M"),
+                                    .strike = *decimal::from_string("-0.005"),
+                                    .payoff_amount = *decimal::from_string("10000"),
+                                    .payoff_currency = std::string("EUR"),
+                                    .kind = option_kind::call,
+                                    .position = option_position::long_option,
+                                    .fixing_date = 2027y / 6 / 18,
+                                    .payment_date = 2027y / 6 / 20};
+    const auto built = rate_digital_option_builder(terms).build();
+    REQUIRE(built.has_value());
+    CHECK(built->header.identity.trade_type_code == "RateDigitalOption");
+    const auto* fact = std::get_if<ores::trading::domain::rate_digital_option_instrument>(&built->facts);
+    REQUIRE(fact != nullptr);
+    CHECK(fact->index_name == "EUR-EURIBOR-6M");
+    CHECK(fact->strike == *decimal::from_string("-0.005"));
+    CHECK(fact->payment_date == std::optional(2027y / 6 / 20));
+    REQUIRE(built->options.size() == 1);
+    CHECK(built->options[0].option_type == std::optional<std::string>("Call"));
+    REQUIRE(built->schedule_dates.size() == 1);
+    CHECK(built->schedule_dates[0].schedule_date == 2027y / 6 / 18);
+
+    auto early = terms;
+    early.payment_date = 2027y / 6 / 1;
+    const auto refused = rate_digital_option_builder(early).build();
+    REQUIRE_FALSE(refused.has_value());
+    CHECK(refused.error().term == "payment_date");
+
+    auto unnamed = terms;
+    unnamed.index = std::string();
+    CHECK(rate_digital_option_builder(unnamed).build().error().term == "index");
+}

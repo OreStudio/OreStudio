@@ -234,6 +234,26 @@ private:
     synthetic_cdo_terms terms_;
 };
 
+/**
+ * @brief An investment in one tranche of a collateralised bond obligation,
+ * whose structure the reference data holds under the structure id.
+ */
+struct cbo_terms final {
+    required<std::string> tranche_name;
+    required<utility::decimal::decimal> notional;
+    required<std::string> structure_id;
+};
+
+class ORES_TRADING_API_EXPORT cbo_builder final {
+public:
+    static constexpr std::string_view trade_type = "CBO";
+    explicit cbo_builder(cbo_terms terms);
+    [[nodiscard]] std::expected<domain::credit_instrument_data, build_error> build() const;
+
+private:
+    cbo_terms terms_;
+};
+
 }
 
 #endif

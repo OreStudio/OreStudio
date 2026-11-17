@@ -70,6 +70,7 @@
 #include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
+#include "ores.trading.api/domain/cbo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <concepts>
 #include <cstddef>
@@ -265,6 +266,7 @@ struct credit_instrument_data {
     std::vector<synthetic_cdo_instrument> synthetic_cdo_instruments;
     std::vector<credit_linked_swap_instrument> credit_linked_swap_instruments;
     std::vector<risk_participation_agreement_instrument> risk_participation_agreement_instruments;
+    std::vector<cbo_instrument> cbo_instruments;
     std::vector<swap_leg> legs;
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
@@ -294,7 +296,8 @@ using credit_fact_types = std::tuple<credit_default_swap_instrument,
                                      index_credit_default_swap_option_instrument,
                                      synthetic_cdo_instrument,
                                      credit_linked_swap_instrument,
-                                     risk_participation_agreement_instrument>;
+                                     risk_participation_agreement_instrument,
+                                     cbo_instrument>;
 
 inline constexpr auto credit_fact_arrays =
     std::tuple{&credit_instrument_data::credit_default_swap_instruments,
@@ -302,7 +305,8 @@ inline constexpr auto credit_fact_arrays =
                &credit_instrument_data::index_credit_default_swap_option_instruments,
                &credit_instrument_data::synthetic_cdo_instruments,
                &credit_instrument_data::credit_linked_swap_instruments,
-               &credit_instrument_data::risk_participation_agreement_instruments};
+               &credit_instrument_data::risk_participation_agreement_instruments,
+               &credit_instrument_data::cbo_instruments};
 
 namespace detail {
 

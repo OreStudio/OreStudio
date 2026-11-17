@@ -143,6 +143,27 @@ private:
     forward_bond_terms terms_;
 };
 
+/// A European option on a bond future contract, exercised into the future.
+struct bond_future_option_terms final {
+    bond_holding holding;
+    required<std::string> contract;
+    required<utility::decimal::decimal> contract_notional;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> expiry;
+};
+
+class ORES_TRADING_API_EXPORT bond_future_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "BondFutureOption";
+    explicit bond_future_option_builder(bond_future_option_terms terms);
+    [[nodiscard]] bond_result build() const;
+
+private:
+    bond_future_option_terms terms_;
+};
+
 /// A position in a bond future contract.
 struct bond_future_terms final {
     bond_holding holding;

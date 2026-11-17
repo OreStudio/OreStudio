@@ -465,4 +465,23 @@ std::expected<domain::credit_instrument_data, build_error> synthetic_cdo_builder
     return out;
 }
 
+cbo_builder::cbo_builder(cbo_terms terms) : terms_(std::move(terms)) {}
+
+std::expected<domain::credit_instrument_data, build_error> cbo_builder::build() const {
+    if (terms_.tranche_name.get().empty())
+        return std::unexpected(build_error{"tranche_name", "must name a tranche"});
+    if (!(terms_.notional.get() > utility::decimal::decimal{}))
+        return std::unexpected(build_error{"notional", "must be positive"});
+    if (terms_.structure_id.get().empty())
+        return std::unexpected(build_error{"structure_id", "must name a structure"});
+    domain::credit_instrument_data out;
+    out.instrument.identity.trade_type_code = std::string(trade_type);
+    domain::cbo_instrument fact{};
+    fact.tranche_name = terms_.tranche_name.get();
+    fact.notional = terms_.notional.get();
+    fact.structure_id = terms_.structure_id.get();
+    out.cbo_instruments.push_back(std::move(fact));
+    return out;
+}
+
 }

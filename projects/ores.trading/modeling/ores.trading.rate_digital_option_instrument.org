@@ -1,0 +1,283 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 14F37EA6-5222-4A12-8D00-5F388263FD11
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.rate_digital_option_instrument
+#+description: Codegen entity model for the trading =rate_digital_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Rate digital option facts.
+#+entity_singular: rate_digital_option_instrument
+#+entity_plural: rate_digital_option_instruments
+#+entity_title: Rate Digital Option Instrument
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+Represents a RateDigitalOption: a fixed payout if an interest rate fixing
+ends above (call) or below (put) the strike. The OptionData block is an
+instrument option row.
+
+This row is the family's fact table, not its identity. The header,
+=ores.trading.rate_instruments=, holds the trade type code, the party, the
+instrument's start and maturity dates and its description; this table holds
+only the product's own fields, and joins the header by =trade_id=.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:economic:    false
+:END:
+
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:economic: false
+:END:
+
+The activity that wrote this version.
+
+** index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The index that fixes, as =Index= states it, stored as its address.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-6M")
+#+end_src
+
+** strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:economic: true
+:END:
+
+The rate the fixing is compared with, as =Strike= states it; it may be
+negative, as a rate may.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("0.02").value()
+#+end_src
+
+** payoff_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:economic: true
+:END:
+
+The amount paid if the option ends in the money, as =PayoffAmount= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("10000").value()
+#+end_src
+
+** payoff_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The currency of the payout, as =PayoffCurrency= states it.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** fixing_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:economic: true
+:END:
+
+The date the index fixes, as =FixingDate= states it.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2027}/1/4}
+#+end_src
+
+** payment_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date the payout is made, as =PaymentDate= states it; absent, ORE pays
+on the fixing date.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_rate_digital_option_instruments_tbl
+:party_scoped_writes: true
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "index_name" <> '' |
+| "payoff_amount" > 0 |
+| "payoff_currency" <> '' |
+| "payment_date" is null or "payment_date" >= "fixing_date" |
+
+* C++
+
+The C++ domain class is a fact table's: the two keys stay flat, the
+implicit scaffolding columns carry the version and the tenant, and the
+columns below are the product's own fields. The row carries no
+=instrument_identity= and no audit member, because it carries neither the
+identity nor the party: the header, =ores.trading.rate_instruments=, owns
+both and this row joins it by =trade_id=. The SQL schema, DB entity and
+column lists are unaffected. The entity templates consume these
+annotations; domain and repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: rate_digital_option_instrument
+:entity_plural_short:   rate_digital_option_instruments
+:entity_singular_words: rate digital option instrument
+:entity_plural_words:   rate digital option instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rdo
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| trade_id    | ID          |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+** Write observation
+
+The trade's economic digest observes every write of this component. The
+observer's specialisation must be visible where the repository writes, so the
+repository includes it.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.trading.core/repository/trade_write_observation.hpp"
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -59,7 +59,7 @@ absent: it is a placeholder, not a product.
 | code | name | family | construction | markets | has_options | has_extension | instrument |
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 | CompositeTrade | Composite Trade |   | container |  | false | false | composite_instrument |
-| RateDigitalOption | Rate Digital Option | option | native | interest_rates! | true | false | scripted_instrument |
+| RateDigitalOption | Rate Digital Option | option | native | interest_rates! | true | false | rate_instrument |
 | SwaptionStraddle | Swaption Straddle |   | native | interest_rates! | true | false | rate_instrument |
 | ForwardVolatilityAgreement | Forward Volatility Agreement |   | native | interest_rates! | true | false |  |
 | Swap | Interest Rate Swap | swap | native | interest_rates! | false | false | rate_instrument |
@@ -105,8 +105,8 @@ absent: it is a placeholder, not a product.
 | IndexCreditDefaultSwapOption | Index Credit Default Swap Option | option | native | credit! | false | false | credit_instrument |
 | SyntheticCDO | Synthetic CDO |   | native | credit! | false | false | credit_instrument |
 | CreditLinkedSwap | Credit Linked Swap | swap | native | credit! | false | false | credit_instrument |
-| CBO | Collateralised Bond Obligation |   | native | credit! | false | false | scripted_instrument |
-| BondFutureOption | Bond Future Option |   | native | bond! | true | false | scripted_instrument |
+| CBO | Collateralised Bond Obligation |   | native | credit! | false | false | credit_instrument |
+| BondFutureOption | Bond Future Option |   | native | bond! | true | false | bond_instrument |
 | Bond | Fixed Income Bond | security | native | bond! | false | false | bond_instrument |
 | ForwardBond | Forward Bond | forward | native | bond! | false | false | bond_instrument |
 | BondFuture | Bond Future | future | native | bond! | false | true | bond_instrument |
@@ -448,6 +448,7 @@ generator and the import write it through one path.
 | callable_swap_call_date                     |
 | callable_swap_instrument                    |
 | cap_floor_instrument                        |
+| cbo_instrument                              |
 | commodity_basket_constituent                |
 | credit_basket_constituent                   |
 | credit_default_swap_instrument              |
@@ -474,6 +475,7 @@ generator and the import write it through one path.
 | instrument_underlying                       |
 | knock_out_swap_instrument                   |
 | range_bound                                 |
+| rate_digital_option_instrument              |
 | risk_participation_agreement_instrument     |
 | swap_leg                                    |
 | swap_leg_amount                             |
@@ -517,6 +519,7 @@ hold no row for the trade and read as empty.
 | credit_instrument                | index_credit_default_swap_instrument |
 | credit_instrument                | index_credit_default_swap_option_instrument |
 | credit_instrument                | risk_participation_agreement_instrument |
+| credit_instrument                | cbo_instrument                     |
 | credit_instrument                | synthetic_cdo_instrument           |
 | cash_position_instrument         | cash_position_instrument           |
 | equity_accumulator_instrument    | equity_accumulator_instrument      |
@@ -544,6 +547,7 @@ hold no row for the trade and read as empty.
 | rate_instrument                  | cap_floor_instrument               |
 | rate_instrument                  | fra_instrument                     |
 | rate_instrument                  | inflation_swap_instrument          |
+| rate_instrument                  | rate_digital_option_instrument     |
 | rate_instrument                  | knock_out_swap_instrument          |
 | rate_instrument                  | swaption_instrument                |
 | rate_instrument                  | vanilla_swap_instrument            |

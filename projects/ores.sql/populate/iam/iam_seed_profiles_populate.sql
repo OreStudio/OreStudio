@@ -55,7 +55,8 @@
 \echo '--- Seed Profiles ---'
 
 -- Operational: for real use, so the tenant it makes is a production one. It
--- publishes the base bundle, imports the parties under a GLEIF root LEI the
+-- publishes the tenant's own bundles and the counterparties it trades
+-- against, imports the parties under a GLEIF root LEI the
 -- administrator names, and creates no test data. It prefills no tenant detail,
 -- because the administrator supplies the tenant and its own identity.
 --
@@ -174,13 +175,13 @@ from ores_iam_seed_profiles_tbl p
 cross join (values
     ('empty_operational', 'system_provision', 5, '{}'::jsonb),
     ('empty_operational', 'publish_system_curves', 6, '{}'::jsonb),
-    ('empty_operational', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
+    ('empty_operational', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('empty_operational', 'build_calendars', 15, '{}'::jsonb),
     ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('gleif_entity', 'system_provision', 5, '{}'::jsonb),
     ('gleif_entity', 'publish_system_curves', 6, '{}'::jsonb),
-    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
+    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('gleif_entity', 'build_calendars', 15, '{}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
@@ -188,7 +189,7 @@ cross join (values
     ('acme_demo', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_demo', 'start_auto_approval', 8, '{}'::jsonb),
     ('acme_demo', 'end_auto_approval', 9000, '{}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'build_calendars', 15, '{}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -421,7 +422,7 @@ cross join (values
     ('acme_minimal', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_minimal', 'start_auto_approval', 8, '{}'::jsonb),
     ('acme_minimal', 'end_auto_approval', 9000, '{}'::jsonb),
-    ('acme_minimal', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.tiny", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_minimal', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.tiny", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_minimal', 'build_calendars', 15, '{}'::jsonb),
     ('acme_minimal', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_minimal', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -430,7 +431,7 @@ cross join (values
     ]}'::jsonb),
     ('northwind', 'system_provision', 5, '{}'::jsonb),
     ('northwind', 'publish_system_curves', 6, '{}'::jsonb),
-    ('northwind', 'publish_bundle', 10, '{"bundles": ["world", "tenant_defaults"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
+    ('northwind', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
     ('northwind', 'build_calendars', 15, '{}'::jsonb),
     ('northwind', 'import_lei_hierarchy', 20, '{"bundles": ["northwind_lei_import"], "root_lei": "9695NORTHWIND0000065"}'::jsonb),
     ('northwind', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),

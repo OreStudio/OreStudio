@@ -44,11 +44,12 @@ BEGIN
 
     -- The world catalogue: the facts every installation holds identically,
     -- adopted from an outside standard. Published once, into the system tenant,
-    -- at database bring-up.
+    -- at database bring-up. A tenant reads these rows where they lie and holds
+    -- no copy, so no bundle of this level is ever published into a tenant.
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'world',
         'World',
-        'Reference data adopted from an outside standard: ISO countries and currencies, the FpML vocabularies, calendars, currency pairs, commodities and equity underlyings.'
+        'Reference data adopted from an outside standard: ISO countries and currencies, the FpML vocabularies, calendars, currency pairs, commodities and equity underlyings. Held in the system tenant, and read by every tenant where it lies.'
     );
 
     -- A new tenant's own starting configuration: the rows it may change, and
@@ -62,7 +63,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto',
         'Crypto',
-        'The world catalogue plus the cryptocurrency slice: the symbols and the icons a tenant quotes beside its currencies.'
+        'The cryptocurrency slice: the symbols, and the icons a screen draws beside them. Published into the system tenant beside the world catalogue, which carries every other dataset a crypto installation needs.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -84,15 +85,23 @@ BEGIN
     );
 
     -- The generic LEI hierarchy import: the production counterpart of
-    -- acme_lei_import, carrying no organisation's data. Its one member
+    -- acme_lei_import, carrying no organisation's data. Its required member
     -- derives the parties of a GLEIF legal-entity subtree from the root LEI
-    -- the run supplies, reading the GLEIF entity/relationship staging rows
-    -- that the base bundle's gleif.* datasets carry. The profile's
+    -- the run supplies, reading the GLEIF entity and relationship staging
+    -- rows that the dataset dependency graph orders. The profile's
     -- import_lei_hierarchy step names this bundle and passes root_lei.
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'lei_hierarchy',
         'GLEIF LEI Hierarchy Import',
         'Imports the GLEIF legal-entity hierarchy under a root LEI as the tenant''s parties. Published tenant-wide with the {"lei_parties": {"root_lei": "..."}} param, before any party under the root exists. The root LEI is the run''s, so the bundle holds no organisation''s data.'
+    );
+
+    -- The GLEIF records a tenant trades against, as the tenant's own rows.
+    -- Published tenant-wide, on request, with the rungs the caller opts into.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'lei_counterparties',
+        'GLEIF Counterparties',
+        'The GLEIF records a tenant trades against: the counterparties it draws from the GLEIF golden copy, and the aliases that name them. Published tenant-wide on request, with each rung opted into by name. The LEI record is a world fact; the counterparty and the alias are the tenant''s own rows.'
     );
 
     -- The reference data one party needs and nothing more: its instrument

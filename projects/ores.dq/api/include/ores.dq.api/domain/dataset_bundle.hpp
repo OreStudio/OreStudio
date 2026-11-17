@@ -51,7 +51,7 @@ namespace ores::dq::domain {
  * - "system_core": the platform's own vocabulary, published at bring-up
  * - "world": reference data adopted from an outside standard, published at bring-up
  * - "tenant_defaults": the configuration a tenant starts with
- * - "crypto": the world catalogue plus the cryptocurrency slice
+ * - "crypto": the cryptocurrency slice, published beside the world catalogue
  */
 struct dataset_bundle final {
     /**

@@ -47,7 +47,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_lei_import',
         'Acme Corporation LEI Import',
-        'The four-party ACME Corporation LEI hierarchy. Published tenant-wide with the {"root_lei": "9695ACMEGROUP0000030"} param, before any operating-company party exists. Depends on fpml.business_center already having been published via the base bundle.'
+        'The four-party ACME Corporation LEI hierarchy. Published tenant-wide with the {"root_lei": "9695ACMEGROUP0000030"} param, before any operating-company party exists. Depends on fpml.business_center already having been published in the system tenant by the world catalogue.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_parties', 20);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_counterparties', 30);

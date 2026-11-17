@@ -155,14 +155,15 @@ Entry price; absent for market-price positions.
 
 ** volatility
 :PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:     double precision
+:cpp_type: std::optional<double>
 :nullable: true
 :economic: true
 :END:
 
 The volatility an auto delta hedged option's hedge is run at, as its
-=Volatility= states it; other positions leave it null.
+=Volatility= states it; other positions leave it null. A volatility is a
+continuous quantity, so it is held as ORE's schema reads it, a float.
 
 ** drift_rate
 :PROPERTIES:

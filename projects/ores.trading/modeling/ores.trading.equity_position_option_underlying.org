@@ -225,14 +225,16 @@ The currency of a batch's strike, as its optional =StrikeCurrency= states it.
 
 ** quantity
 :PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:     double precision
+:cpp_type: std::optional<double>
 :nullable: true
 :END:
 
 The number of options in an auto delta hedged option's batch, as its
 =Quantity= states it; an option position's entries leave it null, as the
-position states one quantity for all of them.
+position states one quantity for all of them. ORE's schema reads =Quantity=
+as an =xs:float=, so a batch's count is held as a float and not rounded to
+twelve places.
 
 ** premium_amount
 :PROPERTIES:

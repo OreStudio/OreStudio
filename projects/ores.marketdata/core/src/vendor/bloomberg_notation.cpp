@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/vendor/bloomberg_notation.hpp"
 #include "notation_support.hpp"
+#include <algorithm>
 #include <array>
 #include <optional>
 
@@ -59,6 +60,59 @@ std::optional<price_side> side_of(std::string_view field) {
         return price_side::ask;
     if (field == "PX_MID")
         return price_side::mid;
+    return std::nullopt;
+}
+
+// The words of a volatility ticker between the pair and the expiry: V for the at-the-money
+// volatility, and the delta and R or B for a risk reversal or a butterfly, as in EURUSD25R1Y.
+std::optional<std::string> option_word_of(std::string_view label) {
+    if (label == "ATM")
+        return "V";
+    if (label == "25RR")
+        return "25R";
+    if (label == "10RR")
+        return "10R";
+    if (label == "25BF")
+        return "25B";
+    if (label == "10BF")
+        return "10B";
+    return std::nullopt;
+}
+
+// A tenor as a volatility ticker ends it: a count and one of D, W, M and Y.
+bool is_option_tenor(std::string_view tenor) {
+    if (tenor.size() < 2 || tenor.size() > 4)
+        return false;
+    const auto unit = tenor.back();
+    if (unit != 'D' && unit != 'W' && unit != 'M' && unit != 'Y')
+        return false;
+    if (tenor.front() == '0')
+        return false;
+    return std::ranges::all_of(tenor.substr(0, tenor.size() - 1),
+                               [](char c) { return c >= '0' && c <= '9'; });
+}
+
+// The point a volatility ticker names, such as EURUSDV1Y Curncy or EURUSD25R1Y Curncy, or
+// nothing for a ticker of another form.
+std::optional<fx_option_quote> option_of(std::string_view ticker) {
+    const auto suffix = std::string(" ") + std::string(yellow_key);
+    if (ticker.size() <= suffix.size() + 7 || !ticker.ends_with(suffix))
+        return std::nullopt;
+    const auto body = ticker.substr(0, ticker.size() - suffix.size());
+    const auto upper = [](std::string_view w) {
+        return std::ranges::all_of(w, [](char c) { return c >= 'A' && c <= 'Z'; });
+    };
+    if (!upper(body.substr(0, 6)))
+        return std::nullopt;
+    const auto rest = body.substr(6);
+    for (const auto label : {"ATM", "25RR", "10RR", "25BF", "10BF"}) {
+        const auto word = *option_word_of(label);
+        if (rest.starts_with(word) && is_option_tenor(rest.substr(word.size())))
+            return fx_option_quote{.base = std::string(body.substr(0, 3)),
+                                   .quote = std::string(body.substr(3, 3)),
+                                   .expiry = std::string(rest.substr(word.size())),
+                                   .strike_label = label};
+    }
     return std::nullopt;
 }
 
@@ -109,6 +163,18 @@ bloomberg_notation::read(const messaging::vendor_id& id) const {
         }
     }
 
+    // A point of an FX volatility surface: the pair, the quote's word and the expiry, read before
+    // the pair ticker, which would take it for another form of a currency id.
+    if (const auto option = option_of(id.external_id)) {
+        if (id.field != field_of(price_side::last))
+            return fail(notation_error::kind::wrong_field,
+                        "A Bloomberg volatility carries the last price: '" + id.field + "'.");
+        if (option->base == option->quote)
+            return fail(notation_error::kind::malformed,
+                        "A pair holds two different currencies: '" + id.external_id + "'.");
+        return quote_description{*option};
+    }
+
     // The ticker of a currency pair: six upper case letters, a space and the yellow key.
     // A ticker with another yellow key is a valid Bloomberg id that this description cannot hold.
     std::string base;
@@ -156,6 +222,22 @@ bloomberg_notation::write(const quote_description& description) const {
                            pillar->instrument_code + " " + pillar->start_tenor + " " +
                            pillar->end_tenor + " " + std::string(yellow_key),
             .field = std::string(field_of(price_side::last))};
+    }
+    if (const auto* option = std::get_if<fx_option_quote>(&description)) {
+        const auto word = option_word_of(option->strike_label);
+        if (!word)
+            return detail::fail(notation_error::kind::not_representable,
+                                "Bloomberg quotes ATM, 25RR, 10RR, 25BF and 10BF, not '" +
+                                    option->strike_label + "'.");
+        if (!is_option_tenor(option->expiry))
+            return detail::fail(notation_error::kind::not_representable,
+                                "Not a Bloomberg volatility expiry: '" + option->expiry + "'.");
+        if (const auto ok = detail::check_pair(fx_spot_quote{option->base, option->quote}); !ok)
+            return std::unexpected(ok.error());
+        return messaging::vendor_id{.id_scheme = std::string(scheme),
+                                    .external_id = option->base + option->quote + *word +
+                                                   option->expiry + " " + std::string(yellow_key),
+                                    .field = std::string(field_of(price_side::last))};
     }
     const auto fx = detail::fx_spot_of(description);
     if (!fx)

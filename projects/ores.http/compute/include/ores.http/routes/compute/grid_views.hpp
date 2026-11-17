@@ -60,6 +60,13 @@ inline constexpr std::string_view page_refused =
     "The jobs read takes an offset of 0 or more and a limit of 1 to 200.";
 
 /**
+ * @brief The identifier a grid route's address names.
+ *
+ * @throws refusal naming the sentence when the address does not name one.
+ */
+boost::uuids::uuid id_of(const ores::http::domain::http_request& req);
+
+/**
  * @brief The page a grid list's query states.
  *
  * A stated offset or limit that is not a whole number, or a limit outside 1 to

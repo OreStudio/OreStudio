@@ -859,6 +859,14 @@ RULES = (
          BFF, RESOURCE, "grid",
          "One page of the runs that ended with an outcome, the answer to which of them"
          " failed, or one run by id."),
+    Rule("the grid app versions' route",
+         ("regex", r"^(GET|PUT) /api/operations/grid/app-versions/\{id\}"
+                   r"(/release-note)?$"),
+         CPP, RESOURCE, "grid",
+         "One build of the compute catalogue at the addresses and in the shapes the BFF"
+         " answered: the build with the app it belongs to, the packages the wrapper downloads"
+         " and the versions beside it, and the write that replaces its release note against"
+         " the version the editor read."),
     Rule("the grid app versions",
          ("regex", r"^(GET|PUT) /api/operations/grid/app-versions"),
          BFF, RESOURCE, "grid",

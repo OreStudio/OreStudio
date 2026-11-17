@@ -97,14 +97,6 @@ int outcome_of(const http_request& req) {
     return code;
 }
 
-/// The identifier a route's address names.
-boost::uuids::uuid id_of(const http_request& req) {
-    const auto raw = req.get_path_param("id");
-    if (!rr::is_uuid(raw))
-        rr::invalid(std::string(grid::id_refused));
-    return boost::uuids::string_generator()(raw);
-}
-
 /// The references a page of batches carries, which a report run may name.
 std::vector<std::string> references_of(const std::vector<compute_domain::batch>& batches) {
     std::vector<std::string> references;
@@ -183,7 +175,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_batches_request>([&] {
                     rr::refuse_unknown_params(req, {});
-                    const auto id = id_of(req);
+                    const auto id = grid::id_of(req);
                     compute_messaging::list_batches_request msg;
                     msg.limit = 1;
                     msg.filter.emplace();
@@ -204,7 +196,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_by_batch_id_workunits_request>([&] {
                     rr::refuse_unknown_params(req, {"offset", "limit"});
-                    const auto id = id_of(req);
+                    const auto id = grid::id_of(req);
                     const auto asked = grid::page_of(req, grid::page_refused);
                     compute_messaging::list_by_batch_id_workunits_request msg;
                     msg.batch_id = id;
@@ -227,7 +219,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 co_return guarded<compute_messaging::get_workunit_request>([&] {
                     rr::refuse_unknown_params(req, {});
                     compute_messaging::get_workunit_request msg;
-                    msg.key.id = id_of(req);
+                    msg.key.id = grid::id_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     if (reply.result.outcome == ores::utility::domain::outcome::missing)
                         rr::refuse(
@@ -249,7 +241,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_by_workunit_id_results_request>([&] {
                     rr::refuse_unknown_params(req, {"offset", "limit"});
-                    const auto id = id_of(req);
+                    const auto id = grid::id_of(req);
                     const auto asked = grid::page_of(req, grid::page_refused);
                     compute_messaging::list_by_workunit_id_results_request msg;
                     msg.workunit_id = id;
@@ -306,7 +298,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 co_return guarded<compute_messaging::get_result_request>([&] {
                     rr::refuse_unknown_params(req, {});
                     compute_messaging::get_result_request msg;
-                    msg.key.id = id_of(req);
+                    msg.key.id = grid::id_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     if (reply.result.outcome == ores::utility::domain::outcome::missing)
                         rr::refuse(http_status::not_found, "not-found", "No result has this id.");

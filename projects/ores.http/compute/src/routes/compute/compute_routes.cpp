@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/compute/compute_routes.hpp"
+#include "ores.http/routes/compute/app_version_routes.hpp"
 #include "ores.http/routes/compute/download_routes.hpp"
 #include "ores.http/routes/compute/job_routes.hpp"
 
@@ -30,6 +31,7 @@ void compute_routes::register_routes(
     std::string storage_dir) {
     job_routes::register_routes(router, registry, session);
     download_routes::register_routes(router, registry, session, std::move(storage_dir));
+    app_version_routes::register_routes(router, registry, session);
 }
 
 }

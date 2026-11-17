@@ -130,11 +130,8 @@ void download_routes::register_routes(
                       store](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::get_workunit_request>([&] {
                     rr::refuse_unknown_params(req, {});
-                    const auto raw = req.get_path_param("id");
-                    if (!rr::is_uuid(raw))
-                        rr::invalid(std::string(grid::id_refused));
                     compute_messaging::get_workunit_request msg;
-                    msg.key.id = boost::uuids::string_generator()(raw);
+                    msg.key.id = grid::id_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     if (reply.result.outcome == ores::utility::domain::outcome::missing)
                         rr::refuse(
@@ -155,11 +152,8 @@ void download_routes::register_routes(
                       store](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::get_result_request>([&] {
                     rr::refuse_unknown_params(req, {});
-                    const auto raw = req.get_path_param("id");
-                    if (!rr::is_uuid(raw))
-                        rr::invalid(std::string(grid::id_refused));
                     compute_messaging::get_result_request msg;
-                    msg.key.id = boost::uuids::string_generator()(raw);
+                    msg.key.id = grid::id_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     if (reply.result.outcome == ores::utility::domain::outcome::missing)
                         rr::refuse(http_status::not_found, "not-found", "No result has this id.");

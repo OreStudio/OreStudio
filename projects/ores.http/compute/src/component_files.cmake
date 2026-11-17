@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/compute/app_version_routes.cpp"
     "routes/compute/compute_routes.cpp"
     "routes/compute/download_routes.cpp"
     "routes/compute/grid_views.cpp"
@@ -29,6 +30,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.compute.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/app_version_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/compute_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/download_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/grid_views.hpp"

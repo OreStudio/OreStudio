@@ -91,6 +91,13 @@ std::optional<std::string> stated_id(const std::optional<boost::uuids::uuid>& id
     return id ? stated_id(*id) : std::nullopt;
 }
 
+boost::uuids::uuid id_of(const http_request& req) {
+    const auto raw = req.get_path_param("id");
+    if (!rr::is_uuid(raw))
+        rr::invalid(std::string(id_refused));
+    return boost::uuids::string_generator()(raw);
+}
+
 page page_of(const http_request& req, std::string_view sentence) {
     page out;
     out.limit = page_default;

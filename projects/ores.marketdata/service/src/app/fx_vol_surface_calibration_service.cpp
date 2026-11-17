@@ -50,6 +50,7 @@
 #include <cmath>
 #include <cstdint>
 #include <format>
+#include <map>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -300,10 +301,27 @@ fx_vol_surface_calibration_service::calibrate(const context& ctx,
 
         boost::uuids::random_generator uuid_gen;
         repository::observation_lineage_repository lineage_repo;
+
+        // The lineage rows this grid already has, read in one statement: a
+        // read per point costs the fit more than the fit does.
+        std::vector<std::string> uris;
+        uris.reserve(datums.size());
+        for (const auto& d : datums)
+            uris.push_back(datum::oresmd_uri_codec::write(d).value());
+        std::vector<repository::observation_lineage_repository::point_key> points;
+        points.reserve(uris.size());
+        for (const auto& uri : uris)
+            points.push_back({as_of, uri});
+        const auto annexed =
+            lineage_repo.read_latest_for_points(tx, blueprint.output_series_id, points);
+        std::map<std::string, boost::uuids::uuid> annex_of;
+        for (const auto& row : annexed)
+            annex_of.emplace(row.oresmd_uri, row.id);
+
         std::vector<domain::market_observation> observations;
         std::vector<domain::observation_lineage> lineages;
         for (std::size_t i = 0; i < fit->grid.size(); ++i) {
-            const auto uri = datum::oresmd_uri_codec::write(datums[i]).value();
+            const auto& uri = uris[i];
             domain::market_observation obs;
             obs.id = uuid_gen();
             obs.tenant_id = ctx.tenant_id();
@@ -316,11 +334,10 @@ fx_vol_surface_calibration_service::calibrate(const context& ctx,
             obs.feed_id = domain::catalogue_ids::ore_derived_feed_id();
             observations.push_back(std::move(obs));
 
-            const auto existing =
-                lineage_repo.read_latest_by_observation(tx, blueprint.output_series_id, as_of, uri);
+            const auto existing = annex_of.find(uri);
             domain::observation_lineage lin;
             lin.tenant_id = ctx.tenant_id();
-            lin.id = existing ? existing->id : uuid_gen();
+            lin.id = existing != annex_of.end() ? existing->second : uuid_gen();
             lin.party_id = blueprint.party_id;
             lin.series_id = blueprint.output_series_id;
             lin.observation_datetime = as_of;

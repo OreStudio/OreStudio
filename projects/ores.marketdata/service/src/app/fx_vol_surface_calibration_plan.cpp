@@ -341,6 +341,19 @@ prepare_calibration(const surface_calibration_recipe& recipe,
     out.request.pillar_tolerance = pillar_tolerance;
     std::set<std::string> unfitted;
     double longest_fitted = 0.0;
+
+    // The blueprint is indexed once: each expiry's pillars, and each pillar's
+    // sources. A surface carries hundreds of both, so walking the whole of each
+    // per expiry would cost the fit more than the fit does.
+    std::map<std::string, std::vector<const refdata::domain::fx_vol_surface_pillar*>>
+        pillars_of_expiry;
+    for (const auto& pillar : recipe.pillars)
+        pillars_of_expiry[pillar.expiry_code].push_back(&pillar);
+    std::map<boost::uuids::uuid, std::vector<const refdata::domain::fx_vol_surface_pillar_source*>>
+        sources_of_pillar;
+    for (const auto& source : recipe.sources)
+        sources_of_pillar[source.pillar_id].push_back(&source);
+
     for (const auto& expiry : checked.expiries) {
         const auto terms = terms_at(recipe, forwards, by_date, expiry.code, expiry.period);
         if (!terms)
@@ -354,9 +367,11 @@ prepare_calibration(const surface_calibration_recipe& recipe,
         std::set<int> risk_reversals;
         std::set<int> butterflies;
         std::vector<std::string> unquoted;
-        for (const auto& pillar : recipe.pillars) {
-            if (pillar.expiry_code != expiry.code)
-                continue;
+        static const std::vector<const refdata::domain::fx_vol_surface_pillar*> no_pillars;
+        const auto found_pillars = pillars_of_expiry.find(expiry.code);
+        for (const auto* pillar_ptr :
+             found_pillars == pillars_of_expiry.end() ? no_pillars : found_pillars->second) {
+            const auto& pillar = *pillar_ptr;
             const auto point = pillar_key_of(pillar.expiry_code, pillar.strike_label);
             const auto read = read_strike_label(point, pillar.strike_label);
             if (!read)
@@ -369,9 +384,12 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                                 .contributions = {}};
             missing_surface_pillar missing{.point = point, .series_ids = {}};
             std::vector<used_surface_source> used;
-            for (const auto& source : recipe.sources) {
-                if (source.pillar_id != pillar.id)
-                    continue;
+            static const std::vector<const refdata::domain::fx_vol_surface_pillar_source*>
+                no_sources;
+            const auto found_sources = sources_of_pillar.find(pillar.id);
+            for (const auto* source_ptr :
+                 found_sources == sources_of_pillar.end() ? no_sources : found_sources->second) {
+                const auto& source = *source_ptr;
                 const double* value = nullptr;
                 if (const auto series = quotes.find(source.market_series_id);
                     series != quotes.end())

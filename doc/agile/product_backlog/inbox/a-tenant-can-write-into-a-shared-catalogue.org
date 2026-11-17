@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 34172C9C-FC58-475C-BD18-7AF4782B163F
+:END:
+#+title: A tenant can write into a shared catalogue
+#+description: The model forbids a tenant holding a write path into a table that carries a shared row, but the permissions still grant one: a tenant that writes a row of its own shadows the shared row in every read, and no check refuses it.
+#+type: capture
+#+level: cross
+#+filetags: :product_backlog:inbox:capture:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The reference data model permits exactly one copy of a shared row, and states
+that a tenant must hold no write path into a table that carries one. The
+permissions do not yet enforce that: a tenant's role grants, for example,
+=refdata::calendars:write=, so a tenant administrator can add a calendar of its
+own. A row of the tenant's own shadows the shared row of the same code in every
+read, which is the divergence the model exists to prevent.
+
+The gap is on every catalogue that took the shared-reference read: the
+vocabularies first, and now the world catalogue beside them.
+
+* Why
+
+The read side of the model is in place and tested: a tenant reads the platform's
+and the world's rows where they lie. A write path that recreates a second copy
+by hand leaves the class of defect open by another route, and it is invisible in
+the publication pipeline because no dataset is involved.
+
+* References
+
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — states the classes and the write path a class permits.
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — states that a tenant holds no copy, and that permission governs the write.
+
+* See also
+
+- [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Task: Collapse the tables written both ways]] — removed the second copy the pipeline made, and left this one.

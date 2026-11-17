@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
+#+updated: 2026-11-17
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ No table is written by both a direct seed and a DQ publish, and a check proves i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
+| Now          | The bundle map is settled: no tenant takes a copy of a world row, and a dataset belongs to one level and one scope. The writer collapse is next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Next         | Take the fifteen tables written both ways, one writer at a time. |
+| Last touched | 2026-11-17                              |
 
 * Acceptance
 
@@ -42,26 +42,30 @@ No table is written by both a direct seed and a DQ publish, and a check proves i
 
 * Plan
 
-1. Take the fourteen two-writer tables from the inventory.
-2. Keep DQ for the eight refdata datasets and =iso.countries=; keep the direct
-   seed only for the system party and the WRLD business centre.
-3. Delete the other side, and adjust the dataset or the seed accordingly.
+The reader question is settled, in two steps and in this order.
+
+1. Give the world catalogue the shared-reference read: the select policy that
+   admits the system tenant's rows, and the repository read that names them.
+2. Publish no world bundle into a tenant. The seed profiles name the tenant's
+   own bundles, the GLEIF datasets that write a tenant's rows move to
+   =lei_hierarchy= and =lei_counterparties=, and no dataset is a member of two
+   bundles that differ in level or in scope.
+3. Take the fifteen two-writer tables, one at a time, and keep the writer the
+   level assigns: the DQ publish for the world catalogue, the populate script
+   for a fixed platform vocabulary.
 4. Classify the eleven tables that have no tenant route.
-The deletion is only safe once the reader question is settled. The backlog
-capture *One source for reference data that the system and each tenant read*
-records why the copy exists: the screens read the caller's tenant and the
-row-level security hides the system tenant's rows, so a reader change may have
-to land before the writer goes.
+5. Add the check that fails when a table gains a second writer.
 
 * Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Tables written both by a direct seed and a DQ publish | 14 | investigation, section 3.3 | e050a2d239 |
+| Tables written both by a direct seed and a DQ publish | 15: the fourteen the investigation names, and =assets_images_tbl= | the intersection of the tables the populate scripts insert into and the tables a publish function inserts into | this commit |
 | System-only tables with no tenant route | 11 | investigation, section 3.3 | e050a2d239 |
-| Seed profiles that name the world bundle, so a demo tenant publishes the world catalogue into itself | 5 of 5 | `grep -c '\"world\"' projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql` | this commit |
-| Rows a provisioned demo tenant holds of two world datasets | 61 calendars and 170 currencies of its own, beside the system tenant's | `select tenant_id, count(*) from ores_refdata_calendars_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1` | this commit |
-| Datasets that are a member of more than one bundle | 32, of which 24 are the crypto bundle re-listing world members | `select count(*) from (select dataset_code from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by dataset_code having count(*) > 1) d` | this commit |
+| Seed profiles that name the world bundle, so a demo tenant publishes the world catalogue into itself | 0 of 5, was 5 of 5 | `grep -c '\"world\"' projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql` | this commit |
+| World rows a provisioned tenant holds of its own | 0 calendars and 0 currencies, beside the system tenant's 61 and 170, which it reads | provision a tenant with =ores_iam_provision_tenant_fn=, then count the rows whose =tenant_id= is the caller's | this commit |
+| Datasets that are a member of more than one bundle | 3, was 32: the conventions the map doubles, and two pairs of bundles that share a level and a scope | `select count(*) from (select dataset_code from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by dataset_code having count(*) > 1) d` | this commit |
+| Members of each bundle | 39 world, 16 system_core, 5 lei_hierarchy, 4 lei_counterparties, 4 tenant_defaults, 2 crypto | `select bundle_code, count(*) from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1 order by 1` | this commit |
 
 * Notes
 
@@ -86,7 +90,98 @@ task has to do:
   the =crypto= bundle re-listing world members; the rest are worth looking at
   one by one.
 
+Both bullets are closed in the tree. The world catalogue carries the
+shared-reference read, so a tenant reads a calendar and a currency where they
+lie; the seed profiles name =tenant_defaults= and =lei_counterparties= and no
+world bundle; and the crypto bundle keeps only the slice it alone carries.
+
+What the page says about a shared row and what the tree now does agree, with one
+correction the work forced. The page said a dataset is a member of one bundle and
+no other, which the tree contradicts in three places that are not defects: two
+bundles of one level and one scope may carry the same dataset, because the target
+and the parameters are the same either way. The rule the page now states is that
+a dataset's bundles share its level and its scope, and the instrument conventions
+remain the one dataset the map doubles, because the system tenant publishes the
+system party's copy and =party_essentials= publishes each other party's.
+
+Two further properties of the world catalogue are worth stating where the next
+person will look for them:
+
+- The validator functions that check a code against a catalogue already admitted
+  the system tenant for the world datasets the platform published first, and the
+  rest now do too: =:tenant_scope: both= rather than =tenant=.
+- A tenant may still write a row of its own into a shared catalogue, and a row
+  of its own shadows the shared one in every read. The page forbids the write
+  path; the permissions do not remove it yet, and the same is true of the
+  vocabularies that took the read before this task. It is recorded as the
+  capture [[id:34172C9C-FC58-475C-BD18-7AF4782B163F][A tenant can write into a
+  shared catalogue]].
+
 See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Result
+
+The first half is in the tree and proven. The world catalogue carries the
+shared-reference read, no profile publishes a world bundle into a tenant, and a
+check fails when a table gains a second writer.
+
+- 33 entities take the two flags a shared table needs, and the images policy is
+  written by hand. The validate functions that check a code against a catalogue
+  admit the system tenant's rows.
+- A provisioned tenant holds 0 calendars and 0 currencies of its own and reads
+  the system tenant's 61 and 170. A pgTAP suite asserts the six catalogues a
+  tenant no longer copies, the reads, and that it can neither move nor close a
+  shared row.
+- Five seed profiles name =tenant_defaults= and =lei_counterparties= and no
+  world bundle. =lei_counterparties= is new; the GLEIF counterparties and the
+  aliases left the world catalogue for it, and the GLEIF legal entities moved to
+  =lei_hierarchy=.
+- The crypto bundle keeps only the slice only it carries, and the datasets the
+  platform already published left the world catalogue rather than being listed
+  twice.
+- The eleven tables the investigation left with no tenant route are classified:
+  they are platform vocabularies, so every tenant reads them where they lie and
+  the ten whose repository filtered them out now find them.
+- =check_single_writer.py= states the rule and runs in CI. It finds 18 tables
+  written both ways, three of them legitimately, and fifteen as debt.
+
+What the second half needs, found while measuring:
+
+- Eight of the fifteen live in the world catalogue, and deleting their populate
+  inserts is not mechanical: =refdata_currency_calendars_seed_populate.sql= and
+  =refdata_currency_countries_seed_populate.sql= *derive* their artefact rows
+  from the live tables at populate time. With the live inserts gone, the
+  derivation reads empty tables and stages nothing. They must derive from the
+  artefact tables instead.
+- The two copies had already drifted: the live insert names USD -> US.FOMC,
+  which the dataset does not carry. Collapsing the writers has to add that row
+  to the dataset, or the collapse loses it.
+- Three of the eighteen are outside the refdata inventory the investigation
+  took: the market data series and their asset classes, and the IAM account
+  roles. Both writers reach the system tenant, and the derived-feed work owns
+  the collapse.
+
+Gates, each run on the tree this task leaves:
+
+| Gate | Result |
+|------+--------|
+| Database recreate from the tree | succeeded, three times |
+| pgTAP | 915 assertions in 97 files; 913 pass, and the two files that fail are main's own (see below) |
+| Build, preset =linux-clang-release-ninja= | succeeded: the first run reached 1152 of 1155 targets before the host signalled it, and the resumed runs finished the rest |
+| ctest | 103 of 103 suites pass |
+| Component drift, for refdata, reporting, dq, iam and assets-cpp | no drift |
+| =check_single_writer.py= | 18 tables written both ways, all listed |
+| =check_rls_system_tenant_widenings.py= | 13 widenings, all listed |
+| =check_populate_references.py=, =check_entity_table_writes.py= | clean, and no new writer |
+| =compass lint= | clean |
+
+Two SQL suites fail and neither is reachable from this branch. Main's
+=b0243c0361= (2026-11-17) took the FX volatility blueprint set from ten pairs to
+thirty-five and left the tests that assert the old shape: =acme_fx_volatility_configs_test=
+still expects 22 surfaces where the data now has 54, and
+=refdata_fx_vol_surface_blueprints_publish_test= still expects ten pairs and two
+pairs no blueprint names. The fix is to regenerate the ACME curve configurations,
+which is the derived-feed work's, not a change to those expectations.
 
 * Test Scenarios
 

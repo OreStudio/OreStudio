@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 94 types name an instrument table, and the generator records 94.
+- 98 types name an instrument table, and the generator records 98.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -149,7 +149,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =EquityBarrierOption= | native | native | =EquityBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
 | =EquityBasketOption= | scripted | scripted | =EquityBasketOptionData= | =scripted_instrument= | yes | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |
 | =EquityBasketVarianceSwap= | scripted | scripted | =EquityBasketVarianceSwapData= | - | no | =BasketVarianceSwap= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
-| =EquityBestEntryOption= | scripted | scripted | =EquityBestEntryOptionData= | - | no | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
+| =EquityBestEntryOption= | scripted | scripted | =EquityBestEntryOptionData= | =scripted_instrument= | yes | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
 | =EquityCliquetOption= | native | native | =EquityCliquetOptionData= | =equity_option_instrument= | yes | - | - | - |
 | =EquityDigitalOption= | native | native | =EquityDigitalOptionData= | =equity_digital_option_instrument= | yes | - | - | - |
 | =EquityDoubleBarrierOption= | native | native | =EquityDoubleBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
@@ -165,7 +165,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =EquityPairwiseVarianceSwap= | native | native | =EquityPairwiseVarianceSwapData= | - | no | =PairwiseVarianceSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
 | =EquityPosition= | native | native | =EquityPositionData= | =equity_position_instrument= | yes | - | - | - |
 | =EquityRainbowOption= | scripted | scripted | =EquityRainbowOptionData= | =scripted_instrument= | yes | =MaxRainbowOption=, =MinRainbowOption=, =BestOfAssetOrCashRainbowOption=, =WorstOfAssetOrCashRainbowOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |
-| =EquityStrikeResettableOption= | scripted | scripted | =EquityStrikeResettableOptionData= | - | no | - | - | [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
+| =EquityStrikeResettableOption= | scripted | scripted | =EquityStrikeResettableOptionData= | =scripted_instrument= | yes | - | - | [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
 | =EquitySwap= | native | native | =EquitySwapData= | =equity_swap_instrument= | yes | - | - | - |
 | =EquityTaRF= | scripted | scripted | =EquityTaRFData= | =equity_accumulator_instrument= | yes | =TaRF= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
 | =EquityTouchOption= | native | native | =EquityTouchOptionData= | =equity_digital_option_instrument= | yes | - | - | - |
@@ -183,7 +183,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =FxBarrierOption= | native | native | =FxBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
 | =FxBasketOption= | scripted | scripted | =FxBasketOptionData= | =scripted_instrument= | yes | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |
 | =FxBasketVarianceSwap= | scripted | scripted | =FxBasketVarianceSwapData= | - | no | =BasketVarianceSwap= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
-| =FxBestEntryOption= | scripted | scripted | =FxBestEntryOptionData= | - | no | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
+| =FxBestEntryOption= | scripted | scripted | =FxBestEntryOptionData= | =scripted_instrument= | yes | =BestEntryOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
 | =FxDigitalBarrierOption= | native | native | =FxDigitalBarrierOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
 | =FxDigitalOption= | native | native | =FxDigitalOptionData= | =fx_digital_option_instrument= | yes | - | - | - |
 | =FxDoubleBarrierOption= | native | native | =FxDoubleBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
@@ -196,7 +196,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =FxOption= | native | native | =FxOptionData= | =fx_vanilla_option_instrument= | yes | - | - | - |
 | =FxPairwiseVarianceSwap= | native | native | =FxPairwiseVarianceSwapData= | - | no | =PairwiseVarianceSwap= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
 | =FxRainbowOption= | scripted | scripted | =FxRainbowOptionData= | =scripted_instrument= | yes | =MaxRainbowOption=, =MinRainbowOption=, =BestOfAssetOrCashRainbowOption=, =WorstOfAssetOrCashRainbowOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |
-| =FxStrikeResettableOption= | scripted | scripted | =FxStrikeResettableOptionData= | - | no | - | - | [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
+| =FxStrikeResettableOption= | scripted | scripted | =FxStrikeResettableOptionData= | =scripted_instrument= | yes | - | - | [[id:A0F6C588-DE2B-402C-82B5-485FC64CCB3F][Model the best-entry and strike-resettable products]] |
 | =FxSwap= | native | native | =FxSwapData= | =fx_forward_instrument= | yes | - | - | - |
 | =FxTaRF= | scripted | scripted | =FxTaRFData= | =fx_asian_forward_instrument= | yes | =TaRF= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
 | =FxTouchOption= | native | native | =FxTouchOptionData= | =fx_digital_option_instrument= | yes | - | - | - |

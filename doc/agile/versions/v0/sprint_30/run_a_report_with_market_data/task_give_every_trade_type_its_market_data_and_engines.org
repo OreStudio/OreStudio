@@ -67,6 +67,15 @@ task and name that file in the Command column.
 
 * Notes
 
+- From the baseline run of 2026-11-17 (=evidence/run_674d2887_errors.txt=):
+  70 trades name a ceased LIBOR index (=GBP-LIBOR-3M=, =GBP-LIBOR-1W=,
+  =USD-LIBOR-3M=). A market cannot forward a ceased index. Decide here
+  whether the generator books a live index or the run exports an ORE IBOR
+  fallback configuration. The baseline also lists the smaller causes this
+  task owns: basket reference data for the credit index products, the
+  script library for =ScriptedTrade=, and a pricing engine for
+  =EquityOutperformanceOption=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

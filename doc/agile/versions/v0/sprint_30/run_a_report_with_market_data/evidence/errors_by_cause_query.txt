@@ -1,0 +1,29 @@
+with e as (
+  select e.subject_id, e.message,
+    case
+      when e.message ~ 'of type ibor index' then 'index not in the market: ibor/overnight index'
+      when e.message ~ 'of type yield curve / ibor index' then 'index not in the market: ibor/overnight index'
+      when e.message ~ 'of type equity (curve|spot|vol)' then 'equity not in the market'
+      when e.message ~ 'of type commodity' then 'commodity not in the market'
+      when e.message ~ 'of type intraday power' then 'commodity not in the market'
+      when e.message ~ 'inflation index' then 'inflation index not in the market'
+      when e.message ~ 'of type (default curve|credit|security|recovery)' then 'credit not in the market'
+      when e.message ~ 'Convention .* not found' then 'curve convention not exported'
+      when e.message ~ '(ReferenceDataManager|reference data manager)' then 'no reference data for baskets'
+      when e.message ~ 'script .* not found' then 'no script library'
+      when e.message ~ 'No Pricing Engine' then 'no pricing engine'
+      when e.message ~ '^Missing .* fixing' then 'missing fixing'
+      when e.message ~ 'of type (fx vol|swaption vol|cap)' then 'volatility not in the market'
+      else 'other: ' || left(e.message, 90)
+    end as cause
+  from ores_reporting_report_error_events_tbl e
+  where e.report_instance_id = '674d2887-291d-4241-9c5b-e6da510c3ab6'
+    and e.severity = 'error' and e.subject = 'trade'
+)
+select e.cause, count(*) as errors, count(distinct e.subject_id) as trades,
+       string_agg(distinct t.trade_type, ', ') as trade_types
+from e
+left join ores_trading_trades_tbl t
+  on t.id::text = e.subject_id and t.valid_to = ores_utility_infinity_timestamp_fn()
+group by e.cause
+order by 2 desc;

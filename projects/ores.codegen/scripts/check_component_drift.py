@@ -150,17 +150,19 @@ CODEGEN_DIR = REPO_ROOT / "projects" / "ores.codegen"
 # A render is about 200 MB, too much for the tmpfs the fleet shares, so it goes
 # to the git common directory: on disk and outside every worktree. prettier
 # silently skips files under git-ignored paths and dot directories.
-def _render_root() -> Path:
-    common = subprocess.run(
+def _render_root() -> Path | None:
+    found = subprocess.run(
         ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
-        cwd=REPO_ROOT, check=True, capture_output=True, text=True).stdout.strip()
-    return Path(common) / "codegen-drift"
+        cwd=REPO_ROOT, capture_output=True, text=True)
+    if found.returncode != 0:
+        return None
+    root = Path(found.stdout.strip()) / "codegen-drift"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 def _render_dir(prefix: str) -> tempfile.TemporaryDirectory:
-    root = _render_root()
-    root.mkdir(parents=True, exist_ok=True)
-    return tempfile.TemporaryDirectory(prefix=prefix, dir=root)
+    return tempfile.TemporaryDirectory(prefix=prefix, dir=_render_root())
 
 
 SCRIPTS_DIR = Path(__file__).resolve().parent

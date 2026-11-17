@@ -26,11 +26,11 @@ The two products have a data model, a projection reader and writer through the c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,22 @@ The two products have a data model, a projection reader and writer through the c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both elements are flat, and the class-read path already reads every member
+they state: scalar leaves, Underlying blocks, lists of values in a container
+(=InitialPrices=, =KnockOutLevels=, =FixedTriggerLevels=), and dated and
+derived schedules. They route to the scripted instrument table.
+
+- =EuropeanOptionBarrier= states its underlyings in =OptionUnderlying= and
+  =BarrierUnderlying=. The model says an element-named block's role is its
+  element, so the role vocabulary gains =optionunderlying= and
+  =barrierunderlying=, and the table check is regenerated from it.
+- Builders: =european_option_barrier_builder=, European barrier style only, and
+  =fx_worst_of_basket_swap_builder=, with dated period and pay schedules and a
+  fixing schedule derived two days before each period.
+- The FX worst-of pays in its floating index's currency, preferring the quote
+  currency's index: its coupons depend on each pair's performance, a ratio.
+- The generator books the European option barrier in the scripted family, on
+  two of the tenant's equities, and the FX worst-of in the FX family.
 
 * Measurements
 
@@ -60,7 +73,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4675 cases pass | =./ores.trading.api.tests= | 6f1aaaea4c |
+| ore core tests | 550 cases pass | =./ores.ore.core.tests= | 6f1aaaea4c |
+| synthetic tests, not generated | 138 cases pass | =./ores.synthetic.core.tests "~[generated]"= | 6f1aaaea4c |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | 6f1aaaea4c |
 
 * Notes
 
@@ -88,3 +104,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+EuropeanOptionBarrier and FxWorstOfBasketSwap are held in the scripted
+instrument table. The underlyings are underlying rows under their own roles,
+the level lists are parameter values, and the schedules are schedule rows,
+including the derived fixing schedule. The round-trip test reads ORE's two
+examples from its AMC portfolios and writes them back. Each type has a builder,
+the catalogue routes both, and the generator books one trade of each. The ORE
+engine builds the recorded trades with no error, and the recorded FX worst-of
+trades state every path ORE's example states.
+
+The builder does not state a European option barrier's Premiums block or an
+American barrier with its schedule; the generated trades are European.

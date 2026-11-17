@@ -28,7 +28,7 @@ them the dataset lacks, and each whose terms differ from the dataset's row.
 propose_decisions.tsv, beside it, states why the dataset keeps a row of its own;
 a difference it names is not reported.
 
-It also checks the table itself: each id is one row, of one kind, each row names its
+It also checks the table itself: each id has one row whatever its kind; each row names its
 source, and each Ibor or overnight index a convention names is defined by an
 index convention of the table, matched by its address without the tenor, as the
 convention lookup matches it.

@@ -62,8 +62,8 @@ own copy.
    CAD-CORRA, GBP-SONIA, JPY-TONAR and USD-SOFR were both an IborIndex and an
    OvernightIndex, and CNH-HIBOR and MXN-TIIE the same. ORE holds one convention
    for each id, so on 2026-11-17 each kept one row: the overnight rates their
-   OvernightIndex, and the two IBOR families their IborIndex. The check states
-   each id is one row.
+   OvernightIndex, and the two IBOR families their IborIndex. The check requires
+   one row for each id.
 
    EUR-ESTR and JPY-TONA are OreStudio ids of the indices ORE names EUR-ESTER
    and JPY-TONAR. The curve configs name them, and they state the same terms,

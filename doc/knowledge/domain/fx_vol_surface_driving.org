@@ -71,8 +71,8 @@ parameterisation and conventions.
 - Tenor propagation is *deterministic*: adding a tenor to a correlation driver
   adds it to the derived pair (other driver interpolated); ATM vol entered on a
   correlation-derived pair is *ignored* and re-implied; a pair can be detached
-  from its drivers or attached to them; drivers and derived need not share tenor structure;
-  decay should only decay *driver* vols.
+  from its drivers or attached to them; drivers and derived need not share tenor
+  structure; decay should only decay *driver* vols.
 - Same *graph discipline* as the spot CRM: chain freely but *detect cycles* and
   block both-ends edits ([[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][topology]]). The derived curve must be *rebased as
   spot moves*; large driver/derived spot divergence has P&L impact (a known

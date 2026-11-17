@@ -322,7 +322,6 @@ private:
     strike_resettable_option_terms terms_;
 };
 
-
 /// One barrier: its type as ORE spells it, such as DownAndOut, and its level.
 struct scripted_barrier final {
     std::string type;
@@ -369,8 +368,8 @@ private:
  * @brief A vanilla option on an equity with barriers watched on a schedule.
  *
  * The barriers are monitored daily from the monitoring start to the expiry.
- * The kiko type says how a knock-in and a knock-out interact, and is stated
- * when the barriers hold both.
+ * The kiko type says how a knock-in and a knock-out interact; ORE reads it
+ * only when the barriers hold both. The builder states no rebate.
  */
 struct generic_barrier_option_terms final {
     required<marketdata::datum::market_reference> underlying;

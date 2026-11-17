@@ -775,6 +775,9 @@ void write_class_blocks(xml::record_writer& product, const scripted_instrument_d
 /**
  * @brief Whether the element states both one Underlying and a list of them
  * under the role, as a generic barrier option does; the rows then say which.
+ *
+ * One row is written as the single form, so a list of one comes back as one
+ * Underlying, which ORE reads the same.
  */
 auto states_one_or_a_list(const xml::record_type& type, const std::string& role) -> bool {
     bool one = false;

@@ -778,7 +778,9 @@ void write_rate_digital_option(record_writer& trade, const swap_instrument_data&
     const auto& fact = std::get<rate_digital_option_instrument>(v.facts);
     auto data = trade.child("RateDigitalOptionData");
     auto option = data.child("OptionData");
-    option_block::write_option_block(option, v);
+    // The exercise dates the document stated are schedule rows, and the option
+    // block alone holds none of them.
+    option_block::write_option_data(option, v);
     scalar_terms::write_text(data, "Index", ore_name_of(fact.index_name));
     scalar_terms::write_text(data, "Strike", fact.strike.to_string());
     scalar_terms::write_text(data, "PayoffAmount", fact.payoff_amount.to_string());

@@ -67,11 +67,11 @@ struct options final {
      * @brief How long a quoted value of an IR instrument stays current, in seconds. Zero
      * means the deployment's one threshold answers for the kind.
      */
-    std::int64_t stale_seconds_ir = 0;
+    std::int64_t stale_seconds_ir{0};
     /**
      * @brief The same, for the FX instruments.
      */
-    std::int64_t stale_seconds_fx = 0;
+    std::int64_t stale_seconds_fx{0};
     /**
      * @brief Password of the tick writer role.
      */

@@ -88,6 +88,7 @@ The role that copies ticks to the tick table. It connects to the database of
 :cpp_type: std::int64_t
 :option: stale-seconds-ir
 :default: 0
+:initial: 0
 :help: How long a quoted IR value stays current, in seconds; 0 uses the deployment's one threshold
 :END:
 
@@ -99,6 +100,7 @@ means the deployment's one threshold answers for the kind.
 :cpp_type: std::int64_t
 :option: stale-seconds-fx
 :default: 0
+:initial: 0
 :help: How long a quoted FX value stays current, in seconds; 0 uses the deployment's one threshold
 :END:
 

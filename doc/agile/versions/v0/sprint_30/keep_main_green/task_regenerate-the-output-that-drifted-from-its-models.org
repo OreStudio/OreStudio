@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/regenerate-the-output-that-drifted-from-its-models
-#+pr:
+#+pr: 4832
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4832][#4832]] | [web] Publish the new trade tables' list descriptors |
 
 * Review
 

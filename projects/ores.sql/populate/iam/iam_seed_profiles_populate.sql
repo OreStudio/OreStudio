@@ -282,22 +282,24 @@ cross join (values
     -- because a planner draws its codes by the slot's position and a config
     -- shorter than the list never reaches the codes past that point.
     --
-    -- The two rules fix the total. A thousand trades is the smallest round
-    -- number where every class can hold both: commodity routes twenty-five
-    -- codes and weighs five per cent, so it needs a thousand to hold them at
-    -- its weight, and bond trades are ten per book across four entities, so
-    -- bonds weigh four per cent of a thousand exactly.
+    -- The two rules fix the total. Eleven hundred trades is the smallest total
+    -- where every class can hold both: bond cycles eleven codes, one more since
+    -- the option on a bond future joined the catalogue, and four entities each
+    -- book a bond config, so bonds need forty-four trades, which is four per
+    -- cent of eleven hundred exactly.
     --
-    -- Counts per config, and what each class comes to:
-    --   bonds           10 x 4 entities               40    4%
-    --   interest rates  140 x 3 entities             420   42%
-    --   FX              63 + 63 + 62 + 62            250   25%
-    --   equity          120                            120   12%
-    --   credit          60                              60    6%
-    --   commodity       50                              50    5%
-    --   inflation       30                              30    3%
-    --   scripted        30                              30    3%
-    --                                                1000  100%
+    -- Counts per config, and what each class comes to at a total of eleven
+    -- hundred. The planner draws these from the shares, so they are what the
+    -- weights come to, not what a config states:
+    --   bonds           11 x 4 entities               44    4%
+    --   interest rates  154 x 3 entities             462   42%
+    --   FX              69 + 69 + 69 + 68            275   25%
+    --   equity          132                            132   12%
+    --   credit          66                              66    6%
+    --   commodity       55                              55    5%
+    --   inflation       33                              33    3%
+    --   scripted        33                              33    3%
+    --                                                1100  100%
     --
     -- The book count and the population size are the config's, so a tenant that
     -- wants a thinner book changes a row and not the generator, and gives up the
@@ -559,11 +561,14 @@ cross join (values
      '["tiny", "small", "large"]'::jsonb, 'small', true,
      'tiny is about 2.5k GLEIF counterparties and covers every region; small is '
      'about 13k; large is about 500k.', 20),
-    ('acme_demo', 'population_size', 'Population size (trades)', 'integer', null, '1000', false,
+    ('acme_demo', 'population_size', 'Population size (trades)', 'integer', null, '1100', false,
      'The trades the demonstration writes, across every asset class. The seeded '
-     'configs state a thousand, which is the smallest total where every class can '
-     'be its weight of the population and still book one trade per code it routes. '
-     'Leave it empty to take the seeded configs as they stand.', 20),
+     'total is eleven hundred, the smallest where every class can be its weight of '
+     'the population and still book one trade per code it routes: the bonds need '
+     'forty-four, which is four per cent of eleven hundred. A class whose code '
+     'cycle grows raises that total, and the planner refuses a total that cannot '
+     'hold it, naming the smallest one that can. Leave it empty to take the seeded '
+     'configs as they stand.', 20),
     ('acme_demo', 'population_interest_rates_percent', 'Interest rates share (%)', 'integer', null, '42', false,
      'The percentage of the population interest rate trades take.', 21),
     ('acme_demo', 'population_fx_percent', 'FX share (%)', 'integer', null, '25', false,

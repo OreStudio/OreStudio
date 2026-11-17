@@ -297,7 +297,7 @@ phase and will require a separate table keyed to =series_id=:
 - Smile model (SABR β=1, flat, five-point spline)
 - Active delta pillars (25Δ only vs. 25Δ + 10Δ)
 - Cross-tenor interpolation method (market vs. physical parameter space)
-- Master/slave surface relationships (e.g. EUR/GBP derived from EUR/USD and
+- Driver and driven surface relationships (e.g. EUR/GBP driven by EUR/USD and
   GBP/USD via correlation)
 
 The raw observation data stored in =ores_marketdata_observations_tbl= is already

@@ -101,6 +101,7 @@ constexpr class_read_product class_read_products[] = {
     {"BondFutureOption", "BondFutureOptionData"},
     {"FxAsianOption", "FxAsianOptionData"},
     {"RateDigitalOption", "RateDigitalOptionData"},
+    {"CBO", "CBOData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -631,6 +632,20 @@ auto barrier_role_of(std::string_view member) -> std::string {
     return member == "TransatlanticBarrier" ? "transatlantic" : "barrier";
 }
 
+/**
+ * @brief Whether the member is a block of leaves only, such as a CBO's
+ * CBOInvestment, whose leaves are parameters named for the block and the leaf.
+ */
+auto states_a_leaf_block(const xml::field& member) -> bool {
+    if (member.kind != xml::field_kind::nested || member.type == nullptr ||
+        member.type->name.starts_with("stFreeStyle") || member.type->field_count == 0)
+        return false;
+    for (std::uint8_t i = 0; i < member.type->field_count; ++i)
+        if (!member.type->fields[i].is_attribute && !states_a_leaf(member.type->fields[i]))
+            return false;
+    return true;
+}
+
 /// The name a leaf of a barrier holder is kept under: the holder, a dot, the leaf.
 auto holder_leaf_name(std::string_view holder, std::string_view leaf) -> std::string {
     return std::string(holder) + "." + std::string(leaf);
@@ -665,6 +680,23 @@ void read_barrier_holder(scripted_instrument_data& data,
                 parameter.value = *value;
             }
         }
+    }
+}
+
+void write_leaf_block(xml::record_writer& product,
+                      const scripted_instrument_data& data,
+                      const xml::field& member) {
+    const auto& type = *member.type;
+    std::optional<xml::record_writer> block;
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& leaf = type.fields[i];
+        const auto name = holder_leaf_name(member.name, leaf.name);
+        for (const auto& p : data.parameters)
+            if (p.name == name && p.value) {
+                if (!block)
+                    block = product.child(member.name);
+                set_scalar_text(*block, leaf.name, *p.value);
+            }
     }
 }
 
@@ -722,6 +754,20 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
         }
         if (states_a_barrier(f)) {
             barrier_block::read_barriers(data, product, barrier_role_of(f.name));
+            continue;
+        }
+        if (states_a_leaf_block(f)) {
+            if (const auto block = product.child(f.name))
+                for (std::uint8_t j = 0; j < f.type->field_count; ++j) {
+                    const auto& leaf = f.type->fields[j];
+                    if (leaf.is_attribute)
+                        continue;
+                    if (const auto value = scalar_text(*block, leaf.name)) {
+                        auto& parameter = make_parameter(
+                            data, holder_leaf_name(f.name, leaf.name), declared_type_of(leaf));
+                        parameter.value = *value;
+                    }
+                }
             continue;
         }
         // A barrier holder may state a ScheduleData, so it is checked before an event.
@@ -817,6 +863,8 @@ void write_class_blocks(xml::record_writer& product, const scripted_instrument_d
             barrier_block::write_barriers(product, data, barrier_role_of(f.name));
         else if (holds_barriers(f))
             write_barrier_holder(product, data, f);
+        else if (states_a_leaf_block(f))
+            write_leaf_block(product, data, f);
     }
 }
 

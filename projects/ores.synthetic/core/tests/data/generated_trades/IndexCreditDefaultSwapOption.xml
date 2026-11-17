@@ -50,12 +50,12 @@
       </IndexCreditDefaultSwapData>
     </IndexCreditDefaultSwapOptionData>
   </Trade>
-  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
     <TradeType>IndexCreditDefaultSwapOption</TradeType>
     <IndexCreditDefaultSwapOptionData>
       <Strike>1</Strike>
       <KnockOut>N</KnockOut>
-      <IndexTerm>2Y</IndexTerm>
+      <IndexTerm>4Y</IndexTerm>
       <StrikeType>Price</StrikeType>
       <OptionData>
         <LongShort>Short</LongShort>
@@ -79,12 +79,12 @@
           <PaymentConvention>Following</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>7675517.41</Notional>
+            <Notional>1036903.28</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
               <StartDate>2026-04-03</StartDate>
-              <EndDate>2028-04-03</EndDate>
+              <EndDate>2030-04-03</EndDate>
               <Tenor>3M</Tenor>
               <Calendar>WeekendsOnly</Calendar>
               <Convention>Following</Convention>
@@ -93,7 +93,7 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.05</Rate>
+              <Rate>0.01</Rate>
             </Rates>
           </FixedLegData>
         </LegData>

@@ -129,6 +129,36 @@ private:
  * notional at maturity, while the entity survives. The buyer takes the other
  * side of each payment.
  */
+/**
+ * @brief An option to enter a single name credit default swap at a strike
+ * spread, on a date before the swap starts.
+ */
+struct credit_default_swap_option_terms final {
+    credit_protection_terms swap;
+    required<std::chrono::year_month_day> expiry;
+    /// The strike as a spread, such as 0.01 for a hundred basis points.
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+};
+
+class ORES_TRADING_API_EXPORT credit_default_swap_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CreditDefaultSwapOption";
+
+    credit_default_swap_option_builder(
+        const marketdata::conventions::convention_lookup& conventions,
+        credit_default_swap_option_terms terms);
+    credit_default_swap_option_builder(marketdata::conventions::convention_lookup&&,
+                                       credit_default_swap_option_terms) = delete;
+
+    [[nodiscard]] std::expected<domain::credit_instrument_data, build_error> build() const;
+
+private:
+    const marketdata::conventions::convention_lookup& conventions_;
+    credit_default_swap_option_terms terms_;
+};
+
 class ORES_TRADING_API_EXPORT credit_linked_swap_builder final {
 public:
     static constexpr std::string_view trade_type = "CreditLinkedSwap";

@@ -78,12 +78,12 @@
       </Underlying>
     </RiskParticipationAgreementData>
   </Trade>
-  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
+  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
     <TradeType>RiskParticipationAgreement</TradeType>
     <RiskParticipationAgreementData>
       <ParticipationRate>0.5</ParticipationRate>
-      <ProtectionStart>2025-09-02</ProtectionStart>
-      <ProtectionEnd>2029-09-02</ProtectionEnd>
+      <ProtectionStart>2026-01-02</ProtectionStart>
+      <ProtectionEnd>2036-01-02</ProtectionEnd>
       <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
       <IssuerId>529900T8BM49AURSDO55</IssuerId>
       <SettlesAccrual>true</SettlesAccrual>
@@ -94,25 +94,25 @@
           <Currency>EUR</Currency>
           <CashflowData>
             <Cashflow>
-              <Amount date="2025-09-02">1036.9</Amount>
+              <Amount date="2026-01-02">3895.25</Amount>
             </Cashflow>
           </CashflowData>
         </LegData>
       </ProtectionFee>
       <Underlying>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>MF</PaymentConvention>
           <DayCounter>30/360</DayCounter>
           <Notionals>
-            <Notional>1036903.28</Notional>
+            <Notional>3895254.25</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2025-09-02</StartDate>
-              <EndDate>2029-09-02</EndDate>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2036-01-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>MF</Convention>
@@ -122,23 +122,23 @@
           </ScheduleData>
           <FixedLegData>
             <Rates>
-              <Rate>0.0302</Rate>
+              <Rate>0.0379</Rate>
             </Rates>
           </FixedLegData>
         </LegData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Floating</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>MF</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>1036903.28</Notional>
+            <Notional>3895254.25</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2025-09-02</StartDate>
-              <EndDate>2029-09-02</EndDate>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2036-01-02</EndDate>
               <Tenor>6M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>MF</Convention>

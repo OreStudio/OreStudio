@@ -327,6 +327,11 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
+        // A CBO names a structure the reference data holds, in the scripted table.
+        if (slot.trade_type_code == "CBO") {
+            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            continue;
+        }
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
         const auto& row = slot.instruments.credit_instruments.front();
         CHECK_FALSE(slot.instruments.swap_legs.empty());

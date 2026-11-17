@@ -801,3 +801,22 @@ TEST_CASE("a_rate_digital_option_takes_a_negative_strike_and_refuses_no_index", 
     REQUIRE_FALSE(built.has_value());
     CHECK(built.error().term == "index");
 }
+
+TEST_CASE("a_cbo_names_its_tranche_notional_and_structure", scripted_tags) {
+    const auto built = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                    .notional = scripted_amount("1802750.20"),
+                                    .structure_id = std::string("Pegasus")})
+                           .build();
+    REQUIRE(built.has_value());
+    const auto structure = std::ranges::find_if(
+        built->parameters, [](const auto& p) { return p.name == "CBOInvestment.StructureId"; });
+    REQUIRE(structure != built->parameters.end());
+    CHECK(structure->value == "Pegasus");
+
+    const auto unnamed = cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                      .notional = scripted_amount("1"),
+                                      .structure_id = std::string()})
+                             .build();
+    REQUIRE_FALSE(unnamed.has_value());
+    CHECK(unnamed.error().term == "structure_id");
+}

@@ -201,6 +201,15 @@ const std::vector<error_pattern>& error_patterns() {
         {"market_data",
          std::regex(
              R"(BondFactory: could not build bond '.*': no reference data given or no suitable builder)")},
+        /*
+         * A CBO takes its structure from the reference data its structure id
+         * names. When the run holds none, ORE lists every structure element as
+         * missing; a structure missing only some is the trade's own fault.
+         */
+        {"market_data",
+         std::regex(R"(^CBO \S+ expects SeniorFee SubordinatedFee EquityKicker FeeDayCounter )"
+                    R"(Currency DayCounter PaymentConvention ScheduleData BondBasketData )"
+                    R"(TrancheData elements$)")},
         {"engine_configuration",
          std::regex(R"(^No Pricing Engine configuration was provided for trade type )")},
         {"engine_configuration", std::regex(R"(^No EngineBuilder for )")},

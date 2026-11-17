@@ -275,10 +275,12 @@ struct credit_instrument_data {
     std::vector<instrument_option_exercise_fee> option_exercise_fees;
     std::vector<instrument_option_payment_date> option_payment_dates;
     std::vector<instrument_option_exercise_price> option_exercise_prices;
-    // An index option wraps an index swap, which has fact fields of its own.
-    // The option's fact row is one of the carrier's fact arrays; the wrapped
-    // swap's row is here. A product that wraps no swap leaves it empty.
+    // An option wraps a swap, which has fact fields of its own: an index
+    // option an index swap, a single name option a credit default swap. The
+    // option's fact row is one of the carrier's fact arrays; the wrapped swap's
+    // row is here. A product that wraps no swap leaves both empty.
     std::optional<index_credit_default_swap_instrument> wrapped_index_swap;
+    std::optional<credit_default_swap_instrument> wrapped_swap;
 };
 
 // The credit fact types, one per concrete product, and the array each lives
@@ -844,6 +846,8 @@ inline void stamp_ids(credit_instrument_data& data,
     }
     if (data.wrapped_index_swap)
         stamp_ids(*data.wrapped_index_swap, trade_id, activity_id);
+    if (data.wrapped_swap)
+        stamp_ids(*data.wrapped_swap, trade_id, activity_id);
 }
 
 inline void stamp_ids(equity_instrument_data& data,

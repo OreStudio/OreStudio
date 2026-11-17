@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/name-every-market-object-the-trades-use
-#+pr:
+#+pr: 4810
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4810][#4810]] | [ore] Forward each index the trades name where the market holds a curve |
 
 * Review
 

@@ -509,24 +509,39 @@ private:
         return catalogue;
     }
 
-    /// The series and curve configs one party holds.
+    /// The series and curve configs one party holds, one page at a time.
+    ///
+    /// A page that comes back short is the last: a party with more rows than a
+    /// page holds is read whole, because a holding mistaken for absent would be
+    /// written a second time under new ids.
     static ores::marketdata::messaging::party_curve_holdings
     read_party_curve_holdings(ores::nats::service::nats_client& client,
                               const boost::uuids::uuid& party_id) {
+        constexpr std::uint32_t page_size = 1000;
         ores::marketdata::messaging::party_curve_holdings holdings;
         holdings.party_id = party_id;
-        ores::marketdata::messaging::list_market_series_request series;
-        series.limit = 10000;
-        holdings.series = ask(client, series).market_series;
-
-        ores::refdata::messaging::list_ir_curve_bootstrap_configs_request configs;
-        configs.limit = 1000;
-        for (const auto& c : ask(client, configs).bootstrap_configs)
-            if (c.party_id == party_id)
-                holdings.config_ids.insert(c.id);
+        for (std::uint32_t offset = 0;; offset += page_size) {
+            ores::marketdata::messaging::list_market_series_request series;
+            series.offset = offset;
+            series.limit = page_size;
+            const auto page = ask(client, series).market_series;
+            holdings.series.insert(holdings.series.end(), page.begin(), page.end());
+            if (page.size() < page_size)
+                break;
+        }
+        for (std::uint32_t offset = 0;; offset += page_size) {
+            ores::refdata::messaging::list_ir_curve_bootstrap_configs_request configs;
+            configs.offset = offset;
+            configs.limit = page_size;
+            const auto page = ask(client, configs).bootstrap_configs;
+            for (const auto& c : page)
+                if (c.party_id == party_id)
+                    holdings.config_ids.insert(c.id);
+            if (page.size() < page_size)
+                break;
+        }
         return holdings;
     }
-
 
     /// The most rows one write request may carry.
     ///
@@ -552,7 +567,7 @@ private:
             put.intent.commentary = std::string(commentary);
             const auto saved = ask(client, put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
-                throw std::runtime_error("The surface " + std::string(what) + " of '" + party_name +
+                throw std::runtime_error("The " + std::string(what) + " of '" + party_name +
                                          "' were not saved: " + saved.result.message);
         }
     }
@@ -614,15 +629,23 @@ private:
             client, pillars, reason, commentary, "curve pillars", party_name);
     }
 
-    /// The bootstrap configs a party already has a current published curve for.
+    /// The bootstrap configs a party already has a current published curve for,
+    /// one page at a time.
     static std::set<std::string> published_configs_of(ores::nats::service::nats_client& client,
                                                       const boost::uuids::uuid& party_id) {
-        ores::marketdata::messaging::list_published_curves_request request;
-        request.party_id = boost::uuids::to_string(party_id);
-        request.limit = 1000;
+        constexpr std::uint32_t page_size = 1000;
         std::set<std::string> out;
-        for (const auto& set : ask(client, request).sets)
-            out.insert(set.bootstrap_config_id);
+        for (std::uint32_t offset = 0;; offset += page_size) {
+            ores::marketdata::messaging::list_published_curves_request request;
+            request.party_id = boost::uuids::to_string(party_id);
+            request.offset = offset;
+            request.limit = page_size;
+            const auto page = ask(client, request).sets;
+            for (const auto& set : page)
+                out.insert(set.bootstrap_config_id);
+            if (page.size() < page_size)
+                break;
+        }
         return out;
     }
 
@@ -982,20 +1005,33 @@ private:
         return catalogue;
     }
 
-    /// The series and surface blueprints one party holds.
+    /// The series and surface blueprints one party holds, one page at a time.
     static ores::marketdata::messaging::party_surface_holdings
     read_party_surface_holdings(ores::nats::service::nats_client& client,
                                 const boost::uuids::uuid& party_id) {
+        constexpr std::uint32_t page_size = 1000;
         ores::marketdata::messaging::party_surface_holdings holdings;
         holdings.party_id = party_id;
-        ores::marketdata::messaging::list_market_series_request series;
-        series.limit = 10000;
-        holdings.series = ask(client, series).market_series;
-        ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
-        blueprints.limit = 1000;
-        for (const auto& b : ask(client, blueprints).blueprints)
-            if (b.party_id == party_id)
-                holdings.blueprint_ids.insert(b.id);
+        for (std::uint32_t offset = 0;; offset += page_size) {
+            ores::marketdata::messaging::list_market_series_request series;
+            series.offset = offset;
+            series.limit = page_size;
+            const auto page = ask(client, series).market_series;
+            holdings.series.insert(holdings.series.end(), page.begin(), page.end());
+            if (page.size() < page_size)
+                break;
+        }
+        for (std::uint32_t offset = 0;; offset += page_size) {
+            ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
+            blueprints.offset = offset;
+            blueprints.limit = page_size;
+            const auto page = ask(client, blueprints).blueprints;
+            for (const auto& b : page)
+                if (b.party_id == party_id)
+                    holdings.blueprint_ids.insert(b.id);
+            if (page.size() < page_size)
+                break;
+        }
         return holdings;
     }
 

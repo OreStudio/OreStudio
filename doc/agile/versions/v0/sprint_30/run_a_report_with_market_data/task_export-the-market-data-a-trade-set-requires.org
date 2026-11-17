@@ -5,7 +5,7 @@
 #+description: marketdata.v1.ops.export_market_data_to_storage takes no trade set and no date and writes the whole tenant's market data as one market file and one fixings file. A run that gathers per trade set needs the export narrowed to that set's resolved requirements and read at the set's as-of, so two runs of one set on different dates read different rows.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:sprint_30:v0:
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -33,7 +33,7 @@ two runs of one set on different dates read different rows.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]] |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a trade set's market data requirements]] |
 | Next         | Begin implementation.                  |

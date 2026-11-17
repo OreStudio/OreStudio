@@ -5,7 +5,7 @@
 #+description: A report over every generated trade type completes, and each trade values correctly: a trade built on an ORE sample's terms reproduces ORE's own NPV for that sample.
 #+type: task
 #+level: s1
-#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr: 4708
@@ -16,7 +16,7 @@
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ A report run over the generated trades shows they value correctly according to O
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -62,6 +62,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- PR #4708 (merged 2026-11-14) was recorded on this task. It states a pricing engine for every product type ORE documents, so a report over 1,000 generated trades completes with no pricing engine errors. It did not compare a value with ORE, so no acceptance item here is met. The remaining errors it found are market data, which the earlier tasks of the parent story supply.
 
 * Test Scenarios
 

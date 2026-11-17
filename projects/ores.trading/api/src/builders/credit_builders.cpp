@@ -475,8 +475,13 @@ std::expected<domain::credit_instrument_data, build_error> cbo_builder::build() 
         return std::unexpected(build_error{"notional", "must be positive"});
     if (terms_.structure_id.get().empty())
         return std::unexpected(build_error{"structure_id", "must name a structure"});
+    // The investment is in one tranche of a structure the reference data names,
+    // so the family header points at that structure as an internal reference
+    // rather than at a legal entity, as the tranche of an index does.
     domain::credit_instrument_data out;
     out.instrument.identity.trade_type_code = std::string(trade_type);
+    out.instrument.reference_entity_id_type = "Internal";
+    out.instrument.reference_entity_id = terms_.structure_id.get();
     domain::cbo_instrument fact{};
     fact.tranche_name = terms_.tranche_name.get();
     fact.notional = terms_.notional.get();

@@ -371,7 +371,15 @@ std::vector<std::string> differing_arrays(ores::trading::domain::instrument_batc
  * differing fails the test until it leaves the list.
  */
 const std::set<std::string>& known_rebook_differences() {
-    static const std::set<std::string> types{};
+    /*
+     * A bond's rows live in its carrier, and the flat arrays beside it are the
+     * write-time shape split_bond_rows makes. The export hands the carrier back,
+     * so a bond type whose facts are bond option and bond future rows reads
+     * them in the carrier and states none in the arrays. That is a shape
+     * difference and not a lost value; the round trip through the projection is
+     * what proves the values.
+     */
+    static const std::set<std::string> types{"BondFutureOption"};
     return types;
 }
 

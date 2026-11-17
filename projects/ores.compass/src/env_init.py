@@ -918,12 +918,20 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
     # Registry "Extra args" supplied as env, not container CLI args (the
     # per-service containers pass no service-specific flags).  Keys follow
     # the make_mapper("<UP>_SERVICE") naming: ORES_<UP>_SERVICE_<OPT>.
+    # The services that move objects through the storage HTTP API read its
+    # address from http-base-url, whose default is localhost:8080. No
+    # environment serves 8080, so a service left without this variable fails
+    # every export with "Connection refused" while looking healthy.
+    http_base_url = f"http://localhost:{http_port}"
     service_extra_opts = {
         "telemetry": [("NATS_MONITOR_URL", nats_monitor_url)],
         "ore": [
             ("WORK_DIR", "../var/ore-service/work"),
-            ("HTTP_BASE_URL", f"http://localhost:{http_port}"),
+            ("HTTP_BASE_URL", http_base_url),
         ],
+        "marketdata": [("HTTP_BASE_URL", http_base_url)],
+        "reporting": [("HTTP_BASE_URL", http_base_url)],
+        "trading": [("HTTP_BASE_URL", http_base_url)],
     }
     for c in service_components:
         up = _upper(c)

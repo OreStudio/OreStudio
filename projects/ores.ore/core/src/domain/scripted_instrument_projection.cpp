@@ -635,6 +635,7 @@ auto barrier_role_of(std::string_view member) -> std::string {
 /**
  * @brief Whether the member is a block of leaves only, such as a CBO's
  * CBOInvestment, whose leaves are parameters named for the block and the leaf.
+ * A block's attributes are not held; no block a product states carries one.
  */
 auto states_a_leaf_block(const xml::field& member) -> bool {
     if (member.kind != xml::field_kind::nested || member.type == nullptr ||

@@ -122,14 +122,6 @@ private:
 };
 
 /**
- * @brief A funded note on the reference entity.
- *
- * The protection seller pays the notional at the start, whatever happens. It
- * then receives the running spread as a coupon on the premium schedule and the
- * notional at maturity, while the entity survives. The buyer takes the other
- * side of each payment.
- */
-/**
  * @brief An option to enter a single name credit default swap at a strike
  * spread, on a date before the swap starts.
  */
@@ -159,6 +151,14 @@ private:
     credit_default_swap_option_terms terms_;
 };
 
+/**
+ * @brief A funded note on the reference entity.
+ *
+ * The protection seller pays the notional at the start, whatever happens. It
+ * then receives the running spread as a coupon on the premium schedule and the
+ * notional at maturity, while the entity survives. The buyer takes the other
+ * side of each payment.
+ */
 class ORES_TRADING_API_EXPORT credit_linked_swap_builder final {
 public:
     static constexpr std::string_view trade_type = "CreditLinkedSwap";

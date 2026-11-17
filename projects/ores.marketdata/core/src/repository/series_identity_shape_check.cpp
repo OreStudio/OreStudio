@@ -73,8 +73,7 @@ std::string family_name(const market_series_identity& row, const market_series& 
 
 }
 
-std::optional<std::string> text_of(const market_series_identity& row,
-                                   std::string_view column) {
+std::optional<std::string> text_of(const market_series_identity& row, std::string_view column) {
     std::optional<std::string> out;
     ores::utility::codec::apply_fields(
         [&](const auto&... one) {
@@ -114,9 +113,8 @@ void check_identity_shape(const std::vector<series_identity_shape>& stated,
     const auto held = [&](const std::string& field) {
         const auto text = text_of(row, field);
         if (!text)
-            throw std::invalid_argument("the " + family_name(row, series) +
-                                        " shape names field '" + field +
-                                        "', which an identity does not hold as text");
+            throw std::invalid_argument("the " + family_name(row, series) + " shape names field '" +
+                                        field + "', which an identity does not hold as text");
         return *text;
     };
     for (const auto& field : shape->second.required) {

@@ -247,6 +247,29 @@ chmod -R u+rwX,go-rwx "$volume_mountpoint"
 
 mkdir -p "$nats_store_dir"
 
+# Every image the deploy needs must already be on this host. A deploy that
+# removes the running fleet and only then discovers a missing image leaves the
+# environment down, so the check comes before anything is stopped.
+required_images=("localhost/ores-nats:${IMAGE_TAG}")
+for svc in $SERVICES; do
+    required_images+=("localhost/${svc}:${IMAGE_TAG}")
+done
+if [[ "${WEB_ENABLED:-0}" == "1" ]]; then
+    required_images+=("localhost/ores-web:${IMAGE_TAG}")
+fi
+missing_images=()
+for img in "${required_images[@]}"; do
+    podman image exists "$img" || missing_images+=("$img")
+done
+if (( ${#missing_images[@]} > 0 )); then
+    echo "Error: ${#missing_images[@]} image(s) missing on this host:" >&2
+    printf '  - %s\n' "${missing_images[@]}" >&2
+    echo "Nothing was stopped. Pull them first:" >&2
+    echo "  compass env deploy <host> --pull" >&2
+    exit 1
+fi
+echo "  Images: ${#required_images[@]} present"
+
 echo "=== Stopping old containers ==="
 # Scoped to this label (ores-nats-<label>, ores-<svc-dashed>-<label>) so a
 # shared host's other environments' containers are left alone -- same
@@ -345,14 +368,34 @@ echo "  Stop        : compass env deploy <host> --stop"
 
 echo "=== Waiting for healthcheck (5s) ==="
 sleep 5
-nats_ok=$(podman ps --filter "name=$nats_container" --format "{{.Status}}" | grep -c "Up" || true)
-echo "  NATS     : $([ "$nats_ok" -gt 0 ] && echo "running" || echo "STOPPED")"
+not_running=()
+echo
+echo "=== Runtime report ==="
+printf '  %-32s %s\n' "ores-nats" "$(podman ps --filter "name=$nats_container" --format '{{.Status}}' | head -1 || echo MISSING)"
 for svc in $SERVICES; do
     container="ores-${svc//./-}-${label}"
-    status=$(podman ps --filter "name=$container" --format "{{.Status}}" 2>/dev/null)
+    status=$(podman ps --filter "name=$container" --format '{{.Status}}' 2>/dev/null | head -1)
     if [[ -n "$status" ]]; then
-        echo "  $svc : $status"
+        printf '  %-32s %s\n' "$svc" "$status"
     else
-        echo "  $svc : EXITED — podman logs $container"
+        printf '  %-32s %s\n' "$svc" "MISSING (podman logs $container)"
+        not_running+=("$svc")
     fi
 done
+if [[ "${WEB_ENABLED:-0}" == "1" ]]; then
+    web_status=$(podman ps --filter "name=ores-web-${label}" --format '{{.Status}}' 2>/dev/null | head -1)
+    if [[ -n "$web_status" ]]; then
+        printf '  %-32s %s\n' "ores.web.service" "$web_status"
+    else
+        printf '  %-32s %s\n' "ores.web.service" "MISSING"
+        not_running+=("ores.web.service")
+    fi
+fi
+
+echo
+if (( ${#not_running[@]} > 0 )); then
+    echo "=== Deploy incomplete: ${#not_running[@]} container(s) not running ===" >&2
+    printf '  - %s\n' "${not_running[@]}" >&2
+    exit 1
+fi
+echo "=== Deploy complete: every container is running ==="

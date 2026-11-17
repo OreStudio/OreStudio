@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/find-why-a-report-gathers-no-market-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
 #+updated: 2026-11-17
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The cause of the empty market is known and measured, and the story has a baselin
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ The cause of the empty market is known and measured, and the story has a baselin
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Recreate the database, build, start the services and provision ACME from
+   =acme_demo=.
+2. Count the series, observations and fixings each party holds.
+3. Run the ACCOUK NPV report (=40c7876e=) and read the export's own log.
+4. Unpack the run's package and read =market.txt=, =fixings.txt= and
+   =todaysmarket.xml=.
+5. Group the run's trade errors by cause and by trade type.
+6. Fix a defect in the export or the gather here. File anything larger as a
+   task of the story.
 
 * Measurements
 
@@ -58,9 +64,55 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trades the provision booked under ACCOUK | 460 | =generate_trades= step log of the =acme_demo= provision | 4e6e99f2e1 |
+| Series ACCOUK holds | 265 (120 FX, 145 IR); no fixing series | count of =ores_marketdata_market_series_tbl= by party and URI kind | 4e6e99f2e1 |
+| Fixings held under =system_party= | 301,650 (280,172 FX, 21,478 IR); none under an ACME party | same query | 4e6e99f2e1 |
+| Data points in the run's =market.txt= | 3,313: 2,275 FX option vols, 466 IR swap rates, 362 FX rates, 210 discount rates | =evidence/run_674d2887_inputs.txt= | 4e6e99f2e1 |
+| Bytes in the run's =fixings.txt= | 0 | same file | 4e6e99f2e1 |
+| Series the export reported, before the fix | 1,280 (every series in the tenant) | =ores.marketdata.service= log, "Exported 1280 series" | 4e6e99f2e1 |
+| Series the export reports, after the fix | 265 | same log, run =4247bff1= | this branch |
+| Trades that failed in ORE | 416 of 460 (473 engine errors) | =evidence/errors_by_cause_query.txt= into =evidence/run_674d2887_errors.txt= | 4e6e99f2e1 |
 
 * Notes
+
+The premise of the task was wrong. The market file is not empty. Three
+other things fail the run, and each one becomes work in the story.
+
+1. *The market configuration names only OIS, overnight indices and FX.*
+   ACCOUK's =todaysmarket.xml= holds four collections: discount curves,
+   17 overnight index forwarding curves, FX spots and FX volatilities. It
+   comes from a hand-authored seed
+   (=acme_uk_todays_market_artefact_populate.sql=, written by
+   =generate_configuration_data.py=). So ORE answers "did not find object"
+   for every IBOR index, equity, commodity, inflation index and credit
+   curve. This is 352 of the 416 failures, whatever quotes exist.
+2. *The quotes cover FX and IR only.* No equity, commodity, inflation or
+   credit series exists under any party, so naming those objects in the
+   configuration is not enough on its own.
+3. *The fixings file is empty.* Every fixing in the tenant sits under
+   =system_party=, and the export writes only the reporting party's
+   series. ACME parties receive the system's raw quotes through
+   subscriptions, but no fixings.
+
+Smaller causes, each under 30 trades: the credit index products need
+basket reference data; seven scripted trades find no script library; five
+EquityOutperformanceOption trades have no pricing engine; 14 KnockOutSwap
+trades report the GBP OIS convention as not found, although
+=conventions.xml= holds it; two commodity strips need a future convention.
+
+70 of the 148 index failures name a ceased LIBOR index (=GBP-LIBOR-3M=,
+=GBP-LIBOR-1W=, =USD-LIBOR-3M=). The generator books them. A market cannot
+forward a ceased index, so the trades need either a live index or an
+ORE IBOR fallback configuration.
+
+One defect was in the export, and this task fixes it. The export reported
+every series the session can read as the series it wrote, so the run
+logged "Gathered 1280 market data series" for a party that holds 265.
+That count is what made an incomplete market look full.
+
+The script's =select-party= line answers "Invalid or expired token",
+because the script's =connect= reconnects without the session. The
+trigger still runs the definition as its own party, so the run is valid.
 
 * Test Scenarios
 
@@ -83,6 +135,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the evidence query was a .sql file, which put the change in the SQL class | evidence/ | Accept | Renamed to errors_by_cause_query.txt. |
 
 * Result
+
+The market file was not empty. ACCOUK's run carried 3,313 FX and IR data
+points and no fixings, and 416 of its 460 trades failed. The main cause is
+the market configuration: it names only OIS curves, overnight indices and
+FX, so ORE cannot find any other object. The export also reported the
+tenant's 1,280 series as the party's. That count is fixed, and a test
+asserts that a party's export counts only its own series. The story gains
+two tasks from these findings: name every object the trades use in the
+market configuration, and give each party the fixings of the indices it
+trades.

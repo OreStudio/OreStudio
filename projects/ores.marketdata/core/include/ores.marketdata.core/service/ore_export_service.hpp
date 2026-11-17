@@ -42,6 +42,7 @@ namespace ores::marketdata::service {
 struct ore_export_result final {
     std::string market_data;
     std::string fixings;
+    /// The series written: the session party's own, not every series the session can read.
     int series_count = 0;
     int observation_count = 0;
     int fixing_count = 0;

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:291B09A9-AF7D-4B8D-A012-6C021442120D][Share the service libraries and publish the images to GitHub Container Registry]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-16                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The story's documents, its sprint wiring and the scaffold PR. The work that
+followed is recorded in the tasks beside this one.

@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:database:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/split-the-context-into-its-two-parts
-#+pr:
+#+pr: 4826
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4826][#4826]] | [database] Split the context into its connection and request parts |
 
 * Review
 

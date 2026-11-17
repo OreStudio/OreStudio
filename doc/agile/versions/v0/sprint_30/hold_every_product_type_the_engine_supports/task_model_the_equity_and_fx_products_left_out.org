@@ -2,7 +2,7 @@
 :ID: 689DD23D-9D6F-4643-BC3E-7BA2AF083CFC
 :END:
 #+title: Task: Model the equity and fx products left out
-#+description: EquityDoubleTouchOption, EquityAutoDeltaHedgedOption and FxAsianOption are native ORE products. The equity family models nine tables and the fx family its own set; these three are not held, and the fx asian option is distinct from the asian forward already modelled.
+#+description: EquityDoubleTouchOption and FxAsianOption are native ORE products. The equity family models nine tables and the fx family its own set; these two are not held, and the fx asian option is distinct from the asian forward already modelled. EquityAutoDeltaHedgedOption moved to its own task.
 #+type: task
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
@@ -13,20 +13,20 @@
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The three products have a data model, a projection reader and writer, and a builder, and each is routed by the catalogue.
+The two products have a data model, a projection reader and writer, and a builder, and each is routed by the catalogue.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,9 +35,9 @@ The three products have a data model, a projection reader and writer, and a buil
 
 * Acceptance
 
-- each of the three types names an instrument table carrying the terms the product states
+- each of the two types names an instrument table carrying the terms the product states
 - the projection reads and writes each element, value for value
-- each type has a builder, and the catalogue routes all three
+- each type has a builder, and the catalogue routes both
 - the generator books one trade of each type through its builder, and the recorded trades hold it
 - the ORE engine test reads and builds each, with no error of the trade kind
 - every fact the element states is a column or a row: no list, basket or schedule is held as text
@@ -63,6 +63,9 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+EquityAutoDeltaHedgedOption moved to [[id:B9D6D5E2-05E5-45D4-AC50-155FA746359F][Model the equity auto delta hedged option]]:
+its batches each state an option block, and the option rows hold one a trade.
 
 * Test Scenarios
 

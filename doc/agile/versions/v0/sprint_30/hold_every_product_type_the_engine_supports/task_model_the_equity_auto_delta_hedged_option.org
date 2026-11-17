@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: B9D6D5E2-05E5-45D4-AC50-155FA746359F
+:END:
+#+title: Task: Model the equity auto delta hedged option
+#+description: EquityAutoDeltaHedgedOption is a native ORE product: batches of equity options, each with its own option block, name, currency, strike and quantity, under a hedging volatility, drift and window. The option rows hold one block a trade, so its batches need rows of their own.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+EquityAutoDeltaHedgedOption has a data model, a projection reader and writer,
+and a builder; a trade of it is booked, exported as the element ORE reads, and
+imported back unchanged.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- the type names an instrument table, and each batch is a row with its option
+  terms, name, currency, strike, strike currency and quantity
+- the hedging volatility, drift rate, observation start and payment date are
+  columns
+- the projection reads and writes the element, value for value
+- the type has a builder, and the catalogue routes it
+- the generator books one trade of it through its builder, and the recorded
+  trades hold it
+- the ORE engine test reads and builds it, with no error of the trade kind
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Split from [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]]. The equity
+position option underlying already holds a batch's option terms, name, strike
+and weight; it lacks the currency, strike currency and quantity.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

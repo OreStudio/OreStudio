@@ -1053,6 +1053,30 @@ TEST_CASE("an_fx_variance_swap_states_a_window_with_a_length", "[trade_populatio
     REQUIRE(found);
 }
 
+TEST_CASE("a_basket_in_a_book_whose_currency_no_second_pair_quotes_is_still_planned",
+          "[trade_population]") {
+    /*
+     * The UK book's currency is GBP, and EUR/GBP is the only pair quoted in it,
+     * so a slot of a product on two pairs that drew EUR/GBP had no partner and
+     * refused the whole population. Such a slot now draws from the pairs that
+     * have one.
+     */
+    auto scope = fx_scope();
+    scope.currency_code = "GBP";
+    scope.currency_pairs = {{.base = "EUR", .quote = "GBP"},
+                            {.base = "EUR", .quote = "USD"},
+                            {.base = "GBP", .quote = "USD"}};
+    scope.trades_per_book = 64;
+
+    domain::trade_population_plan plan;
+    REQUIRE_NOTHROW(plan = plan_of(scope));
+    const auto codes = codes_of(plan);
+    CHECK(codes.contains("FxBasketOption"));
+    CHECK(codes.contains("FxRainbowOption"));
+    CHECK(codes.contains("FxBasketVarianceSwap"));
+    CHECK(codes.contains("FxPairwiseVarianceSwap"));
+}
+
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {
     const auto plan = plan_of(fx_scope());
 

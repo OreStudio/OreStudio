@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 1DB859E4-9604-46EA-BAD3-3810393F4BBE
+:END:
+#+title: Task: Book an FX basket in a book whose currency no second pair quotes
+#+description: A fresh Acme setup ended generate_trades with warnings: a basket slot of the UK book drew EUR/GBP, the only pair quoted in GBP, so it had no partner and the book's population was refused.
+#+type: task
+#+level: s1
+#+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
+#+owner: marco
+#+branch: feature/refuse-forwards-cheaply
+#+pr: 4800
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every FX book books its baskets and rainbows, whatever its own currency.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- A basket or rainbow slot draws only from pairs with a second pair in their quote currency, still preferring the book's own currency.
+- A fresh Acme setup's generate_trades step completes without warnings.
+
+* Plan
+
+- *The cause.* The FX planner draws a slot's pair from those that name the book's currency.
+  The UK book's currency is GBP, and EUR/GBP is the only pair quoted in it, so a basket or
+  rainbow slot that drew EUR/GBP found no second pair to pay in and refused the population.
+  The basket and rainbow came to main in the window and generic barrier PRs, after the last
+  provisioning run on this branch's base.
+- *The fix.* A basket or rainbow slot draws from the pairs that have a partner in their quote
+  currency, still preferring the book's own; a tenant with none at all still gets the refusal.
+- *What the yellow run exposed.* The step threw on the first entry it could not write, so the
+  US and HK books, which come after the UK's FX book, got no trades at all: 487 trades went
+  unwritten for one bad slot. Each entry now fails on its own: the step names it, goes on to
+  the next, and ends with warnings, keeping the trades it wrote.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The regression test without the fix | fails with the provisioning message, "no second pair quoted in GBP" | =compass test run -- -R ores.synthetic.core.tests=, planner change set aside | feature/refuse-forwards-cheaply over 558bf9f78f |
+| The same test with the fix | passes; the suite passes | the same | feature/refuse-forwards-cheaply over 558bf9f78f |
+| Trades the first run never wrote | 487: UK FX 63; US 10 + 140 + 62; HK 10 + 140 + 62 | the re-run's log | feature/refuse-forwards-cheaply over 558bf9f78f |
+| =setup-rerun generate_trades= on the warned tenant | completed; wrote the missing books, 0 of every book already written | =compass shell -f= | feature/refuse-forwards-cheaply over 558bf9f78f |
+| A fresh Acme setup on main with #4797, which added the basket and pairwise variance swaps | all 17 steps completed, generate_trades in 54 s with no warnings | the provisioning recipe, then the step times | 2c60e67187 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4800][#4800]] | [marketdata,synthetic,service] Mop up the setup: fast forward refusals, baskets, re-run answers |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Claude review: fail the step when every population fails | provisioning_step_handler.hpp | Decline | The step is not essential, so the engine settles a failure of it with warnings anyway; the outcome is the same. |
+| 2 | Claude review: a population that throws part way under-counts what it wrote | provisioning_step_handler.hpp | Decline | A rerun writes only the missing trades, so the count is a report, not a gap. |
+| 3 | Claude review: the partner rule lives in the pair choice and in the builder | trade_population_planner.cpp | Accept | Both read one predicate, is_basket_partner. |
+| 4 | Claude review: the draw order changes for the four products | trade_population_planner.cpp | Decline | Checked: the recorded generated-trade tests pass. |
+| 5 | Claude review: precompute the partner lookup | trade_population_planner.cpp | Decline | A handful of pairs per slot; not worth the state. |
+| 6 | Claude review: merge the two adjacent comments | provisioning_step_handler.hpp | Accept | Merged. |
+
+* Result
+
+A basket or rainbow slot draws from the pairs that have a partner in their quote currency, so
+the UK book books its baskets; a regression test reproduces the provisioning refusal without the
+fix and passes with it. The trade step writes each population on its own and ends with warnings
+naming the ones it could not write, keeping the rest: with three bonds books renamed on purpose,
+a re-run named those three and wrote the other thirteen populations, and with the books restored
+a re-run completed clean. The first fresh run had lost 487 trades to one bad slot; a re-run wrote
+them.

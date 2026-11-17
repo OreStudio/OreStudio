@@ -1806,22 +1806,56 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxWorstOfBasketSwap"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
+/// The products on two pairs in one quote currency, which they pay in.
+bool needs_second_pair(std::string_view type) {
+    return type == "FxBasketOption" || type == "FxRainbowOption" ||
+           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap";
+}
+
+/// Whether a pair can stand beside another in a product on two pairs: quoted in the same
+/// currency, which the product pays in, on a different base. The pair choice and the
+/// builder's second pair both read this, so a slot is never given a pair the builder refuses.
+bool is_basket_partner(const domain::currency_pair_reference& pair,
+                       const domain::currency_pair_reference& candidate) {
+    return candidate.quote == pair.quote && candidate.base != pair.base;
+}
+
+/// Whether the tenant holds a second pair for a product on two pairs.
+bool has_basket_partner(const domain::trade_generation_scope& scope,
+                        const domain::currency_pair_reference& pair) {
+    return std::ranges::any_of(scope.currency_pairs, [&](const auto& candidate) {
+        return is_basket_partner(pair, candidate);
+    });
+}
+
 /*
  * The pair a slot trades. A desk books what it quotes, so the pairs that name
  * the book's own currency come first; a tenant holding none of those trades the
  * whole catalogue rather than refusing, because a pair in another currency is
- * still a pair it holds.
+ * still a pair it holds. A slot of a product on two pairs draws only from the
+ * pairs that have a partner in their quote currency, so a book whose own
+ * currency is quoted in no second pair still books those products.
  */
-const domain::currency_pair_reference& pair_for(const domain::trade_generation_scope& scope,
-                                                std::uint32_t slot) {
+const domain::currency_pair_reference&
+pair_for(const domain::trade_generation_scope& scope, std::uint32_t slot, std::string_view type) {
+    const bool basket = needs_second_pair(type);
+    const auto fits = [&](const domain::currency_pair_reference& pair) {
+        return !basket || has_basket_partner(scope, pair);
+    };
     const auto& own = scope.currency_code;
     std::vector<const domain::currency_pair_reference*> matching;
+    std::vector<const domain::currency_pair_reference*> fitting;
     for (const auto& pair : scope.currency_pairs) {
+        if (!fits(pair))
+            continue;
+        fitting.push_back(&pair);
         if (pair.base == own || pair.quote == own)
             matching.push_back(&pair);
     }
     if (!matching.empty())
         return *matching[slot % matching.size()];
+    if (!fitting.empty())
+        return *fitting[slot % fitting.size()];
     return scope.currency_pairs[slot % scope.currency_pairs.size()];
 }
 
@@ -2016,7 +2050,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
      */
     const auto second_pair = [&]() -> const domain::currency_pair_reference& {
         for (const auto& candidate : scope.currency_pairs)
-            if (candidate.quote == pair.quote && candidate.base != pair.base)
+            if (is_basket_partner(pair, candidate))
                 return candidate;
         throw trade_population_error("A " + type +
                                      " names two pairs in one quote currency, and the tenant "
@@ -2275,7 +2309,7 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
         const auto& type = *types[slot % types.size()];
-        const auto& pair = pair_for(scope, slot);
+        const auto& pair = pair_for(scope, slot, type);
 
         const auto span = max_years - min_years + 1;
         const auto drawn =

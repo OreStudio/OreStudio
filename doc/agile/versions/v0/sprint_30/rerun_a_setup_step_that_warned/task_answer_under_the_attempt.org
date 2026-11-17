@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 512E1028-BD72-4535-8288-D5BC24CA7303
+:END:
+#+title: Task: Publish a re-run step's answer under its attempt
+#+description: A re-run sent within two minutes of the step's last answer hung: the service published its answer under the step id, so the stream dropped it as a repeat of the first answer.
+#+type: task
+#+level: s1
+#+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
+#+owner: marco
+#+branch: feature/refuse-forwards-cheaply
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every attempt's answer reaches the engine, however soon after the last one it is sent.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- A step's answer is published under the attempt its command was sent as, and under the step id when the command names none.
+- Two re-runs of one step in a row on a provisioned tenant both complete.
+
+* Plan
+
+- *The cause.* The re-run sends its command under a new idempotency key, but the service
+  answered under =publish_identity_headers(step_id)=, so both attempts' answers shared one
+  =Nats-Msg-Id=. An answer inside the stream's duplicate window of the first was stored once,
+  as the first: the step stayed in progress, the shell waited, and the deadline settled the
+  step 20 minutes later. The first round of re-runs escaped it only because each step's last
+  answer was more than two minutes old.
+- *The fix.* The step context reads the attempt from the command's =Nats-Msg-Id= and answers
+  under it; a command that names none is answered under the step id, as before.
+- *Not changed.* The compute bridge answers report-run steps under the step id; those are never
+  sent again as a new attempt.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| A re-run inside two minutes of the last answer, before the fix | hung; the step settled at its 20 minute deadline | =setup-rerun generate_trades= | feature/refuse-forwards-cheaply over 558bf9f78f |
+| Two re-runs back to back, after the fix | both answered within seconds | =setup-rerun generate_trades= twice in one script | feature/refuse-forwards-cheaply over 558bf9f78f |
+| The context reads the attempt | ores.service.tests passed, with the new case | =compass test run -- -R ores.service.tests= | feature/refuse-forwards-cheaply over 558bf9f78f |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A step's answer is published under the attempt its command was sent as, so a re-run sent soon
+after the last answer is no longer dropped by the stream. Two re-runs of generate_trades back to
+back both answered within seconds; before the fix the second hung until the step's deadline.

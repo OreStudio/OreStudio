@@ -3527,6 +3527,88 @@ TEST_CASE("an_option_on_an_equity_future_and_on_a_bond_future_hold_their_terms_a
     check_bond(rebuild(items[1]));
 }
 
+TEST_CASE("an_equity_double_touch_and_an_fx_asian_option_hold_their_terms_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="EquityDoubleTouch#1">
+    <TradeType>EquityDoubleTouchOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityDoubleTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
+        <ExerciseDates><ExerciseDate>2027-01-05</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockIn</Type>
+        <Levels><Level>4500</Level><Level>5500</Level></Levels>
+      </BarrierData>
+      <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>100000</PayoffAmount>
+    </EquityDoubleTouchOptionData>
+  </Trade>
+  <Trade id="FxAsianOption#1">
+    <TradeType>FxAsianOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxAsianOptionData>
+      <Currency>USD</Currency>
+      <Quantity>1000000</Quantity>
+      <Strike>1.08</Strike>
+      <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name><Weight>1.0</Weight></Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>Asian</PayoffType>
+        <ExerciseDates><ExerciseDate>2022-03-01</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Settlement>2022-03-05</Settlement>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2022-02-01</StartDate>
+          <EndDate>2022-03-01</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>TGT,US</Calendar>
+          <Convention>F</Convention>
+          <TermConvention>F</TermConvention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ObservationDates>
+    </FxAsianOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto check_touch = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_digital_option_instrument>(&data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->identity.trade_type_code == "EquityDoubleTouchOption");
+        REQUIRE(data->barriers.size() == 1);
+        CHECK(data->barriers[0].barrier_type == "KnockIn");
+        REQUIRE(data->barrier_levels.size() == 2);
+    };
+    const auto check_asian = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].payoff_type == std::optional<std::string>("Asian"));
+        REQUIRE(data->instrument_underlyings.size() == 1);
+        CHECK(data->instrument_underlyings[0].weight == 1.0);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "observationdates"));
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_touch(items[0]);
+    check_touch(rebuild(items[0]));
+    check_asian(items[1]);
+    check_asian(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

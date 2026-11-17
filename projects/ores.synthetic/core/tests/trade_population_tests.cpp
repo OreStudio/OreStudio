@@ -194,7 +194,7 @@ domain::trade_generation_scope inflation_scope() {
 }
 
 /*
- * A scope of the FX family. The routed types are twenty-five here, and the
+ * A scope of the FX family. The routed types are twenty-six here, and the
  * catalogue carries one pair of the book's currency and one that names neither
  * side of it, so the preference is testable.
  */
@@ -431,7 +431,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 30;
+    wide.trades_per_book = 31;
 
     const auto plan = plan_of(wide);
 
@@ -444,15 +444,15 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     }
 
     /*
-     * Thirty codes, twenty-seven products and three containers, and the
-     * planner cycles through them, so one book of thirty reaches every one. The
+     * Thirty-one codes, twenty-eight products and three containers, and the
+     * planner cycles through them, so one book of thirty-one reaches every one. The
      * composite holds two options and each return swap one position, which
      * are trades of their own.
      */
-    REQUIRE(types.size() == 30u);
+    REQUIRE(types.size() == 31u);
     const auto books = wide.book_ids.size();
     CHECK(held == 4u * books);
-    CHECK(plan.slots.size() == 34u * books);
+    CHECK(plan.slots.size() == 35u * books);
     CHECK(plan.structures.size() == 3u * books);
 }
 
@@ -994,27 +994,27 @@ TEST_CASE("a month_end_anchor_still_dates_every_fx_trade", "[trade_population]")
 
 TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto scope = fx_scope();
-    scope.trades_per_book = 25;
+    scope.trades_per_book = 26;
     const auto plan = plan_of(scope);
 
     std::set<std::string> types;
     for (const auto& slot : plan.slots)
         types.insert(slot.trade_type_code);
 
-    CHECK(types.size() == 25);
+    CHECK(types.size() == 26);
 }
 
 TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
           "[trade_population]") {
     /*
-     * The fx planner cycles twenty-five routed codes. A config of eight slots never
+     * The fx planner cycles twenty-six routed codes. A config of eight slots never
      * reaches the variance swap or the accumulator, which is what a tenant held
      * before the seeded configs stated one trade per code.
      */
     auto wide = fx_scope();
     wide.trades_per_book = 64;
     const auto routed = codes_of(plan_of(wide));
-    REQUIRE(routed.size() == 25);
+    REQUIRE(routed.size() == 26);
 
     auto seeded = fx_scope();
     seeded.book_ids = {bond_book};
@@ -1558,7 +1558,7 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
     auto scope = fx_scope();
     scope.min_tenor_code = "1M";
     scope.max_tenor_code = "2Y";
-    scope.trades_per_book = 25;
+    scope.trades_per_book = 26;
     scope.seed = 44;
     /*
      * The day a run anchors on is the day the population draws its months back
@@ -1578,7 +1578,7 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
             CHECK(row.end_date > row.start_date);
         }
     }
-    /* One per book: twenty-five types in the cycle, two books in the scope. */
+    /* One per book: twenty-six types in the cycle, two books in the scope. */
     CHECK(swaps == 2);
 }
 
@@ -1719,9 +1719,9 @@ std::vector<domain::trade_generation_scope> every_class_scope() {
                                                        commodity_scope(),
                                                        equity_scope(),
                                                        credit_scope()};
-    // About five trades of each type a book, so a drawn either-or reaches both of its ways.
+    // About eight trades of each type a book, so a drawn either-or reaches both of its ways.
     for (auto& scope : scopes)
-        scope.trades_per_book = 128;
+        scope.trades_per_book = 256;
     return scopes;
 }
 

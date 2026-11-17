@@ -40,30 +40,30 @@
       </Barriers>
     </EquityGenericBarrierOptionData>
   </Trade>
-  <Trade id="68ca7fb7-d3e6-55d8-b185-04e6a3193ab8">
+  <Trade id="f8bbf0a7-ea59-58ea-830a-e02a820d688f">
     <TradeType>EquityGenericBarrierOption</TradeType>
     <EquityGenericBarrierOptionData>
-      <PayCurrency>EUR</PayCurrency>
+      <PayCurrency>USD</PayCurrency>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2027-12-02</ExerciseDate>
+          <ExerciseDate>2026-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <SettlementDate>2027-12-07</SettlementDate>
-      <Quantity>2886.28</Quantity>
-      <Strike>2749.49</Strike>
+      <SettlementDate>2026-11-07</SettlementDate>
+      <Quantity>6677.75</Quantity>
+      <Strike>594.24</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2027-12-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2026-11-02</EndDate>
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
@@ -72,9 +72,9 @@
           </Rules>
         </ScheduleData>
         <BarrierData>
-          <Type>DownAndOut</Type>
+          <Type>UpAndOut</Type>
           <Levels>
-            <Level>2474.54</Level>
+            <Level>653.66</Level>
           </Levels>
         </BarrierData>
       </Barriers>

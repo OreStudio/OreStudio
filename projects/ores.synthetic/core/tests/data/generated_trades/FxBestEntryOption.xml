@@ -35,53 +35,57 @@
       </Underlying>
     </FxBestEntryOptionData>
   </Trade>
-  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
     <TradeType>FxBestEntryOption</TradeType>
     <FxBestEntryOptionData>
       <LongShort>Short</LongShort>
       <Currency>USD</Currency>
-      <Notional>9919657.76</Notional>
+      <Notional>6145432.04</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.2</Cap>
       <Strike>1</Strike>
       <TriggerLevel>0.98</TriggerLevel>
       <ResetMinimum>0.95</ResetMinimum>
       <Premium>0</Premium>
-      <ExpiryDate>2032-12-02</ExpiryDate>
-      <StrikeDate>2025-12-02</StrikeDate>
-      <PremiumDate>2025-12-02</PremiumDate>
-      <SettlementDate>2032-12-02</SettlementDate>
+      <ExpiryDate>2033-11-02</ExpiryDate>
+      <StrikeDate>2025-11-02</StrikeDate>
+      <PremiumDate>2025-11-02</PremiumDate>
+      <SettlementDate>2033-11-02</SettlementDate>
       <StrikeObservationDates>
         <Dates>
           <Dates>
-            <Date>2026-03-02</Date>
-            <Date>2026-06-02</Date>
-            <Date>2026-09-02</Date>
-            <Date>2026-12-02</Date>
-            <Date>2027-03-02</Date>
-            <Date>2027-06-02</Date>
-            <Date>2027-09-02</Date>
-            <Date>2027-12-02</Date>
-            <Date>2028-03-02</Date>
-            <Date>2028-06-02</Date>
-            <Date>2028-09-04</Date>
-            <Date>2028-12-04</Date>
-            <Date>2029-03-02</Date>
-            <Date>2029-06-04</Date>
-            <Date>2029-09-03</Date>
-            <Date>2029-12-03</Date>
-            <Date>2030-03-04</Date>
-            <Date>2030-06-03</Date>
-            <Date>2030-09-02</Date>
-            <Date>2030-12-02</Date>
-            <Date>2031-03-03</Date>
-            <Date>2031-06-02</Date>
-            <Date>2031-09-02</Date>
-            <Date>2031-12-02</Date>
-            <Date>2032-03-02</Date>
-            <Date>2032-06-02</Date>
-            <Date>2032-09-02</Date>
-            <Date>2032-12-02</Date>
+            <Date>2026-02-02</Date>
+            <Date>2026-05-04</Date>
+            <Date>2026-08-03</Date>
+            <Date>2026-11-02</Date>
+            <Date>2027-02-02</Date>
+            <Date>2027-05-03</Date>
+            <Date>2027-08-02</Date>
+            <Date>2027-11-02</Date>
+            <Date>2028-02-02</Date>
+            <Date>2028-05-02</Date>
+            <Date>2028-08-02</Date>
+            <Date>2028-11-02</Date>
+            <Date>2029-02-02</Date>
+            <Date>2029-05-02</Date>
+            <Date>2029-08-02</Date>
+            <Date>2029-11-02</Date>
+            <Date>2030-02-04</Date>
+            <Date>2030-05-02</Date>
+            <Date>2030-08-02</Date>
+            <Date>2030-11-04</Date>
+            <Date>2031-02-03</Date>
+            <Date>2031-05-02</Date>
+            <Date>2031-08-04</Date>
+            <Date>2031-11-03</Date>
+            <Date>2032-02-02</Date>
+            <Date>2032-05-03</Date>
+            <Date>2032-08-02</Date>
+            <Date>2032-11-02</Date>
+            <Date>2033-02-02</Date>
+            <Date>2033-05-02</Date>
+            <Date>2033-08-02</Date>
+            <Date>2033-11-02</Date>
           </Dates>
         </Dates>
       </StrikeObservationDates>

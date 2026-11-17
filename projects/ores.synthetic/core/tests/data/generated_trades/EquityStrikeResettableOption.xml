@@ -35,48 +35,44 @@
       </ObservationDates>
     </EquityStrikeResettableOptionData>
   </Trade>
-  <Trade id="c1d59ae5-996a-5563-bbca-8ef8c71aaec2">
+  <Trade id="85a4cda1-faea-5845-bc9c-b97dc2482179">
     <TradeType>EquityStrikeResettableOption</TradeType>
     <EquityStrikeResettableOptionData>
       <LongShort>Short</LongShort>
-      <OptionType>Call</OptionType>
-      <Currency>USD</Currency>
-      <Strike>1953.12</Strike>
-      <ResetStrike>1757.81</ResetStrike>
-      <Quantity>4262.71</Quantity>
-      <TriggerType>Down</TriggerType>
-      <TriggerPrice>1757.81</TriggerPrice>
+      <OptionType>Put</OptionType>
+      <Currency>EUR</Currency>
+      <Strike>4348.95</Strike>
+      <ResetStrike>4783.85</ResetStrike>
+      <Quantity>1717.78</Quantity>
+      <TriggerType>Up</TriggerType>
+      <TriggerPrice>4783.85</TriggerPrice>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
-      <ExpiryDate>2030-08-02</ExpiryDate>
-      <SettlementDate>2030-08-02</SettlementDate>
+      <ExpiryDate>2030-01-02</ExpiryDate>
+      <SettlementDate>2030-01-02</SettlementDate>
       <Premium>0</Premium>
-      <PremiumDate>2025-08-02</PremiumDate>
+      <PremiumDate>2026-01-02</PremiumDate>
       <ObservationDates>
         <Dates>
           <Dates>
-            <Date>2025-11-03</Date>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-04</Date>
-            <Date>2026-08-03</Date>
-            <Date>2026-11-02</Date>
-            <Date>2027-02-02</Date>
-            <Date>2027-05-03</Date>
-            <Date>2027-08-02</Date>
-            <Date>2027-11-02</Date>
-            <Date>2028-02-02</Date>
-            <Date>2028-05-02</Date>
-            <Date>2028-08-02</Date>
-            <Date>2028-11-02</Date>
-            <Date>2029-02-02</Date>
-            <Date>2029-05-02</Date>
-            <Date>2029-08-02</Date>
-            <Date>2029-11-02</Date>
-            <Date>2030-02-04</Date>
-            <Date>2030-05-02</Date>
-            <Date>2030-08-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-04</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-04</Date>
+            <Date>2028-01-03</Date>
+            <Date>2028-04-03</Date>
+            <Date>2028-07-03</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+            <Date>2030-01-02</Date>
           </Dates>
         </Dates>
       </ObservationDates>

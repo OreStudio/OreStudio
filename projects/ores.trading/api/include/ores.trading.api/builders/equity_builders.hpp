@@ -262,6 +262,32 @@ private:
     equity_touch_option_terms terms_;
 };
 
+/**
+ * @brief A double touch: pays a fixed amount when the equity touches either
+ * of two levels before the expiry (KnockIn), or touches neither (KnockOut).
+ */
+struct equity_double_touch_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> payout;
+    /// KnockIn or KnockOut.
+    required<std::string> barrier_type;
+    required<utility::decimal::decimal> lower;
+    required<utility::decimal::decimal> upper;
+    required<std::chrono::year_month_day> expiry;
+    required<option_position> position;
+};
+
+class ORES_TRADING_API_EXPORT equity_double_touch_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityDoubleTouchOption";
+    explicit equity_double_touch_option_builder(equity_double_touch_option_terms terms);
+    [[nodiscard]] equity_result build() const;
+
+private:
+    equity_double_touch_option_terms terms_;
+};
+
 struct equity_forward_terms final {
     required<marketdata::datum::market_reference> underlying;
     required<std::string> currency;

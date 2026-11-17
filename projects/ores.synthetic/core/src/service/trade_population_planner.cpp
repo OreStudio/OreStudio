@@ -1803,13 +1803,15 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxBasketVarianceSwap",
                                          "FxPairwiseVarianceSwap",
                                          "FxForwardVolatilityAgreement",
-                                         "FxWorstOfBasketSwap"};
+                                         "FxWorstOfBasketSwap",
+                                         "FxAsianOption"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
 /// The products on two pairs in one quote currency, which they pay in.
 bool needs_second_pair(std::string_view type) {
     return type == "FxBasketOption" || type == "FxRainbowOption" ||
-           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap";
+           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap" ||
+           type == "FxWorstOfBasketSwap";
 }
 
 /// Whether a pair can stand beside another in a product on two pairs: quoted in the same
@@ -2096,6 +2098,20 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                 .build(),
             type);
     }
+    if (type == "FxAsianOption")
+        // The rate is averaged daily over the trade's life and settles two days after.
+        return scripted_batch_of(
+            tb::fx_asian_option_builder({.fx_index = index,
+                                         .currency = pair.quote,
+                                         .quantity = money(notional),
+                                         .strike = level(rate),
+                                         .kind = kind,
+                                         .position = position,
+                                         .observation_start = start,
+                                         .expiry = end,
+                                         .settlement = year_month_day{sys_days{end} + days{2}}})
+                .build(),
+            type);
     if (type == "FxWorstOfBasketSwap") {
         /*
          * Half-yearly periods over the trade's life, each paying two days after
@@ -2363,7 +2379,8 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityBasketVarianceSwap",
                                              "EquityPairwiseVarianceSwap",
                                              "EquityForwardVolatilityAgreement",
-                                             "EquityFutureOption"};
+                                             "EquityFutureOption",
+                                             "EquityDoubleTouchOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -3297,6 +3314,16 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                                       .level = upper,
                                                       .expiry = end,
                                                       .position = position})
+                         .build());
+    if (type == "EquityDoubleTouchOption")
+        return built(tb::equity_double_touch_option_builder({.underlying = address,
+                                                             .currency = currency,
+                                                             .payout = money(notional),
+                                                             .barrier_type = std::string("KnockIn"),
+                                                             .lower = lower,
+                                                             .upper = upper,
+                                                             .expiry = end,
+                                                             .position = position})
                          .build());
     if (type == "EquityForward")
         return built(

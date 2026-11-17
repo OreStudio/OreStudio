@@ -103,6 +103,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::fx_digital_option_instrument;
     if (trade_type == "FxAverageForward")
         return instrument_table::fx_asian_forward_instrument;
+    if (trade_type == "FxAsianOption")
+        return instrument_table::scripted_instrument;
     if (trade_type == "FxBarrierOption")
         return instrument_table::fx_barrier_option_instrument;
     if (trade_type == "FxDoubleBarrierOption")
@@ -192,6 +194,8 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityGenericBarrierOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityTouchOption")
+        return instrument_table::equity_digital_option_instrument;
+    if (trade_type == "EquityDoubleTouchOption")
         return instrument_table::equity_digital_option_instrument;
     if (trade_type == "EquityDigitalOption")
         return instrument_table::equity_digital_option_instrument;

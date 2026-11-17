@@ -79,7 +79,7 @@ absent: it is a placeholder, not a product.
 | FxOption | FX Option | option | native | fx! | true | false | fx_vanilla_option_instrument |
 | FxDigitalOption | FX Digital Option | option | native | fx! | true | false | fx_digital_option_instrument |
 | FxAverageForward | FX Average Forward |   | native | fx! | false | false | fx_asian_forward_instrument |
-| FxAsianOption | FX Asian Option | option | native | fx! | true | false |  |
+| FxAsianOption | FX Asian Option | option | native | fx! | true | false | scripted_instrument |
 | FxBarrierOption | FX Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxDoubleBarrierOption | FX Double Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
 | FxEuropeanBarrierOption | FX European Barrier Option | option | native | fx! | true | false | fx_barrier_option_instrument |
@@ -128,7 +128,7 @@ absent: it is a placeholder, not a product.
 | EquityWindowBarrierOption | Equity Window Barrier Option | option | scripted | equity! | true | false | scripted_instrument |
 | EquityGenericBarrierOption | Equity Generic Barrier Option | option | scripted | equity! | true | false | scripted_instrument |
 | EquityTouchOption | Equity Touch Option | option | native | equity! | true | false | equity_digital_option_instrument |
-| EquityDoubleTouchOption | Equity Double Touch Option | option | native | equity! | true | false |  |
+| EquityDoubleTouchOption | Equity Double Touch Option | option | native | equity! | true | false | equity_digital_option_instrument |
 | EquityDigitalOption | Equity Digital Option | option | native | equity! | true | false | equity_digital_option_instrument |
 | EquityForward | Equity Forward | forward | native | equity! | false | false | equity_forward_instrument |
 | EquitySwap | Equity Swap | swap | native | equity!,interest_rates | false | false | equity_swap_instrument |

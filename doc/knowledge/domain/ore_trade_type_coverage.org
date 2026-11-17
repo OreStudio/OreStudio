@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 111 types name an instrument table, and the generator records 111.
+- 113 types name an instrument table, and the generator records 113.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -145,7 +145,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =DoubleDigitalOption= | scripted | scripted | =DoubleDigitalOptionData= | =scripted_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]], [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]] |
 | =EquityAccumulator= | scripted | scripted | =EquityAccumulatorData= | =equity_accumulator_instrument= | yes | =Accumulator01=, =Accumulator02= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
 | =EquityAsianOption= | native | native | =EquityAsianOptionData= | =equity_asian_option_instrument= | yes | - | - | - |
-| =EquityAutoDeltaHedgedOption= | native | native | =EquityAutoDeltaHedgedOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
+| =EquityAutoDeltaHedgedOption= | native | native | =EquityAutoDeltaHedgedOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]], [[id:B9D6D5E2-05E5-45D4-AC50-155FA746359F][Model the equity auto delta hedged option]] |
 | =EquityBarrierOption= | native | native | =EquityBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
 | =EquityBasketOption= | scripted | scripted | =EquityBasketOptionData= | =scripted_instrument= | yes | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |
 | =EquityBasketVarianceSwap= | scripted | scripted | =EquityBasketVarianceSwapData= | =scripted_instrument= | yes | =BasketVarianceSwap= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
@@ -153,7 +153,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =EquityCliquetOption= | native | native | =EquityCliquetOptionData= | =equity_option_instrument= | yes | - | - | - |
 | =EquityDigitalOption= | native | native | =EquityDigitalOptionData= | =equity_digital_option_instrument= | yes | - | - | - |
 | =EquityDoubleBarrierOption= | native | native | =EquityDoubleBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
-| =EquityDoubleTouchOption= | native | native | =EquityDoubleTouchOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
+| =EquityDoubleTouchOption= | native | native | =EquityDoubleTouchOptionData= | =equity_digital_option_instrument= | yes | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
 | =EquityEuropeanBarrierOption= | native | native | =EquityEuropeanBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
 | =EquityForward= | native | native | =EquityForwardData= | =equity_forward_instrument= | yes | - | - | - |
 | =EquityForwardVolatilityAgreement= | scripted | scripted | =EquityForwardVolatilityAgreementData= | =scripted_instrument= | yes | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
@@ -178,7 +178,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =ForwardRateAgreement= | native | native | =ForwardRateAgreementData= | =rate_instrument= | yes | - | - | - |
 | =ForwardVolatilityAgreement= | not registered | native | =ForwardVolatilityAgreementData= | - | no | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]], [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] |
 | =FxAccumulator= | scripted | scripted | =FxAccumulatorData= | =fx_accumulator_instrument= | yes | =Accumulator01=, =Accumulator02= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
-| =FxAsianOption= | native | native | =FxAsianOptionData= | - | no | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
+| =FxAsianOption= | native | native | =FxAsianOptionData= | =scripted_instrument= | yes | - | - | [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]] |
 | =FxAverageForward= | native | native | =FxAverageForwardData= | =fx_asian_forward_instrument= | yes | - | - | - |
 | =FxBarrierOption= | native | native | =FxBarrierOptionData= | =fx_barrier_option_instrument= | yes | - | - | - |
 | =FxBasketOption= | scripted | scripted | =FxBasketOptionData= | =scripted_instrument= | yes | =VanillaBasketOption=, =AsianBasketOption=, =AverageStrikeBasketOption=, =LookbackCallBasketOption=, =LookbackPutBasketOption= | identical | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]] |

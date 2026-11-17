@@ -31,60 +31,55 @@
       </ObservationDates>
     </FxStrikeResettableOptionData>
   </Trade>
-  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>FxStrikeResettableOption</TradeType>
     <FxStrikeResettableOptionData>
       <LongShort>Short</LongShort>
       <OptionType>Put</OptionType>
       <Currency>USD</Currency>
-      <Strike>0.5776</Strike>
-      <ResetStrike>0.5892</ResetStrike>
-      <Quantity>6145432.04</Quantity>
+      <Strike>0.6612</Strike>
+      <ResetStrike>0.6744</ResetStrike>
+      <Quantity>2621254.1</Quantity>
       <TriggerType>Up</TriggerType>
-      <TriggerPrice>0.618</TriggerPrice>
+      <TriggerPrice>0.7075</TriggerPrice>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
-      <ExpiryDate>2033-11-02</ExpiryDate>
-      <SettlementDate>2033-11-02</SettlementDate>
+      <ExpiryDate>2032-10-02</ExpiryDate>
+      <SettlementDate>2032-10-02</SettlementDate>
       <Premium>0</Premium>
-      <PremiumDate>2025-11-02</PremiumDate>
+      <PremiumDate>2025-10-02</PremiumDate>
       <ObservationDates>
         <Dates>
           <Dates>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-04</Date>
-            <Date>2026-08-03</Date>
-            <Date>2026-11-02</Date>
-            <Date>2027-02-02</Date>
-            <Date>2027-05-03</Date>
-            <Date>2027-08-02</Date>
-            <Date>2027-11-02</Date>
-            <Date>2028-02-02</Date>
-            <Date>2028-05-02</Date>
-            <Date>2028-08-02</Date>
-            <Date>2028-11-02</Date>
-            <Date>2029-02-02</Date>
-            <Date>2029-05-02</Date>
-            <Date>2029-08-02</Date>
-            <Date>2029-11-02</Date>
-            <Date>2030-02-04</Date>
-            <Date>2030-05-02</Date>
-            <Date>2030-08-02</Date>
-            <Date>2030-11-04</Date>
-            <Date>2031-02-03</Date>
-            <Date>2031-05-02</Date>
-            <Date>2031-08-04</Date>
-            <Date>2031-11-03</Date>
-            <Date>2032-02-02</Date>
-            <Date>2032-05-03</Date>
-            <Date>2032-08-02</Date>
-            <Date>2032-11-02</Date>
-            <Date>2033-02-02</Date>
-            <Date>2033-05-02</Date>
-            <Date>2033-08-02</Date>
-            <Date>2033-11-02</Date>
+            <Date>2026-01-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-04</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-04</Date>
+            <Date>2028-01-03</Date>
+            <Date>2028-04-03</Date>
+            <Date>2028-07-03</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+            <Date>2030-01-02</Date>
+            <Date>2030-04-02</Date>
+            <Date>2030-07-02</Date>
+            <Date>2030-10-02</Date>
+            <Date>2031-01-02</Date>
+            <Date>2031-04-02</Date>
+            <Date>2031-07-02</Date>
+            <Date>2031-10-02</Date>
+            <Date>2032-01-02</Date>
+            <Date>2032-04-02</Date>
+            <Date>2032-07-02</Date>
           </Dates>
         </Dates>
       </ObservationDates>

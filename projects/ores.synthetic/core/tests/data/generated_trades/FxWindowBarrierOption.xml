@@ -27,29 +27,29 @@
       </BarrierData>
     </FxWindowBarrierOptionData>
   </Trade>
-  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
+  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
     <TradeType>FxWindowBarrierOption</TradeType>
     <FxWindowBarrierOptionData>
       <Currency>USD</Currency>
-      <FixingAmount>2621254.1</FixingAmount>
-      <Strike>0.6612</Strike>
+      <FixingAmount>3698285.51</FixingAmount>
+      <Strike>0.9102</Strike>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <ExerciseDates>
-          <ExerciseDate>2032-10-02</ExerciseDate>
+          <ExerciseDate>2029-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <StartDate>2025-10-02</StartDate>
-      <EndDate>2029-04-02</EndDate>
+      <StartDate>2025-09-02</StartDate>
+      <EndDate>2027-09-02</EndDate>
       <BarrierData>
-        <Type>UpAndOut</Type>
+        <Type>DownAndOut</Type>
         <Levels>
-          <Level>0.7273</Level>
+          <Level>0.8192</Level>
         </Levels>
       </BarrierData>
     </FxWindowBarrierOptionData>

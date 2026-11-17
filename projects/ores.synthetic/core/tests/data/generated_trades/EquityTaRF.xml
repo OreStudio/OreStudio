@@ -45,21 +45,21 @@
       </Barriers>
     </EquityTaRFData>
   </Trade>
-  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
     <TradeType>EquityTaRF</TradeType>
     <EquityTaRFData>
       <Currency>EUR</Currency>
-      <FixingAmount>1833.24</FixingAmount>
-      <TargetAmount>549570.1</TargetAmount>
-      <Strike>2997.8</Strike>
+      <FixingAmount>2252.33</FixingAmount>
+      <TargetAmount>991965.78</TargetAmount>
+      <Strike>4404.18</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate>2026-01-02</StartDate>
-          <EndDate>2027-01-02</EndDate>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2032-12-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>2997.8</RangeTo>
+          <RangeTo>4404.18</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>2997.8</RangeFrom>
+          <RangeFrom>4404.18</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>549570.1</Level>
+            <Level>991965.78</Level>
           </Levels>
         </BarrierData>
       </Barriers>

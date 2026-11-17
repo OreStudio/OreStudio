@@ -24,10 +24,11 @@
  *
  * Equity Digital Option Instrument Table
  *
- * Represents EquityDigitalOption and EquityTouchOption trades.
- * underlying_name captures the ORE equity Name identifier;
- * option_type is Call or Put (digital only); strike is digital
- * only; barrier_level and barrier_type are touch only; the two
+ * Represents EquityDigitalOption, EquityTouchOption and
+ * EquityDoubleTouchOption trades. underlying_name captures the ORE equity
+ * Name identifier; option_type is Call or Put (digital only); strike is
+ * digital only; barrier_level and barrier_type are touch only, and a double
+ * touch keeps its lower level here and both levels in the barrier rows; the two
  * product families are mutually exclusive, enforced by a cross-column
  * check. expiry_date is an ISO 8601 date string.
  */
@@ -68,11 +69,11 @@ create table if not exists "ores_trading_equity_digital_option_instruments_tbl" 
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('EquityTouchOption', 'EquityDigitalOption')),
+    check ("trade_type_code" in ('EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption')),
     check ("notional" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check (("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" = 'EquityTouchOption' and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null)),
+    check (("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" in ('EquityTouchOption', 'EquityDoubleTouchOption') and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null)),
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
     check ("barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
 );

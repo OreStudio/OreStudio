@@ -2,7 +2,5 @@ CBO
 CashPosition
 CreditDefaultSwapOption
 EquityAutoDeltaHedgedOption
-EquityDoubleTouchOption
-FxAsianOption
 RateDigitalOption
 SwaptionStraddle

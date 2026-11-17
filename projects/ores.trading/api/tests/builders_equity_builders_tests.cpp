@@ -485,3 +485,37 @@ TEST_CASE("a_barrier_at_zero_fails", equity_tags) {
     REQUIRE_FALSE(option.has_value());
     CHECK(option.error().term == "barrier");
 }
+
+TEST_CASE("an_equity_double_touch_states_both_levels_as_one_barrier", equity_tags) {
+    const auto touch =
+        equity_double_touch_option_builder({.underlying = spx(),
+                                            .currency = std::string("USD"),
+                                            .payout = equity_amount("100000"),
+                                            .barrier_type = std::string("KnockIn"),
+                                            .lower = equity_amount("4500"),
+                                            .upper = equity_amount("5500"),
+                                            .expiry = 2027y / 1 / 5,
+                                            .position = option_position::long_option})
+            .build();
+    REQUIRE(touch.has_value());
+    REQUIRE(touch->barriers.size() == 1);
+    CHECK(touch->barriers[0].barrier_type == "KnockIn");
+    REQUIRE(touch->barrier_levels.size() == 2);
+    CHECK(touch->barrier_levels[0].level == equity_amount("4500"));
+    CHECK(touch->barrier_levels[1].level == equity_amount("5500"));
+}
+
+TEST_CASE("an_equity_double_touch_refuses_levels_out_of_order", equity_tags) {
+    const auto touch =
+        equity_double_touch_option_builder({.underlying = spx(),
+                                            .currency = std::string("USD"),
+                                            .payout = equity_amount("100000"),
+                                            .barrier_type = std::string("KnockOut"),
+                                            .lower = equity_amount("5500"),
+                                            .upper = equity_amount("4500"),
+                                            .expiry = 2027y / 1 / 5,
+                                            .position = option_position::long_option})
+            .build();
+    REQUIRE_FALSE(touch.has_value());
+    CHECK(touch.error().term == "barrier");
+}

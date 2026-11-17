@@ -142,6 +142,7 @@ public:
         row.tenor = std::move(tenor);
         row.calendar = "TARGET";
         row.convention = "F";
+        row.term_convention = "F";
         row.rule = "Forward";
         out_.schedules.push_back(std::move(row));
     }
@@ -576,6 +577,112 @@ scripted_result equity_generic_barrier_option_builder::build() const {
     out.rules_schedule("barrier_schedule", terms.monitoring_start.get(), terms.expiry.get(), "1D");
     for (const auto& barrier : barriers)
         out.barrier("barrier", barrier);
+    return out.take();
+}
+
+scripted_result build_basket_variance_swap(std::string_view trade_type,
+                                           std::string_view underlying_type,
+                                           const basket_variance_swap_terms& terms) {
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (auto refusal = positive_amount("notional", terms.notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("strike", terms.strike.get()))
+        return std::unexpected(std::move(*refusal));
+    const auto& members = terms.members.get();
+    if (members.size() < 2)
+        return std::unexpected(build_error{"members", "a basket names at least two underlyings"});
+    for (std::size_t i = 0; i < members.size(); ++i) {
+        if (auto refusal = positive_amount("weight", members[i].weight))
+            return std::unexpected(std::move(*refusal));
+        for (std::size_t j = 0; j < i; ++j)
+            if (members[j].underlying.uri() == members[i].underlying.uri())
+                return std::unexpected(build_error{"members", "names an underlying twice"});
+    }
+    if (!(terms.start.get() < terms.end.get()))
+        return std::unexpected(build_error{"end", "must be after the start"});
+    if (terms.settlement.get() < terms.end.get())
+        return std::unexpected(build_error{"settlement", "must not be before the end"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("LongShort", "enumeration", long_short_of(terms.position.get()));
+    out.value("Strike", "decimal", scripted_text(terms.strike.get()));
+    out.value("Notional", "decimal", scripted_text(terms.notional.get()));
+    out.value("SquaredPayoff", "text", terms.squared_payoff.get() ? "true" : "false");
+    out.value("SettlementDate", "text", scripted_date(terms.settlement.get()));
+    out.value("Currency", "enumeration", terms.currency.get());
+    for (const auto& member : members) {
+        auto& row = out.underlying("underlying", member.underlying, std::string(underlying_type));
+        row.currency = member.currency;
+        row.weight = member.weight.to_double();
+    }
+    out.rules_schedule("valuationschedule", terms.start.get(), terms.end.get(), "1D");
+    return out.take();
+}
+
+scripted_result build_pairwise_variance_swap(std::string_view trade_type,
+                                             const pairwise_variance_swap_terms& terms) {
+    if (terms.pay_currency.get().empty())
+        return std::unexpected(build_error{"pay_currency", "must name a currency"});
+    const auto& first = terms.first.get();
+    const auto& second = terms.second.get();
+    if (first.underlying.uri() == second.underlying.uri())
+        return std::unexpected(build_error{"second", "must name another underlying"});
+    for (const auto& [term, value] : {std::pair{"strike", &first.strike},
+                                      std::pair{"strike", &second.strike},
+                                      std::pair{"notional", &first.notional},
+                                      std::pair{"notional", &second.notional},
+                                      std::pair{"basket_notional", &terms.basket_notional.get()},
+                                      std::pair{"basket_strike", &terms.basket_strike.get()}})
+        if (auto refusal = positive_amount(term, *value))
+            return std::unexpected(std::move(*refusal));
+    if (!(terms.start.get() < terms.end.get()))
+        return std::unexpected(build_error{"end", "must be after the start"});
+    if (terms.settlement.get() < terms.end.get())
+        return std::unexpected(build_error{"settlement", "must not be before the end"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("LongShort", "enumeration", long_short_of(terms.position.get()));
+    out.list("Underlyings", "Index", {first.underlying.uri(), second.underlying.uri()});
+    out.list("UnderlyingStrikes",
+             "decimal",
+             {scripted_text(first.strike), scripted_text(second.strike)});
+    out.list("UnderlyingNotionals",
+             "decimal",
+             {scripted_text(first.notional), scripted_text(second.notional)});
+    out.value("BasketNotional", "decimal", scripted_text(terms.basket_notional.get()));
+    out.value("BasketStrike", "decimal", scripted_text(terms.basket_strike.get()));
+    out.value("SettlementDate", "text", scripted_date(terms.settlement.get()));
+    out.value("PayCcy", "enumeration", terms.pay_currency.get());
+    out.rules_schedule("valuationschedule", terms.start.get(), terms.end.get(), "1D");
+    return out.take();
+}
+
+scripted_result
+build_forward_volatility_agreement(std::string_view trade_type,
+                                   std::string_view underlying_type,
+                                   const forward_volatility_agreement_terms& terms) {
+    if (terms.pay_currency.get().empty())
+        return std::unexpected(build_error{"pay_currency", "must name a currency"});
+    if (auto refusal = positive_amount("quantity", terms.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = positive_amount("implied_vol_strike", terms.implied_vol_strike.get()))
+        return std::unexpected(std::move(*refusal));
+    if (!(terms.fva_date.get() < terms.option_expiry.get()))
+        return std::unexpected(build_error{"option_expiry", "must be after the FVA date"});
+    if (terms.settlement.get() < terms.option_expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the option expiry"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("FvaDate", "text", scripted_date(terms.fva_date.get()));
+    out.value("OptionExpiry", "text", scripted_date(terms.option_expiry.get()));
+    out.value("PremiumDate", "text", scripted_date(terms.premium_date.get()));
+    out.value("LongShort", "enumeration", long_short_of(terms.position.get()));
+    out.value("ImpliedVolStrike", "decimal", scripted_text(terms.implied_vol_strike.get()));
+    out.value("Quantity", "decimal", scripted_text(terms.quantity.get()));
+    out.value("PayCcy", "enumeration", terms.pay_currency.get());
+    out.value("SettlementDate", "text", scripted_date(terms.settlement.get()));
+    out.underlying("underlying", terms.underlying.get(), std::string(underlying_type));
     return out.take();
 }
 

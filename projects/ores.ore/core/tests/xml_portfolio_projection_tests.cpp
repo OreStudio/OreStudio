@@ -3187,6 +3187,146 @@ TEST_CASE("a_window_and_a_generic_barrier_hold_their_barriers_schedule_and_kiko_
     check_generic(rebuild(items[1]));
 }
 
+TEST_CASE("the_variance_swaps_and_a_forward_volatility_agreement_hold_their_terms_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="FxBasketVarianceSwap#1">
+    <TradeType>FxBasketVarianceSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxBasketVarianceSwapData>
+      <LongShort>Short</LongShort>
+      <Currency>EUR</Currency>
+      <Notional>1000</Notional>
+      <Strike>0.07</Strike>
+      <Underlyings>
+        <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name><Weight>0.5</Weight></Underlying>
+        <Underlying><Type>FX</Type><Name>ECB-EUR-GBP</Name><Weight>0.5</Weight></Underlying>
+      </Underlyings>
+      <SquaredPayoff>false</SquaredPayoff>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2022-01-31</StartDate>
+          <EndDate>2024-01-31</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>EUR,GBP</Calendar>
+          <Convention>F</Convention>
+          <TermConvention>F</TermConvention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <SettlementDate>2024-02-02</SettlementDate>
+    </FxBasketVarianceSwapData>
+  </Trade>
+  <Trade id="EquityPairwiseVarianceSwap#1">
+    <TradeType>EquityPairwiseVarianceSwap</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityPairwiseVarianceSwapData>
+      <LongShort>Long</LongShort>
+      <Underlyings>
+        <Value>EQ-RIC:.STOXX50E</Value>
+        <Value>EQ-RIC:.SPX</Value>
+      </Underlyings>
+      <UnderlyingStrikes><Value>0.3385</Value><Value>0.3903</Value></UnderlyingStrikes>
+      <UnderlyingNotionals><Value>577.75</Value><Value>603.54</Value></UnderlyingNotionals>
+      <BasketNotional>1339.28</BasketNotional>
+      <BasketStrike>0.3161</BasketStrike>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2021-06-25</StartDate>
+          <EndDate>2022-06-24</EndDate>
+          <Tenor>1D</Tenor>
+          <Calendar>US</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <AccrualLag>3</AccrualLag>
+      <PayoffLimit>5</PayoffLimit>
+      <Cap>2.5</Cap>
+      <Floor>0</Floor>
+      <SettlementDate>2022-06-29</SettlementDate>
+      <PayCcy>USD</PayCcy>
+    </EquityPairwiseVarianceSwapData>
+  </Trade>
+  <Trade id="FxForwardVolatilityAgreement#1">
+    <TradeType>FxForwardVolatilityAgreement</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxForwardVolatilityAgreementData>
+      <FvaDate>2019-07-25</FvaDate>
+      <OptionExpiry>2020-01-27</OptionExpiry>
+      <PremiumDate>2019-07-29</PremiumDate>
+      <Underlying><Type>FX</Type><Name>ECB-GBP-USD</Name></Underlying>
+      <LongShort>Long</LongShort>
+      <UnderlyingStrike>1.29844</UnderlyingStrike>
+      <ImpliedVolStrike>0.09675</ImpliedVolStrike>
+      <Quantity>89000000</Quantity>
+      <PayCcy>USD</PayCcy>
+      <SettlementDate>2020-01-29</SettlementDate>
+    </FxForwardVolatilityAgreementData>
+  </Trade>
+</Portfolio>)");
+    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) -> std::string {
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    const auto list_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                            std::string_view name) {
+        std::vector<std::string> values;
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                for (const auto& v : data.parameter_values)
+                    if (v.parameter_sequence_number == p.sequence_number)
+                        values.push_back(v.value);
+        return values;
+    };
+    const auto check_basket = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "SquaredPayoff") == "false");
+        CHECK(value_of(*data, "Strike") == "0.07");
+        REQUIRE(data->instrument_underlyings.size() == 2);
+        CHECK(data->instrument_underlyings[1].weight == 0.5);
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuationschedule"));
+    };
+    std::vector<std::string> first_read;
+    const auto check_pairwise = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        const auto names = list_of(*data, "Underlyings");
+        REQUIRE(names.size() == 2);
+        CHECK(names[0] != "EQ-RIC:.STOXX50E");
+        if (first_read.empty())
+            first_read = names;
+        CHECK(names == first_read);
+        CHECK(list_of(*data, "UnderlyingStrikes") == std::vector<std::string>{"0.3385", "0.3903"});
+        CHECK(value_of(*data, "AccrualLag") == "3");
+        CHECK(value_of(*data, "PayCcy") == "USD");
+        CHECK(ores::ore::domain::option_block::has_product_schedule(*data, "valuationschedule"));
+    };
+    const auto check_fva = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "FvaDate") == "2019-07-25");
+        CHECK(value_of(*data, "ImpliedVolStrike") == "0.09675");
+        CHECK(value_of(*data, "UnderlyingStrike") == "1.29844");
+        REQUIRE(data->instrument_underlyings.size() == 1);
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 3);
+    check_basket(items[0]);
+    check_basket(rebuild(items[0]));
+    check_pairwise(items[1]);
+    check_pairwise(rebuild(items[1]));
+    check_fva(items[2]);
+    check_fva(rebuild(items[2]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

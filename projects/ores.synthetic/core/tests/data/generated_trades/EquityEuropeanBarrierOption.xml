@@ -24,28 +24,28 @@
       <Quantity>1082.9</Quantity>
     </EquityEuropeanBarrierOptionData>
   </Trade>
-  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>EquityEuropeanBarrierOption</TradeType>
     <EquityEuropeanBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-11-02</ExerciseDate>
+          <ExerciseDate>2026-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>DownAndOut</Type>
         <Levels>
-          <Level>2336.42</Level>
+          <Level>2477.98</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.SPX</Name>
-      <Currency>USD</Currency>
-      <Strike>2596.02</Strike>
-      <Quantity>1200.89</Quantity>
+      <Name>RIC:DHER.DE</Name>
+      <Currency>EUR</Currency>
+      <Strike>2753.31</Strike>
+      <Quantity>889.5</Quantity>
     </EquityEuropeanBarrierOptionData>
   </Trade>
 </Portfolio>

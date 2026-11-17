@@ -27,29 +27,29 @@
       </BarrierData>
     </EquityWindowBarrierOptionData>
   </Trade>
-  <Trade id="28bcfefe-69ac-56e7-ba81-e84082bd1ff6">
+  <Trade id="c1d59ae5-996a-5563-bbca-8ef8c71aaec2">
     <TradeType>EquityWindowBarrierOption</TradeType>
     <EquityWindowBarrierOptionData>
-      <Currency>EUR</Currency>
-      <FixingAmount>3965.83</FixingAmount>
-      <Strike>2495.52</Strike>
+      <Currency>USD</Currency>
+      <FixingAmount>4262.71</FixingAmount>
+      <Strike>1953.12</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <ExerciseDates>
-          <ExerciseDate>2027-11-02</ExerciseDate>
+          <ExerciseDate>2030-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <StartDate>2025-11-02</StartDate>
-      <EndDate>2026-11-02</EndDate>
+      <StartDate>2025-08-02</StartDate>
+      <EndDate>2028-02-01</EndDate>
       <BarrierData>
-        <Type>UpAndOut</Type>
+        <Type>DownAndOut</Type>
         <Levels>
-          <Level>2745.07</Level>
+          <Level>1757.81</Level>
         </Levels>
       </BarrierData>
     </EquityWindowBarrierOptionData>

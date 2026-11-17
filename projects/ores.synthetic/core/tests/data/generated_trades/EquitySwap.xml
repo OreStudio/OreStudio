@@ -60,7 +60,7 @@
       </LegData>
     </EquitySwapData>
   </Trade>
-  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
+  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
     <TradeType>EquitySwap</TradeType>
     <EquitySwapData>
       <LegData>
@@ -70,12 +70,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>482126.28</Notional>
+          <Notional>8812586.99</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2030-12-02</EndDate>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2027-09-02</EndDate>
             <Tenor>3M</Tenor>
             <Calendar>US,UK</Calendar>
             <Convention>MF</Convention>
@@ -100,8 +100,8 @@
         <DayCounter>A360</DayCounter>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2030-12-02</EndDate>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2027-09-02</EndDate>
             <Tenor>3M</Tenor>
             <Calendar>US,UK</Calendar>
             <Convention>MF</Convention>
@@ -110,11 +110,11 @@
           </Rules>
         </ScheduleData>
         <EquityLegData>
-          <Quantity>114</Quantity>
+          <Quantity>4782</Quantity>
           <ReturnType>Price</ReturnType>
           <Underlying>
             <Type>Equity</Type>
-            <Name>RIC:.NDX</Name>
+            <Name>RIC:.SPX</Name>
           </Underlying>
         </EquityLegData>
       </LegData>

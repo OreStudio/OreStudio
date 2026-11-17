@@ -63,25 +63,26 @@
       </Underlying>
     </EquityBestEntryOptionData>
   </Trade>
-  <Trade id="0f1cabb4-b764-579f-8437-c726066494c7">
+  <Trade id="bb13d6bb-0c5c-514a-8171-ef3bcba65cde">
     <TradeType>EquityBestEntryOption</TradeType>
     <EquityBestEntryOptionData>
       <LongShort>Short</LongShort>
-      <Currency>USD</Currency>
-      <Notional>9441681.11</Notional>
+      <Currency>EUR</Currency>
+      <Notional>8333490.93</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.06</Cap>
       <Strike>0.85</Strike>
       <TriggerLevel>0.95</TriggerLevel>
       <ResetMinimum>0.85</ResetMinimum>
       <Premium>0</Premium>
-      <ExpiryDate>2033-01-02</ExpiryDate>
-      <StrikeDate>2026-01-02</StrikeDate>
-      <PremiumDate>2026-01-02</PremiumDate>
-      <SettlementDate>2033-01-02</SettlementDate>
+      <ExpiryDate>2030-10-02</ExpiryDate>
+      <StrikeDate>2025-10-02</StrikeDate>
+      <PremiumDate>2025-10-02</PremiumDate>
+      <SettlementDate>2030-10-02</SettlementDate>
       <StrikeObservationDates>
         <Dates>
           <Dates>
+            <Date>2026-01-02</Date>
             <Date>2026-04-02</Date>
             <Date>2026-07-02</Date>
             <Date>2026-10-02</Date>
@@ -101,20 +102,12 @@
             <Date>2030-04-02</Date>
             <Date>2030-07-02</Date>
             <Date>2030-10-02</Date>
-            <Date>2031-01-02</Date>
-            <Date>2031-04-02</Date>
-            <Date>2031-07-02</Date>
-            <Date>2031-10-02</Date>
-            <Date>2032-01-02</Date>
-            <Date>2032-04-02</Date>
-            <Date>2032-07-02</Date>
-            <Date>2032-10-04</Date>
           </Dates>
         </Dates>
       </StrikeObservationDates>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
     </EquityBestEntryOptionData>
   </Trade>

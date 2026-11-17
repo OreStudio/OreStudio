@@ -45,21 +45,21 @@
       </Barriers>
     </EquityTaRFData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
     <TradeType>EquityTaRF</TradeType>
     <EquityTaRFData>
-      <Currency>EUR</Currency>
-      <FixingAmount>1455.31</FixingAmount>
-      <TargetAmount>726734.11</TargetAmount>
-      <Strike>4993.67</Strike>
+      <Currency>USD</Currency>
+      <FixingAmount>571.13</FixingAmount>
+      <TargetAmount>129813.53</TargetAmount>
+      <Strike>2272.91</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2027-11-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2034-08-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>4993.67</RangeTo>
+          <RangeTo>2272.91</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>4993.67</RangeFrom>
+          <RangeFrom>2272.91</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>726734.11</Level>
+            <Level>129813.53</Level>
           </Levels>
         </BarrierData>
       </Barriers>

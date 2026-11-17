@@ -27,6 +27,7 @@
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
+            <TermConvention>F</TermConvention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
@@ -39,40 +40,41 @@
       </Barriers>
     </EquityGenericBarrierOptionData>
   </Trade>
-  <Trade id="bb13d6bb-0c5c-514a-8171-ef3bcba65cde">
+  <Trade id="85a4cda1-faea-5845-bc9c-b97dc2482179">
     <TradeType>EquityGenericBarrierOption</TradeType>
     <EquityGenericBarrierOptionData>
       <PayCurrency>EUR</PayCurrency>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2030-10-02</ExerciseDate>
+          <ExerciseDate>2030-01-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <SettlementDate>2030-10-07</SettlementDate>
-      <Quantity>6609.89</Quantity>
-      <Strike>1260.76</Strike>
+      <SettlementDate>2030-01-07</SettlementDate>
+      <Quantity>1717.78</Quantity>
+      <Strike>4348.95</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2030-10-02</EndDate>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2030-01-02</EndDate>
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
+            <TermConvention>F</TermConvention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>1386.84</Level>
+            <Level>4783.85</Level>
           </Levels>
         </BarrierData>
       </Barriers>

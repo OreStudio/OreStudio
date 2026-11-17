@@ -11,14 +11,14 @@
       <Settlement>Cash</Settlement>
     </FxForwardData>
   </Trade>
-  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
     <TradeType>FxForward</TradeType>
     <FxForwardData>
-      <ValueDate>2027-10-02</ValueDate>
+      <ValueDate>2035-01-02</ValueDate>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>8774166.11</BoughtAmount>
+      <BoughtAmount>5632565.12</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>7633524.52</SoldAmount>
+      <SoldAmount>3041021.91</SoldAmount>
       <Settlement>Cash</Settlement>
     </FxForwardData>
   </Trade>

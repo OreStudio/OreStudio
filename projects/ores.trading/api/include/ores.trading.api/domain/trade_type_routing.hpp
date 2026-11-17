@@ -91,6 +91,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::credit_instrument;
     if (trade_type == "InflationSwap")
         return instrument_table::rate_instrument;
+    if (trade_type == "FxForwardVolatilityAgreement")
+        return instrument_table::scripted_instrument;
     if (trade_type == "FxForward")
         return instrument_table::fx_forward_instrument;
     if (trade_type == "FxSwap")
@@ -121,6 +123,10 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::fx_digital_option_instrument;
     if (trade_type == "FxVarianceSwap")
         return instrument_table::fx_variance_swap_instrument;
+    if (trade_type == "FxPairwiseVarianceSwap")
+        return instrument_table::scripted_instrument;
+    if (trade_type == "FxBasketVarianceSwap")
+        return instrument_table::scripted_instrument;
     if (trade_type == "FxAccumulator")
         return instrument_table::fx_accumulator_instrument;
     if (trade_type == "FxTaRF")
@@ -163,6 +169,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::bond_instrument;
     if (trade_type == "Ascot")
         return instrument_table::bond_instrument;
+    if (trade_type == "EquityForwardVolatilityAgreement")
+        return instrument_table::scripted_instrument;
     if (trade_type == "EquityOption")
         return instrument_table::equity_option_instrument;
     if (trade_type == "EquityAsianOption")
@@ -187,6 +195,10 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::equity_swap_instrument;
     if (trade_type == "EquityVarianceSwap")
         return instrument_table::equity_variance_swap_instrument;
+    if (trade_type == "EquityPairwiseVarianceSwap")
+        return instrument_table::scripted_instrument;
+    if (trade_type == "EquityBasketVarianceSwap")
+        return instrument_table::scripted_instrument;
     if (trade_type == "EquityCliquetOption")
         return instrument_table::equity_option_instrument;
     if (trade_type == "EquityAccumulator")

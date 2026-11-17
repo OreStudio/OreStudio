@@ -29,21 +29,21 @@
       <Settlement>2027-10-02</Settlement>
     </EquityRainbowOptionData>
   </Trade>
-  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
+  <Trade id="28bcfefe-69ac-56e7-ba81-e84082bd1ff6">
     <TradeType>EquityRainbowOption</TradeType>
     <EquityRainbowOptionData>
       <Currency>EUR</Currency>
-      <Notional>1879.19</Notional>
-      <Strike>8364.14</Strike>
+      <Notional>3965.83</Notional>
+      <Strike>4991.04</Strike>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:DHER.DE</Name>
+          <Name>RIC:.STOXX50E</Name>
           <Weight>1</Weight>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.STOXX50E</Name>
+          <Name>RIC:DHER.DE</Name>
           <Weight>1</Weight>
         </Underlying>
       </Underlyings>
@@ -52,10 +52,10 @@
         <OptionType>Put</OptionType>
         <PayoffType>MaxRainbow</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2032-08-02</ExerciseDate>
+          <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Settlement>2032-08-02</Settlement>
+      <Settlement>2027-11-02</Settlement>
     </EquityRainbowOptionData>
   </Trade>
 </Portfolio>

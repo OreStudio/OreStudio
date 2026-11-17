@@ -18,7 +18,7 @@
       <SoldAmount>4069109.38</SoldAmount>
     </FxOptionData>
   </Trade>
-  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>FxOption</TradeType>
     <FxOptionData>
       <OptionData>
@@ -27,13 +27,13 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-08-02</ExerciseDate>
+          <ExerciseDate>2028-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>674201.2</BoughtAmount>
+      <BoughtAmount>1014327.95</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>988311.54</SoldAmount>
+      <SoldAmount>1372081.42</SoldAmount>
     </FxOptionData>
   </Trade>
 </Portfolio>

@@ -17,11 +17,11 @@
       <MomentType>Variance</MomentType>
     </FxVarianceSwapData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
     <TradeType>FxVarianceSwap</TradeType>
     <FxVarianceSwapData>
-      <StartDate>2025-09-02</StartDate>
-      <EndDate>2026-09-02</EndDate>
+      <StartDate>2025-12-02</StartDate>
+      <EndDate>2030-12-02</EndDate>
       <Currency>USD</Currency>
       <Underlying>
         <Type>FX</Type>
@@ -29,7 +29,7 @@
       </Underlying>
       <LongShort>Short</LongShort>
       <Strike>0.1</Strike>
-      <Notional>4253585.58</Notional>
+      <Notional>482126.28</Notional>
       <Calendar>TARGET</Calendar>
       <MomentType>Variance</MomentType>
     </FxVarianceSwapData>

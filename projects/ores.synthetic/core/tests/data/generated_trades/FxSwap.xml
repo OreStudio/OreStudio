@@ -14,17 +14,17 @@
       <Settlement>Physical</Settlement>
     </FxSwapData>
   </Trade>
-  <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
+  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
     <TradeType>FxSwap</TradeType>
     <FxSwapData>
-      <NearDate>2025-09-02</NearDate>
+      <NearDate>2025-12-02</NearDate>
       <NearBoughtCurrency>EUR</NearBoughtCurrency>
-      <NearBoughtAmount>6208184.38</NearBoughtAmount>
+      <NearBoughtAmount>8737435.82</NearBoughtAmount>
       <NearSoldCurrency>USD</NearSoldCurrency>
-      <NearSoldAmount>4707666.22</NearSoldAmount>
-      <FarDate>2034-09-02</FarDate>
-      <FarBoughtAmount>4707666.22</FarBoughtAmount>
-      <FarSoldAmount>6208184.38</FarSoldAmount>
+      <NearSoldAmount>6701613.27</NearSoldAmount>
+      <FarDate>2029-12-02</FarDate>
+      <FarBoughtAmount>6701613.27</FarBoughtAmount>
+      <FarSoldAmount>8737435.82</FarSoldAmount>
       <Settlement>Physical</Settlement>
     </FxSwapData>
   </Trade>

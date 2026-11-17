@@ -31,29 +31,28 @@
       </ObservationDates>
     </FxStrikeResettableOptionData>
   </Trade>
-  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
     <TradeType>FxStrikeResettableOption</TradeType>
     <FxStrikeResettableOptionData>
       <LongShort>Short</LongShort>
       <OptionType>Put</OptionType>
       <Currency>USD</Currency>
-      <Strike>0.8673</Strike>
-      <ResetStrike>0.8846</ResetStrike>
-      <Quantity>8812586.99</Quantity>
+      <Strike>1.3806</Strike>
+      <ResetStrike>1.4082</ResetStrike>
+      <Quantity>9919657.76</Quantity>
       <TriggerType>Up</TriggerType>
-      <TriggerPrice>0.928</TriggerPrice>
+      <TriggerPrice>1.4772</TriggerPrice>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
       </Underlying>
-      <ExpiryDate>2027-09-02</ExpiryDate>
-      <SettlementDate>2027-09-02</SettlementDate>
+      <ExpiryDate>2032-12-02</ExpiryDate>
+      <SettlementDate>2032-12-02</SettlementDate>
       <Premium>0</Premium>
-      <PremiumDate>2025-09-02</PremiumDate>
+      <PremiumDate>2025-12-02</PremiumDate>
       <ObservationDates>
         <Dates>
           <Dates>
-            <Date>2025-12-02</Date>
             <Date>2026-03-02</Date>
             <Date>2026-06-02</Date>
             <Date>2026-09-02</Date>
@@ -61,6 +60,27 @@
             <Date>2027-03-02</Date>
             <Date>2027-06-02</Date>
             <Date>2027-09-02</Date>
+            <Date>2027-12-02</Date>
+            <Date>2028-03-02</Date>
+            <Date>2028-06-02</Date>
+            <Date>2028-09-04</Date>
+            <Date>2028-12-04</Date>
+            <Date>2029-03-02</Date>
+            <Date>2029-06-04</Date>
+            <Date>2029-09-03</Date>
+            <Date>2029-12-03</Date>
+            <Date>2030-03-04</Date>
+            <Date>2030-06-03</Date>
+            <Date>2030-09-02</Date>
+            <Date>2030-12-02</Date>
+            <Date>2031-03-03</Date>
+            <Date>2031-06-02</Date>
+            <Date>2031-09-02</Date>
+            <Date>2031-12-02</Date>
+            <Date>2032-03-02</Date>
+            <Date>2032-06-02</Date>
+            <Date>2032-09-02</Date>
+            <Date>2032-12-02</Date>
           </Dates>
         </Dates>
       </ObservationDates>

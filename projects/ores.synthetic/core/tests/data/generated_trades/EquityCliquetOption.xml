@@ -24,22 +24,22 @@
       </ScheduleData>
     </EquityCliquetOptionData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
     <TradeType>EquityCliquetOption</TradeType>
     <EquityCliquetOptionData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <Currency>USD</Currency>
-      <Notional>1887.83</Notional>
+      <Notional>1200.89</Notional>
       <LongShort>Short</LongShort>
-      <OptionType>Put</OptionType>
+      <OptionType>Call</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2031-08-02</EndDate>
+          <StartDate>2025-11-02</StartDate>
+          <EndDate>2027-11-02</EndDate>
           <Tenor>3M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>

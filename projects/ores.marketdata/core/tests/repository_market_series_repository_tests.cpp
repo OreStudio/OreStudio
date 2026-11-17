@@ -239,7 +239,7 @@ ores::marketdata::domain::market_series make_fixing_test_series(database_helper&
     s.tenant_id = h.tenant_id();
     s.party_id = party;
     s.oresmd_uri = uri;
-    s.series_subclass = "yield";
+    s.series_subclass = "index_fixing";
     s.provider_code = "ore";
     s.derivation_kind = "OBSERVED";
     s.derivation_config_id = boost::uuids::nil_uuid();

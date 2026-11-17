@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 36
+Tables: 37
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1241,6 +1241,53 @@ package "marketdata" #E3F2FD {
     The reader rejects an empty table, because an empty table aborts the first
     ingest that reads it and the message should name the table rather than the first
     series it met.
+    end note
+
+    entity ores_marketdata_series_identity_shapes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * asset_class : text <<PK>>
+        * series_subclass : text <<PK>>
+        * index_family : text <<PK>>
+        * field : text <<PK>>
+        --
+        * version : integer
+        * requirement : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_series_identity_shapes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Identity Shape Table
+    The shape of a market series identity, one row per field per family.
+    A family is the pair of codes the taxonomy already carries -- the asset class
+    and the series subclass -- narrowed, for an index series, by the index family.
+    index_fixing is not one shape but several: an IBOR fixing states a currency
+    and an index name, a swap fixing a currency and a tenor, an FX fixing a currency
+    and the currency it is quoted in. A rule keyed on the subclass alone would be
+    wrong about all but one of them, so the key carries the index family too.
+    A row says what the family makes of one field: required means a row of this
+    family that leaves it empty is not an identity, forbidden means the field says
+    nothing about this family and a row that fills it states something untrue. A
+    field a family does not mention is neither: the family does not use it, and the
+    writer leaves it as the URI parse left it.
+    The table is read by the writer that projects an identity row from an oresmd
+    URI, which refuses a row that misses a required field or carries a forbidden
+    one, naming the family and the field. It sits beside
+    series_classification_rules because the two are the same kind of statement --
+    what a series of this identity is -- and because a family the taxonomy gains
+    gains its shape in the same place rather than in a second mechanism.
+    A family with no row here is not enforced: the writer projects its series
+    unguarded, and the backfill counts them as unstated. The catalogue grows family by
+    family, and refusing every family nobody has stated yet would stop an ingest for a
+    reason that is the catalogue's.
     end note
 
     entity ores_marketdata_sessions_tbl <<temporal>> #C6F0D8 {

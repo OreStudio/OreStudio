@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 2659F47C-2C7D-48B4-9FA0-46BBE1214485
+:END:
+#+title: Send the derived FX vol quotes to a party that subscribes late
+#+description: The derived FX vol feed sends its quotes once a day, so a party that subscribes after the first tick gets nothing until the market data service restarts, and Acme provisioning stops at give_party_surface_blueprints.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:provisioning:fx:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Send a party that subscribes to the =derived= provider the last value of each
+derived FX vol quote, even when another party already demanded the same id, so
+its series exist when the provisioning step reads them.
+
+* Why
+
+=derived_fx_vol_feed= sends a quote again only for an id that the demand marks
+as an =image=. It skips any id whose last sent day is not older than the day of
+the fixings. On 2026-11-16, on a fresh database, the feed ticked once at 23:41,
+for the system party only. The four Acme parties subscribed at 23:43. For the
+next twelve minutes each of them had 0 ticks, and Acme held none of the 35
+derived series per party. Provisioning then stopped at
+=give_party_surface_blueprints= with "140 surface blueprint(s) were not given".
+
+A restart of =ores.marketdata.service= sent a fresh demand. The Acme parties got
+their first tick within a minute, Acme held 140 derived series, and a retry of
+the step completed. So the quotes exist. Only the later subscriber is not served.
+
+The probable cause is that the market data service does not put an id into the
+=image= of a demand when another party already demands that id. That cause is
+not confirmed.
+
+* References
+
+- =projects/ores.synthetic/api/src/feeds/derived_fx_vol_feed.cpp= — =demand= and =ticks_of=.
+- =projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp= — =give_party_surface_blueprints= depends only on =subscribe_market_data=.
+- =ores.marketdata.service.0.log= of clever_dijkstra, 2026-11-16 23:41 to 23:56: the =INGEST STATUS: source='derived-fx-vol'= lines.
+
+* See also
+
+- [[id:80B588CC-A940-4911-97C4-38599A79A427][Start the market data service within its start limit on a fresh database]]

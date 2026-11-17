@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: BF673434-ABA7-473E-8550-FC0E7EDD9399
+:END:
+#+title: Task: State the identity shape of a fixing
+#+description: State, as data beside the series classification rules, which fields each market series family requires and which it forbids, and hold the identity writer to it.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
+#+owner: marco
+#+branch: feature/state-the-identity-shape-of-a-fixing
+#+pr: 4821
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-16
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every family the market data ingest writes states the fields its identity requires and forbids, so a fixing that leaves its index name empty is refused at the writer instead of failing later as a curve that cannot find the series it names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Review of the PR. |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The projection refuses a series whose identity contradicts its stated family, naming the class, the subdivision and the field.
+- The IBOR, swap and FX fixing families state the fields they key on, and one seed states each one.
+- A provisioned tenant reads the same shapes as the system tenant, holds no copy of them, and reads one rule for the index keys.
+- The identities already written contradict no shape they are held to.
+
+* Plan
+
+The shape of an identity is data, one row per field per family, in a table beside
+the series classification rules, because the family that a series belongs to is
+already data there and a second place to state it would drift from the first. The
+key carries the index family as well as the class and the subclass, because
+=ir/index_fixing= is an IBOR fixing when the index is =ibor= and a swap fixing
+when it is =swap=, and the two are named by different fields: an IBOR fixing
+carries an index name, a swap fixing a tenor.
+
+The writer that projects an identity row from an oresmd URI enforces the shape,
+because that is the boundary where external data meets the model and the only
+point that sees the whole row before it is stored. It fails closed and names the
+family and the field, so the message says which series was refused and why. The
+backfill, which is a repair, counts the rows it refuses instead of aborting on the
+first legacy one, so the rest are projected and the refused ones are named.
+
+A family no row states is projected unguarded and counted. Refusing every family
+nobody has declared yet would stop an ingest over a gap in the catalogue, so the
+seed states the families the curve and fixing work already creates, and the rest
+wait for the family's own task.
+
+A tenant holds no copy of the shapes. It reads the system tenant's rows beside its
+own, as it reads the classification rules, so a tenant cannot drift from the system
+tenant and a provisioning run has nothing to copy.
+
+A party's curve output is the party's own computation from its own subscriptions,
+so it is labelled =IR_CURVE_BOOTSTRAP= and names the party's copy of the config
+that computes it, at version 1; it is never =OBSERVED=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stated shapes, system tenant | 29 rows over 7 families | `select asset_class, series_subclass, index_family, count(*) from ores_marketdata_series_identity_shapes_tbl where valid_to = ores_utility_infinity_timestamp_fn() group by 1,2,3` | 964e4593b8 |
+| Identities that contradict a stated shape | 0 | the =shape_scan= query in =projects/ores.sql/test/marketdata_series_identity_shape_test.sql=, against the 1,374 identity rows of 16 tenants the database held before the rebuild of 2026-11-15 20:19 | 5f052db062 |
+| Rules keyed by an index, per tenant | 1 in each of 17 tenants | `select tenant_id, count(*) from ores_marketdata_series_classification_rules_tbl where key_kind = 'index' and valid_to = ores_utility_infinity_timestamp_fn() group by 1` | 5f052db062 |
+| Identity guard unit tests | 9 assertions in 5 test cases, pass | `./publish/bin/ores.marketdata.core.tests "[series_identity][shape]"` | 5f052db062 |
+| Shape test suite | 9 tests, pass | `projects/ores.sql/test/run_tests.sh projects/ores.sql/test/marketdata_series_identity_shape_test.sql` | 3363d12929 |
+| Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | 964e4593b8 |
+| Stated shapes, Acme after provisioning | 0 rows of its own; it reads the system's 29 | per-tenant count over =ores_marketdata_series_identity_shapes_tbl=, and =series_identity_shapes list= as =tenant_admin@acme_corporation= | 67c0a4645d |
+| Identities that contradict a stated shape, Acme provisioned | 0 of 4,992 field checks: 920 Acme identities and 328 system ones | the =shape_scan= query of =marketdata_series_identity_shape_test.sql=, joined to the system tenant's shapes | 67c0a4645d |
+| Market data core suite | 445 test cases, 27,693 assertions, pass, after the second rebase and the review fixes | `compass build test_ores.marketdata.core.tests` | 76426a9247 |
+| Market data service suite | 309 test cases, 2,698 assertions, pass | `compass build test_ores.marketdata.service.tests` | 67c0a4645d |
+| IAM core suite | 306 test cases, 1,436 assertions, pass | `compass build test_ores.iam.core.tests` | 67c0a4645d |
+| Shell market data suite | 441 test cases, 1,209 assertions, pass | `compass build test_ores.shell.marketdata.tests` | 67c0a4645d |
+| Documentation checks and shape entity drift | 40 components pass; 44 generated files current | `projects/ores.codegen/validate_docs.sh`, `compass codegen entity show series_identity_shape` | 67c0a4645d |
+
+* Notes
+
+The 73 fixing series the classification calls something other than =index_fixing=
+are fixtures: every one of them was written by the test DML user with the reason
+=system.test=, and all 162 real fixing series classify as =index_fixing=. There is
+no classifier defect to fix.
+
+Those fixtures are not served. Each test suite provisions a tenant of its own, named
+after the suite and the run, writes its fixtures there, and terminates that tenant at
+the end of the run; a terminated tenant admits nobody, because the login reads the
+tenant's status before it reads the password. Row-level security answers for one
+tenant per session, so no other session reads the rows either.
+
+They were still wrong, and the reason they were wrong is worth keeping: a fixture
+wrote a fixing URI and kept the generated series subclass, and the shape guard could
+not see the lie, because the shape is keyed on that very subclass. The projector now
+refuses an index identity whose series subclass is not =index_fixing= before it looks
+a family up, and the fixtures that did this state the subclass their URI implies: one
+that writes an FX fixing, one that writes an IBOR fixing, and an FX montage fixture
+that called an FX spot series =yield=.
+
+A provisioned party's curve could not be labelled by copying the system's row. The
+seed writes every curve output =OBSERVED=, and the curve republish stamps it
+=IR_CURVE_BOOTSTRAP= only on its first run, so on 2026-11-16 four LIBOR projection
+curves were still observed when Acme was provisioned. The planner now states the
+label the republish would stamp: a bootstrap of the party's own config copy, at
+version 1. The series table refuses version 0 for a derived series.
+
+The second rebase, on 2026-11-16, brought main's shared-reference read: a tenant
+reads the system tenant's catalogues and the provisioner no longer copies them.
+The shape copy that this branch added to the provisioner went with the rest. The
+shape model now declares the same two flags as the classification rules, so a
+tenant reads the system's shapes, and the projector reads them with no change.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4821][#4821]] | [marketdata] State the identity shape of a fixing |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Important: a shape row that names a field the identity does not hold is ignored, so a misspelt forbidden field admits every row, and the shell can now write such a row | =series_identity_shape_check.cpp= | Accept | =text_of= gives no value for an unknown column, and the check refuses the shape by name; test =a_shape_that_names_a_field_an_identity_does_not_hold_is_refused= |
+| 2 | Important: the model says a family with no shape is refused; the projector projects it unguarded and counts it | =ores.marketdata.series_identity_shape.org= | Accept | Model text, generated header, table comment and ER diagram now say what the code does |
+| 3 | Minor: the check builds the family map again for every row | =series_identity_shape_check.cpp= | Decline | 29 rows over 7 families; the cost is small next to the write, and the pure function is what the tests call |
+| 4 | Minor: the backfill projects each missing series twice, once to judge it and once in =project= | =market_series_identity_projector.cpp= | Decline | A repair path that runs rarely; one projection would need =project= to take projected rows |
+| 5 | Minor: a tenant row on a system key adds to the system's shape and cannot relax it | =series_identity_shape_check.cpp= | Decline | Intended: the shared catalogue is the floor; a tenant that needs a different shape is a design question for the screen task |
+| 6 | Minor: misspell check | branch files | Accept | Clean on every file the branch changes |
+| 7 | PR #4821 review 1: the backfill counts a shape row that names an unknown field as refused series, and hides the cause | =market_series_identity_projector.cpp= | Accept | A catalogue fault throws =std::logic_error=, which the backfill's =invalid_argument= catch does not take; the test asserts it is not an =invalid_argument= |
+| 8 | PR #4821 review 2: the family map is built per row, and the backfill reads the shape table twice | =series_identity_shape_check.cpp= | Accept | =identity_shape_book= groups the shapes once per batch; the backfill writes the rows it checked and no longer calls =project= (this also settles item 4) |
+| 9 | PR #4821 review 3: =text_of= walks every field on each call | =series_identity_shape_check.cpp= | Decline | 29 rows; the reviewer marks it optional |
+| 10 | PR #4821 review 4: a family with no shape passes unguarded, and coverage can drift | story | Accept as a task | [[id:AECE7F12-9EFB-4F3E-AFEF-0D61BEB8E811][Check every family in use has a shape]] |
+| 11 | PR #4821 review 5: the PR is large and mixes concerns | PR | Decline | Each concern is its own commit, so the history bisects |
+| 12 | PR #4821 review 6: confirm the failing checks are main's, and the shared policy | PR | Accept | The create script ends with =series_identity_shapes_tbl_shared_reference_read_policy=; bright_faraday owns the FX vol suites and the resend |
+
+* Result
+
+Shipped:
+
+- =series_identity_shapes=, a catalogue of the fields each series family requires
+  and forbids, keyed by asset class, series subclass and index family, seeded with
+  29 rows over 7 families: FX spot, forward, volatility and fixing, IR yield, and
+  the IBOR and swap fixings.
+- The identity projector refuses a row that misses a required field or carries a
+  forbidden one, and names the family and the field. It also refuses an index
+  identity whose series subclass is not =index_fixing=. The backfill counts the
+  rows it refuses instead of stopping.
+- The shapes are a shared catalogue: a tenant reads the system tenant's rows and
+  holds no copy. Shape changes raise events, and the shell has the
+  =series_identity_shapes= commands.
+- A party's curve output is labelled =IR_CURVE_BOOTSTRAP= at config version 1, so
+  Acme provisions its curves.
+
+Every acceptance bullet is met; the Measurements table holds the evidence.
+
+The Acme provisioning run on 2026-11-16 stopped at =give_party_surface_blueprints=
+for a reason outside this task. It is filed as
+[[id:2659F47C-2C7D-48B4-9FA0-46BBE1214485][Send the derived FX vol quotes to a party that subscribes late]].
+A screen for the shapes is the task
+[[id:DA257967-5C16-4743-B507-167872D3765E][Show the identity shapes on a screen]].

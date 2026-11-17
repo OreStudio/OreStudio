@@ -45,6 +45,7 @@
 #include "ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
 #include "ores.shell/app/commands/marketdata/oresmd_index_commands.hpp"
 #include "ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
+#include "ores.shell/app/commands/marketdata/series_identity_shape_commands.hpp"
 #include "ores.shell/app/commands/marketdata/supplier_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
@@ -183,6 +184,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
     market_series_asset_class_commands::register_commands(root_menu, session);
     observation_lineage_commands::register_commands(root_menu, session);
     series_classification_rule_commands::register_commands(root_menu, session);
+    series_identity_shape_commands::register_commands(root_menu, session);
 
     // Import has no modelled operation family yet, so it stays hand-written.
     auto marketdata_menu = std::make_unique<cli::Menu>("marketdata");

@@ -1716,6 +1716,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.series_identity_shapes.list': {
+        asOf: true,
+        filter: [],
+        rows: ['shapes'],
+    },
+    'marketdata.v1.series_identity_shapes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.sessions.list': {
         asOf: true,
         filter: [

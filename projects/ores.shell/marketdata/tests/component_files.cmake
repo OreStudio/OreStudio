@@ -49,6 +49,7 @@ set(files
     "rate_card_component_commands_tests.cpp"
     "route_commands_tests.cpp"
     "series_classification_rule_commands_tests.cpp"
+    "series_identity_shape_commands_tests.cpp"
     "subscription_commands_tests.cpp"
     "subscription_interval_commands_tests.cpp"
     "supplier_commands_tests.cpp"

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 474E8968-C7B4-4740-839F-9328B93A5FEA
+:END:
+#+title: Task: Generate a series that is an identity
+#+description: The synthetic market series generator fabricates an oresmd URI that nothing can read, so every fixture built on it writes a series with no family.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:market_data:identity:test_data:sprint_30:build_ir_curves_from_public_data-remaining:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A series a test generates carries an identity the codec reads and a family the shapes state, so the fixtures exercise the projection and the guard instead of the unreadable path.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The generated series projects to a stated family, or the generator refuses to make one it cannot state.
+- The generated subclass and the generated URI agree, so the identity kind rule accepts them.
+- A suite that writes generated series writes no identity row of kind 'unknown'.
+
+* Plan
+
+=generate_synthetic_market_series= is generated from =cpp_domain_type_generator.cpp.mustache=,
+which gives every text column a faker word. For a series that is a lie rather than a
+placeholder: the URI is the identity, so =oresmd://generic/<noun>-<n>?type=fixing-<n>=
+is a series with no family at all, and the projection records it as =unknown=. The
+generator was patched once before, in sprint 22, to set the asset class and the
+subclass so the mapper had an enum to serialise -- a fix for the store, not for the
+data.
+
+Three seams, in order of how much they change:
+
+- A =:generator_expr:= on the =oresmd_uri= column and on =series_subclass=, which the
+  entity meta model already supports. Cheap, but the two expressions have to stay in
+  step by hand, and a fixed URI collides on the series unique key unless every row
+  draws a different party, which is exactly what the fixtures override.
+- A codegen change so the model states a series' identity as one expression that
+  yields the URI and the subclass together, which is the honest seam: the two are
+  one fact.
+- Stop generating series at all and have the fixtures state the URI and the subclass,
+  through a helper that builds a row from a real identity. Sixty call sites, and every
+  one of them becomes a fixture the guard actually exercises.
+
+The third is the one to weigh against the second: a test that generates a series is
+usually a test about something else, and an explicit row reads better than a faker
+word. Whichever is chosen, the done condition is the third acceptance bullet: no
+suite writes an identity row of kind =unknown=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -384,3 +384,52 @@ TEST_CASE("a_notation_names_the_scheme_it_refuses_a_foreign_id_with", "[vendor_n
         }
     }
 }
+
+TEST_CASE("a_bloomberg_volatility_ticker_names_its_pair_expiry_and_label_and_roundtrips",
+          "[vendor_notation]") {
+    const auto& sut = *vendor::notation_of("bloomberg");
+    const std::vector<std::pair<std::string, vendor::fx_option_quote>> cases{
+        {"EURUSDV1Y Curncy", {"EUR", "USD", "1Y", "ATM"}},
+        {"EURUSD25R1W Curncy", {"EUR", "USD", "1W", "25RR"}},
+        {"USDJPY10R18M Curncy", {"USD", "JPY", "18M", "10RR"}},
+        {"GBPUSD25B10Y Curncy", {"GBP", "USD", "10Y", "25BF"}},
+        {"AUDUSD10B3M Curncy", {"AUD", "USD", "3M", "10BF"}}};
+    for (const auto& [ticker, quote] : cases) {
+        INFO(ticker);
+        const auto written = sut.write(vendor::quote_description{quote});
+        REQUIRE(written);
+        CHECK(written->id_scheme == "bbg_ticker");
+        CHECK(written->external_id == ticker);
+        CHECK(written->field == "PX_LAST");
+        const auto read = sut.read(*written);
+        REQUIRE(read);
+        CHECK(*read == vendor::quote_description{quote});
+    }
+
+    // A volatility ticker is not a spot ticker, and a spot ticker is not a volatility one.
+    const auto spot =
+        sut.read({.id_scheme = "bbg_ticker", .external_id = "EURUSD Curncy", .field = "PX_LAST"});
+    REQUIRE(spot);
+    CHECK(std::holds_alternative<vendor::fx_spot_quote>(*spot));
+
+    CHECK_FALSE(
+        sut.write(vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "15RR"}}));
+    CHECK_FALSE(
+        sut.write(vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "0Y", "ATM"}}));
+    CHECK_FALSE(
+        sut.write(vendor::quote_description{vendor::fx_option_quote{"EUR", "EUR", "1Y", "ATM"}}));
+    CHECK_FALSE(sut.read(
+        {.id_scheme = "bbg_ticker", .external_id = "EURUSDV1Y Curncy", .field = "PX_BID"}));
+    // An expiry is a count of days, weeks, months or years from one up: no overnight, no zero.
+    for (const auto* tenor : {"ON", "0M"}) {
+        CHECK_FALSE(sut.write(
+            vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", tenor, "ATM"}}));
+        const auto read = sut.read({.id_scheme = "bbg_ticker",
+                                    .external_id = std::string("EURUSDV") + tenor + " Curncy",
+                                    .field = "PX_LAST"});
+        CHECK_FALSE((read && std::holds_alternative<vendor::fx_option_quote>(*read)));
+    }
+    // Another notation does not write a volatility point.
+    CHECK_FALSE(vendor::notation_of("lseg")->write(
+        vendor::quote_description{vendor::fx_option_quote{"EUR", "USD", "1Y", "ATM"}}));
+}

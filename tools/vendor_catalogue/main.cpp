@@ -67,6 +67,19 @@
  *      and e.index_family = c.index_family
  *      and e.tenor = c.tenor
  *     where c.provider_code is not null
+ *     union all
+ *     select 'vol', c.provider_code, f.base_currency_code, f.quote_currency_code, e.tenor,
+ *            '', '', ''
+ *     from ores_dq_fx_vol_surface_feeds_artefact_tbl f
+ *     join ores_dq_fx_vol_surface_feed_expiries_artefact_tbl e
+ *       on e.dataset_id = f.dataset_id and e.feed_id = f.id
+ *     join ores_dq_fx_vol_surface_feed_contributors_artefact_tbl l
+ *       on l.dataset_id = f.dataset_id and l.feed_id = f.id
+ *     join ores_dq_fx_vol_contributors_artefact_tbl c
+ *       on c.dataset_id = l.dataset_id and c.id = l.contributor_id
+ *
+ * A surface's line is expanded to the five labels its feed quotes at the expiry, and its rows go
+ * to the volatility seed, which runs after the surfaces are staged.
  *
  * With no --write the statements go to stdout. With no input file the quotes are read from stdin.
  */
@@ -78,6 +91,7 @@
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cstddef>
 #include <filesystem>
@@ -103,6 +117,15 @@ constexpr std::string_view fx_begin_marker = "-- BEGIN GENERATED fx pair ids";
 constexpr std::string_view fx_end_marker = "-- END GENERATED fx pair ids";
 constexpr std::string_view ir_begin_marker = "-- BEGIN GENERATED ir pillar ids";
 constexpr std::string_view ir_end_marker = "-- END GENERATED ir pillar ids";
+constexpr std::string_view vol_begin_marker = "-- BEGIN GENERATED fx option ids";
+constexpr std::string_view vol_end_marker = "-- END GENERATED fx option ids";
+
+/// The seed of the volatility points, which runs after the surfaces are staged.
+constexpr std::string_view default_option_seed =
+    "projects/ores.sql/populate/marketdata/marketdata_vendor_volatility_instruments_populate.sql";
+
+/// The labels a surface feed quotes at each expiry.
+constexpr std::array<std::string_view, 5> option_labels{"ATM", "25RR", "25BF", "10RR", "10BF"};
 
 /// The seed the program writes to when it is not told otherwise.
 constexpr std::string_view default_seed =
@@ -126,6 +149,15 @@ struct pillar_feed final {
     /// The config's index tenor field: empty for an overnight index, FOMC for the meeting-dated
     /// variant of one, or a period such as 3M for a term index.
     std::string tenor;
+};
+
+/// One point of one surface a contributor quotes, as the artefact tables state it.
+struct option_feed final {
+    std::string provider_code;
+    std::string base_currency_code;
+    std::string quote_currency_code;
+    std::string expiry;
+    std::string strike_label;
 };
 
 /// The id and the item of one quote, or neither when no notation writes the quote.
@@ -236,6 +268,59 @@ std::string pillar_datum_uri(const pillar_feed& p, const std::string& index_teno
                                  p.start_tenor_code + " to " + p.end_tenor_code + ": " +
                                  uri.error());
     return *uri;
+}
+
+/// The oresmd item of a surface point: the fx_option datum of the pair, the expiry and the label,
+/// which is the item the blueprints' pillars read.
+std::string option_datum_uri(const option_feed& p) {
+    const auto expiry = datum::term::parse(p.expiry);
+    const auto label = datum::strike_label::parse(p.strike_label);
+    if (!expiry || !label)
+        throw std::runtime_error("no datum for the point " + p.base_currency_code + "/" +
+                                 p.quote_currency_code + " " + p.expiry + " " + p.strike_label +
+                                 ": " + (!expiry ? expiry.error() : label.error()));
+    const auto made = datum::market_datum::make(datum::instrument_type::fx_option,
+                                                datum::quote_type::rate_lnvol,
+                                                {{datum::field::unit_ccy, p.base_currency_code},
+                                                 {datum::field::ccy, p.quote_currency_code},
+                                                 {datum::field::expiry, *expiry},
+                                                 {datum::field::strike_label, *label}});
+    if (!made)
+        throw std::runtime_error("no datum for the point " + p.base_currency_code + "/" +
+                                 p.quote_currency_code + " " + p.expiry + " " + p.strike_label +
+                                 ": " + made.error());
+    const auto uri = datum::oresmd_uri_codec::write(*made);
+    if (!uri)
+        throw std::runtime_error("no item for the point " + p.base_currency_code + "/" +
+                                 p.quote_currency_code + " " + p.expiry + " " + p.strike_label +
+                                 ": " + uri.error());
+    return *uri;
+}
+
+/// The row for one surface point: the provider's id and the point's item, or null for both when
+/// the provider cannot name the point.
+quote_row
+row_of(const option_feed& p, std::size_t& unnamed_by_notation, std::size_t& unnamed_by_provider) {
+    quote_row row;
+    const auto* notation = vendor::notation_of(p.provider_code);
+    if (notation == nullptr) {
+        ++unnamed_by_provider;
+        return row;
+    }
+    const vendor::fx_option_quote description{
+        p.base_currency_code, p.quote_currency_code, p.expiry, p.strike_label};
+    const auto written = notation->write(description);
+    if (!written) {
+        std::cerr << "no id: " << p.provider_code << " " << p.base_currency_code << "/"
+                  << p.quote_currency_code << " " << p.expiry << " " << p.strike_label << ": "
+                  << written.error().message << '\n';
+        ++unnamed_by_notation;
+        return row;
+    }
+    require_round_trip(*notation, description, *written);
+    row.id = *written;
+    row.oresmd_uri = option_datum_uri(p);
+    return row;
 }
 
 /// The row for one currency pair: the provider's id and the pair's item, or null for both when
@@ -358,6 +443,27 @@ std::string ir_statement_of(const row_map<pillar_feed>& rows) {
     return out;
 }
 
+/// The statement that fills the volatility seed's lookup, one row for each point of each surface
+/// of each contributor.
+std::string vol_statement_of(const row_map<option_feed>& rows) {
+    std::string out = counts_comment(rows);
+    out += "    insert into t_fx_option_id (provider_code, base_currency_code,\n"
+           "        quote_currency_code, expiry, strike_label, id_scheme, external_id, field,\n"
+           "        oresmd_uri) values\n";
+    std::size_t i = 0;
+    for (const auto& [feed, row] : rows) {
+        out += std::format("    ({}, {}, {}, {}, {}, ",
+                           quoted(feed.provider_code),
+                           quoted(feed.base_currency_code),
+                           quoted(feed.quote_currency_code),
+                           quoted(feed.expiry),
+                           quoted(feed.strike_label));
+        out += id_columns_of(row);
+        out += (++i == rows.size()) ? ");\n" : "),\n";
+    }
+    return out;
+}
+
 /// The seed's text with the region between @p begin_marker and @p end_marker replaced by
 /// @p statement.
 std::string replaced(const std::string& seed,
@@ -378,6 +484,7 @@ std::string replaced(const std::string& seed,
 struct feeds final {
     std::vector<pair_feed> pairs;
     std::vector<pillar_feed> pillars;
+    std::vector<option_feed> options;
 };
 
 /// The input, read from @p in: one line for each quote of each artefact config.
@@ -401,6 +508,15 @@ feeds read_feeds(std::istream& in) {
                                          line + "'");
             out.pillars.push_back(pillar_feed{
                 fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7]});
+        } else if (fields[0] == "vol") {
+            // A surface's line names its expiry; each of the labels the feed quotes is a point.
+            if (fields.size() < 5)
+                throw std::runtime_error(
+                    "expected at least five tab separated fields for a surface, got '" + line +
+                    "'");
+            for (const auto label : option_labels)
+                out.options.push_back(
+                    option_feed{fields[1], fields[2], fields[3], fields[4], std::string(label)});
         } else {
             throw std::runtime_error("'" + fields[0] + "' is not a market this program writes");
         }
@@ -433,10 +549,24 @@ bool pillar_less(const pillar_feed& a, const pillar_feed& b) {
                                         b.tenor);
 }
 
+
+/// The order of the surface points, and the identity the seed joins on.
+bool option_less(const option_feed& a, const option_feed& b) {
+    return std::tie(a.provider_code,
+                    a.base_currency_code,
+                    a.quote_currency_code,
+                    a.expiry,
+                    a.strike_label) < std::tie(b.provider_code,
+                                               b.base_currency_code,
+                                               b.quote_currency_code,
+                                               b.expiry,
+                                               b.strike_label);
+}
 }
 
 int main(int argc, char** argv) {
     auto seed_path = std::filesystem::path(std::string(default_seed));
+    auto option_seed_path = std::filesystem::path(std::string(default_option_seed));
     std::optional<std::filesystem::path> feeds_path;
     bool write = false;
     for (int i = 1; i < argc; ++i) {
@@ -445,13 +575,16 @@ int main(int argc, char** argv) {
             write = true;
         } else if (arg == "--seed" && i + 1 < argc) {
             seed_path = std::filesystem::path(argv[++i]);
+        } else if (arg == "--option-seed" && i + 1 < argc) {
+            option_seed_path = std::filesystem::path(argv[++i]);
         } else if (arg.starts_with("--")) {
             std::cerr << "usage: " << argv[0]
                       << " [--seed FILE] [--write] [QUOTES]\n"
                          "  Reads one line for each quote of each artefact config, tab separated:\n"
                          "    fx provider base quote\n"
                          "    ir provider currency index-family instrument start end tenor\n"
-                         "  Writes the seed's two lookup tables.\n";
+                         "    vol provider base quote expiry\n"
+                         "  Writes the seeds' three lookup tables.\n";
             return 2;
         } else {
             feeds_path = std::filesystem::path(arg);
@@ -492,12 +625,38 @@ int main(int argc, char** argv) {
                                    unnamed_by_provider));
         }
 
+        row_map<option_feed> vol_rows(option_less);
+        for (const auto& p : input.options)
+            vol_rows.emplace(p, row_of(p, unnamed_by_notation, unnamed_by_provider));
+
         const auto fx_statement = fx_statement_of(fx_rows);
         const auto ir_statement = ir_statement_of(ir_rows);
+        const auto vol_statement = vol_rows.empty() ? std::string() : vol_statement_of(vol_rows);
 
         if (!write) {
-            std::cout << fx_statement << ir_statement;
+            std::cout << fx_statement << ir_statement << vol_statement;
             return 0;
+        }
+
+        // The volatility points have a seed of their own, which runs after the surfaces it reads
+        // are staged.
+        if (!vol_rows.empty()) {
+            std::ifstream option_file(option_seed_path);
+            if (!option_file)
+                throw std::runtime_error("cannot read the seed: " + option_seed_path.string());
+            std::ostringstream option_text;
+            option_text << option_file.rdbuf();
+            option_file.close();
+            const auto option_updated =
+                replaced(option_text.str(), vol_begin_marker, vol_end_marker, vol_statement);
+            if (option_updated != option_text.str()) {
+                std::ofstream out(option_seed_path);
+                if (!out)
+                    throw std::runtime_error("cannot write the seed: " + option_seed_path.string());
+                out << option_updated;
+                std::cout << "wrote " << vol_rows.size() << " surface point(s) to "
+                          << option_seed_path.string() << '\n';
+            }
         }
 
         std::ifstream seed_file(seed_path);

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/quote-through-the-vendor-contributors
+#+pr: 4824
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -26,11 +26,11 @@ A party meets its volatility quotes from the vendors it meets its rates from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -40,9 +40,32 @@ A party meets its volatility quotes from the vendors it meets its rates from.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*What is there.* The surface feed publishes raw market ticks under =source_name.contributor=,
+addressed by oresmd URI: an older path. The spot and curve feeds instead run through the
+simulator adapter: an adapter of each provider is offered the generators whose vendor ids its
+notation writes, and starts one when the market data service demands one of those ids. Three
+pieces are missing for a surface to take that path:
+
+1. *A vendor id for an FX option quote.* =quote_description= is =fx_spot_quote= or
+   =ir_curve_pillar=; no provider's notation writes or parses an id for a volatility point.
+2. *Offers for a surface.* =system_generator_offers= offers spot and curve generators only.
+3. *One latent path for every contributor.* Each adapter has its own generator runner, so a
+   surface offered to the bloomberg, ice and tradeweb adapters would be three generators on
+   three latent paths, and the vendors would quote three different markets. The contributors
+   must observe one surface.
+
+*Plan, in slices.*
+
+1. Add =fx_option_quote= (pair, expiry, strike label) to =quote_description=, and teach each
+   provider's notation to write and read it; the catalogue gains each contributor's vendor
+   instruments, mapped to the fx_option items the blueprints read.
+2. Hold one surface generator per feed in the fleet, shared by the adapters: the first adapter
+   whose ids are demanded starts it, each adapter publishes only its own contributor's points
+   through its own targets, and the surface stops when no adapter demands it.
+3. Offer the surface's points to each contributor's adapter, and add the vendors the curves use
+   (ice, tradeweb) and a clean contributor no tenant subscribes to, in the dataset.
+4. Prove a subscribed party receives its vendors' volatility quotes on the routes it receives
+   its rates on.
 
 * Measurements
 
@@ -56,7 +79,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bloomberg volatility vendor instruments, each mapped to its own fx_option item | 910 instruments, 910 items | =compass sql -f q_vol_inst.sql= after =db recreate= | 14ab79cf6e |
+| Ids the bloomberg-a adapter announces | 1272 (362 spot and curve, 910 surface) | synthetic service log, "Announced 'bloomberg-a'" | working tree on 14ab79cf6e |
+| Volatility ticks stored under the bloomberg-a feed in 15 minutes | 975 ticks over 845 items | =compass sql -f q_vol_ticks.sql= | working tree on 14ab79cf6e |
+| System tenant calendar days built at the first refdata start, then at a restart | 81090, then 0 | refdata service log, "Built the system tenant's calendars" | working tree on 14ab79cf6e |
 
 * Notes
 
@@ -75,12 +101,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4824][#4824]] | [synthetic,marketdata] Quote the latent surfaces through their vendors' adapters |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unsynchronised surface_ in the hold | shared_surfaces.hpp | Accepted | A mutex guards it. |
+| 2 | Legacy ticks before the first attach | shared_surfaces.hpp | Accepted | The first adapter attaches before the surface starts. |
+| 3 | Publishing under the sink lock | fx_vol_surface_feed.cpp | Accepted | Sinks are copy-on-write; a tick publishes without the lock. |
+| 4 | Back off a failed start | generator_runner.hpp | Declined | Demand comes about once a minute, so a permanent failure rebuilds and logs once a minute: a visible signal, not a loop. |
+| 5 | Lifetime of the make lambda's references | simulator_offers.hpp | Confirmed | The adapter fleet is declared after the registry, the build context and the generator fleet, so it goes first. |
+| 6 | Time the calendar build | refdata application.cpp | Accepted | |
+| 7 | Loose ticker length guard | bloomberg_notation.cpp | Accepted | |
+| 8 | Test two adapters on one surface; refuse ON and 0M | tests | Accepted | The shared surfaces are templated over the surface, so a fake drives them. |
 
 * Result
+
+Slices 1 and 2 of the plan shipped, with the offer half of slice 3. Slice 3's other vendors and
+clean contributor, and slice 4's proof at the party, moved to
+[[file:task_quote_through_ice_and_tradeweb.org][Quote the latent surfaces through ice and tradeweb, and prove a party receives them]].
+
+- *A vendor id for a volatility point.* =fx_option_quote= (pair, expiry, strike label) is a
+  =quote_description=. Bloomberg's notation writes and reads it as =EURUSDV1Y Curncy= and
+  =EURUSD25R1Y Curncy=, field =PX_LAST=; the other notations refuse it. The vendor catalogue
+  tool writes each surface contributor's ids into a seed of their own, which runs after the
+  surfaces are staged: 910 Bloomberg instruments, each mapped to its fx_option item.
+- *The surfaces through the adapters.* A surface is offered to the adapter of each contributor's
+  provider, for that contributor's points. The fleet holds one surface per feed, shared by the
+  adapters: the first adapter whose ids are demanded starts it, each adapter publishes its own
+  contributor's points under its vendor ids, and the last one to go stops it. A surface no
+  adapter holds, such as a manual run, still publishes market ticks.
+- *Dates for the system tenant.* Provisioning builds each tenant's calendars, but nothing built
+  the system tenant's, so every surface failed to date its expiries. ores.refdata now builds the
+  system tenant's in-use calendars at startup; a restart writes nothing.
+- *A failed start is retried.* A generator whose start threw stayed registered and was never
+  started again. The next demand now builds it again, so a surface that starts before the
+  calendars are built recovers within a demand round.

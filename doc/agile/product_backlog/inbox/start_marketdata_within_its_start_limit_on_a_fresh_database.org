@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 80B588CC-A940-4911-97C4-38599A79A427
+:END:
+#+title: Start the market data service within its start limit on a fresh database
+#+description: On a fresh database the first usage sync opens about 2,700 demand intervals one row at a time before the service says ready, which overruns the 90-second start limit; systemd kills it and cancels the official adapter unit.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:services:startup:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Take the first usage sync off the path to "Service ready", or write its intervals
+in one batch, so the market data service starts within its 90-second start limit
+on a fresh database.
+
+* Why
+
+=ores.marketdata.service= sends its ready notice only after
+=usage_recorder::sync= has run once. On a fresh database that sync opens about
+2,700 demand intervals, and it writes them one row at a time, each with its own
+event. On 2026-11-16 two of three starts on a fresh database ran past the limit.
+systemd killed the service, and the =ores.marketdata.official= unit, which
+requires it, failed with "Dependency failed". The restart read 2,707 open
+intervals, opened none, and was ready in under two seconds, so the first start
+had done the work and was only slow. =compass services start= then reports one
+unit that did not start, and any chain that follows it stops.
+
+The same first sync also logs a duplicate key on
+=subscription_intervals_party_id_provider_code_inte...= for the system tenant.
+That error does no harm: the next sync finds the row.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/usage_recorder.cpp= — =sync=.
+- =projects/ores.marketdata/service/src/app/application.cpp= — the call before ready.
+- =journalctl --user -u ores.marketdata.service-clever_dijkstra.service= — 11:07 and 15:41 on 2026-11-16.
+
+* See also
+
+-

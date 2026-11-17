@@ -93,4 +93,6 @@
 \ir ./marketdata_curve_series_drop.sql
 \ir ./marketdata_surface_series_drop.sql
 \ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
+\ir ./marketdata_series_identity_shapes_notify_trigger_drop.sql
 \ir ./marketdata_series_classification_rules_drop.sql
+\ir ./marketdata_series_identity_shapes_drop.sql

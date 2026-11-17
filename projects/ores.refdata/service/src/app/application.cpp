@@ -21,14 +21,18 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
+#include "ores.refdata.core/service/calendar_materialisation_service.hpp"
 #include "ores.refdata.service/config/options.hpp"
 #include "ores.refdata.service/messaging/book_proposal_registrar.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
+#include "ores.refdata.service/messaging/provisioning_step_handler.hpp"
 #include "ores.refdata.service/messaging/provisioning_step_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -38,7 +42,9 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/log/sources/severity_feature.hpp>
+#include <chrono>
 #include <cstddef>
+#include <exception>
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -67,6 +73,30 @@ namespace {
 constexpr std::string_view service_name = "ores.refdata.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
+/*
+ * Provisioning builds each tenant's calendars, but no run provisions the system tenant. Its
+ * generators date what they quote with its calendars, so they are built here, before any of them
+ * can ask. A build only extends past the dates already there, so a restart rewrites nothing.
+ */
+void build_system_calendars(const ores::database::context& ctx) {
+    static auto log = ores::logging::make_logger("ores.refdata.service.app.system_calendars");
+    using ores::database::service::tenant_context;
+    const auto system = tenant_context::with_system_tenant(ctx);
+    const auto acting = system.with_tenant(system.tenant_id(), system.service_account());
+    const auto started = std::chrono::steady_clock::now();
+    try {
+        ores::refdata::service::calendar_materialisation_service calendars(acting);
+        const auto rows = calendars.regenerate_in_use(std::chrono::year{
+            ores::refdata::messaging::provisioning_step_handler::last_generated_holiday_year});
+        const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - started);
+        BOOST_LOG_SEV(log, info) << "Built the system tenant's calendars: wrote " << rows
+                                 << " day(s) in " << took.count() << " ms.";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(log, error) << "The system tenant's calendars were not built: " << e.what();
+    }
+}
+
 } // namespace
 
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
@@ -90,6 +120,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+
+    build_system_calendars(make_context(cfg.database));
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

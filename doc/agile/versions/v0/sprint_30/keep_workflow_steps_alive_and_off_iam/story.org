@@ -139,6 +139,30 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   tenant is entered, no person is impersonated, and nothing a tenant may read
   changes. The rows the step copies are exactly the installation's, so a second
   run copies the template and never a copy of a copy.
+- *The system tenant is not entered, so its own curves wait for a decision,
+  2026-11-17.* Every marketdata kind of step 4 moved but =publish_system_curves=.
+  That step publishes the *installation's* curves, in the system tenant, as the
+  installation's administrator, through the impersonation service iam keeps to
+  itself. A move is a port only while the authority travels with it, and here it
+  does not: =enter_tenant_as_service= refuses the system tenant outright ("The
+  system tenant is not entered; it is the deployment's own"), which is the rule
+  this story set so that no service session reaches the installation's rows.
+  A service that works in the system tenant therefore works as itself there,
+  and two questions follow that no slice of this task can answer by itself:
+  which party of the system tenant owns the installation's published sets, and
+  whether the service's own role may be the maker of an installation-wide
+  publish. Until someone states them, iam keeps the step and the impersonation
+  it uses, and the task stays open.
+- *Four services work one run at once, 2026-11-17.* The measured run has iam,
+  refdata, synthetic and marketdata working overlapping steps: between 15:10:59
+  and 15:13:32 marketdata served a party's curves and its surface blueprints
+  while iam reset passwords and scheduled reports, and refdata's calendars had
+  been building since 15:09:57. The acceptance line "the parallel steps of a
+  run execute in different services at once" is measured now, not argued. The
+  cost the run also shows is that the surface publish is the long pole, at
+  20 min 27 s of 26 min: it stays alive on its progress reports, and its retry
+  budget is taken per party, so a wider run needs that budget measured rather
+  than assumed.
 - *A command that cannot read the state it guards on refuses, 2026-11-14.*
   A recreate asks whether anything is still connected before it drops, and an
   answer that never came back used to read as "nothing is connected". The

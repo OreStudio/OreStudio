@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: E26C57B3-A75A-4D93-BCFA-222259BA3C49
+:END:
+#+title: Main fails six local checks after the FX vol catalogue grew
+#+description: On 2026-11-17 the local check gate failed six checks on a branch that touches none of their inputs: two stale FX vol pgTAP suites, the codegen suite, the marketdata drift check, the shell tangle and a purge deadlock.
+#+type: capture
+#+level: cross
+#+filetags: :ci:local_checks:sql:codegen:shell:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make main pass the local check gate again, so a branch that is green on its own
+change can raise its PR on a green report.
+
+* Why
+
+On 2026-11-17 =compass check= on =feature/state-the-identity-shape-of-a-fixing=,
+rebased on =545cafca45=, failed these checks. The branch changes none of their
+inputs.
+
+- =pgtap=: =refdata_fx_vol_surface_blueprints_publish_test.sql= expects ten
+  derived pairs and =acme_fx_volatility_configs_test.sql= expects 22 surfaces.
+  The seed now has 35 pairs (commits 765ec2ce2a, a4b7491c12 and 0121534b78, on
+  2026-11-14 and 2026-11-16); the tests last changed on 2026-11-11.
+- =pgtap=: =iam_tenant_purge_test.sql= hit a deadlock, because the services of
+  the smoke test were still running when the suites ran.
+- =codegen-tests=: =test_domain_includes= finds trading headers that include
+  =<optional>= and use no =std::optional=, and the two
+  =test_rls_own_or_system_tenant_rows= tests no longer find the policy body
+  they expect.
+- =component-drift=: =ores.marketdata.service/config/options.hpp= differs from
+  its model in the default of =stale_seconds_ir= and =stale_seconds_fx=.
+- =tangle-shell=: the =barrier_types=, =commodity_instruments= and =leg_types=
+  recipes tangle to scripts that differ from the committed ones, and the
+  =regulatory_corporate_sector= recipe tangles into =doc/recipes/shell/=.
+- =ticks-smoke=: the late-subscriber bug in
+  [[id:2659F47C-2C7D-48B4-9FA0-46BBE1214485][Send the derived FX vol quotes to a party that subscribes late]].
+
+* References
+
+- =build/output/local_checks/report.md= of the clever_dijkstra worktree, 2026-11-17.
+
+* See also
+
+- [[id:2659F47C-2C7D-48B4-9FA0-46BBE1214485][Send the derived FX vol quotes to a party that subscribes late]]

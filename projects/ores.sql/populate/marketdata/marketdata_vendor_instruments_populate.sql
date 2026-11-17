@@ -76,8 +76,21 @@
  *        and e.currency_code = c.currency_code
  *        and e.index_family = c.index_family
  *        and e.tenor = c.tenor
- *       where c.provider_code is not null"
+ *       where c.provider_code is not null
+ *       union all
+ *       select 'vol', c.provider_code, f.base_currency_code, f.quote_currency_code, e.tenor,
+ *              '', '', ''
+ *       from ores_dq_fx_vol_surface_feeds_artefact_tbl f
+ *       join ores_dq_fx_vol_surface_feed_expiries_artefact_tbl e
+ *         on e.dataset_id = f.dataset_id and e.feed_id = f.id
+ *       join ores_dq_fx_vol_surface_feed_contributors_artefact_tbl l
+ *         on l.dataset_id = f.dataset_id and l.feed_id = f.id
+ *       join ores_dq_fx_vol_contributors_artefact_tbl c
+ *         on c.dataset_id = l.dataset_id and c.id = l.contributor_id"
  *   build/publish/bin/ores.marketdata.vendor-catalogue --write tmp/vendor-catalogue.tsv
+ *
+ * The volatility points go to marketdata_vendor_volatility_instruments_populate.sql, which runs
+ * after the surfaces are staged.
  *
  * An instrument of a config this seed has no row for stops the seed, and says so, rather than
  * leaving the catalogue quietly short of a feed's ids.

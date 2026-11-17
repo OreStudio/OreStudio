@@ -103,9 +103,11 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
              &build,
              ctx = db_ctx,
              faults,
+             surfaces = &generators.surfaces(),
              name = source.name,
              provider = source.publisher_code] {
-                return system_generator_offers(registry, ctx, build, name, provider, faults);
+                return system_generator_offers(
+                    registry, ctx, build, name, provider, faults, surfaces);
             },
             &generators.running_names());
         one.adapter = std::make_unique<simulator_adapter>(nats,

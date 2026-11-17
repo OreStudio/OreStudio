@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: ABFE5452-57B4-4621-86A4-011CF2B03E6A
+:END:
+#+title: Task: Write a series and its identity in one act
+#+description: Take the identity projection before the series is stored, so a series the shape refuses leaves nothing behind.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-15
+#+updated: 2026-11-15
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A series write the identity shape refuses stores nothing at all: the projection is taken first and written once the series is in, so a reader never meets a series whose identity is missing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-15                               |
+
+* Acceptance
+
+- The repository template pastes a block before the generated write, and the market series model states the projection there.
+- A write the shape refuses leaves the series row count unchanged.
+- A write that is not refused stores the series and its identity in that order, and a batch does the same.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Plan
+
+The projection hook in =cpp_domain_type_repository.cpp.mustache= pastes at the end of
+the generated write, after the row is stored, so a projection that refuses the row has
+already written the series. A run of the core suite that refused eight fixtures left
+sixteen series with no identity row: readable by the series repository, invisible to
+every identity reader.
+
+The template already pastes before-write blocks for =insert= and none for =write=, so
+the seam has to be added: two paste points, one before the single-value write and one
+before the batch write, registered in the entity meta model and the paste-block table.
+The market series model then states the projection in the new block, =rows_of= builds
+the rows and refuses them before anything is stored, and the existing after-write
+block writes them.
+
+Writers that hold a =unit_of_work= today already lose the series when the projection
+throws, because the throw unwinds the transaction. The ingest path and the tests do
+not, which is where the residue came from.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -109,7 +109,7 @@ private:
         s.tenant_id = h.tenant_id();
         s.party_id = party_id;
         s.oresmd_uri = series_uri(base, quote);
-        s.series_subclass = "yield";
+        s.series_subclass = "spot";
         s.provider_code = provider;
         s.derivation_kind = "OBSERVED";
         s.derivation_config_id = boost::uuids::nil_uuid();

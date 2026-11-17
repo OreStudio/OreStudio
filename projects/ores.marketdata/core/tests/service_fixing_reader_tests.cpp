@@ -77,6 +77,9 @@ struct reader_fixture {
         auto row = ores::marketdata::generators::generate_synthetic_market_series(generation);
         row.party_id = owner_party.value_or(party);
         row.oresmd_uri = uri;
+        // The generated row carries a subclass of its own, but this fixture writes a
+        // fixing and a fixing is an index series, so the row has to say so.
+        row.series_subclass = "index_fixing";
         row.provider_code = provider;
         ores::marketdata::repository::market_series_repository{}.write(db.context(), row);
         return row.id;

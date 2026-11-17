@@ -2172,3 +2172,7 @@ tangled into the runnable script library
 * Fx Vol Surface Feeds
 
 - [[id:55B302A7-4C28-5734-A290-65B5FA10629F][How do I run the fx_vol_surface_feeds commands from the shell?]]
+
+* Series Identity Shapes
+
+- [[id:424D435E-B5A9-5042-8D95-615970844601][How do I run the series_identity_shapes commands from the shell?]]

@@ -318,6 +318,7 @@ select ores_utility_allow_version_replace_fn();
 \echo ''
 \echo '--- Synthetic Feeds: Bloomberg Volatility Surfaces (read from the refdata blueprints) ---'
 \ir synthetic/synthetic_feeds_bloomberg_volatility_populate.sql
+\ir marketdata/marketdata_vendor_volatility_instruments_populate.sql
 
 -- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)

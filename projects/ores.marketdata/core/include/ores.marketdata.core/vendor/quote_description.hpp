@@ -75,13 +75,29 @@ struct ir_curve_pillar final {
 };
 
 /**
+ * @brief One point of an FX volatility surface, as a provider's id describes it.
+ *
+ * The pair is in market order. The expiry is a tenor such as 1M or 10Y, and the strike label is
+ * one of the five a broker shows: ATM, the 25 and 10 delta risk reversals (25RR, 10RR) and the
+ * 25 and 10 delta butterflies (25BF, 10BF). The quote is a volatility, as the vendor states it.
+ */
+struct fx_option_quote final {
+    std::string base;
+    std::string quote;
+    std::string expiry;
+    std::string strike_label;
+
+    bool operator==(const fx_option_quote&) const = default;
+};
+
+/**
  * @brief What a vendor id says about the quote it names, in no provider's words.
  *
- * The spot quote of a currency pair and one pillar of an interest rate curve are described
- * today. Another instrument is a further alternative, and each notation then reads and writes
- * it or refuses it.
+ * The spot quote of a currency pair, one pillar of an interest rate curve, and one point of an
+ * FX volatility surface are described today. Another instrument is a further alternative, and
+ * each notation then reads and writes it or refuses it.
  */
-using quote_description = std::variant<fx_spot_quote, ir_curve_pillar>;
+using quote_description = std::variant<fx_spot_quote, ir_curve_pillar, fx_option_quote>;
 
 }
 

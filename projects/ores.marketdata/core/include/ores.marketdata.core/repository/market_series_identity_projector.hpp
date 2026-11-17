@@ -73,6 +73,11 @@ public:
         std::size_t projected = 0;
         std::size_t already_projected = 0;
         std::size_t unreadable = 0;
+        /// The rows the shape table refused: a required field is empty or a forbidden
+        /// one is filled. They are left as they are and named, not repaired silently.
+        std::size_t refused = 0;
+        /// The rows whose family no shape states yet, which are projected unguarded.
+        std::size_t unstated = 0;
     };
 
     /**

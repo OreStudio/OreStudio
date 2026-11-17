@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "running_set.hpp"
 #include <algorithm>
+#include <atomic>
 #include <exception>
 #include <functional>
 #include <map>
@@ -152,6 +153,13 @@ public:
             }
             const auto& feed = offer->second;
             wanted_feeds.insert(feed);
+            if (const auto found = running_.find(feed);
+                found != running_.end() && found->second.failed->load()) {
+                // What it needed may be there now, such as the dates its calendars build at
+                // startup, so a generator whose start threw is built again rather than kept.
+                halt(found->second);
+                running_.erase(found);
+            }
             if (running_.contains(feed)) {
                 // A demanded feed the operator started runs on until a demand stops naming it.
                 running_.at(feed).manual = false;
@@ -184,7 +192,7 @@ public:
                 started.feed = std::move(generator);
                 started.source_name = source_name;
                 try {
-                    started.thread = launch(started.feed.get());
+                    started.thread = launch(started.feed.get(), started.failed);
                 } catch (...) {
                     release(source_name);
                     throw;
@@ -241,7 +249,7 @@ public:
             if (!claim(source_name))
                 return false;
             try {
-                started.thread = launch(started.feed.get());
+                started.thread = launch(started.feed.get(), started.failed);
             } catch (...) {
                 release(source_name);
                 throw;
@@ -318,6 +326,8 @@ private:
         std::string source_name;
         /** An operator started it, and no demand has named its group since. */
         bool manual = false;
+        /** Its start threw, so the next demand that names it builds it again. */
+        std::shared_ptr<std::atomic<bool>> failed = std::make_shared<std::atomic<bool>>(false);
         std::thread thread;
     };
 
@@ -366,13 +376,15 @@ private:
         return out;
     }
 
-    static std::thread launch(ores::marketdata::domain::i_feed* raw) {
-        return std::thread([raw] {
+    static std::thread launch(ores::marketdata::domain::i_feed* raw,
+                              std::shared_ptr<std::atomic<bool>> failed) {
+        return std::thread([raw, failed = std::move(failed)] {
             try {
                 raw->start();
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), ores::logging::error)
                     << "The generator of " << raw->source_name() << " stopped: " << e.what();
+                failed->store(true);
             }
         });
     }

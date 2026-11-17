@@ -184,6 +184,29 @@ def views() -> dict[str, tuple[list[str], set[str]]]:
     return found
 
 
+SHAPES_SQL = (
+    REPO_ROOT
+    / "projects/ores.sql/populate/marketdata/marketdata_series_identity_shapes_populate.sql"
+)
+
+SHAPE_ROW = re.compile(
+    r"\(ores_utility_system_tenant_id_fn\(\),\s*'(\w+)',\s*'(\w+)',\s*'(\w*)',\s*"
+    r"'(\w+)',\s*'(\w+)',"
+)
+
+
+def stated_shapes() -> list[tuple[str, str, str, str, str]]:
+    """Every shape row the seed states: asset class, subclass, index family, field, requirement."""
+    text = SHAPES_SQL.read_text()
+    rows = SHAPE_ROW.findall(text)
+    if not rows:
+        raise SystemExit(
+            f"FAIL: parsed no shape rows from {SHAPES_SQL.relative_to(REPO_ROOT)}; "
+            "the check needs fixing."
+        )
+    return rows
+
+
 def table_columns() -> set[str]:
     """The columns of the projection's create table statement."""
     text = CREATE_SQL.read_text()
@@ -283,6 +306,21 @@ def main() -> int:
             f"{CREATE_TABLE} has column '{extra}', which is neither a context column, "
             "nor an identity field, nor an index field."
         )
+
+    # 1b. Every field a shape row states is a column of the projection, and every
+    #     requirement the row states is one the table admits. A shape that names a
+    #     column nobody has is a rule no writer can keep.
+    for asset_class, subclass, index_family, field, requirement in stated_shapes():
+        if field not in columns:
+            problems.append(
+                f"a shape row states field '{field}' for {asset_class}/{subclass}/"
+                f"{index_family}, which is no column of {CREATE_TABLE}."
+            )
+        if requirement not in ("required", "forbidden"):
+            problems.append(
+                f"a shape row states requirement '{requirement}' for field '{field}', "
+                "which is neither required nor forbidden."
+            )
 
     # 2. The projector places every field, and places each one correctly.
     placed = projector_switch()

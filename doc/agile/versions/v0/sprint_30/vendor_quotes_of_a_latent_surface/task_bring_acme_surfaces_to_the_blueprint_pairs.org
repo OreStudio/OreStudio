@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: C63E4382-E698-440C-848A-C98F638E6539
+:END:
+#+title: Task: Bring the Acme surfaces and two suites up to the 35 blueprint pairs
+#+description: A peer environment found two pgTAP suites failing after the blueprints grew to 35 pairs.
+#+type: task
+#+level: s1
+#+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
+#+owner: marco
+#+branch: fix/stale-volatility-pgtap-suites
+#+pr: 4825
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Acme configuration documents read every surface the blueprints give, and the two suites pass on the current blueprints.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- refdata_fx_vol_surface_blueprints_publish_test.sql and acme_fx_volatility_configs_test.sql pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4825][#4825]] | [seeder,sql] Bring the Acme surfaces and suites to 35 pairs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Derive the surface count from t_expected | acme_fx_volatility_configs_test.sql | Declined | set_eq already checks the staged set against the derived one; the pinned 54 is the check that a change of currencies or pairs moves coverage on purpose. |
+| 2 | Shorten the count check's message | acme_fx_volatility_configs_test.sql | Accepted | |
+| 3 | Confirm the two failing checks come from main | | Answered | GitHub runs no checks; the local gate fails on main's trading tables, which this branch does not touch. |
+| 4 | Generate the BFF's empty batch | booking.ts | Out of scope | Each new instrument table breaks it again; a generated empty batch belongs with the generator. |
+
+* Result
+
+The blueprints grew from ten pairs to 35, each with 65 pillars, and the Acme configuration
+documents were not regenerated with them. Regenerating them gives 54 FX volatility curves: 4 for
+the holding company, 30 for London, 11 for New York and 9 for Hong Kong, which is what the Acme
+suite derives from the blueprints. The blueprint suite pinned the old counts and used EUR/SEK
+as a pair no blueprint names; it pins 35 pairs and 65 pillars now, and uses EUR/PLN. Both
+suites pass.

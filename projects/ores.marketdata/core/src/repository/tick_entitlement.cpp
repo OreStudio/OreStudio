@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/tick_entitlement.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
 
 namespace ores::marketdata::repository {

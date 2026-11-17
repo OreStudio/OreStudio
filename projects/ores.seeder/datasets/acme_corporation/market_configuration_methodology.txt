@@ -46,10 +46,9 @@ party's subscriptions deliver.
    One FX volatility curve for each pair the system calibrates a surface for
    (see the FX Volatility Surface Blueprint Methodology) whose two currencies
    the entity builds a curve for. A surface needs both curves to turn a delta
-   into a strike. On the current currencies this gives the holding company
-   EUR/USD, GBP/USD and EUR/GBP; London all ten pairs; New York EUR/USD,
-   GBP/USD, USD/JPY, USD/CAD, EUR/GBP and EUR/JPY; and Hong Kong AUD/USD,
-   USD/JPY and NZD/USD.
+   into a strike. On the current currencies and the 35 blueprint pairs this
+   gives the holding company 4 surfaces, London 30, New York 11 and Hong
+   Kong 9: 54 in all.
 
    Each curve reads the published surface as ORE quotes, so ORE prices from
    the published grid and from nothing else:

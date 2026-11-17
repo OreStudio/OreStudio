@@ -1,0 +1,619 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.marketdata.core/service/series_identity_shape_service.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
+#include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.marketdata.api/domain/series_identity_shape.hpp"
+#include "ores.marketdata.api/messaging/series_identity_shape_protocol.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <map>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
+using ores::utility::domain::max_batch_size;
+
+namespace ores::marketdata::service {
+
+using namespace ores::logging;
+
+series_identity_shape_service::series_identity_shape_service(const context& ctx)
+    : ctx_(ctx) {}
+namespace {
+
+/**
+ * @brief The current row a key names, or an empty vector when there is none.
+ *
+ * A key record carries each column with the column's own type, and the
+ * repository takes the text form every one of its key parameters shares, so
+ * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
+ */
+std::vector<domain::series_identity_shape>
+series_identity_shape_read_one(repository::series_identity_shape_repository& repo,
+                               const ores::database::context& ctx,
+                               const messaging::series_identity_shape_key& key) {
+    return repo.read_latest(ctx, key.asset_class, key.series_subclass, key.index_family, key.field);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. The repository
+ * reads the key set in one batch read.
+ *
+ * A row is joined back to its key by the text form of each key column. Both
+ * sides convert the typed value with the same function, and the store compares
+ * key text exactly, so every row the read returns finds its key.
+ *
+ * When the declared key is not the storage key the batch is read by the
+ * declared key instead. A model that states its own read by that key has no
+ * batch form of it, so its keys are read one at a time.
+ */
+std::vector<std::vector<domain::series_identity_shape>>
+series_identity_shape_read_many(repository::series_identity_shape_repository& repo,
+                                const ores::database::context& ctx,
+                                const std::vector<messaging::series_identity_shape_key>& keys) {
+    std::vector<std::vector<domain::series_identity_shape>> found(keys.size());
+    using key_tuple = std::tuple<std::string, std::string, std::string, std::string>;
+    std::vector<std::string> asset_class_keys;
+    asset_class_keys.reserve(keys.size());
+    std::vector<std::string> series_subclass_keys;
+    series_subclass_keys.reserve(keys.size());
+    std::vector<std::string> index_family_keys;
+    index_family_keys.reserve(keys.size());
+    std::vector<std::string> field_keys;
+    field_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        asset_class_keys.push_back(key.asset_class);
+        series_subclass_keys.push_back(key.series_subclass);
+        index_family_keys.push_back(key.index_family);
+        field_keys.push_back(key.field);
+    }
+    std::map<key_tuple, std::vector<domain::series_identity_shape>> by_key;
+    for (auto& row : repo.read_latest(
+             ctx, asset_class_keys, series_subclass_keys, index_family_keys, field_keys)) {
+        key_tuple named(row.asset_class, row.series_subclass, row.index_family, row.field);
+        by_key[std::move(named)].push_back(std::move(row));
+    }
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& key = keys[i];
+        const auto rows = by_key.find(
+            key_tuple(key.asset_class, key.series_subclass, key.index_family, key.field));
+        if (rows != by_key.end())
+            found[i] = rows->second;
+    }
+    return found;
+}
+
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::series_identity_shape_key
+series_identity_shape_key_from(const domain::series_identity_shape& v) {
+    messaging::series_identity_shape_key key;
+    key.asset_class = v.asset_class;
+    key.series_subclass = v.series_subclass;
+    key.index_family = v.index_family;
+    key.field = v.field;
+    return key;
+}
+
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy,
+ * provenance, the version and the validity window are the service's and the
+ * database's to state, and are set after this conversion.
+ */
+domain::series_identity_shape
+series_identity_shape_to_domain(const messaging::series_identity_shape_write& write) {
+    domain::series_identity_shape v;
+    v.asset_class = write.asset_class;
+    v.series_subclass = write.series_subclass;
+    v.index_family = write.index_family;
+    v.field = write.field;
+    v.requirement = write.requirement;
+    v.description = write.description;
+    return v;
+}
+
+
+}
+
+messaging::list_series_identity_shapes_response
+series_identity_shape_service::list_series_identity_shapes(
+    const messaging::list_series_identity_shapes_request& request) {
+    messaging::list_series_identity_shapes_response response;
+    if (!request.order.field.empty() &&
+        !repository::series_identity_shape_repository::is_sortable(request.order.field)) {
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "series identity shapes", .field = request.order.field});
+        return response;
+    }
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
+            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
+            return response;
+        }
+    }
+    response.shapes = repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
+    response.total = repo_.get_total_shape_count(ctx_, as_of);
+    return response;
+}
+
+messaging::get_series_identity_shape_response
+series_identity_shape_service::get_series_identity_shape(
+    const messaging::get_series_identity_shape_request& request) {
+    messaging::get_series_identity_shape_response response;
+    auto found = series_identity_shape_read_one(repo_, ctx_, request.key);
+    if (found.empty()) {
+        response.result = refuse(outcome_code::not_found, {.entity = "series_identity_shape"});
+        return response;
+    }
+    response.series_identity_shape = std::move(found.front());
+    return response;
+}
+
+messaging::get_many_series_identity_shapes_response
+series_identity_shape_service::get_many_series_identity_shapes(
+    const messaging::get_many_series_identity_shapes_request& request) {
+    messaging::get_many_series_identity_shapes_response response;
+    // A key set carries at most as many keys as the protocol lets a batch
+    // carry, so one request cannot ask for an unbounded reply.
+    if (request.keys.size() > max_batch_size) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    auto found = series_identity_shape_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
+        messaging::series_identity_shape_lookup entry;
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.series_identity_shape = std::move(found[i].front());
+        response.entries.push_back(std::move(entry));
+    }
+    return response;
+}
+
+messaging::put_series_identity_shape_response
+series_identity_shape_service::put_series_identity_shape(
+    const messaging::put_series_identity_shape_request& request) {
+    messaging::put_series_identity_shape_response response;
+    domain::series_identity_shape value;
+    const auto current = series_identity_shape_read_one(
+        repo_,
+        ctx_,
+        series_identity_shape_key_from(series_identity_shape_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(ctx_, value, request.change.precondition);
+    auto written =
+        series_identity_shape_read_one(repo_, ctx_, series_identity_shape_key_from(value));
+    if (!written.empty())
+        response.series_identity_shape = std::move(written.front());
+    return response;
+}
+
+messaging::put_many_series_identity_shapes_response
+series_identity_shape_service::put_many_series_identity_shapes(
+    const messaging::put_many_series_identity_shapes_request& request) {
+    messaging::put_many_series_identity_shapes_response response;
+    if (request.changes.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "series_identity_shape", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::series_identity_shape_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            series_identity_shape_key_from(series_identity_shape_to_domain(change.write)));
+    const auto current = series_identity_shape_read_many(repo_, ctx_, keys);
+    std::vector<domain::series_identity_shape> batch;
+    batch.reserve(request.changes.size());
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
+        domain::series_identity_shape value;
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
+        }
+        batch.push_back(std::move(value));
+    }
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
+    response.shapes.reserve(batch.size());
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = series_identity_shape_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.shapes.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
+    }
+    return response;
+}
+
+messaging::delete_series_identity_shape_response
+series_identity_shape_service::delete_series_identity_shape(
+    const messaging::delete_series_identity_shape_request& request) {
+    messaging::delete_series_identity_shape_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result = refuse(outcome_code::precondition_not_supported);
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result = refuse(outcome_code::precondition_incomplete);
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (repo_.remove(ctx_,
+                         request.removal.key.asset_class,
+                         request.removal.key.series_subclass,
+                         request.removal.key.index_family,
+                         request.removal.key.field,
+                         expected)) {
+        case repository::series_identity_shape_repository::remove_status::removed:
+            break;
+        case repository::series_identity_shape_repository::remove_status::missing:
+            response.result = refuse(outcome_code::not_found, {.entity = "series_identity_shape"});
+            break;
+        case repository::series_identity_shape_repository::remove_status::conflicting: {
+            // A conflicting removal states the version it expected but not the one
+            // the row now holds, and the sentence wants both. The row is read only
+            // on the refusal path.
+            const auto live = series_identity_shape_read_one(repo_, ctx_, request.removal.key);
+            response.result = refuse(
+                outcome_code::version_conflict,
+                {.entity = "series_identity_shape",
+                 .field = "asset_class",
+                 .expected = expected ? std::to_string(*expected) : std::string{},
+                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
+            break;
+        }
+        case repository::series_identity_shape_repository::remove_status::unsupported:
+            response.result = refuse(outcome_code::precondition_not_supported);
+            break;
+    }
+    return response;
+}
+
+messaging::delete_many_series_identity_shapes_response
+series_identity_shape_service::delete_many_series_identity_shapes(
+    const messaging::delete_many_series_identity_shapes_request& request) {
+    messaging::delete_many_series_identity_shapes_response response;
+    if (request.removals.size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::batch_too_large,
+                   {.entity = "series_identity_shape", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result = refuse(outcome_code::batch_removal_is_unconditional);
+            return response;
+        }
+    }
+    if (request.removals.empty())
+        return response;
+    std::vector<std::string> asset_class_keys;
+    asset_class_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        asset_class_keys.push_back(removal.key.asset_class);
+    std::vector<std::string> series_subclass_keys;
+    series_subclass_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        series_subclass_keys.push_back(removal.key.series_subclass);
+    std::vector<std::string> index_family_keys;
+    index_family_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        index_family_keys.push_back(removal.key.index_family);
+    std::vector<std::string> field_keys;
+    field_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        field_keys.push_back(removal.key.field);
+    repo_.remove(ctx_, asset_class_keys, series_subclass_keys, index_family_keys, field_keys);
+    return response;
+}
+
+messaging::list_series_identity_shape_versions_response
+series_identity_shape_service::list_series_identity_shape_versions(
+    const messaging::list_series_identity_shape_versions_request& request) {
+    messaging::list_series_identity_shape_versions_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "series identity shapes", .field = request.order.field});
+        return response;
+    }
+    if (request.filter) {
+        response.result =
+            refuse(outcome_code::filter_not_supported, {.entity = "series identity shapes"});
+        return response;
+    }
+    auto all = repo_.read_all(ctx_,
+                              request.key.asset_class,
+                              request.key.series_subclass,
+                              request.key.index_family,
+                              request.key.field);
+    // The store reads versions newest first, and the order a caller gets when
+    // it states none is key order, which for a version key is oldest first.
+    std::reverse(all.begin(), all.end());
+    response.total = all.size();
+    const auto begin = std::min<std::size_t>(request.offset, all.size());
+    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
+    response.versions.assign(std::make_move_iterator(all.begin() + begin),
+                             std::make_move_iterator(all.begin() + end));
+    return response;
+}
+
+messaging::get_series_identity_shape_version_response
+series_identity_shape_service::get_series_identity_shape_version(
+    const messaging::get_series_identity_shape_version_request& request) {
+    messaging::get_series_identity_shape_version_response response;
+    auto found = repo_.read_at_version(ctx_,
+                                       request.key.series_identity_shape.asset_class,
+                                       request.key.series_identity_shape.series_subclass,
+                                       request.key.series_identity_shape.index_family,
+                                       request.key.series_identity_shape.field,
+                                       request.key.version);
+    if (!found) {
+        response.result = refuse(outcome_code::not_found, {.entity = "series_identity_shape"});
+        return response;
+    }
+    response.version = std::move(*found);
+    return response;
+}
+
+ores::utility::domain::result series_identity_shape_service::prepare_change(
+    const messaging::series_identity_shape_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::series_identity_shape>& current,
+    domain::series_identity_shape& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = series_identity_shape_to_domain(change.write);
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "series_identity_shape", .field = "asset_class"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "series_identity_shape"});
+            // The protocol states the version as a uint32 and the row carries it
+            // as an int, so the comparison states the conversion.
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "series_identity_shape",
+                               .field = "asset_class",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
+
+std::vector<domain::series_identity_shape>
+series_identity_shape_service::list_shapes(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all series identity shapes";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t series_identity_shape_service::count_shapes() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total series identity shapes count";
+    return repo_.get_total_shape_count(ctx_);
+}
+
+
+std::optional<domain::series_identity_shape>
+series_identity_shape_service::get_shape_at_version(const std::string& asset_class,
+                                                    const std::string& series_subclass,
+                                                    const std::string& index_family,
+                                                    const std::string& field,
+                                                    std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape at version. "
+                               << "asset_class: " << asset_class
+                               << " series_subclass: " << series_subclass
+                               << " index_family: " << index_family << " field: " << field
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, asset_class, series_subclass, index_family, field, version);
+}
+
+std::optional<domain::series_identity_shape>
+series_identity_shape_service::get_shape(const std::string& asset_class,
+                                         const std::string& series_subclass,
+                                         const std::string& index_family,
+                                         const std::string& field) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape. "
+                               << "asset_class: " << asset_class
+                               << " series_subclass: " << series_subclass
+                               << " index_family: " << index_family << " field: " << field;
+    auto results = repo_.read_latest(ctx_, asset_class, series_subclass, index_family, field);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::vector<domain::series_identity_shape>
+series_identity_shape_service::get_shapes(const std::vector<std::string>& asset_classs,
+                                          const std::vector<std::string>& series_subclasss,
+                                          const std::vector<std::string>& index_familys,
+                                          const std::vector<std::string>& fields) {
+    return repo_.read_latest(ctx_, asset_classs, series_subclasss, index_familys, fields);
+}
+
+void series_identity_shape_service::save_shape(const domain::series_identity_shape& v) {
+    if (v.asset_class.empty())
+        throw std::invalid_argument("Series Identity Shape asset_class cannot be empty.");
+    if (v.series_subclass.empty())
+        throw std::invalid_argument("Series Identity Shape series_subclass cannot be empty.");
+    if (v.index_family.empty())
+        throw std::invalid_argument("Series Identity Shape index_family cannot be empty.");
+    if (v.field.empty())
+        throw std::invalid_argument("Series Identity Shape field cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving series identity shape. "
+                               << "asset_class: " << v.asset_class
+                               << " series_subclass: " << v.series_subclass
+                               << " index_family: " << v.index_family << " field: " << v.field;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved series identity shape. " << "asset_class: " << v.asset_class
+                              << " series_subclass: " << v.series_subclass
+                              << " index_family: " << v.index_family << " field: " << v.field;
+}
+
+void series_identity_shape_service::save_shapes(
+    const std::vector<domain::series_identity_shape>& shapes) {
+    for (const auto& e : shapes) {
+        if (e.asset_class.empty())
+            throw std::invalid_argument("Series Identity Shape asset_class cannot be empty.");
+        if (e.series_subclass.empty())
+            throw std::invalid_argument("Series Identity Shape series_subclass cannot be empty.");
+        if (e.index_family.empty())
+            throw std::invalid_argument("Series Identity Shape index_family cannot be empty.");
+        if (e.field.empty())
+            throw std::invalid_argument("Series Identity Shape field cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << shapes.size() << " series identity shapes";
+    auto ts = shapes;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
+    }
+    repo_.write(ctx_, ts);
+}
+
+void series_identity_shape_service::delete_shape(const std::string& asset_class,
+                                                 const std::string& series_subclass,
+                                                 const std::string& index_family,
+                                                 const std::string& field) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. "
+                               << "asset_class: " << asset_class
+                               << " series_subclass: " << series_subclass
+                               << " index_family: " << index_family << " field: " << field;
+    repo_.remove(ctx_, asset_class, series_subclass, index_family, field);
+    BOOST_LOG_SEV(lg(), info) << "Removed series identity shape. " << "asset_class: " << asset_class
+                              << " series_subclass: " << series_subclass
+                              << " index_family: " << index_family << " field: " << field;
+}
+
+void series_identity_shape_service::delete_shapes(const std::vector<std::string>& asset_classs,
+                                                  const std::vector<std::string>& series_subclasss,
+                                                  const std::vector<std::string>& index_familys,
+                                                  const std::vector<std::string>& fields) {
+    repo_.remove(ctx_, asset_classs, series_subclasss, index_familys, fields);
+}
+
+std::vector<domain::series_identity_shape>
+series_identity_shape_service::get_shape_history(const std::string& asset_class,
+                                                 const std::string& series_subclass,
+                                                 const std::string& index_family,
+                                                 const std::string& field) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for series identity shape. "
+                               << "asset_class: " << asset_class
+                               << " series_subclass: " << series_subclass
+                               << " index_family: " << index_family << " field: " << field;
+    return repo_.read_all(ctx_, asset_class, series_subclass, index_family, field);
+}
+
+}

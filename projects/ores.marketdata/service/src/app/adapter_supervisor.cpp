@@ -303,7 +303,8 @@ void adapter_supervisor::monitor_loop() {
 
         // Re-read the catalogue on a timer as well as on events, so a missed event
         // delays a demand set by one interval instead of losing it.
-        if (steady_clock::now() >= next_refresh) {
+        if (refresh_requested_.exchange(false, std::memory_order_acq_rel) ||
+            steady_clock::now() >= next_refresh) {
             next_refresh = steady_clock::now() + refresh_interval;
             try {
                 refresh();

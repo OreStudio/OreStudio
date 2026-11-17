@@ -46,6 +46,7 @@ render_workflow_plan_step_fields(const domain::workflow_plan_step& v) {
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Command Subject", .value = v.command_subject});
     fields.push_back({.name = "Compensation Subject", .value = v.compensation_subject});
+    fields.push_back({.name = "Essential", .value = v.essential ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -109,6 +109,14 @@ struct workflow_plan_step final {
     std::int32_t timeout_seconds{};
 
     /**
+     * @brief Whether the run needs this step's work to go on. A step that is not essential and
+     * fails, or outlives its deadline, ends with warnings instead: its error goes into its log and
+     * the run carries on without its work. Carried with the run for the same reason as the
+     * deadline.
+     */
+    bool essential = true;
+
+    /**
      * @brief Username of the person who last modified this workflow plan step.
      */
     std::string modified_by;

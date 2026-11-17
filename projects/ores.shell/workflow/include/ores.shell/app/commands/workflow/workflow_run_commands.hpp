@@ -85,6 +85,44 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
+     * @brief Prints the steps of the latest run of a type that ended with warnings.
+     *
+     * A step that ends with warnings did its work only in part, and the run went
+     * on without the rest, so a person must read what is missing. The heading is
+     * printed only when there is such a step. With @p detail each step's warnings
+     * follow it; without, each step states how many it has. A run the session
+     * cannot read, or no run, prints nothing: the caller may not be the tenant's
+     * administrator, and that is not a failure of the command that asked.
+     *
+     * With @p news_since, a wire timestamp, the run is reported only when it
+     * finished after that time: a person is told about a run once, on the first
+     * login after it finished. Empty reports the run whenever it has warnings.
+     *
+     * @return The number of steps that ended with warnings.
+     */
+    static std::size_t print_run_warnings(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          std::string_view run_type,
+                                          std::string_view heading,
+                                          bool detail,
+                                          const std::string& news_since = {});
+
+    /**
+     * @brief Runs again a step of the latest run of a type that ended with
+     * warnings, and waits for the run to complete again.
+     *
+     * The engine refuses a step that did not end with warnings, or one the run
+     * cannot do without, and the refusal is printed as it came.
+     *
+     * @return true when the run completed again.
+     */
+    static bool rerun_latest_step(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  std::string_view run_type,
+                                  const std::string& step_name,
+                                  std::chrono::seconds timeout);
+
+    /**
      * @brief How a command's work ended when a run may hand some of it on.
      */
     enum class follow_result {

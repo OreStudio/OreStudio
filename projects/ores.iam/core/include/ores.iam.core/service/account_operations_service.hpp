@@ -35,6 +35,7 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -68,6 +69,8 @@ inline constexpr std::string_view password_unchanged_message =
 struct ORES_IAM_CORE_EXPORT authenticated_login {
     domain::account account;
     bool password_reset_required = false;
+    /// When the account last logged in before this login; none for its first.
+    std::optional<std::chrono::system_clock::time_point> previous_login;
 };
 
 /**

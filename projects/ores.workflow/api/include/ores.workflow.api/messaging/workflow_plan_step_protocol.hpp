@@ -58,6 +58,7 @@ struct workflow_plan_step_write {
     std::string command_subject;
     std::string compensation_subject;
     std::int32_t timeout_seconds{};
+    bool essential{};
 
     friend bool operator==(const workflow_plan_step_write&,
                            const workflow_plan_step_write&) = default;
@@ -432,6 +433,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_st
         utility::codec::field{"compensation_subject",
                               &workflow_plan_step_write::compensation_subject},
         utility::codec::field{"timeout_seconds", &workflow_plan_step_write::timeout_seconds},
+        utility::codec::field{"essential", &workflow_plan_step_write::essential},
     };
 }
 

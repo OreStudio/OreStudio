@@ -154,6 +154,7 @@ workflow_plan_step_to_domain(const messaging::workflow_plan_step_write& write) {
     v.command_subject = write.command_subject;
     v.compensation_subject = write.compensation_subject;
     v.timeout_seconds = write.timeout_seconds;
+    v.essential = write.essential;
     return v;
 }
 

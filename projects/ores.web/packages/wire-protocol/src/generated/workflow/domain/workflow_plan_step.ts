@@ -42,6 +42,7 @@ export interface WorkflowPlanStep {
     command_subject: string;
     compensation_subject: string;
     timeout_seconds: number;
+    essential: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

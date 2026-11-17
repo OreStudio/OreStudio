@@ -49,6 +49,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
@@ -844,6 +845,9 @@ public:
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 resp.tenant_bootstrapping = tenant_bootstrapping;
                 resp.password_reset_required = outcome.password_reset_required;
+                if (outcome.previous_login)
+                    resp.previous_login =
+                        ores::platform::time::datetime::to_iso8601_utc(*outcome.previous_login);
                 resp.access_lifetime_s = token_settings()->access_lifetime_s;
                 resp.session_id = session_id_str;
                 resp.available_parties = available_parties;
@@ -905,6 +909,9 @@ public:
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 resp.tenant_bootstrapping = tenant_bootstrapping;
                 resp.password_reset_required = outcome.password_reset_required;
+                if (outcome.previous_login)
+                    resp.previous_login =
+                        ores::platform::time::datetime::to_iso8601_utc(*outcome.previous_login);
                 resp.access_lifetime_s = token_settings()->party_selection_lifetime_s;
                 resp.session_id = session_id_str;
                 resp.available_parties = available_parties;

@@ -21,6 +21,7 @@
 
 import { PATHS } from '../shell/paths.js';
 import { ActiveCards } from '../shell/AreaCards.js';
+import { SetupWarningsAlert } from '../shell/SetupReport.js';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useHolds } from '../access/holds.js';
@@ -249,6 +250,7 @@ export function ApplicationHome({
                     )
                 }
             />
+            <SetupWarningsAlert />
             {bar}
             {tab === 'dashboard' && (
                 <Dashboard data={data} translator={translator} visible={visible} />

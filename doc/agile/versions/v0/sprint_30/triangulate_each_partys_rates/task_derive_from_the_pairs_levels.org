@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 655BB6F8-D16E-49DE-B912-85240B490A93
+:END:
+#+title: Task: Derive the volatility quotes from the pair's levels
+#+description: The derived volatility source reads two ECB fixing windows and composes the pair itself; ask the market data service for the pair's levels instead, and delete the constants that name the ECB.
+#+type: task
+#+level: s1
+#+filetags: :triangulate_each_partys_rates:sprint_30:v0:
+#+owner: marco
+#+branch: feature/derive-from-the-pairs-levels
+#+pr: 4790
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The derived volatility source asks for a pair's daily levels and does arithmetic: it names no publisher, leg or pivot, and a pair any source of the party quotes gets a surface.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-16                               |
+
+* Acceptance
+
+- The derived source reads a pair's levels through get_pair_levels and differences them into returns.
+- fixing_provider, ecb_fixing_item and ecb_legs_of are gone, with their tests.
+- A pair whose source stopped fixing one of its sides is refused, naming the provider and the
+  day it stopped, instead of being read from its last fixing. (The first draft read "USD/CLP and
+  USD/COP are back in the catalogue"; measured, neither can be: see the Result.)
+- A fresh tenant provisions through every step with the derived source on the new read.
+
+* Plan
+
+Slices 3 and 4 of [[id:C330DD6F-258B-4D41-930D-AE00FC60BF2E][the derive task]], in one change so the move and the deletion land
+together.
+
+- The feed's reader becomes =levels(pair, to)= and =pair_log_returns= takes one series.
+- The adapter answers it with =get_pair_levels=; the ECB constants and their test go.
+- Bring USD/CLP and USD/COP back, which the IMF quotes and the ECB does not.
+
+What the provisioning run of the first draft changed:
+
+- *USD/COP.* The IMF last fixed COP on 2022-02-28 (1213 fixings), so the pair was read from a
+  four-year-old rate and quoted as today's. The read now refuses a side whose last fixing is
+  more than a week before the window's end; the pair stays out of the catalogue.
+- *USD/CLP.* 2345 IMF fixings, short of the 2520 returns a 10Y window needs, so its surface
+  lacks 10Y and is refused whole. Sizing the grid to the sample is the sizing story's task,
+  "Compute how far a pair's surface reaches"; the pair stays out until then.
+- *The first party.* The blueprint step waited three minutes per party in turn, so the first
+  party's wait ended while the derived source was still on its first pass: Acme Corporation Plc
+  held NZD/JPY from 09:18:34 and the step, which ran from 09:15 to 09:27, never saw it. The
+  wait is now over every party together and lasts while blueprints keep becoming ready.
+- *The late routes.* The second run gave 105 blueprints none of their quotes. The marketdata
+  listener thread ran each subscription event's demand refresh itself, and the usage recorder in
+  it wrote 2707 and then 8568 demand intervals, 3 and 4.3 minutes each. The US, UK and HK routes
+  arrived at 11:15, 7.5 minutes late; the derived quotes had published at 11:07:46 into a
+  snapshot that held only Plc's route, and the derived feed does not send them again. The event
+  handlers now ask the supervisor to refresh, and its monitor loop does the work.
+- *Not the cause.* A pair's level read takes 40 to 60 ms (2555 levels, measured at debug level
+  in the synthetic service), so the per-request read of the fixing sources is not a cost worth
+  a cache.
+
+Also in this change, at the person's request: the setup rail opens each step to show its times,
+its log and, for a failed step, its error one piece of work to a line; the run states how many
+steps are done, with a bar and its elapsed time; a running step states its elapsed time. A
+failed step turns red and keeps its error behind its disclosure. Each step records what it did,
+one line per piece of work, so its log is no longer empty.
+
+Also at the person's request, after the third run failed on two curves of one party: a setup
+whose market data, trades or reports are incomplete still gives a usable tenant, so those steps
+no longer stop it.
+
+- *Essential steps.* Each step kind states whether the tenant needs its work. A step that is
+  not essential and fails, or outlives its deadline, ends with warnings: the engine puts its
+  error in its log and the run goes on. The flag is carried on the run's plan rows, beside the
+  deadline. The essential kinds are the system data, reference data, legal entities, parties,
+  staff and passwords, auto-approval, calendars, the hand-over and the finish.
+- *The curve wait.* The party curve step waited per party in turn, like the blueprint step did,
+  and Plc's SEK and ZAR overnight series arrived 20 seconds after its three minutes. It now
+  waits over every party together while curves keep becoming ready.
+- *The report.* The shell names the steps that ended with warnings when a run finishes. The
+  login answer now states the account's previous login, so the shell prints a summary on the
+  tenant administrator's first login after the setup finished, and prints the warnings in full
+  with =setup-report=. The web shows a notice on every screen until the administrator dismisses it,
+  and a =/setup-report= page that lists each step's warnings above the whole run.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Fresh Acme setup, steps completed | 17 of 17, none with warnings | =compass shell -f .../how_do_i_provision_the_system_with_acme_corporation_holding_group.ores= | 01d4df4579 |
+| Party curve step, all parties together | 22:25:12 to 22:29:26 (4m14s) | step rows of the tenant_setup_workflow run | 01d4df4579 |
+| Plan rows not essential | 9 of 17 | the same query, =essential= column | 5bf5bb5f20 |
+| Shell summary on first login after the setup, with one step marked warned | printed, then not printed on the second login | =compass shell -f= with a logout-only script, twice | 9b57af296c |
+| Suites | ores.workflow.core, 16 ores.shell, ores.iam.core, ores.service: all passed; web vitest 39 passed | =compass test run -- -R <suite>=, =vitest= | 9b57af296c |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4790][#4790]] | [marketdata,iam,workflow,shell,web] Derive volatility quotes from the pair's levels; let a setup finish with warnings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the startup login printed no setup summary; only the =login= command did | ores.shell application.cpp | Accept | Both paths call =print_setup_news= (9b57af296c). |
+| 2 | Local review: the logout doc comment sat above =process_setup_report= | accounts_commands.hpp | Accept | Moved back above =process_logout=. |
+| 3 | Claude review 1: the expiry pass may advance one run twice on a stale snapshot | workflow_engine.cpp | Accept | Harmless (the dispatch rebuilds what is dispatched from the store), but the pass now advances each run once, from its row as it stands. |
+| 4 | Claude review 2: a step missing from the plan is treated as essential silently | workflow_engine.cpp | Accept | Logged as a warning. |
+| 5 | Claude review 3: comment why compensation steps are excluded | workflow_engine.cpp | Decline | The guard's comment says a failed step that is not essential is settled; a compensation step has no plan row to be essential in. |
+| 6 | Claude review 4: test the 7 versus 8 day boundary | app_pair_levels_tests.cpp | Decline | Already tested: a last fixing 7 days before is accepted, 8 days before refused. |
+| 7 | Claude review 5, 6: track the system-party gap; check recorded lines for secrets | - | Decline | The gap stays on the open story; the recorded lines name bundles, parties and counts, no secret. |
+| 8 | Claude review 7: test two optional steps expiring in one pass | workflow_engine_tests.cpp | Decline | The test fixture chains steps in order, so two cannot be in flight at once; the dedupe is by construction. |
+
+* Result
+
+The derived volatility source reads each pair's levels through =get_pair_levels= and differences
+them into returns; the ECB helpers and their tests are gone. A pair whose fixing stopped more
+than a week before the window's end is refused with =fixing_stopped=, naming the provider and
+the day. USD/CLP and USD/COP stay out of the catalogue, for the reasons in the Plan.
+
+A fresh Acme tenant provisions through all 17 steps. The blueprint and curve steps wait over
+every party together, and the marketdata listener no longer runs the demand refresh itself.
+
+The setup is resilient: a step that is not essential and fails, or runs out of time, ends with
+warnings and the run goes on. The shell names those steps when a run finishes, prints a summary
+on the tenant administrator's first login after the setup, and prints the full warnings with
+=setup-report=. The web shows a dismissible notice and a =/setup-report= page. The live run had
+no warned step, so the yellow path was proven by the two engine tests and by one step marked
+warned in the local database.
+
+Open gap against the story: the derived source still writes its quotes under the system party,
+so "each party derives its own volatility quotes" is not yet met. The story stays STARTED.

@@ -23,10 +23,10 @@ A rate a firm does not observe, it triangulates: the driver pairs are the ones i
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Every task is done; the derived source still writes under the system party. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-15                               |
+| Next          | Add a task so each party's derived quotes are written under that party. |
+| Last touched  | 2026-11-16                               |
 
 * Acceptance
 
@@ -47,6 +47,7 @@ A rate a firm does not observe, it triangulates: the driver pairs are the ones i
 | [[id:C330DD6F-258B-4D41-930D-AE00FC60BF2E][Derive each party's quotes from its own market]] | DONE | 2026-11-15 | 2026-11-16 | The derived volatility source names its publisher, its legs and its currencies in code; take the party's triangulated history from CRM instead, so each party derives its own quotes and the constants disappear. |
 | [[id:3D29D41E-E006-4404-8D94-7966EB224B29][Serve the CRM the topology the store describes]] | DONE | 2026-11-15 | 2026-11-15 | The policy reads a topology from the identity a source states; nothing fills it yet. Read a party's fixing identities and the provider rank into fixing sources, and build the CRM's engines from those instead of crm_driver_pair. |
 | [[id:BD6B7F10-4E38-4072-8F40-4AC9C25CE588][Serve a pair's daily levels from the party's fixings]] | DONE | | 2026-11-16 | The derived source reads two ECB fixing windows and composes the pair itself; serve the pair's daily levels from the party's own fixings instead, through the source that quotes the pair. |
+| [[id:655BB6F8-D16E-49DE-B912-85240B490A93][Derive the volatility quotes from the pair's levels]] | DONE | | 2026-11-16 | The derived volatility source reads two ECB fixing windows and composes the pair itself; ask the market data service for the pair's levels instead, and delete the constants that name the ECB. |
 
 * Decisions
 

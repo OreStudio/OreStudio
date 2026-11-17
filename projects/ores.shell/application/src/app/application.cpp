@@ -23,6 +23,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
 #include "ores.shell/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
@@ -118,6 +119,7 @@ bool auto_login(ores::nats::service::nats_client& session,
         out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
         if (!selected->empty())
             out << "  Party: " << *selected << std::endl;
+        commands::accounts_commands::print_setup_news(out, session, result->previous_login);
         return true;
     } catch (const std::exception& e) {
         out << "✗ Auto-login failed: " << e.what() << std::endl;

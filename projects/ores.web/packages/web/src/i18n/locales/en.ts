@@ -3048,6 +3048,12 @@ export const en: SourceCatalogue = {
             retrying: 'The run resumed at {step}.',
             rolledBack:
                 'The run rolled back the steps it had completed, so it left nothing behind.',
+            stepsDone: '{done} of {total} steps done',
+            elapsed: '{time} elapsed',
+            details: 'What this step did',
+            started: 'Started {time}',
+            ended: 'Ended {time}',
+            noLog: 'The step logged nothing.',
         },
 
         finish: {
@@ -3062,6 +3068,20 @@ export const en: SourceCatalogue = {
             readFailed: 'The setup run could not be read. {message}',
             noRun: "This tenant's setup has not been started. The deployment administrator has to start it.",
             enter: 'Go to the application',
+            report: {
+                alert: "{count} step(s) of your tenant's setup ended with warnings. Read the setup report to run them again.",
+                notice: "Your tenant's setup finished, but {count} step(s) ended with warnings. The system is usable; some market data, trades or reports may be missing.",
+                read: 'Read the setup report',
+                dismiss: 'Dismiss',
+                title: 'Setup report',
+                lead: "What your tenant's setup did not finish. Each step below ended with warnings, and the setup went on without the work it names.",
+                none: "Your tenant's setup has no step with warnings.",
+                unavailable:
+                    "The setup report is not available. Only the tenant's administrator can read it.",
+                run: 'The whole run',
+                rerun: 'Run again',
+                rerunning: 'Running {step} again. The run below shows its progress.',
+            },
         },
 
         ready: {
@@ -3793,26 +3813,26 @@ export const en: SourceCatalogue = {
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Gives the accounts their photographs, and the tenant's party its logo.",
         'Subscribe to market data': 'Subscribe to market data',
-        "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
-            "Gives each party of the tenant a subscription to a provider and a route to the provider's source.",
+        "Gives each party of the tenant a subscription to a provider and a route to the provider's source. If it fails, the run goes on without market data.":
+            "Gives each party of the tenant a subscription to a provider and a route to the provider's source. If it fails, the run goes on without market data.",
         "Publish each party's curves": "Publish each party's curves",
-        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.":
-            "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.",
+        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, the step ends with warnings, and the run goes on.":
+            "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, the step ends with warnings, and the run goes on.",
         'Give each party its surface blueprints': 'Give each party its surface blueprints',
-        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
-            "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.",
+        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, the step ends with warnings, and the run goes on.":
+            "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, the step ends with warnings, and the run goes on.",
         "Publish each party's FX forwards": "Publish each party's FX forwards",
-        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.':
-            'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.',
+        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, the step ends with warnings, and the run goes on.':
+            'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, the step ends with warnings, and the run goes on.',
         "Publish each party's volatility surfaces": "Publish each party's volatility surfaces",
-        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.":
-            "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.",
+        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, the step ends with warnings, and the run goes on.":
+            "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, the step ends with warnings, and the run goes on.",
         'Generate the trades': 'Generate the trades',
-        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
-            "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books. Trades that are not written are named, the step ends with warnings, and the run goes on.":
+            "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books. Trades that are not written are named, the step ends with warnings, and the run goes on.",
         'Schedule the reports': 'Schedule the reports',
-        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.":
-            "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand.",
+        "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand. If it fails, the run goes on and the reports can be scheduled later.":
+            "Schedules every report definition each party it names publishes, as the run's administrator, so the catalogue ticks without a person acting. A report whose schedule is the on-demand placeholder is left to be asked for by hand. If it fails, the run goes on and the reports can be scheduled later.",
         'Hand the tenant to its administrator': 'Hand the tenant to its administrator',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.",

@@ -158,6 +158,7 @@ import { CutTypePage } from './reporting/cuts/CutTypePage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
+import { SetupReportPage } from './shell/SetupReport.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
@@ -969,6 +970,12 @@ export function AppRoutes({
                 path="/tenants/new"
                 element={signedIn(gate.version, session, shell, () => (
                     <NewTenantScreen>{newTenantJourney}</NewTenantScreen>
+                ))}
+            />
+            <Route
+                path="/setup-report"
+                element={signedIn(gate.version, session, shell, () => (
+                    <SetupReportPage />
                 ))}
             />
             <Route

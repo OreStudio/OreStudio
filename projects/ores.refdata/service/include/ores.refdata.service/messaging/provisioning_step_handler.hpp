@@ -149,6 +149,7 @@ private:
 
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "build_calendars: wrote " << rows << " day(s) for tenant " << command.tenant_id;
+        wf.record("Wrote " + std::to_string(rows) + " holiday calendar day(s)");
         // Nothing downstream reads this step's result: the kinds that consume a
         // step read its state, not its answer. The count is in the service log.
         wf.complete("{}");

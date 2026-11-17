@@ -30,6 +30,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/domain/workflow_step.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/step_claim_repository.hpp"
@@ -46,6 +47,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 namespace ores::workflow::service {
 
@@ -224,14 +226,19 @@ public:
     };
 
     /**
-     * @brief Resumes a stopped run from the step that failed.
+     * @brief Resumes a stopped run from the step that failed, or runs again a
+     * step of a completed run that ended with warnings.
      *
-     * The run must have stopped, the target step must be one the run has not
+     * For a stopped run, the target step must be one the run has not
      * completed, and every step before it must have completed, so a retry
      * never resumes past work that did not finish and never repeats work that
      * did. The target is re-dispatched under the step id it already holds —
      * its idempotency key — with its command as the store persisted it, and
      * the target's error and the instance's error are cleared.
+     *
+     * For a completed run, the named step must be one that is not essential
+     * and ended with warnings: its work is what the run still owes. It is sent
+     * again as a new attempt, under a new idempotency key.
      *
      * @param instance_id   The run to resume.
      * @param step_name     The step to resume from, or empty for the step that
@@ -448,6 +455,34 @@ private:
      * step keeps its own error and log.
      */
     void stop_on_failure(const domain::workflow_instance& instance, const std::string& failure_msg);
+
+    /**
+     * @brief Whether the run's own chain marks the named step essential.
+     *
+     * The chain the run was started with decides, not the definition as it
+     * stands now. A step the chain does not name is essential, so a run the
+     * engine cannot read is never let past a failure.
+     */
+    bool is_essential_step(const boost::uuids::uuid& instance_id, const std::string& step_name);
+
+    /**
+     * @brief Sends again the named step of a completed run that ended with
+     * warnings, as a new attempt. The caller holds the engine's lock.
+     */
+    retry_outcome rerun_warned_step(const domain::workflow_instance& instance,
+                                    const std::string& step_name);
+
+    /**
+     * @brief Ends a step that is not essential, and failed, with warnings.
+     *
+     * The failure is added to the step's log as a warning, where a step that
+     * warns by itself puts its reasons, so a person reads what the run went on
+     * without. The log the step sent, if any, comes first.
+     */
+    void settle_with_warnings(const domain::workflow_step& step,
+                              const std::string& result_json,
+                              const std::string& failure,
+                              std::vector<ores::workflow::messaging::step_log_entry> log);
 
     /**
      * @brief Checks whether all compensation steps have finished.

@@ -37,13 +37,13 @@ namespace ores::synthetic::feed {
 /**
  * @brief What the derived source reads, injected so the feed holds no connection.
  *
- * fixings returns the window of one fixing item that ends on a day; convention returns
- * the quoting convention of a pair.
+ * levels returns a pair's daily levels in the window that ends on a day; convention
+ * returns the quoting convention of a pair.
  */
 struct derived_fx_readers final {
-    std::function<std::expected<dated_series, std::string>(const std::string& item,
+    std::function<std::expected<dated_series, std::string>(const derived_fx_pair& pair,
                                                            std::chrono::year_month_day to)>
-        fixings;
+        levels;
     std::function<std::expected<refdata::domain::fx_option_convention, std::string>(
         const derived_fx_pair& pair)>
         convention;
@@ -71,9 +71,9 @@ struct derived_fx_store final {
  *
  * Its universe is the vendor ids the catalogue holds for it. It answers demand for ids
  * of that universe, and on a refresh publishes each demanded id not yet sent for the
- * latest day its pair's legs hold, deriving only the expiries those ids need. It publishes
+ * latest day its pair has a level, deriving only the expiries those ids need. It publishes
  * the current day only and never a past one, since a past day is computed again from the
- * fixings when it is needed.
+ * levels when it is needed.
  */
 class ORES_SYNTHETIC_API_EXPORT derived_fx_vol_feed final {
 public:
@@ -116,7 +116,7 @@ public:
      * @brief Keeps every day of every pair of the universe the store does not yet hold.
      *
      * The first call reads the days each series holds and fills the rest of the history
-     * the fixings cover; a later call writes only the days since. A pair that cannot be
+     * the levels cover; a later call writes only the days since. A pair that cannot be
      * kept is named in failures() and tried again on the next call. Returns how many days
      * were written. Without a store it keeps nothing.
      *

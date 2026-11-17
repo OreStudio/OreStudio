@@ -1755,12 +1755,19 @@ bool needs_second_pair(std::string_view type) {
            type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap";
 }
 
-/// Whether the tenant holds a second pair quoted in the same currency, which a product on two
-/// pairs needs.
+/// Whether a pair can stand beside another in a product on two pairs: quoted in the same
+/// currency, which the product pays in, on a different base. The pair choice and the
+/// builder's second pair both read this, so a slot is never given a pair the builder refuses.
+bool is_basket_partner(const domain::currency_pair_reference& pair,
+                       const domain::currency_pair_reference& candidate) {
+    return candidate.quote == pair.quote && candidate.base != pair.base;
+}
+
+/// Whether the tenant holds a second pair for a product on two pairs.
 bool has_basket_partner(const domain::trade_generation_scope& scope,
                         const domain::currency_pair_reference& pair) {
     return std::ranges::any_of(scope.currency_pairs, [&](const auto& candidate) {
-        return candidate.quote == pair.quote && candidate.base != pair.base;
+        return is_basket_partner(pair, candidate);
     });
 }
 
@@ -1986,7 +1993,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
      */
     const auto second_pair = [&]() -> const domain::currency_pair_reference& {
         for (const auto& candidate : scope.currency_pairs)
-            if (candidate.quote == pair.quote && candidate.base != pair.base)
+            if (is_basket_partner(pair, candidate))
                 return candidate;
         throw trade_population_error("A " + type +
                                      " names two pairs in one quote currency, and the tenant "

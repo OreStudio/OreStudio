@@ -304,11 +304,6 @@ private:
                 record_trade_generation_scope(party_nats, config_id, party->id, entry);
 
                 /*
-                 * The population is booked in the step's own session, so a trade
-                 * names the service as its author and the run holds one identity
-                 * throughout.
-                 */
-                /*
                  * The population is booked by this service, so a trade names the
                  * account the store can defend and no person's name is used. The
                  * fallback names that same account for a party whose staff holds

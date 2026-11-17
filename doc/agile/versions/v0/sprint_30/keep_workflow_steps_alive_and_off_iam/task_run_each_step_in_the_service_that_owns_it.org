@@ -308,7 +308,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The surfaces step leaves the party out of =parties= when it finds no blueprint | =provisioning_step_handler.hpp= | Fixed in =816115c347= | The party is recorded as soon as its session exists, as the curve and forwards steps do. |
+| 2 | The two new executors repeat the party session, the paging and the failure tail | =provisioning_step_handler.hpp= | Accepted as a follow-up | A helper for the party session and the failure tail would keep the four party steps from drifting apart. Not this change's: it already moves a step and a rule. |
+| 3 | The surface step took 20 min 27 s against a 20 min stall budget | =workflow_helpers.hpp= | Answered, no change | =wf.progress= is the renewal: the claim's renewal carries the report to the engine, which fails a step only when its progress stands still. The step reports for every blueprint, and each takes seconds. The 20 min the kind states is a stall budget, and =deadline_of= reads it per party; the longest party took under six minutes. |
+| 4 | The forward step reads the published sets once per pair | =provisioning_step_handler.hpp= | Accepted as a follow-up | One read of the party's published sets before the loop is the next step if the catalogue grows. |
+| 5 | Only the hold-back rule has unit tests | marketdata's step handler | Accepted as a follow-up | The classification of published, skipped and unpublished, and the all-skipped guard, are pure enough to test. |
+| 6 | Two database test files are red | =projects/ores.sql/test/= | Tracked, not this change's | They read the curated surface catalogue that another branch is changing: 35 blueprints where one file expects 10 pairs, and 54 Acme surfaces where the other expects 22. |
 
 * Result
 

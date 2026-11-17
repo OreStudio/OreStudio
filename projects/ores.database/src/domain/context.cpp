@@ -31,12 +31,21 @@ namespace ores::database {
  * shares, and the identity, which a copy that narrows the request owns alone.
  */
 struct context::impl {
-    explicit impl(std::shared_ptr<connection> database, utility::uuid::tenant_id tenant_id)
+    impl(std::shared_ptr<connection> database,
+         utility::uuid::tenant_id tenant_id,
+         std::optional<boost::uuids::uuid> party_id,
+         std::vector<boost::uuids::uuid> visible_party_ids,
+         std::string actor,
+         std::string service_account)
         : database(std::move(database))
-        , tenant_id(std::move(tenant_id)) {}
+        , tenant_id(std::move(tenant_id))
+        , party_id(party_id)
+        , visible_party_ids(std::move(visible_party_ids))
+        , actor(std::move(actor))
+        , service_account(std::move(service_account)) {}
 
     std::shared_ptr<connection> database;
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    utility::uuid::tenant_id tenant_id;
     std::optional<boost::uuids::uuid> party_id;
     std::vector<boost::uuids::uuid> visible_party_ids;
     std::string actor;
@@ -50,10 +59,11 @@ context::context(pq::connection_options options,
                  std::string actor,
                  std::string service_account)
     : impl_(std::make_shared<impl>(std::make_shared<connection>(std::move(options)),
-                                   std::move(tenant_id))) {
-    impl_->actor = std::move(actor);
-    impl_->service_account = std::move(service_account);
-}
+                                   std::move(tenant_id),
+                                   std::nullopt,
+                                   std::vector<boost::uuids::uuid>{},
+                                   std::move(actor),
+                                   std::move(service_account))) {}
 
 context::context(pq::connection_options options,
                  utility::uuid::tenant_id tenant_id,
@@ -62,10 +72,11 @@ context::context(pq::connection_options options,
                  pq::open_policy policy)
     : impl_(std::make_shared<impl>(
           std::make_shared<connection>(std::move(options), std::move(policy)),
-          std::move(tenant_id))) {
-    impl_->actor = std::move(actor);
-    impl_->service_account = std::move(service_account);
-}
+          std::move(tenant_id),
+          std::nullopt,
+          std::vector<boost::uuids::uuid>{},
+          std::move(actor),
+          std::move(service_account))) {}
 
 context::context(pq::connection_options options,
                  utility::uuid::tenant_id tenant_id,
@@ -74,12 +85,11 @@ context::context(pq::connection_options options,
                  std::string actor,
                  std::string service_account)
     : impl_(std::make_shared<impl>(std::make_shared<connection>(std::move(options)),
-                                   std::move(tenant_id))) {
-    impl_->party_id = party_id;
-    impl_->visible_party_ids = std::move(visible_party_ids);
-    impl_->actor = std::move(actor);
-    impl_->service_account = std::move(service_account);
-}
+                                   std::move(tenant_id),
+                                   party_id,
+                                   std::move(visible_party_ids),
+                                   std::move(actor),
+                                   std::move(service_account))) {}
 
 context::context(pq::connection_options options,
                  utility::uuid::tenant_id tenant_id,
@@ -90,12 +100,11 @@ context::context(pq::connection_options options,
                  pq::open_policy policy)
     : impl_(std::make_shared<impl>(
           std::make_shared<connection>(std::move(options), std::move(policy)),
-          std::move(tenant_id))) {
-    impl_->party_id = party_id;
-    impl_->visible_party_ids = std::move(visible_party_ids);
-    impl_->actor = std::move(actor);
-    impl_->service_account = std::move(service_account);
-}
+          std::move(tenant_id),
+          party_id,
+          std::move(visible_party_ids),
+          std::move(actor),
+          std::move(service_account))) {}
 
 context::context(std::shared_ptr<impl> p)
     : impl_(std::move(p)) {}
@@ -103,8 +112,6 @@ context::context(std::shared_ptr<impl> p)
 context::~context() = default;
 context::context(const context&) = default;
 context& context::operator=(const context&) = default;
-context::context(context&&) noexcept = default;
-context& context::operator=(context&&) noexcept = default;
 
 pq::transaction* context::active_transaction() const {
     return impl_->active_transaction;

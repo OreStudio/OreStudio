@@ -35,6 +35,7 @@ pq::pool& connection::pool() const {
 }
 
 void connection::set_pool_size(std::size_t size) {
+    std::scoped_lock lock(mutex_);
     size_ = size;
 }
 

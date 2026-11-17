@@ -103,10 +103,12 @@ public:
 
     ~context();
 
+    /**
+     * @brief A context is copied, never moved: copying one is a shared pointer
+     * increment, and a moved-from context would be a null one.
+     */
     context(const context&);
     context& operator=(const context&);
-    context(context&&) noexcept;
-    context& operator=(context&&) noexcept;
 
     /**
      * @brief The transaction of the unit of work this context is bound to, if

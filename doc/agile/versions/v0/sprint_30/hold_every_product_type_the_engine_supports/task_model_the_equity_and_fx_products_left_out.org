@@ -26,11 +26,11 @@ The two products have a data model, a projection reader and writer, and a builde
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,19 @@ The two products have a data model, a projection reader and writer, and a builde
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =EquityDoubleTouchOptionData= is the same schema type as
+  =EquityTouchOptionData=, so the double touch routes to the equity digital
+  option row, natively. The touch reader and writer take the element by name.
+  Its two levels are one barrier's, in the shared barrier rows, which the
+  writer prefers; the row keeps the lower level. The table's touch check names
+  both touch types.
+- =FxAsianOptionData= is the same schema type as =EquityAsianOptionData=. The fx
+  family has no Asian option row, so the FX Asian option routes to the scripted
+  instrument table through the class-read path.
+- Builders: =equity_double_touch_option_builder= and =fx_asian_option_builder=.
+  The FX Asian option states what both of ORE's examples state: the strike as
+  a scalar, the underlying's weight, the settlement and daily observation
+  rules with their term convention.
 
 * Measurements
 
@@ -60,7 +70,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4681 cases pass | =./ores.trading.api.tests= | e9d1f72ff4 |
+| ore core tests | 552 cases pass | =./ores.ore.core.tests= | e9d1f72ff4 |
+| synthetic tests, not generated | 139 cases pass | =./ores.synthetic.core.tests "~[generated]"= | e9d1f72ff4 |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | e9d1f72ff4 |
 
 * Notes
 
@@ -91,3 +104,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+EquityDoubleTouchOption is held natively in the equity digital option row, its
+two levels in the barrier rows. FxAsianOption is held in the scripted
+instrument table, its option block in the option rows and its observation
+dates in the schedule rows. The round-trip test reads a double touch and ORE's
+FX Asian example and writes them back. Each type has a builder, the catalogue
+routes both, and the generator books one trade of each. The ORE engine builds
+the recorded trades with no error of the trade kind; the double touch raises
+an engine configuration error, which the known list holds and the valuation
+story owns. The recorded FX Asian trades state every path ORE's examples
+state.
+
+EquityAutoDeltaHedgedOption moved to its own task, because its batches each
+state an option block.

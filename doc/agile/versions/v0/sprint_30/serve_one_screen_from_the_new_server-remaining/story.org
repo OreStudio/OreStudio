@@ -115,7 +115,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:408B68E8-AFC7-46C3-9C04-ED9C181A308B][Serve the ORE import and its preview]] | DONE | 2026-11-16 | 2026-11-16 | Two routes: the preview that states what importing a document would change, and the import that acts on the same answer, both the service's. |
 | [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | DONE | 2026-11-16 | 2026-11-16 | One route: a schema and every schema it includes, at the engine version asked for, with a missing include a 404 that names it. |
 | [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | DONE | 2026-11-16 | 2026-11-16 | Three routes the story's Acceptance moves from the reference data and pick-list tasks: a party's curve configurations, one configuration drawn from its document, and the write of the leaves it names. |
-| [[id:9796EE15-7695-4999-B00C-F872F84B2763][Serve the convention documents this story moved here]] | BACKLOG | | | Two routes the moved-reference-data task splits off: one family's convention document with its terms, and the write of those terms. |
+| [[id:9796EE15-7695-4999-B00C-F872F84B2763][Serve the convention documents this story moved here]] | DONE | 2026-11-17 | 2026-11-17 | Two routes the moved-reference-data task splits off: one family's convention document with its terms, and the write of those terms. |
 
 * Decisions
 
@@ -126,6 +126,24 @@ it lands, and the browser keeps calling the BFF until the last one does.
 - Decided on 2026-11-09: when the work is done, move the one switch and test ores.web. If ores.web breaks, keep using the BFF until the fault is fixed. The design's section 12.4 states this rule.
 - Found on 2026-11-11: a pair in =route_pairing.py= records the C++ route that does the same thing, not one ores.web can call unchanged. Of 54 pairs, 39 differ in method, path or shape, such as =GET /api/accounts/:accountId/access= against =POST /api/v1/iam/ops/get_account_roles=. The switch is one switch, so each area task serves the BFF's own path and shape for every route ores.web calls, paired or not, as the pick list, site and change stream routes do.
 
+- Decided on 2026-11-17: the curve configuration screen's column wiring is generated
+  twice over one read of the projection. The generator that wrote the BFF's
+  TypeScript writes a C++ table too, and the drift check compares the pair, so the
+  gateway reads the same wiring without a second hand-written copy.
+- Decided on 2026-11-17: the value set tables are read in =ores.http.core=, beside
+  the reader, because both the reporting part and the reference data part state
+  allowed values. The catalogue relation a set draws on is still read where the
+  relation lives, so the reference data part reads the tenors and the currencies
+  and the reporting part reads the analytics templates.
+- Decided on 2026-11-17: a regex value set's pattern is enforced when a curve leaf
+  is written. The BFF read the pattern off the ORE parameter contract, which has no
+  such column, so it never checked one; the rule the data states is the one that
+  binds.
+- Decided on 2026-11-17: the convention document routes extend the convention
+  screen's unit rather than a unit of their own, because the family table and the
+  404 that names a family already live there and a second table would disagree the
+  first time a family is added. A stale terms write is answered as the service's
+  conflict with 200, because the screen reads the result's outcome.
 - Decided on 2026-11-12: the trading part reads IAM's accounts for the portfolio
   rights read and links =ores.iam.api= for it. The precedent is =ores.http.core=,
   which already speaks IAM's protocols from a part that is not IAM's.

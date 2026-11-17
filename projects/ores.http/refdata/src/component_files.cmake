@@ -41,9 +41,11 @@ set(files
     "routes/refdata/calendar_screen_routes.cpp"
     "routes/refdata/calendar_type_classification_routes.cpp"
     "routes/refdata/calendar_web_routes.cpp"
+    "routes/refdata/catalogue_choices.cpp"
     "routes/refdata/classification_routes.cpp"
     "routes/refdata/contact_type_classification_routes.cpp"
     "routes/refdata/convention_screen_routes.cpp"
+    "routes/refdata/convention_terms.cpp"
     "routes/refdata/counterparty_routes.cpp"
     "routes/refdata/counterparty_screen_routes.cpp"
     "routes/refdata/counterparty_web_routes.cpp"
@@ -118,6 +120,7 @@ set(files
     "routes/refdata/tenor_screen_routes.cpp"
     "routes/refdata/tenor_unit_classification_routes.cpp"
     "routes/refdata/tenor_web_routes.cpp"
+    "routes/refdata/wire_cells.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -144,9 +147,11 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/calendar_screen_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/calendar_type_classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/calendar_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/catalogue_choices.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/contact_type_classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/convention_screen_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/convention_terms.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/counterparty_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/counterparty_screen_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/counterparty_web_routes.hpp"
@@ -221,4 +226,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_screen_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_unit_classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/wire_cells.hpp"
 )

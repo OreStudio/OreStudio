@@ -907,11 +907,15 @@ RULES = (
          " the BFF answered: one record with its identifiers, the children of a page, the"
          " composite write, and the visibility and business centre writes."),
     Rule("the conventions screen's route",
-         ("regex", r"^(GET /api/conventions/(families|\{family\})|PUT /api/conventions/\{family\})$"),
+         ("regex",
+          r"^(GET /api/conventions/(families|\{family\})"
+          r"|GET /api/conventions/\{family\}/documents/\{id\}"
+          r"|PUT /api/conventions/\{family\}(/documents/\{id\}/terms)?)$"),
          CPP, RESOURCE, "reference-data",
          "The conventions screen's read or write at the address and in the shape the BFF"
-         " answered: each family with its count, one family's page, and the write of a family"
-         " whose terms the screen draws."),
+         " answered: each family with its count, one family's page, the write of a family whose"
+         " terms the screen draws, and one convention's document with the terms the screen"
+         " changes and writes."),
     Rule("the tenors screen's route",
          ("regex", r"^(POST /api/tenors/(preview-resolution|resolve|resolve-convention)"
                    r"|GET /api/tenors/conventions/\{code\}/resolutions"

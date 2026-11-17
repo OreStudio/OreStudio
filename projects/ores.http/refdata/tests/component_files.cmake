@@ -42,7 +42,9 @@ set(files
     "calendar_type_classification_routes_tests.cpp"
     "calendar_web_routes_tests.cpp"
     "contact_type_classification_routes_tests.cpp"
+    "convention_document_routes_tests.cpp"
     "convention_screen_routes_tests.cpp"
+    "convention_terms_tests.cpp"
     "counterparty_routes_tests.cpp"
     "counterparty_screen_routes_tests.cpp"
     "counterparty_web_routes_tests.cpp"
@@ -116,4 +118,5 @@ set(files
     "tenor_screen_routes_tests.cpp"
     "tenor_unit_classification_routes_tests.cpp"
     "tenor_web_routes_tests.cpp"
+    "wire_cells_tests.cpp"
 )

@@ -19,8 +19,11 @@
  */
 #include "ores.http/routes/refdata/convention_screen_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/json_shape.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/refdata/convention_terms.hpp"
+#include "ores.http/routes/refdata/wire_cells.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/messaging/average_ois_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/bma_basis_swap_convention_protocol.hpp"
@@ -53,6 +56,7 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
@@ -64,6 +68,7 @@
 #include <optional>
 #include <ranges>
 #include <set>
+#include <span>
 #include <yyjson.h>
 
 namespace ores::http::routes::refdata {
@@ -75,6 +80,8 @@ using ores::nats::service::nats_client;
 namespace json = ores::utility::codec::json;
 namespace messaging = ores::refdata::messaging;
 namespace rr = ores::http::net::record_routes;
+using ores::http::net::shape::member;
+using ores::http::net::shape::object;
 
 namespace {
 
@@ -94,11 +101,32 @@ using page_fn = listed (*)(
 
 using write_fn = std::string (*)(const http_request&, nats_client&, const std::string& body);
 
+/// One convention as a screen reads it: its row flattened, and the parts it holds.
+struct one_convention final {
+    std::string row;
+    std::set<std::string, std::less<>> held;
+};
+
+using one_fn = std::optional<one_convention> (*)(const http_request&,
+                                                 nats_client&,
+                                                 const unit&,
+                                                 const boost::uuids::uuid&,
+                                                 const std::string& party);
+
+using terms_write_fn = std::string (*)(const http_request&,
+                                       nats_client&,
+                                       const unit&,
+                                       const std::string& id_text,
+                                       const boost::uuids::uuid& id,
+                                       const std::string& body);
+
 /**
  * One family the screen lists, and how its rows are read and written.
  *
  * kind_code is set only for a composite family. A family with no write is one
- * whose terms the screen does not draw yet.
+ * whose terms the screen does not draw yet. parts names the registry entities a
+ * composite stands for, which is how the form a row actually holds is told from
+ * the forms it declares.
  */
 struct unit final {
     std::string_view key;
@@ -106,6 +134,9 @@ struct unit final {
     std::string_view kind_code;
     page_fn page;
     write_fn write;
+    one_fn one;
+    terms_write_fn write_terms;
+    std::span<const std::string_view> parts;
 };
 
 /// A family's page through its own list.
@@ -196,11 +227,94 @@ std::string family_write(const http_request& req, nats_client& session, const st
     return rr::result_with(reply.result, "convention", reply.*Written);
 }
 
+// The reads and the write a family's table names, stated here because the table
+// comes before them and their helpers read the document's own utilities.
+template <typename List, auto Rows>
+std::optional<one_convention> plain_one(const http_request& req,
+                                        nats_client& session,
+                                        const unit&,
+                                        const boost::uuids::uuid& id,
+                                        const std::string& party);
+
+template <typename GetMany>
+std::optional<one_convention> composite_one(const http_request& req,
+                                            nats_client& session,
+                                            const unit& family,
+                                            const boost::uuids::uuid& id,
+                                            const std::string& party);
+
+template <typename List, auto Rows, typename Put, auto Written>
+std::string terms_write_of(const http_request& req,
+                           nats_client& session,
+                           const unit& family,
+                           const std::string& id_text,
+                           const boost::uuids::uuid& id,
+                           const std::string& body_text);
+
+/// A plain family that the screen lists, whose row's terms the screen changes.
+template <typename List, auto Rows, typename Put, auto Written>
+constexpr unit writable(std::string_view key, std::string_view entity) {
+    return {key,
+            entity,
+            "",
+            &plain_page<List, Rows>,
+            &family_write<Put, Written>,
+            &plain_one<List, Rows>,
+            &terms_write_of<List, Rows, Put, Written>,
+            {}};
+}
+
 /// A plain family that the screen lists and does not write.
 template <typename List, auto Rows>
 constexpr unit plain(std::string_view key, std::string_view entity) {
-    return {key, entity, "", &plain_page<List, Rows>, nullptr};
+    return {key, entity, "", &plain_page<List, Rows>, nullptr, &plain_one<List, Rows>, nullptr, {}};
 }
+
+/// A composite family: one central row with the parts one form of it carries.
+template <typename GetMany>
+constexpr unit composite(std::string_view key,
+                         std::string_view entity,
+                         std::string_view kind_code,
+                         std::span<const std::string_view> parts) {
+    return {key,
+            entity,
+            kind_code,
+            &composite_page<GetMany>,
+            nullptr,
+            &composite_one<GetMany>,
+            nullptr,
+            parts};
+}
+
+/// The registry entities the commodity-future convention stands for.
+inline constexpr std::string_view commodity_future_parts[] = {
+    "convention",
+    "commodity_future_averaging_terms",
+    "commodity_future_contract_terms",
+    "commodity_future_expiry_anchor",
+    "commodity_future_off_peak_index",
+    "commodity_future_option_expiry",
+};
+/// The registry entities the cross-currency-basis convention stands for.
+inline constexpr std::string_view cross_currency_basis_parts[] = {
+    "convention",
+    "cross_currency_basis_swap_terms",
+    "cross_currency_basis_flat_leg",
+    "cross_currency_basis_spread_leg",
+};
+/// The registry entities the cross-currency-fix-float convention stands for.
+inline constexpr std::string_view cross_currency_fix_float_parts[] = {
+    "convention",
+    "cross_currency_fix_float_swap_terms",
+    "cross_currency_fix_float_fixed_leg",
+    "cross_currency_fix_float_float_leg",
+};
+/// The registry entities the tenor-basis-swap convention stands for.
+inline constexpr std::string_view tenor_basis_swap_parts[] = {
+    "convention",
+    "tenor_basis_swap_pay_receive",
+    "tenor_basis_swap_long_short",
+};
 
 /**
  * Every family the screen lists. A plain family comes from the convention
@@ -227,13 +341,11 @@ const unit units[] = {
     plain<messaging::list_commodity_forward_conventions_request,
           &messaging::list_commodity_forward_conventions_response::commodity_forward_conventions>(
         "commodity-forward", "commodity_forward_convention"),
-    {"deposit",
-     "deposit_convention",
-     "",
-     &plain_page<messaging::list_deposit_conventions_request,
-                 &messaging::list_deposit_conventions_response::deposit_conventions>,
-     &family_write<messaging::put_deposit_convention_request,
-                   &messaging::put_deposit_convention_response::deposit_convention>},
+    writable<messaging::list_deposit_conventions_request,
+             &messaging::list_deposit_conventions_response::deposit_conventions,
+             messaging::put_deposit_convention_request,
+             &messaging::put_deposit_convention_response::deposit_convention>("deposit",
+                                                                              "deposit_convention"),
     plain<messaging::list_fra_conventions_request,
           &messaging::list_fra_conventions_response::fra_conventions>("fra", "fra_convention"),
     plain<messaging::list_future_conventions_request,
@@ -257,13 +369,10 @@ const unit units[] = {
     plain<messaging::list_overnight_index_conventions_request,
           &messaging::list_overnight_index_conventions_response::overnight_index_conventions>(
         "overnight-index", "overnight_index_convention"),
-    {"swap",
-     "swap_convention",
-     "",
-     &plain_page<messaging::list_swap_conventions_request,
-                 &messaging::list_swap_conventions_response::swap_conventions>,
-     &family_write<messaging::put_swap_convention_request,
-                   &messaging::put_swap_convention_response::swap_convention>},
+    writable<messaging::list_swap_conventions_request,
+             &messaging::list_swap_conventions_response::swap_conventions,
+             messaging::put_swap_convention_request,
+             &messaging::put_swap_convention_response::swap_convention>("swap", "swap_convention"),
     plain<messaging::list_swap_index_conventions_request,
           &messaging::list_swap_index_conventions_response::swap_index_conventions>(
         "swap-index", "swap_index_convention"),
@@ -277,38 +386,31 @@ const unit units[] = {
           &messaging::list_zero_inflation_index_conventions_response::
               zero_inflation_index_conventions>("zero-inflation-index",
                                                 "zero_inflation_index_convention"),
-    {"commodity-future",
-     "commodity_future_convention",
-     "COMMODITY_FUTURE",
-     &composite_page<messaging::get_many_commodity_future_conventions_request>,
-     nullptr},
-    {"cross-currency-basis",
-     "cross_currency_basis_convention",
-     "CROSS_CURRENCY_BASIS",
-     &composite_page<messaging::get_many_cross_currency_basis_conventions_request>,
-     nullptr},
-    {"cross-currency-fix-float",
-     "cross_currency_fix_float_convention",
-     "CROSS_CURRENCY_FIX_FLOAT",
-     &composite_page<messaging::get_many_cross_currency_fix_float_conventions_request>,
-     nullptr},
-    {"tenor-basis-swap",
-     "tenor_basis_swap_convention",
-     "TENOR_BASIS_SWAP",
-     &composite_page<messaging::get_many_tenor_basis_swap_conventions_request>,
-     nullptr},
-    {"tenor",
-     "tenor_convention",
-     "",
-     &plain_page<messaging::list_tenor_conventions_request,
-                 &messaging::list_tenor_conventions_response::conventions>,
-     nullptr},
-    {"currency-pair",
-     "currency_pair_convention",
-     "",
-     &plain_page<messaging::list_currency_pair_conventions_request,
-                 &messaging::list_currency_pair_conventions_response::conventions>,
-     nullptr},
+    composite<messaging::get_many_commodity_future_conventions_request>(
+        "commodity-future",
+        "commodity_future_convention",
+        "COMMODITY_FUTURE",
+        commodity_future_parts),
+    composite<messaging::get_many_cross_currency_basis_conventions_request>(
+        "cross-currency-basis",
+        "cross_currency_basis_convention",
+        "CROSS_CURRENCY_BASIS",
+        cross_currency_basis_parts),
+    composite<messaging::get_many_cross_currency_fix_float_conventions_request>(
+        "cross-currency-fix-float",
+        "cross_currency_fix_float_convention",
+        "CROSS_CURRENCY_FIX_FLOAT",
+        cross_currency_fix_float_parts),
+    composite<messaging::get_many_tenor_basis_swap_conventions_request>(
+        "tenor-basis-swap",
+        "tenor_basis_swap_convention",
+        "TENOR_BASIS_SWAP",
+        tenor_basis_swap_parts),
+    plain<messaging::list_tenor_conventions_request,
+          &messaging::list_tenor_conventions_response::conventions>("tenor", "tenor_convention"),
+    plain<messaging::list_currency_pair_conventions_request,
+          &messaging::list_currency_pair_conventions_response::conventions>(
+        "currency-pair", "currency_pair_convention"),
 };
 
 /**
@@ -423,6 +525,321 @@ bool is_link(yyjson_val* key) {
                                                           "change_commentary",
                                                           "recorded_at"};
     return links.contains(std::string_view(yyjson_get_str(key), yyjson_get_len(key)));
+}
+
+/**
+ * Asks one list for the row whose id this is.
+ *
+ * Most convention entities hold their identifier as text, and the central
+ * convention holds it as a uuid, so the filter is filled with whichever the
+ * entity states.
+ */
+template <typename List>
+void filter_by_id(List& msg, const boost::uuids::uuid& id) {
+    using filter_type = typename std::remove_cvref_t<decltype(List{}.filter)>::value_type;
+    msg.filter = filter_type{};
+    if constexpr (requires { msg.filter->id_one_of; }) {
+        using elements = std::remove_cvref_t<decltype(*msg.filter->id_one_of)>;
+        using element = typename elements::value_type;
+        if constexpr (std::is_same_v<element, std::string>)
+            msg.filter->id_one_of = elements{rr::as_text(id)};
+        else
+            msg.filter->id_one_of = elements{id};
+    }
+}
+
+/// Whether the family's own list states a filter by id at all.
+template <typename List>
+constexpr bool filters_by_id = requires { List{}.filter->id_one_of; };
+
+/// The rows of one family whose id is this, read whole for a list that names no id filter.
+template <typename List, auto Rows>
+auto rows_of_id_without_filter(const http_request& req,
+                               nats_client& session,
+                               const boost::uuids::uuid& id) {
+    List msg;
+    const auto all = ores::http::forwarding::forward_all(req, session, msg, Rows);
+    std::remove_cvref_t<decltype(all)> mine;
+    for (const auto& row : all)
+        if (document::find_cell(row, "id") == document::cell(rr::as_text(id)))
+            mine.push_back(row);
+    return mine;
+}
+
+/// The rows of one family whose id is this, a page at a time.
+template <typename List, auto Rows>
+auto rows_of_id(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
+    if constexpr (!filters_by_id<List>) {
+        return rows_of_id_without_filter<List, Rows>(req, session, id);
+    } else {
+        List msg;
+        filter_by_id(msg, id);
+        return ores::http::forwarding::forward_all(req, session, msg, Rows);
+    }
+}
+
+/**
+ * One row of the key, chosen by the party when one is named.
+ *
+ * A convention is named by its id within a party, and a session may read the
+ * rows of several parties, so the party picks the row; with no party the id must
+ * name one row only.
+ */
+template <typename Row>
+const Row* one_of(const std::vector<Row>& rows, const std::string& party) {
+    if (!party.empty()) {
+        for (const auto& row : rows)
+            if (document::find_cell(row, "party_id") == document::cell(party))
+                return &row;
+        return nullptr;
+    }
+    if (rows.size() > 1)
+        rr::invalid("More than one party holds this convention; name the party.");
+    return rows.empty() ? nullptr : &rows.front();
+}
+
+/// The whole number one flat JSON row states, zero for a row that states none.
+int version_of(std::string_view row_json) {
+    const auto doc = read_json(row_json);
+    auto* root = root_object(doc);
+    if (root == nullptr)
+        return 0;
+    auto* version = yyjson_obj_get(root, "version");
+    return yyjson_is_int(version) ? static_cast<int>(yyjson_get_int(version)) : 0;
+}
+
+/// One plain family's convention, its row flattened as the screen reads it.
+template <typename List, auto Rows>
+std::optional<one_convention> plain_one(const http_request& req,
+                                        nats_client& session,
+                                        const unit&,
+                                        const boost::uuids::uuid& id,
+                                        const std::string& party) {
+    const auto rows = rows_of_id<List, Rows>(req, session, id);
+    const auto* row = one_of(rows, party);
+    if (row == nullptr)
+        return std::nullopt;
+    return one_convention{convention_screen_routes::flatten_central(json::write(*row)), {}};
+}
+
+/**
+ * The entities of a composite a row actually holds.
+ *
+ * A part is populated exactly when its array holds a row. An entity that names
+ * one of those arrays is held only when the array is; an entity that names none
+ * of them is the centre, which every row holds.
+ */
+std::set<std::string, std::less<>> held_of(std::span<const std::string_view> parts,
+                                           std::string_view item) {
+    std::set<std::string, std::less<>> held;
+    const auto item_doc = read_json(item);
+    auto* root = root_object(item_doc);
+    for (const auto& entity : parts) {
+        bool found = false;
+        bool populated = true;
+        if (root != nullptr) {
+            std::size_t index = 0;
+            std::size_t count = 0;
+            yyjson_val* name = nullptr;
+            yyjson_val* value = nullptr;
+            yyjson_obj_foreach(root, index, count, name, value) {
+                if (!yyjson_is_arr(value))
+                    continue;
+                const std::string_view member(yyjson_get_str(name), yyjson_get_len(name));
+                if (!std::string_view(entity).ends_with(member))
+                    continue;
+                found = true;
+                populated = yyjson_arr_size(value) > 0;
+                break;
+            }
+        }
+        if (!found || populated)
+            held.emplace(entity);
+    }
+    return held;
+}
+
+/// One composite family's convention, its parts laid over the central row.
+template <typename GetMany>
+std::optional<one_convention> composite_one(const http_request& req,
+                                            nats_client& session,
+                                            const unit& family,
+                                            const boost::uuids::uuid& id,
+                                            const std::string& party) {
+    messaging::list_conventions_request msg;
+    filter_by_id(msg, id);
+    msg.filter->kind_code = std::string(family.kind_code);
+    const auto rows = ores::http::forwarding::forward_all(
+        req, session, msg, &messaging::list_conventions_response::conventions);
+    const auto* central = one_of(rows, party);
+    if (central == nullptr)
+        return std::nullopt;
+
+    GetMany many;
+    typename decltype(many.keys)::value_type key;
+    key.id = central->identity.id;
+    many.keys.push_back(key);
+    const auto parts = ores::http::forwarding::forward(req, session, many);
+    rr::require_ok(parts.result);
+    const auto item = parts.items.empty() ? std::string("{}") : json::write(parts.items.front());
+    auto flat = convention_screen_routes::flatten_central(json::write(*central));
+    if (!parts.items.empty())
+        flat = convention_screen_routes::zip_parts(flat, item);
+    return one_convention{std::move(flat), held_of(family.parts, item)};
+}
+
+/// The terms a screen changes, and the version it read before it asks.
+struct terms_body final {
+    std::string reason_code;
+    std::optional<std::string> commentary;
+    std::uint32_t version = 0;
+    std::optional<std::string> party;
+    std::vector<std::pair<std::string, std::optional<std::string>>> changes;
+};
+
+/// One text member of an object, or nothing when it states none.
+std::optional<std::string> text_member(yyjson_val* object, std::string_view name) {
+    auto* value = yyjson_obj_getn(object, name.data(), name.size());
+    if (value == nullptr || yyjson_is_null(value))
+        return std::nullopt;
+    if (!yyjson_is_str(value))
+        rr::invalid("The " + std::string(name) + " is text.");
+    return std::string(yyjson_get_str(value), yyjson_get_len(value));
+}
+
+/**
+ * @brief The terms write's body, read by hand.
+ *
+ * The changes are one member per term, so the body's shape is a map and not a
+ * list of named members: the carriers read a type's stated fields, and a map of
+ * terms is not one of them.
+ */
+terms_body parse_terms_body(std::string_view body_text) {
+    rr::refuse_unknown_members(body_text,
+                               {"intent", "version", "party", "changes"},
+                               "A terms write states its reason, the version it read, the party "
+                               "it acts for and the terms it changes.");
+    const auto doc = read_json(body_text);
+    auto* root = root_object(doc);
+    if (root == nullptr)
+        rr::invalid("A terms write states its reason, the version it read and the terms it "
+                    "changes.");
+
+    terms_body body;
+    auto* intent = yyjson_obj_get(root, "intent");
+    if (!yyjson_is_obj(intent))
+        rr::invalid("A terms write states why it is made.");
+    body.reason_code = text_member(intent, "reason_code").value_or(std::string());
+    body.commentary = text_member(intent, "commentary");
+
+    auto* version = yyjson_obj_get(root, "version");
+    if (!yyjson_is_int(version) || yyjson_get_int(version) < 0)
+        rr::invalid("A terms write states the version it read.");
+    body.version = static_cast<std::uint32_t>(yyjson_get_int(version));
+    body.party = text_member(root, "party");
+
+    auto* changes = yyjson_obj_get(root, "changes");
+    if (!yyjson_is_obj(changes) || yyjson_obj_size(changes) == 0)
+        rr::invalid("A terms write states the terms it changes.");
+    std::size_t index = 0;
+    std::size_t count = 0;
+    yyjson_val* key = nullptr;
+    yyjson_val* value = nullptr;
+    yyjson_obj_foreach(changes, index, count, key, value) {
+        const std::string column(yyjson_get_str(key), yyjson_get_len(key));
+        if (yyjson_is_null(value)) {
+            body.changes.emplace_back(column, std::nullopt);
+            continue;
+        }
+        if (!yyjson_is_str(value))
+            rr::invalid("A term states its value as text or as nothing, and " + column +
+                        " states neither.");
+        body.changes.emplace_back(column,
+                                  std::string(yyjson_get_str(value), yyjson_get_len(value)));
+    }
+    return body;
+}
+
+/**
+ * One convention's terms, changed and written.
+ *
+ * The write lays the changes over the row it reads here, so a row that moved on
+ * since the page read it is refused rather than written with columns the person
+ * never saw. The service's result is answered whatever its outcome, as the BFF
+ * did, so the screen shows the term it refused.
+ */
+template <typename List, auto Rows, typename Put, auto Written>
+std::string terms_write_of(const http_request& req,
+                           nats_client& session,
+                           const unit& family,
+                           const std::string& id_text,
+                           const boost::uuids::uuid& id,
+                           const std::string& body_text) {
+    const auto body = std::optional<terms_body>{parse_terms_body(body_text)};
+    rr::stated_intent stated_intent;
+    stated_intent.reason_code = body->reason_code;
+    stated_intent.commentary = body->commentary;
+    const auto intent = rr::intent_of(stated_intent);
+    if (!intent)
+        rr::invalid("A terms write states its reason and the version it read.");
+    if (body->party && !rr::is_uuid(*body->party))
+        rr::invalid("A party is named by its identifier.");
+
+    const auto rows = rows_of_id<List, Rows>(req, session, id);
+    const auto* row = one_of(rows, body->party.value_or(std::string()));
+    if (row == nullptr)
+        rr::refuse(http_status::not_found,
+                   "not-found",
+                   "There is no " + std::string(family.key) + " convention " + id_text + ".");
+
+    // The service writes a convention under the session's acting party, so a row
+    // of another party would be written as a change to the acting party's.
+    const auto owner = document::find_cell(*row, "party_id").value_or(std::string());
+    const auto acting =
+        req.authenticated_user ? req.authenticated_user->party_id.value_or("") : std::string();
+    if (!owner.empty() && owner != acting)
+        rr::invalid("The " + std::string(family.key) + " convention " + id_text +
+                    " belongs to another party. Switch to it to change it.");
+
+    const auto stated = convention_screen_routes::flatten_central(json::write(*row));
+    if (version_of(stated) != static_cast<int>(body->version)) {
+        ores::utility::domain::result conflict;
+        conflict.outcome = ores::utility::domain::outcome::conflict;
+        conflict.code = "version_conflict";
+        conflict.message = "The " + std::string(family.key) + " convention " + id_text +
+                           " changed since it was read.";
+        return "{\"result\":" + json::write(conflict) + ",\"convention\":null}";
+    }
+    const auto terms = terms::read(req, session, kind_code_of(family.key), stated, {});
+
+    std::set<std::string, std::less<>> known;
+    for (const auto& term : terms)
+        known.emplace(term.column);
+    std::string strangers;
+    for (const auto& [column, value] : body->changes) {
+        if (known.contains(column))
+            continue;
+        strangers += (strangers.empty() ? "" : ", ") + column;
+    }
+    if (!strangers.empty())
+        rr::invalid("Not terms of a " + std::string(family.key) + " convention: " + strangers +
+                    ".");
+
+    // A write carries every term the row holds, not only the ones the screen
+    // changed: a term left out would be written as empty.
+    std::remove_cvref_t<decltype(Put{}.change.write)> written;
+    ores::utility::codec::for_each_field(written, [&](std::string_view name, auto&) {
+        document::set_cell(written, name, document::find_cell(*row, name));
+    });
+    for (const auto& [column, value] : body->changes)
+        if (!document::set_cell(written, column, value))
+            rr::invalid("The " + std::string(family.key) + " convention " + id_text +
+                        " writes no " + column + " term.");
+    const auto reply =
+        ores::http::forwarding::put_at_version<Put>(req, session, written, body->version, *intent);
+    auto result = reply.result;
+    terms::name_term(result, terms);
+    return rr::result_with(result, "convention", reply.*Written);
 }
 
 }
@@ -575,6 +992,114 @@ void convention_screen_routes::register_routes(
                             "}";
                     }
                     return http_response::json(out + "]}");
+                });
+            }));
+
+    add(router->get("/api/conventions/{family}/documents/{id}")
+            .summary("Read one convention with the terms the screen draws")
+            .description("One family's convention, found by the family the address names: its "
+                         "kind, the party that holds it, and its terms, each with the value it "
+                         "holds and the values it may hold. A family the registry does not hold "
+                         "is a 404 that names it.")
+            .query_param("party", "string", "", false, "The party whose row to read", "")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<messaging::list_conventions_request>([&] {
+                    rr::refuse_unknown_params(req, {"party"});
+                    const auto& family = family_of(req);
+                    const auto id = req.get_path_param("id");
+                    if (!rr::is_uuid(id))
+                        rr::invalid("A convention is named by its identifier.");
+                    const auto party = req.get_query_param("party");
+                    if (!party.empty() && !rr::is_uuid(party))
+                        rr::invalid("A party is named by its identifier.");
+                    const auto found = family.one(
+                        req, session, family, boost::uuids::string_generator()(id), party);
+                    if (!found)
+                        rr::refuse(http_status::not_found,
+                                   "not-found",
+                                   "There is no " + std::string(family.key) + " convention " + id +
+                                       ".");
+
+                    const auto code = kind_code_of(family.key);
+                    const auto kinds = ores::http::forwarding::forward_all(
+                        req,
+                        session,
+                        messaging::list_convention_kinds_request{},
+                        &messaging::list_convention_kinds_response::kinds);
+                    const ores::refdata::domain::convention_kind* kind = nullptr;
+                    for (const auto& candidate : kinds)
+                        if (candidate.code == code)
+                            kind = &candidate;
+
+                    const auto row = [&found](std::string_view name) {
+                        const auto flat = read_json(found->row);
+                        auto* root = root_object(flat);
+                        if (root == nullptr)
+                            return document::cell();
+                        auto* value = yyjson_obj_getn(root, name.data(), name.size());
+                        if (value == nullptr || yyjson_is_null(value))
+                            return document::cell();
+                        if (yyjson_is_str(value))
+                            return document::cell(
+                                std::string(yyjson_get_str(value), yyjson_get_len(value)));
+                        std::size_t length = 0;
+                        char* written = yyjson_val_write(value, 0, &length);
+                        return document::cell(std::string(written, length));
+                    };
+                    const auto terms = terms::read(req, session, code, found->row, found->held);
+
+                    auto members = std::vector<std::string>{
+                        member("family", json::write(std::string(family.key))),
+                        member("id", json::write(id)),
+                        member("shared", shared_of(family) ? "true" : "false"),
+                        member("editable", family.kind_code.empty() ? "true" : "false"),
+                        member("partyId", json::write(row("party_id"))),
+                        member(
+                            "kind",
+                            object({
+                                member("code", json::write(code)),
+                                member("name",
+                                       json::write(kind == nullptr ? std::string() : kind->name)),
+                                member("description",
+                                       json::write(kind == nullptr ? std::string() :
+                                                                     kind->description)),
+                                member("assetClass",
+                                       kind == nullptr || kind->asset_class.empty() ?
+                                           "null" :
+                                           json::write(kind->asset_class)),
+                                member("oreElement",
+                                       kind == nullptr || !kind->ore_element ?
+                                           "null" :
+                                           json::write(*kind->ore_element)),
+                            })),
+                        member("version", row("version").value_or("0")),
+                        member("modifiedBy", json::write(row("modified_by"))),
+                        member("recordedAt", json::write(row("recorded_at"))),
+                        member("terms", terms::json_of(terms))};
+                    return http_response::json(object(members));
+                });
+            }));
+
+    add(router->put("/api/conventions/{family}/documents/{id}/terms")
+            .summary("Change the terms of one convention from its record page")
+            .description("Answers 200 with the service's result whatever its outcome, so read "
+                         "result.outcome rather than the status; a stale version is the service's "
+                         "conflict, put on no field. A composite family's terms are changed on its "
+                         "parts, so the address answers 400.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<messaging::put_deposit_convention_request>([&] {
+                    const auto& family = family_of(req);
+                    if (!family.kind_code.empty())
+                        rr::invalid("The terms of a " + std::string(family.key) +
+                                    " convention are changed on its parts.");
+                    if (family.write_terms == nullptr)
+                        rr::invalid("The terms of " + std::string(family.key) +
+                                    " conventions are not drawn yet.");
+                    const auto id = req.get_path_param("id");
+                    if (!rr::is_uuid(id))
+                        rr::invalid("A convention is named by its identifier.");
+                    return http_response::json(family.write_terms(
+                        req, session, family, id, boost::uuids::string_generator()(id), req.body));
                 });
             }));
 

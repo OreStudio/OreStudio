@@ -157,6 +157,10 @@ function emptyBatch(): InstrumentBatch {
         bond_options: [],
         bond_repos: [],
         bond_trs: [],
+        cash_position_instruments: [],
+        equity_pairwise_variance_swap_instruments: [],
+        fx_asian_option_instruments: [],
+        fx_pairwise_variance_swap_instruments: [],
     };
 } /** The intent every write of a booking carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {

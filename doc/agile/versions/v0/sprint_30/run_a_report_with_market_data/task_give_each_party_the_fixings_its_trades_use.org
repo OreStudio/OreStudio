@@ -124,7 +124,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local gate: two test constants collided with another source of the unity target | service_ore_export_tests.cpp | Accept | Renamed to world_sonia, world_estr and world_eurusd. |
+| 2 | PR #4823 review: the new doc block detached the class comment from its class | ore_export_service.hpp | Accept | The function and its comment now come before the class comment. |
+| 3 | PR #4823 review: the fixings of several indices interleave in the file | ore_export_service.cpp | Decline | The writer keeps the order it is given and ORE stores fixings by index and date, so the order carries nothing. |
+| 4 | PR #4823 review: two addresses could write one ORE index twice | ore_export_service.cpp | Accept | The rule keys on the ORE index an address writes. No real pair of addresses writes one name: EUR-ESTR and EUR-ESTER stay two names, which a test meant to cover the case showed, so the case has no test. |
+| 5 | PR #4823 review: the tenant is turned into a string and parsed back | ore_export_service.cpp | Accept | Keyed on the tenant's uuid, with a side map to the tenant id, so no parse and no error path. |
+| 6 | PR #4823 review: one query names every series in its IN list | market_fixing_repository.cpp | Decline | The export narrowing task bounds the list to the trades' indices. |
+| 7 | PR #4823 review: say why the party's series need no tenant check | ore_export_service.cpp | Accept | A party id belongs to one tenant; the comment says so. |
 
 * Result
 

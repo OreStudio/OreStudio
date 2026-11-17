@@ -135,8 +135,16 @@ ore_export_service::ore_export_service(const context& ctx)
 
 namespace {
 
-bool is_fixing_series(const std::string& uri) {
-    return !datum::oresmd_uri_codec::read(uri) && datum::oresmd_uri_codec::read_index(uri);
+/**
+ * @brief The ORE index a fixing series writes, or nothing for a quote series.
+ */
+std::optional<std::string> fixing_index(const std::string& uri) {
+    if (datum::oresmd_uri_codec::read(uri))
+        return std::nullopt;
+    const auto index = datum::oresmd_uri_codec::read_index(uri);
+    if (!index)
+        return std::nullopt;
+    return datum::ore_index_codec::write(*index);
 }
 
 }
@@ -154,16 +162,20 @@ series_to_export(const std::vector<domain::market_series>& series,
     }
     std::set<std::string> held;
     for (const auto& s : series)
-        if (s.party_id == *party && is_fixing_series(s.oresmd_uri))
-            held.insert(s.oresmd_uri);
+        if (s.party_id == *party)
+            if (const auto index = fixing_index(s.oresmd_uri))
+                held.insert(*index);
     std::set<std::string> world;
     for (const auto& s : series) {
+        // A party id belongs to one tenant, so the party's series need no tenant check.
         if (s.party_id == *party) {
             out.push_back(&s);
             continue;
         }
-        if (s.tenant_id.is_system() && !held.contains(s.oresmd_uri) &&
-            is_fixing_series(s.oresmd_uri) && world.insert(s.oresmd_uri).second)
+        if (!s.tenant_id.is_system())
+            continue;
+        const auto index = fixing_index(s.oresmd_uri);
+        if (index && !held.contains(*index) && world.insert(*index).second)
             out.push_back(&s);
     }
     return out;
@@ -242,7 +254,9 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     // The fixings are read once for each tenant and party that holds them, after the loop,
     // because a read for each series pays a query for each of them.
     std::map<boost::uuids::uuid, std::string> index_names;
-    std::map<std::pair<std::string, boost::uuids::uuid>, std::vector<std::string>> fixing_series;
+    std::map<std::pair<boost::uuids::uuid, boost::uuids::uuid>, std::vector<std::string>>
+        fixing_series;
+    std::map<boost::uuids::uuid, utility::uuid::tenant_id> tenants;
     const auto exported = series_to_export(series, ctx_.tenant_id(), ctx_.party_id());
     const auto exported_series = static_cast<int>(exported.size());
     for (const auto* sp : exported) {
@@ -259,7 +273,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                     s.oresmd_uri + "', which is no quote series (" + quote_series.error() +
                     ") and no fixing series (" + index.error() + ")");
             index_names[s.id] = datum::ore_index_codec::write(*index);
-            fixing_series[{s.tenant_id.to_string(), s.party_id}].push_back(
+            tenants.emplace(s.tenant_id.to_uuid(), s.tenant_id);
+            fixing_series[{s.tenant_id.to_uuid(), s.party_id}].push_back(
                 boost::uuids::to_string(s.id));
             continue;
         }
@@ -333,11 +348,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
             data.push_back(to_datum(o, std::nullopt));
     }
     for (const auto& [owner, ids] : fixing_series) {
-        const auto tenant = utility::uuid::tenant_id::from_string(owner.first);
-        if (!tenant)
-            throw std::runtime_error("market data export: a series names tenant '" + owner.first +
-                                     "', which is no tenant id: " + tenant.error());
-        for (const auto& f : fixings_repo.read_latest_for_series(ctx_, *tenant, owner.second, ids))
+        const auto& tenant = tenants.at(owner.first);
+        for (const auto& f : fixings_repo.read_latest_for_series(ctx_, tenant, owner.second, ids))
             fixings.push_back(to_fixing(index_names.at(f.series_id), f));
     }
     std::erase_if(data, [&](const ores::ore::market::market_datum& d) {

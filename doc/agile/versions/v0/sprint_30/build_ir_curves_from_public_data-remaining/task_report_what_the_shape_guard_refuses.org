@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 15A60BBE-102B-40BA-8F6A-83E2FB92E96B
+:END:
+#+title: Task: Report what the shape guard refuses
+#+description: The shape guard refuses a row and reports nothing: the backfill drops the counts it makes, and the pgTAP scan reads the shapes through a tenant join the shared catalogue no longer has.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
+#+owner: marco
+#+branch: feature/hold-the-shape-guard-to-what-it-reports
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shape guard is observable and honest: every refusal and every family no shape states reaches a caller, and the test that holds the catalogue to the stored identities reads the shapes the writer reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | The two gaps are measured: the pgTAP scan is blind to a violation in any tenant but the system's, and the backfill drops the counts it makes. |
+| Waiting on   | Nothing.                               |
+| Next         | Fix the scan join, then take the counts from the projector to the protocol. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The pgTAP scan joins the shapes the way the projector reads them, so a violation in any tenant's identity fails the suite; the injection that proves it is part of the suite.
+- The backfill response carries how many rows the shape refused and how many series fall in a family no shape states.
+- The counts are asserted in a test, so a guard that refuses silently cannot return.
+
+* Plan
+
+Two gaps, both measured against the tree at =67803175ce=.
+
+The pgTAP suite holds the stored identities to the shapes, but it joins the shape
+row on the identity's own tenant:
+
+#+begin_src sql
+  join ores_marketdata_series_identity_shapes_tbl st
+    on st.tenant_id = i.tenant_id
+#+end_src
+
+That was right while every tenant held a copy. The catalogue is shared now, and the
+only shape rows are the system tenant's, so the join reaches the 330 identities the
+system tenant holds and none of the 3,473 any other tenant holds. The projector
+reads the shapes the session can see -- =tenant_id == tid || tenant_id == sys= in
+the generated =read_latest= -- so the test must join the same way:
+=st.tenant_id in (i.tenant_id, ores_utility_system_tenant_id_fn())=. A violation
+injected into a non-system identity, inside the transaction and rolled back, is the
+case that fails with the fixed join and passes with the current one.
+
+The projector counts what it refuses (=backfill_result::refused=) and how many series
+fall in a family no shape states (=unstated=), and the backfill response carries
+neither: it reports projected, already projected and unreadable. A refusal and an
+unguarded family are what an operator most needs to see, and today neither leaves the
+process. The response gains =refused_count= and =unstated_count= from the model, and
+a test asserts them.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Pairs the committed scan examines | 1,320 | the =shape_scan= query of =marketdata_series_identity_shape_test.sql= | 67803175ce |
+| Pairs the writer's shared read examines | 8,370 | the same query without the tenant join on the shape | 67803175ce |
+| Violations the committed scan reports when one is injected outside the system tenant | 0 | injected into a rolled-back transaction | 67803175ce |
+| Violations the shared read reports for the same injection | 1 | the same | 67803175ce |
+| Identity rows outside the system tenant | 3,473 of 3,803 | `select (tenant_id = ores_utility_system_tenant_id_fn()), count(*) from ores_marketdata_market_series_identity_tbl group by 1` | 67803175ce |
+| Counts the backfill response carries for refusals and unguarded families | none | =backfill_series_identity_response= in =operations_protocol.hpp= | 67803175ce |
+
+* Notes
+
+The scan fix and the counts are one PR because both are about the same thing: a guard
+that refuses without saying so, held by a test that cannot see it.
+
+* Test Scenarios
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

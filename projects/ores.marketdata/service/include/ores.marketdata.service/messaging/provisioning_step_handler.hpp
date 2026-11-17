@@ -41,6 +41,7 @@
 #include "ores.marketdata.core/messaging/party_surface_blueprints.hpp"
 #include "ores.marketdata.core/messaging/party_surface_hold_back.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
 #include "ores.nats/domain/delivery.hpp"
@@ -57,6 +58,7 @@
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_pillar_repository.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_pillar_source_repository.hpp"
@@ -1006,22 +1008,116 @@ private:
 
     /// The pair codes of every currency pair convention the tenant holds, one
     /// page at a time.
-    static std::vector<std::string>
-    pair_convention_codes(ores::nats::service::nats_client& client) {
-        constexpr std::uint32_t page_size = 1000;
+    static std::vector<std::string> pair_convention_codes(const ores::database::context& ctx) {
         std::vector<std::string> out;
-        for (std::uint32_t offset = 0;; offset += page_size) {
-            ores::refdata::messaging::list_currency_pair_conventions_request request;
-            request.offset = offset;
-            request.limit = page_size;
-            const auto page = ask(client, request).conventions;
-            for (const auto& convention : page)
-                out.push_back(convention.pair_code);
-            if (page.size() < page_size)
-                break;
-        }
+        for (const auto& convention :
+             ores::refdata::repository::currency_pair_convention_repository{}.read_latest(ctx))
+            out.push_back(convention.pair_code);
         std::ranges::sort(out);
+        out.erase(std::unique(out.begin(), out.end()), out.end());
         return out;
+    }
+
+    /// What one pair of a party's forward work came to.
+    struct forward_outcome {
+        enum class state { published, already_published, skipped, not_published } how;
+        /// The pair code, as the tenant reads it.
+        std::string pair;
+        /// The detail a person reads for the state, when the state has one.
+        std::string detail;
+    };
+
+    /// Publishes one pair's forward set where the step stands, asking the store
+    /// again when it was only busy.
+    ///
+    /// A repeat never raises a second request for one set: the read before the
+    /// publish answers whether an earlier attempt already published it.
+    static forward_outcome fit_and_publish_forward(const ores::database::context& ctx,
+                                                   const std::string& pair,
+                                                   std::string_view publish_reason) {
+        const auto as_of = std::chrono::system_clock::now();
+        ores::marketdata::messaging::get_published_fx_forward_request published_before;
+        published_before.pair_code = pair;
+        published_before.as_of = as_of;
+        if (ores::marketdata::service::app::fx_forward_publish_service::read(ctx, published_before)
+                .success)
+            return {.how = forward_outcome::state::already_published, .pair = pair, .detail = {}};
+
+        ores::marketdata::messaging::publish_fx_forward_request publish;
+        publish.pair_code = pair;
+        publish.as_of = as_of;
+        publish.reason = std::string(publish_reason);
+        const auto answer =
+            ores::marketdata::service::app::fx_forward_publish_service::publish(ctx, publish);
+        if (answer.success && answer.published_at)
+            return {.how = forward_outcome::state::published,
+                    .pair = pair,
+                    .detail = "as of " + ores::platform::time::datetime::to_iso8601_utc(as_of)};
+        if (answer.approval_request_id.empty())
+            return {.how = forward_outcome::state::skipped, .pair = pair, .detail = answer.message};
+        if (answer.success)
+            return {.how = forward_outcome::state::not_published,
+                    .pair = pair,
+                    .detail = "the request " + answer.approval_request_id + " is " +
+                              answer.state_code + " and no person has answered it"};
+        return {
+            .how = forward_outcome::state::not_published, .pair = pair, .detail = answer.message};
+    }
+
+    /// The same, offered twice more when the store made it wait.
+    static forward_outcome fit_and_publish_forward_with_retry(const ores::database::context& ctx,
+                                                              const std::string& pair,
+                                                              std::string_view publish_reason) {
+        for (int attempt = 1;; ++attempt) {
+            try {
+                return fit_and_publish_forward(ctx, pair, publish_reason);
+            } catch (const ores::database::pq::store_error& e) {
+                if (!e.retryable() || attempt >= surface_attempts)
+                    throw;
+                std::this_thread::sleep_for(std::chrono::milliseconds{200 * attempt});
+            }
+        }
+    }
+
+    /// Publishes a party's forward sets, several pairs at a time.
+    std::vector<forward_outcome>
+    run_party_forwards(ores::service::messaging::workflow_step_context& wf,
+                       const ores::database::context& party_ctx,
+                       const std::vector<std::string>& pairs,
+                       std::string_view publish_reason,
+                       const std::string& party_name) const {
+        constexpr std::size_t lanes = 4;
+        const auto lane_count = std::min(lanes, pairs.size());
+        const auto total = static_cast<std::int64_t>(pairs.size());
+        std::vector<forward_outcome> outcomes(pairs.size());
+        std::atomic<std::size_t> next{0};
+        std::atomic<std::int64_t> done{0};
+
+        const auto lane = [&] {
+            for (;;) {
+                const auto i = next.fetch_add(1);
+                if (i >= pairs.size())
+                    return;
+                try {
+                    outcomes[i] =
+                        fit_and_publish_forward_with_retry(party_ctx, pairs[i], publish_reason);
+                } catch (const std::exception& e) {
+                    outcomes[i] = {.how = forward_outcome::state::not_published,
+                                   .pair = pairs[i],
+                                   .detail = e.what()};
+                }
+                const auto finished = done.fetch_add(1) + 1;
+                wf.progress(party_name + ": " + pairs[i], finished, total);
+            }
+        };
+
+        std::vector<std::thread> workers;
+        workers.reserve(lane_count);
+        for (std::size_t l = 0; l < lane_count; ++l)
+            workers.emplace_back(lane);
+        for (auto& worker : workers)
+            worker.join();
+        return outcomes;
     }
 
     /**
@@ -1046,11 +1142,16 @@ private:
         const auto parties =
             ores::iam::workflow::parse_party_forwards_arguments(command.arguments_json);
 
-        ores::nats::service::nats_client tenant_nats(
-            nats_,
-            ores::iam::client::make_tenant_session_provider(
-                nats_, service_token_, command.tenant_id));
-        const auto pairs = pair_convention_codes(tenant_nats);
+        // The step acts in the tenant as its own service account, and then in
+        // each party it names.
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, command.tenant_id);
+        const auto service_ctx =
+            tenant_ctx.with_tenant(tenant_ctx.tenant_id(), ctx_.service_account());
+
+        // The pairs every party is asked for are the tenant's catalogue, read
+        // once rather than asked of refdata.
+        const auto pairs = pair_convention_codes(service_ctx);
         if (pairs.empty()) {
             wf.fail("The tenant holds no currency pair convention to publish a forward set for.");
             return;
@@ -1060,83 +1161,35 @@ private:
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
         for (const auto& party_name : parties) {
-            const auto party = find_party(tenant_nats, party_name);
+            const auto party = read_party_named(service_ctx, party_name);
             if (!party)
                 throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
 
-            // A forward set is the party's own work, so it is read and
-            // published in a session scoped to that party.
             const auto party_text = boost::uuids::to_string(party->id);
-            ores::nats::service::nats_client party_nats(
-                nats_,
-                ores::iam::client::make_tenant_session_provider(nats_,
-                                                                service_token_,
-                                                                command.tenant_id,
-                                                                std::chrono::seconds{60},
-                                                                party_text));
+            result.parties.push_back(party_text);
+            const auto party_ctx = context_for_party(service_ctx, party->id);
 
+            const auto outcomes =
+                run_party_forwards(wf, party_ctx, pairs, publish_reason, party_name);
             std::size_t published = 0;
             std::size_t held = 0;
-            const auto step_deadline = deadline_of(command.kind);
-            std::int64_t done = 0;
-            for (const auto& pair : pairs) {
-                const auto as_of = std::chrono::system_clock::now();
-                const auto line = party_name + ": " + pair;
-                wf.progress(line, done++, static_cast<std::int64_t>(pairs.size()));
-
-                // The read answers the newest set at or before the as-of, so a
-                // set an earlier run published is found by a later one.
-                ores::marketdata::messaging::get_published_fx_forward_request published_before;
-                published_before.pair_code = pair;
-                published_before.as_of = as_of;
-                if (ask(party_nats, published_before).success) {
-                    ++held;
-                    result.forwards_already_published.push_back(line);
-                    continue;
-                }
-
-                ores::marketdata::messaging::publish_fx_forward_request publish;
-                publish.pair_code = pair;
-                publish.as_of = as_of;
-                publish.reason = std::string(publish_reason);
-                const auto answer = ores::service::messaging::call_with_retry(
-                    [&](const ores::service::messaging::retry_attempt& attempt)
-                        -> ores::marketdata::messaging::publish_fx_forward_response {
-                        return ores::service::messaging::do_unless_already_done(
-                            attempt,
-                            [&]() -> std::optional<
-                                      ores::marketdata::messaging::publish_fx_forward_response> {
-                                ores::marketdata::messaging::get_published_fx_forward_request read;
-                                read.pair_code = pair;
-                                read.as_of = as_of;
-                                const auto found = ask(party_nats, read, attempt.budget_left);
-                                if (!found.success)
-                                    return std::nullopt;
-                                return ores::marketdata::messaging::publish_fx_forward_response{
-                                    .success = true,
-                                    .message = "Published by an earlier attempt.",
-                                    .approval_request_id = found.request_id,
-                                    .state_code = "published",
-                                    .published_at = found.published_at,
-                                    .published_by = found.published_by};
-                            },
-                            [&] { return ask(party_nats, publish, attempt.budget_left); });
-                    },
-                    {.deadline = step_deadline,
-                     .what = line + " forward set",
-                     .note = attempts_recorded_in(step_log, wf)});
-                if (answer.success && answer.published_at) {
-                    ++published;
-                    result.forwards.push_back(
-                        line + ": as of " + ores::platform::time::datetime::to_iso8601_utc(as_of));
-                } else if (answer.approval_request_id.empty()) {
-                    result.forwards_skipped.push_back(line + ": " + answer.message);
-                } else if (answer.success) {
-                    result.forwards_not_published.push_back(
-                        line + ": the request " + answer.approval_request_id + " is " +
-                        answer.state_code + " and no person has answered it");
-                } else {
-                    result.forwards_not_published.push_back(line + ": " + answer.message);
+            for (const auto& outcome : outcomes) {
+                const auto line = party_name + ": " + outcome.pair;
+                switch (outcome.how) {
+                    case forward_outcome::state::published:
+                        ++published;
+                        result.forwards.push_back(line + ": " + outcome.detail);
+                        break;
+                    case forward_outcome::state::already_published:
+                        ++held;
+                        result.forwards_already_published.push_back(line);
+                        break;
+                    case forward_outcome::state::skipped:
+                        result.forwards_skipped.push_back(line + ": " + outcome.detail);
+                        break;
+                    case forward_outcome::state::not_published:
+                        result.forwards_not_published.push_back(line + ": " + outcome.detail);
+                        break;
                 }
             }
             BOOST_LOG_SEV(lg(), ores::logging::info)
@@ -1150,7 +1203,6 @@ private:
             if (published == 0 && held == 0)
                 result.forwards_not_published.push_back(
                     party_name + ": no pair could be built, and the party holds no forward set");
-            result.parties.push_back(party_text);
         }
 
         for (const auto& skipped : result.forwards_skipped)

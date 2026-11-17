@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: DEEB47F9-88E8-4E53-98C9-C73FD16E3570
+:END:
+#+title: The Acme trade population is too small for the bond codes it cycles
+#+description: A fresh Acme setup ends generate_trades with warnings: the 1000-trade population gives bond 40 trades, but its 4 configs now cycle 11 codes each (44), since the bond future option and its kin joined the catalogue; 1100 is the smallest total that holds them.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A fresh Acme setup on main ed926fbead ends generate_trades with warnings: "The population of
+1000 trades gives 'bond' 40 trades, and its 4 configs state at least one trade per code it
+cycles, which is 44. A total of 1100 is the smallest that holds them." The population knobs, or
+the bond share of them, should grow with the bond codes the planner cycles, so a fresh setup
+ends green again.
+
+* Why
+
+The bond planner's code cycle grew when the bond future option and its kin joined the
+catalogue, but the default population did not. The step still writes the trades, so the tenant
+is usable; the warning is a false alarm on every fresh setup, which hides a real one. Found on
+the ladder task's provisioning run; the trade population belongs to the story "Hold every
+product type the engine supports".
+
+* References
+
+-
+
+* See also
+
+-

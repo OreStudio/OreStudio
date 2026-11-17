@@ -40,6 +40,7 @@
 #include <cmath>
 #include <format>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -2051,6 +2052,12 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
      * holds in the same quote currency, which the product pays in.
      */
     const auto second_pair = [&]() -> const domain::currency_pair_reference& {
+        // A product that asks for a second pair must be listed, or the pair choice gives its
+        // slot a pair that may have none.
+        if (!needs_second_pair(type))
+            throw std::logic_error("The " + type +
+                                   " asks for a second pair but needs_second_pair "
+                                   "does not list it.");
         for (const auto& candidate : scope.currency_pairs)
             if (is_basket_partner(pair, candidate))
                 return candidate;

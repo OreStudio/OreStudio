@@ -101,12 +101,16 @@ derived_fx_readers derived_readers_of(const std::map<std::string, dated_series>&
             }};
 }
 
+/// The ladder the blueprint dataset states, which the source reads from its vendor ids.
+const std::vector<derived_fx_expiry> test_ladder = derived_fx_ladder(
+    {"1W", "1M", "2M", "3M", "6M", "9M", "1Y", "18M", "2Y", "3Y", "5Y", "7Y", "10Y"});
+
 std::vector<std::string> derived_ids_of(const derived_fx_pair& pair) {
     std::vector<std::string> out;
-    for (const auto& e : derived_fx_expiries)
+    for (const auto& e : test_ladder)
         for (const auto label : derived_fx_labels)
             out.push_back(derived_fx_external_id(
-                {.pair = pair, .expiry = std::string(e.label), .label = std::string(label)}));
+                {.pair = pair, .expiry = e.label, .label = std::string(label)}));
     return out;
 }
 
@@ -128,11 +132,41 @@ TEST_CASE("a_derived_vendor_id_names_a_pair_an_expiry_and_a_label_and_reads_back
     CHECK(parse_derived_fx_external_id("EURUSD/5Y/25RR") ==
           derived_fx_quote_id{
               .pair = {.base = "EUR", .quote = "USD"}, .expiry = "5Y", .label = "25RR"});
-    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/15Y/25RR"));
+    CHECK(parse_derived_fx_external_id("EURUSD/15Y/25RR"));
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Q/25RR"));
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/Y/25RR"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Y/15RR"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUS/1Y/ATM"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Y/ATM/X"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUSD"));
+}
+
+TEST_CASE("a_ladder_is_the_tenors_its_labels_name_shortest_first", derived_tags) {
+    CHECK(derived_fx_expiry_years("1W") == Approx(7.0 / 365.0));
+    CHECK(derived_fx_expiry_years("18M") == Approx(1.5));
+    CHECK(derived_fx_expiry_years("10Y") == Approx(10.0));
+    CHECK_FALSE(derived_fx_expiry_years("ATM"));
+    CHECK_FALSE(derived_fx_expiry_years("0Y"));
+    CHECK_FALSE(derived_fx_expiry_years("Y"));
+    CHECK_FALSE(derived_fx_expiry_years(""));
+    CHECK_FALSE(derived_fx_expiry_years("0M"));
+    CHECK_FALSE(derived_fx_expiry_years("1.5Y"));
+    CHECK_FALSE(derived_fx_expiry_years("3D"));
+    CHECK_FALSE(derived_fx_expiry_years("-1Y"));
+
+    // A set orders its labels as text, so 10Y would come before 1Y; the ladder orders them by
+    // length, and leaves out a label that is not a tenor.
+    const auto ladder = derived_fx_ladder({"10Y", "1Y", "18M", "1W", "ATM"});
+    REQUIRE(ladder.size() == 4);
+    CHECK(ladder[0].label == "1W");
+    CHECK(ladder[1].label == "1Y");
+    CHECK(ladder[2].label == "18M");
+    CHECK(ladder[3].label == "10Y");
+
+    const auto ties = derived_fx_ladder({"1Y", "12M"});
+    REQUIRE(ties.size() == 2);
+    CHECK(ties[0].label == "12M");
+    CHECK(ties[1].label == "1Y");
 }
 
 TEST_CASE("a_pair_returns_the_change_of_its_log_level_and_skips_a_level_that_is_not_positive",
@@ -155,9 +189,9 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
     const auto fixings = derived_fixings(400, 3);
     const auto returns = pair_log_returns(fixings.at("EURUSD"));
     std::vector<qm::fx_expiry> expiries;
-    for (const auto& e : derived_fx_expiries)
+    for (const auto& e : test_ladder)
         expiries.push_back(
-            {.label = std::string(e.label),
+            {.label = e.label,
              .years = e.years,
              .convention = *convention_at(ores::testing::eur_usd_fx_option_convention(), e.label)});
     const auto d = qm::derive_fx_quotes(returns.returns, expiries, {});
@@ -171,13 +205,12 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
         std::ranges::find_if(d->expiries, [](const auto& e) { return !e.has_value(); }) -
         d->expiries.begin());
     REQUIRE(quoted > 0);
-    REQUIRE(quoted < derived_fx_expiries.size());
+    REQUIRE(quoted < test_ladder.size());
     const double trading_days = qm::fx_derivation_settings{}.trading_days_per_year;
-    CHECK(derived_fx_expiries[quoted - 1].years * trading_days <=
+    CHECK(test_ladder[quoted - 1].years * trading_days <=
           static_cast<double>(returns.returns.size()));
-    CHECK(derived_fx_expiries[quoted].years * trading_days >
-          static_cast<double>(returns.returns.size()));
-    for (std::size_t i = quoted; i < derived_fx_expiries.size(); ++i)
+    CHECK(test_ladder[quoted].years * trading_days > static_cast<double>(returns.returns.size()));
+    for (std::size_t i = quoted; i < test_ladder.size(); ++i)
         REQUIRE_FALSE(d->expiries[i].has_value());
     const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"},
                                         *d,
@@ -187,8 +220,7 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
     REQUIRE(ticks.size() == quoted * derived_fx_labels.size());
     CHECK(ticks.front().external_id == "EURUSD/1W/ATM");
     CHECK(ticks[1].external_id == "EURUSD/1W/25RR");
-    CHECK(ticks.back().external_id ==
-          "EURUSD/" + std::string(derived_fx_expiries[quoted - 1].label) + "/10BF");
+    CHECK(ticks.back().external_id == "EURUSD/" + test_ladder[quoted - 1].label + "/10BF");
     CHECK(ticks.front().sequence == 40);
     CHECK(ticks.back().sequence == 40 + ticks.size() - 1);
     for (const auto& t : ticks) {
@@ -393,7 +425,8 @@ TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", der
     const auto convention = ores::testing::eur_usd_fx_option_convention();
     const derived_fx_pair pair{.base = "EUR", .quote = "USD"};
     const std::set<year_month_day> stored{returns.dates[300]};
-    const auto history = derive_missing_days(pair, returns, convention, stored, {}, 250, 0);
+    const auto history =
+        derive_missing_days(pair, test_ladder, returns, convention, stored, {}, 250, 0);
     REQUIRE(history);
     CHECK(history->underived.empty());
     const auto* days = &history->days;
@@ -431,6 +464,7 @@ TEST_CASE("a_day_whose_history_covers_no_long_expiry_quotes_only_the_short_ones"
     const auto fixings = derived_fixings(300, 17);
     const auto returns = pair_log_returns(fixings.at("EURUSD"));
     const auto history = derive_missing_days({.base = "EUR", .quote = "USD"},
+                                             test_ladder,
                                              returns,
                                              ores::testing::eur_usd_fx_option_convention(),
                                              {},

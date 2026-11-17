@@ -311,6 +311,10 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Refdata Layer ---'
 \ir refdata/refdata_populate.sql
 
+\echo ''
+\echo '--- Derived Source Quotes (read from the refdata blueprints) ---'
+\ir marketdata/marketdata_derived_inventory_populate.sql
+
 -- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)
 -- =============================================================================

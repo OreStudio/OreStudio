@@ -147,13 +147,11 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     if (!convention)
         return std::unexpected("the convention: " + convention.error());
     std::vector<qm::fx_expiry> expiries;
-    for (const auto& e : derived_fx_expiries) {
-        if (!owed_expiries.contains(std::string(e.label)))
-            continue;
+    for (const auto& e : derived_fx_ladder(owed_expiries)) {
         const auto at = convention_at(*convention, e.label);
         if (!at)
-            return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
-        expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});
+            return std::unexpected("the convention at " + e.label + ": " + at.error());
+        expiries.push_back({.label = e.label, .years = e.years, .convention = *at});
     }
     const auto derivation = qm::derive_fx_quotes(returns.returns, expiries, settings_);
     if (!derivation)
@@ -172,10 +170,15 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
     if (!store_)
         return 0;
     failures_.clear();
+    // Each pair is derived at the expiries its ids name, which is the ladder its blueprint
+    // states.
     std::map<std::string, derived_fx_pair> pairs;
+    std::map<std::string, std::set<std::string>> labels;
     for (const auto& id : universe_)
-        if (const auto quote = parse_derived_fx_external_id(id))
+        if (const auto quote = parse_derived_fx_external_id(id)) {
             pairs.emplace(key_of(quote->pair), quote->pair);
+            labels[key_of(quote->pair)].insert(quote->expiry);
+        }
 
     using namespace ores::logging;
     const auto pass_started = std::chrono::steady_clock::now();
@@ -247,8 +250,15 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
         started = std::chrono::steady_clock::now();
         // A feed publishes the current day, so it asks for a short tail: the whole history is a
         // vintage's business, and deriving it per tenant is what stalled a fresh one.
-        const auto missing = derive_missing_days(
-            pair, returns, *convention, held, settings_, settings_.minimum_window, history_days);
+        const auto ladder = derived_fx_ladder(labels[key]);
+        const auto missing = derive_missing_days(pair,
+                                                 ladder,
+                                                 returns,
+                                                 *convention,
+                                                 held,
+                                                 settings_,
+                                                 settings_.minimum_window,
+                                                 history_days);
         if (!missing) {
             fail(key, missing.error());
             continue;

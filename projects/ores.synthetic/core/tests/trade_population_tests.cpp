@@ -1075,6 +1075,7 @@ TEST_CASE("a_basket_in_a_book_whose_currency_no_second_pair_quotes_is_still_plan
     CHECK(codes.contains("FxRainbowOption"));
     CHECK(codes.contains("FxBasketVarianceSwap"));
     CHECK(codes.contains("FxPairwiseVarianceSwap"));
+    CHECK(codes.contains("FxWorstOfBasketSwap"));
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {

@@ -646,7 +646,6 @@ private:
     bond_future_option_terms terms_;
 };
 
-
 /**
  * @brief An FX option on the rate averaged over daily observations from the
  * observation start to the expiry.

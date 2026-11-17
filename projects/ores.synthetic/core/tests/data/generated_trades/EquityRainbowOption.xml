@@ -29,21 +29,21 @@
       <Settlement>2027-10-02</Settlement>
     </EquityRainbowOptionData>
   </Trade>
-  <Trade id="06ac4b98-591b-5627-8744-f749d53ac7ca">
+  <Trade id="c1d59ae5-996a-5563-bbca-8ef8c71aaec2">
     <TradeType>EquityRainbowOption</TradeType>
     <EquityRainbowOptionData>
       <Currency>USD</Currency>
-      <Notional>8711.82</Notional>
-      <Strike>1544.68</Strike>
+      <Notional>4262.71</Notional>
+      <Strike>3906.24</Strike>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.SPX</Name>
+          <Name>RIC:.NDX</Name>
           <Weight>1</Weight>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:.SPX</Name>
           <Weight>1</Weight>
         </Underlying>
       </Underlyings>
@@ -52,10 +52,10 @@
         <OptionType>Call</OptionType>
         <PayoffType>MaxRainbow</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2030-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Settlement>2026-09-02</Settlement>
+      <Settlement>2030-08-02</Settlement>
     </EquityRainbowOptionData>
   </Trade>
 </Portfolio>

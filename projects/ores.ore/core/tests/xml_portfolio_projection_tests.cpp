@@ -3829,6 +3829,36 @@ TEST_CASE("a_single_name_cds_option_and_a_cbo_hold_their_terms_as_rows",
     check_cbo(rebuild(items[1]));
 }
 
+TEST_CASE("a_cash_position_holds_its_currency_and_amount_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="Cash#1">
+    <TradeType>CashPosition</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CashPositionData>
+      <Currency>EUR</Currency>
+      <Amount>1000000</Amount>
+    </CashPositionData>
+  </Trade>
+</Portfolio>)");
+    const auto check = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        std::map<std::string, std::string> values;
+        for (const auto& p : data->parameters)
+            values[p.name] = p.value.value_or("");
+        CHECK(values["Currency"] == "EUR");
+        CHECK(values["Amount"] == "1000000");
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    check(items[0]);
+    check(rebuild(items[0]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

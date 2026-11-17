@@ -173,7 +173,7 @@ absent: it is a placeholder, not a product.
 | CommodityRainbowOption | Commodity Rainbow Option | option | scripted | commodity! | false | true | commodity_instrument |
 | CommodityStrikeResettableOption | Commodity Strike Resettable Option | option | scripted | commodity! | false | true | commodity_instrument |
 | CommodityPosition | Commodity Position | position | native | commodity! | false | false | commodity_instrument |
-| CashPosition | Cash Position | position | native | equity! | false | false |  |
+| CashPosition | Cash Position | position | native | equity! | false | false | scripted_instrument |
 | ScriptedTrade | Scripted Trade (ORE generic payoff engine) |   | script |  | false | false | scripted_instrument |
 | Autocallable_01 | Autocallable (variant 01) |   | scripted |  | false | false | scripted_instrument |
 | DoubleDigitalOption | Double Digital Option | option | scripted |  | false | false | scripted_instrument |

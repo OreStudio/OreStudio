@@ -291,6 +291,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::commodity_instrument;
     if (trade_type == "CommodityPosition")
         return instrument_table::commodity_instrument;
+    if (trade_type == "CashPosition")
+        return instrument_table::scripted_instrument;
     if (trade_type == "ScriptedTrade")
         return instrument_table::scripted_instrument;
     if (trade_type == "Autocallable_01")

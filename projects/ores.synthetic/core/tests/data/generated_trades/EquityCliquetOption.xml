@@ -24,22 +24,22 @@
       </ScheduleData>
     </EquityCliquetOptionData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
     <TradeType>EquityCliquetOption</TradeType>
     <EquityCliquetOptionData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
       <Currency>EUR</Currency>
-      <Notional>3780.36</Notional>
+      <Notional>889.5</Notional>
       <LongShort>Short</LongShort>
-      <OptionType>Call</OptionType>
+      <OptionType>Put</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-09-02</StartDate>
-          <EndDate>2026-09-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2026-08-02</EndDate>
           <Tenor>3M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>

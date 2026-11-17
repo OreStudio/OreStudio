@@ -24,28 +24,28 @@
       <EQIndex>EQ-RIC:.STOXX50E</EQIndex>
     </EquityDoubleTouchOptionData>
   </Trade>
-  <Trade id="2b98ce5b-3eeb-5c36-9cb8-e4a7f8922842">
+  <Trade id="efaa3e0a-4eda-59a6-bd4f-1221214c99bd">
     <TradeType>EquityDoubleTouchOption</TradeType>
     <EquityDoubleTouchOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
-          <ExerciseDate>2033-12-02</ExerciseDate>
+          <ExerciseDate>2032-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>KnockIn</Type>
         <Levels>
-          <Level>3711.24</Level>
-          <Level>4535.96</Level>
+          <Level>189.7</Level>
+          <Level>231.86</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.NDX</Name>
-      <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>8826889.9</PayoffAmount>
+      <Name>RIC:.STOXX50E</Name>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <PayoffAmount>3914815.08</PayoffAmount>
       <Calendar>TARGET</Calendar>
-      <EQIndex>EQ-RIC:.NDX</EQIndex>
+      <EQIndex>EQ-RIC:.STOXX50E</EQIndex>
     </EquityDoubleTouchOptionData>
   </Trade>
 </Portfolio>

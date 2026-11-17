@@ -35,44 +35,36 @@
       </ObservationDates>
     </EquityStrikeResettableOptionData>
   </Trade>
-  <Trade id="85a4cda1-faea-5845-bc9c-b97dc2482179">
+  <Trade id="68ca7fb7-d3e6-55d8-b185-04e6a3193ab8">
     <TradeType>EquityStrikeResettableOption</TradeType>
     <EquityStrikeResettableOptionData>
       <LongShort>Short</LongShort>
-      <OptionType>Put</OptionType>
+      <OptionType>Call</OptionType>
       <Currency>EUR</Currency>
-      <Strike>4348.95</Strike>
-      <ResetStrike>4783.85</ResetStrike>
-      <Quantity>1717.78</Quantity>
-      <TriggerType>Up</TriggerType>
-      <TriggerPrice>4783.85</TriggerPrice>
+      <Strike>2749.49</Strike>
+      <ResetStrike>2474.54</ResetStrike>
+      <Quantity>2886.28</Quantity>
+      <TriggerType>Down</TriggerType>
+      <TriggerPrice>2474.54</TriggerPrice>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
-      <ExpiryDate>2030-01-02</ExpiryDate>
-      <SettlementDate>2030-01-02</SettlementDate>
+      <ExpiryDate>2027-12-02</ExpiryDate>
+      <SettlementDate>2027-12-02</SettlementDate>
       <Premium>0</Premium>
-      <PremiumDate>2026-01-02</PremiumDate>
+      <PremiumDate>2025-12-02</PremiumDate>
       <ObservationDates>
         <Dates>
           <Dates>
-            <Date>2026-04-02</Date>
-            <Date>2026-07-02</Date>
-            <Date>2026-10-02</Date>
-            <Date>2027-01-04</Date>
-            <Date>2027-04-02</Date>
-            <Date>2027-07-02</Date>
-            <Date>2027-10-04</Date>
-            <Date>2028-01-03</Date>
-            <Date>2028-04-03</Date>
-            <Date>2028-07-03</Date>
-            <Date>2028-10-02</Date>
-            <Date>2029-01-02</Date>
-            <Date>2029-04-02</Date>
-            <Date>2029-07-02</Date>
-            <Date>2029-10-02</Date>
-            <Date>2030-01-02</Date>
+            <Date>2026-03-02</Date>
+            <Date>2026-06-02</Date>
+            <Date>2026-09-02</Date>
+            <Date>2026-12-02</Date>
+            <Date>2027-03-02</Date>
+            <Date>2027-06-02</Date>
+            <Date>2027-09-02</Date>
+            <Date>2027-12-02</Date>
           </Dates>
         </Dates>
       </ObservationDates>

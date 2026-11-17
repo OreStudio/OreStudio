@@ -574,3 +574,13 @@ TEST_CASE("a_forward_volatility_agreement_refuses_an_expiry_before_its_fva_date"
     REQUIRE_FALSE(built.has_value());
     CHECK(built.error().term == "option_expiry");
 }
+
+TEST_CASE("a_basket_variance_swap_refuses_a_member_named_twice", scripted_tags) {
+    auto terms = spx_and_ndx_variance();
+    auto members = terms.members.get();
+    members[1].underlying = scripted_equity(".SPX");
+    terms.members = members;
+    const auto built = basket_variance_swap_builder<scripted_family::equity>(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "members");
+}

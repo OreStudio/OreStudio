@@ -395,7 +395,6 @@ private:
     generic_barrier_option_terms terms_;
 };
 
-
 /**
  * @brief A swap on the realised variance of a weighted basket, observed daily
  * from the start to the end.

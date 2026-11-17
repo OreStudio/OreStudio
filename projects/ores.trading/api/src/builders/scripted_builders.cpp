@@ -592,9 +592,13 @@ scripted_result build_basket_variance_swap(std::string_view trade_type,
     const auto& members = terms.members.get();
     if (members.size() < 2)
         return std::unexpected(build_error{"members", "a basket names at least two underlyings"});
-    for (const auto& member : members)
-        if (auto refusal = positive_amount("weight", member.weight))
+    for (std::size_t i = 0; i < members.size(); ++i) {
+        if (auto refusal = positive_amount("weight", members[i].weight))
             return std::unexpected(std::move(*refusal));
+        for (std::size_t j = 0; j < i; ++j)
+            if (members[j].underlying.uri() == members[i].underlying.uri())
+                return std::unexpected(build_error{"members", "names an underlying twice"});
+    }
     if (!(terms.start.get() < terms.end.get()))
         return std::unexpected(build_error{"end", "must be after the start"});
     if (terms.settlement.get() < terms.end.get())

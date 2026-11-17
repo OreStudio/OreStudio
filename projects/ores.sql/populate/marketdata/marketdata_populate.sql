@@ -60,6 +60,10 @@
 \ir ./marketdata_series_classification_rules_populate.sql
 
 \echo ''
+\echo '--- Series Identity Shapes ---'
+\ir ./marketdata_series_identity_shapes_populate.sql
+
+\echo ''
 \echo '--- Notification Kinds: a curve published and withdrawn ---'
 \ir ./marketdata_notification_kinds_populate.sql
 

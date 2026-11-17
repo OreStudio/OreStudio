@@ -1960,6 +1960,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::series_classification_rules:read',   'View series classification rules');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::series_classification_rules:write',  'Create and modify series classification rules');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::series_classification_rules:delete', 'Delete series classification rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::series_identity_shapes:read',        'View the fields each market series family requires and forbids');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::series_identity_shapes:write',       'Create and modify the shape of a market series family');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::series_identity_shapes:delete',      'Delete the shape of a market series family');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::observations:read',                  'Export every market data series, observation and fixing as ORE files');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::import:write',                       'Import ORE market data and fixings files');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::crm:read',                           'Read cross rates derived from live market data');

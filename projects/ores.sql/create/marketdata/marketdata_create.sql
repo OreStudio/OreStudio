@@ -66,7 +66,9 @@
 \ir ./marketdata_market_fixings_create.sql
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_series_classification_rules_create.sql
+\ir ./marketdata_series_identity_shapes_create.sql
 \ir ./marketdata_series_classification_rules_notify_trigger_create.sql
+\ir ./marketdata_series_identity_shapes_notify_trigger_create.sql
 \ir ./marketdata_adapters_create.sql
 \ir ./marketdata_adapters_notify_trigger_create.sql
 \ir ./marketdata_suppliers_create.sql

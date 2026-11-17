@@ -22,14 +22,21 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
+#include "ores.marketdata.api/domain/market_series_identity_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
+#include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -37,6 +44,33 @@ namespace ores::marketdata::repository {
 namespace {
 
 using datum::field;
+
+/**
+ * @brief What the shape table says about the families it states.
+ *
+ * Read and grouped once per call, because a projection writes a batch and the table
+ * is small. The statement and its enforcement live in =series_identity_shape_check=,
+ * which a test can call without a database.
+ */
+class shape_book final {
+public:
+    explicit shape_book(const ores::database::context& ctx)
+        : book_(repository::series_identity_shape_repository{}.read_latest(ctx)) {}
+
+    void check(const domain::market_series& series,
+               const domain::market_series_identity& row) const {
+        check_identity_kind(series, row);
+        book_.check(series, row);
+    }
+
+    [[nodiscard]] bool states(const domain::market_series& series,
+                              const domain::market_series_identity& row) const {
+        return book_.states(series, row);
+    }
+
+private:
+    identity_shape_book book_;
+};
 
 constexpr std::string_view kind_series = "series";
 constexpr std::string_view kind_index = "index";
@@ -330,6 +364,7 @@ market_series_identity_projector::project(const ores::database::context& ctx,
                                           const std::vector<domain::market_series>& series) {
     if (series.empty())
         return 0;
+    const shape_book shapes(ctx);
     std::vector<domain::market_series_identity> rows;
     rows.reserve(series.size());
     std::size_t unknown = 0;
@@ -337,6 +372,9 @@ market_series_identity_projector::project(const ores::database::context& ctx,
         auto p = project_one(ctx, s);
         if (!p.understood)
             ++unknown;
+        // A series written through the repository is refused here or nowhere: the
+        // store's own columns cannot say which fields a family requires.
+        shapes.check(s, p.row);
         rows.push_back(std::move(p.row));
     }
     market_series_identity_repository{}.write(ctx, rows);
@@ -367,10 +405,34 @@ market_series_identity_projector::project_missing(const ores::database::context&
             missing.push_back(s);
     }
 
+    // A backfill is a repair, and a repair that aborts on the first legacy row it
+    // cannot state is no repair: the rows the shape refuses are counted and left
+    // as they are, so the caller can report them while the rest are projected.
+    // A shape row that names a field no identity holds throws std::logic_error,
+    // which this catch does not take: that is a fault of the catalogue, and it
+    // stops the backfill rather than being counted against every series.
+    const shape_book shapes(ctx);
+    std::vector<domain::market_series_identity> accepted;
+    accepted.reserve(missing.size());
     backfill_result result;
-    result.projected = missing.size();
+    for (const auto& s : missing) {
+        auto p = project_one(ctx, s);
+        if (!p.understood)
+            ++result.unreadable;
+        if (!shapes.states(s, p.row))
+            ++result.unstated;
+        try {
+            shapes.check(s, p.row);
+        } catch (const std::invalid_argument&) {
+            ++result.refused;
+            continue;
+        }
+        accepted.push_back(std::move(p.row));
+    }
     result.already_projected = series.size() - missing.size();
-    result.unreadable = project(ctx, missing);
+    result.projected = accepted.size();
+    if (!accepted.empty())
+        market_series_identity_repository{}.write(ctx, accepted);
     return result;
 }
 
@@ -388,12 +450,14 @@ market_series_identity_projector::reproject(const ores::database::context& ctx,
     for (const auto& row : market_series_identity_repository{}.read_latest(ctx))
         stored[boost::uuids::to_string(row.series_id)] = row;
 
+    const shape_book shapes(ctx);
     std::vector<domain::market_series_identity> changed;
     changed.reserve(series.size());
     for (const auto& s : series) {
         auto p = project_one(ctx, s);
         if (!p.understood)
             ++result.unreadable;
+        shapes.check(s, p.row);
         const auto it = stored.find(boost::uuids::to_string(s.id));
         if (it != stored.end() && it->second == p.row) {
             ++result.unchanged;

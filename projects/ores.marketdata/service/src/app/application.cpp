@@ -72,6 +72,7 @@
 #include "ores.marketdata.service/messaging/rate_ladder_handler.hpp"
 #include "ores.marketdata.service/messaging/route_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/series_identity_shape_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/session_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/subscription_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/subscription_interval_event_registrar.hpp"
@@ -222,6 +223,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         mdsm::register_observation_lineage_event_mapping(event_source, event_bus, nats);
     auto series_classification_rule_sub =
         mdsm::register_series_classification_rule_event_mapping(event_source, event_bus, nats);
+    auto series_identity_shape_sub =
+        mdsm::register_series_identity_shape_event_mapping(event_source, event_bus, nats);
     auto curve_publish_sub =
         mdsm::register_curve_publish_event_mapping(event_source, event_bus, nats);
     auto fx_forward_publish_sub =

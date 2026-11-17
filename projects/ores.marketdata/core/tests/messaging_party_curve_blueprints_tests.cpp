@@ -115,8 +115,13 @@ TEST_CASE("a party's copy of a curve reads its own series of the same item and p
     CHECK(output.id == config.output_series_id);
     CHECK(output.party_id == acme_us);
     CHECK(output.provider_code == "ore");
-    CHECK(output.derivation_kind == "OBSERVED");
-    CHECK(output.derivation_config_id == boost::uuids::nil_uuid());
+    // The copy is the party's own bootstrap of that curve, so it carries the system's
+    // kind and the party's config, never the observed label.
+    CHECK(output.derivation_kind == "IR_CURVE_BOOTSTRAP");
+    CHECK(output.derivation_config_id == config.id);
+    // The series table refuses a derived series that names version 0, and the party's
+    // config is new, so it is stored as version 1.
+    CHECK(output.derivation_config_version == 1);
     REQUIRE(plan.ready.size() == 1);
     CHECK(plan.ready.front().config_id == config.id);
 }
@@ -262,6 +267,9 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
+    // The seed writes a curve's output series as observed, and only its first republish
+    // stamps it a bootstrap, so a party can be provisioned before the system's label is
+    // right.
     system.series.push_back(
         market_series_row(projection_output,
                           system_party,
@@ -291,4 +299,15 @@ TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off"
     CHECK(plan.configs_to_write[0].name == "EUR-ESTR");
     CHECK(plan.configs_to_write[1].name == "AAA-EURIBOR-6M");
     CHECK(plan.configs_to_write[1].discount_curve_config_id == plan.configs_to_write[0].id);
+
+    // The party's output series is its own bootstrap of the same curve, whatever the
+    // system's row says yet, and it names the party's own copy of the config.
+    const auto output = std::ranges::find_if(plan.series_to_write, [&](const auto& s) {
+        return s.id == party_copy_id(acme_us, "market_series", projection_output);
+    });
+    REQUIRE(output != plan.series_to_write.end());
+    CHECK(output->derivation_kind == "IR_CURVE_BOOTSTRAP");
+    CHECK(output->derivation_config_id ==
+          party_copy_id(acme_us, "ir_curve_bootstrap_config", projection_config));
+    CHECK(output->derivation_config_version == 1);
 }

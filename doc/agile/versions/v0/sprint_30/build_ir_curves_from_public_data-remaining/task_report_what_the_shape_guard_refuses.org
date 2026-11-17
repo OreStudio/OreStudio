@@ -28,62 +28,82 @@ The shape guard is observable and honest: every refusal and every family no shap
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | The two gaps are measured: the pgTAP scan is blind to a violation in any tenant but the system's, and the backfill drops the counts it makes. |
+| Now          | The scan now reads the shapes the way the writer reads them, and the file states what a session can see. The counts are still dropped. |
 | Waiting on   | Nothing.                               |
-| Next         | Fix the scan join, then take the counts from the projector to the protocol. |
+| Next         | Take =refused_count= and =unstated_count= from the projector to the protocol, and assert them. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
 
-- The pgTAP scan joins the shapes the way the projector reads them, so a violation in any tenant's identity fails the suite; the injection that proves it is part of the suite.
-- The backfill response carries how many rows the shape refused and how many series fall in a family no shape states.
+- The pgTAP scan joins the shapes the way the projector reads them, and the suite states
+  the scope row-level security gives it, so no reader mistakes it for a cross-tenant check.
+- The backfill response carries how many rows the shape refused and how many series fall
+  in a family no shape states.
 - The counts are asserted in a test, so a guard that refuses silently cannot return.
+- A tenant's own identity is held to the shared catalogue, either by the two facts the
+  suite and the guard's unit test already establish or directly, if a later task gives the
+  fixture tenant an account.
 
 * Plan
 
-Two gaps, both measured against the tree at =67803175ce=.
+Two findings, both measured against the tree at =67803175ce=.
 
-The pgTAP suite holds the stored identities to the shapes, but it joins the shape
-row on the identity's own tenant:
+The pgTAP suite joins the shape row on the identity's own tenant:
 
 #+begin_src sql
   join ores_marketdata_series_identity_shapes_tbl st
     on st.tenant_id = i.tenant_id
 #+end_src
 
-That was right while every tenant held a copy. The catalogue is shared now, and the
-only shape rows are the system tenant's, so the join reaches the 330 identities the
-system tenant holds and none of the 3,473 any other tenant holds. The projector
-reads the shapes the session can see -- =tenant_id == tid || tenant_id == sys= in
-the generated =read_latest= -- so the test must join the same way:
-=st.tenant_id in (i.tenant_id, ores_utility_system_tenant_id_fn())=. A violation
-injected into a non-system identity, inside the transaction and rolled back, is the
-case that fails with the fixed join and passes with the current one.
+That described the per-tenant copy the shared catalogue removed. The writer reads
+=tenant_id == tid || tenant_id == sys=, so the view is corrected to the same read and
+now describes what the code does rather than a copy no tenant holds.
 
-The projector counts what it refuses (=backfill_result::refused=) and how many series
-fall in a family no shape states (=unstated=), and the backfill response carries
-neither: it reports projected, already projected and unreadable. A refusal and an
-unguarded family are what an operator most needs to see, and today neither leaves the
-process. The response gains =refused_count= and =unstated_count= from the model, and
-a test asserts them.
+The correction is a latent one, and the record should say so plainly. The suite runs
+under row-level security with one tenant in context, so it sees that tenant's identities
+and no others: 330 rows of the 3,803 the table holds. The tenant-equal join therefore
+could not be observed from inside the suite, and a temporary copy of the file with the
+join reverted passes all eight of its assertions. My first reading of this called it a
+coverage hole over ninety per cent of the rows; that reading came from a session with
+=bypassrls= and it was wrong. What the suite proves is what the session can see, and the
+file now says that in its own words.
+
+The cross-tenant property is not lost, it is composed: this suite asserts that a
+provisioned tenant reads the system tenant's shapes and holds no copy, and the guard's
+unit test asserts that whatever shapes it is given are enforced. Together those say a
+tenant's identity is held to the shared catalogue. Writing a tenant's identity in SQL to
+prove it directly needs a series row, whose trigger validates an account username, and
+the provisioner creates no accounts; that is why the proof is composed rather than
+direct, and the price of a direct one is more fixture than the claim is worth.
+
+The second finding stands as first reported. The projector counts what it refuses
+(=backfill_result::refused=) and how many series fall in a family no shape states
+(=unstated=), and the backfill response carries neither: it reports projected, already
+projected and unreadable. A refusal and an unguarded family are what an operator most
+needs to see, and today neither leaves the process. The response gains =refused_count=
+and =unstated_count= from the model, and a test asserts them.
 
 * Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Pairs the committed scan examines | 1,320 | the =shape_scan= query of =marketdata_series_identity_shape_test.sql= | 67803175ce |
-| Pairs the writer's shared read examines | 8,370 | the same query without the tenant join on the shape | 67803175ce |
-| Violations the committed scan reports when one is injected outside the system tenant | 0 | injected into a rolled-back transaction | 67803175ce |
-| Violations the shared read reports for the same injection | 1 | the same | 67803175ce |
-| Identity rows outside the system tenant | 3,473 of 3,803 | `select (tenant_id = ores_utility_system_tenant_id_fn()), count(*) from ores_marketdata_market_series_identity_tbl group by 1` | 67803175ce |
-| Counts the backfill response carries for refusals and unguarded families | none | =backfill_series_identity_response= in =operations_protocol.hpp= | 67803175ce |
+| Identities the suite's session reads | 330 of 3,803 | psql as the test DML user with =app.current_tenant_id= set to the system tenant | 67803175ce |
+| Pairs the scan examines, tenant-equal join | 1,320 | the =shape_scan= query as a =bypassrls= session | 67803175ce |
+| Pairs the scan examines, writer's read | 8,370 | the same query with the join on the shared read | 67803175ce |
+| Assertions that fail with the join reverted | 0 of 9 | a temporary copy of the suite with =st.tenant_id = i.tenant_id= | 7f8a3089e2 |
+| Counts the response carries for refusals and unguarded families | none | =backfill_series_identity_response= in =operations_protocol.hpp= | 67803175ce |
 
 * Notes
 
-The scan fix and the counts are one PR because both are about the same thing: a guard
-that refuses without saying so, held by a test that cannot see it.
+The join correction is worth keeping even though it changes no assertion: a query that
+describes a copy nobody holds is a trap for the next reader, and a system-level check
+that runs with elevated rights would read it as the writer does only after the fix.
 
-* Test Scenarios
+The suite's scope is now stated where it is used. If a later task wants a tenant's own
+identities held to the catalogue in SQL, it needs an account in the fixture tenant first,
+which is a seeding question and not a shape question.
+
+* Test Scenarios* Test Scenarios
 
 * Test Scenarios
 

@@ -53,8 +53,22 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 -- One row per identity a shape speaks for. The shape is joined by the same key
 -- the projection uses: the class and the index family from the identity row, and
 -- the subclass from the series that row belongs to.
+--
+-- The shape is read from the caller's rows and the system tenant's, because that
+-- is what the writer reads: the catalogue is shared, and the generated read carries
+-- =tenant_id == tid || tenant_id == sys=. A join on the identity's own tenant would
+-- describe a copy no tenant holds.
+--
+-- What this scan can see is what the session can see. Row-level security bounds it
+-- to one tenant, so the identities it holds to the shapes are that tenant's: on a
+-- suite run that is the system tenant's, which is the tenant whose families the
+-- catalogue states. A tenant's own identities are guarded by the same code, and the
+-- chain is proved in two places that compose: this suite asserts a provisioned
+-- tenant reads the system tenant's shapes and holds none of its own, and the guard's
+-- unit test asserts that whatever shapes it is given are enforced.
 create temporary view shape_scan as
 select st.asset_class, st.series_subclass, st.index_family, st.field, st.requirement,
+       i.tenant_id as identity_tenant,
        coalesce(to_jsonb(i) ->> st.field, '') as held
 from ores_marketdata_market_series_identity_tbl i
 join ores_marketdata_market_series_tbl s
@@ -62,7 +76,7 @@ join ores_marketdata_market_series_tbl s
  and s.tenant_id = i.tenant_id
  and s.valid_to = ores_utility_infinity_timestamp_fn()
 join ores_marketdata_series_identity_shapes_tbl st
-  on st.tenant_id = i.tenant_id
+  on st.tenant_id in (i.tenant_id, ores_utility_system_tenant_id_fn())
  and st.asset_class = to_jsonb(i) ->> 'asset_class'
  and st.series_subclass = s.series_subclass
  and st.index_family = coalesce(to_jsonb(i) ->> 'index', '')

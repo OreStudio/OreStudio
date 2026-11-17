@@ -85,6 +85,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: two links named the wrong story IDs | story.org | Accept | Fixed before commit. Every link title now matches its target. |
 | 2 | Local review: the two new tasks named the story branch | task_*.org | Accept | Cleared, so each task gets its own branch. |
+| 3 | PR #4795 review: the moved valuation task kept its 2026-11-09 dates though this PR edits it | task_value_the_generated_trades_in_a_report.org | Accept | Dates bumped to 2026-11-17. |
+| 4 | PR #4795 review: the moved task still names jolly_knuth as its environment | task_value_the_generated_trades_in_a_report.org | Decline | The environment records where the work happens; compass task start sets it when the task is picked up. |
+| 5 | PR #4795 review: the story's Now reads "Not yet started" beside a done scaffold task | story.org | Accept | Now says the scaffold is done and no work task has started. |
+| 6 | PR #4795 review: ABANDONED is the nearest state for a story whose work moved | */story.org | Decline | The todo keywords have no superseded state, and the closed-into precedent of 2026-11-15 uses ABANDONED. |
 
 * Result
 

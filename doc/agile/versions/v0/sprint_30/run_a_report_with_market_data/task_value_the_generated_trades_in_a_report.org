@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
-#+updated: 2026-11-09
+#+updated: 2026-11-17
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ A report run over the generated trades shows they value correctly according to O
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 

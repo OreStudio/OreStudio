@@ -25,29 +25,29 @@
       <SoldAmount>5231367.54</SoldAmount>
     </FxEuropeanBarrierOptionData>
   </Trade>
-  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
     <TradeType>FxEuropeanBarrierOption</TradeType>
     <FxEuropeanBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2029-12-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>UpAndOut</Type>
         <Levels>
-          <Level>0.8437</Level>
+          <Level>0.7988</Level>
         </Levels>
       </BarrierData>
       <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>8737435.82</BoughtAmount>
+      <BoughtAmount>189880.89</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>6701613.27</SoldAmount>
+      <SoldAmount>137891.5</SoldAmount>
     </FxEuropeanBarrierOptionData>
   </Trade>
 </Portfolio>

@@ -48,16 +48,16 @@
       </Components>
     </CompositeTradeData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
     <TradeType>CompositeTrade</TradeType>
     <Envelope>
       <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
     </Envelope>
     <CompositeTradeData>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <NotionalCalculation>Mean</NotionalCalculation>
       <Components>
-        <SubTrade id="8542cc55-8cdb-5038-a5a0-377660a069e7">
+        <SubTrade id="6330be47-161c-51a9-a105-aec9cfdea578">
           <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
@@ -66,16 +66,16 @@
               <Style>European</Style>
               <Settlement>Cash</Settlement>
               <ExerciseDates>
-                <ExerciseDate>2027-11-02</ExerciseDate>
+                <ExerciseDate>2027-09-02</ExerciseDate>
               </ExerciseDates>
             </OptionData>
-            <Name>RIC:.STOXX50E</Name>
-            <Currency>EUR</Currency>
-            <Quantity>1455.31</Quantity>
-            <Strike>4993.67</Strike>
+            <Name>RIC:.SPX</Name>
+            <Currency>USD</Currency>
+            <Quantity>4781.86</Quantity>
+            <Strike>1842.92</Strike>
           </EquityOptionData>
         </SubTrade>
-        <SubTrade id="7f63b829-5111-5bf5-af9f-c230d7ee5bfe">
+        <SubTrade id="047c5b66-7819-5521-a659-1ae948dbf7b7">
           <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
@@ -84,13 +84,13 @@
               <Style>European</Style>
               <Settlement>Cash</Settlement>
               <ExerciseDates>
-                <ExerciseDate>2027-11-02</ExerciseDate>
+                <ExerciseDate>2027-09-02</ExerciseDate>
               </ExerciseDates>
             </OptionData>
-            <Name>RIC:.STOXX50E</Name>
-            <Currency>EUR</Currency>
-            <Quantity>1455.31</Quantity>
-            <Strike>4993.67</Strike>
+            <Name>RIC:.SPX</Name>
+            <Currency>USD</Currency>
+            <Quantity>4781.86</Quantity>
+            <Strike>1842.92</Strike>
           </EquityOptionData>
         </SubTrade>
       </Components>

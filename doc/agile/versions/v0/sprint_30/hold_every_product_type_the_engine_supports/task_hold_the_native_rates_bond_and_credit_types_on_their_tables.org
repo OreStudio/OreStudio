@@ -30,9 +30,9 @@ stated inline is the split-out task's.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Paused mid-verification. Models, facts, projections, builders, planner and tests are in; the five suites build. trading api, trading core and shell suites pass. ores.ore.core.tests has 2 failures, below. |
+| Now          | Done. The three types hold their own rows, the suites pass, and the ORE engine reads and builds every recorded trade. |
 | Waiting on   | Nothing.                               |
-| Next         | 1. RateDigitalOption reads no exercise date (xml_portfolio_projection_tests.cpp:3771): read_option_block does not keep ExerciseDates for this carrier; read them into the exercise schedule rows as the swaption reader does. 2. The CBO refusal test fixture (line ~4023) is not schema-valid, as the schema requires BondBasketData in CBOStructure; add a minimal BondBasketData, CBOTranches and ScheduleData. 3. Record the generated trades with the engine, close the task, raise the PR. |
+| Next         | Nothing. The work is committed; the PR and its review follow. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -53,9 +53,20 @@ stated inline is the split-out task's.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each type moves to the family whose facts it states, and the class-read entry
+that held it as parameter rows is deleted, so the scripted table keeps only the
+generic =ScriptedTrade= form.
+
+- =RateDigitalOption= gains a fact table of its own under the rates header, with
+  its option block in the shared option rows the family already uses.
+- =CBO= gains a credit fact table holding its investment. A structure stated
+  inline is refused, with the message naming the split task, because its bond
+  basket holds whole bond definitions.
+- =BondFutureOption= needs no new table: the bond family already states a future
+  and an option, so the type holds one row of each under the bond header.
+
+The builders move to the family files, the planner branches with them, and the
+tests follow, so each family's code sits together.
 
 * Measurements
 
@@ -69,7 +80,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three types' own tables | =rate_digital_option_instruments= and =cbo_instruments= created; =BondFutureOption= on the existing bond future and option rows | =ls projects/ores.sql/create/trading/ | grep -c "rate_digital\|_cbo_"= | =4b138a71b9= |
+| The scripted table's class-read list | 23 entries before, 20 after the three leave | =grep -c "class_read" projects/ores.ore/core/src/domain/scripted_instrument_projection.cpp= | =4b138a71b9= |
+| The ORE core suite | 520655 assertions, 564 cases, all pass | =ores.ore.core.tests= | =4b138a71b9= |
+| The trading API suite | 18390 assertions, 4874 cases, all pass | =ores.trading.api.tests= | =4b138a71b9= |
+| The trading core suite | 1671 assertions, 258 cases, all pass | =ores.trading.core.tests= | =4b138a71b9= |
+| The shell's trading suite | 4044 assertions, 1432 cases, all pass | =ores.shell.trading.tests= | =4b138a71b9= |
+| The planner's suite, including the booking round trip through the database | 4289 assertions, 147 cases, all pass | =ores.synthetic.core.tests= | =4b138a71b9= |
+| The ORE engine on the recorded trades | 244 assertions, no error of the trade kind | =ORES_ORE_EXECUTABLE=<engine> ores.synthetic.core.tests "[ore_engine]"= | =4b138a71b9= |
+| The handler permission seeds | 18 codes seeded, 1518 codes over 10 components checked | =python projects/ores.codegen/scripts/check_handler_permissions.py= | =98936dd85= |
+| The codegen suite | 1806 passed, 2 failed; both failures on =origin/main= before this branch (the row-level-security flag) | =pytest projects/ores.codegen/tests -q= | =98936dd85= |
 
 * Notes
 
@@ -105,3 +125,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=RateDigitalOption= holds its facts on a rates table of its own, under the rates
+header, with its option block in the shared option rows. =CBO= holds its
+investment on a credit fact table under the credit header, which names the
+structure as an internal reference; a structure stated inline is refused with
+the message pointing at [[id:70A950DD-F516-44D3-8859-6FEA30766589][the task that holds it]].
+=BondFutureOption= needed no new table: it states one bond future row and one
+bond option row under the bond header, and the bond reader now asks for both by
+type rather than one per trade.
+
+The class-read entries for the three are gone, so the scripted table holds only
+the generic =ScriptedTrade= form. The builders, planner branches and tests moved
+to their families.
+
+The suites the change touches pass on the merged tree — 520,655 assertions over
+the ORE core's 564 cases, 18,390 over the trading API's 4,874, 1,671 over the
+trading core's 258, 4,044 over the shell's 1,432, and 4,289 over the planner's
+147 — and the ORE engine reads and builds every recorded trade with no error of
+the trade kind.
+
+Two defects the paused run left are fixed: the rate digital option's writer
+stated the option block and not the exercise dates the reader keeps as schedule
+rows, and the CBO refusal test's fixture was not schema-valid, so it tested
+binding rather than the refusal. The bond future option's recorded portfolio
+gains the settlement its option row now states, and the rebook test records one
+shape difference: a bond's rows come back in its carrier, and the flat arrays
+beside it are the write-time shape.

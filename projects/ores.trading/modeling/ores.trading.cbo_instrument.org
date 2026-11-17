@@ -202,7 +202,6 @@ annotations; domain and repository profiles regenerate correctly.
 
 #+begin_src cpp :name includes
 #include <chrono>
-#include <optional>
 #include <string>
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/uuid.hpp>

@@ -8,7 +8,7 @@
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/compute-how-far-a-surface-reaches
-#+pr:
+#+pr: 4808
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4808][#4808]] | [analytics,synthetic] Report how far a pair's sample reaches |
 
 * Review
 

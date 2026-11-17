@@ -525,9 +525,12 @@ using ores::iam::workflow::read_population_knobs;
 using ores::iam::workflow::provision_tenant_parameter;
 
 /// The codes each class's planner cycles, as the handler resolves them.
+///
+/// The bond count is eleven: the option on a bond future joined the catalogue,
+/// and the planner draws it with the other bond codes.
 std::size_t codes_of(const std::string& asset_class) {
     if (asset_class == "bond")
-        return 10;
+        return 11;
     if (asset_class == "commodity")
         return 25;
     if (asset_class == "interest_rates")
@@ -626,20 +629,21 @@ TEST_CASE("a run that states no size keeps the counts its recipe states", "[popu
 TEST_CASE("a mix states each class's share of the total, remainder first", "[population_knobs]") {
     auto assignments = all_configs();
     apply_population_knobs(
-        assignments, read_population_knobs(page_mix(1000, "population_fx_percent", 25)), codes_of);
+        assignments, read_population_knobs(page_mix(1100, "population_fx_percent", 25)), codes_of);
 
-    // Forty bond trades over four configs is ten each.
+    // Forty-four bond trades over four configs is eleven each, which is the
+    // floor: eleven bond codes and one config per entity.
     for (const auto count : counts_of(assignments, "bond"))
-        CHECK(count == 10);
+        CHECK(count == 11);
 
-    // Two hundred and fifty fx trades over four configs is sixty-two with two
-    // spare, and the spare goes to the first configs.
+    // Two hundred and seventy-five fx trades over four configs is sixty-eight
+    // with three spare, and the spare goes to the first configs.
     const auto fx = counts_of(assignments, "fx");
     REQUIRE(fx.size() == 4);
-    CHECK(fx[0] == 63);
-    CHECK(fx[1] == 63);
-    CHECK(fx[2] == 62);
-    CHECK(fx[3] == 62);
+    CHECK(fx[0] == 69);
+    CHECK(fx[1] == 69);
+    CHECK(fx[2] == 69);
+    CHECK(fx[3] == 68);
 }
 
 TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[population_knobs]") {
@@ -664,14 +668,14 @@ TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[popul
 
     auto exact = all_configs();
     apply_population_knobs(
-        exact, read_population_knobs(page_mix(1000, "population_fx_percent", 25)), codes_of);
+        exact, read_population_knobs(page_mix(1100, "population_fx_percent", 25)), codes_of);
 
     auto scaled = all_configs();
     apply_population_knobs(
-        scaled, read_population_knobs(page_mix(1000, "population_fx_percent", 24)), codes_of);
+        scaled, read_population_knobs(page_mix(1100, "population_fx_percent", 24)), codes_of);
 
-    CHECK(everyone(exact) == 1000);
-    CHECK(everyone(scaled) == 1000);
+    CHECK(everyone(exact) == 1100);
+    CHECK(everyone(scaled) == 1100);
 
     /*
      * A mix of ninety-nine is not the mix of a hundred: the class whose share
@@ -689,7 +693,7 @@ TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[popul
              {"inflation", 3, 1},
              {"interest_rates", 42, 3},
              {"scripted", 3, 1}}) {
-        const auto expected = 1000.0 * static_cast<double>(share) / 99.0;
+        const auto expected = 1100.0 * static_cast<double>(share) / 99.0;
         const auto actual = static_cast<double>(class_total(scaled, asset_class));
         CHECK(actual >= expected - static_cast<double>(configs));
         CHECK(actual <= expected + static_cast<double>(configs));
@@ -714,13 +718,13 @@ TEST_CASE("a class whose share cannot hold its codes is refused with the total t
 
     /*
      * Four per cent of a hundred is four trades over four configs, and each
-     * config states ten codes, so the smallest total is a thousand.
+     * config states eleven codes, so the smallest total is eleven hundred.
      */
     CHECK_THROWS_WITH(
         apply_population_knobs(assignments,
                                read_population_knobs(page_mix(100, "population_bond_percent", 4)),
                                codes_of),
-        Catch::Matchers::ContainsSubstring("A total of 1000 is the smallest"));
+        Catch::Matchers::ContainsSubstring("A total of 1100 is the smallest"));
 }
 
 TEST_CASE("a class the run books nothing for is refused", "[population_knobs]") {
@@ -764,4 +768,39 @@ TEST_CASE("a share of zero books nothing of that class", "[population_knobs]") {
 
     for (const auto count : counts_of(assignments, "bond"))
         CHECK(count == 0);
+}
+
+TEST_CASE("the seeded total holds the bond codes the generator cycles", "[population_knobs]") {
+    /*
+     * The demonstration's seeded configs and mix: a population of eleven
+     * hundred, four per cent of it bonds, and four bond configs that each book
+     * one trade per code. Eleven codes over four configs is forty-four trades,
+     * which is exactly four per cent of eleven hundred. A total of a thousand
+     * would leave one code of each config unbooked, and the planner refuses it.
+     */
+    auto assignments = all_configs();
+    apply_population_knobs(
+        assignments, read_population_knobs(page_mix(1100, "population_bond_percent", 4)), codes_of);
+
+    const auto bond = counts_of(assignments, "bond");
+    REQUIRE(bond.size() == 4);
+    for (const auto count : bond)
+        CHECK(count == 11);
+
+    std::uint32_t total = 0;
+    for (const auto& entry : assignments)
+        total += *entry.trades_per_book;
+    CHECK(total == 1100);
+}
+
+TEST_CASE("a seeded total of a thousand cannot hold the bond codes", "[population_knobs]") {
+    /* The regression this pair guards: the seeded total did not grow when the
+     * bond code cycle did, so a fresh provision ended its trade step with no
+     * trade booked. */
+    auto assignments = all_configs();
+    CHECK_THROWS_WITH(
+        apply_population_knobs(assignments,
+                               read_population_knobs(page_mix(1000, "population_bond_percent", 4)),
+                               codes_of),
+        Catch::Matchers::ContainsSubstring("A total of 1100 is the smallest"));
 }

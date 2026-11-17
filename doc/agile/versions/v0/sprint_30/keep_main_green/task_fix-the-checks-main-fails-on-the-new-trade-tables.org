@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-17
 #+updated: 2026-11-17
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make the four local checks that the new trading instrument tables turn red pass 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -41,9 +41,25 @@ Make the four local checks that the new trading instrument tables turn red pass 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The four defects are one omission seen four ways: the tables were added to
+the schema and to the code, and not to the three things that surround a
+trading table. So each fix puts the table where its neighbours already are
+rather than inventing a new arrangement.
+
+Row-level security lives in one file per component,
+=trading_rls_policies_create.sql=, and not in the table's own script, so
+the four blocks go there, in the shape the FX instrument blocks use. The
+permission codes live in the IAM seed and follow its alphabetical order
+within the component block. The diagrams are generated, so the fix is to
+run their generator rather than to edit them.
+
+One thing is not a fix and is left alone: the reconciliation between the
+four checks and the four tables is a coincidence of naming. The
+=er-diagram= check failed because the strict parser refuses a warning at
+all, and the warnings were the missing policies; the =handler-permissions=
+check failed because the handlers name codes the seed does not hold. A
+later table that omits either will fail the same two checks, which is what
+they are for.
 
 * Measurements
 
@@ -57,7 +73,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tables the new files create | 4, every one without row-level security | `grep -n "create table" projects/ores.sql/create/trading/trading_{cash_position,fx_asian_option,fx_pairwise_variance_swap,equity_pairwise_variance_swap}_instruments_create.sql` | 67803175ce |
+| Policy statements the tables needed | 8: 4 permissive tenant, 4 restrictive party | `select tablename, policyname, permissive from pg_policies where tablename like '%instruments%'` | 95ed116fae |
+| Permission codes never seeded | 12: read, write and delete for each table | `projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_handler_permissions.py` | 67803175ce |
+| Distinct permission codes after the seed | 1509 before, 1512 after | same | 95ed116fae |
+| Strict parser warnings | 8 before, 0 after | `plantuml_er_parse_sql.py --strict` | 95ed116fae |
+| Local checks the change can break | 20 run, 20 passed | `compass check --exclude-heavy` | 95ed116fae |
 
 * Notes
 
@@ -85,3 +106,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four checks pass on this branch. The tables are isolated the way the
+tables beside them are, the codes their handlers check are seeded, and the
+strict parser reports no warning.
+
+This is proved against a database rather than against the text: the
+database was rebuilt from the schema, and the four tables come back with
+=relrowsecurity= true and eight policies, four permissive tenant policies
+and four restrictive party policies. Reading the SQL alone would not show
+whether a policy names a function that exists or a column that does not.
+
+*Gate.* =compass check --exclude-heavy= passed 20 of 20 checks for this
+diff, which classifies as =docs= and =sql=. No build was needed: the change
+holds no C++, so the heavy checks (build, database, ctest, smoke) test
+nothing it can break, and were skipped.
+
+*What this does not fix.* Four other checks are red on this branch for
+reasons that predate it and that this change does not touch. They are
+listed so the next reader does not mistake them for fallout:
+
+- =component-drift=: 26 generated files differ from their models, starting
+  with the claim rows of =script_variant_repository.cpp=.
+- =money-decimal-columns=: =volatility= in =equity_position_instrument= and
+  =quantity= in =equity_position_option_underlying= are exact decimals for
+  quantities the check treats as continuous.
+- =bff-list-requests=: the generated list request table is stale.
+- =codegen-tests=: 4 of 1809 tests fail, on the RLS junction flag, the
+  trade type catalogue and the domain includes.
+
+Each is a separate defect with its own owner and needs its own change.

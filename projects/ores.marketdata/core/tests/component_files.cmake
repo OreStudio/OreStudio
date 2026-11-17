@@ -45,6 +45,8 @@ set(files
     "market_series_eventing_integration_tests.cpp"
     "messaging_feed_system_owned_tests.cpp"
     "messaging_fixing_read_handler_tests.cpp"
+    "messaging_party_curve_blueprints_tests.cpp"
+    "messaging_party_surface_blueprints_tests.cpp"
     "messaging_provider_system_owned_tests.cpp"
     "messaging_provider_terms_handler_tests.cpp"
     "messaging_series_ticks_handler_tests.cpp"

@@ -17,7 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/service/request_retry.hpp"
+#include "ores.service/messaging/request_retry.hpp"
+#include "ores.service/messaging/service_error.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
@@ -29,14 +30,15 @@
 
 namespace {
 
-using ores::iam::service::call_with_retry;
-using ores::iam::service::classify_request_failure;
-using ores::iam::service::do_unless_already_done;
-using ores::iam::service::request_failure_class;
-using ores::iam::service::request_retry_policy;
-using ores::iam::service::request_with_retry;
-using ores::iam::service::retry_attempt;
-using ores::iam::service::retry_request_options;
+using ores::service::messaging::call_with_retry;
+using ores::service::messaging::classify_request_failure;
+using ores::service::messaging::do_unless_already_done;
+using ores::service::messaging::request_failure_class;
+using ores::service::messaging::request_retry_policy;
+using ores::service::messaging::request_with_retry;
+using ores::service::messaging::retry_attempt;
+using ores::service::messaging::retry_request_options;
+using ores::service::messaging::service_error;
 using ores::nats::service::nats_connect_error;
 using ores::nats::service::nats_error_kind;
 
@@ -94,8 +96,8 @@ TEST_CASE("a_timeout_and_a_missing_responder_are_transient", "[request_retry]") 
 }
 
 TEST_CASE("a_refusal_and_an_unnamed_fault_are_not_retried", "[request_retry]") {
-    CHECK(classify_request_failure(ores::iam::service::internal_request_client::service_error(
-              "forbidden", "test.v1.ops.answer")) == request_failure_class::refused);
+    CHECK(classify_request_failure(service_error("forbidden", "test.v1.ops.answer")) ==
+          request_failure_class::refused);
     CHECK(classify_request_failure(nats_connect_error(nats_error_kind::tls_error, "tls")) ==
           request_failure_class::permanent);
     CHECK(classify_request_failure(std::runtime_error("the reply did not parse")) ==
@@ -123,9 +125,7 @@ TEST_CASE("a_request_that_misses_its_deadline_once_and_answers_is_retried", "[re
 
 TEST_CASE("a_refusal_is_thrown_at_once_with_the_servers_reason", "[request_retry]") {
     scripted_client client;
-    client.script.push_back([]() -> int {
-        throw ores::iam::service::internal_request_client::service_error("forbidden", "test");
-    });
+    client.script.push_back([]() -> int { throw service_error("forbidden", "test"); });
 
     wait_recorder waits;
     std::string said;

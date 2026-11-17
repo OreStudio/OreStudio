@@ -71,10 +71,11 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
     // for it and the step is refused here rather than worked by the wrong
     // service.
     CHECK(classify_step_kind("subscribe_market_data") == provision_step_action::refuse);
-    CHECK(classify_step_kind("publish_party_curves") ==
-          provision_step_action::publish_party_curves);
-    CHECK(classify_step_kind("give_party_surface_blueprints") ==
-          provision_step_action::give_party_surface_blueprints);
+    // The curves are published by the service that owns them, so the executor
+    // has no action for the step that hands a party its copy of the blueprints.
+    CHECK(classify_step_kind("publish_party_curves") == provision_step_action::refuse);
+    // The surface blueprints are marketdata's work too.
+    CHECK(classify_step_kind("give_party_surface_blueprints") == provision_step_action::refuse);
     CHECK(classify_step_kind("publish_party_forwards") ==
           provision_step_action::publish_party_forwards);
     CHECK(classify_step_kind("publish_party_surfaces") ==

@@ -103,9 +103,10 @@ inline constexpr std::string_view synthetic_provision_tenant_step_subject =
 /**
  * @brief The subject ores.marketdata serves the provisioning steps it owns.
  *
- * ores.marketdata owns the subscriptions and the routes, so the step that gives
- * the parties their market data runs there and reaches the catalogue and the
- * reference data through its own tenant-scoped session.
+ * ores.marketdata owns the subscriptions, the routes, the curves and the
+ * volatility surfaces, so the steps that give the parties their market data and
+ * their own copy of the curve and surface blueprints run there and reach the
+ * catalogue and the reference data through their own tenant-scoped session.
  */
 inline constexpr std::string_view marketdata_provision_tenant_step_subject =
     "marketdata.v1.ops.provision_tenant_step";
@@ -234,6 +235,8 @@ inline constexpr step_owner provision_step_owners[] = {
     {build_calendars_step_kind, refdata_provision_tenant_step_subject},
     {generate_trades_step_kind, synthetic_provision_tenant_step_subject},
     {subscribe_market_data_step_kind, marketdata_provision_tenant_step_subject},
+    {publish_party_curves_step_kind, marketdata_provision_tenant_step_subject},
+    {give_party_surface_blueprints_step_kind, marketdata_provision_tenant_step_subject},
 };
 
 /**

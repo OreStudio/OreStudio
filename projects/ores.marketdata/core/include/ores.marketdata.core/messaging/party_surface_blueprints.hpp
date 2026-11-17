@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_PARTY_SURFACE_BLUEPRINTS_HPP
-#define ORES_IAM_MESSAGING_PARTY_SURFACE_BLUEPRINTS_HPP
+#ifndef ORES_MARKETDATA_CORE_MESSAGING_PARTY_SURFACE_BLUEPRINTS_HPP
+#define ORES_MARKETDATA_CORE_MESSAGING_PARTY_SURFACE_BLUEPRINTS_HPP
 
-#include "ores.iam.core/messaging/party_curve_blueprints.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.core/messaging/party_curve_blueprints.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_blueprint.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_pillar.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_pillar_source.hpp"
@@ -31,10 +31,10 @@
 #include <utility>
 #include <vector>
 
-namespace ores::iam::messaging {
+namespace ores::marketdata::messaging {
 
 /// The system's surface blueprints, with every series they name.
-struct system_surface_blueprints {
+struct surface_blueprints {
     std::vector<ores::refdata::domain::fx_vol_surface_blueprint> blueprints;
     std::vector<ores::refdata::domain::fx_vol_surface_pillar> pillars;
     std::vector<ores::refdata::domain::fx_vol_surface_pillar_source> sources;
@@ -73,7 +73,7 @@ struct party_surface_plan {
  * strikes. Each pillar source reads the party's series of the same item from the same provider,
  * and each blueprint writes its own output series under the party.
  */
-[[nodiscard]] inline party_surface_plan plan_party_surfaces(const system_surface_blueprints& system,
+[[nodiscard]] inline party_surface_plan plan_party_surfaces(const surface_blueprints& system,
                                                             const party_surface_holdings& party) {
     std::map<boost::uuids::uuid, const ores::marketdata::domain::market_series*> system_series;
     for (const auto& s : system.series)

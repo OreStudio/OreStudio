@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_CORE_TESTS_PARTY_BLUEPRINT_FIXTURE_HPP
-#define ORES_IAM_CORE_TESTS_PARTY_BLUEPRINT_FIXTURE_HPP
+#ifndef ORES_MARKETDATA_CORE_TESTS_PARTY_BLUEPRINT_FIXTURE_HPP
+#define ORES_MARKETDATA_CORE_TESTS_PARTY_BLUEPRINT_FIXTURE_HPP
 
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.testing/uuid_of.hpp"
@@ -28,7 +28,7 @@
  * @brief The rows the tests of a party's blueprints share: the system party the parties copy
  * from, and the market series the blueprints name.
  */
-namespace ores::iam::tests {
+namespace ores::marketdata::tests {
 
 /// The system party, whose blueprints are the templates a party copies.
 inline const auto system_party = ores::testing::uuid_of("00000000-0000-4000-8000-000000000001");

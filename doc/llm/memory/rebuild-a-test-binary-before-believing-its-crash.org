@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 7CD14D35-A19D-4B70-A86C-8B9324F68E61
+:END:
+#+title: Rebuild a test binary before believing its crash
+#+description: A stale test binary against a newer library reads a type at an older offset and crashes in a destructor.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+
+A SIGSEGV in a destructor, or a vector size that reads as a fill pattern such as 0xdf2df2df2df2df2f, is usually a stale test binary compiled against an older layout of a type whose library was rebuilt.
+
+*Why:* split_conventions returns a conventions_package by value into a caller-sized slot, so a newer library writes a member the older caller's object does not hold, and the caller destroys a vector at the old offset.
+
+*How to apply:* Rebuild the whole test target, not only the library, before believing a crash: build the target and rerun. Suspect the build tree before the code when a suite dies in a destructor while a neighbouring suite that was rebuilt passes.

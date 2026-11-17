@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_SERVICE_REQUEST_RETRY_HPP
-#define ORES_IAM_SERVICE_REQUEST_RETRY_HPP
+#ifndef ORES_SERVICE_MESSAGING_REQUEST_RETRY_HPP
+#define ORES_SERVICE_MESSAGING_REQUEST_RETRY_HPP
 
-#include "ores.iam.core/service/internal_request_client.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
+#include "ores.service/messaging/service_error.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -36,7 +36,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace ores::iam::service {
+namespace ores::service::messaging {
 
 /**
  * @brief Whether a failed request is worth asking again.
@@ -70,7 +70,7 @@ enum class request_failure_class {
  * says it would pass.
  */
 inline request_failure_class classify_request_failure(const std::exception& failure) {
-    if (dynamic_cast<const internal_request_client::service_error*>(&failure))
+    if (dynamic_cast<const service_error*>(&failure))
         return request_failure_class::refused;
 
     if (const auto* transport =
@@ -184,7 +184,7 @@ struct retry_call_options {
 template <typename Operation>
 auto call_with_retry(Operation&& operation, const retry_call_options& options)
     -> std::invoke_result_t<Operation, const retry_attempt&> {
-    static auto lg = ores::logging::make_logger("ores.iam.service.request_retry");
+    static auto lg = ores::logging::make_logger("ores.service.messaging.request_retry");
 
     auto delay = options.policy.first_delay;
     for (int attempt = 1;; ++attempt) {
@@ -241,9 +241,8 @@ auto call_with_retry(Operation&& operation, const retry_call_options& options)
  * @param work Does the work and answers its result.
  */
 template <typename ReadBack, typename Work>
-auto do_unless_already_done(const retry_attempt& attempt,
-                            ReadBack&& read_back,
-                            Work&& work) -> std::invoke_result_t<Work> {
+auto do_unless_already_done(const retry_attempt& attempt, ReadBack&& read_back, Work&& work)
+    -> std::invoke_result_t<Work> {
     if (attempt.number > 1) {
         if (auto found = read_back())
             return std::move(*found);

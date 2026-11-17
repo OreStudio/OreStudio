@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch: feature/run-each-step-in-the-service-that-owns-it
-#+pr: 4735
+#+branch: feature/serve-the-party-curve-step-in-marketdata
+#+pr: 4793
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -117,20 +117,94 @@ task and name that file in the Command column.
 | =ores.iam.api.tests= | 970 cases, 4184 assertions | =ores.iam.api.tests= | =394eca3824= |
 | =ores.marketdata.service.tests= | 285 of 287 pass; the two failures are =app_feed_ingest_loop_tests= cases that fail in isolation and do not touch step dispatch | =ores.marketdata.service.tests= | =394eca3824= |
 | =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
+| Step kinds ores.marketdata serves | 2 (=subscribe_market_data=, =publish_party_curves=) | =grep -c "routes.on" projects/ores.marketdata/service/src/messaging/provisioning_step_registrar.cpp= | =c9d9f2b052= |
+| The run with the curve step in marketdata | passed: =publish_party_curves: <party>: published 20, already published 0, not published 0= for each of four parties, as =marketdata= | =./compass.sh smoke ticks --fresh= | =1206847bcf= |
+| The catalogue the service reads | the installation's 20 curve blueprints with their pillars, and the surface blueprints with their pillars and sources, read in the system tenant through the service's own context | =read_curve_catalogue= and =read_surface_catalogue= in marketdata's provisioning step handler | =55c6b98021= |
+| =ores.marketdata.core.tests= | passed, 707.7 s | =ctest -R ores.marketdata.core.tests= | =c9d9f2b052= |
+| =ores.iam.api.tests= | passed, 2.3 s | =ctest -R ores.iam.api.tests= | =c9d9f2b052= |
+| =ores.iam.core.tests= | passed, 35.4 s | =ctest -R ores.iam.core.tests= | =c9d9f2b052= |
+| =ores.inbox.core.tests= | passed, 24.3 s, including =a_service_acting_in_a_tenant_is_its_maker_read_where_it_lives= | =ctest -R ores.inbox.core.tests= | =8bc32fab9f= |
+| =ores.refdata.core.tests= | 41 of 42 cases pass; =curve_configuration_database_roundtrip_tests= segfaults on =origin/main='s repositories too | =ctest -R ores.refdata.core.tests= | =8bc32fab9f= |
+| Step kinds ores.marketdata serves | 3 (=subscribe_market_data=, =publish_party_curves=, =give_party_surface_blueprints=) | =grep -c "routes.on" projects/ores.marketdata/service/src/messaging/provisioning_step_registrar.cpp= | =29b1e86952= |
+| The run with both copy steps in marketdata | passed: =publish_party_curves: <party>: published 20, already published 0, not published 0= and =give_party_surface_blueprints: <party>: 10 written, 10 held, 0 waiting= for each of four parties, and the two steps ran interleaved on the service's two workers | =./compass.sh smoke ticks --fresh= | =045c229741= |
+| =ores.marketdata.service.tests= | passed, 33.3 s (the two =app_feed_ingest_loop_tests= cases that failed on the previous tree pass here) | =ctest -R ores.marketdata.service.tests= | =77635bb41c= |
+| =ores.iam.api.tests= | passed, 2.4 s | =ctest -R ores.iam.api.tests= | =77635bb41c= |
+| =ores.iam.core.tests= | passed, 28.8 s | =ctest -R ores.iam.core.tests= | =77635bb41c= |
+| =ores.marketdata.core.tests= | passed, 1105 s | =ctest -R ores.marketdata.core.tests= | =77635bb41c= |
+| =ores.refdata.core.tests= | 548 cases, 6172 assertions, all pass once the stale test binary is rebuilt | =ores.refdata.core.tests= after rebuilding =ores.ore.core.tests= and =ores.refdata.core.tests= | =3d59918da4= |
+| The gates this branch pays for | =format=, =unity-collisions=, =cmake-sources=, =exported-types=, =org-links=, =backlog-indexes=, =sql-reachability= pass; =component-drift= fails on one file that is main's (=configuration_document_protocol.hpp=) | =python3 build/scripts/local_checks.py --only ...= | =77635bb41c= |
 
 * Notes
 
+- The rest of step 4 is not the same shape as the first three kinds. Two of the
+  remaining kinds read the *system* tenant's blueprints: =publish_party_curves=
+  copies the system's curve blueprints and =give_party_surface_blueprints= the
+  system's surface blueprints, both through an administrator session in the
+  system tenant. A service session cannot read the system tenant, and by design
+  it is refused there, so those two need the blueprints to reach the tenant by
+  another route before they can move. That is a decision, not a port.
+- Two more bring machinery rather than only requests: the forwards and surfaces
+  kinds retry a request and read back what an earlier attempt did, through
+  =request_retry.hpp=, which lived in iam.core. It has moved to ores.service,
+  with the refusal error type it shares with iam's internal client, so a service
+  that is not iam can retry a step's work; that move changes no behaviour and
+  leaves no coupling behind.
+
 * Notes
 
-- The subscription step's move copied the step envelope (=step()=: idempotency,
-  decode, commit, reject) and its =ask()= helper from the synthetic handler,
-  which copied them from refdata's. Three services now hold the same shape, and
-  it belongs beside =step_routes= and =serve_step_commands= in ores.service.
-  Captured rather than refactored here, because a fourth copy is what a
-  refactor should answer.
-- The moved handler has no case of its own: the dispatch and the classifier are
-  tested, and marketdata's messaging harness could hold the foreign-kind and
-  unnamed-party refusals.
+- The two blueprint-copying kinds were held by how a blueprint reaches a
+  tenant, not by the steps. The story decides it: a service reads the
+  installation's blueprints in the system tenant as itself, through its own
+  database context, so neither step enters an administrator session and
+  nothing a tenant may read changes. =publish_party_curves= moved to
+  ores.marketdata on that decision, and =give_party_surface_blueprints= is
+  moving now: it copies each party's surfaces in that party's session, as the
+  curve step does.
+- The planners moved with it. =plan_party_curves= and =plan_party_surfaces=,
+  with the fixture their tests share, are in ores.marketdata.core now: they
+  are pure planning over marketdata and reference data types, and the service
+  that runs the steps is theirs. Once the surface step moves, iam links that
+  library no more.
+- Story Decisions and the task's Measurements have to be read together: a
+  step's authority is the session it holds, and the catalogue read is the
+  reason this step needs no other.
+- A party's plan is one act but not one request. The first run on the rebased
+  tree failed with "A batch of fx_vol_surface_pillar carries more than 1000
+  elements": a party's surface plan holds more rows than a write request may
+  carry, so both writers send their rows in batches of 1000. The run then
+  passed, with the four parties' curves and surfaces written.
+- The catalogue is read by the service, not by the tenant. Widening the
+  blueprint tables to every tenant worked and was withdrawn: a read is narrowed
+  twice, by the policy and by the repository, so the repositories had to widen
+  too, and that changed every reader. The scheduled =publish_due_curves= sweep
+  then planned 22 curves instead of 2, and its suite caught it. ores.marketdata
+  now reads the installation's rows in the system tenant through its own
+  database context, as =feed_ingest_loop= already does, and no policy, model or
+  repository changed. The commits that widened it stay in this branch's history
+  and are reverted by the tree; squash them away when the branch is rebased for
+  its PR.
+- The publish the step raises is an approval request, and the account that
+  raises it is the service's, which lives in the system tenant. The inbox reads
+  the maker where it lives for a service account, and a request a policy
+  authorised is decided by the installation, so the rule that keeps a person
+  from deciding their own request no longer refuses it. Case
+  =a_service_acting_in_a_tenant_is_its_maker_read_where_it_lives=, and the acme
+  run before the catalogue was withdrawn proves the path end to end: 20 curves
+  published for each of four parties, raised and closed as =marketdata=.
+- The =ores.refdata.core.tests= segfault was a stale test binary, not a defect.
+  =curve_configuration_database_roundtrip_tests= died in the destructor of a
+  =std::vector<fx_convention>= whose size read as =0xdf2df2df2df2df2f=, the
+  fill of memory no constructor ever wrote. =libores.ore.core.so= had been
+  rebuilt after =conventions_package= gained its =fx= member, and the test
+  binaries had not: =split_conventions= returns by value into a slot the
+  *caller* sizes, so the newer library wrote the member past the older caller's
+  object, and the caller then destroyed a vector at the old offset. Rebuilding
+  =ores.ore.core.tests= and =ores.refdata.core.tests= fixed both suites with no
+  source change: 548 cases and 6172 assertions in refdata, 31 cases and 43805
+  assertions in the ore conventions tests. The earlier note blaming =main= was
+  wrong; the five widened repositories were a coincidental suspect, and the same
+  stale binary was behind the two =app_feed_ingest_loop_tests= failures that
+  disappeared on the next build.
 - =ores.marketdata.service.tests= fails two =app_feed_ingest_loop_tests= cases
   on this tree. They fail in isolation, they do not touch step dispatch, and
   the file changed on main this week; nobody has shown they are main's, so the
@@ -151,6 +225,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4793][#4793]] | [marketdata,iam] Serve the party curve and surface steps in marketdata |
 | [[https://github.com/OreStudio/OreStudio/pull/4735][#4735]] | [marketdata,iam] Serve the market data subscription step in marketdata |
 | [[https://github.com/OreStudio/OreStudio/pull/4727][#4727]] | [synthetic,iam] Serve the generated trades step in synthetic |
 | [[https://github.com/OreStudio/OreStudio/pull/4690][#4690]] | [iam,refdata,service] Dispatch a provisioning step to the service that owns it |

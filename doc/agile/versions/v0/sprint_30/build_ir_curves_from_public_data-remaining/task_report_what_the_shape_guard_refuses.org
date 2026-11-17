@@ -98,6 +98,9 @@ family and the field.
 | Assertions that fail with the join reverted | 0 of 9 | a temporary copy of the suite with =st.tenant_id = i.tenant_id= | 7f8a3089e2 |
 | Counts the response carries for refusals and unguarded families | =refused_count= and =unstated_count= | =backfill_series_identity_response= in =operations_protocol.hpp= | 727350300a |
 | Identity tests after the change | 42 assertions in 17 cases, pass | `publish/bin/ores.marketdata.core.tests "[series_identity]"` | 727350300a |
+| Market data core suite, rebased on 4834e28b1c | 28,727 assertions in 452 cases, pass | `publish/bin/ores.marketdata.core.tests` | 77e1249ab2 |
+| Shape suite | 9 tests, pass | `projects/ores.sql/test/run_tests.sh marketdata_series_identity_shape_test.sql` | 77e1249ab2 |
+| Build of the rebased tree | succeeded, 1:10:43 | `compass build` | 77e1249ab2 |
 
 * Notes
 

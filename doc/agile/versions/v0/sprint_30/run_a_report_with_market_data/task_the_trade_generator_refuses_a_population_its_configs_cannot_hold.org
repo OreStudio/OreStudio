@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/the-trade-generator-refuses-a-population-its-configs-cannot-hold
-#+pr: 4828
+#+pr: 4830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -91,6 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4830][#4830]] | [agile] Hold the next asset classes until rates and FX are signed off |
 | [[https://github.com/OreStudio/OreStudio/pull/4828][#4828]] | [iam] Hold the bond codes the seeded population cycles |
 
 * Review

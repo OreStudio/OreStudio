@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/collapse-the-double-writers
-#+pr:
+#+pr: 4833
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -198,7 +198,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4833][#4833]] | [refdata,dq,iam,codegen] Read the world catalogue where it lies |
 
 * Review
 

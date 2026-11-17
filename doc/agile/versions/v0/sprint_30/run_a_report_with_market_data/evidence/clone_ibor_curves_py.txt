@@ -1,0 +1,116 @@
+"""Add IBOR curves by cloning an existing curve's rows in place.
+
+Each new curve copies every row its template curve has, in the statement the
+template's row sits in, right after it: the bootstrap config insert, the pillar
+insert, the output and quote series, and their asset class rows. Only the ids,
+the curve name and the index tenor change, so the new rows follow the existing
+pattern exactly. Ids are uuid5 of a fixed namespace, the new curve and the
+template id they replace, so a rerun writes the same ids.
+"""
+import re
+import uuid
+
+NS = uuid.uuid5(uuid.NAMESPACE_URL, "https://orestudio.github.io/ibor-curves")
+UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+ID = re.compile(f"'({UUID})'")
+
+CONFIGS = "projects/ores.sql/populate/refdata/refdata_ir_curve_bootstrap_ibor_configs_populate.sql"
+SERIES = "projects/ores.sql/populate/marketdata/marketdata_market_series_ibor_curves_populate.sql"
+
+NEW = [("GBP-LIBOR-6M", "GBP-LIBOR-3M"), ("GBP-LIBOR-12M", "GBP-LIBOR-3M"),
+       ("GBP-LIBOR-1W", "GBP-LIBOR-3M"), ("EUR-EURIBOR-12M", "EUR-EURIBOR-6M"),
+       ("EUR-EURIBOR-1W", "EUR-EURIBOR-6M")]
+
+
+def tenor(curve):
+    return curve.rsplit("-", 1)[1]
+
+
+def statements(text):
+    parts, start = [], 0
+    for m in re.finditer(r";\n", text):
+        parts.append(text[start:m.end()])
+        start = m.end()
+    parts.append(text[start:])
+    return parts
+
+
+def config_statement(parts, curve):
+    return next(i for i, s in enumerate(parts)
+                if "ir_curve_bootstrap_configs_tbl (" in s and f"'{curve}', '{curve[:3]}'," in s)
+
+
+def pillar_statement(parts, config_id):
+    return next(i for i, s in enumerate(parts)
+                if "ir_curve_bootstrap_pillars_tbl (" in s and f"'{config_id}'" in s)
+
+
+def template(configs, curve):
+    parts = statements(configs)
+    config_id, output_id = ID.findall(parts[config_statement(parts, curve)])[:2]
+    pillars = parts[pillar_statement(parts, config_id)]
+    pillar_ids = re.findall(f"\\('({UUID})', ores_utility_system_tenant_id_fn", pillars)
+    quote_ids = [i for i in dict.fromkeys(ID.findall(pillars))
+                 if i not in pillar_ids and i != config_id]
+    return config_id, output_id, pillar_ids, quote_ids
+
+
+def renamer(new, old_curve, ids):
+    mapping = {old: str(uuid.uuid5(NS, f"{new}:{old}")) for old in ids}
+
+    def rename(text):
+        text = ID.sub(lambda m: f"'{mapping.get(m.group(1), m.group(1))}'", text)
+        text = text.replace(old_curve, new)
+        text = text.replace(f"&tenor={tenor(old_curve)}'", f"&tenor={tenor(new)}'")
+        return text.replace(f"'{new[:3]}', '{tenor(old_curve)}',", f"'{new[:3]}', '{tenor(new)}',")
+    return rename
+
+
+def clone_configs(configs):
+    parts = statements(configs)
+    for new, old in reversed(NEW):
+        config_id, output_id, pillar_ids, quote_ids = template(configs, old)
+        rename = renamer(new, old, [config_id, output_id] + pillar_ids + quote_ids)
+        p = pillar_statement(parts, config_id)
+        parts.insert(p + 1, rename(parts[p]))
+        c = config_statement(parts, old)
+        parts.insert(c + 1, rename(parts[c]))
+    return "".join(parts)
+
+
+def row(text, row_id):
+    m = re.search(f"    \\(\\n        '{row_id}',\\n(?:(?!    \\)).*\\n)*    \\)", text)
+    return m
+
+
+def clone_series(series, configs):
+    for new, old in reversed(NEW):
+        config_id, output_id, pillar_ids, quote_ids = template(configs, old)
+        ids = [output_id] + quote_ids
+        rename = renamer(new, old, ids)
+        for run in range(2):
+            found = []
+            pos = 0
+            for i in ids:
+                m = None
+                for cand in re.finditer(f"    \\(\\n        '{i}',\\n(?:(?!    \\)).*\\n)*    \\)", series):
+                    m = cand
+                    if run == 0:
+                        break
+                found.append(m)
+            last = max(found, key=lambda m: m.end())
+            ordered = sorted(found, key=lambda m: m.start())
+            clones = ",\n".join(rename(m.group(0)) for m in ordered)
+            series = series[:last.end()] + ",\n" + clones + series[last.end():]
+    return series
+
+
+def main():
+    configs = open(CONFIGS).read()
+    series = open(SERIES).read()
+    open(SERIES, "w").write(clone_series(series, configs))
+    open(CONFIGS, "w").write(clone_configs(configs))
+
+
+if __name__ == "__main__":
+    main()

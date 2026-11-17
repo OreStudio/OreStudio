@@ -3732,6 +3732,103 @@ TEST_CASE("a_swaption_straddle_and_a_rate_digital_option_hold_their_terms_as_row
     check_digital(rebuild(items[1]));
 }
 
+TEST_CASE("a_single_name_cds_option_and_a_cbo_hold_their_terms_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="CDSOption#1">
+    <TradeType>CreditDefaultSwapOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CreditDefaultSwapOptionData>
+      <CreditDefaultSwapData>
+        <IssuerId>CPTY_A</IssuerId>
+        <CreditCurveId>CPTY_A</CreditCurveId>
+        <SettlesAccrual>true</SettlesAccrual>
+        <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+        <LegData>
+          <LegType>Fixed</LegType>
+          <Payer>true</Payer>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals><Notional>10000000</Notional></Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2016-06-01</StartDate>
+              <EndDate>2021-03-01</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>WeekendsOnly</Calendar>
+              <Convention>Following</Convention>
+              <TermConvention>Unadjusted</TermConvention>
+              <Rule>CDS2015</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData><Rates><Rate>0.0058</Rate></Rates></FixedLegData>
+        </LegData>
+      </CreditDefaultSwapData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <PayOffAtExpiry>false</PayOffAtExpiry>
+        <ExerciseDates><ExerciseDate>2016-06-01</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Strike>0.01</Strike>
+      <StrikeType>Spread</StrikeType>
+      <KnockOut>true</KnockOut>
+      <Term>5Y</Term>
+    </CreditDefaultSwapOptionData>
+  </Trade>
+  <Trade id="CBO#1">
+    <TradeType>CBO</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>JuniorNote</TrancheName>
+        <Notional>1802750.20</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+    </CBOData>
+  </Trade>
+</Portfolio>)");
+    const auto check_option = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::credit_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(data->instrument.identity.trade_type_code == "CreditDefaultSwapOption");
+        REQUIRE(data->wrapped_swap.has_value());
+        CHECK(data->wrapped_swap->issuer_id == std::optional<std::string>("CPTY_A"));
+        CHECK(data->credit_default_swap_instruments.empty());
+        REQUIRE(data->index_credit_default_swap_option_instruments.size() == 1);
+        const auto& fact = data->index_credit_default_swap_option_instruments.front();
+        CHECK(fact.knock_out == std::optional<bool>(true));
+        CHECK(fact.index_term == std::optional<std::string>("5Y"));
+        CHECK(fact.strike_type == std::optional<std::string>("Spread"));
+        REQUIRE(data->strikes.size() == 1);
+        CHECK(data->legs.size() == 1u);
+        REQUIRE(data->options.size() == 1);
+    };
+    const auto check_cbo = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        std::map<std::string, std::string> values;
+        for (const auto& p : data->parameters)
+            values[p.name] = p.value.value_or("");
+        CHECK(values["CBOInvestment.TrancheName"] == "JuniorNote");
+        CHECK(values["CBOInvestment.Notional"].starts_with("1802750.2"));
+        CHECK(values["CBOInvestment.StructureId"] == "Pegasus");
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_option(items[0]);
+    check_option(rebuild(items[0]));
+    check_cbo(items[1]);
+    check_cbo(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

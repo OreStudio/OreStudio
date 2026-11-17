@@ -323,3 +323,36 @@ TEST_CASE("a_synthetic_cdo_detaching_above_the_whole_index_fails", credit_tags) 
     REQUIRE_FALSE(cdo.has_value());
     CHECK(cdo.error().term == "detachment_point");
 }
+
+TEST_CASE("a_single_name_option_wraps_the_swap_and_strikes_on_a_spread", credit_tags) {
+    conv::convention_lookup lookup(credit_conventions());
+    const credit_default_swap_option_terms terms{.swap = protection_terms(),
+                                                 .expiry = 2026y / 1 / 4,
+                                                 .strike = *decimal::from_string("0.01"),
+                                                 .kind = option_kind::call,
+                                                 .position = option_position::short_option};
+    const auto option = credit_default_swap_option_builder(lookup, terms).build();
+    REQUIRE(option.has_value());
+
+    CHECK(option->instrument.identity.trade_type_code == "CreditDefaultSwapOption");
+    REQUIRE(option->wrapped_swap.has_value());
+    CHECK(option->credit_default_swap_instruments.empty());
+    REQUIRE(option->index_credit_default_swap_option_instruments.size() == 1);
+    CHECK(option->index_credit_default_swap_option_instruments.front().strike_type == "Spread");
+    REQUIRE(option->options.size() == 1);
+    CHECK(option->options.front().long_short == "Short");
+    REQUIRE(option->strikes.size() == 1);
+    CHECK(option->strikes.front().bare_value == *decimal::from_string("0.01"));
+}
+
+TEST_CASE("a_single_name_option_that_expires_after_the_swap_starts_fails", credit_tags) {
+    conv::convention_lookup lookup(credit_conventions());
+    const credit_default_swap_option_terms terms{.swap = protection_terms(),
+                                                 .expiry = 2030y / 1 / 4,
+                                                 .strike = *decimal::from_string("0.01"),
+                                                 .kind = option_kind::put,
+                                                 .position = option_position::long_option};
+    const auto option = credit_default_swap_option_builder(lookup, terms).build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "expiry");
+}

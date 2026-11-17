@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 68862052-610A-4F3D-AF32-57070F1B0831
+:END:
+#+title: Hold a CBO structure stated inline
+#+description: A CBO read from ORE with an inline CBOStructure keeps only its investment; the bond basket, tranches, fees and schedule are lost.
+#+type: capture
+#+level: cross
+#+filetags: :trading:ore:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Hold a CBO's =CBOStructure= when a trade states it inline: the day counters,
+payment convention, currency, fees and equity kicker as columns, the
+=BondBasketData= as the bond sub-trades a basket holds, the =CBOTranches= as
+tranche rows with their legs, and the =ScheduleData= as a schedule. Let the
+CBO builder state one, so the generator can book a CBO the engine prices
+without reference data.
+
+* Why
+
+The CBO is held as its =CBOInvestment= and names a structure the reference
+data holds, as ORE's own example does. A trade that states the structure
+inline is read without it, so an import followed by an export loses the bond
+basket, the tranches, the fees and the schedule. The engine test stages no CBO
+reference data, so the generated CBO is built but not priced.
+
+* References
+
+- [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]]
+- ORE =OREData/ored/portfolio/cbo.cpp=, =populateFromCboReferenceData=.
+- ORE =Examples/Products/Input_CBO=, whose reference data states the structure.
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]

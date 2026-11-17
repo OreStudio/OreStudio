@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+    <TradeType>CBO</TradeType>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>JuniorNote</TrancheName>
+        <Notional>5817155.05</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+    </CBOData>
+  </Trade>
+  <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
+    <TradeType>CBO</TradeType>
+    <CBOData>
+      <CBOInvestment>
+        <TrancheName>JuniorNote</TrancheName>
+        <Notional>8284783.79</Notional>
+        <StructureId>Pegasus</StructureId>
+      </CBOInvestment>
+    </CBOData>
+  </Trade>
+</Portfolio>

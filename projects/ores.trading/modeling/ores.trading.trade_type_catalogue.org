@@ -100,12 +100,12 @@ absent: it is a placeholder, not a product.
 | FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | scripted_instrument |
 | FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | scripted_instrument |
 | CreditDefaultSwap | Credit Default Swap | swap | native | credit! | false | false | credit_instrument |
-| CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true |  |
+| CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true | credit_instrument |
 | IndexCreditDefaultSwap | Index Credit Default Swap | swap | native | credit! | false | true | credit_instrument |
 | IndexCreditDefaultSwapOption | Index Credit Default Swap Option | option | native | credit! | false | false | credit_instrument |
 | SyntheticCDO | Synthetic CDO |   | native | credit! | false | false | credit_instrument |
 | CreditLinkedSwap | Credit Linked Swap | swap | native | credit! | false | false | credit_instrument |
-| CBO | Collateralised Bond Obligation |   | native | credit! | false | false |  |
+| CBO | Collateralised Bond Obligation |   | native | credit! | false | false | scripted_instrument |
 | BondFutureOption | Bond Future Option |   | native | bond! | true | false | scripted_instrument |
 | Bond | Fixed Income Bond | security | native | bond! | false | false | bond_instrument |
 | ForwardBond | Forward Bond | forward | native | bond! | false | false | bond_instrument |

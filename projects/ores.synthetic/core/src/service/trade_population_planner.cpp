@@ -2440,7 +2440,9 @@ constexpr std::string_view credit_types[] = {"CreditDefaultSwap",
                                              "IndexCreditDefaultSwapOption",
                                              "CreditLinkedSwap",
                                              "RiskParticipationAgreement",
-                                             "SyntheticCDO"};
+                                             "SyntheticCDO",
+                                             "CreditDefaultSwapOption",
+                                             "CBO"};
 
 constexpr std::size_t credit_type_count = std::size(credit_types);
 
@@ -2556,6 +2558,25 @@ build_credit_trade(const domain::trade_generation_scope& scope,
     if (type == "CreditLinkedSwap")
         return batch_of(tb::credit_linked_swap_builder(conventions, protection(start)).build(),
                         type);
+    if (type == "CreditDefaultSwapOption") {
+        // The option expires before the swap it enters starts, as the index option does.
+        const auto expiry = add_months(scope.as_of_date, 3);
+        const tb::credit_default_swap_option_terms terms{
+            .swap = protection(year_month_day{sys_days{expiry} + days{1}}),
+            .expiry = expiry,
+            .strike = money(draw(name, 2) < 0.5 ? 0.01 : 0.05),
+            .kind = first_way(entry, 2) ? tb::option_kind::call : tb::option_kind::put,
+            .position = first_way(entry) ? tb::option_position::long_option :
+                                           tb::option_position::short_option};
+        return batch_of(tb::credit_default_swap_option_builder(conventions, terms).build(), type);
+    }
+    if (type == "CBO")
+        // An investment in the junior note of the structure ORE's own example names.
+        return scripted_batch_of(tb::cbo_builder({.tranche_name = std::string("JuniorNote"),
+                                                  .notional = money(entry.notional),
+                                                  .structure_id = std::string("Pegasus")})
+                                     .build(),
+                                 type);
     if (type == "IndexCreditDefaultSwapOption") {
         const auto expiry = add_months(scope.as_of_date, 3);
         const tb::index_credit_default_swap_option_terms terms{

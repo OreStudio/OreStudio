@@ -934,6 +934,24 @@ scripted_result rate_digital_option_builder::build() const {
     return out.take();
 }
 
+cbo_builder::cbo_builder(cbo_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result cbo_builder::build() const {
+    if (terms_.tranche_name.get().empty())
+        return std::unexpected(build_error{"tranche_name", "must name a tranche"});
+    if (terms_.structure_id.get().empty())
+        return std::unexpected(build_error{"structure_id", "must name a structure"});
+    if (auto refusal = positive_amount("notional", terms_.notional.get()))
+        return std::unexpected(std::move(*refusal));
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("CBOInvestment.TrancheName", "text", terms_.tranche_name.get());
+    out.value("CBOInvestment.Notional", "decimal", scripted_text(terms_.notional.get()));
+    out.value("CBOInvestment.StructureId", "text", terms_.structure_id.get());
+    return out.take();
+}
+
 autocallable_builder::autocallable_builder(autocallable_terms terms)
     : terms_(std::move(terms)) {}
 

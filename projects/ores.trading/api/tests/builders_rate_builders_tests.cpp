@@ -361,7 +361,8 @@ TEST_CASE("a_rate_digital_option_is_its_fact_with_an_option_exercised_at_the_fix
     const auto built = rate_digital_option_builder(terms).build();
     REQUIRE(built.has_value());
     CHECK(built->header.identity.trade_type_code == "RateDigitalOption");
-    const auto* fact = std::get_if<ores::trading::domain::rate_digital_option_instrument>(&built->facts);
+    const auto* fact =
+        std::get_if<ores::trading::domain::rate_digital_option_instrument>(&built->facts);
     REQUIRE(fact != nullptr);
     CHECK(fact->index_name == "EUR-EURIBOR-6M");
     CHECK(fact->strike == *decimal::from_string("-0.005"));

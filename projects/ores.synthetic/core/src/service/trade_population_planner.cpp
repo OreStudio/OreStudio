@@ -581,15 +581,16 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
     }
     if (type == "BondFutureOption")
         // The option expires a month out, before any listed contract's delivery.
-        return built(tb::bond_future_option_builder(
-                         {.holding = holding,
-                          .contract = std::string(bond_futures[slot % 4]),
-                          .contract_notional = money(100000.0),
-                          .strike = money(std::round((100.0 + 30.0 * draw(name, 6)) * 100.0) / 100.0),
-                          .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
-                          .position = position,
-                          .expiry = add_months(scope.as_of_date, 1)})
-                         .build());
+        return built(
+            tb::bond_future_option_builder(
+                {.holding = holding,
+                 .contract = std::string(bond_futures[slot % 4]),
+                 .contract_notional = money(100000.0),
+                 .strike = money(std::round((100.0 + 30.0 * draw(name, 6)) * 100.0) / 100.0),
+                 .kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put,
+                 .position = position,
+                 .expiry = add_months(scope.as_of_date, 1)})
+                .build());
     if (type == "BondFuture")
         return built(tb::bond_future_builder({.holding = holding,
                                               .contract = std::string(bond_futures[slot % 4]),

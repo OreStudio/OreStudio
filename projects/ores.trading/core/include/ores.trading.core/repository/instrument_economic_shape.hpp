@@ -32,6 +32,7 @@
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/cash_position_instrument_repository.hpp"
+#include "ores.trading.core/repository/cbo_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_default_swap_instrument_repository.hpp"
@@ -62,6 +63,7 @@
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/rate_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
@@ -106,6 +108,7 @@ void read_instrument_components(const ores::database::context& ctx,
             append(index_credit_default_swap_option_instrument_repository{}.read_latest(ctx,
                                                                                         trade_id));
             append(risk_participation_agreement_instrument_repository{}.read_latest(ctx, trade_id));
+            append(cbo_instrument_repository{}.read_latest(ctx, trade_id));
             append(synthetic_cdo_instrument_repository{}.read_latest(ctx, trade_id));
             break;
         case domain::instrument_table::equity_accumulator_instrument:
@@ -173,6 +176,7 @@ void read_instrument_components(const ores::database::context& ctx,
             append(cap_floor_instrument_repository{}.read_latest(ctx, trade_id));
             append(fra_instrument_repository{}.read_latest(ctx, trade_id));
             append(inflation_swap_instrument_repository{}.read_latest(ctx, trade_id));
+            append(rate_digital_option_instrument_repository{}.read_latest(ctx, trade_id));
             append(knock_out_swap_instrument_repository{}.read_latest(ctx, trade_id));
             append(swaption_instrument_repository{}.read_latest(ctx, trade_id));
             append(vanilla_swap_instrument_repository{}.read_latest(ctx, trade_id));

@@ -465,7 +465,8 @@ std::expected<domain::credit_instrument_data, build_error> synthetic_cdo_builder
     return out;
 }
 
-cbo_builder::cbo_builder(cbo_terms terms) : terms_(std::move(terms)) {}
+cbo_builder::cbo_builder(cbo_terms terms)
+    : terms_(std::move(terms)) {}
 
 std::expected<domain::credit_instrument_data, build_error> cbo_builder::build() const {
     if (terms_.tranche_name.get().empty())

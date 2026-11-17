@@ -18,8 +18,8 @@
  *
  */
 #include "ores.ore.core/domain/index_reference.hpp"
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -90,8 +90,8 @@ constexpr std::string_view change_commentary = "Imported from ORE XML";
 constexpr bool is_bond_trade_type(std::string_view type) {
     return type == "Bond" || type == "ForwardBond" || type == "CallableBond" ||
            type == "ConvertibleBond" || type == "BondOption" || type == "BondTRS" ||
-           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" || type == "Ascot" ||
-           type == "BondFutureOption";
+           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" ||
+           type == "Ascot" || type == "BondFutureOption";
 }
 
 template <typename Row>
@@ -141,8 +141,8 @@ auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto bond_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto bond_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
@@ -170,8 +170,8 @@ auto decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
-auto bond_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto bond_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -631,9 +631,8 @@ struct call_term_entry {
     std::optional<std::chrono::year_month_day> start_date;
 };
 
-auto read_call_term(const record_reader& call,
-                    std::string_view list,
-                    std::string_view item) -> std::vector<call_term_entry> {
+auto read_call_term(const record_reader& call, std::string_view list, std::string_view item)
+    -> std::vector<call_term_entry> {
     std::vector<call_term_entry> result;
     const auto holder = call.child(list);
     if (!holder)
@@ -1087,9 +1086,8 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w,
-                      std::string_view name,
-                      std::string_view value) -> bool {
+auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
+    -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -1774,7 +1772,8 @@ void write_bond_future_option(record_writer trade, const bond_instrument_data& d
     if (data.strike_data)
         write_strike_data(d.child("StrikeData"), *data.strike_data);
     else if (data.option)
-        scalar_terms::write_text(d, "Strike", format_number(data.option->option_strike.to_double()));
+        scalar_terms::write_text(
+            d, "Strike", format_number(data.option->option_strike.to_double()));
 }
 
 void write_ascot(record_writer trade,

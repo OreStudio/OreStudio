@@ -74,7 +74,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "CompositeTrade")
         return instrument_table::composite_instrument;
     if (trade_type == "RateDigitalOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::rate_instrument;
     if (trade_type == "SwaptionStraddle")
         return instrument_table::rate_instrument;
     if (trade_type == "Swap")
@@ -164,9 +164,9 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "CreditLinkedSwap")
         return instrument_table::credit_instrument;
     if (trade_type == "CBO")
-        return instrument_table::scripted_instrument;
+        return instrument_table::credit_instrument;
     if (trade_type == "BondFutureOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::bond_instrument;
     if (trade_type == "Bond")
         return instrument_table::bond_instrument;
     if (trade_type == "ForwardBond")

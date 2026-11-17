@@ -19,16 +19,16 @@
  */
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
-#include <stdexcept>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -150,15 +150,15 @@ auto credit_instrument_projection_to_ore_date(const std::optional<std::chrono::y
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto credit_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto credit_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto credit_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto credit_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -394,8 +394,8 @@ auto read_index_swap(const record_reader& d) -> index_credit_default_swap_instru
 }
 
 /// The CreditDefaultSwapData element, as the swap's fact row and its premium leg.
-auto read_cds_data(credit_instrument_data& result,
-                   const std::optional<record_reader>& d) -> credit_default_swap_instrument {
+auto read_cds_data(credit_instrument_data& result, const std::optional<record_reader>& d)
+    -> credit_default_swap_instrument {
     credit_default_swap_instrument fact;
     if (d) {
         if (const auto curve = d->text("CreditCurveId"))

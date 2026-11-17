@@ -76,6 +76,7 @@
 #include "ores.trading.api/domain/callable_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument_codec.hpp"
 #include "ores.trading.api/domain/cash_position_instrument_codec.hpp"
+#include "ores.trading.api/domain/cbo_instrument_codec.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/commodity_instrument_codec.hpp"
 #include "ores.trading.api/domain/composite_instrument_codec.hpp"
@@ -123,6 +124,7 @@
 #include "ores.trading.api/domain/instrument_underlying_codec.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/range_bound_codec.hpp"
+#include "ores.trading.api/domain/rate_digital_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/rate_instrument_codec.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument_codec.hpp"
 #include "ores.trading.api/domain/scripted_instrument_codec.hpp"
@@ -372,6 +374,10 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::cap_floor_instrument> cap_floor_instruments;
     /**
+     * @brief The cbo_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::cbo_instrument> cbo_instruments;
+    /**
      * @brief The commodity_basket_constituent rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::commodity_basket_constituent> commodity_basket_constituents;
@@ -483,6 +489,11 @@ struct instrument_batch {
      * @brief The range_bound rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::range_bound> range_bounds;
+    /**
+     * @brief The rate_digital_option_instrument rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::rate_digital_option_instrument>
+        rate_digital_option_instruments;
     /**
      * @brief The risk_participation_agreement_instrument rows, keyed by trade id.
      */
@@ -912,6 +923,13 @@ inline void append(instrument_batch& batch, cap_floor_instrument v) {
 }
 
 /**
+ * @brief Adds one cbo_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, cbo_instrument v) {
+    batch.cbo_instruments.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one commodity_basket_constituent to the array that holds its type.
  */
 inline void append(instrument_batch& batch, commodity_basket_constituent v) {
@@ -1091,6 +1109,13 @@ inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
  */
 inline void append(instrument_batch& batch, range_bound v) {
     batch.range_bounds.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one rate_digital_option_instrument to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, rate_digital_option_instrument v) {
+    batch.rate_digital_option_instruments.push_back(std::move(v));
 }
 
 /**
@@ -1294,6 +1319,7 @@ template <typename T>
                                       &instrument_batch::callable_swap_instruments},
         ::ores::utility::codec::field{"cap_floor_instruments",
                                       &instrument_batch::cap_floor_instruments},
+        ::ores::utility::codec::field{"cbo_instruments", &instrument_batch::cbo_instruments},
         ::ores::utility::codec::field{"commodity_basket_constituents",
                                       &instrument_batch::commodity_basket_constituents},
         ::ores::utility::codec::field{"credit_basket_constituents",
@@ -1343,6 +1369,8 @@ template <typename T>
         ::ores::utility::codec::field{"knock_out_swap_instruments",
                                       &instrument_batch::knock_out_swap_instruments},
         ::ores::utility::codec::field{"range_bounds", &instrument_batch::range_bounds},
+        ::ores::utility::codec::field{"rate_digital_option_instruments",
+                                      &instrument_batch::rate_digital_option_instruments},
         ::ores::utility::codec::field{"risk_participation_agreement_instruments",
                                       &instrument_batch::risk_participation_agreement_instruments},
         ::ores::utility::codec::field{"swap_legs", &instrument_batch::swap_legs},

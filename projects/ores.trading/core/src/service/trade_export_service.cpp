@@ -49,6 +49,7 @@
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
 #include "ores.trading.core/service/cash_position_instrument_service.hpp"
+#include "ores.trading.core/service/cbo_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 #include "ores.trading.core/service/credit_default_swap_instrument_service.hpp"
@@ -79,6 +80,7 @@
 #include "ores.trading.core/service/index_credit_default_swap_option_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/rate_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/rate_instrument_service.hpp"
 #include "ores.trading.core/service/risk_participation_agreement_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
@@ -414,6 +416,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         auto rows = svc.get_risk_participation_agreement_instruments(credit_ids);
         take(rows, batch.risk_participation_agreement_instruments);
     }
+    if (!credit_ids.empty()) {
+        service::cbo_instrument_service svc(ctx);
+        auto rows = svc.get_cbo_instruments(credit_ids);
+        take(rows, batch.cbo_instruments);
+    }
     if (!commodity_ids.empty()) {
         service::commodity_instrument_service svc(ctx);
         auto rows = svc.get_commodity_instruments(commodity_ids);
@@ -451,6 +458,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::cap_floor_instrument_service svc(ctx);
         auto rows = svc.get_cap_floor_instruments(rate_ids);
         take(rows, batch.cap_floor_instruments);
+    }
+    if (!rate_ids.empty()) {
+        service::rate_digital_option_instrument_service svc(ctx);
+        auto rows = svc.get_rate_digital_option_instruments(rate_ids);
+        take(rows, batch.rate_digital_option_instruments);
     }
     if (!rate_ids.empty()) {
         service::swaption_instrument_service svc(ctx);

@@ -73,6 +73,7 @@ import type { BalanceGuaranteedSwapTrancheNotional } from './domain/balance_guar
 import type { CallableSwapCallDate } from './domain/callable_swap_call_date.js';
 import type { CallableSwapInstrument } from './domain/callable_swap_instrument.js';
 import type { CapFloorInstrument } from './domain/cap_floor_instrument.js';
+import type { CboInstrument } from './domain/cbo_instrument.js';
 import type { CommodityBasketConstituent } from './domain/commodity_basket_constituent.js';
 import type { CreditBasketConstituent } from './domain/credit_basket_constituent.js';
 import type { CreditDefaultSwapInstrument } from './domain/credit_default_swap_instrument.js';
@@ -99,6 +100,7 @@ import type { InstrumentStrike } from './domain/instrument_strike.js';
 import type { InstrumentUnderlying } from './domain/instrument_underlying.js';
 import type { KnockOutSwapInstrument } from './domain/knock_out_swap_instrument.js';
 import type { RangeBound } from './domain/range_bound.js';
+import type { RateDigitalOptionInstrument } from './domain/rate_digital_option_instrument.js';
 import type { RiskParticipationAgreementInstrument } from './domain/risk_participation_agreement_instrument.js';
 import type { SwapLeg } from './domain/swap_leg.js';
 import type { SwapLegAmount } from './domain/swap_leg_amount.js';
@@ -172,6 +174,7 @@ export interface InstrumentBatch {
     callable_swap_call_dates: CallableSwapCallDate[];
     callable_swap_instruments: CallableSwapInstrument[];
     cap_floor_instruments: CapFloorInstrument[];
+    cbo_instruments: CboInstrument[];
     commodity_basket_constituents: CommodityBasketConstituent[];
     credit_basket_constituents: CreditBasketConstituent[];
     credit_default_swap_instruments: CreditDefaultSwapInstrument[];
@@ -198,6 +201,7 @@ export interface InstrumentBatch {
     instrument_underlyings: InstrumentUnderlying[];
     knock_out_swap_instruments: KnockOutSwapInstrument[];
     range_bounds: RangeBound[];
+    rate_digital_option_instruments: RateDigitalOptionInstrument[];
     risk_participation_agreement_instruments: RiskParticipationAgreementInstrument[];
     swap_legs: SwapLeg[];
     swap_leg_amounts: SwapLegAmount[];

@@ -21,8 +21,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 RateDigitalOption, BondFutureOption and CBO are held natively, on tables of the
-rates, bond and credit families. A CBO holds its structure (bond basket,
-tranches, fees, schedule) as well as its investment.
+rates, bond and credit families. A CBO holds its investment; a structure
+stated inline is the split-out task's.
 
 * Status
 
@@ -77,7 +77,9 @@ The type was first held on the scripted instrument table through the
 class-read path, as parameter rows. That held every value but gave the element
 no table of its own, against the story's rule that a product ORE carries in
 both forms is held in both, and that the forms can be compared. ORE builds all three natively. The CBO structure was captured
-separately as "Hold a CBO structure stated inline", which this task absorbs.
+separately as "Hold a CBO structure stated inline". Its bond basket holds full
+bond definitions, so it is split out again as [[id:70A950DD-F516-44D3-8859-6FEA30766589][a task of its own]]; this
+task holds the investment and refuses a structure stated inline.
 
 * Test Scenarios
 

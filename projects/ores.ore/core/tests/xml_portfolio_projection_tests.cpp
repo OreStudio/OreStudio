@@ -4019,7 +4019,8 @@ TEST_CASE("a_pairwise_variance_swap_with_a_term_ore_refuses_is_refused",
         mapped(trade("<Value>FX-ECB-EUR-USD</Value>", "2027-01-08", "2")).instrument));
 }
 
-TEST_CASE("a_cbo_that_states_its_structure_inline_is_refused", "[ore][xml][portfolio][projection]") {
+TEST_CASE("a_cbo_that_states_its_structure_inline_is_refused",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto items = portfolio_projection::map(portfolio_projection::read(R"(<Portfolio>

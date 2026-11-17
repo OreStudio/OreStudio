@@ -24,6 +24,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
+#include "ores.trading.api/domain/cbo_instrument.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
@@ -70,7 +71,6 @@
 #include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
-#include "ores.trading.api/domain/cbo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <concepts>
 #include <cstddef>

@@ -40,6 +40,10 @@ export interface EquityPositionInstrumentWrite {
     currency: string;
     quantity: number;
     price: string | null;
+    volatility: string | null;
+    drift_rate: string | null;
+    observation_start_date: string | null;
+    payment_date: string | null;
     description: string;
 }
 

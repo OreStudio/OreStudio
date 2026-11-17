@@ -337,7 +337,7 @@ insert into ores_trading_product_types_tbl (
     ('EquityAutoDeltaHedgedOption', ores_utility_system_tenant_id_fn(), 0, 'Equity Auto Delta Hedged Option', 'Batches of European equity options with an embedded delta-hedging strategy.',
      'ORE User Guide', 'equityautodeltahedgedoption.tex',
      'option', 'native', 'non_flow',
-     true, false, null, 60,
+     true, false, 'equity_position_instrument', 60,
      'ores_trading_service', 'system.initial_load', 'Seed product types'),
     ('EquityForwardVolatilityAgreement', ores_utility_system_tenant_id_fn(), 0, 'Equity Forward Volatility Agreement', 'A forward volatility agreement on an equity price.',
      'ORE User Guide', 'var_and_vol_derivatives.tex',

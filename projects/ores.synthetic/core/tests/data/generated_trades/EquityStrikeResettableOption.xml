@@ -35,36 +35,32 @@
       </ObservationDates>
     </EquityStrikeResettableOptionData>
   </Trade>
-  <Trade id="68ca7fb7-d3e6-55d8-b185-04e6a3193ab8">
+  <Trade id="f8bbf0a7-ea59-58ea-830a-e02a820d688f">
     <TradeType>EquityStrikeResettableOption</TradeType>
     <EquityStrikeResettableOptionData>
       <LongShort>Short</LongShort>
-      <OptionType>Call</OptionType>
-      <Currency>EUR</Currency>
-      <Strike>2749.49</Strike>
-      <ResetStrike>2474.54</ResetStrike>
-      <Quantity>2886.28</Quantity>
-      <TriggerType>Down</TriggerType>
-      <TriggerPrice>2474.54</TriggerPrice>
+      <OptionType>Put</OptionType>
+      <Currency>USD</Currency>
+      <Strike>594.24</Strike>
+      <ResetStrike>653.66</ResetStrike>
+      <Quantity>6677.75</Quantity>
+      <TriggerType>Up</TriggerType>
+      <TriggerPrice>653.66</TriggerPrice>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
-      <ExpiryDate>2027-12-02</ExpiryDate>
-      <SettlementDate>2027-12-02</SettlementDate>
+      <ExpiryDate>2026-11-02</ExpiryDate>
+      <SettlementDate>2026-11-02</SettlementDate>
       <Premium>0</Premium>
-      <PremiumDate>2025-12-02</PremiumDate>
+      <PremiumDate>2025-11-02</PremiumDate>
       <ObservationDates>
         <Dates>
           <Dates>
-            <Date>2026-03-02</Date>
-            <Date>2026-06-02</Date>
-            <Date>2026-09-02</Date>
-            <Date>2026-12-02</Date>
-            <Date>2027-03-02</Date>
-            <Date>2027-06-02</Date>
-            <Date>2027-09-02</Date>
-            <Date>2027-12-02</Date>
+            <Date>2026-02-02</Date>
+            <Date>2026-05-04</Date>
+            <Date>2026-08-03</Date>
+            <Date>2026-11-02</Date>
           </Dates>
         </Dates>
       </ObservationDates>

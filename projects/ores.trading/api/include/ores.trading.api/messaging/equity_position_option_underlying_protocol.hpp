@@ -63,6 +63,12 @@ struct equity_position_option_underlying_write {
     std::string settlement_type;
     std::optional<std::string> identifier_type;
     std::optional<std::chrono::year_month_day> exercise_date;
+    std::optional<std::string> currency;
+    std::optional<std::string> strike_currency;
+    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
+    std::optional<std::string> premium_currency;
+    std::optional<std::chrono::year_month_day> premium_pay_date;
 
     friend bool operator==(const equity_position_option_underlying_write&,
                            const equity_position_option_underlying_write&) = default;
@@ -471,6 +477,16 @@ wire_fields(std::type_identity<equity_position_option_underlying_write>) {
                               &equity_position_option_underlying_write::identifier_type},
         utility::codec::field{"exercise_date",
                               &equity_position_option_underlying_write::exercise_date},
+        utility::codec::field{"currency", &equity_position_option_underlying_write::currency},
+        utility::codec::field{"strike_currency",
+                              &equity_position_option_underlying_write::strike_currency},
+        utility::codec::field{"quantity", &equity_position_option_underlying_write::quantity},
+        utility::codec::field{"premium_amount",
+                              &equity_position_option_underlying_write::premium_amount},
+        utility::codec::field{"premium_currency",
+                              &equity_position_option_underlying_write::premium_currency},
+        utility::codec::field{"premium_pay_date",
+                              &equity_position_option_underlying_write::premium_pay_date},
     };
 }
 

@@ -57,6 +57,10 @@ struct equity_position_instrument_write {
     std::string currency;
     double quantity{};
     std::optional<ores::utility::decimal::decimal> price;
+    std::optional<ores::utility::decimal::decimal> volatility;
+    std::optional<ores::utility::decimal::decimal> drift_rate;
+    std::optional<std::chrono::year_month_day> observation_start_date;
+    std::optional<std::chrono::year_month_day> payment_date;
     std::string description;
 
     friend bool operator==(const equity_position_instrument_write&,
@@ -404,6 +408,11 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_position_i
         utility::codec::field{"currency", &equity_position_instrument_write::currency},
         utility::codec::field{"quantity", &equity_position_instrument_write::quantity},
         utility::codec::field{"price", &equity_position_instrument_write::price},
+        utility::codec::field{"volatility", &equity_position_instrument_write::volatility},
+        utility::codec::field{"drift_rate", &equity_position_instrument_write::drift_rate},
+        utility::codec::field{"observation_start_date",
+                              &equity_position_instrument_write::observation_start_date},
+        utility::codec::field{"payment_date", &equity_position_instrument_write::payment_date},
         utility::codec::field{"description", &equity_position_instrument_write::description},
     };
 }

@@ -22,14 +22,14 @@
       </Underlying>
     </EquityOptionPositionData>
   </Trade>
-  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
+  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
     <TradeType>EquityOptionPosition</TradeType>
     <EquityOptionPositionData>
-      <Quantity>571</Quantity>
+      <Quantity>1833</Quantity>
       <Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:.STOXX50E</Name>
         </Underlying>
         <OptionData>
           <LongShort>Short</LongShort>
@@ -37,10 +37,10 @@
           <Style>European</Style>
           <Settlement>Cash</Settlement>
           <ExerciseDates>
-            <ExerciseDate>2034-08-02</ExerciseDate>
+            <ExerciseDate>2027-01-02</ExerciseDate>
           </ExerciseDates>
         </OptionData>
-        <Strike>2272.91</Strike>
+        <Strike>2997.8</Strike>
       </Underlying>
     </EquityOptionPositionData>
   </Trade>

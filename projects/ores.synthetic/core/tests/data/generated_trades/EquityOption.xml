@@ -18,7 +18,7 @@
       <Strike>2538.69</Strike>
     </EquityOptionData>
   </Trade>
-  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
+  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
     <TradeType>EquityOption</TradeType>
     <EquityOptionData>
       <OptionData>
@@ -27,13 +27,13 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-09-02</ExerciseDate>
+          <ExerciseDate>2034-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>RIC:.SPX</Name>
+      <Name>RIC:.NDX</Name>
       <Currency>USD</Currency>
-      <Quantity>4781.86</Quantity>
-      <Strike>1842.92</Strike>
+      <Quantity>571.13</Quantity>
+      <Strike>2272.91</Strike>
     </EquityOptionData>
   </Trade>
 </Portfolio>

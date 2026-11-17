@@ -65,6 +65,12 @@ struct equity_position_option_underlying_entity {
     std::optional<std::string> settlement_type;
     std::optional<std::string> identifier_type;
     std::optional<std::chrono::year_month_day> exercise_date;
+    std::optional<std::string> currency;
+    std::optional<std::string> strike_currency;
+    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
+    std::optional<std::string> premium_currency;
+    std::optional<std::chrono::year_month_day> premium_pay_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -92,6 +98,12 @@ struct equity_position_option_underlying_entity {
                query_builder::bind("settlement_type", &e::settlement_type) |
                query_builder::bind("identifier_type", &e::identifier_type) |
                query_builder::bind("exercise_date", &e::exercise_date) |
+               query_builder::bind("currency", &e::currency) |
+               query_builder::bind("strike_currency", &e::strike_currency) |
+               query_builder::bind("quantity", &e::quantity) |
+               query_builder::bind("premium_amount", &e::premium_amount) |
+               query_builder::bind("premium_currency", &e::premium_currency) |
+               query_builder::bind("premium_pay_date", &e::premium_pay_date) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

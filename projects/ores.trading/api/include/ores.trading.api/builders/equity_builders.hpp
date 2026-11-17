@@ -278,6 +278,43 @@ struct equity_double_touch_option_terms final {
     required<option_position> position;
 };
 
+/// One batch of a delta hedged option: European options on one equity.
+struct delta_hedged_batch final {
+    marketdata::datum::market_reference underlying;
+    std::string currency;
+    utility::decimal::decimal strike;
+    utility::decimal::decimal quantity;
+    option_kind kind;
+    option_position position;
+    std::chrono::year_month_day expiry;
+    /// The premium paid for the batch, in its currency; ORE requires one a batch.
+    utility::decimal::decimal premium;
+    std::chrono::year_month_day premium_date;
+};
+
+/**
+ * @brief Batches of European equity options whose delta is hedged daily from
+ * the observation start, at the volatility and drift stated, the hedging
+ * result paid on the payment date.
+ */
+struct equity_auto_delta_hedged_option_terms final {
+    required<utility::decimal::decimal> volatility;
+    required<utility::decimal::decimal> drift_rate;
+    required<std::chrono::year_month_day> observation_start;
+    required<std::chrono::year_month_day> payment_date;
+    required<std::vector<delta_hedged_batch>> batches;
+};
+
+class ORES_TRADING_API_EXPORT equity_auto_delta_hedged_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "EquityAutoDeltaHedgedOption";
+    explicit equity_auto_delta_hedged_option_builder(equity_auto_delta_hedged_option_terms terms);
+    [[nodiscard]] equity_result build() const;
+
+private:
+    equity_auto_delta_hedged_option_terms terms_;
+};
+
 class ORES_TRADING_API_EXPORT equity_double_touch_option_builder final {
 public:
     static constexpr std::string_view trade_type = "EquityDoubleTouchOption";

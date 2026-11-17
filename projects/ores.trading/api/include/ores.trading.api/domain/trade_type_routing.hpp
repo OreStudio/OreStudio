@@ -183,6 +183,8 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::bond_instrument;
     if (trade_type == "Ascot")
         return instrument_table::bond_instrument;
+    if (trade_type == "EquityAutoDeltaHedgedOption")
+        return instrument_table::equity_position_instrument;
     if (trade_type == "EquityForwardVolatilityAgreement")
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityOption")

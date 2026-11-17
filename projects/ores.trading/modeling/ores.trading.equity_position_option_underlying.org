@@ -204,6 +204,64 @@ states it.
 The entry's option exercise date, as =OptionData/ExerciseDates/ExerciseDate=
 states it.
 
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency an auto delta hedged option's batch is quoted in, as its
+=Currency= states it; an option position's entries leave it null.
+
+** strike_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of a batch's strike, as its optional =StrikeCurrency= states it.
+
+** quantity
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The number of options in an auto delta hedged option's batch, as its
+=Quantity= states it; an option position's entries leave it null, as the
+position states one quantity for all of them.
+
+** premium_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The premium paid for the entry's options, as its option's premium states it.
+ORE requires one premium on each batch of an auto delta hedged option.
+
+** premium_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency the entry's premium is paid in.
+
+** premium_pay_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The date the entry's premium is paid.
+
 * Foreign keys
 
 ** trade_id

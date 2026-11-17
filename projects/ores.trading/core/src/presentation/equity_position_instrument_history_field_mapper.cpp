@@ -47,6 +47,19 @@ render_equity_position_instrument_fields(const domain::equity_position_instrumen
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Quantity", .value = std::to_string(v.quantity)});
     fields.push_back({.name = "Price", .value = v.price ? v.price->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Volatility", .value = v.volatility ? v.volatility->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Drift Rate", .value = v.drift_rate ? v.drift_rate->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Observation Start Date",
+         .value = v.observation_start_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.observation_start_date) :
+                      std::string{}});
+    fields.push_back({.name = "Payment Date",
+                      .value = v.payment_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                    *v.payment_date) :
+                                                std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

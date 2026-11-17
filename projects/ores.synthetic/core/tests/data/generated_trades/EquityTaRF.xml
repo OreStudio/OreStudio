@@ -45,21 +45,21 @@
       </Barriers>
     </EquityTaRFData>
   </Trade>
-  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>EquityTaRF</TradeType>
     <EquityTaRFData>
       <Currency>USD</Currency>
-      <FixingAmount>15464.88</FixingAmount>
-      <TargetAmount>614543.2</TargetAmount>
-      <Strike>397.38</Strike>
+      <FixingAmount>3219.66</FixingAmount>
+      <TargetAmount>262125.41</TargetAmount>
+      <Strike>814.14</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2033-11-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2032-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>397.38</RangeTo>
+          <RangeTo>814.14</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>397.38</RangeFrom>
+          <RangeFrom>814.14</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>614543.2</Level>
+            <Level>262125.41</Level>
           </Levels>
         </BarrierData>
       </Barriers>

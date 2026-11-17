@@ -22,7 +22,7 @@
       <FutureExpiryDate>2031-09-02</FutureExpiryDate>
     </EquityFutureOptionData>
   </Trade>
-  <Trade id="2b98ce5b-3eeb-5c36-9cb8-e4a7f8922842">
+  <Trade id="efaa3e0a-4eda-59a6-bd4f-1221214c99bd">
     <TradeType>EquityFutureOption</TradeType>
     <EquityFutureOptionData>
       <OptionData>
@@ -31,17 +31,17 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2033-12-02</ExerciseDate>
+          <ExerciseDate>2032-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
-      <Currency>USD</Currency>
-      <Strike>4123.6</Strike>
-      <Quantity>2140.58</Quantity>
-      <FutureExpiryDate>2034-01-02</FutureExpiryDate>
+      <Currency>EUR</Currency>
+      <Strike>210.78</Strike>
+      <Quantity>18572.99</Quantity>
+      <FutureExpiryDate>2032-12-02</FutureExpiryDate>
     </EquityFutureOptionData>
   </Trade>
 </Portfolio>

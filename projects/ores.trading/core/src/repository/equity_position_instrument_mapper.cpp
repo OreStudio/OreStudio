@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/equity_position_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_position_instrument_entity.hpp"
@@ -33,6 +34,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
 #include <vector>
 
@@ -56,6 +58,10 @@ equity_position_instrument_mapper::map(const equity_position_instrument_entity& 
     r.currency = v.currency.value_or("");
     r.quantity = v.quantity;
     r.price = v.price;
+    r.volatility = v.volatility;
+    r.drift_rate = v.drift_rate;
+    r.observation_start_date = v.observation_start_date;
+    r.payment_date = v.payment_date;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -82,6 +88,10 @@ equity_position_instrument_mapper::map(const domain::equity_position_instrument&
     r.currency = v.currency.empty() ? std::nullopt : std::optional(v.currency);
     r.quantity = v.quantity;
     r.price = v.price;
+    r.volatility = v.volatility;
+    r.drift_rate = v.drift_rate;
+    r.observation_start_date = v.observation_start_date;
+    r.payment_date = v.payment_date;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

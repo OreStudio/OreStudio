@@ -63,6 +63,12 @@ equity_position_option_underlying_mapper::map(const equity_position_option_under
     r.settlement_type = v.settlement_type.value_or("");
     r.identifier_type = v.identifier_type;
     r.exercise_date = v.exercise_date;
+    r.currency = v.currency;
+    r.strike_currency = v.strike_currency;
+    r.quantity = v.quantity;
+    r.premium_amount = v.premium_amount;
+    r.premium_currency = v.premium_currency;
+    r.premium_pay_date = v.premium_pay_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -92,6 +98,12 @@ equity_position_option_underlying_mapper::map(const domain::equity_position_opti
     r.settlement_type = v.settlement_type.empty() ? std::nullopt : std::optional(v.settlement_type);
     r.identifier_type = v.identifier_type;
     r.exercise_date = v.exercise_date;
+    r.currency = v.currency;
+    r.strike_currency = v.strike_currency;
+    r.quantity = v.quantity;
+    r.premium_amount = v.premium_amount;
+    r.premium_currency = v.premium_currency;
+    r.premium_pay_date = v.premium_pay_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

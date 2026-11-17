@@ -61,6 +61,10 @@ struct equity_position_instrument_entity {
     std::optional<std::string> currency;
     double quantity = 0.0;
     std::optional<ores::utility::decimal::decimal> price;
+    std::optional<ores::utility::decimal::decimal> volatility;
+    std::optional<ores::utility::decimal::decimal> drift_rate;
+    std::optional<std::chrono::year_month_day> observation_start_date;
+    std::optional<std::chrono::year_month_day> payment_date;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -85,6 +89,10 @@ struct equity_position_instrument_entity {
                query_builder::bind("currency", &e::currency) |
                query_builder::bind("quantity", &e::quantity) |
                query_builder::bind("price", &e::price) |
+               query_builder::bind("volatility", &e::volatility) |
+               query_builder::bind("drift_rate", &e::drift_rate) |
+               query_builder::bind("observation_start_date", &e::observation_start_date) |
+               query_builder::bind("payment_date", &e::payment_date) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

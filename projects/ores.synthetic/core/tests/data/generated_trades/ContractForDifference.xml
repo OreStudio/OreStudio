@@ -36,20 +36,20 @@
       </ReturnData>
     </ContractForDifferenceData>
   </Trade>
-  <Trade id="9df8ee5f-9ce1-546e-ba4b-05270865af03">
+  <Trade id="28bcfefe-69ac-56e7-ba81-e84082bd1ff6">
     <TradeType>ContractForDifference</TradeType>
     <Envelope>
-      <CounterParty>55555555-5555-5555-5555-555555555555</CounterParty>
+      <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
     </Envelope>
     <ContractForDifferenceData>
       <UnderlyingData>
-        <SubTrade id="38fd00bc-1010-5aad-83f9-19b71a8c866f">
+        <SubTrade id="3ae53b7e-75d3-53b7-ba12-cc984468a247">
           <SubTradeType>EquityPosition</SubTradeType>
           <EquityPositionData>
-            <Quantity>2423</Quantity>
+            <Quantity>3966</Quantity>
             <Underlying>
               <Type>Equity</Type>
-              <Name>RIC:DHER.DE</Name>
+              <Name>RIC:.STOXX50E</Name>
             </Underlying>
           </EquityPositionData>
         </SubTrade>
@@ -59,15 +59,15 @@
         <Currency>EUR</Currency>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2034-12-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
             <Tenor>0D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
-        <InitialPrice>2847.08</InitialPrice>
+        <InitialPrice>2495.52</InitialPrice>
         <InitialPriceCurrency>EUR</InitialPriceCurrency>
       </ReturnData>
     </ContractForDifferenceData>

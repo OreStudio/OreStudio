@@ -26,11 +26,11 @@ The six products have a data model, a projection reader and writer, and a builde
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,22 @@ The six products have a data model, a projection reader and writer, and a builde
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+All six elements are flat: scalar terms, one Underlying or a list of them,
+lists of values, and schedules. They route to the scripted instrument table
+through the class-read path. The two pairwise variance swaps are native ORE
+products, but their element is as flat as the others, so the same table holds
+them.
+
+- The class-read path reads and writes a free style scalar, an element whose
+  value is its own text with an optional type attribute. The pairwise variance
+  swap states every term this way. Its declared type is the attribute, or the
+  schema type's name less =stFreeStyle=.
+- A list of indices (=stFreeStyleIndexVector=) is an =Index= list: held as
+  addresses, written in ORE's spelling.
+- A rules schedule a builder states carries its term convention, as ORE's FX
+  basket variance swap example does.
+- Builders: =basket_variance_swap_builder=, =pairwise_variance_swap_builder=
+  and =forward_volatility_agreement_builder=, each for equity and FX.
 
 * Measurements
 
@@ -60,7 +73,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4670 cases pass | =./ores.trading.api.tests= | c3000fd25f |
+| ore core tests | 549 cases pass | =./ores.ore.core.tests= | c3000fd25f |
+| synthetic tests, not generated | 138 cases pass | =./ores.synthetic.core.tests "~[generated]"= | c3000fd25f |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | c3000fd25f |
 
 * Notes
 
@@ -88,3 +104,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The six types are held in the scripted instrument table. The basket members
+and their weights are underlying rows, the pairwise legs are three lists of
+parameter values, and the valuation schedules are schedule rows. The round-trip
+test reads ORE's FX basket variance swap example, the user guide's equity
+pairwise variance swap and its FX forward volatility agreement, and writes them
+back. Each type has a builder, the catalogue routes all six, and the generator
+books one trade of each.
+
+The ORE engine builds every recorded trade with no error of the trade kind. The
+two pairwise variance swaps raise an engine configuration error: ORE's Products
+example configuration names no engine for them. The known list holds both, and
+pricing engine configuration is out of this story's scope.

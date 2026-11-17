@@ -28,9 +28,9 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part serves the seven jobs reads. |
+| Now          | The part serves the seven jobs reads and the two stored bytes. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the stored bytes and the app versions. |
+| Next         | Serve the app versions and their release note. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -76,6 +76,12 @@ party names and the run names are stated once. Two departures from the BFF are
 recorded below: the node a run ran on is shown to the system tenant alone, and
 the party names are one read per page rather than the session's own list.
 
+The two downloads follow: the input bundle of a work unit and the output archive
+of a run. The part reads the record on the caller's own token first, so a caller
+who may not read the record is refused before a byte is read, and then streams
+the object out of the store the grid wrote it to. The aggregate takes the
+storage root, as the reporting part's does, and the server passes its own.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -91,6 +97,9 @@ task and name that file in the Command column.
 | The compute part's test suite | 18 cases, 252 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.compute.tests= | the jobs unit commit |
 | The grid area's routes the C++ server answers | 7 of 14 paired | =python3 build/scripts/route_inventory.py --check= | the jobs unit commit |
 | The gateway's routes in the inventory | 1358 routes, 1030 answered by the gateway, 264 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the jobs unit commit |
+| The compute part's test suite | 24 cases, 295 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.compute.tests= | the downloads commit |
+| The grid area's routes the C++ server answers | 9 of 14 paired | =python3 build/scripts/route_inventory.py --check= | the downloads commit |
+| The gateway's routes in the inventory | 1360 routes, 1032 answered by the gateway, 266 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the downloads commit |
 
 * Notes
 
@@ -110,6 +119,14 @@ run the caller may not read, states no run name.
 A run states its node only to a caller whose token is scoped to the system
 tenant; every other caller reads =host_hidden= where the node is known. That is
 the rule the BFF applied, read from the token rather than from a session.
+
+** The stored bytes
+
+A row states the address of its object as the storage service serves it, so the
+download reads the key out of that path and nothing else: a row that names
+another bucket, or a path outside the storage service, answers 404 rather than
+reading something the row did not mean. The object is streamed from the store a
+buffer at a time, under the name of its last segment, and is never held whole.
 
 ** The acknowledgements
 

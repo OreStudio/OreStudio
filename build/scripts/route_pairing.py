@@ -353,6 +353,12 @@ PAIRS = {
     ("GET", "/api/operations/grid/jobs/results/:id"): (
         "GET",
         "/api/operations/grid/jobs/results/{id}"),
+    ("GET", "/api/operations/grid/jobs/workunits/:id/input"): (
+        "GET",
+        "/api/operations/grid/jobs/workunits/{id}/input"),
+    ("GET", "/api/operations/grid/jobs/results/:id/output"): (
+        "GET",
+        "/api/operations/grid/jobs/results/{id}/output"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

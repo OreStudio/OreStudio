@@ -61,9 +61,6 @@ constexpr std::string_view runs_refused =
     "The runs read takes an outcome code of 0, 1, 3 or 4, an offset of 0 or more and a limit of "
     "1 to 200.";
 
-/// The sentence a route states when its address does not name an identifier.
-constexpr std::string_view id_refused = "The address names an id that is not a uuid.";
-
 /// The outcome codes the runs read names: none yet, Success, ClientError, NoReply.
 constexpr int outcome_codes[] = {0, 1, 3, 4};
 
@@ -104,7 +101,7 @@ int outcome_of(const http_request& req) {
 boost::uuids::uuid id_of(const http_request& req) {
     const auto raw = req.get_path_param("id");
     if (!rr::is_uuid(raw))
-        rr::invalid(std::string(id_refused));
+        rr::invalid(std::string(grid::id_refused));
     return boost::uuids::string_generator()(raw);
 }
 

@@ -815,6 +815,13 @@ RULES = (
          " batches the session may see with the name of the run and the party that made each,"
          " one batch, the work units of one batch, one work unit, the runs of one work unit,"
          " one page of the runs that ended with an outcome, and one run."),
+    Rule("a grid artefact's route",
+         ("regex", r"^GET /api/operations/grid/jobs/"
+                   r"(workunits/\{id\}/input|results/\{id\}/output)$"),
+         CPP, RESOURCE, "grid",
+         "The input bundle of one work unit or the output of one run, at the addresses and in"
+         " the shapes the BFF answered: the bytes the grid stored, read only after the record"
+         " that names them is read on the caller's own token."),
     Rule("a grid artefact",
          ("regex", r"^GET /api/operations/grid/jobs/(workunits/:id/input|results/:id/output)"),
          BFF, RESOURCE, "grid",

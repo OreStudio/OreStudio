@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/domain/http_request.hpp"
-#include "ores.http/routes/compute/job_routes.hpp"
+#include "ores.http/routes/compute/compute_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
@@ -30,7 +30,7 @@ using ores::http::compute::tests::answer_at;
 using ores::http::domain::http_method;
 using ores::http::domain::http_request;
 using ores::http::domain::http_status;
-using ores::http::routes::compute::job_routes;
+using ores::http::routes::compute::compute_routes;
 using namespace ores::logging;
 
 namespace {
@@ -93,7 +93,7 @@ TEST_CASE("every_jobs_route_is_served_and_requires_a_session", "[grid_jobs]") {
     BOOST_LOG_SEV(lg, info) << "Testing the addresses the jobs routes are served at";
 
     for (const auto& stated : addresses()) {
-        const auto answer = answer_at<job_routes>(
+        const auto answer = answer_at<compute_routes>(
             http_method::get, stated.path, asking(stated.query), stated.pattern);
         CHECK(answer.status == http_status::bad_gateway);
     }
@@ -106,7 +106,7 @@ TEST_CASE("the_batch_list_refuses_a_page_that_is_not_one", "[grid_jobs]") {
     const std::vector<std::pair<std::string, std::string>> pages = {
         {"offset", "-1"}, {"offset", "ten"}, {"limit", "0"}, {"limit", "201"}, {"limit", "ten"}};
     for (const auto& page : pages) {
-        const auto answer = answer_at<job_routes>(
+        const auto answer = answer_at<compute_routes>(
             http_method::get, batches_pattern, asking({page}), batches_pattern);
         CHECK(answer.status == http_status::bad_request);
         CHECK(body_holds(answer.body, batch_refused));
@@ -122,7 +122,7 @@ TEST_CASE("the_batch_list_refuses_a_status_and_a_reference_that_are_not_ones", "
              {{"status", "   "}},
              {{"party", "acme"}},
              {{"find", std::string(257, 'a')}}}) {
-        const auto answer = answer_at<job_routes>(
+        const auto answer = answer_at<compute_routes>(
             http_method::get, batches_pattern, asking(query), batches_pattern);
         CHECK(answer.status == http_status::bad_request);
         CHECK(body_holds(answer.body, batch_refused));
@@ -133,14 +133,14 @@ TEST_CASE("the_batch_list_takes_a_status_a_party_and_part_of_a_reference", "[gri
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the narrowing the batch list takes";
 
-    const auto answer = answer_at<job_routes>(http_method::get,
-                                              batches_pattern,
-                                              asking({{"status", "closed"},
-                                                      {"party", an_id},
-                                                      {"find", "nightly"},
-                                                      {"offset", "0"},
-                                                      {"limit", "200"}}),
-                                              batches_pattern);
+    const auto answer = answer_at<compute_routes>(http_method::get,
+                                                  batches_pattern,
+                                                  asking({{"status", "closed"},
+                                                          {"party", an_id},
+                                                          {"find", "nightly"},
+                                                          {"offset", "0"},
+                                                          {"limit", "200"}}),
+                                                  batches_pattern);
     CHECK(answer.status == http_status::bad_gateway);
 }
 
@@ -148,15 +148,15 @@ TEST_CASE("a_jobs_route_refuses_a_parameter_it_does_not_take", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a parameter the jobs routes do not name";
 
-    const auto answer = answer_at<job_routes>(
+    const auto answer = answer_at<compute_routes>(
         http_method::get, batches_pattern, asking({{"sort", "status"}}), batches_pattern);
     CHECK(answer.status == http_status::bad_request);
     CHECK(body_holds(answer.body, "sort"));
 
-    const auto page = answer_at<job_routes>(http_method::get,
-                                            a_batch_path + "/workunits",
-                                            asking({{"status", "closed"}}),
-                                            batch_workunits_pattern);
+    const auto page = answer_at<compute_routes>(http_method::get,
+                                                a_batch_path + "/workunits",
+                                                asking({{"status", "closed"}}),
+                                                batch_workunits_pattern);
     CHECK(page.status == http_status::bad_request);
 }
 
@@ -175,7 +175,8 @@ TEST_CASE("a_job_is_named_by_an_identifier", "[grid_jobs]") {
 
     for (const auto& [path, pattern] :
          {not_an_id, workunit_id, result_id, workunits_of, results_of}) {
-        const auto answer = answer_at<job_routes>(http_method::get, path, http_request{}, pattern);
+        const auto answer =
+            answer_at<compute_routes>(http_method::get, path, http_request{}, pattern);
         CHECK(answer.status == http_status::bad_request);
         CHECK(body_holds(answer.body, id_refused));
     }
@@ -185,20 +186,20 @@ TEST_CASE("the_runs_read_refuses_an_outcome_it_does_not_name", "[grid_jobs]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the outcome codes the runs read names";
 
-    const auto absent =
-        answer_at<job_routes>(http_method::get, results_pattern, http_request{}, results_pattern);
+    const auto absent = answer_at<compute_routes>(
+        http_method::get, results_pattern, http_request{}, results_pattern);
     CHECK(absent.status == http_status::bad_request);
     CHECK(body_holds(absent.body, runs_refused));
 
     for (const auto& code : {"2", "5", "x", "10"}) {
-        const auto answer = answer_at<job_routes>(
+        const auto answer = answer_at<compute_routes>(
             http_method::get, results_pattern, asking({{"outcome", code}}), results_pattern);
         CHECK(answer.status == http_status::bad_request);
         CHECK(body_holds(answer.body, runs_refused));
     }
 
     for (const auto& code : {"0", "1", "3", "4"}) {
-        const auto answer = answer_at<job_routes>(
+        const auto answer = answer_at<compute_routes>(
             http_method::get, results_pattern, asking({{"outcome", code}}), results_pattern);
         CHECK(answer.status == http_status::bad_gateway);
     }
@@ -214,7 +215,7 @@ TEST_CASE("the_runs_read_refuses_a_page_that_is_not_one", "[grid_jobs]") {
         auto req = asking({{"outcome", "1"}});
         req.query_params[page.first] = page.second;
         const auto answer =
-            answer_at<job_routes>(http_method::get, results_pattern, req, results_pattern);
+            answer_at<compute_routes>(http_method::get, results_pattern, req, results_pattern);
         CHECK(answer.status == http_status::bad_request);
         CHECK(body_holds(answer.body, runs_refused));
     }
@@ -224,17 +225,17 @@ TEST_CASE("the_children_of_a_job_refuse_a_page_that_is_not_one", "[grid_jobs]") 
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the page the children of a job refuse";
 
-    const auto workunits = answer_at<job_routes>(http_method::get,
-                                                 a_batch_path + "/workunits",
-                                                 asking({{"limit", "201"}}),
-                                                 batch_workunits_pattern);
+    const auto workunits = answer_at<compute_routes>(http_method::get,
+                                                     a_batch_path + "/workunits",
+                                                     asking({{"limit", "201"}}),
+                                                     batch_workunits_pattern);
     CHECK(workunits.status == http_status::bad_request);
     CHECK(body_holds(workunits.body, page_refused));
 
-    const auto results = answer_at<job_routes>(http_method::get,
-                                               a_workunit + "/results",
-                                               asking({{"offset", "less"}}),
-                                               workunit_results_pattern);
+    const auto results = answer_at<compute_routes>(http_method::get,
+                                                   a_workunit + "/results",
+                                                   asking({{"offset", "less"}}),
+                                                   workunit_results_pattern);
     CHECK(results.status == http_status::bad_request);
     CHECK(body_holds(results.body, page_refused));
 }

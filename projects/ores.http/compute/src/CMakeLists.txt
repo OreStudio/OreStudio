@@ -42,6 +42,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.reporting.api.lib
     PRIVATE
+        ores.http.core.lib
         ores.http.nats.lib
         ores.storage.api.lib
         ores.utility.lib)

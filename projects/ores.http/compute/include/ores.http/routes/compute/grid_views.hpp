@@ -52,6 +52,9 @@ struct page final {
     std::uint32_t limit = page_default;
 };
 
+/// The sentence a grid route states when its address does not name an identifier.
+inline constexpr std::string_view id_refused = "The address names an id that is not a uuid.";
+
 /// The sentence a grid page states when it is not one.
 inline constexpr std::string_view page_refused =
     "The jobs read takes an offset of 0 or more and a limit of 1 to 200.";

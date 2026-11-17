@@ -36,10 +36,12 @@
 namespace ores::http::compute::tests {
 
 /**
- * @brief The answer a unit's route gives a request at an address, matched
+ * @brief The answer the part's route gives a request at an address, matched
  * through the router as a browser reaches it, on a client that is not
  * connected, so any forward fails.
  *
+ * The routes are registered as the server registers them, through the part's
+ * aggregate, so the test also proves the unit is one the aggregate installs.
  * The address must reach the expected pattern, and the route must require a
  * session.
  */
@@ -47,11 +49,12 @@ template <typename Routes>
 ores::http::domain::http_response answer_at(ores::http::domain::http_method method,
                                             const std::string& path,
                                             ores::http::domain::http_request req,
-                                            const std::string& expected_pattern) {
+                                            const std::string& expected_pattern,
+                                            const std::string& storage_dir = std::string()) {
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
     Routes::register_routes(
-        table, std::make_shared<ores::http::openapi::endpoint_registry>(), session);
+        table, std::make_shared<ores::http::openapi::endpoint_registry>(), session, storage_dir);
     const auto route = table->match(method, path, req.path_params);
     REQUIRE(route.has_value());
     REQUIRE(route->pattern == expected_pattern);

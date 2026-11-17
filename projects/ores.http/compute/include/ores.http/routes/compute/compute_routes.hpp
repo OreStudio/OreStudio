@@ -24,6 +24,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <memory>
+#include <string>
 
 namespace ores::http::routes::compute {
 
@@ -39,10 +40,13 @@ public:
      *
      * @param session The NATS client each unit forwards on, with the caller's
      * own token, so the services' permission checks govern.
+     * @param storage_dir The root the object store is read under, for the bytes
+     * a download answers with.
      */
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
-                                ores::nats::service::nats_client& session);
+                                ores::nats::service::nats_client& session,
+                                std::string storage_dir);
 };
 
 }

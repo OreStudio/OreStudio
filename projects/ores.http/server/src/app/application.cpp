@@ -206,7 +206,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     }
     ores::http::routes::site_routes::register_routes(router, registry, std::move(site));
 
-    ores::http::routes::compute::compute_routes::register_routes(router, registry, service_nats);
+    ores::http::routes::compute::compute_routes::register_routes(
+        router, registry, service_nats, cfg.storage_dir);
     ores::http::routes::synthetic::synthetic_routes::register_routes(
         router, registry, service_nats);
     ores::http::routes::marketdata::marketdata_routes::register_routes(

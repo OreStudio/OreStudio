@@ -24,6 +24,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/refdata/catalogue_choices.hpp"
 #include "ores.http/routes/refdata/curve_amend_rules.hpp"
 #include "ores.http/routes/refdata/curve_configuration_view.hpp"
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
@@ -83,43 +84,6 @@ std::map<std::string, curve_tally> tallies_of(const http_request& req, nats_clie
         ++tally.curves;
     }
     return tallies;
-}
-
-/**
- * @brief The choices one catalogue relation offers, read from the collection
- * that holds it.
- *
- * A relation names a view in another component, so the part that answers a route
- * states which relations it reads. The two the value set data names for a curve
- * configuration are the tenors and the currencies; a row naming another one is a
- * seed error, and it is refused with a sentence rather than drawn as an empty
- * list.
- */
-std::vector<ores::http::routes::value_choice>
-curve_catalogue_choices(const http_request& req, nats_client& session, std::string_view relation) {
-    if (relation == "ores_refdata_tenor_catalogue_v") {
-        std::vector<ores::http::routes::value_choice> choices;
-        for (const auto& tenor :
-             forwarding::forward_all(req,
-                                     session,
-                                     refdata_messaging::list_tenors_request{},
-                                     &refdata_messaging::list_tenors_response::tenors))
-            choices.push_back({tenor.code, tenor.display_name});
-        return choices;
-    }
-    if (relation == "ores_refdata_currency_catalogue_v") {
-        std::vector<ores::http::routes::value_choice> choices;
-        for (const auto& currency :
-             forwarding::forward_all(req,
-                                     session,
-                                     refdata_messaging::list_currencies_request{},
-                                     &refdata_messaging::list_currencies_response::currencies))
-            choices.push_back({currency.iso_code, currency.name});
-        return choices;
-    }
-    throw ores::http::routes::value_set_error(
-        "The value set tables name the catalogue relation \"" + std::string(relation) +
-        "\", which this build does not read.");
 }
 
 /// The schema the curve configuration's leaves are documented under.
@@ -350,7 +314,7 @@ void curve_configuration_screen_routes::register_routes(
                         const auto values = value_set_reader(
                             read_value_set_tables(req, session),
                             [&req, &session](std::string_view relation) {
-                                return curve_catalogue_choices(req, session, relation);
+                                return catalogue::choices_of(req, session, relation);
                             });
                         const auto flattened = document::cells(answer.document);
                         return http_response::json(curve_view::view_json_of(
@@ -417,7 +381,7 @@ void curve_configuration_screen_routes::register_routes(
                         const auto values = value_set_reader(
                             read_value_set_tables(req, session),
                             [&req, &session](std::string_view relation) {
-                                return curve_catalogue_choices(req, session, relation);
+                                return catalogue::choices_of(req, session, relation);
                             });
 
                         auto working = stored.document;

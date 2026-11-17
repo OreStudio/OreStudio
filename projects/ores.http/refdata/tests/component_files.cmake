@@ -116,4 +116,5 @@ set(files
     "tenor_screen_routes_tests.cpp"
     "tenor_unit_classification_routes_tests.cpp"
     "tenor_web_routes_tests.cpp"
+    "wire_cells_tests.cpp"
 )

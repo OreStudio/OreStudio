@@ -81,6 +81,12 @@ task and name that file in the Command column.
 
 - *Five curves, the LIBOR and EURIBOR tenors:* GBP-LIBOR 6M, 12M and 1W,
   EUR-EURIBOR 12M and 1W. They cover 63 trades of the population.
+- *One ladder for every tenor:* each new curve keeps its template's seven
+  pillars, deposits to 1M and 3M, FRAs 3x6 and 6x12 and swaps to 2Y, 5Y and
+  10Y. That is the ladder every IBOR curve of the system uses, the 1M ones
+  included, so a 1W or a 12M curve is as market-faithful as the existing 1M
+  curves: it resolves the index and projects it, and its pillars are not the
+  instruments a desk would quote for that tenor.
 - *Left out:* the synthetic IR curve config admits a term tenor only for
   the LIBOR and EURIBOR families, so CZK-PRIBOR-6M, CNH-HIBOR-3M,
   HKD-HIBOR-1M, ILS-TELBOR-3M, JPY-EYTIBOR-6M, KRW-CD-91D, NOK-NIBOR-3M,
@@ -117,7 +123,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4818 review: a 1W curve on the 3M ladder is not market-faithful | task decisions | Accept | The task states that every IBOR curve of the system uses one ladder, the 1M ones included, and what that means for the new tenors. |
+| 2 | PR #4818 review: the new curves may tick at the 3M curve's level | synthetic_feeds_providers_populate.sql | Decline | Each feed row states its own CIR mean and start level: 4.55% for 1W, 4.80% for 6M and 4.90% for 12M against 4.70% for 3M. |
+| 3 | PR #4818 review: confirm the generated block regenerates with no diff | marketdata_vendor_instruments_populate.sql | Accept | Re-running ores.marketdata.vendor-catalogue on the same input reports the seed unchanged. The clone script is a one-off that wrote rows, kept as evidence, and is not meant to be rerun. |
+| 4 | PR #4818 review: confirm the main failures touch no file of this PR | report | Decline | The drift lists trading, refdata and marketdata service files, the money check two trading models, and the codegen tests the generator; none is in this diff. |
+| 5 | PR #4818 review: re-run at full volume before the story closes | story | Decline | The story's last task proves the chain on a freshly recreated database at full volume. |
 
 * Result
 

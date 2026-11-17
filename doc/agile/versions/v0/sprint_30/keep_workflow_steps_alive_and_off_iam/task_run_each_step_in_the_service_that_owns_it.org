@@ -28,7 +28,7 @@ Each provisioning step is dispatched to the service that owns its work, so iam r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Step 4 is done but for the installation's own curves: ores.marketdata serves the subscription, the party curves, the surface blueprints, the forwards and the surfaces. |
+| Now          | Step 4 is done but for the installation's own curves: ores.marketdata serves the subscription, the party curves, the surface blueprints, the forwards and the surfaces, and a fresh Acme run passes with all of them. |
 | Waiting on   | A decision on who publishes the system tenant's own curves (see Notes). |
 | Next         | Step 4's last kind, or step 5's reporting, dq and inbox kinds. |
 | Last touched | 2026-11-17                               |
@@ -141,6 +141,15 @@ task and name that file in the Command column.
 | =ores.marketdata.core.tests= | passed, 625.1 s | =ctest -R ores.marketdata.core.tests= | =51917f8c10= |
 | =ores.marketdata.service.tests= | passed, 56.0 s | =ctest -R ores.marketdata.service.tests= | =51917f8c10= |
 | The gates this change pays for | =format=, =unity-collisions=, =cmake-sources=, =exported-types= and =sql-reachability= pass; =component-drift= renders the whole changed tree past its 1800 s budget here, so it was rendered a component at a time: =iam= is clean, and =marketdata='s one drift is =config/options.hpp=, a file this branch does not touch | =python3 build/scripts/local_checks.py --only ...=, then =check_component_drift.py --component iam= and =--component marketdata= | =51917f8c10= |
+| The build on the day | succeeded, 393 edges, 26 min 51 s | =./compass.sh build= | =cb8b2d92c8= |
+| The run with the forwards and surfaces steps in marketdata | passed: =tenant_setup_workflow= =9666da04-6077-42ec-91f4-ea80d4ff59a1= completed all 17 steps in 26 min 34 s with no error, and =✅ ticks smoke passed= | =./compass.sh smoke ticks --fresh= | =cb8b2d92c8= |
+| The forward sets the step published | 156 sets, 0 already held, 0 not published, as =marketdata= | the step row's =response_json=: =jsonb_array_length(forwards)= | run =9666da04= |
+| The surfaces the step published | 120 published, 20 held back for a decider, 0 not published, as =marketdata= | the step row's =response_json=: =jsonb_array_length(surfaces)=, =..._held_back=, =..._not_published= | run =9666da04= |
+| The steps' own durations | forwards 1 min 02 s, surfaces 20 min 27 s, curves 2 min 33 s, surface blueprints 2 min 39 s, calendars 2 min 20 s | =select name, completed_at - started_at from ores_workflow_workflow_steps_tbl where workflow_id = '9666da04-6077-42ec-91f4-ea80d4ff59a1'= | run =9666da04= |
+| Four services work at once | iam, refdata, synthetic and marketdata ran overlapping steps between 15:10:59 and 15:13:32: marketdata served the curves and the surface blueprints while iam reset passwords and scheduled reports, and refdata's calendars had been running since 15:09:57 | the same step rows' =started_at= and =completed_at= | run =9666da04= |
+| The suites | 103 of 103 passed, 932 s | =./compass.sh test run --preset linux-clang-release-ninja -- -j 4= | =cb8b2d92c8= |
+| The database tests | 903 tests in 96 files; two files fail on data that another branch is curating (see Notes) | =bash projects/ores.sql/test/run_tests.sh= on a recreated database | =cb8b2d92c8= |
+| Every step stream's consumer | passed, 19 streams, each with its own consumer | =python3 build/scripts/check_step_consumers.py= | =cb8b2d92c8= |
 
 * Notes
 
@@ -249,16 +258,30 @@ task and name that file in the Command column.
   questions: which party of the system tenant owns the installation's
   published sets, and whether the service's own role may be the maker of an
   installation-wide publish. The story records it as no decision yet.
-- The end-to-end run is not recorded for this change. The published tree in
-  this worktree predates the checkout: =libores.database.so= has no
-  =pq::transaction(connection&, session_context)=, so every service that links
-  it fails to start with an undefined symbol and =smoke ticks --fresh= stops at
-  startup. The suites ran against freshly built libraries, but the run needs a
-  full build and deploy first.
+- The end-to-end run passes on a recreated database, twice. The first run
+  published 156 forward sets and 106 surfaces with 18 held back; the second,
+  kept for the record as run =9666da04=, published 156 and 120 with 20 held
+  back. Neither run named a set it could not publish. The surface count moves
+  with the quotes that have arrived at the party's series, which is why the two
+  runs differ and why the step publishes what it can and names the rest.
+- The surfaces step is the long pole: 20 min 27 s of a 26 min run, against the
+  20 min stall budget the definition states. It stays alive because it reports
+  progress for every surface it touches, which is the story's rule, and its
+  retry deadline is taken per party. A tenant with more parties would need a
+  measurement of that budget, not a guess.
+- The database suite leaves two files red, and neither is this change's. Both
+  read the curated surface blueprints, and that catalogue grew on another
+  branch while this one ran: =refdata.fx_vol_surface_blueprints= now holds 35
+  blueprints where =refdata_fx_vol_surface_blueprints_publish_test= still
+  expects the derived source's 10 pairs, and the Acme entities now build 54
+  surfaces from 30, 11, 9 and 4 quoted pairs where
+  =acme_fx_volatility_configs_test= still expects 22. The first assertion that
+  fails in each file is a count of those rows, and nothing in this branch
+  changes a row or a role the two files read. They belong to the work that is
+  curating that catalogue.
 - =provisioning_step_workers= is still two, and the service now serves five
-  kinds. The forward and surface steps spend their time waiting on a publish,
-  which is what two workers cover. Widening the run to more tenants at once is
-  when the pool needs its own measurement.
+  kinds. The curve and blueprint steps ran side by side on those two workers
+  for 2 min 33 s without starving anything else, so two covers this run.
 
 * Test Scenarios
 

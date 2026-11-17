@@ -153,6 +153,16 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   whether the service's own role may be the maker of an installation-wide
   publish. Until someone states them, iam keeps the step and the impersonation
   it uses, and the task stays open.
+- *Four services work one run at once, 2026-11-17.* The measured run has iam,
+  refdata, synthetic and marketdata working overlapping steps: between 15:10:59
+  and 15:13:32 marketdata served a party's curves and its surface blueprints
+  while iam reset passwords and scheduled reports, and refdata's calendars had
+  been building since 15:09:57. The acceptance line "the parallel steps of a
+  run execute in different services at once" is measured now, not argued. The
+  cost the run also shows is that the surface publish is the long pole, at
+  20 min 27 s of 26 min: it stays alive on its progress reports, and its retry
+  budget is taken per party, so a wider run needs that budget measured rather
+  than assumed.
 - *A command that cannot read the state it guards on refuses, 2026-11-14.*
   A recreate asks whether anything is still connected before it drops, and an
   answer that never came back used to read as "nothing is connected". The

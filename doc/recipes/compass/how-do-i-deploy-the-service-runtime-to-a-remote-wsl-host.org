@@ -258,6 +258,37 @@ Two ways a pull deploy fails before anything starts:
   user cannot write. Regenerate the profile, or rewrite the old prefix
   in =.env.<host>=.
 
+* The database stays on the host
+
+The remote PostgreSQL listens on loopback only. The services reach it
+because they run with =--network=host=, so nothing off the machine can
+open a connection — not the internet and not the tailnet. Administer it
+through ssh:
+
+#+begin_src sh :results verbatim
+# One-off SQL
+ssh <host> sudo -u postgres psql -p 5433
+
+# A psql session from this machine, without a listener
+ssh -N -L 5433:127.0.0.1:5433 <host> &
+PGPASSWORD=... psql -h 127.0.0.1 -p 5433 -U postgres
+#+end_src
+
+A local =listen_addresses= is also why =compass db ... --env <host>= does
+not reach the host directly: it would need the tunnel above, and the
+profile's =ORES_DB_HOST= stays =localhost= so the services on the host
+use the socket.
+
+** Connection slots
+
+Every service keeps its own pool, so a host that runs the whole fleet
+must allow more connections than the default 100 — with nineteen
+services the pools alone reach about a hundred and the last two services
+fail with =remaining connection slots are reserved for roles with the
+SUPERUSER attribute=. The setting costs little because the backends are
+mostly idle; the buffers are what cost memory, as =ores_sizing.conf= on
+the host shows.
+
 * See also
 
 - [[id:0168F066-BFA4-4CFE-8A61-A2C727D91D10][How do I use named env files?]] — the =--env <host>= registry this

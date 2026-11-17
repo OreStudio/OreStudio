@@ -1439,6 +1439,7 @@ private:
             // A surface is the party's own work, so it is read, calibrated and
             // published in a session scoped to that party.
             const auto party_text = boost::uuids::to_string(party->id);
+            result.parties.push_back(party_text);
             ores::nats::service::nats_client party_nats(
                 nats_,
                 ores::iam::client::make_tenant_session_provider(nats_,
@@ -1565,7 +1566,6 @@ private:
                 << blueprints.size() << " surface(s)";
             wf.record(party_name + ": published " + std::to_string(published) + " of " +
                       std::to_string(blueprints.size()) + " surface(s)");
-            result.parties.push_back(party_text);
         }
 
         for (const auto& held : result.surfaces_held_back)

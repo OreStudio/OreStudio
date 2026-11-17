@@ -574,3 +574,89 @@ TEST_CASE("an_auto_delta_hedged_option_refuses_a_batch_that_expires_after_the_pa
     REQUIRE_FALSE(hedged.has_value());
     CHECK(hedged.error().term == "batches");
 }
+
+TEST_CASE("an_equity_future_option_is_the_option_row_with_the_future_expiry", equity_tags) {
+    const equity_option_terms option{.underlying = spx(),
+                                     .currency = std::string("USD"),
+                                     .quantity = equity_amount("17000"),
+                                     .kind = option_kind::call,
+                                     .strike = equity_amount("2147.56"),
+                                     .expiry = 2027y / 1 / 5,
+                                     .position = option_position::long_option};
+    const auto built =
+        equity_future_option_builder({.option = option, .future_expiry = 2027y / 3 / 19}).build();
+    REQUIRE(built.has_value());
+    const auto* row =
+        std::get_if<ores::trading::domain::equity_option_instrument>(&built->instrument);
+    REQUIRE(row != nullptr);
+    CHECK(row->identity.trade_type_code == "EquityFutureOption");
+    CHECK(row->future_expiry_date == std::optional(2027y / 3 / 19));
+
+    const auto early =
+        equity_future_option_builder({.option = option, .future_expiry = 2026y / 12 / 18}).build();
+    REQUIRE_FALSE(early.has_value());
+    CHECK(early.error().term == "future_expiry");
+}
+
+TEST_CASE("a_cash_position_is_its_row_long_or_short_and_refuses_none", equity_tags) {
+    const auto short_cash =
+        cash_position_builder({.currency = std::string("EUR"), .amount = equity_amount("-1000000")})
+            .build();
+    REQUIRE(short_cash.has_value());
+    const auto* row =
+        std::get_if<ores::trading::domain::cash_position_instrument>(&short_cash->instrument);
+    REQUIRE(row != nullptr);
+    CHECK(row->identity.trade_type_code == "CashPosition");
+    CHECK(row->currency == "EUR");
+    CHECK(row->amount == equity_amount("-1000000"));
+
+    const auto none =
+        cash_position_builder({.currency = std::string("EUR"), .amount = equity_amount("0")})
+            .build();
+    REQUIRE_FALSE(none.has_value());
+    CHECK(none.error().term == "amount");
+
+    const auto unnamed =
+        cash_position_builder({.currency = std::string(), .amount = equity_amount("100")}).build();
+    REQUIRE_FALSE(unnamed.has_value());
+    CHECK(unnamed.error().term == "currency");
+}
+
+TEST_CASE("an_equity_pairwise_variance_swap_states_both_members_and_a_daily_schedule",
+          equity_tags) {
+    pairwise_variance_swap_terms terms{.first = pairwise_member{.underlying = spx(),
+                                                                .strike = equity_amount("0.34"),
+                                                                .notional = equity_amount("577")},
+                                       .second = pairwise_member{.underlying = ndx(),
+                                                                 .strike = equity_amount("0.39"),
+                                                                 .notional = equity_amount("603")},
+                                       .basket_notional = equity_amount("1339"),
+                                       .basket_strike = equity_amount("0.32"),
+                                       .pay_currency = std::string("USD"),
+                                       .start = 2026y / 1 / 5,
+                                       .end = 2027y / 1 / 5,
+                                       .settlement = 2027y / 1 / 7,
+                                       .position = option_position::long_option};
+    const auto built = equity_pairwise_variance_swap_builder(terms).build();
+    REQUIRE(built.has_value());
+    const auto* row = std::get_if<ores::trading::domain::equity_pairwise_variance_swap_instrument>(
+        &built->instrument);
+    REQUIRE(row != nullptr);
+    CHECK(row->first_underlying == spx().uri());
+    CHECK(row->second_underlying == ndx().uri());
+    CHECK(row->second_strike == equity_amount("0.39"));
+    CHECK(row->basket_notional == equity_amount("1339"));
+    CHECK(row->long_short == "Long");
+    CHECK(row->settlement_date == 2027y / 1 / 7);
+    REQUIRE(built->schedules.size() == 1);
+    CHECK(built->schedules[0].schedule_role == "valuation_schedule");
+    CHECK(built->schedules[0].tenor == "1D");
+
+    auto twice = terms;
+    auto second = twice.second.get();
+    second.underlying = spx();
+    twice.second = second;
+    const auto refused = equity_pairwise_variance_swap_builder(twice).build();
+    REQUIRE_FALSE(refused.has_value());
+    CHECK(refused.error().term == "second");
+}

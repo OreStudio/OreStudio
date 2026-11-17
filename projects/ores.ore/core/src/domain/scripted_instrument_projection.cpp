@@ -91,18 +91,13 @@ constexpr class_read_product class_read_products[] = {
     {"EquityGenericBarrierOption", "EquityGenericBarrierOptionData"},
     {"EquityBasketVarianceSwap", "EquityBasketVarianceSwapData"},
     {"FxBasketVarianceSwap", "FxBasketVarianceSwapData"},
-    {"EquityPairwiseVarianceSwap", "EquityPairwiseVarianceSwapData"},
-    {"FxPairwiseVarianceSwap", "FxPairwiseVarianceSwapData"},
     {"EquityForwardVolatilityAgreement", "EquityForwardVolatilityAgreementData"},
     {"FxForwardVolatilityAgreement", "FxForwardVolatilityAgreementData"},
     {"EuropeanOptionBarrier", "EuropeanOptionBarrierData"},
     {"FxWorstOfBasketSwap", "FxWorstOfBasketSwapData"},
-    {"EquityFutureOption", "EquityFutureOptionData"},
     {"BondFutureOption", "BondFutureOptionData"},
-    {"FxAsianOption", "FxAsianOptionData"},
     {"RateDigitalOption", "RateDigitalOptionData"},
     {"CBO", "CBOData"},
-    {"CashPosition", "CashPositionData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {

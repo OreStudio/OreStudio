@@ -260,3 +260,69 @@ TEST_CASE("a_touch_with_a_strike_fails_and_names_the_term", fx_tags) {
     REQUIRE_FALSE(touch.has_value());
     CHECK(touch.error().term == "strike");
 }
+
+TEST_CASE("an_fx_asian_option_is_its_row_with_an_asian_block_and_daily_observations", fx_tags) {
+    const auto built = fx_asian_option_builder({.fx_index = eur_usd(),
+                                                .currency = std::string("USD"),
+                                                .quantity = fx_amount("1000000"),
+                                                .strike = fx_amount("1.08"),
+                                                .kind = option_kind::call,
+                                                .position = option_position::long_option,
+                                                .observation_start = 2026y / 2 / 2,
+                                                .expiry = 2026y / 3 / 2,
+                                                .settlement = 2026y / 3 / 4})
+                           .build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->asian_options.size() == 1);
+    const auto& row = built->asian_options[0];
+    CHECK(row.identity.trade_type_code == "FxAsianOption");
+    CHECK(row.fx_index == eur_usd().uri());
+    CHECK(row.strike == fx_amount("1.08"));
+    CHECK(row.option_type == "Call");
+    CHECK(row.expiry_date == 2026y / 3 / 2);
+    CHECK(row.settlement_date == std::optional(2026y / 3 / 4));
+    REQUIRE(built->options.size() == 1);
+    CHECK(built->options[0].payoff_type == "Asian");
+    REQUIRE(built->instrument_underlyings.size() == 1);
+    REQUIRE(built->schedules.size() == 1);
+    CHECK(built->schedules[0].schedule_role == "observation_schedule");
+    CHECK(built->schedules[0].tenor == "1D");
+}
+
+TEST_CASE("an_fx_pairwise_variance_swap_states_both_pairs_and_refuses_one_named_twice", fx_tags) {
+    auto gbp =
+        md::market_index::make(md::index_family::fx, "GBP", {{"source", "TR20H"}, {"ccy", "USD"}});
+    REQUIRE(gbp);
+    const auto gbp_usd = md::market_reference::of(std::move(*gbp));
+    REQUIRE(gbp_usd);
+    pairwise_variance_swap_terms terms{.first = pairwise_member{.underlying = eur_usd(),
+                                                                .strike = fx_amount("0.08"),
+                                                                .notional = fx_amount("1000")},
+                                       .second = pairwise_member{.underlying = *gbp_usd,
+                                                                 .strike = fx_amount("0.09"),
+                                                                 .notional = fx_amount("1200")},
+                                       .basket_notional = fx_amount("2000"),
+                                       .basket_strike = fx_amount("0.085"),
+                                       .pay_currency = std::string("USD"),
+                                       .start = 2026y / 1 / 5,
+                                       .end = 2027y / 1 / 5,
+                                       .settlement = 2027y / 1 / 8,
+                                       .position = option_position::short_option};
+    const auto built = fx_pairwise_variance_swap_builder(terms).build();
+    REQUIRE(built.has_value());
+    REQUIRE(built->pairwise_variance_swaps.size() == 1);
+    const auto& row = built->pairwise_variance_swaps[0];
+    CHECK(row.identity.trade_type_code == "FxPairwiseVarianceSwap");
+    CHECK(row.second_underlying == gbp_usd->uri());
+    CHECK(row.long_short == "Short");
+    REQUIRE(built->schedules.size() == 1);
+    CHECK(built->schedules[0].schedule_role == "valuation_schedule");
+
+    auto twice = terms;
+    auto second = twice.second.get();
+    second.underlying = eur_usd();
+    twice.second = second;
+    const auto refused = fx_pairwise_variance_swap_builder(twice).build();
+    REQUIRE_FALSE(refused.has_value());
+    CHECK(refused.error().term == "second");
+}

@@ -58,6 +58,7 @@ export interface EquityOptionInstrumentWrite {
     initial_price_2: string | null;
     knock_in_price: string | null;
     knock_out_price: string | null;
+    future_expiry_date: string | null;
     description: string;
 }
 

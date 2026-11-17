@@ -171,6 +171,7 @@ equity_option_instrument_to_domain(const messaging::equity_option_instrument_wri
     v.initial_price_2 = write.initial_price_2;
     v.knock_in_price = write.knock_in_price;
     v.knock_out_price = write.knock_out_price;
+    v.future_expiry_date = write.future_expiry_date;
     v.description = write.description;
     return v;
 }

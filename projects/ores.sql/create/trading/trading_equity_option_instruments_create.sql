@@ -24,7 +24,9 @@
  *
  * Equity Option Instrument Table
  *
- * Routes ORE product types: EquityOption, EquityCliquetOption.
+ * Routes ORE product types: EquityOption, EquityCliquetOption,
+ * EquityOutperformanceOption and EquityFutureOption; future_expiry_date is the
+ * future option's alone.
  * underlying_name captures the ORE equity Name identifier.
  * settlement_type is Cash or Physical (empty when not specified);
  * cliquet_frequency is EquityCliquetOption-only (e.g. Annual,
@@ -61,6 +63,7 @@ create table if not exists "ores_trading_equity_option_instruments_tbl" (
     "initial_price_2" numeric(38, 12) null,
     "knock_in_price" numeric(38, 12) null,
     "knock_out_price" numeric(38, 12) null,
+    "future_expiry_date" date null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -76,12 +79,13 @@ create table if not exists "ores_trading_equity_option_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('EquityOption', 'EquityCliquetOption', 'EquityOutperformanceOption')),
+    check ("trade_type_code" in ('EquityOption', 'EquityFutureOption', 'EquityCliquetOption', 'EquityOutperformanceOption')),
     check ("notional" > 0),
     check ("strike" >= 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
     check ("trade_type_code" = 'EquityCliquetOption' or "cliquet_frequency" is null),
+    check ("trade_type_code" = 'EquityFutureOption' or "future_expiry_date" is null),
     check ("option_type" in ('Call', 'Put')),
     check ("exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American')),
     check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))

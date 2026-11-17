@@ -125,6 +125,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/index_reference.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/leg_block_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/option_block_projection.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/pairwise_variance_swap_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/payment_frequency_conversion.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/portfolio_instrument_projection.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/portfolio_projection.hpp"

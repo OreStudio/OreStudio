@@ -241,4 +241,52 @@ fx_result fx_accumulator_builder::build() const {
 }
 
 
+fx_asian_option_builder::fx_asian_option_builder(fx_asian_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+fx_result fx_asian_option_builder::build() const {
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (!(terms_.quantity.get() > decimal{}))
+        return std::unexpected(build_error{"quantity", "must be positive"});
+    if (!(terms_.strike.get() > decimal{}))
+        return std::unexpected(build_error{"strike", "must be positive"});
+    if (!(terms_.observation_start.get() < terms_.expiry.get()))
+        return std::unexpected(build_error{"observation_start", "must be before the expiry"});
+    if (terms_.settlement.get() < terms_.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+    domain::fx_asian_option_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.fx_index = terms_.fx_index.get().uri();
+    row.currency = terms_.currency.get();
+    row.notional = terms_.quantity.get();
+    row.strike = terms_.strike.get();
+    row.option_type = option_type_of(terms_.kind.get());
+    row.long_short = long_short_of(terms_.position.get());
+    row.expiry_date = terms_.expiry.get();
+    row.settlement_date = terms_.settlement.get();
+    domain::fx_instrument_data out{};
+    out.asian_options.push_back(std::move(row));
+    out.options.push_back(fx_detail::option_row(terms_.position.get(), "European", "Asian"));
+    fx_detail::add_underlying(out, terms_.fx_index.get());
+    fx_detail::add_schedule(
+        out, "observation_schedule", "1D", terms_.observation_start.get(), terms_.expiry.get());
+    return out;
+}
+
+fx_pairwise_variance_swap_builder::fx_pairwise_variance_swap_builder(
+    pairwise_variance_swap_terms terms)
+    : terms_(std::move(terms)) {}
+
+fx_result fx_pairwise_variance_swap_builder::build() const {
+    auto row = pairwise_variance_swap_row<domain::fx_pairwise_variance_swap_instrument>(trade_type,
+                                                                                        terms_);
+    if (!row)
+        return std::unexpected(std::move(row.error()));
+    domain::fx_instrument_data out{};
+    out.pairwise_variance_swaps.push_back(std::move(*row));
+    fx_detail::add_schedule(out, "valuation_schedule", "1D", terms_.start.get(), terms_.end.get());
+    return out;
+}
+
 }

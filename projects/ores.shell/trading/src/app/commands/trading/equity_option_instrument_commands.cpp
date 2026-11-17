@@ -146,8 +146,8 @@ void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
         "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
         "<settlement_type> <cliquet_frequency> <strike_currency> <local_cap> <local_floor> "
         "<global_cap> <global_floor> <settlement_days> <premium> <premium_payment_date> "
-        "<initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <description> "
-        "<reason> <commentary>");
+        "<initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> "
+        "<future_expiry_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -158,8 +158,8 @@ void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
         "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
         "<settlement_type> <cliquet_frequency> <strike_currency> <local_cap> <local_floor> "
         "<global_cap> <global_floor> <settlement_days> <premium> <premium_payment_date> "
-        "<initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <description> "
-        "<reason> <commentary> [--version <n>]");
+        "<initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> "
+        "<future_expiry_date> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -170,8 +170,8 @@ void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
         "<currency> <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
         "<settlement_type> <cliquet_frequency> <strike_currency> <local_cap> <local_floor> "
         "<global_cap> <global_floor> <settlement_days> <premium> <premium_payment_date> "
-        "<initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> <description> "
-        "<reason> <commentary>");
+        "<initial_price_1> <initial_price_2> <knock_in_price> <knock_out_price> "
+        "<future_expiry_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -374,8 +374,8 @@ void equity_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 26 + 2) {
-            fail(out) << "Expected " << (26 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 27 + 2) {
+            fail(out) << "Expected " << (27 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -430,6 +430,8 @@ void equity_option_instrument_commands::process_add(std::ostream& out,
             req.change.write.knock_in_price, parsed->positionals[next++], "knock_in_price");
         equity_option_instrument_read_token(
             req.change.write.knock_out_price, parsed->positionals[next++], "knock_out_price");
+        equity_option_instrument_read_token(
+            req.change.write.future_expiry_date, parsed->positionals[next++], "future_expiry_date");
         equity_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -476,8 +478,8 @@ void equity_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 26 + 2) {
-            fail(out) << "Expected " << (26 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 27 + 2) {
+            fail(out) << "Expected " << (27 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -532,6 +534,8 @@ void equity_option_instrument_commands::process_set(std::ostream& out,
             req.change.write.knock_in_price, parsed->positionals[next++], "knock_in_price");
         equity_option_instrument_read_token(
             req.change.write.knock_out_price, parsed->positionals[next++], "knock_out_price");
+        equity_option_instrument_read_token(
+            req.change.write.future_expiry_date, parsed->positionals[next++], "future_expiry_date");
         equity_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -590,8 +594,8 @@ void equity_option_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 26 + 2) {
-            fail(out) << "Expected " << (change_count * 26 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 27 + 2) {
+            fail(out) << "Expected " << (change_count * 27 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -648,6 +652,8 @@ void equity_option_instrument_commands::process_put_many(std::ostream& out,
                 change.write.knock_in_price, parsed->positionals[next++], "knock_in_price");
             equity_option_instrument_read_token(
                 change.write.knock_out_price, parsed->positionals[next++], "knock_out_price");
+            equity_option_instrument_read_token(
+                change.write.future_expiry_date, parsed->positionals[next++], "future_expiry_date");
             equity_option_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

@@ -264,6 +264,14 @@
 \ir ./trading_equity_swap_instruments_drop.sql
 \ir ./trading_equity_variance_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_variance_swap_instruments_drop.sql
+\ir ./trading_equity_pairwise_variance_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_pairwise_variance_swap_instruments_drop.sql
+\ir ./trading_fx_pairwise_variance_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_fx_pairwise_variance_swap_instruments_drop.sql
+\ir ./trading_fx_asian_option_instruments_notify_trigger_drop.sql
+\ir ./trading_fx_asian_option_instruments_drop.sql
+\ir ./trading_cash_position_instruments_notify_trigger_drop.sql
+\ir ./trading_cash_position_instruments_drop.sql
 \ir ./trading_equity_forward_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_forward_instruments_drop.sql
 \ir ./trading_equity_asian_option_instruments_notify_trigger_drop.sql

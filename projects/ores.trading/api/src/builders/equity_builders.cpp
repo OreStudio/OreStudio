@@ -189,6 +189,56 @@ equity_result equity_option_builder::build() const {
     return out;
 }
 
+cash_position_builder::cash_position_builder(cash_position_terms terms)
+    : terms_(std::move(terms)) {}
+
+equity_result cash_position_builder::build() const {
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (terms_.amount.get().is_zero())
+        return std::unexpected(build_error{"amount", "must not be zero"});
+    domain::cash_position_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.currency = terms_.currency.get();
+    row.amount = terms_.amount.get();
+    domain::equity_instrument_data out;
+    out.instrument = std::move(row);
+    return out;
+}
+
+equity_pairwise_variance_swap_builder::equity_pairwise_variance_swap_builder(
+    pairwise_variance_swap_terms terms)
+    : terms_(std::move(terms)) {}
+
+equity_result equity_pairwise_variance_swap_builder::build() const {
+    auto row = pairwise_variance_swap_row<domain::equity_pairwise_variance_swap_instrument>(
+        trade_type, terms_);
+    if (!row)
+        return std::unexpected(std::move(row.error()));
+    domain::equity_instrument_data out;
+    out.instrument = std::move(*row);
+    out.schedules.push_back(
+        equity_schedule("valuation_schedule", "1D", terms_.start.get(), terms_.end.get()));
+    return out;
+}
+
+equity_future_option_builder::equity_future_option_builder(equity_future_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+equity_result equity_future_option_builder::build() const {
+    if (auto refusal = equity_detail::option_refusal(terms_.option))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.future_expiry.get() < terms_.option.expiry.get())
+        return std::unexpected(
+            build_error{"future_expiry", "must not be before the option expires"});
+    auto row = equity_option_row(trade_type, terms_.option);
+    row.future_expiry_date = terms_.future_expiry.get();
+    domain::equity_instrument_data out;
+    out.instrument = std::move(row);
+    out.options.push_back(equity_detail::option_row(terms_.option.position.get(), "European"));
+    return out;
+}
+
 equity_cliquet_option_builder::equity_cliquet_option_builder(equity_cliquet_option_terms terms)
     : terms_(std::move(terms)) {}
 

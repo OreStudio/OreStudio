@@ -38,6 +38,7 @@ namespace ores::trading::domain {
  */
 enum class instrument_table {
     bond_instrument,
+    cash_position_instrument,
     commodity_instrument,
     composite_instrument,
     credit_instrument,
@@ -47,14 +48,17 @@ enum class instrument_table {
     equity_digital_option_instrument,
     equity_forward_instrument,
     equity_option_instrument,
+    equity_pairwise_variance_swap_instrument,
     equity_position_instrument,
     equity_swap_instrument,
     equity_variance_swap_instrument,
     fx_accumulator_instrument,
     fx_asian_forward_instrument,
+    fx_asian_option_instrument,
     fx_barrier_option_instrument,
     fx_digital_option_instrument,
     fx_forward_instrument,
+    fx_pairwise_variance_swap_instrument,
     fx_vanilla_option_instrument,
     fx_variance_swap_instrument,
     rate_instrument,
@@ -108,7 +112,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "FxAverageForward")
         return instrument_table::fx_asian_forward_instrument;
     if (trade_type == "FxAsianOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_asian_option_instrument;
     if (trade_type == "FxBarrierOption")
         return instrument_table::fx_barrier_option_instrument;
     if (trade_type == "FxDoubleBarrierOption")
@@ -130,7 +134,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "FxVarianceSwap")
         return instrument_table::fx_variance_swap_instrument;
     if (trade_type == "FxPairwiseVarianceSwap")
-        return instrument_table::scripted_instrument;
+        return instrument_table::fx_pairwise_variance_swap_instrument;
     if (trade_type == "FxBasketVarianceSwap")
         return instrument_table::scripted_instrument;
     if (trade_type == "FxAccumulator")
@@ -190,7 +194,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityOption")
         return instrument_table::equity_option_instrument;
     if (trade_type == "EquityFutureOption")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_option_instrument;
     if (trade_type == "EquityAsianOption")
         return instrument_table::equity_asian_option_instrument;
     if (trade_type == "EquityBarrierOption")
@@ -216,7 +220,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "EquityVarianceSwap")
         return instrument_table::equity_variance_swap_instrument;
     if (trade_type == "EquityPairwiseVarianceSwap")
-        return instrument_table::scripted_instrument;
+        return instrument_table::equity_pairwise_variance_swap_instrument;
     if (trade_type == "EquityBasketVarianceSwap")
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityCliquetOption")
@@ -294,7 +298,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "CommodityPosition")
         return instrument_table::commodity_instrument;
     if (trade_type == "CashPosition")
-        return instrument_table::scripted_instrument;
+        return instrument_table::cash_position_instrument;
     if (trade_type == "ScriptedTrade")
         return instrument_table::scripted_instrument;
     if (trade_type == "Autocallable_01")

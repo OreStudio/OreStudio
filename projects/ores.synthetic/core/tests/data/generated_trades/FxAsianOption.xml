@@ -9,12 +9,13 @@
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
-        <Weight>1</Weight>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <PayoffType>Asian</PayoffType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2029-12-02</ExerciseDate>
         </ExerciseDates>
@@ -27,7 +28,6 @@
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
-          <TermConvention>F</TermConvention>
           <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>
@@ -42,12 +42,13 @@
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>
-        <Weight>1</Weight>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <PayoffType>Asian</PayoffType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2030-10-02</ExerciseDate>
         </ExerciseDates>
@@ -60,7 +61,6 @@
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
-          <TermConvention>F</TermConvention>
           <Rule>Forward</Rule>
         </Rules>
       </ObservationDates>

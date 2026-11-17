@@ -38,7 +38,9 @@ namespace ores::trading::domain {
 /**
  * @brief Equity Option instrument.
  *
- * Routes ORE product types: EquityOption, EquityCliquetOption.
+ * Routes ORE product types: EquityOption, EquityCliquetOption,
+ * EquityOutperformanceOption and EquityFutureOption; future_expiry_date is the
+ * future option's alone.
  * underlying_name captures the ORE equity Name identifier.
  * settlement_type is Cash or Physical (empty when not specified);
  * cliquet_frequency is EquityCliquetOption-only (e.g. Annual,
@@ -176,6 +178,14 @@ struct equity_option_instrument final {
     std::optional<ores::utility::decimal::decimal> knock_out_price;
 
     /**
+     * @brief An option on an equity future's future expiry, as FutureExpiryDate states it; the
+     * future expires on or after the option. Other options leave it null.
+     *
+     * The generated row is a plain EquityOption, so it leaves the column null.
+     */
+    std::optional<std::chrono::year_month_day> future_expiry_date;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -226,6 +236,7 @@ struct equity_option_instrument final {
     ores::utility::digest::append_member(out, "initial_price_2", v.initial_price_2);
     ores::utility::digest::append_member(out, "knock_in_price", v.knock_in_price);
     ores::utility::digest::append_member(out, "knock_out_price", v.knock_out_price);
+    ores::utility::digest::append_member(out, "future_expiry_date", v.future_expiry_date);
     out.push_back('}');
     return out;
 }

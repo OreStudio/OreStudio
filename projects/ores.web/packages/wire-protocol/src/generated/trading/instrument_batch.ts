@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 import type { BondInstrumentData } from './domain/bond_instrument_data.js';
+import type { CashPositionInstrument } from './domain/cash_position_instrument.js';
 import type { CommodityInstrument } from './domain/commodity_instrument.js';
 import type { CompositeInstrument } from './domain/composite_instrument.js';
 import type { CreditInstrument } from './domain/credit_instrument.js';
@@ -32,14 +33,17 @@ import type { EquityBarrierOptionInstrument } from './domain/equity_barrier_opti
 import type { EquityDigitalOptionInstrument } from './domain/equity_digital_option_instrument.js';
 import type { EquityForwardInstrument } from './domain/equity_forward_instrument.js';
 import type { EquityOptionInstrument } from './domain/equity_option_instrument.js';
+import type { EquityPairwiseVarianceSwapInstrument } from './domain/equity_pairwise_variance_swap_instrument.js';
 import type { EquityPositionInstrument } from './domain/equity_position_instrument.js';
 import type { EquitySwapInstrument } from './domain/equity_swap_instrument.js';
 import type { EquityVarianceSwapInstrument } from './domain/equity_variance_swap_instrument.js';
 import type { FxAccumulatorInstrument } from './domain/fx_accumulator_instrument.js';
 import type { FxAsianForwardInstrument } from './domain/fx_asian_forward_instrument.js';
+import type { FxAsianOptionInstrument } from './domain/fx_asian_option_instrument.js';
 import type { FxBarrierOptionInstrument } from './domain/fx_barrier_option_instrument.js';
 import type { FxDigitalOptionInstrument } from './domain/fx_digital_option_instrument.js';
 import type { FxForwardInstrument } from './domain/fx_forward_instrument.js';
+import type { FxPairwiseVarianceSwapInstrument } from './domain/fx_pairwise_variance_swap_instrument.js';
 import type { FxVanillaOptionInstrument } from './domain/fx_vanilla_option_instrument.js';
 import type { FxVarianceSwapInstrument } from './domain/fx_variance_swap_instrument.js';
 import type { RateInstrument } from './domain/rate_instrument.js';
@@ -118,6 +122,7 @@ import type { VanillaSwapInstrument } from './domain/vanilla_swap_instrument.js'
  */
 export interface InstrumentBatch {
     bond_instruments: BondInstrumentData[];
+    cash_position_instruments: CashPositionInstrument[];
     commodity_instruments: CommodityInstrument[];
     composite_instruments: CompositeInstrument[];
     credit_instruments: CreditInstrument[];
@@ -127,14 +132,17 @@ export interface InstrumentBatch {
     equity_digital_option_instruments: EquityDigitalOptionInstrument[];
     equity_forward_instruments: EquityForwardInstrument[];
     equity_option_instruments: EquityOptionInstrument[];
+    equity_pairwise_variance_swap_instruments: EquityPairwiseVarianceSwapInstrument[];
     equity_position_instruments: EquityPositionInstrument[];
     equity_swap_instruments: EquitySwapInstrument[];
     equity_variance_swap_instruments: EquityVarianceSwapInstrument[];
     fx_accumulator_instruments: FxAccumulatorInstrument[];
     fx_asian_forward_instruments: FxAsianForwardInstrument[];
+    fx_asian_option_instruments: FxAsianOptionInstrument[];
     fx_barrier_option_instruments: FxBarrierOptionInstrument[];
     fx_digital_option_instruments: FxDigitalOptionInstrument[];
     fx_forward_instruments: FxForwardInstrument[];
+    fx_pairwise_variance_swap_instruments: FxPairwiseVarianceSwapInstrument[];
     fx_vanilla_option_instruments: FxVanillaOptionInstrument[];
     fx_variance_swap_instruments: FxVarianceSwapInstrument[];
     rate_instruments: RateInstrument[];

@@ -33,6 +33,7 @@
 #include "ores.shell/app/commands/trading/bond_issue_commands.hpp"
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/cap_floor_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/cash_position_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/commodity_basket_constituent_commands.hpp"
 #include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_instrument_commands.hpp"
@@ -48,6 +49,7 @@
 #include "ores.shell/app/commands/trading/equity_forward_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_pairwise_variance_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_position_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_position_option_underlying_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_swap_instrument_commands.hpp"
@@ -58,9 +60,11 @@
 #include "ores.shell/app/commands/trading/fra_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_asian_forward_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_asian_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_barrier_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_digital_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_forward_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_pairwise_variance_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_vanilla_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_variance_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/index_credit_default_swap_instrument_commands.hpp"
@@ -120,6 +124,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     bond_issue_commands::register_commands(root_menu, session);
     callable_swap_instrument_commands::register_commands(root_menu, session);
     cap_floor_instrument_commands::register_commands(root_menu, session);
+    cash_position_instrument_commands::register_commands(root_menu, session);
     commodity_basket_constituent_commands::register_commands(root_menu, session);
     commodity_instrument_commands::register_commands(root_menu, session);
     composite_instrument_commands::register_commands(root_menu, session);
@@ -135,6 +140,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     equity_forward_instrument_commands::register_commands(root_menu, session);
     equity_instrument_commands::register_commands(root_menu, session);
     equity_option_instrument_commands::register_commands(root_menu, session);
+    equity_pairwise_variance_swap_instrument_commands::register_commands(root_menu, session);
     equity_position_instrument_commands::register_commands(root_menu, session);
     equity_position_option_underlying_commands::register_commands(root_menu, session);
     equity_swap_instrument_commands::register_commands(root_menu, session);
@@ -145,9 +151,11 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     fra_instrument_commands::register_commands(root_menu, session);
     fx_accumulator_instrument_commands::register_commands(root_menu, session);
     fx_asian_forward_instrument_commands::register_commands(root_menu, session);
+    fx_asian_option_instrument_commands::register_commands(root_menu, session);
     fx_barrier_option_instrument_commands::register_commands(root_menu, session);
     fx_digital_option_instrument_commands::register_commands(root_menu, session);
     fx_forward_instrument_commands::register_commands(root_menu, session);
+    fx_pairwise_variance_swap_instrument_commands::register_commands(root_menu, session);
     fx_vanilla_option_instrument_commands::register_commands(root_menu, session);
     fx_variance_swap_instrument_commands::register_commands(root_menu, session);
     index_credit_default_swap_instrument_commands::register_commands(root_menu, session);

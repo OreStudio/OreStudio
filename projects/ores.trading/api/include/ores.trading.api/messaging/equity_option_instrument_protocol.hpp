@@ -75,6 +75,7 @@ struct equity_option_instrument_write {
     std::optional<ores::utility::decimal::decimal> initial_price_2;
     std::optional<ores::utility::decimal::decimal> knock_in_price;
     std::optional<ores::utility::decimal::decimal> knock_out_price;
+    std::optional<std::chrono::year_month_day> future_expiry_date;
     std::string description;
 
     friend bool operator==(const equity_option_instrument_write&,
@@ -439,6 +440,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_option_ins
         utility::codec::field{"initial_price_2", &equity_option_instrument_write::initial_price_2},
         utility::codec::field{"knock_in_price", &equity_option_instrument_write::knock_in_price},
         utility::codec::field{"knock_out_price", &equity_option_instrument_write::knock_out_price},
+        utility::codec::field{"future_expiry_date",
+                              &equity_option_instrument_write::future_expiry_date},
         utility::codec::field{"description", &equity_option_instrument_write::description},
     };
 }

@@ -25,7 +25,6 @@
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
-          <TermConvention>F</TermConvention>
           <Rule>Forward</Rule>
         </Rules>
       </ValuationSchedule>
@@ -58,7 +57,6 @@
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
-          <TermConvention>F</TermConvention>
           <Rule>Forward</Rule>
         </Rules>
       </ValuationSchedule>

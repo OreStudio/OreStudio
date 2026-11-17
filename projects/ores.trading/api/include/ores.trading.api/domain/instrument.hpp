@@ -37,9 +37,11 @@
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_pairwise_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
@@ -499,6 +501,16 @@ struct fx_instrument_data {
     std::vector<fx_variance_swap_instrument> variance_swaps;
 
     /**
+     * @brief The fx_asian_option_instrument rows: FxAsianOption.
+     */
+    std::vector<fx_asian_option_instrument> asian_options;
+
+    /**
+     * @brief The fx_pairwise_variance_swap_instrument rows: FxPairwiseVarianceSwap.
+     */
+    std::vector<fx_pairwise_variance_swap_instrument> pairwise_variance_swaps;
+
+    /**
      * @brief The range_bound rows: the RangeBounds list an accumulator states.
      *
      * A child of the product rather than a product, so it states no type and
@@ -549,13 +561,16 @@ namespace detail {
  * gains is one more entry here and in the batch's pairing of the same seven,
  * and no walk needs changing.
  */
-inline constexpr auto fx_instrument_arrays = std::tuple{&fx_instrument_data::forwards,
-                                                        &fx_instrument_data::vanilla_options,
-                                                        &fx_instrument_data::barrier_options,
-                                                        &fx_instrument_data::digital_options,
-                                                        &fx_instrument_data::asian_forwards,
-                                                        &fx_instrument_data::accumulators,
-                                                        &fx_instrument_data::variance_swaps};
+inline constexpr auto fx_instrument_arrays =
+    std::tuple{&fx_instrument_data::forwards,
+               &fx_instrument_data::vanilla_options,
+               &fx_instrument_data::barrier_options,
+               &fx_instrument_data::digital_options,
+               &fx_instrument_data::asian_forwards,
+               &fx_instrument_data::accumulators,
+               &fx_instrument_data::variance_swaps,
+               &fx_instrument_data::asian_options,
+               &fx_instrument_data::pairwise_variance_swaps};
 
 /**
  * @brief The family's child arrays: rows a product owns rather than rows a

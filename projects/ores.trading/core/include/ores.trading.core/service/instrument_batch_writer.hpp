@@ -55,6 +55,7 @@
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
+#include "ores.trading.core/repository/cash_position_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
@@ -69,6 +70,7 @@
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
@@ -78,9 +80,11 @@
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_pairwise_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
@@ -216,6 +220,8 @@ void write_instrument_batch(const ores::database::context& ctx,
                             const Claim& claim) {
     write_rows<repository::bond_instrument_repository>(
         ctx, batch.bond_instruments, keys, stamp, claim);
+    write_rows<repository::cash_position_instrument_repository>(
+        ctx, batch.cash_position_instruments, keys, stamp, claim);
     write_rows<repository::commodity_instrument_repository>(
         ctx, batch.commodity_instruments, keys, stamp, claim);
     write_rows<repository::composite_instrument_repository>(
@@ -234,6 +240,8 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.equity_forward_instruments, keys, stamp, claim);
     write_rows<repository::equity_option_instrument_repository>(
         ctx, batch.equity_option_instruments, keys, stamp, claim);
+    write_rows<repository::equity_pairwise_variance_swap_instrument_repository>(
+        ctx, batch.equity_pairwise_variance_swap_instruments, keys, stamp, claim);
     write_rows<repository::equity_position_instrument_repository>(
         ctx, batch.equity_position_instruments, keys, stamp, claim);
     write_rows<repository::equity_swap_instrument_repository>(
@@ -244,12 +252,16 @@ void write_instrument_batch(const ores::database::context& ctx,
         ctx, batch.fx_accumulator_instruments, keys, stamp, claim);
     write_rows<repository::fx_asian_forward_instrument_repository>(
         ctx, batch.fx_asian_forward_instruments, keys, stamp, claim);
+    write_rows<repository::fx_asian_option_instrument_repository>(
+        ctx, batch.fx_asian_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_barrier_option_instrument_repository>(
         ctx, batch.fx_barrier_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_digital_option_instrument_repository>(
         ctx, batch.fx_digital_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_forward_instrument_repository>(
         ctx, batch.fx_forward_instruments, keys, stamp, claim);
+    write_rows<repository::fx_pairwise_variance_swap_instrument_repository>(
+        ctx, batch.fx_pairwise_variance_swap_instruments, keys, stamp, claim);
     write_rows<repository::fx_vanilla_option_instrument_repository>(
         ctx, batch.fx_vanilla_option_instruments, keys, stamp, claim);
     write_rows<repository::fx_variance_swap_instrument_repository>(
@@ -386,6 +398,9 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     const auto table = domain::instrument_table_for(trade_type);
     if (!batch.bond_instruments.empty() && table != domain::instrument_table::bond_instrument)
         names.emplace_back("bond_instruments");
+    if (!batch.cash_position_instruments.empty() &&
+        table != domain::instrument_table::cash_position_instrument)
+        names.emplace_back("cash_position_instruments");
     if (!batch.commodity_instruments.empty() &&
         table != domain::instrument_table::commodity_instrument)
         names.emplace_back("commodity_instruments");
@@ -412,6 +427,9 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.equity_option_instruments.empty() &&
         table != domain::instrument_table::equity_option_instrument)
         names.emplace_back("equity_option_instruments");
+    if (!batch.equity_pairwise_variance_swap_instruments.empty() &&
+        table != domain::instrument_table::equity_pairwise_variance_swap_instrument)
+        names.emplace_back("equity_pairwise_variance_swap_instruments");
     if (!batch.equity_position_instruments.empty() &&
         table != domain::instrument_table::equity_position_instrument)
         names.emplace_back("equity_position_instruments");
@@ -427,6 +445,9 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.fx_asian_forward_instruments.empty() &&
         table != domain::instrument_table::fx_asian_forward_instrument)
         names.emplace_back("fx_asian_forward_instruments");
+    if (!batch.fx_asian_option_instruments.empty() &&
+        table != domain::instrument_table::fx_asian_option_instrument)
+        names.emplace_back("fx_asian_option_instruments");
     if (!batch.fx_barrier_option_instruments.empty() &&
         table != domain::instrument_table::fx_barrier_option_instrument)
         names.emplace_back("fx_barrier_option_instruments");
@@ -436,6 +457,9 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
     if (!batch.fx_forward_instruments.empty() &&
         table != domain::instrument_table::fx_forward_instrument)
         names.emplace_back("fx_forward_instruments");
+    if (!batch.fx_pairwise_variance_swap_instruments.empty() &&
+        table != domain::instrument_table::fx_pairwise_variance_swap_instrument)
+        names.emplace_back("fx_pairwise_variance_swap_instruments");
     if (!batch.fx_vanilla_option_instruments.empty() &&
         table != domain::instrument_table::fx_vanilla_option_instrument)
         names.emplace_back("fx_vanilla_option_instruments");
@@ -460,18 +484,21 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
 [[nodiscard]] inline std::vector<std::string> orphan_arrays(const domain::instrument_batch& batch) {
     std::vector<std::string> names;
     const bool headed =
-        !batch.bond_instruments.empty() || !batch.commodity_instruments.empty() ||
-        !batch.composite_instruments.empty() || !batch.credit_instruments.empty() ||
-        !batch.equity_accumulator_instruments.empty() ||
+        !batch.bond_instruments.empty() || !batch.cash_position_instruments.empty() ||
+        !batch.commodity_instruments.empty() || !batch.composite_instruments.empty() ||
+        !batch.credit_instruments.empty() || !batch.equity_accumulator_instruments.empty() ||
         !batch.equity_asian_option_instruments.empty() ||
         !batch.equity_barrier_option_instruments.empty() ||
         !batch.equity_digital_option_instruments.empty() ||
         !batch.equity_forward_instruments.empty() || !batch.equity_option_instruments.empty() ||
+        !batch.equity_pairwise_variance_swap_instruments.empty() ||
         !batch.equity_position_instruments.empty() || !batch.equity_swap_instruments.empty() ||
         !batch.equity_variance_swap_instruments.empty() ||
         !batch.fx_accumulator_instruments.empty() || !batch.fx_asian_forward_instruments.empty() ||
+        !batch.fx_asian_option_instruments.empty() ||
         !batch.fx_barrier_option_instruments.empty() ||
         !batch.fx_digital_option_instruments.empty() || !batch.fx_forward_instruments.empty() ||
+        !batch.fx_pairwise_variance_swap_instruments.empty() ||
         !batch.fx_vanilla_option_instruments.empty() ||
         !batch.fx_variance_swap_instruments.empty() || !batch.rate_instruments.empty() ||
         !batch.scripted_instruments.empty() || false;

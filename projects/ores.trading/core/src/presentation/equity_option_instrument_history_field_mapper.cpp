@@ -82,6 +82,11 @@ render_equity_option_instrument_fields(const domain::equity_option_instrument& v
                       .value = v.knock_in_price ? v.knock_in_price->to_string() : std::string{}});
     fields.push_back({.name = "Knock Out Price",
                       .value = v.knock_out_price ? v.knock_out_price->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Future Expiry Date",
+         .value = v.future_expiry_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.future_expiry_date) :
+                      std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

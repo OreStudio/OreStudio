@@ -24,6 +24,7 @@
 #include "ores.trading.api/builders/build_error.hpp"
 #include "ores.trading.api/builders/fx_builder_rows.hpp"
 #include "ores.trading.api/builders/option_position.hpp"
+#include "ores.trading.api/builders/pairwise_variance_swap_terms.hpp"
 #include "ores.trading.api/builders/required.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/export.hpp"
@@ -403,6 +404,42 @@ fx_result fx_digital_option_builder<Product>::build() const {
     fx_detail::add_barriers(out, terms_.barriers);
     return out;
 }
+
+/**
+ * @brief An FX option on the rate averaged over daily observations from the
+ * observation start to the expiry.
+ */
+struct fx_asian_option_terms final {
+    required<marketdata::datum::market_reference> fx_index;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    required<utility::decimal::decimal> strike;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<std::chrono::year_month_day> observation_start;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+};
+
+class ORES_TRADING_API_EXPORT fx_asian_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "FxAsianOption";
+    explicit fx_asian_option_builder(fx_asian_option_terms terms);
+    [[nodiscard]] fx_result build() const;
+
+private:
+    fx_asian_option_terms terms_;
+};
+
+class ORES_TRADING_API_EXPORT fx_pairwise_variance_swap_builder final {
+public:
+    static constexpr std::string_view trade_type = "FxPairwiseVarianceSwap";
+    explicit fx_pairwise_variance_swap_builder(pairwise_variance_swap_terms terms);
+    [[nodiscard]] fx_result build() const;
+
+private:
+    pairwise_variance_swap_terms terms_;
+};
 
 }
 

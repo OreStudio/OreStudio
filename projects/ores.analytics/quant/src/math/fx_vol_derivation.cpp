@@ -34,6 +34,11 @@ constexpr double maximum_years = 50.0;
 
 }
 
+int fx_derivation_window(double years, const fx_derivation_settings& settings) {
+    return std::max(settings.minimum_window,
+                    static_cast<int>(std::lround(years * settings.trading_days_per_year)));
+}
+
 std::expected<fx_derivation, std::string>
 derive_fx_quotes(std::span<const double> daily_log_returns,
                  std::span<const fx_expiry> expiries,
@@ -55,7 +60,7 @@ derive_fx_quotes(std::span<const double> daily_log_returns,
             continue;
         }
         const double days = expiry.years * settings.trading_days_per_year;
-        const int window = std::max(settings.minimum_window, static_cast<int>(std::lround(days)));
+        const int window = fx_derivation_window(expiry.years, settings);
         const auto level =
             realised_volatility(daily_log_returns, window, settings.trading_days_per_year);
         if (!level) {
@@ -103,7 +108,7 @@ std::expected<void, std::string> derive_grid(std::span<const double> returns,
     windows.reserve(expiries.size());
     for (const auto& expiry : expiries) {
         const auto days = expiry.years * settings.trading_days_per_year;
-        const auto count = std::max(settings.minimum_window, static_cast<int>(std::lround(days)));
+        const auto count = fx_derivation_window(expiry.years, settings);
         windows.push_back({.returns = static_cast<std::size_t>(std::max(count, 2)),
                            .days = days,
                            .usable = expiry.years > 0.0 && expiry.years <= maximum_years});

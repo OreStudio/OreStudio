@@ -62,6 +62,31 @@ std::vector<derived_fx_expiry> derived_fx_ladder(const std::set<std::string>& la
     return ladder;
 }
 
+derived_fx_reach derived_fx_reach_of(std::span<const derived_fx_expiry> ladder,
+                                     std::size_t returns,
+                                     const qm::fx_derivation_settings& settings) {
+    derived_fx_reach out;
+    for (const auto& e : ladder) {
+        const auto needs = qm::fx_derivation_window(e.years, settings);
+        if (static_cast<std::size_t>(needs) <= returns)
+            out.reached.push_back(e);
+        else
+            out.unreached.push_back({.expiry = e, .needs = needs});
+    }
+    return out;
+}
+
+std::string
+describe_reach(const derived_fx_pair& pair, const derived_fx_reach& reach, std::size_t returns) {
+    auto out = pair.base + pair.quote + " reaches " +
+               (reach.reached.empty() ? std::string("no expiry") : reach.reached.back().label) +
+               " with " + std::to_string(returns) + " returns";
+    for (std::size_t i = 0; i < reach.unreached.size(); ++i)
+        out += (i == 0 ? "; " : ", ") + reach.unreached[i].expiry.label + " needs " +
+               std::to_string(reach.unreached[i].needs);
+    return out;
+}
+
 std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view external_id) {
     const auto first = external_id.find('/');
     if (first != 6)

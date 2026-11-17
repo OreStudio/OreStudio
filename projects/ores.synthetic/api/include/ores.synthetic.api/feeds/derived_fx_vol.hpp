@@ -82,6 +82,36 @@ struct derived_fx_expiry final {
 ORES_SYNTHETIC_API_EXPORT std::vector<derived_fx_expiry>
 derived_fx_ladder(const std::set<std::string>& labels);
 
+/// An expiry a pair's sample does not cover, and the returns its window needs.
+struct derived_fx_short_expiry final {
+    derived_fx_expiry expiry;
+    int needs;
+};
+
+/// How far a pair's sample reaches along its ladder: the expiries its returns cover, and the
+/// ones they do not.
+struct derived_fx_reach final {
+    std::vector<derived_fx_expiry> reached;
+    std::vector<derived_fx_short_expiry> unreached;
+};
+
+/**
+ * @brief The expiries of @p ladder that @p returns cover.
+ *
+ * An expiry is reached when its window, fx_derivation_window, holds no more returns than the
+ * sample, so a longer sample reaches at least as far. The reach is read from the sample a party
+ * holds, never from a constant.
+ */
+ORES_SYNTHETIC_API_EXPORT derived_fx_reach
+derived_fx_reach_of(std::span<const derived_fx_expiry> ladder,
+                    std::size_t returns,
+                    const analytics::quant::math::fx_derivation_settings& settings);
+
+/// One line that names where a pair's reach stops and what each expiry past it needs, such as
+/// "USDCLP reaches 7Y with 2345 returns; 10Y needs 2520".
+ORES_SYNTHETIC_API_EXPORT std::string
+describe_reach(const derived_fx_pair& pair, const derived_fx_reach& reach, std::size_t returns);
+
 /// The labels of an expiry's quotes, the strike_label of their fx_option items.
 inline constexpr std::array<std::string_view, 5> derived_fx_labels{
     "ATM", "25RR", "25BF", "10RR", "10BF"};

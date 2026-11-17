@@ -147,7 +147,13 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     if (!convention)
         return std::unexpected("the convention: " + convention.error());
     std::vector<qm::fx_expiry> expiries;
-    for (const auto& e : derived_fx_ladder(owed_expiries)) {
+    // The source quotes the expiries the pair's sample reaches and names the rest, rather than
+    // deriving an expiry its history cannot cover.
+    const auto ladder = derived_fx_ladder(owed_expiries);
+    const auto reach = derived_fx_reach_of(ladder, returns.returns.size(), settings_);
+    if (!reach.unreached.empty())
+        failures_.push_back(describe_reach(pair, reach, returns.returns.size()));
+    for (const auto& e : reach.reached) {
         const auto at = convention_at(*convention, e.label);
         if (!at)
             return std::unexpected("the convention at " + e.label + ": " + at.error());

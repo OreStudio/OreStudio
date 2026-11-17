@@ -26,11 +26,11 @@ Every drift finding compass reports at the start of this story is fixed in the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -88,3 +88,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+compass diff writes nothing on the branch, and compass check reports only the
+baseline rules (entity_writes, core_link_edges, rls_widenings,
+template_sections and 7 known money columns), which the baselines task owns.
+
+- *Hand edits moved into their models* (9605b1e8d0). The market_fixing
+  read_latest_for_series overload of a tenant, a party and a set of series is a
+  repository paste block; the marketdata stale_seconds options get
+  =:initial: 0=, which keeps the zero initialisers valgrind needed; the ores.ore
+  core tests link pugixml from the component model. compass generate
+  reproduces each committed file.
+- *Regeneration* (7f4942054f). The system-tenant shared-read change reaches the
+  7 script entities and the tenor convention resolution read; the 52 shell
+  recipe scripts are tangled, 40 of them for four instrument families that had
+  none; the shell recipe and HTTP route inventories are current.
+- *List request table* regenerated for the four new instrument families
+  (37c78e7beb).
+- *Two continuous columns typed exact*: equity_position_instrument.volatility
+  and equity_position_option_underlying.quantity are double precision and
+  double, as the rule for continuous quantities and every sibling model state;
+  the ORE projection and the builder convert at the seam.
+- *The 4 trading tables without RLS and the 12 unseeded handler permissions*
+  were fixed on main by a28783596f before this task started.
+- *Parity*: Python component-drift passes on marketdata, trading, ore and
+  refdata; Python er-diagram --strict passes with no warnings and agrees with
+  the diagram compass wrote.
+- *Tests*: ores.trading.api.tests, ores.ore.core.tests and
+  ores.trading.core.tests pass on a recreated database.
+- *ores_mq_queues_tbl* (861cd6d639): compass's rls_coverage, in a build not
+  yet installed, reads a party_id column the Python parser skips. The table
+  isolates parties by scope in its read policy, so validation_ignore.txt lists
+  it for RLS_002 with that reason.
+

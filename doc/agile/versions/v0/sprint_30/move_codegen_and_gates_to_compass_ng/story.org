@@ -42,16 +42,16 @@ compass-ng generates the code and runs the build-free gates for every environmen
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2EE98846-E34A-49AA-949F-29ABF87DBCDA][Scaffold story: Move codegen and the gates to compass-ng]] | STARTED | 2026-11-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:684B4233-F5A7-4E16-B6B2-31C2251406B2][Compare compass-ng with the Python gates on main]] | BACKLOG | | | Initial task for: Move codegen and the gates to compass-ng |
+| [[id:2EE98846-E34A-49AA-949F-29ABF87DBCDA][Scaffold story: Move codegen and the gates to compass-ng]] | DONE | 2026-11-17 | 2026-11-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:684B4233-F5A7-4E16-B6B2-31C2251406B2][Compare compass-ng with the Python gates on main]] | DONE | | 2026-11-17 | Initial task for: Move codegen and the gates to compass-ng |
 | [[id:6EA72ABF-61C0-457C-A01E-8B2E2FC2A48D][Name the two compass tools apart]] | BACKLOG | | | Install compass-ng under its own name and route its verbs through ./compass.sh, so a bare compass verb never reaches the wrong tool. |
 | [[id:978CA725-4B08-428C-8AD2-E16E703F18A2][Commit the compass configuration]] | BACKLOG | | | Add .compass.org at the repository root with the codec table the integration guide gives, and the rule table page it names. |
-| [[id:28EE3185-5F2E-472A-9364-FAE5E41E4743][Fix the drift compass reports on main]] | BACKLOG | | | Regenerate the outputs compass shows as drift, decide each hand edit in a generated file, and fix the real findings, so compass check is clean before it becomes a gate. |
+| [[id:28EE3185-5F2E-472A-9364-FAE5E41E4743][Fix the drift compass reports on main]] | DONE | | 2026-11-17 | Regenerate the outputs compass shows as drift, decide each hand edit in a generated file, and fix the real findings, so compass check is clean before it becomes a gate. |
 | [[id:1A34BC91-478A-44E4-B52E-D77FD3640D44][Move the gate baselines to inline exceptions]] | BACKLOG | | | Turn each entry in the gate baseline files into a compass:except comment on the line it covers, with a reason, an approver and an expiry. |
 | [[id:8F2AD565-A4DC-43C2-8867-BAB7AAC5DD16][Run the ported gates through compass check]] | BACKLOG | | | Make ./compass.sh check run one compass check for the gates compass has ported, and run local_checks.py only for the gates it does not cover. |
 | [[id:AD824750-38EA-4209-A359-082223E68EBA][Generate code with compass generate]] | BACKLOG | | | Replace regenerate --all, the ores.codegen regeneration verbs and the per-artefact regenerate scripts that compass covers with compass generate. |
 | [[id:C9EC800C-94A5-4D63-A885-6BA3B478BE92][Check each edit with the compass hook]] | BACKLOG | | | Add compass hook as a PostToolUse hook through doc/llm/claude_code_settings.org. |
-| [[id:E1BC8C25-71E9-4586-98D6-F320F44B02A7][Fix the gate defects compass found]] | BACKLOG | | | Fix the defects in ORE Studio's own gates that the compass port found. |
+| [[id:E1BC8C25-71E9-4586-98D6-F320F44B02A7][Fix the gate defects compass found]] | DONE | | 2026-11-17 | Fix the defects in ORE Studio's own gates that the compass port found. |
 | [[id:AE4F196D-F528-467A-AF6A-2E464A6601F5][Roll compass-ng out to the fleet]] | BACKLOG | | | Make every ores_dev environment use compass-ng: check the binary, build each worktree's records, collect the store, and say what to do when it fails. |
 | [[id:C333376D-5D88-4D73-BB2F-AACED7605D17][Run compass check in CI]] | BACKLOG | | | Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job. |
 | [[id:A463E42D-7A73-44DC-BB9B-FEFF1D1413E2][Install compass-ng for external developers]] | BACKLOG | | | Document and script how a developer outside the fleet installs compass-ng, and keep the project usable when they do not. |

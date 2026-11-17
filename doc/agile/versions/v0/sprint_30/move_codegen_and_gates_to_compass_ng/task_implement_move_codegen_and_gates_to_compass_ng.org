@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-17
 #+updated: 2026-11-17
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ integration guide's numbers.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Pilot run, findings recorded.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -165,3 +165,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+compass-ng gives the same verdicts as the Python gates on every gate it could
+be compared on, except er-diagram's RLS validation, which compass has since
+ported as rls_coverage. It caught 10 of 10 planted violations, and it is about
+400 times faster warm. The 7 defects reported to the compass repository are
+fixed there (PRs #55 to #59); the install name is compass-ng, installed at
+9021d31, and a cold check of that build on this branch matches 68833c3. The
+ORE Studio side of the findings is fixed on this branch by the drift and gate
+defect tasks.
+

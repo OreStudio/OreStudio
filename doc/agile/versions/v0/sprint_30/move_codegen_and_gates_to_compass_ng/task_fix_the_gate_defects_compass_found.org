@@ -26,11 +26,11 @@ The gates compass does not port give a correct verdict, and the value-set gates 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -86,3 +86,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- *r.id* (20bfe6a5bc): the FX projection's own convention Id is exempt in
+  generate_convention_kind_terms.py, beside spot_days; the convention kind
+  terms, the ORE element map and the value sets all match their committed
+  seeds.
+- *file-types-seed* (a2283edbe0): byte order in the vendoring script and the
+  generator, new byte-order digests in the two ORE manifests, a sorted walk, an
+  explicit tie-break, and the three tied parameters curated. The check passes
+  under C and en_GB.UTF-8, and the seeds are unchanged.
+- *component-drift and drift-sweep* (874d67870b) render under the git common
+  directory instead of the shared tmpfs.
+- *xml-bindings-drift's second run is kept.* It runs the generator under a
+  second PYTHONHASHSEED, which guards against a future change that iterates
+  over a set; without it that bug shows as intermittent drift. It costs about
+  9 s.
+- *tangle-shell and tangle-http writing into the tree is kept*: it is their
+  stated fix path, which asks the developer to commit the regenerated files.
+- *ore-parameters-seed*: captured as "Move the ORE parameters seed's texts
+  into data files" (7c6d0e5810).
+

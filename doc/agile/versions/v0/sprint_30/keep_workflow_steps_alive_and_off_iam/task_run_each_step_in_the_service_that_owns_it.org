@@ -8,7 +8,7 @@
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-party-curve-step-in-marketdata
-#+pr: 4735
+#+pr: 4793
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -225,6 +225,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4793][#4793]] | [marketdata,iam] Serve the party curve and surface steps in marketdata |
 | [[https://github.com/OreStudio/OreStudio/pull/4735][#4735]] | [marketdata,iam] Serve the market data subscription step in marketdata |
 | [[https://github.com/OreStudio/OreStudio/pull/4727][#4727]] | [synthetic,iam] Serve the generated trades step in synthetic |
 | [[https://github.com/OreStudio/OreStudio/pull/4690][#4690]] | [iam,refdata,service] Dispatch a provisioning step to the service that owns it |

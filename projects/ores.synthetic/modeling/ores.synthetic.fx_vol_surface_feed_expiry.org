@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6325E19B-B7BE-45B9-B4FE-B54064A6A1E6
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ores.cpp.http-route.web_records_header.enabled: true
 :ores.cpp.http-route.web_records_implementation.enabled: true
@@ -133,6 +134,56 @@ The volatility of the segment's forward variance.
 #+begin_src cpp :name generator
 0.08
 #+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+One row per quoted expiry of an imported feed. Its feed_id is the imported feed row's id,
+which the publish maps to the feed it creates.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** feed_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** tenor
+:PROPERTIES:
+:type: text
+:END:
+
+** atm_vol
+:PROPERTIES:
+:type: double precision
+:END:
+
+** variance_reversion
+:PROPERTIES:
+:type: double precision
+:END:
+
+** variance_volatility
+:PROPERTIES:
+:type: double precision
+:END:
+
+* Artefact indexes
+
+** feed_id
+:PROPERTIES:
+:columns: feed_id
+:END:
 
 * SQL
 

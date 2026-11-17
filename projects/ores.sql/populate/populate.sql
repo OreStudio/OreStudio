@@ -315,6 +315,10 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Derived Source Quotes (read from the refdata blueprints) ---'
 \ir marketdata/marketdata_derived_inventory_populate.sql
 
+\echo ''
+\echo '--- Synthetic Feeds: Bloomberg Volatility Surfaces (read from the refdata blueprints) ---'
+\ir synthetic/synthetic_feeds_bloomberg_volatility_populate.sql
+
 -- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)
 -- =============================================================================

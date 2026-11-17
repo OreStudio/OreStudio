@@ -49,6 +49,10 @@
 \ir ./dq_engine_settings_artefact_drop.sql
 \ir ./dq_risk_report_configs_artefact_drop.sql
 \ir ./dq_ir_curve_template_entries_artefact_drop.sql
+\ir ./dq_fx_vol_surface_feed_contributors_artefact_drop.sql
+\ir ./dq_fx_vol_contributors_artefact_drop.sql
+\ir ./dq_fx_vol_surface_feed_expiries_artefact_drop.sql
+\ir ./dq_fx_vol_surface_feeds_artefact_drop.sql
 \ir ./dq_ir_curve_generation_configs_artefact_drop.sql
 \ir ./dq_gmm_components_artefact_drop.sql
 \ir ./dq_fx_spot_fixing_items_artefact_drop.sql

@@ -245,6 +245,19 @@ instead. The pulled images are tagged under the local names
 A =--pull= deploy does not need =compass image build= on this machine and
 does not check that the local images exist.
 
+Two ways a pull deploy fails before anything starts:
+
+- The tag is not published. The default tag names the version and the
+  commit of the checkout, so a commit the nightly has not reached yet has
+  no image. Use =--image-tag main= for the newest published build, or
+  =compass image publish= the checkout first.
+- The profile holds paths from an older remote root. The profile pins the
+  expanded =ORES_REMOTE_ROOT= when it is generated, so changing
+  =ORES_REMOTE_HOST= afterwards leaves every path under the old root —
+  a deploy then fails on the first =mkdir= into a directory the remote
+  user cannot write. Regenerate the profile, or rewrite the old prefix
+  in =.env.<host>=.
+
 * See also
 
 - [[id:0168F066-BFA4-4CFE-8A61-A2C727D91D10][How do I use named env files?]] — the =--env <host>= registry this

@@ -30,10 +30,12 @@ namespace {
 const std::string forwarding_curves_test_suite("ores::ore::core::tests");
 const std::string forwarding_curves_tags("[ore][forwarding_curves]");
 
-const std::string market_data = "2026-11-17 DISCOUNT/RATE/GBP/GBP-LIBOR-3M/2Y 0.91\n"
+const std::string market_data = "# published by the party\n"
+                                "2026-11-17 DISCOUNT/RATE/GBP/GBP-LIBOR-3M/2Y 0.91\n"
                                 "2026-11-17 DISCOUNT/RATE/GBP/GBP-LIBOR-3M/12M 0.96\n"
                                 "2026-11-17 DISCOUNT/RATE/GBP/GBP-SONIA/12M 0.95\n"
                                 "2026-11-17 DISCOUNT/RATE/SEK/SEK-STIBOR-3M/12M 0.97\n"
+                                "2026-11-17 DISCOUNT/RATE/GBP/GBP-SARON/12M 0.99\n"
                                 "2026-11-17 DISCOUNT/RATE/GBP/12M 0.94\n"
                                 "2026-11-17 FX/RATE/EUR/GBP 0.87\n";
 
@@ -85,13 +87,14 @@ std::vector<std::string> curve_ids(const ores::ore::xml::input_files& files) {
 TEST_CASE("a_market_publishes_each_curve_its_discount_factors_name", forwarding_curves_tags) {
     auto lg(ores::logging::make_logger(forwarding_curves_test_suite));
     const auto curves = ores::ore::xml::published_curves(market_data);
-    REQUIRE(curves.size() == 3);
+    REQUIRE(curves.size() == 4);
     CHECK(curves[0].name == "GBP-LIBOR-3M");
     CHECK(curves[0].currency == "GBP");
     CHECK(curves[0].quotes == std::vector<std::string>{"DISCOUNT/RATE/GBP/GBP-LIBOR-3M/12M",
                                                        "DISCOUNT/RATE/GBP/GBP-LIBOR-3M/2Y"});
-    CHECK(curves[1].name == "GBP-SONIA");
-    CHECK(curves[2].name == "SEK-STIBOR-3M");
+    CHECK(curves[1].name == "GBP-SARON");
+    CHECK(curves[2].name == "GBP-SONIA");
+    CHECK(curves[3].name == "SEK-STIBOR-3M");
 }
 
 TEST_CASE("a_published_curve_the_portfolio_names_is_forwarded_and_built", forwarding_curves_tags) {
@@ -143,4 +146,15 @@ TEST_CASE("a_term_rate_is_forwarded_on_its_overnight_index_curve", forwarding_cu
             input, "", "<Index>GBP-SONIA-3MX</Index><Index>GBP-SONIA-M</Index>");
         CHECK(other == input);
     }
+}
+
+TEST_CASE("a_term_rate_of_a_published_overnight_curve_brings_the_curve_in",
+          forwarding_curves_tags) {
+    auto lg(ores::logging::make_logger(forwarding_curves_test_suite));
+    const auto out = ores::ore::xml::name_forwarding_curves(
+        package(), market_data, "<Index>GBP-SARON-3M</Index>");
+    CHECK(forwarded(out) == std::vector<std::string>{"GBP-SONIA=Yield/GBP/GBP1D",
+                                                     "GBP-SARON=Yield/GBP/GBP-SARON",
+                                                     "GBP-SARON-3M=Yield/GBP/GBP-SARON"});
+    CHECK(curve_ids(out) == std::vector<std::string>{"GBP-SARON"});
 }

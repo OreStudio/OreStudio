@@ -81,7 +81,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Trades ORE builds of 416 on the ACCOUK NPV run | 1 before, 32 after | "Built Portfolio" in the ORE log of the run's package, runs =21f9269c= and =2e6d03a7= | 7cbca3c5b3, this branch |
 | Trades that fail on an index the market does not name | 148 at the story's baseline, 73 after | "did not find object ... of type ibor index" in the same logs | 4e6e99f2e1, this branch |
-| Unit cases | 4 cases, 16 assertions | =ores.ore.core.tests "[forwarding_curves]"= | this branch |
+| Unit cases | 5 cases, 19 assertions | =ores.ore.core.tests "[forwarding_curves]"= | this branch |
 
 * Decisions
 
@@ -132,6 +132,12 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the function did more than publish curves once the term rule was added | forwarding_curves.hpp | Accept | Renamed from published_curves to forwarding_curves. |
+| 2 | PR #4810 review: a term rate whose overnight curve this function adds is missed | forwarding_curves.cpp | Accept | A published curve the portfolio names only through a term rate is now added, and its term rates forwarded on it; a case covers it. |
+| 3 | PR #4810 review: a comment line in the market data breaks the parse | forwarding_curves.cpp | Accept | The market data is read line by line, and a line starting with # is skipped; the test data carries one. |
+| 4 | PR #4810 review: say why the curve's interpolation and day counter are fixed | forwarding_curves.cpp | Accept | A comment states that the pillars are discount factors, so log-linear discount interpolation reproduces them. |
+| 5 | PR #4810 review: a name in an unrelated field or comment counts as named | forwarding_curves.cpp | Decline | It adds a curve that is not needed, which is harmless, as the review says. |
+| 6 | PR #4810 review: a published name under two currencies keeps the last | forwarding_curves.cpp | Decline | Every published name is currency-prefixed, so the case does not arise. |
+| 7 | PR #4810 review: the term rate inherits the overnight curve's convention | forwarding_curves.cpp | Decline | That is how ORE projects a term rate off its overnight curve. |
 
 * Result
 

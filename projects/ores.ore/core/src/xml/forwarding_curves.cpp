@@ -108,6 +108,14 @@ std::set<std::string> term_rates(std::string_view portfolio, std::string_view in
     return out;
 }
 
+/**
+ * @brief The curve a published curve is built as.
+ *
+ * The pillars are discount factors, so the curve interpolates log-linearly in
+ * the discount factor, which keeps forward rates flat between pillars. The day
+ * counter only turns a pillar date into a time, and the pillars are what the
+ * party published, so the curve reproduces them whatever counter it names.
+ */
 std::string yield_curve_xml(const published_curve& c, std::string_view convention) {
     std::string quotes;
     for (const auto& q : c.quotes)
@@ -133,9 +141,11 @@ std::string yield_curve_xml(const published_curve& c, std::string_view conventio
 std::vector<published_curve> published_curves(std::string_view market_data) {
     std::map<std::string, published_curve> by_name;
     std::istringstream in{std::string(market_data)};
-    std::string date, key, value;
-    while (in >> date >> key >> value) {
-        if (!key.starts_with(discount_prefix))
+    std::string line;
+    while (std::getline(in, line)) {
+        std::istringstream fields{line};
+        std::string date, key;
+        if (!(fields >> date >> key) || date.starts_with('#') || !key.starts_with(discount_prefix))
             continue;
         const auto rest = std::string_view(key).substr(discount_prefix.size());
         const auto first = rest.find('/');
@@ -192,21 +202,27 @@ input_files name_forwarding_curves(const input_files& files,
 
     std::string yield_curves;
     std::string indices;
+    std::vector<std::pair<std::string, std::string>> sources;
+    for (const auto& i : collection->index)
+        sources.emplace_back(i.name, i.value);
     for (const auto& c : published_curves(market_data)) {
-        if (forwarded.contains(c.name) || built.contains(c.name) || !names(portfolio, c.name))
+        if (forwarded.contains(c.name) || built.contains(c.name) ||
+            (!names(portfolio, c.name) && term_rates(portfolio, c.name).empty()))
             continue;
         const auto convention = zero_convention(conventions_it->second, c.currency);
         if (convention.empty())
             continue;
         yield_curves += yield_curve_xml(c, convention);
-        indices += std::format("<Index name=\"{0}\">Yield/{1}/{0}</Index>", c.name, c.currency);
+        const auto target = std::format("Yield/{}/{}", c.currency, c.name);
+        indices += std::format("<Index name=\"{}\">{}</Index>", c.name, target);
+        sources.emplace_back(c.name, target);
     }
     // A term rate is projected off its overnight index's curve, so a term rate
     // the portfolio names is forwarded on the curve its overnight index uses.
-    for (const auto& i : collection->index)
-        for (const auto& term : term_rates(portfolio, i.name))
+    for (const auto& [name, target] : sources)
+        for (const auto& term : term_rates(portfolio, name))
             if (!forwarded.contains(term))
-                indices += std::format("<Index name=\"{}\">{}</Index>", term, i.value);
+                indices += std::format("<Index name=\"{}\">{}</Index>", term, target);
     if (indices.empty())
         return files;
 

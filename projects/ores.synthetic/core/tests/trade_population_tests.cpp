@@ -1322,6 +1322,22 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", "[trade
     }
 }
 
+TEST_CASE("a_forward_bond_matures_before_its_bond_does", "[trade_population]") {
+    auto scope = bond_scope();
+    scope.trades_per_book = 64;
+    std::size_t forwards = 0;
+    for (const auto& slot : plan_of(scope).slots) {
+        for (const auto& forward : slot.instruments.bond_forwards) {
+            REQUIRE(forward.forward_maturity_date.has_value());
+            const auto bond_maturity = std::format("{:%Y-%m-%d}", bond_of(slot).maturity_date);
+            INFO("forward " << *forward.forward_maturity_date << " bond " << bond_maturity);
+            CHECK(*forward.forward_maturity_date < bond_maturity);
+            ++forwards;
+        }
+    }
+    CHECK(forwards > 0u);
+}
+
 TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 

@@ -731,15 +731,6 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             throw trade_population_error("The bond issue builder refuses the drawn " +
                                          security.error().term + ": " + security.error().message);
         /*
-         * An option on a bond future names a contract rather than the slot's
-         * security, so its batch is scripted; the slot states the security as
-         * every bond slot does.
-         */
-        const bool future_option = entry.trade_type_code == "BondFutureOption";
-        auto product = future_option ?
-                           ores::trading::domain::bond_product{} :
-                           build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
-        /*
          * ORE prices a bond option on the yield volatility its bond names, and
          * refuses the trade when the bond names none. The name follows the
          * Products market's BondOptionVols-<currency>.
@@ -774,12 +765,19 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.bond_issue_leg_amounts = std::move(security->amounts);
         entry.bond_issue_leg_rates = std::move(security->rates);
         entry.bond_issue_leg_schedules = std::move(security->schedules);
-        entry.bond_issue_call_dates = product.call_dates;
-        entry.bond_issue_conversion_targets = product.conversion_targets;
-        if (future_option)
+        /*
+         * An option on a bond future names a contract rather than the slot's
+         * security, so its batch is scripted; the slot states the security as
+         * every bond slot does.
+         */
+        if (entry.trade_type_code == "BondFutureOption") {
             entry.instruments = build_bond_future_option(scope, entry);
-        else
+        } else {
+            auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
+            entry.bond_issue_call_dates = product.call_dates;
+            entry.bond_issue_conversion_targets = product.conversion_targets;
             append(entry.instruments, std::move(product));
+        }
 
         plan.slots.push_back(std::move(entry));
     }

@@ -8,7 +8,7 @@
 #+filetags: :marketdata:market_data:identity:sprint_30:build_ir_curves_from_public_data-remaining:v0:
 #+owner: marco
 #+branch: feature/state-the-identity-shape-of-a-fixing
-#+pr:
+#+pr: 4821
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4821][#4821]] | [marketdata] State the identity shape of a fixing |
 
 * Review
 

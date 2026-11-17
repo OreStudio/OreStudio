@@ -23,16 +23,18 @@
 
 -- A requirement is an oresmd address, and an address is a series identity, so
 -- a requirement is answered by the party's series with that address. One row
--- comes back for each requirement. A requirement no series answers comes back
--- with no series: it is a gap, and the caller reports it rather than skipping
--- it. A series that exists but holds no point at or before the date also
+-- comes back for each answering series; two providers may each hold a series
+-- with one address, so a requirement can come back twice. A requirement no
+-- series answers comes back once with no series: it is a gap, and the caller
+-- reports it rather than skipping it. A series that exists but holds no point at or before the date also
 -- comes back with no latest point, which is a gap of another kind.
 --
 -- A fixing series answers with its fixings and a quote series with its
 -- observations. Ticks that were never written as observations are not read.
 --
--- The date is a business date: a point counts when its fixing date or its
--- observation time is at or before it. The rows are read as they stand now,
+-- The date is a business date, read in UTC so the session's time zone does
+-- not move it: a point counts when its fixing date or its observation time is
+-- at or before it. The rows are read as they stand now,
 -- because a series written today may hold points about an earlier day.
 create or replace function ores_marketdata_requirement_coverage_fn(
     p_tenant_id    uuid,
@@ -45,10 +47,10 @@ begin
     return query
     select r.uri, s.id,
         greatest(
-            (select max(f.fixing_date)::timestamptz
+            (select max(f.fixing_date)::timestamp at time zone 'UTC'
              from ores_marketdata_market_fixings_tbl f
              where f.tenant_id = s.tenant_id and f.series_id = s.id
-               and f.fixing_date <= p_as_of::date
+               and f.fixing_date <= (p_as_of at time zone 'UTC')::date
                and f.valid_to = ores_utility_infinity_timestamp_fn()),
             (select max(o.observation_datetime)
              from ores_marketdata_market_observations_tbl o

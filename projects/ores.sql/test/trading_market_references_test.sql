@@ -26,13 +26,14 @@
  * - A leg with no index states no requirement
  * - A trade outside the set states none
  * - A read before the leg was written finds none
+ * - Every column the function names can be read
  *
  * Run with: pg_prove -d <database> test/trading_market_references_test.sql
  */
 
 begin;
 
-select plan(4);
+select plan(5);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -106,6 +107,11 @@ select is_empty(
           array['00000000-0000-0000-0000-0000000e1001']::uuid[], %L::timestamptz)$$,
           (select before_booking from t_ctx)),
     'a read before the leg was written finds no requirement');
+
+select lives_ok(
+    $$select * from ores_trading_market_references_fn(ores_utility_system_tenant_id_fn(),
+          array[gen_random_uuid()])$$,
+    'every table and column the function names exists and reads as text');
 
 select * from finish();
 

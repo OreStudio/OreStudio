@@ -32,6 +32,9 @@
 -- on different dates read the instruments each date held. A null p_as_of reads
 -- the current rows, which a write earlier in the same transaction is one of.
 --
+-- The function does not filter by party: row-level security limits the rows
+-- to the parties the session may see.
+--
 -- A column joins the list below when a trade table starts to hold an address
 -- in it. The pair is the table and the column; every table in it is keyed by
 -- trade_id. Bond issues are keyed by issue and reached through the trade's
@@ -86,7 +89,7 @@ begin
                and r.trade_id = any($2)
                and (($3 is null and r.valid_to = ores_utility_infinity_timestamp_fn())
                     or (r.valid_from <= $3 and r.valid_to > $3))
-               and r.%2$I like ''oresmd://%%''',
+               and r.%2$I::text like ''oresmd://%%''',
             v_columns[v_i][1], v_columns[v_i][2],
             v_columns[v_i][1] || '.' || v_columns[v_i][2])
         using p_tenant_id, p_trade_ids, p_as_of;

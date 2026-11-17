@@ -123,7 +123,7 @@ task and name that file in the Command column.
 | Addresses the system party's series answer | 0 of 109 | same | this branch |
 | Gaps by asset class | credit 61, ir 27, equity 11, commodity 6, inflation 3, security 1 | same | this branch |
 | Trade types that resolve to nothing | CompositeTrade 5, ContractForDifference 5, EquityOptionPosition 5 | same | this branch |
-| pgTAP | 9 of 9 pass (4 trading, 5 marketdata) | =run_tests.sh= on the two new files | this branch |
+| pgTAP | 11 of 11 pass (5 trading, 6 marketdata) | =run_tests.sh= on the two new files | this branch |
 
 * Notes
 
@@ -159,6 +159,13 @@ via its "Verifies task" field.
 | 1 | Local review: coverage read series and points at a system time, so a run about an earlier day missed a series written today | marketdata_requirement_coverage_functions_create.sql | Accept | The date is a business date over the current rows; a pgTAP case covers it. |
 | 2 | Local review: a default as-of of now() missed a trade row written earlier in the same transaction, because the trigger stamps the clock time | trading_market_references_functions_create.sql | Accept | A null as-of reads the current rows. |
 | 3 | Local gate: the ER diagram, three codegen tests and the trading drift were red on main | ores_schema.dq_datasets.puml, inbox | Accept | The diagram is regenerated here; the rest is filed as captures. |
+| 4 | PR #4802 review: a stale table or column in the list fails only at run time, and only one entry is tested | trading_market_references_functions_create.sql | Accept | A pgTAP case calls the function with no data, which runs every query; the column is cast to text. |
+| 5 | PR #4802 review: the coverage date moves with the session time zone | marketdata_requirement_coverage_functions_create.sql | Accept | The date and the fixing dates are read in UTC. |
+| 6 | PR #4802 review: one address can return several rows | marketdata_requirement_coverage_functions_create.sql | Accept | True: the unique index includes the provider. The comment now says one row comes back for each answering series. |
+| 7 | PR #4802 review: the outside-the-set test would pass for almost any implementation | trading_market_references_test.sql | Decline | An implementation that ignores the trade filter returns trade 1003's ESTER row, so the count is not 0 and the test fails. |
+| 8 | PR #4802 review: no test of the observations branch | marketdata_requirement_coverage_test.sql | Accept | A quote series with one observation is now covered. |
+| 9 | PR #4802 review: no test of the bond branch or of superseded versions | trading_market_references_test.sql | Decline | The no-data case runs the bond query; a bond issue fixture and a version history fixture are large for what they would add, and the export task exercises bonds on real trades. |
+| 10 | PR #4802 review: say that the trading function relies on row-level security for parties | trading_market_references_functions_create.sql | Accept | Comment added. |
 
 * Result
 

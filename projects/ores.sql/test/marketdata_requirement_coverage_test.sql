@@ -26,13 +26,14 @@
  * - A series with a fixing at or before the date answers with that date
  * - A series whose only fixing is after the date has no latest point
  * - Another party's series does not answer
+ * - A quote series answers with its last observation at or before the date
  *
  * Run with: pg_prove -d <database> test/marketdata_requirement_coverage_test.sql
  */
 
 begin;
 
-select plan(5);
+select plan(6);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -93,6 +94,33 @@ select is(
          gen_random_uuid(), array[(select answered from t_ctx)])),
     null::uuid,
     'another party''s series does not answer the requirement');
+
+insert into ores_marketdata_market_series_tbl (
+    id, tenant_id, version, party_id, oresmd_uri, series_subclass, provider_code,
+    derivation_kind, derivation_config_id, derivation_config_version,
+    modified_by, performed_by, change_reason_code, change_commentary)
+select '00000000-0000-0000-0000-0000000e3002', ores_utility_system_tenant_id_fn(), 0,
+    party_id, 'oresmd://fx/GBP?type=series&instrument=fx_spot&quote=rate&ccy=PGT',
+    'spot', 'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+    current_user, current_user, 'system.new_record', 'Requirement coverage pgTAP fixture'
+from t_ctx;
+
+insert into ores_marketdata_market_observations_tbl (
+    id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value, source,
+    feed_id)
+select '00000000-0000-0000-0000-0000000e5001', ores_utility_system_tenant_id_fn(), party_id,
+    '00000000-0000-0000-0000-0000000e3002', timestamptz '2026-02-10 16:00:00+00',
+    'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=PGT', '1.25', 'test.pgtap',
+    ores_utility_nil_uuid_fn()
+from t_ctx;
+
+select is(
+    (select latest_point from ores_marketdata_requirement_coverage_fn(
+         ores_utility_system_tenant_id_fn(), (select party_id from t_ctx),
+         array['oresmd://fx/GBP?type=series&instrument=fx_spot&quote=rate&ccy=PGT'],
+         timestamptz '2026-03-01 00:00:00+00')),
+    timestamptz '2026-02-10 16:00:00+00',
+    'a quote series answers with its last observation at or before the date');
 
 select * from finish();
 

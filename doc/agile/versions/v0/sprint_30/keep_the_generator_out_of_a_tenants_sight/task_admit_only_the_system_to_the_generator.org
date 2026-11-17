@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 0A4D7B25-1E75-4D0D-89C4-2C7404DB972E
 :END:
-#+title: Task: Admit only the system tenant to the generator's rows
-#+description: Sixteen synthetic row policies admit any tenant to the system tenant's rows; Acme's tenant administrator listed the Vasicek processes behind its curves. Admit a tenant only to its own rows, and the system tenant to all.
+#+title: Task: Prove no tenant-side process reads the generator's data
+#+description: A search finds the synthetic tables read only by the synthetic service, its HTTP routes, its shell commands and its SQL tests; encode that as a check, so a tenant-side process that starts to read the generator fails the gate.
 #+type: task
 #+level: s1
 #+filetags: :keep_the_generator_out_of_a_tenants_sight:sprint_30:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A tenant's session reads no row of the system's generator.
+Nothing a party builds or prices can come to depend on the generator unnoticed.
 
 * Status
 
@@ -35,8 +35,8 @@ A tenant's session reads no row of the system's generator.
 
 * Acceptance
 
-- Each synthetic table's policy admits a tenant to its own rows only, and the system tenant's sessions to every row.
-- A database test reads every synthetic table as a tenant and finds no system row.
+- A local check lists every reader of a synthetic table or the synthetic service's read verbs outside the generator's own components, and fails on a new one.
+- The provisioning, bootstrapping, calibration and forward paths are shown, by that check, to read none.
 
 * Plan
 

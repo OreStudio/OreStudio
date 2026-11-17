@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 131D7D77-3FF8-4836-8849-E721B24A3ADE
 :END:
-#+title: Task: Offer the generator's screen and verbs only in a system session
-#+description: The Synthetic card is gated by synthetic read permissions, which a tenant administrator holds through its wildcard; offer the screen, its card and the synthetic verbs only to a system session.
+#+title: Task: Decide what a tenant sees of the generator, and hide what adds nothing
+#+description: A tenant administrator's Synthetic card lists the system's generator configurations, which a tenant cannot change and does not use; decide whether any of it helps a tenant, keep that with its reason, and offer the rest only in a system session.
 #+type: task
 #+level: s1
 #+filetags: :keep_the_generator_out_of_a_tenants_sight:sprint_30:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A tenant administrator's web and shell show no generator.
+A tenant's screens show the generator only where that helps the tenant.
 
 * Status
 
@@ -35,8 +35,8 @@ A tenant administrator's web and shell show no generator.
 
 * Acceptance
 
-- The Synthetic card and route are absent from a tenant session, whatever permissions it holds.
-- The synthetic service refuses a generator read or write from a tenant session, and a test signs in as Acme's administrator to show it.
+- Each generator screen and verb a tenant session reaches is kept with a stated reason or offered only in a system session.
+- A test signs in as Acme's administrator and finds what was decided.
 
 * Plan
 

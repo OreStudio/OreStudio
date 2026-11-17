@@ -26,7 +26,7 @@ The correlation a driven cross uses has a stated, replaceable source.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -58,6 +58,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Abandoned (2026-11-17, with the person): each party holds its own correlation tables,
+  maintained on screens like its other market data, so the source of a driven cross's
+  correlation is the party's tables. The whole flow is the story [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]].
 
 * Test Scenarios
 

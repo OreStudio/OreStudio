@@ -29,6 +29,7 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "shared_surfaces.hpp"
 #include <algorithm>
 #include <functional>
 #include <memory>
@@ -62,7 +63,8 @@ system_generator_offers(const feed_kind_registry& registry,
                         const feed::feed_build_context& build,
                         const std::string& adapter_id,
                         const std::string& provider_code,
-                        std::shared_ptr<const feed::fault_state> faults = {}) {
+                        std::shared_ptr<const feed::fault_state> faults = {},
+                        shared_surfaces* surfaces = nullptr) {
     namespace vendor = ores::marketdata::vendor;
     namespace msg = ores::marketdata::messaging;
     using namespace ores::synthetic::feed;
@@ -83,11 +85,70 @@ system_generator_offers(const feed_kind_registry& registry,
     std::vector<generator_offer> out;
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
-        if (!target.startable() || !target.container_is_system ||
-            target.container_provider_code != provider_code)
+        if (!target.startable() || !target.container_is_system)
             continue;
         const auto* notation = vendor::notation_of(provider_code);
         if (!notation)
+            continue;
+
+        // A surface is offered to the adapter of each contributor's provider, for that
+        // contributor's points, whichever collection holds it: the contributors observe one
+        // surface, which the adapters share.
+        if (target.row.kind->kind == fx_vol_surface_feed_kind) {
+            if (surfaces == nullptr)
+                continue;
+            for (const auto& [contributor, contributor_provider] :
+                 candidate.contributor_providers) {
+                if (contributor_provider != provider_code)
+                    continue;
+                fx_vol_surface_feed::point_targets point_targets;
+                std::vector<msg::vendor_id> ids;
+                for (const auto& point : candidate.option_points) {
+                    const auto written = target_of(point);
+                    if (!written)
+                        continue;
+                    ids.push_back(written->id);
+                    point_targets.emplace(std::pair{point.expiry, point.strike_label}, *written);
+                }
+                if (ids.empty())
+                    continue;
+                auto make = [&registry,
+                             &build,
+                             target,
+                             adapter_for_build,
+                             surfaces,
+                             contributor,
+                             point_targets,
+                             adapter_id,
+                             provider_code] {
+                    const auto feed_id = target.row.candidate.feed_config_id;
+                    auto make_surface = [&registry, &build, target, adapter_for_build] {
+                        auto outcome = target.row.candidate.build_input(adapter_for_build);
+                        if (!outcome.input)
+                            throw std::runtime_error(outcome.skip_reason);
+                        return std::dynamic_pointer_cast<fx_vol_surface_feed>(
+                            registry.factory().make(target.row.kind->kind, build, *outcome.input));
+                    };
+                    return std::shared_ptr<ores::marketdata::domain::i_feed>(
+                        std::make_shared<shared_surface_hold>(*surfaces,
+                                                              feed_id,
+                                                              adapter_id,
+                                                              contributor,
+                                                              target.row.candidate.source_name +
+                                                                  "." + provider_code,
+                                                              point_targets,
+                                                              make_surface));
+                };
+                for (const auto& id : ids)
+                    out.push_back(
+                        generator_offer{.id = id,
+                                        .group = candidate.feed_config_id + "|" + contributor,
+                                        .make = make});
+            }
+            continue;
+        }
+
+        if (target.container_provider_code != provider_code)
             continue;
 
         if (candidate.fx_pair && target.row.kind->kind == fx_spot_feed_kind) {

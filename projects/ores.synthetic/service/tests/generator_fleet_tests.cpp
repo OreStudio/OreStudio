@@ -23,6 +23,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -79,11 +80,50 @@ private:
     std::atomic<bool> stop_{false};
 };
 
+// A generator whose start throws, as one does when what it reads is not there yet.
+class start_throwing_generator final : public domain::i_feed {
+public:
+    explicit start_throwing_generator(std::string name)
+        : name_(std::move(name)) {}
+
+    static std::atomic<bool>& thrown() {
+        static std::atomic<bool> instance{false};
+        return instance;
+    }
+
+    const std::string& source_name() const override {
+        return name_;
+    }
+    const std::vector<std::string>& series_uris() const override {
+        return series_;
+    }
+    const std::string& role() const override {
+        return name_;
+    }
+    const std::string& nats_subject() const override {
+        return name_;
+    }
+    std::string_view kind() const override {
+        return "failing";
+    }
+    std::uint64_t publish_count() const override {
+        return 0;
+    }
+    void start() override {
+        thrown().store(true);
+        throw std::runtime_error("nothing to start from yet");
+    }
+    void stop() override {}
+
+private:
+    std::string name_;
+    std::vector<std::string> series_;
+};
+
 // One offer: the id it answers and the feed, by source name, that it builds.
 generator_offer offer_of(const std::string& pair, const std::string& source_name) {
-    return {.id = pair_id(pair), .make = [source_name] {
-                return std::make_shared<named_generator>(source_name);
-            }};
+    return {.id = pair_id(pair),
+            .make = [source_name] { return std::make_shared<named_generator>(source_name); }};
 }
 
 std::shared_ptr<domain::i_feed> feed_named(const std::string& source_name) {
@@ -168,4 +208,38 @@ TEST_CASE("a stop by source name reaches a demanded run and a manual one alike",
     CHECK(fleet.running_source_names() == std::vector<std::string>{"synthetic.eurusd"});
 
     fleet.detach(runner);
+}
+
+TEST_CASE("a generator whose start threw is built again by the next demand", "[generator_fleet]") {
+    // The first build cannot start, as a surface cannot before its calendars have dates; the
+    // second one can.
+    auto builds = std::make_shared<std::atomic<int>>(0);
+    generator_runner runner([builds] {
+        return std::vector{generator_offer{
+            .id = pair_id("EUR/USD"), .make = [builds]() -> std::shared_ptr<domain::i_feed> {
+                if (builds->fetch_add(1) == 0)
+                    return std::make_shared<start_throwing_generator>("synthetic.eurusd");
+                return std::make_shared<named_generator>("synthetic.eurusd");
+            }}};
+    });
+
+    CHECK(runner.apply({pair_id("EUR/USD")}).started == 1);
+
+    // A demand that comes before the start has thrown keeps the generator; the first one after
+    // builds it again.
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    std::size_t restarted = 0;
+    while (restarted == 0 && std::chrono::steady_clock::now() < deadline) {
+        restarted = runner.apply({pair_id("EUR/USD")}).started;
+        if (restarted == 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    CHECK(start_throwing_generator::thrown().load());
+    CHECK(restarted == 1);
+    CHECK(builds->load() == 2);
+    CHECK(runner.running_count() == 1);
+
+    // A generator that runs is kept, not built a third time.
+    CHECK(runner.apply({pair_id("EUR/USD")}).started == 0);
+    CHECK(builds->load() == 2);
 }

@@ -95,6 +95,15 @@ struct feed_kind_candidate final {
      * its pillars, so the versions of the list are what an adapter is offered.
      */
     std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars;
+    /**
+     * @brief The points of a volatility surface feed, in the notation's own words, and the
+     * provider of each contributor that quotes them, by contributor id.
+     *
+     * A surface is offered to the adapter of each contributor's provider, for that contributor's
+     * points. Other kinds leave both empty.
+     */
+    std::vector<ores::marketdata::vendor::fx_option_quote> option_points;
+    std::map<std::string, std::string> contributor_providers;
 
     /**
      * @brief Builds the kind's factory input, or says why it cannot.

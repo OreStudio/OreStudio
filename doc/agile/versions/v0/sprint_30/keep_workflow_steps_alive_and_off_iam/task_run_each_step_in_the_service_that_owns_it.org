@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch: feature/serve-the-party-curve-step-in-marketdata
+#+branch: feature/serve-the-forward-and-surface-steps-in-marketdata
 #+pr: 4793
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
-#+updated: 2026-11-12
+#+updated: 2026-11-17
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Each provisioning step is dispatched to the service that owns its work, so iam r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Steps 1 to 3 are done, and step 4's first kind is: ores.marketdata serves =subscribe_market_data= and a run passes with it. |
-| Waiting on   | Nothing.                               |
-| Next         | Step 4: the remaining marketdata kinds (curves, forwards, surfaces, blueprints, system curves). |
-| Last touched | 2026-11-14                               |
+| Now          | Step 4 is done but for the installation's own curves: ores.marketdata serves the subscription, the party curves, the surface blueprints, the forwards and the surfaces. |
+| Waiting on   | A decision on who publishes the system tenant's own curves (see Notes). |
+| Next         | Step 4's last kind, or step 5's reporting, dq and inbox kinds. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -133,6 +133,14 @@ task and name that file in the Command column.
 | =ores.marketdata.core.tests= | passed, 1105 s | =ctest -R ores.marketdata.core.tests= | =77635bb41c= |
 | =ores.refdata.core.tests= | 548 cases, 6172 assertions, all pass once the stale test binary is rebuilt | =ores.refdata.core.tests= after rebuilding =ores.ore.core.tests= and =ores.refdata.core.tests= | =3d59918da4= |
 | The gates this branch pays for | =format=, =unity-collisions=, =cmake-sources=, =exported-types=, =org-links=, =backlog-indexes=, =sql-reachability= pass; =component-drift= fails on one file that is main's (=configuration_document_protocol.hpp=) | =python3 build/scripts/local_checks.py --only ...= | =77635bb41c= |
+| Step kinds ores.marketdata serves | 5 (=subscribe_market_data=, =publish_party_curves=, =give_party_surface_blueprints=, =publish_party_forwards=, =publish_party_surfaces=) | =sed -n '/inline constexpr step_owner provision_step_owners\[\] = {/,/};/p' projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp \| grep -c marketdata_provision_tenant_step_subject= | =51917f8c10= |
+| Step kinds that still run in ores.iam | 13 | The 18 less the 5 rows of =provision_step_owners= | =51917f8c10= |
+| Core libraries ores.iam still links for other services' work | 1 (=ores.refdata.core=), and no synthetic, marketdata or reporting core | =grep -nE "ores\.(refdata\|synthetic\|marketdata)\.core" projects/ores.iam/core/src/CMakeLists.txt= | =51917f8c10= |
+| =ores.iam.api.tests= | passed, 2.3 s | =ctest -R ores.iam.api.tests= | =51917f8c10= |
+| =ores.iam.core.tests= | passed, 48.1 s | =ctest -R ores.iam.core.tests= | =51917f8c10= |
+| =ores.marketdata.core.tests= | passed, 625.1 s | =ctest -R ores.marketdata.core.tests= | =51917f8c10= |
+| =ores.marketdata.service.tests= | passed, 56.0 s | =ctest -R ores.marketdata.service.tests= | =51917f8c10= |
+| The gates this change pays for | =format=, =unity-collisions=, =cmake-sources=, =exported-types= and =sql-reachability= pass; =component-drift= renders the whole changed tree past its 1800 s budget here, so it was rendered a component at a time: =iam= is clean, and =marketdata='s one drift is =config/options.hpp=, a file this branch does not touch | =python3 build/scripts/local_checks.py --only ...=, then =check_component_drift.py --component iam= and =--component marketdata= | =51917f8c10= |
 
 * Notes
 
@@ -208,7 +216,49 @@ task and name that file in the Command column.
 - =ores.marketdata.service.tests= fails two =app_feed_ingest_loop_tests= cases
   on this tree. They fail in isolation, they do not touch step dispatch, and
   the file changed on main this week; nobody has shown they are main's, so the
-  suite is recorded as not green.
+  suite is recorded as not green. They pass on the tree of =51917f8c10=.
+- Step 4 is done but for the installation's own curves.
+  =publish_party_forwards= and =publish_party_surfaces= ran in ores.iam and
+  asked ores.marketdata for the work. ores.marketdata runs both now. Each party
+  is found across the tenant, and its work runs in a session scoped to that
+  party, entered by the service as itself: the same shape the curve and
+  blueprint steps took. The forward publish is still an approval request. The
+  service is the maker, and the tenant's auto-approval decides it. A repeat
+  reads what an earlier attempt published before it raises anything, so a
+  retry raises no second request for one set.
+- The surface hold-back rule moved with the step, to
+  =ores.marketdata.core/messaging/party_surface_hold_back.hpp=, with its
+  tests. It is a rule about marketdata's own calibration response, and the
+  service that runs the step reads it now. It and the curve planners are one
+  kind of move.
+- ores.iam keeps no executor for either kind, no dispatch case and no result
+  fields they filled. Its handler no longer includes the forward or surface
+  protocols, the currency pair convention protocol or the hold-back rule.
+- The forward step asks the service for a set for every currency pair
+  convention the tenant holds, so =MarketdataService= gained one read:
+  =refdata::currency_pair_conventions:read=. Every other permission it needs
+  is =marketdata::*=.
+- =publish_system_curves= stays in ores.iam, and that is a decision rather
+  than a port. The step bootstraps and publishes the installation's own curves
+  in the system tenant, as the installation's administrator, through iam's
+  in-process impersonation. Both entries a service may use refuse the system
+  tenant by design: =iam.v1.ops.enter_tenant_as_service= answers "The system
+  tenant is not entered; it is the deployment's own.", and the impersonation
+  service is iam's own and sits on no subject. A service that works in the
+  system tenant works as itself there, so the move needs an answer to two
+  questions: which party of the system tenant owns the installation's
+  published sets, and whether the service's own role may be the maker of an
+  installation-wide publish. The story records it as no decision yet.
+- The end-to-end run is not recorded for this change. The published tree in
+  this worktree predates the checkout: =libores.database.so= has no
+  =pq::transaction(connection&, session_context)=, so every service that links
+  it fails to start with an undefined symbol and =smoke ticks --fresh= stops at
+  startup. The suites ran against freshly built libraries, but the run needs a
+  full build and deploy first.
+- =provisioning_step_workers= is still two, and the service now serves five
+  kinds. The forward and surface steps spend their time waiting on a publish,
+  which is what two workers cover. Widening the run to more tenants at once is
+  when the pool needs its own measurement.
 
 * Test Scenarios
 

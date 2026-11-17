@@ -47,6 +47,12 @@ export interface EquityPositionOptionUnderlyingWrite {
     settlement_type: string;
     identifier_type: string | null;
     exercise_date: string | null;
+    currency: string | null;
+    strike_currency: string | null;
+    quantity: string | null;
+    premium_amount: string | null;
+    premium_currency: string | null;
+    premium_pay_date: string | null;
 }
 
 export interface EquityPositionOptionUnderlyingChange {

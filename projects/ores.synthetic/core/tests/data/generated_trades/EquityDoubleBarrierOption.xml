@@ -25,29 +25,29 @@
       <Quantity>1132.2</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
-  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
+  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
     <TradeType>EquityDoubleBarrierOption</TradeType>
     <EquityDoubleBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2030-12-02</ExerciseDate>
+          <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>3809.54</Level>
-          <Level>4656.1</Level>
+          <Level>4494.3</Level>
+          <Level>5493.04</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.NDX</Name>
-      <Currency>USD</Currency>
-      <Strike>4232.82</Strike>
-      <Quantity>113.9</Quantity>
+      <Name>RIC:.STOXX50E</Name>
+      <Currency>EUR</Currency>
+      <Strike>4993.67</Strike>
+      <Quantity>1455.31</Quantity>
     </EquityDoubleBarrierOptionData>
   </Trade>
 </Portfolio>

@@ -19,23 +19,23 @@
       <Quantity>4132.38</Quantity>
     </EquityDigitalOptionData>
   </Trade>
-  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
     <TradeType>EquityDigitalOption</TradeType>
     <EquityDigitalOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2030-01-02</ExerciseDate>
+          <ExerciseDate>2030-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>4586.31</Strike>
+      <Strike>4232.82</Strike>
       <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>3196000.35</PayoffAmount>
-      <Name>RIC:.SPX</Name>
-      <Quantity>696.86</Quantity>
+      <PayoffAmount>482126.28</PayoffAmount>
+      <Name>RIC:.NDX</Name>
+      <Quantity>113.9</Quantity>
     </EquityDigitalOptionData>
   </Trade>
 </Portfolio>

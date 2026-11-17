@@ -153,6 +153,10 @@ equity_position_instrument_to_domain(const messaging::equity_position_instrument
     v.currency = write.currency;
     v.quantity = write.quantity;
     v.price = write.price;
+    v.volatility = write.volatility;
+    v.drift_rate = write.drift_rate;
+    v.observation_start_date = write.observation_start_date;
+    v.payment_date = write.payment_date;
     v.description = write.description;
     return v;
 }

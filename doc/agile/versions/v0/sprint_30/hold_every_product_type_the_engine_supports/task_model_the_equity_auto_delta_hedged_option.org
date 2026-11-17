@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-the-equity-auto-delta-hedged-option
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ imported back unchanged.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

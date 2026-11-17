@@ -119,6 +119,7 @@ using all_builders =
                equity_digital_option_builder,
                equity_touch_option_builder,
                equity_double_touch_option_builder,
+               equity_auto_delta_hedged_option_builder,
                equity_forward_builder,
                equity_swap_builder,
                equity_worst_of_basket_swap_builder,

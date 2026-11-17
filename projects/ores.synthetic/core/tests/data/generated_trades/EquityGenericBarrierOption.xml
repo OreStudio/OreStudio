@@ -40,30 +40,30 @@
       </Barriers>
     </EquityGenericBarrierOptionData>
   </Trade>
-  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
+  <Trade id="218774a5-e3e4-54a7-a1a9-4d27d7aed44b">
     <TradeType>EquityGenericBarrierOption</TradeType>
     <EquityGenericBarrierOptionData>
-      <PayCurrency>USD</PayCurrency>
+      <PayCurrency>EUR</PayCurrency>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2027-10-02</ExerciseDate>
+          <ExerciseDate>2032-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <SettlementDate>2027-10-07</SettlementDate>
-      <Quantity>7485.13</Quantity>
-      <Strike>917.86</Strike>
+      <SettlementDate>2032-09-07</SettlementDate>
+      <Quantity>721.2</Quantity>
+      <Strike>3573.48</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2027-10-02</EndDate>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2032-09-02</EndDate>
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
@@ -72,9 +72,9 @@
           </Rules>
         </ScheduleData>
         <BarrierData>
-          <Type>DownAndOut</Type>
+          <Type>UpAndOut</Type>
           <Levels>
-            <Level>826.07</Level>
+            <Level>3930.83</Level>
           </Levels>
         </BarrierData>
       </Barriers>

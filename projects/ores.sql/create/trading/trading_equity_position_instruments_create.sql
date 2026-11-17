@@ -24,15 +24,17 @@
  *
  * Equity Position Instrument Table
  *
- * Represents EquityPosition and EquityOptionPosition trades: a plain
- * equity holding or an equity option position. quantity is the number of
+ * Represents EquityPosition, EquityOptionPosition and
+ * EquityAutoDeltaHedgedOption trades: a plain equity holding, an equity option
+ * position, or batches of equity options under a delta hedge. quantity is the number of
  * shares or contracts and stays on this row, because it belongs to the
  * position and not to one underlying. An option position's members are not
  * a column: each is a row of
  * ores.trading.equity_position_option_underlying, keyed to this
  * instrument and its ordinal in the document. A text column held the list
  * as JSON and could not be typed, indexed or questioned, so the collection
- * is a child table now.
+ * is a child table now. An auto delta hedged option's batches are rows of the
+ * same table, and its hedge's volatility, drift and dates are columns here.
  */
 
 create table if not exists "ores_trading_equity_position_instruments_tbl" (
@@ -46,6 +48,10 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     "currency" text null,
     "quantity" double precision not null,
     "price" numeric(38, 12) null,
+    "volatility" numeric(38, 12) null,
+    "drift_rate" numeric(38, 12) null,
+    "observation_start_date" date null,
+    "payment_date" date null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -61,7 +67,7 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition')),
+    check ("trade_type_code" in ('EquityAutoDeltaHedgedOption', 'EquityPosition', 'EquityOptionPosition')),
     check ("underlying_name" <> ''),
     check ("currency" is null or "currency" <> '')
 );

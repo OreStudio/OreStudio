@@ -144,7 +144,8 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
         },
         "add <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike> <weight> "
         "<long_short> <option_type> <exercise_type> <settlement_type> <identifier_type> "
-        "<exercise_date> <reason> <commentary>");
+        "<exercise_date> <currency> <strike_currency> <quantity> <premium_amount> "
+        "<premium_currency> <premium_pay_date> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +154,8 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
         },
         "set <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike> <weight> "
         "<long_short> <option_type> <exercise_type> <settlement_type> <identifier_type> "
-        "<exercise_date> <reason> <commentary> [--version <n>]");
+        "<exercise_date> <currency> <strike_currency> <quantity> <premium_amount> "
+        "<premium_currency> <premium_pay_date> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,7 +164,8 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
         },
         "put-many --count <n> <trade_id> <sequence_number> <trade_activity_id> <underlying_name> "
         "<strike> <weight> <long_short> <option_type> <exercise_type> <settlement_type> "
-        "<identifier_type> <exercise_date> <reason> <commentary>");
+        "<identifier_type> <exercise_date> <currency> <strike_currency> <quantity> "
+        "<premium_amount> <premium_currency> <premium_pay_date> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -375,8 +378,8 @@ void equity_position_option_underlying_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -404,6 +407,18 @@ void equity_position_option_underlying_commands::process_add(std::ostream& out,
             req.change.write.identifier_type, parsed->positionals[next++], "identifier_type");
         equity_position_option_underlying_read_token(
             req.change.write.exercise_date, parsed->positionals[next++], "exercise_date");
+        equity_position_option_underlying_read_token(
+            req.change.write.currency, parsed->positionals[next++], "currency");
+        equity_position_option_underlying_read_token(
+            req.change.write.strike_currency, parsed->positionals[next++], "strike_currency");
+        equity_position_option_underlying_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
+        equity_position_option_underlying_read_token(
+            req.change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+        equity_position_option_underlying_read_token(
+            req.change.write.premium_currency, parsed->positionals[next++], "premium_currency");
+        equity_position_option_underlying_read_token(
+            req.change.write.premium_pay_date, parsed->positionals[next++], "premium_pay_date");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -448,8 +463,8 @@ void equity_position_option_underlying_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -477,6 +492,18 @@ void equity_position_option_underlying_commands::process_set(std::ostream& out,
             req.change.write.identifier_type, parsed->positionals[next++], "identifier_type");
         equity_position_option_underlying_read_token(
             req.change.write.exercise_date, parsed->positionals[next++], "exercise_date");
+        equity_position_option_underlying_read_token(
+            req.change.write.currency, parsed->positionals[next++], "currency");
+        equity_position_option_underlying_read_token(
+            req.change.write.strike_currency, parsed->positionals[next++], "strike_currency");
+        equity_position_option_underlying_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
+        equity_position_option_underlying_read_token(
+            req.change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+        equity_position_option_underlying_read_token(
+            req.change.write.premium_currency, parsed->positionals[next++], "premium_currency");
+        equity_position_option_underlying_read_token(
+            req.change.write.premium_pay_date, parsed->positionals[next++], "premium_pay_date");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -532,8 +559,8 @@ void equity_position_option_underlying_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 18 + 2) {
+            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -563,6 +590,18 @@ void equity_position_option_underlying_commands::process_put_many(
                 change.write.identifier_type, parsed->positionals[next++], "identifier_type");
             equity_position_option_underlying_read_token(
                 change.write.exercise_date, parsed->positionals[next++], "exercise_date");
+            equity_position_option_underlying_read_token(
+                change.write.currency, parsed->positionals[next++], "currency");
+            equity_position_option_underlying_read_token(
+                change.write.strike_currency, parsed->positionals[next++], "strike_currency");
+            equity_position_option_underlying_read_token(
+                change.write.quantity, parsed->positionals[next++], "quantity");
+            equity_position_option_underlying_read_token(
+                change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+            equity_position_option_underlying_read_token(
+                change.write.premium_currency, parsed->positionals[next++], "premium_currency");
+            equity_position_option_underlying_read_token(
+                change.write.premium_pay_date, parsed->positionals[next++], "premium_pay_date");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -67,20 +67,20 @@
       </FundingData>
     </TotalReturnSwapData>
   </Trade>
-  <Trade id="28bcfefe-69ac-56e7-ba81-e84082bd1ff6">
+  <Trade id="bb13d6bb-0c5c-514a-8171-ef3bcba65cde">
     <TradeType>TotalReturnSwap</TradeType>
     <Envelope>
-      <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
+      <CounterParty>55555555-5555-5555-5555-555555555555</CounterParty>
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <SubTrade id="3ae53b7e-75d3-53b7-ba12-cc984468a247">
+        <SubTrade id="cb788d82-439c-522d-a0d3-6558db1372e7">
           <SubTradeType>EquityPosition</SubTradeType>
           <EquityPositionData>
-            <Quantity>3966</Quantity>
+            <Quantity>6610</Quantity>
             <Underlying>
               <Type>Equity</Type>
-              <Name>RIC:.STOXX50E</Name>
+              <Name>RIC:DHER.DE</Name>
             </Underlying>
           </EquityPositionData>
         </SubTrade>
@@ -90,15 +90,15 @@
         <Currency>EUR</Currency>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-11-02</StartDate>
-            <EndDate>2027-11-02</EndDate>
+            <StartDate>2025-10-02</StartDate>
+            <EndDate>2030-10-02</EndDate>
             <Tenor>0D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
-        <InitialPrice>2495.52</InitialPrice>
+        <InitialPrice>1260.76</InitialPrice>
         <InitialPriceCurrency>EUR</InitialPriceCurrency>
       </ReturnData>
       <FundingData>
@@ -109,12 +109,12 @@
           <PaymentConvention>MF</PaymentConvention>
           <DayCounter>A360</DayCounter>
           <Notionals>
-            <Notional>9896806.32</Notional>
+            <Notional>8333490.93</Notional>
           </Notionals>
           <ScheduleData>
             <Rules>
-              <StartDate>2025-11-02</StartDate>
-              <EndDate>2027-11-02</EndDate>
+              <StartDate>2025-10-02</StartDate>
+              <EndDate>2030-10-02</EndDate>
               <Tenor>6M</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>MF</Convention>

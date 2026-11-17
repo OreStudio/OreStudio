@@ -168,6 +168,40 @@ struct equity_position_option_underlying final {
     std::optional<std::chrono::year_month_day> exercise_date;
 
     /**
+     * @brief The currency an auto delta hedged option's batch is quoted in, as its Currency states
+     * it; an option position's entries leave it null.
+     */
+    std::optional<std::string> currency;
+
+    /**
+     * @brief The currency of a batch's strike, as its optional StrikeCurrency states it.
+     */
+    std::optional<std::string> strike_currency;
+
+    /**
+     * @brief The number of options in an auto delta hedged option's batch, as its Quantity states
+     * it; an option position's entries leave it null, as the position states one quantity for all
+     * of them.
+     */
+    std::optional<ores::utility::decimal::decimal> quantity;
+
+    /**
+     * @brief The premium paid for the entry's options, as its option's premium states it. ORE
+     * requires one premium on each batch of an auto delta hedged option.
+     */
+    std::optional<ores::utility::decimal::decimal> premium_amount;
+
+    /**
+     * @brief The currency the entry's premium is paid in.
+     */
+    std::optional<std::string> premium_currency;
+
+    /**
+     * @brief The date the entry's premium is paid.
+     */
+    std::optional<std::chrono::year_month_day> premium_pay_date;
+
+    /**
      * @brief Username of the person who last modified this equity position option underlying.
      */
     std::string modified_by;

@@ -16,15 +16,17 @@
 #+created: 2026-08-05
 #+updated: 2026-08-05
 
-Represents EquityPosition and EquityOptionPosition trades: a plain
-equity holding or an equity option position. =quantity= is the number of
+Represents EquityPosition, EquityOptionPosition and
+EquityAutoDeltaHedgedOption trades: a plain equity holding, an equity option
+position, or batches of equity options under a delta hedge. =quantity= is the number of
 shares or contracts and stays on this row, because it belongs to the
 position and not to one underlying. An option position's members are not
 a column: each is a row of
 =ores.trading.equity_position_option_underlying=, keyed to this
 instrument and its ordinal in the document. A text column held the list
 as JSON and could not be typed, indexed or questioned, so the collection
-is a child table now.
+is a child table now. An auto delta hedged option's batches are rows of the
+same table, and its hedge's volatility, drift and dates are columns here.
 
 * Flags
 :PROPERTIES:
@@ -151,6 +153,50 @@ Number of shares / contracts held.
 
 Entry price; absent for market-price positions.
 
+** volatility
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The volatility an auto delta hedged option's hedge is run at, as its
+=Volatility= states it; other positions leave it null.
+
+** drift_rate
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The drift an auto delta hedged option's hedge assumes, as its =DriftRate=
+states it.
+
+** observation_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date an auto delta hedged option starts to hedge, as its
+=ObservationStartDate= states it.
+
+** payment_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date an auto delta hedged option's hedging result is paid, as its
+=PaymentDate= states it.
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -271,6 +317,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include "ores.utility/decimal/decimal.hpp"

@@ -3859,6 +3859,83 @@ TEST_CASE("a_cash_position_holds_its_currency_and_amount_as_rows",
     check(rebuild(items[0]));
 }
 
+TEST_CASE("an_auto_delta_hedged_option_holds_its_hedge_and_its_batches_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="ADH#1">
+    <TradeType>EquityAutoDeltaHedgedOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <EquityAutoDeltaHedgedOptionData>
+      <Volatility>0.05</Volatility>
+      <DriftRate>0.00</DriftRate>
+      <Underlyings>
+        <Underlying>
+          <OptionData>
+            <LongShort>Long</LongShort>
+            <OptionType>Call</OptionType>
+            <Style>European</Style>
+            <Settlement>Cash</Settlement>
+            <ExerciseDates><ExerciseDate>2021-01-29</ExerciseDate></ExerciseDates>
+            <PremiumAmount>9.36</PremiumAmount>
+            <PremiumCurrency>USD</PremiumCurrency>
+            <PremiumPayDate>2019-03-01</PremiumPayDate>
+          </OptionData>
+          <Name>RIC:HSBA.L</Name>
+          <Currency>USD</Currency>
+          <Strike>3.5</Strike>
+          <StrikeCurrency>USD</StrikeCurrency>
+          <Quantity>51400</Quantity>
+        </Underlying>
+        <Underlying>
+          <OptionData>
+            <LongShort>Short</LongShort>
+            <OptionType>Put</OptionType>
+            <Style>European</Style>
+            <Settlement>Cash</Settlement>
+            <ExerciseDates><ExerciseDate>2021-01-29</ExerciseDate></ExerciseDates>
+          </OptionData>
+          <Name>RIC:HSBA.L</Name>
+          <Currency>USD</Currency>
+          <Strike>3.2</Strike>
+          <Quantity>20000</Quantity>
+        </Underlying>
+      </Underlyings>
+      <ObservationStartDate>2020-11-11</ObservationStartDate>
+      <PaymentDate>2021-02-02</PaymentDate>
+    </EquityAutoDeltaHedgedOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto check = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::equity_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        const auto* row =
+            std::get_if<ores::trading::domain::equity_position_instrument>(&data->instrument);
+        REQUIRE(row != nullptr);
+        CHECK(row->identity.trade_type_code == "EquityAutoDeltaHedgedOption");
+        REQUIRE(row->volatility.has_value());
+        CHECK(row->volatility->to_string() == "0.05");
+        CHECK(row->observation_start_date.has_value());
+        REQUIRE(data->underlyings.size() == 2);
+        CHECK(data->underlyings[0].strike_currency == std::optional<std::string>("USD"));
+        CHECK_FALSE(data->underlyings[1].strike_currency.has_value());
+        CHECK(data->underlyings[1].long_short == "Short");
+        REQUIRE(data->underlyings[1].quantity.has_value());
+        CHECK(data->underlyings[1].quantity->to_string() == "20000");
+        REQUIRE(data->underlyings[0].premium_amount.has_value());
+        CHECK(data->underlyings[0].premium_amount->to_string() == "9.36");
+        CHECK(data->underlyings[0].premium_currency == std::optional<std::string>("USD"));
+        CHECK_FALSE(data->underlyings[1].premium_amount.has_value());
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    check(items[0]);
+    check(rebuild(items[0]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

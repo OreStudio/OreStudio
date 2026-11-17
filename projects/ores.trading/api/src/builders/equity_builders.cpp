@@ -348,6 +348,62 @@ equity_result equity_touch_option_builder::build() const {
     return out;
 }
 
+equity_auto_delta_hedged_option_builder::equity_auto_delta_hedged_option_builder(
+    equity_auto_delta_hedged_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+equity_result equity_auto_delta_hedged_option_builder::build() const {
+    if (terms_.volatility.get() <= decimal{})
+        return std::unexpected(build_error{"volatility", "must be positive"});
+    if (!(terms_.observation_start.get() < terms_.payment_date.get()))
+        return std::unexpected(build_error{"payment_date", "must be after the observation start"});
+    const auto& batches = terms_.batches.get();
+    if (batches.empty())
+        return std::unexpected(build_error{"batches", "must name at least one batch"});
+    for (const auto& batch : batches) {
+        if (batch.currency.empty())
+            return std::unexpected(build_error{"batches", "a batch must name a currency"});
+        if (batch.strike <= decimal{} || batch.quantity <= decimal{} || batch.premium < decimal{})
+            return std::unexpected(build_error{
+                "batches",
+                "a batch's strike and quantity must be positive and its premium not negative"});
+        if (batch.expiry < terms_.observation_start.get() ||
+            terms_.payment_date.get() < batch.expiry)
+            return std::unexpected(build_error{
+                "batches", "a batch must expire between the observation start and the payment"});
+    }
+
+    domain::equity_position_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.underlying_name = batches.front().underlying.uri();
+    row.currency = batches.front().currency;
+    row.volatility = terms_.volatility.get();
+    row.drift_rate = terms_.drift_rate.get();
+    row.observation_start_date = terms_.observation_start.get();
+    row.payment_date = terms_.payment_date.get();
+    domain::equity_instrument_data out;
+    out.instrument = std::move(row);
+    int sequence = 0;
+    for (const auto& batch : batches) {
+        domain::equity_position_option_underlying entry{};
+        entry.sequence_number = ++sequence;
+        entry.underlying_name = batch.underlying.uri();
+        entry.currency = batch.currency;
+        entry.strike = batch.strike;
+        entry.quantity = batch.quantity;
+        entry.long_short = long_short_of(batch.position);
+        entry.option_type = option_type_of(batch.kind);
+        entry.exercise_type = "European";
+        entry.settlement_type = "Cash";
+        entry.exercise_date = batch.expiry;
+        entry.premium_amount = batch.premium;
+        entry.premium_currency = batch.currency;
+        entry.premium_pay_date = batch.premium_date;
+        out.underlyings.push_back(std::move(entry));
+    }
+    return out;
+}
+
 equity_double_touch_option_builder::equity_double_touch_option_builder(
     equity_double_touch_option_terms terms)
     : terms_(std::move(terms)) {}

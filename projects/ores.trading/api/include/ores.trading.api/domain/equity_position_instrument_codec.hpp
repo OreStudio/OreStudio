@@ -53,6 +53,11 @@ namespace ores::trading::domain {
         utility::codec::field{"currency", &equity_position_instrument::currency},
         utility::codec::field{"quantity", &equity_position_instrument::quantity},
         utility::codec::field{"price", &equity_position_instrument::price},
+        utility::codec::field{"volatility", &equity_position_instrument::volatility},
+        utility::codec::field{"drift_rate", &equity_position_instrument::drift_rate},
+        utility::codec::field{"observation_start_date",
+                              &equity_position_instrument::observation_start_date},
+        utility::codec::field{"payment_date", &equity_position_instrument::payment_date},
         utility::codec::field{"description", &equity_position_instrument::description},
         utility::codec::field{"audit", &equity_position_instrument::audit},
     };

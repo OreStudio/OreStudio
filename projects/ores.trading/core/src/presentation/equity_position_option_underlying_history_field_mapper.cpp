@@ -55,6 +55,19 @@ std::vector<ores::diff::domain::field_value> render_equity_position_option_under
                       .value = v.exercise_date ? ores::platform::time::datetime::to_iso8601_date(
                                                      *v.exercise_date) :
                                                  std::string{}});
+    fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Strike Currency", .value = v.strike_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Quantity", .value = v.quantity ? v.quantity->to_string() : std::string{}});
+    fields.push_back({.name = "Premium Amount",
+                      .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Premium Currency", .value = v.premium_currency.value_or(std::string{})});
+    fields.push_back({.name = "Premium Pay Date",
+                      .value = v.premium_pay_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                        *v.premium_pay_date) :
+                                                    std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

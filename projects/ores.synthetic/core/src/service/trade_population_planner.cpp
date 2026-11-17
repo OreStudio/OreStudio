@@ -2416,7 +2416,8 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityForwardVolatilityAgreement",
                                              "EquityFutureOption",
                                              "EquityDoubleTouchOption",
-                                             "CashPosition"};
+                                             "CashPosition",
+                                             "EquityAutoDeltaHedgedOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -3385,6 +3386,33 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                      money(position == tb::option_position::long_option ? notional : -notional)})
                 .build(),
             type);
+    if (type == "EquityAutoDeltaHedgedOption") {
+        /*
+         * A call and a put at the level on the slot's equity, half the
+         * notional each, hedged daily from the start and settled five days
+         * after they expire.
+         */
+        const auto batch = [&](tb::option_kind batch_kind) {
+            return tb::delta_hedged_batch{.underlying = address,
+                                          .currency = currency,
+                                          .strike = money(level),
+                                          .quantity = money(notional / level / 2.0),
+                                          .kind = batch_kind,
+                                          .position = position,
+                                          .expiry = end,
+                                          .premium = money(notional * 0.01),
+                                          .premium_date = start};
+        };
+        return built(
+            tb::equity_auto_delta_hedged_option_builder(
+                {.volatility = money(0.2),
+                 .drift_rate = money(0.0),
+                 .observation_start = start,
+                 .payment_date = year_month_day{sys_days{end} + days{5}},
+                 .batches = std::vector<tb::delta_hedged_batch>{batch(tb::option_kind::call),
+                                                                batch(tb::option_kind::put)}})
+                .build());
+    }
     if (type == "EquityDoubleTouchOption")
         return built(tb::equity_double_touch_option_builder({.underlying = address,
                                                              .currency = currency,

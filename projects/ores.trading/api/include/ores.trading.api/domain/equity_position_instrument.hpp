@@ -39,15 +39,17 @@ namespace ores::trading::domain {
 /**
  * @brief Equity Position instrument.
  *
- * Represents EquityPosition and EquityOptionPosition trades: a plain
- * equity holding or an equity option position. quantity is the number of
+ * Represents EquityPosition, EquityOptionPosition and
+ * EquityAutoDeltaHedgedOption trades: a plain equity holding, an equity option
+ * position, or batches of equity options under a delta hedge. quantity is the number of
  * shares or contracts and stays on this row, because it belongs to the
  * position and not to one underlying. An option position's members are not
  * a column: each is a row of
  * ores.trading.equity_position_option_underlying, keyed to this
  * instrument and its ordinal in the document. A text column held the list
  * as JSON and could not be typed, indexed or questioned, so the collection
- * is a child table now.
+ * is a child table now. An auto delta hedged option's batches are rows of the
+ * same table, and its hedge's volatility, drift and dates are columns here.
  */
 struct equity_position_instrument final {
     instrument_identity identity;
@@ -78,6 +80,29 @@ struct equity_position_instrument final {
      * @brief Entry price; absent for market-price positions.
      */
     std::optional<ores::utility::decimal::decimal> price;
+
+    /**
+     * @brief The volatility an auto delta hedged option's hedge is run at, as its Volatility states
+     * it; other positions leave it null.
+     */
+    std::optional<ores::utility::decimal::decimal> volatility;
+
+    /**
+     * @brief The drift an auto delta hedged option's hedge assumes, as its DriftRate states it.
+     */
+    std::optional<ores::utility::decimal::decimal> drift_rate;
+
+    /**
+     * @brief The date an auto delta hedged option starts to hedge, as its ObservationStartDate
+     * states it.
+     */
+    std::optional<std::chrono::year_month_day> observation_start_date;
+
+    /**
+     * @brief The date an auto delta hedged option's hedging result is paid, as its PaymentDate
+     * states it.
+     */
+    std::optional<std::chrono::year_month_day> payment_date;
 
     /**
      * @brief Optional free-text description.
@@ -114,6 +139,10 @@ struct equity_position_instrument final {
     ores::utility::digest::append_member(out, "currency", v.currency);
     ores::utility::digest::append_member(out, "quantity", v.quantity);
     ores::utility::digest::append_member(out, "price", v.price);
+    ores::utility::digest::append_member(out, "volatility", v.volatility);
+    ores::utility::digest::append_member(out, "drift_rate", v.drift_rate);
+    ores::utility::digest::append_member(out, "observation_start_date", v.observation_start_date);
+    ores::utility::digest::append_member(out, "payment_date", v.payment_date);
     out.push_back('}');
     return out;
 }

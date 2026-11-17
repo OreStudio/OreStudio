@@ -11,6 +11,7 @@
 engine_configuration	BondFuture	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type BondFuture
 engine_configuration	BondFutureOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type BondFutureOption
 engine_configuration	CommodityAsianOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type CommodityAsianOptionArithmeticPrice
+engine_configuration	EquityAutoDeltaHedgedOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityAutoDeltaHedgedOption
 engine_configuration	EquityDoubleTouchOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityDoubleTouchOption
 engine_configuration	EquityFutureOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityFutureOption
 engine_configuration	EquityPairwiseVarianceSwap	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type EquityPairwiseVarianceSwap

@@ -27,29 +27,29 @@
       </BarrierData>
     </EquityWindowBarrierOptionData>
   </Trade>
-  <Trade id="f8bbf0a7-ea59-58ea-830a-e02a820d688f">
+  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
     <TradeType>EquityWindowBarrierOption</TradeType>
     <EquityWindowBarrierOptionData>
       <Currency>USD</Currency>
-      <FixingAmount>6677.75</FixingAmount>
-      <Strike>594.24</Strike>
+      <FixingAmount>7485.13</FixingAmount>
+      <Strike>917.86</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <ExerciseDates>
-          <ExerciseDate>2026-11-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <StartDate>2025-11-02</StartDate>
-      <EndDate>2026-05-03</EndDate>
+      <StartDate>2025-10-02</StartDate>
+      <EndDate>2026-10-02</EndDate>
       <BarrierData>
-        <Type>UpAndOut</Type>
+        <Type>DownAndOut</Type>
         <Levels>
-          <Level>653.66</Level>
+          <Level>826.07</Level>
         </Levels>
       </BarrierData>
     </EquityWindowBarrierOptionData>

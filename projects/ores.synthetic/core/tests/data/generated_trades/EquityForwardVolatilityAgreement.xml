@@ -17,21 +17,21 @@
       <SettlementDate>2026-09-07</SettlementDate>
     </EquityForwardVolatilityAgreementData>
   </Trade>
-  <Trade id="739b0e18-7bb1-53b8-bdab-993e5bad2744">
+  <Trade id="2b98ce5b-3eeb-5c36-9cb8-e4a7f8922842">
     <TradeType>EquityForwardVolatilityAgreement</TradeType>
     <EquityForwardVolatilityAgreementData>
-      <FvaDate>2029-07-03</FvaDate>
-      <OptionExpiry>2033-01-02</OptionExpiry>
-      <PremiumDate>2029-07-05</PremiumDate>
+      <FvaDate>2029-12-02</FvaDate>
+      <OptionExpiry>2033-12-02</OptionExpiry>
+      <PremiumDate>2029-12-04</PremiumDate>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying>
       <LongShort>Short</LongShort>
       <ImpliedVolStrike>0.2</ImpliedVolStrike>
-      <Quantity>7619.25</Quantity>
+      <Quantity>2140.58</Quantity>
       <PayCcy>USD</PayCcy>
-      <SettlementDate>2033-01-07</SettlementDate>
+      <SettlementDate>2033-12-07</SettlementDate>
     </EquityForwardVolatilityAgreementData>
   </Trade>
 </Portfolio>

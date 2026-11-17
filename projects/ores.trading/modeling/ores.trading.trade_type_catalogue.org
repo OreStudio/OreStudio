@@ -117,7 +117,7 @@ absent: it is a placeholder, not a product.
 | CallableBond | Callable Bond | security | native | bond! | false | false | bond_instrument |
 | ConvertibleBond | Convertible Bond | security | native | bond!,equity | false | false | bond_instrument |
 | Ascot | Asset Swapped Convertible Option Transaction | option | native | bond!,equity | false | true | bond_instrument |
-| EquityAutoDeltaHedgedOption | Equity Auto Delta Hedged Option | option | native | equity! | true | false |  |
+| EquityAutoDeltaHedgedOption | Equity Auto Delta Hedged Option | option | native | equity! | true | false | equity_position_instrument |
 | EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement |   | scripted | equity! | true | false | scripted_instrument |
 | EquityOption | Equity Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityFutureOption | Equity Future Option | option | native | equity! | true | false | scripted_instrument |

@@ -7,11 +7,11 @@
       <Amount>5666887.39</Amount>
     </CashPositionData>
   </Trade>
-  <Trade id="45de59e1-86ba-57a0-933b-129740a11052">
+  <Trade id="7e5cd4b8-8f3a-5e69-bef4-ab7e6bc42cb8">
     <TradeType>CashPosition</TradeType>
     <CashPositionData>
-      <Currency>EUR</Currency>
-      <Amount>-9214140.07</Amount>
+      <Currency>USD</Currency>
+      <Amount>-4172652.02</Amount>
     </CashPositionData>
   </Trade>
 </Portfolio>

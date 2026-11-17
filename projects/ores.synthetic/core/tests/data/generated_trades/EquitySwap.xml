@@ -60,31 +60,31 @@
       </LegData>
     </EquitySwapData>
   </Trade>
-  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
     <TradeType>EquitySwap</TradeType>
     <EquitySwapData>
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>9919657.76</Notional>
+          <Notional>6145432.04</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2032-12-02</EndDate>
-            <Tenor>6M</Tenor>
-            <Calendar>TARGET</Calendar>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2033-11-02</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>US,UK</Calendar>
             <Convention>MF</Convention>
             <TermConvention>MF</TermConvention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
-          <Index>EUR-EURIBOR-6M</Index>
+          <Index>USD-LIBOR-3M</Index>
           <IsInArrears>false</IsInArrears>
           <FixingDays>2</FixingDays>
           <Spreads>
@@ -95,26 +95,26 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>Equity</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2032-12-02</EndDate>
-            <Tenor>6M</Tenor>
-            <Calendar>TARGET</Calendar>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2033-11-02</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>US,UK</Calendar>
             <Convention>MF</Convention>
             <TermConvention>MF</TermConvention>
             <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <EquityLegData>
-          <Quantity>2252</Quantity>
+          <Quantity>15465</Quantity>
           <ReturnType>Price</ReturnType>
           <Underlying>
             <Type>Equity</Type>
-            <Name>RIC:DHER.DE</Name>
+            <Name>RIC:.SPX</Name>
           </Underlying>
         </EquityLegData>
       </LegData>

@@ -274,20 +274,28 @@ conflated:
 | Historic Vol                    | Realised volatility computed from historical spot moves                 |
 | Decreasing-Maturity Forward Vol | Historic vol computed over a window that ends at a fixed future date    |
 
-* Volatility Masters and Slaves
+* Driver and Driven Pairs
 
-In a multi-currency system, some currency pairs may not have independent vol
-surfaces. Instead, a /slave/ pair derives its ATM vol, RR, and STR from one or
-more /master/ pairs via a defined relationship:
+In a multi-currency system, some currency pairs do not have independent vol
+surfaces. A /driven/ pair takes its ATM vol, risk reversal and strangle from one
+or more /driver/ pairs, through a stated relationship:
 
-- *Correlation slaving*: The slave surface is implied from a triangular
-  relationship (e.g. EUR/GBP from EUR/USD and GBP/USD vols and their
-  correlation).
-- *Basis slaving*: The slave ATM vol is the master ATM plus a spread; RR and
-  STR may be independently set or also slaved.
+- *Correlation driven*: the driven surface is implied from a triangle, such as
+  EUR/GBP from the EUR/USD and GBP/USD vols and the correlation between them.
+- *Basis driven*: the driven ATM vol is the driver's ATM vol plus a spread; the
+  risk reversal and strangle are either set on their own or driven too.
 
-This mechanism reduces the number of independently managed surfaces while
-maintaining consistency across crosses.
+This keeps the number of independently managed surfaces small, and keeps the
+crosses consistent with the pairs they are built from. The words are the ones
+the cross-rate engine uses for its driver pairs.
+
+In ORE Studio the two kinds of pair live at different levels. The driver pairs'
+quotes are market data: the system tenant publishes them as if they were a
+vendor's, and every party that subscribes receives the same quotes, from which
+it builds and publishes its own surfaces, as it bootstraps its curves. Which
+pairs a party treats as driven, from which drivers and by which relationship,
+is the party's own choice, so driven pairs are configured at the party level.
+They are not built yet.
 
 * Related Research
 

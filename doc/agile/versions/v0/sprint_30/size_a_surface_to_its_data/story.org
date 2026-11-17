@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-17
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -46,7 +46,7 @@ A surface should reach as far as its party's market data reaches and no further,
 | [[id:1A7B554C-555E-4B20-BD8A-08C3F52C8036][Compute how far a pair's surface reaches]] | DONE | 2026-11-17 | 2026-11-17 | A surface's horizon is what its sample can support: for each expiry, does the party's history hold years times trading days of returns? |
 | [[id:235B0F12-EFFD-4B9F-A397-362B2242149D][Calibrate the expiries a surface has and record the rest]] | DONE | 2026-11-17 | 2026-11-17 | One wholly-unquoted expiry voids the whole surface; fit the expiries that have quotes, record the ones that do not in missing_pillars, and refuse only below a configured minimum. |
 | [[id:941B9145-879D-4C7B-AD94-C04E27E44C47][Give each party the configuration its surface is built with]] | BACKLOG | | | A surface belongs to a party, so the settings that build it belong to the party too: trading days, minimum window, prior, level multiplier, history days, minimum expiries and which CRM supplies its rates. |
-| [[id:9191CDB0-3876-4CC1-8704-B0B42D34F75D][Publish every pair out to the horizon its data allows]] | BACKLOG | | | Land the thirty-nine pair catalogue once the source, the ladder and the calibration can carry it, and prove it with a provisioned tenant. Supersedes task 13EA0CF7, which held the same intent before the work was split. |
+| [[id:9191CDB0-3876-4CC1-8704-B0B42D34F75D][Publish every pair out to the horizon its data allows]] | ABANDONED | | | Land the thirty-nine pair catalogue once the source, the ladder and the calibration can carry it, and prove it with a provisioned tenant. Supersedes task 13EA0CF7, which held the same intent before the work was split. |
 
 * Decisions
 

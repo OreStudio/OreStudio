@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-17
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -60,6 +60,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Narrowed (2026-11-17, with the person): the derived quotes stand in for a vendor's and are
+  shared by every tenant, so the derivation's settings (trading days, minimum window, prior,
+  level multiplier, history days, which CRM) belong to the shared source, not to a party. A
+  party's own settings are the calibration's: the minimum of fitted expiries and the pillar
+  tolerance, copied with its blueprints.
 
 - From the review of #4809: the minimum of fitted expiries must be refused below 1 when it
   becomes the party's setting; at 0 the grid would be empty.

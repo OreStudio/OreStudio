@@ -30,7 +30,7 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Every grid resource route the BFF answered is served, and paired. |
 | Waiting on   | Nothing.                               |
-| Next         | The three composed views, which the story owns as their own task. |
+| Next         | The PR, when it is asked for. The three composed views are the story's own task. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -168,3 +168,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Every grid resource route, and none of them left behind. Eleven routes are
+  served at the BFF's addresses, and each names its C++ equivalent in the
+  inventory, so the grid area reads 11 of 14 paired. The three that remain are
+  the composed views, which the story owns as their own task.
+- Tests. =ores.http.compute.tests= holds 29 cases and 356 assertions, all
+  passing. They prove every route is registered by the part's aggregate at the
+  pattern it states, requires a session, and answers the service's absence with
+  502; every refusal the routes decide themselves, which is a page that is not
+  one, a parameter they do not take, an address that is not an identifier and a
+  body that is not the shape they take; and the shapes the views state, which
+  are the run and party a batch names, the nil identifier as none, the node a
+  run hides from a reader who may not see it, the page's own members, the object
+  an address names and the header a download name reaches.
+- The gate. =compass check --exclude-heavy= runs 51 checks and 48 pass. The
+  three that fail are not this branch's and reproduce on =origin/main=:
+  =money-decimal-columns= names two trading equity position models,
+  =forward-declarable-includes= names the marketdata provisioning step
+  registrar, and =codegen-tests= fails two row-level security tests that the
+  template and the schema disagree on.
+- What the tests cannot prove. The routes are proved against a client that is
+  not connected, so every happy path is read from the code and not exercised
+  against a live estate. The refusals, the registration and the shapes are the
+  parts a test can hold without one.
+- The departures, stated so a reader does not meet them as surprises: a run
+  shows its node to the system tenant alone; the party names are one read per
+  page rather than the session's own list; a stale release note answers 409 with
+  the service's sentence where the BFF answered a failure of its own; and a
+  download reads the object store directly instead of fetching it over the
+  storage service's HTTP interface.

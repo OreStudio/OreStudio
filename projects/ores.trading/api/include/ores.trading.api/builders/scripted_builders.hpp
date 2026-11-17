@@ -225,6 +225,103 @@ private:
     basket_option_terms terms_;
 };
 
+/// The families a single-underlying scripted product is read over, each through a class of its own.
+enum class scripted_family { equity, fx };
+
+/**
+ * @brief An option whose entry level is the best the underlying reaches.
+ *
+ * When the underlying falls below the trigger level on an observation date, the
+ * entry is the lowest level observed, floored at the reset minimum. The strike,
+ * cap, trigger level and reset minimum are fractions of the level on the strike
+ * date.
+ */
+struct best_entry_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> notional;
+    required<utility::decimal::decimal> multiplier;
+    required<utility::decimal::decimal> strike;
+    required<utility::decimal::decimal> cap;
+    required<utility::decimal::decimal> trigger_level;
+    required<utility::decimal::decimal> reset_minimum;
+    required<utility::decimal::decimal> premium;
+    required<std::chrono::year_month_day> premium_date;
+    required<std::chrono::year_month_day> strike_date;
+    required<std::vector<std::chrono::year_month_day>> strike_observation_dates;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+    required<option_position> position;
+};
+
+/// Builds the product's rows; the underlying type is the family's, Equity or FX.
+ORES_TRADING_API_EXPORT scripted_result
+build_best_entry_option(std::string_view trade_type,
+                        std::string_view underlying_type,
+                        const best_entry_option_terms& terms);
+
+template <scripted_family Family>
+class best_entry_option_builder final {
+public:
+    static constexpr std::string_view trade_type =
+        Family == scripted_family::equity ? "EquityBestEntryOption" : "FxBestEntryOption";
+    explicit best_entry_option_builder(best_entry_option_terms terms)
+        : terms_(std::move(terms)) {}
+    [[nodiscard]] scripted_result build() const {
+        return build_best_entry_option(
+            trade_type, Family == scripted_family::equity ? "Equity" : "FX", terms_);
+    }
+
+private:
+    best_entry_option_terms terms_;
+};
+
+/**
+ * @brief An option whose strike resets when the underlying reaches a trigger.
+ *
+ * On the first observation date the underlying is at or past the trigger price
+ * in the trigger's direction, the strike becomes the reset strike.
+ */
+struct strike_resettable_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<option_kind> kind;
+    required<option_position> position;
+    required<utility::decimal::decimal> quantity;
+    required<utility::decimal::decimal> strike;
+    required<utility::decimal::decimal> reset_strike;
+    required<trigger_direction> trigger;
+    required<utility::decimal::decimal> trigger_price;
+    required<std::vector<std::chrono::year_month_day>> observation_dates;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+    required<utility::decimal::decimal> premium;
+    required<std::chrono::year_month_day> premium_date;
+};
+
+/// Builds the product's rows; the underlying type is the family's, Equity or FX.
+ORES_TRADING_API_EXPORT scripted_result
+build_strike_resettable_option(std::string_view trade_type,
+                               std::string_view underlying_type,
+                               const strike_resettable_option_terms& terms);
+
+template <scripted_family Family>
+class strike_resettable_option_builder final {
+public:
+    static constexpr std::string_view trade_type = Family == scripted_family::equity ?
+                                                       "EquityStrikeResettableOption" :
+                                                       "FxStrikeResettableOption";
+    explicit strike_resettable_option_builder(strike_resettable_option_terms terms)
+        : terms_(std::move(terms)) {}
+    [[nodiscard]] scripted_result build() const {
+        return build_strike_resettable_option(
+            trade_type, Family == scripted_family::equity ? "Equity" : "FX", terms_);
+    }
+
+private:
+    strike_resettable_option_terms terms_;
+};
+
 }
 
 #endif

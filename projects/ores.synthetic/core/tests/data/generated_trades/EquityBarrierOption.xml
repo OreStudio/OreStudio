@@ -24,28 +24,28 @@
       <Quantity>4159.27</Quantity>
     </EquityBarrierOptionData>
   </Trade>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>EquityBarrierOption</TradeType>
     <EquityBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2035-01-02</ExerciseDate>
+          <ExerciseDate>2028-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>DownAndOut</Type>
         <Levels>
-          <Level>188.26</Level>
+          <Level>3838.25</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.SPX</Name>
-      <Currency>USD</Currency>
-      <Strike>209.18</Strike>
-      <Quantity>26926.88</Quantity>
+      <Name>RIC:.STOXX50E</Name>
+      <Currency>EUR</Currency>
+      <Strike>4264.72</Strike>
+      <Quantity>237.84</Quantity>
     </EquityBarrierOptionData>
   </Trade>
 </Portfolio>

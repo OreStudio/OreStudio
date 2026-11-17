@@ -24,22 +24,22 @@
       </ScheduleData>
     </EquityCliquetOptionData>
   </Trade>
-  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
     <TradeType>EquityCliquetOption</TradeType>
     <EquityCliquetOptionData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
-      <Currency>USD</Currency>
-      <Notional>6508.96</Notional>
+      <Currency>EUR</Currency>
+      <Notional>166.76</Notional>
       <LongShort>Short</LongShort>
       <OptionType>Put</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-12-02</StartDate>
-          <EndDate>2029-12-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2027-10-02</EndDate>
           <Tenor>3M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>

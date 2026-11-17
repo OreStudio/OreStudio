@@ -8,12 +8,12 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-the-best-entry-and-strike-resettable-products
-#+pr:
+#+pr: 4794
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The four products have a data model, a projection reader and writer, and a build
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,22 @@ The four products have a data model, a projection reader and writer, and a build
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ORE reads the four types as scripted trades over fixed elements
+(=bestEntryOptionData2=, =strikeResettableOptionData2=). They route to the
+scripted instrument table through the class-read path that the basket and
+rainbow options use. That path already reads every element they state: scalar
+leaves as parameters, one =Underlying= as an underlying row, and the
+observation schedule as a product schedule. The projection needs only the four
+entries in its table.
+
+- Two builder templates, =best_entry_option_builder= and
+  =strike_resettable_option_builder=, take the family (equity or FX) as a
+  parameter.
+- =trigger_direction= moves to =option_position.hpp=, so the commodity and
+  scripted builders share it.
+- The generator states the observation dates as a list, one a quarter, moved
+  off weekends. ORE's FX examples state a list, and the path check compares the
+  generated trades with them.
 
 * Measurements
 
@@ -60,7 +73,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4661 cases pass | =./ores.trading.api.tests= | this branch |
+| ore core tests | 547 cases pass | =./ores.ore.core.tests= | this branch |
+| synthetic tests, not generated | 138 cases pass | =./ores.synthetic.core.tests "~[generated]"= | this branch |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | this branch |
 
 * Notes
 
@@ -79,12 +95,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4794][#4794]] | [trading,ore,synthetic] Hold best-entry and strike-resettable options |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | strike-resettable dates have no lower bound | scripted_builders.cpp | accept | comment: the element states no start date |
+| 2 | no cross-field checks on trigger, reset and strike | scripted_builders.cpp | decline | ORE accepts any; a strike either side of the trigger is a valid product |
+| 3 | equity and FX triggers differ | trade_population_planner.cpp | accept | comment added |
+| 4 | quarterly_dates ignores holidays | trade_population_planner.cpp | decline | the comment states weekends only; synthetic data |
+| 5 | underlying type as a constexpr member | scripted_builders.hpp | decline | one ternary; style only |
+| 6 | component-drift gap | - | decline | capture F931EFA7 tracks it |
+| 7 | fixture churn | generated_trades | decline | four new types move every type's slot, so its draws change |
+| 8 | test quarterly_dates on a weekend end | trade_population_planner.cpp | decline | file-local; the engine-built generated trades exercise it |
 
 * Result
+
+EquityBestEntryOption, FxBestEntryOption, EquityStrikeResettableOption and
+FxStrikeResettableOption are held in the scripted instrument table. Each fact of
+the element is a parameter, underlying or schedule row; the observation dates
+are schedule date rows. The round-trip test reads ORE's two FX examples from
+its AMC portfolio and writes them back. Each type has a builder, the catalogue
+routes all four, and the generator books one trade of each. The ORE engine
+builds the recorded trades with no error, and the recorded FX trades state
+every path ORE's examples state.

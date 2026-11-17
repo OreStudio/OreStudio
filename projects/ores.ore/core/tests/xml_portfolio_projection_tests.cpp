@@ -2956,6 +2956,112 @@ TEST_CASE("a_basket_and_a_rainbow_hold_their_members_option_block_and_schedule_a
     check(rebuild(items[1]), "BestOfAssetOrCash", false);
 }
 
+TEST_CASE("a_best_entry_and_a_strike_resettable_hold_their_terms_and_observation_dates_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="SCRIPTED_BEO_FX">
+    <TradeType>FxBestEntryOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxBestEntryOptionData>
+      <LongShort>Long</LongShort>
+      <Notional>1000000</Notional>
+      <Multiplier>1.0</Multiplier>
+      <Strike>1.0</Strike>
+      <Cap>0.2</Cap>
+      <TriggerLevel>0.98</TriggerLevel>
+      <ResetMinimum>0.95</ResetMinimum>
+      <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name></Underlying>
+      <StrikeObservationDates>
+        <Dates>
+          <Dates>
+            <Date>2022-02-28</Date>
+            <Date>2022-03-31</Date>
+            <Date>2022-04-29</Date>
+          </Dates>
+        </Dates>
+      </StrikeObservationDates>
+      <ExpiryDate>2023-01-31</ExpiryDate>
+      <SettlementDate>2023-02-02</SettlementDate>
+      <StrikeDate>2022-01-31</StrikeDate>
+      <Premium>0</Premium>
+      <PremiumDate>2022-02-02</PremiumDate>
+      <Currency>USD</Currency>
+    </FxBestEntryOptionData>
+  </Trade>
+  <Trade id="SCRIPTED_SRO_FX">
+    <TradeType>FxStrikeResettableOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <FxStrikeResettableOptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <Currency>USD</Currency>
+      <Strike>1.10</Strike>
+      <ResetStrike>1.08</ResetStrike>
+      <Quantity>1000000</Quantity>
+      <TriggerType>Down</TriggerType>
+      <TriggerPrice>1.02</TriggerPrice>
+      <ExpiryDate>2023-01-31</ExpiryDate>
+      <SettlementDate>2023-02-02</SettlementDate>
+      <Premium>0</Premium>
+      <PremiumDate>2022-02-02</PremiumDate>
+      <Underlying><Type>FX</Type><Name>ECB-EUR-USD</Name></Underlying>
+      <ObservationDates>
+        <Dates>
+          <Dates>
+            <Date>2022-04-29</Date>
+            <Date>2022-07-29</Date>
+            <Date>2022-10-31</Date>
+          </Dates>
+        </Dates>
+      </ObservationDates>
+    </FxStrikeResettableOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto value_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view name) -> std::string {
+        for (const auto& p : data.parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    const auto dates_of = [](const ores::trading::domain::scripted_instrument_data& data,
+                             std::string_view role) {
+        std::size_t n = 0;
+        for (const auto& d : data.schedule_dates)
+            if (d.schedule_role == role)
+                ++n;
+        return n;
+    };
+    const auto check_best_entry = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "TriggerLevel") == "0.98");
+        CHECK(value_of(*data, "StrikeDate") == "2022-01-31");
+        CHECK(value_of(*data, "Currency") == "USD");
+        REQUIRE(data->instrument_underlyings.size() == 1);
+        CHECK(data->instrument_underlyings[0].underlying_type == "FX");
+        CHECK(dates_of(*data, "strikeobservationdates") == 3u);
+    };
+    const auto check_strike_resettable = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(value_of(*data, "TriggerType") == "Down");
+        CHECK(value_of(*data, "ResetStrike") == "1.08");
+        CHECK(value_of(*data, "OptionType") == "Call");
+        REQUIRE(data->instrument_underlyings.size() == 1);
+        CHECK(dates_of(*data, "observationdates") == 3u);
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_best_entry(items[0]);
+    check_best_entry(rebuild(items[0]));
+    check_strike_resettable(items[1]);
+    check_strike_resettable(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

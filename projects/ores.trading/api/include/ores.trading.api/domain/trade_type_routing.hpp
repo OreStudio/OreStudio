@@ -123,9 +123,13 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::fx_accumulator_instrument;
     if (trade_type == "FxTaRF")
         return instrument_table::fx_asian_forward_instrument;
+    if (trade_type == "FxBestEntryOption")
+        return instrument_table::scripted_instrument;
     if (trade_type == "FxBasketOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "FxRainbowOption")
+        return instrument_table::scripted_instrument;
+    if (trade_type == "FxStrikeResettableOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "CreditDefaultSwap")
         return instrument_table::credit_instrument;
@@ -185,12 +189,16 @@ instrument_table_for(std::string_view trade_type) {
         return instrument_table::equity_accumulator_instrument;
     if (trade_type == "EquityWorstOfBasketSwap")
         return instrument_table::equity_swap_instrument;
+    if (trade_type == "EquityBestEntryOption")
+        return instrument_table::scripted_instrument;
     if (trade_type == "EquityBasketOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityRainbowOption")
         return instrument_table::scripted_instrument;
     if (trade_type == "EquityOutperformanceOption")
         return instrument_table::equity_option_instrument;
+    if (trade_type == "EquityStrikeResettableOption")
+        return instrument_table::scripted_instrument;
     if (trade_type == "TotalReturnSwap")
         return instrument_table::composite_instrument;
     if (trade_type == "ContractForDifference")

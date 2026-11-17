@@ -95,10 +95,10 @@ absent: it is a placeholder, not a product.
 | FxAccumulator | FX Accumulator | forward | scripted | fx! | false | false | fx_accumulator_instrument |
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
 | FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false |  |
-| FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false |  |
+| FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false | scripted_instrument |
 | FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | scripted_instrument |
 | FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | scripted_instrument |
-| FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false |  |
+| FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false | scripted_instrument |
 | CreditDefaultSwap | Credit Default Swap | swap | native | credit! | false | false | credit_instrument |
 | CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true |  |
 | IndexCreditDefaultSwap | Index Credit Default Swap | swap | native | credit! | false | true | credit_instrument |
@@ -139,11 +139,11 @@ absent: it is a placeholder, not a product.
 | EquityAccumulator | Equity Accumulator | forward | scripted | equity! | false | true | equity_accumulator_instrument |
 | EquityTaRF | Equity Target Redemption Forward | forward | scripted | equity! | false | false | equity_accumulator_instrument |
 | EquityWorstOfBasketSwap | Equity Worst-Of Basket Swap | swap | scripted | equity! | false | false | equity_swap_instrument |
-| EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false |  |
+| EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false | scripted_instrument |
 | EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | scripted_instrument |
 | EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | scripted_instrument |
 | EquityOutperformanceOption | Equity Outperformance Option | option | native | equity! | true | false | equity_option_instrument |
-| EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false |  |
+| EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false | scripted_instrument |
 | TotalReturnSwap | Total Return Swap | swap | native | equity! | false | false | composite_instrument |
 | ContractForDifference | Contract for Difference |   | native | equity! | false | false | composite_instrument |
 | EquityPosition | Equity Position | position | native | equity! | false | false | equity_position_instrument |

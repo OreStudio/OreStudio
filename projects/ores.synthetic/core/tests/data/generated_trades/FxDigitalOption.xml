@@ -18,20 +18,20 @@
       <DomesticCurrency>USD</DomesticCurrency>
     </FxDigitalOptionData>
   </Trade>
-  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
+  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
     <TradeType>FxDigitalOption</TradeType>
     <FxDigitalOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-10-02</ExerciseDate>
+          <ExerciseDate>2027-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>0.87</Strike>
-      <PayoffAmount>8774166.11</PayoffAmount>
+      <Strike>1.4659</Strike>
+      <PayoffAmount>674201.2</PayoffAmount>
       <ForeignCurrency>EUR</ForeignCurrency>
       <DomesticCurrency>USD</DomesticCurrency>
     </FxDigitalOptionData>

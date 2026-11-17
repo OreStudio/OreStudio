@@ -159,6 +159,29 @@ year_month_day add_months(const year_month_day& date, int months) {
 }
 
 /*
+ * Quarterly observation dates after @p after and by @p until, each moved off a
+ * weekend to the Monday. A span shorter than a quarter observes on @p until.
+ */
+std::vector<year_month_day> quarterly_dates(const year_month_day& after,
+                                            const year_month_day& until) {
+    std::vector<year_month_day> out;
+    for (int months = 3;; months += 3) {
+        auto day = std::chrono::sys_days{add_months(after, months)};
+        const auto weekday = std::chrono::weekday{day};
+        if (weekday == std::chrono::Saturday)
+            day += std::chrono::days{2};
+        else if (weekday == std::chrono::Sunday)
+            day += std::chrono::days{1};
+        if (year_month_day{day} > until)
+            break;
+        out.emplace_back(day);
+    }
+    if (out.empty())
+        out.push_back(until);
+    return out;
+}
+
+/*
  * A draw in [0, 1) that depends only on the scope and the slot. It is built
  * from the same name generator the ids are, so nothing here reads a clock or
  * a global engine and the same scope draws the same numbers.
@@ -1717,7 +1740,9 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxAccumulator",
                                          "FxTaRF",
                                          "FxBasketOption",
-                                         "FxRainbowOption"};
+                                         "FxRainbowOption",
+                                         "FxBestEntryOption",
+                                         "FxStrikeResettableOption"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
 /*
@@ -1858,6 +1883,52 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
     const auto built = [&](auto result) {
         return fx_batch_of(std::move(result), type);
     };
+    if (type == "FxBestEntryOption")
+        return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::fx>(
+                                     {.underlying = index,
+                                      .currency = pair.quote,
+                                      .notional = money(notional),
+                                      .multiplier = level(1.0),
+                                      .strike = level(1.0),
+                                      .cap = level(0.2),
+                                      .trigger_level = level(0.98),
+                                      .reset_minimum = level(0.95),
+                                      .premium = money(0.0),
+                                      .premium_date = start,
+                                      .strike_date = start,
+                                      .strike_observation_dates = quarterly_dates(start, end),
+                                      .expiry = end,
+                                      .settlement = end,
+                                      .position = position})
+                                     .build(),
+                                 type);
+    if (type == "FxStrikeResettableOption") {
+        /*
+         * A call resets lower when the rate falls, a put higher when it rises. A
+         * rate moves less than an equity price, so the trigger and the reset sit
+         * closer to the strike than the equity case's.
+         */
+        const bool call = kind == tb::option_kind::call;
+        const auto reset = level(rate * (call ? 0.98 : 1.02));
+        return scripted_batch_of(
+            tb::strike_resettable_option_builder<tb::scripted_family::fx>(
+                {.underlying = index,
+                 .currency = pair.quote,
+                 .kind = kind,
+                 .position = position,
+                 .quantity = money(notional),
+                 .strike = level(rate),
+                 .reset_strike = reset,
+                 .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                 .trigger_price = level(rate * (call ? 0.93 : 1.07)),
+                 .observation_dates = quarterly_dates(start, end),
+                 .expiry = end,
+                 .settlement = end,
+                 .premium = money(0.0),
+                 .premium_date = start})
+                .build(),
+            type);
+    }
     if (type == "FxBasketOption" || type == "FxRainbowOption") {
         /*
          * The basket holds the slot's pair and another the tenant holds in the
@@ -2065,7 +2136,9 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "TotalReturnSwap",
                                              "EquityOutperformanceOption",
                                              "EquityBasketOption",
-                                             "EquityRainbowOption"};
+                                             "EquityRainbowOption",
+                                             "EquityBestEntryOption",
+                                             "EquityStrikeResettableOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -2775,6 +2848,48 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                 tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build(), type);
         return scripted_batch_of(
             tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build(), type);
+    }
+    if (type == "EquityBestEntryOption")
+        return scripted_batch_of(tb::best_entry_option_builder<tb::scripted_family::equity>(
+                                     {.underlying = address,
+                                      .currency = currency,
+                                      .notional = money(notional),
+                                      .multiplier = money(1.0),
+                                      .strike = money(0.85),
+                                      .cap = money(0.06),
+                                      .trigger_level = money(0.95),
+                                      .reset_minimum = money(0.85),
+                                      .premium = money(0.0),
+                                      .premium_date = start,
+                                      .strike_date = start,
+                                      .strike_observation_dates = quarterly_dates(start, end),
+                                      .expiry = end,
+                                      .settlement = end,
+                                      .position = position})
+                                     .build(),
+                                 type);
+    if (type == "EquityStrikeResettableOption") {
+        // A call resets lower when the price falls, a put higher when it rises.
+        const bool call = kind == tb::option_kind::call;
+        const auto reset = money(level * (call ? 0.9 : 1.1));
+        return scripted_batch_of(
+            tb::strike_resettable_option_builder<tb::scripted_family::equity>(
+                {.underlying = address,
+                 .currency = currency,
+                 .kind = kind,
+                 .position = position,
+                 .quantity = money(notional / level),
+                 .strike = money(level),
+                 .reset_strike = reset,
+                 .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                 .trigger_price = reset,
+                 .observation_dates = quarterly_dates(start, end),
+                 .expiry = end,
+                 .settlement = end,
+                 .premium = money(0.0),
+                 .premium_date = start})
+                .build(),
+            type);
     }
     if (type == "EquityOutperformanceOption") {
         const auto [first, second] = same_currency_pair();

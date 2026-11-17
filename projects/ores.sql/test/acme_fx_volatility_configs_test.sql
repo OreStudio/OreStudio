@@ -78,7 +78,7 @@ select set_eq(
 
 select is(
     (select count(*)::int from t_expected), 54,
-    'the entities read 54 surfaces: four for the group, thirty for the UK, eleven for the US and nine for Hong Kong');
+    'the entities read 54 surfaces: group 4, UK 30, US 11, HK 9');
 
 select is(
     (select count(*)::int from t_volatility v

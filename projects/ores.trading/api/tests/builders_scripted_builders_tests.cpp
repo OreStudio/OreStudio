@@ -820,3 +820,28 @@ TEST_CASE("a_cbo_names_its_tranche_notional_and_structure", scripted_tags) {
     REQUIRE_FALSE(unnamed.has_value());
     CHECK(unnamed.error().term == "structure_id");
 }
+
+TEST_CASE("a_cash_position_holds_an_amount_long_or_short_and_refuses_none", scripted_tags) {
+    const auto short_cash = cash_position_builder({.currency = std::string("EUR"),
+                                                   .amount = scripted_amount("-1000000")})
+                                .build();
+    REQUIRE(short_cash.has_value());
+    const auto amount = std::ranges::find_if(short_cash->parameters,
+                                             [](const auto& p) { return p.name == "Amount"; });
+    REQUIRE(amount != short_cash->parameters.end());
+    CHECK(amount->value == "-1000000");
+
+    const auto none =
+        cash_position_builder({.currency = std::string("EUR"), .amount = scripted_amount("0")})
+            .build();
+    REQUIRE_FALSE(none.has_value());
+    CHECK(none.error().term == "amount");
+}
+
+TEST_CASE("a_cash_position_refuses_no_currency", scripted_tags) {
+    const auto built =
+        cash_position_builder({.currency = std::string(), .amount = scripted_amount("100")})
+            .build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "currency");
+}

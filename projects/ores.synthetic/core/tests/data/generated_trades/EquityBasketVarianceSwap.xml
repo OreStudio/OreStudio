@@ -34,28 +34,28 @@
       <Currency>EUR</Currency>
     </EquityBasketVarianceSwapData>
   </Trade>
-  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
+  <Trade id="218774a5-e3e4-54a7-a1a9-4d27d7aed44b">
     <TradeType>EquityBasketVarianceSwap</TradeType>
     <EquityBasketVarianceSwapData>
       <LongShort>Short</LongShort>
       <Strike>0.2</Strike>
-      <Notional>68703.01</Notional>
+      <Notional>25771.96</Notional>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.NDX</Name>
+          <Name>RIC:.STOXX50E</Name>
           <Weight>0.5</Weight>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.SPX</Name>
+          <Name>RIC:DHER.DE</Name>
           <Weight>0.5</Weight>
         </Underlying>
       </Underlyings>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-10-02</StartDate>
-          <EndDate>2027-10-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2032-09-02</EndDate>
           <Tenor>1D</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>
@@ -64,8 +64,8 @@
         </Rules>
       </ValuationSchedule>
       <SquaredPayoff>false</SquaredPayoff>
-      <SettlementDate>2027-10-07</SettlementDate>
-      <Currency>USD</Currency>
+      <SettlementDate>2032-09-07</SettlementDate>
+      <Currency>EUR</Currency>
     </EquityBasketVarianceSwapData>
   </Trade>
 </Portfolio>

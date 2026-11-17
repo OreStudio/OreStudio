@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
+    <TradeType>CashPosition</TradeType>
+    <CashPositionData>
+      <Currency>EUR</Currency>
+      <Amount>5666887.39</Amount>
+    </CashPositionData>
+  </Trade>
+  <Trade id="45de59e1-86ba-57a0-933b-129740a11052">
+    <TradeType>CashPosition</TradeType>
+    <CashPositionData>
+      <Currency>EUR</Currency>
+      <Amount>-9214140.07</Amount>
+    </CashPositionData>
+  </Trade>
+</Portfolio>

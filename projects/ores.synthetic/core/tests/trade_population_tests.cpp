@@ -436,7 +436,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 31;
+    wide.trades_per_book = 32;
 
     const auto plan = plan_of(wide);
 
@@ -449,15 +449,15 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     }
 
     /*
-     * Thirty-one codes, twenty-eight products and three containers, and the
-     * planner cycles through them, so one book of thirty-one reaches every one. The
+     * Thirty-two codes, twenty-nine products and three containers, and the
+     * planner cycles through them, so one book of thirty-two reaches every one. The
      * composite holds two options and each return swap one position, which
      * are trades of their own.
      */
-    REQUIRE(types.size() == 31u);
+    REQUIRE(types.size() == 32u);
     const auto books = wide.book_ids.size();
     CHECK(held == 4u * books);
-    CHECK(plan.slots.size() == 35u * books);
+    CHECK(plan.slots.size() == 36u * books);
     CHECK(plan.structures.size() == 3u * books);
 }
 

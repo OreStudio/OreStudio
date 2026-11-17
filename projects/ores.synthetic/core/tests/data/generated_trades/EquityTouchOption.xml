@@ -23,27 +23,27 @@
       <EQIndex>EQ-RIC:.NDX</EQIndex>
     </EquityTouchOptionData>
   </Trade>
-  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>EquityTouchOption</TradeType>
     <EquityTouchOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
         <PayOffAtExpiry>true</PayOffAtExpiry>
         <ExerciseDates>
-          <ExerciseDate>2033-11-02</ExerciseDate>
+          <ExerciseDate>2032-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>UpAndIn</Type>
         <Levels>
-          <Level>437.12</Level>
+          <Level>895.55</Level>
         </Levels>
       </BarrierData>
-      <Name>RIC:.SPX</Name>
+      <Name>RIC:.NDX</Name>
       <PayoffCurrency>USD</PayoffCurrency>
-      <PayoffAmount>6145432.04</PayoffAmount>
+      <PayoffAmount>2621254.1</PayoffAmount>
       <Calendar>TARGET</Calendar>
-      <EQIndex>EQ-RIC:.SPX</EQIndex>
+      <EQIndex>EQ-RIC:.NDX</EQIndex>
     </EquityTouchOptionData>
   </Trade>
 </Portfolio>

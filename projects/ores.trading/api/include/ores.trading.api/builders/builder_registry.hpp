@@ -83,6 +83,7 @@ using all_builders =
                fx_asian_option_builder,
                rate_digital_option_builder,
                cbo_builder,
+               cash_position_builder,
                fx_forward_builder,
                fx_swap_builder,
                fx_option_builder,

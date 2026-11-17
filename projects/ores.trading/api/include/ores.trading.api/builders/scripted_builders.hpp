@@ -718,6 +718,22 @@ private:
     cbo_terms terms_;
 };
 
+/// An amount of cash held in one currency.
+struct cash_position_terms final {
+    required<std::string> currency;
+    required<utility::decimal::decimal> amount;
+};
+
+class ORES_TRADING_API_EXPORT cash_position_builder final {
+public:
+    static constexpr std::string_view trade_type = "CashPosition";
+    explicit cash_position_builder(cash_position_terms terms);
+    [[nodiscard]] scripted_result build() const;
+
+private:
+    cash_position_terms terms_;
+};
+
 }
 
 #endif

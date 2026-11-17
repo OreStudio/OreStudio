@@ -617,7 +617,7 @@ insert into ores_trading_product_types_tbl (
     ('CashPosition', ores_utility_system_tenant_id_fn(), 0, 'Cash Position', 'An amount of cash in a currency.',
      'ORE User Guide', 'cashposition.tex',
      'position', 'native', 'flow',
-     false, false, null, 116,
+     false, false, 'scripted_instrument', 116,
      'ores_trading_service', 'system.initial_load', 'Seed product types'),
     ('ScriptedTrade', ores_utility_system_tenant_id_fn(), 0, 'Scripted Trade (ORE generic payoff engine)', 'A structured option that pays accumulated amounts and redeems early below a trigger level.',
      'ORE User Guide', 'autocallable_01.tex',

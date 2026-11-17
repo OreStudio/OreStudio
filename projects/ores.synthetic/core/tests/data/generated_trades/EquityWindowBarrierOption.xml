@@ -27,29 +27,29 @@
       </BarrierData>
     </EquityWindowBarrierOptionData>
   </Trade>
-  <Trade id="68ca7fb7-d3e6-55d8-b185-04e6a3193ab8">
+  <Trade id="f8bbf0a7-ea59-58ea-830a-e02a820d688f">
     <TradeType>EquityWindowBarrierOption</TradeType>
     <EquityWindowBarrierOptionData>
-      <Currency>EUR</Currency>
-      <FixingAmount>2886.28</FixingAmount>
-      <Strike>2749.49</Strike>
+      <Currency>USD</Currency>
+      <FixingAmount>6677.75</FixingAmount>
+      <Strike>594.24</Strike>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <ExerciseDates>
-          <ExerciseDate>2027-12-02</ExerciseDate>
+          <ExerciseDate>2026-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <StartDate>2025-12-02</StartDate>
-      <EndDate>2026-12-02</EndDate>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2026-05-03</EndDate>
       <BarrierData>
-        <Type>DownAndOut</Type>
+        <Type>UpAndOut</Type>
         <Levels>
-          <Level>2474.54</Level>
+          <Level>653.66</Level>
         </Levels>
       </BarrierData>
     </EquityWindowBarrierOptionData>

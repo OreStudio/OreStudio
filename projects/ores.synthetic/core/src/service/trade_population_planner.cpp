@@ -2415,7 +2415,8 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "EquityPairwiseVarianceSwap",
                                              "EquityForwardVolatilityAgreement",
                                              "EquityFutureOption",
-                                             "EquityDoubleTouchOption"};
+                                             "EquityDoubleTouchOption",
+                                             "CashPosition"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -3371,6 +3372,19 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                                       .expiry = end,
                                                       .position = position})
                          .build());
+    /*
+     * Cash in the underlying's currency, the trade's notional. The slot's
+     * position, drawn for every equity trade, says whether the cash is held
+     * long or short.
+     */
+    if (type == "CashPosition")
+        return scripted_batch_of(
+            tb::cash_position_builder(
+                {.currency = currency,
+                 .amount =
+                     money(position == tb::option_position::long_option ? notional : -notional)})
+                .build(),
+            type);
     if (type == "EquityDoubleTouchOption")
         return built(tb::equity_double_touch_option_builder({.underlying = address,
                                                              .currency = currency,

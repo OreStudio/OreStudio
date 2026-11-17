@@ -952,6 +952,22 @@ scripted_result cbo_builder::build() const {
     return out.take();
 }
 
+cash_position_builder::cash_position_builder(cash_position_terms terms)
+    : terms_(std::move(terms)) {}
+
+scripted_result cash_position_builder::build() const {
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    // A short cash position is a negative amount, so only a zero one is refused.
+    if (terms_.amount.get().is_zero())
+        return std::unexpected(build_error{"amount", "must not be zero"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("Currency", "enumeration", terms_.currency.get());
+    out.value("Amount", "decimal", scripted_text(terms_.amount.get()));
+    return out.take();
+}
+
 autocallable_builder::autocallable_builder(autocallable_terms terms)
     : terms_(std::move(terms)) {}
 

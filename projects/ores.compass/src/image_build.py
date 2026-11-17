@@ -40,11 +40,17 @@ IMAGE_LIBS = "localhost/ores-service-libs"
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_WEB = "localhost/ores-web"
+IMAGE_SHELL = "localhost/ores-shell"
 
 # The compute wrapper is a supervised binary but not a runtime service: it
 # ships its own image, yet it shares the library image with the services and
 # therefore is staged with them.
 COMPUTE_SERVICE = "ores.compute.wrapper"
+
+# The shell is not a supervised service but it is shipped as an image, and it
+# links clients no service links (compute.client among them), so its closure
+# has to join the shared library image or the shell image cannot start.
+SHELL_SERVICE = "ores.shell"
 
 
 def _run(cmd, project_root, check=True, **kwargs):
@@ -336,7 +342,7 @@ def stage_only(project_root: Path) -> list[str]:
     and that job builds the images without staging again.
     """
     services = runtime_services(project_root)
-    staged = services + [COMPUTE_SERVICE]
+    staged = services + [COMPUTE_SERVICE, SHELL_SERVICE]
     print("=== Staging binaries ===")
     _run(["bash", "docker/stage-runtime.sh", "--services", " ".join(staged)],
          project_root)
@@ -366,7 +372,7 @@ def image_names(project_root: Path) -> list[str]:
     ores.iam.service.
     """
     names = ["ores-service-base", "ores-service-libs", "ores-nats",
-             "ores-compute-wrapper", "ores-web"]
+             "ores-compute-wrapper", "ores-web", "ores-shell"]
     names += runtime_services(project_root)
     return names
 

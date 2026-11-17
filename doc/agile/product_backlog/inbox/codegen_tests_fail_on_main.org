@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9080FB4F-031D-476E-828D-F97CDE8552DF
+:END:
+#+title: Four codegen tests fail on main
+#+description: On main 0d2e6758d7, projects/ores.codegen/tests has 4 failures no open branch causes: test_domain_includes (script_calibration.hpp and 3 more domain headers include the optional header but use no std::optional), two test_rls_own_or_system_tenant_rows cases that still expect the old for-all shared-read policy the templates no longer emit, and test_trade_type_catalogue's routed-table check. Found while raising the compass-ng pilot PR.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tests:main:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -8,7 +8,7 @@
 #+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
 #+owner: marco
 #+branch: feature/refuse-forwards-cheaply
-#+pr:
+#+pr: 4800
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4800][#4800]] | [marketdata,synthetic,service] Mop up the setup: fast forward refusals, baskets, re-run answers |
 
 * Review
 

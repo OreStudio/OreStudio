@@ -202,16 +202,16 @@ sync_one() {
     top_level_json="$(find "${dest}" -mindepth 1 -maxdepth 1 \
         -not -name "manifest.json" -not -name "README.md" -not -name "methodology.txt" \
         -printf '%f\n' \
-        | sort | python3 -c '
+        | LC_ALL=C sort | python3 -c '
 import json, sys
 print(json.dumps(sorted(l.strip() for l in sys.stdin)))
 ')"
     # Tree hash: sha256 of every file's own sha256 + relative path, sorted
-    # by path -- reproducible from a re-sync of the exact same source
+    # by path in byte order -- reproducible from a re-sync of the exact same source
     # commit, independent of mtimes/permissions, cheap enough to be a
     # single line rather than one entry per file.
     tree_hash="$(find "${dest}" -type f -not -name "manifest.json" -not -name "README.md" -not -name "methodology.txt" -print0 \
-        | sort -z \
+        | LC_ALL=C sort -z \
         | xargs -0 sha256sum \
         | sed "s|${dest}/||" \
         | sha256sum | cut -d' ' -f1)"
@@ -229,7 +229,7 @@ print(json.dumps(sorted(l.strip() for l in sys.stdin)))
   "file_count": ${file_count},
   "top_level_entries": ${top_level_json},
   "tree_sha256": "${tree_hash}",
-  "tree_sha256_method": "sha256 of the sorted 'sha256sum  relative/path' lines for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
+  "tree_sha256_method": "sha256 of the 'sha256sum  relative/path' lines in byte order (LC_ALL=C) for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
 }
 EOF
     echo "Wrote ${dest}/manifest.json (${file_count} files, tree_sha256=${tree_hash:0:12}...)"

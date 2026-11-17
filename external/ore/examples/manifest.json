@@ -9,6 +9,6 @@
   "synced_by": "external/ore/tools/update_ore_samples.sh",
   "file_count": 3525,
   "top_level_entries": ["Academy", "AmericanMonteCarlo", "CreditRisk", "CurveBuilding", "Exposure", "ExposureWithCollateral", "InitialMargin", "Input", "Legacy", "MarketRisk", "MinimalSetup", "ORE-API", "ORE-Python", "Performance", "Products", "ScriptedTrade", "XvaRisk"],
-  "tree_sha256": "04e2c5546c428e10b4be4eb4df557df78e5d20c2d87e2934aaa2eba771a06f81",
-  "tree_sha256_method": "sha256 of the sorted 'sha256sum  relative/path' lines for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
+  "tree_sha256": "44695f83942bf7318db02f1302fd4ba6f7b6ea4d1ea692a117857fd6557eb49e",
+  "tree_sha256_method": "sha256 of the 'sha256sum  relative/path' lines in byte order (LC_ALL=C) for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
 }

@@ -1,0 +1,38 @@
+"""Rebuild the vendor catalogue tool's input from the seed's generated blocks,
+and add the pillars of the new IBOR configs.
+
+The tool reads one row per feed config pillar or FX pair. The seed's generated
+blocks hold one row per id the tool wrote, which is the same set, so the
+existing input is recovered from them. A provider whose notation writes no id
+for an instrument has no row in the blocks; the counts the blocks state show
+that only the ore provider's two FX pairs and the FOMC pillars are such rows,
+and they are added back from the counts' own lines.
+"""
+import re
+import sys
+
+seed, out = sys.argv[1:3]
+s = open(seed).read()
+fx = re.findall(r"^    \('([a-z]+)', '([A-Z]{3})', '([A-Z]{3})', '[a-z_]+', ", s, re.M)
+ir = re.findall(r"^    \('([a-z]+)', '([A-Z]{3})', '([a-z]+)', '([A-Z]+)', '([0-9A-Z]+)', '([0-9A-Z]+)', '([0-9A-Z]*)', '[a-z_]+', ", s, re.M)
+rows = set()
+for p, b, q in fx:
+    rows.add(("fx", p, b, q, "", "", "", ""))
+for p, c, f, k, st, en, t in ir:
+    rows.add(("ir", p, c, f, k, st, en, t))
+for b, q in (("EUR", "USD"), ("GBP", "USD")):
+    rows.add(("fx", "ore", b, q, "", "", "", ""))
+for k, st, en in [("DEPO", "SPOT", "1F"), ("FRA", "1F", "2F"), ("FRA", "2F", "3F"), ("FRA", "3F", "4F"),
+                  ("FRA", "4F", "5F"), ("FRA", "5F", "6F"), ("FRA", "6F", "7F"), ("FRA", "7F", "8F"),
+                  ("IRS", "8F", "1Y")]:
+    rows.add(("ir", "bloomberg", "USD", "sofr", k, st, en, "FOMC"))
+ladder = [("DEPO", "SPOT", "1M"), ("DEPO", "SPOT", "3M"), ("FRA", "3M", "6M"), ("FRA", "6M", "12M"),
+          ("IRS", "SPOT", "2Y"), ("IRS", "SPOT", "5Y"), ("IRS", "SPOT", "10Y")]
+for p, c, f, t in [("ice", "GBP", "libor", "6M"), ("ice", "GBP", "libor", "12M"), ("ice", "GBP", "libor", "1W"),
+                   ("tradeweb", "EUR", "euribor", "12M"), ("tradeweb", "EUR", "euribor", "1W")]:
+    for k, st, en in ladder:
+        rows.add(("ir", p, c, f, k, st, en, t))
+with open(out, "w") as fh:
+    for r in sorted(rows):
+        fh.write("\t".join(r) + "\n")
+print(len(fx), "fx rows,", len(ir), "ir rows from the seed;", len(rows), "rows written")

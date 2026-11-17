@@ -48,6 +48,16 @@ struct fx_derivation_settings final {
     int minimum_window = 21;
 };
 
+/**
+ * @brief The returns an expiry's level is read over: its length in trading days, and never
+ * fewer than the settings' minimum window, or than the two a sample variance needs.
+ *
+ * The one rule for how much history an expiry needs, so the reach a source reports and the
+ * window its quotes are read over cannot disagree.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT int
+fx_derivation_window(double years, const fx_derivation_settings& settings);
+
 /// What an expiry's quotes were derived from, beside the quotes.
 struct derived_fx_expiry final {
     std::string label;

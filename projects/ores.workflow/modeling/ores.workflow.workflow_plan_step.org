@@ -126,6 +126,20 @@ How long the step may run before the engine declares it dead. Carried with the
 run rather than read from the definition, so a definition that shortened a
 deadline cannot expire a run that was started under a longer one.
 
+** essential
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  true
+:default_value: true
+:END:
+
+Whether the run needs this step's work to go on. A step that is not essential
+and fails, or outlives its deadline, ends with warnings instead: its error goes
+into its log and the run carries on without its work. Carried with the run for
+the same reason as the deadline.
+
 * SQL
 
 ** Flags

@@ -23,6 +23,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
@@ -272,6 +273,125 @@ void workflow_run_commands::register_commands(cli::Menu& root_menu, nats_client&
     });
 }
 
+std::size_t workflow_run_commands::print_run_warnings(std::ostream& out,
+                                                      nats_client& session,
+                                                      std::string_view run_type,
+                                                      std::string_view heading,
+                                                      bool detail,
+                                                      const std::string& news_since) {
+    workflow::messaging::list_workflow_instance_summaries_request list;
+    list.limit = 1;
+    list.type_filter = std::string(run_type);
+    std::vector<workflow::messaging::workflow_step_summary> warned;
+    try {
+        const auto runs = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::list_workflow_instance_summaries_response>(
+            session, std::string(list.nats_subject), list);
+        if (!runs || !runs->success || runs->instances.empty())
+            return 0;
+        const auto& run = runs->instances.front();
+        if (!news_since.empty()) {
+            using ores::platform::time::datetime;
+            if (!run.completed_at || datetime::from_iso8601_utc(*run.completed_at) <=
+                                         datetime::from_iso8601_utc(news_since))
+                return 0;
+        }
+        const auto steps = fetch_steps(session, run.id);
+        if (!steps || !steps->success)
+            return 0;
+        for (const auto& step : steps->steps)
+            if (step.status == "completed_with_warnings")
+                warned.push_back(step);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "The latest " << run_type << " run was not read: " << e.what();
+        return 0;
+    }
+    if (warned.empty())
+        return 0;
+
+    std::ranges::sort(warned, {}, &workflow::messaging::workflow_step_summary::step_index);
+    out << "⚠ " << heading << std::endl;
+    for (const auto& step : warned) {
+        std::vector<std::string> warnings;
+        for (const auto& entry : step.log)
+            if (entry.level == workflow::messaging::step_log_level::warn ||
+                entry.level == workflow::messaging::step_log_level::error)
+                warnings.push_back(entry.message);
+        out << "  " << (step.label.empty() ? step.name : step.label);
+        if (!detail) {
+            out << ": " << warnings.size() << " warning(s)" << std::endl;
+            continue;
+        }
+        out << " (" << step.name << ")" << std::endl;
+        for (const auto& warning : warnings)
+            out << "      " << warning << std::endl;
+    }
+    return warned.size();
+}
+
+bool workflow_run_commands::rerun_latest_step(std::ostream& out,
+                                              nats_client& session,
+                                              std::string_view run_type,
+                                              const std::string& step_name,
+                                              std::chrono::seconds timeout) {
+    std::string run_id;
+    try {
+        workflow::messaging::list_workflow_instance_summaries_request list;
+        list.limit = 1;
+        list.type_filter = std::string(run_type);
+        const auto runs = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::list_workflow_instance_summaries_response>(
+            session, std::string(list.nats_subject), list);
+        if (!runs || !runs->success || runs->instances.empty()) {
+            fail(out) << "No " << run_type << " run that this account can read." << std::endl;
+            return false;
+        }
+        run_id = runs->instances.front().id;
+
+        workflow::messaging::retry_workflow_instance_request retry;
+        retry.workflow_instance_id = run_id;
+        retry.step_name = step_name;
+        const auto answer = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::retry_workflow_instance_response>(
+            session, std::string(retry.nats_subject), retry);
+        if (!answer) {
+            fail(out) << "The step was not run again: " << answer.error().what() << std::endl;
+            return false;
+        }
+        if (!answer->success) {
+            fail(out) << "The step was not run again: " << answer->message << std::endl;
+            return false;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << "The step was not run again: " << e.what() << std::endl;
+        return false;
+    }
+    out << "Running '" << step_name << "' again." << std::endl;
+
+    // Only the step that runs again is reported: the rest of the run is as it
+    // was, and printing it would bury the one answer the person asked for.
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    while (std::chrono::steady_clock::now() < deadline) {
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        const auto reply = fetch_steps(session, run_id);
+        if (!reply || !reply->success)
+            continue;
+        const auto step = std::ranges::find(
+            reply->steps, step_name, &workflow::messaging::workflow_step_summary::name);
+        if (step == reply->steps.end() || !is_step_complete(*step) ||
+            reply->status == "in_progress")
+            continue;
+        out << "  " << (step->label.empty() ? step->name : step->label) << ": " << step->status
+            << std::endl;
+        for (const auto& entry : step->log)
+            out << "      " << entry.message << std::endl;
+        return reply->status == "completed";
+    }
+    fail(out) << "The step did not finish within " << timeout.count() << "s." << std::endl;
+    return false;
+}
+
 bool workflow_run_commands::wait_for_instance(std::ostream& out,
                                               nats_client& session,
                                               const std::string& instance_id,
@@ -379,8 +499,20 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                 if (run_completed(*result, expected_steps)) {
                     if (result->steps.empty())
                         out << "✓ Workflow instance " << instance_id << " completed." << std::endl;
-                    else
-                        out << "✓ All " << total << " step(s) completed." << std::endl;
+                    else {
+                        std::vector<std::string> warned;
+                        for (const auto& step : result->steps)
+                            if (step.status == "completed_with_warnings")
+                                warned.push_back(step.name);
+                        out << "✓ All " << total << " step(s) completed";
+                        if (!warned.empty()) {
+                            out << "; " << warned.size()
+                                << " ended with warnings, read their logs above:";
+                            for (const auto& name : warned)
+                                out << " " << name;
+                        }
+                        out << "." << std::endl;
+                    }
                     BOOST_LOG_SEV(lg(), info)
                         << "Workflow instance " << instance_id << " completed.";
                     return true;

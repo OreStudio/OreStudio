@@ -61,6 +61,7 @@ struct workflow_plan_step_entity {
     std::string command_subject;
     std::string compensation_subject;
     std::int32_t timeout_seconds{};
+    bool essential = true;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -84,6 +85,7 @@ struct workflow_plan_step_entity {
                query_builder::bind("command_subject", &e::command_subject) |
                query_builder::bind("compensation_subject", &e::compensation_subject) |
                query_builder::bind("timeout_seconds", &e::timeout_seconds) |
+               query_builder::bind("essential", &e::essential) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

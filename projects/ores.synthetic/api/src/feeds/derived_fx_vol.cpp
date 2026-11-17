@@ -17,6 +17,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
@@ -24,6 +25,7 @@
 #include <format>
 #include <map>
 #include <ranges>
+#include <tuple>
 
 namespace ores::synthetic::feed {
 
@@ -31,7 +33,7 @@ namespace {
 
 namespace qm = analytics::quant::math;
 
-/// The pair's log level on each date, keyed by date so the legs align.
+/// The pair's log level on each date, oldest first.
 std::map<std::chrono::year_month_day, double> log_levels(const dated_series& series) {
     std::map<std::chrono::year_month_day, double> out;
     const auto n = std::min(series.dates.size(), series.values.size());
@@ -47,6 +49,44 @@ std::string derived_fx_external_id(const derived_fx_quote_id& id) {
     return id.pair.base + id.pair.quote + "/" + id.expiry + "/" + id.label;
 }
 
+std::vector<derived_fx_expiry> derived_fx_ladder(const std::set<std::string>& labels) {
+    std::vector<derived_fx_expiry> ladder;
+    for (const auto& label : labels)
+        if (const auto years = ores::analytics::quant::service::fx_vol_tenor_years(label))
+            ladder.push_back({.label = label, .years = *years});
+    // Two labels of one length, such as 12M and 1Y, are ordered by label, so the ladder does
+    // not depend on the order of the set it was read from.
+    std::ranges::sort(ladder, [](const derived_fx_expiry& a, const derived_fx_expiry& b) {
+        return std::tie(a.years, a.label) < std::tie(b.years, b.label);
+    });
+    return ladder;
+}
+
+derived_fx_reach derived_fx_reach_of(std::span<const derived_fx_expiry> ladder,
+                                     std::size_t returns,
+                                     const qm::fx_derivation_settings& settings) {
+    derived_fx_reach out;
+    for (const auto& e : ladder) {
+        const auto needs = qm::fx_derivation_window(e.years, settings);
+        if (static_cast<std::size_t>(needs) <= returns)
+            out.reached.push_back(e);
+        else
+            out.unreached.push_back({.expiry = e, .needs = needs});
+    }
+    return out;
+}
+
+std::string
+describe_reach(const derived_fx_pair& pair, const derived_fx_reach& reach, std::size_t returns) {
+    auto out = pair.base + pair.quote + " reaches " +
+               (reach.reached.empty() ? std::string("no expiry") : reach.reached.back().label) +
+               " with " + std::to_string(returns) + " returns";
+    for (std::size_t i = 0; i < reach.unreached.size(); ++i)
+        out += (i == 0 ? "; " : ", ") + reach.unreached[i].expiry.label + " needs " +
+               std::to_string(reach.unreached[i].needs);
+    return out;
+}
+
 std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view external_id) {
     const auto first = external_id.find('/');
     if (first != 6)
@@ -57,8 +97,8 @@ std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view
         return std::nullopt;
     const auto expiry = external_id.substr(first + 1, second - first - 1);
     const auto label = external_id.substr(second + 1);
-    const bool known_expiry = std::ranges::any_of(
-        derived_fx_expiries, [&](const derived_fx_expiry& e) { return e.label == expiry; });
+    const bool known_expiry =
+        ores::analytics::quant::service::fx_vol_tenor_years(expiry).has_value();
     const bool known_label = std::ranges::contains(derived_fx_labels, label);
     if (!known_expiry || !known_label)
         return std::nullopt;
@@ -87,37 +127,8 @@ std::string fx_option_convention_id(const derived_fx_pair& pair) {
     return pair.base + "-" + pair.quote + "-FXOPTION";
 }
 
-std::string ecb_fixing_item(std::string_view currency) {
-    return "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=" + std::string(currency);
-}
-
-pair_legs ecb_legs_of(const derived_fx_pair& pair) {
-    pair_legs out;
-    if (pair.quote != "EUR")
-        out.plus = ecb_fixing_item(pair.quote);
-    if (pair.base != "EUR")
-        out.minus = ecb_fixing_item(pair.base);
-    return out;
-}
-
-std::expected<pair_returns, std::string>
-pair_log_returns(const std::optional<dated_series>& plus,
-                 const std::optional<dated_series>& minus) {
-    if (!plus && !minus)
-        return std::unexpected("a pair needs at least one leg");
-    std::map<std::chrono::year_month_day, double> level;
-    if (plus && minus) {
-        const auto up = log_levels(*plus);
-        const auto down = log_levels(*minus);
-        for (const auto& [date, value] : up)
-            if (const auto other = down.find(date); other != down.end())
-                level.emplace(date, value - other->second);
-    } else if (plus) {
-        level = log_levels(*plus);
-    } else {
-        for (const auto& [date, value] : log_levels(*minus))
-            level.emplace(date, -value);
-    }
+pair_returns pair_log_returns(const dated_series& levels) {
+    const auto level = log_levels(levels);
     pair_returns out;
     out.returns.reserve(level.empty() ? 0 : level.size() - 1);
     out.dates.reserve(out.returns.capacity());
@@ -174,6 +185,7 @@ derived_fx_ticks(const derived_fx_pair& pair,
 
 std::expected<derived_history, std::string>
 derive_missing_days(const derived_fx_pair& pair,
+                    std::span<const derived_fx_expiry> ladder,
                     const pair_returns& returns,
                     const refdata::domain::fx_option_convention& convention,
                     const std::set<std::chrono::year_month_day>& stored,
@@ -181,12 +193,12 @@ derive_missing_days(const derived_fx_pair& pair,
                     int minimum_returns,
                     std::size_t newest_days) {
     std::vector<qm::fx_expiry> expiries;
-    expiries.reserve(derived_fx_expiries.size());
-    for (const auto& e : derived_fx_expiries) {
+    expiries.reserve(ladder.size());
+    for (const auto& e : ladder) {
         const auto at = convention_at(convention, e.label);
         if (!at)
-            return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
-        expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});
+            return std::unexpected("the convention at " + e.label + ": " + at.error());
+        expiries.push_back({.label = e.label, .years = e.years, .convention = *at});
     }
     derived_history out;
     const auto n = std::min(returns.returns.size(), returns.dates.size());

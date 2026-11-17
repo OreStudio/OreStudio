@@ -29,7 +29,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <charconv>
 #include <format>
 #include <optional>
 #include <set>
@@ -45,12 +44,9 @@ namespace subjects = ores::marketdata::domain;
 
 namespace {
 
-/// The publisher whose reference fixings the derived source reads.
-constexpr std::string_view fixing_provider = "ecb";
-
 /// The history read for a pair: the whole backfill an environment holds, which is what the
-/// longest expiry the grid carries asks of it. A ten year expiry reads 2520 returns, and the
-/// reference publisher quotes roughly 2550 of 3650 days, so the read must span the backfill.
+/// longest expiry the grid carries asks of it. A ten year expiry reads 2520 returns, and a
+/// publisher fixes only on its own business days, so the read must span the whole backfill.
 constexpr int window_days = 3650;
 
 /// The days of one read of what a series holds: 120 days of 40 quotes stay under the ceiling
@@ -95,42 +91,26 @@ derived_fx_vol_adapter::~derived_fx_vol_adapter() {
 }
 
 feed::derived_fx_readers derived_fx_vol_adapter::make_readers() {
-    return {.fixings = [this](const std::string& item, std::chrono::year_month_day to)
+    return {.levels = [this](const feed::derived_fx_pair& pair, std::chrono::year_month_day to)
                 -> std::expected<feed::dated_series, std::string> {
                 const auto party = system_party();
                 if (!party)
                     return std::unexpected(party.error());
                 auto delegated = svc_nats_.with_delegation({});
                 ores::marketdata::client::market_data_client md(delegated);
-                const auto window =
-                    md.get_fixing_window({.item = item,
-                                          .provider_code = std::string(fixing_provider),
-                                          .party_id = *party,
-                                          .to = to,
-                                          .days = window_days});
-                if (!window)
-                    return std::unexpected(window.error());
-                feed::dated_series out;
-                const auto n = std::min(window->dates.size(), window->values.size());
-                out.dates.reserve(n);
-                out.values.reserve(n);
-                std::size_t unread = 0;
-                for (std::size_t i = 0; i < n; ++i) {
-                    const auto& text = window->values[i];
-                    double value = 0.0;
-                    const auto [end, ec] =
-                        std::from_chars(text.data(), text.data() + text.size(), value);
-                    if (ec != std::errc{} || end != text.data() + text.size()) {
-                        ++unread;
-                        continue;
-                    }
-                    out.dates.push_back(window->dates[i]);
-                    out.values.push_back(value);
-                }
-                if (unread > 0)
-                    BOOST_LOG_SEV(lg(), warn) << unread << " fixing(s) of " << item
-                                              << " are not numbers and are left out";
-                return out;
+                auto levels = md.get_pair_levels({.party_id = *party,
+                                                  .base_currency_code = pair.base,
+                                                  .quote_currency_code = pair.quote,
+                                                  .to = to,
+                                                  .days = window_days});
+                if (!levels)
+                    return std::unexpected(levels.error());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Read " << levels->levels.size() << " level(s) of " << pair.base << "/"
+                    << pair.quote << " from " << levels->provider_code << " through "
+                    << levels->pivot_currency_code;
+                return feed::dated_series{.dates = std::move(levels->dates),
+                                          .values = std::move(levels->levels)};
             },
             .convention = [this](const feed::derived_fx_pair& pair)
                 -> std::expected<ores::refdata::domain::fx_option_convention, std::string> {
@@ -422,6 +402,8 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
             });
             for (const auto& failure : feed_.failures())
                 BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
+            for (const auto& notice : feed_.notices())
+                BOOST_LOG_SEV(lg(), info) << "The derived source's reach: " << notice;
             if (sent > 0)
                 BOOST_LOG_SEV(lg(), info)
                     << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";

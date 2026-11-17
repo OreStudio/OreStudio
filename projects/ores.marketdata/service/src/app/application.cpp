@@ -238,18 +238,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_bus.subscribe<mdm::route_event>([ingest, supervisor](const mdm::route_event&) {
             BOOST_LOG_SEV(lg(), info) << "Route changed — refreshing ingest loop and demand.";
             ingest->refresh();
-            supervisor->refresh();
+            supervisor->request_refresh();
         });
     auto subscription_refresh_sub =
         event_bus.subscribe<mdm::subscription_event>([supervisor](const mdm::subscription_event&) {
             BOOST_LOG_SEV(lg(), info) << "Subscription changed — refreshing adapter demand.";
-            supervisor->refresh();
+            supervisor->request_refresh();
         });
     auto source_refresh_sub =
         event_bus.subscribe<mdm::feed_event>([ingest, supervisor](const mdm::feed_event&) {
             BOOST_LOG_SEV(lg(), info) << "Source changed — refreshing ingest loop and demand.";
             ingest->refresh();
-            supervisor->refresh();
+            supervisor->request_refresh();
         });
     auto vendor_instrument_refresh_sub =
         event_bus.subscribe<mdm::market_data_vendor_instrument_event>(
@@ -257,18 +257,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 BOOST_LOG_SEV(lg(), info)
                     << "Vendor instrument changed — refreshing ingest loop and demand.";
                 ingest->refresh();
-                supervisor->refresh();
+                supervisor->request_refresh();
             });
     auto feed_scope_refresh_sub =
         event_bus.subscribe<mdm::feed_scope_event>([supervisor](const mdm::feed_scope_event&) {
             BOOST_LOG_SEV(lg(), info) << "Feed scope changed — refreshing demand.";
-            supervisor->refresh();
+            supervisor->request_refresh();
         });
     auto mapping_refresh_sub = event_bus.subscribe<mdm::market_data_mapping_event>(
         [ingest, supervisor](const mdm::market_data_mapping_event&) {
             BOOST_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop and demand.";
             ingest->refresh();
-            supervisor->refresh();
+            supervisor->request_refresh();
         });
 
     // Refdata owns these tables and publishes their changes. This service

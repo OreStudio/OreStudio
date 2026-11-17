@@ -1,0 +1,25 @@
+do $$
+declare
+    r record;
+    n bigint;
+    sample text;
+begin
+    create temp table if not exists oresmd_cols (tbl text, col text, n bigint, sample text);
+    truncate oresmd_cols;
+    for r in
+        select c.table_name, c.column_name
+        from information_schema.columns c
+        join information_schema.tables t
+          on t.table_name = c.table_name and t.table_schema = c.table_schema and t.table_type = 'BASE TABLE'
+        where c.table_schema = 'public' and c.table_name like 'ores\_trading\_%\_tbl'
+          and c.data_type in ('text', 'character varying')
+    loop
+        execute format('select count(*), min(%I) from %I where %I like ''oresmd://%%'' and valid_to = ores_utility_infinity_timestamp_fn()',
+                       r.column_name, r.table_name, r.column_name)
+          into n, sample;
+        if n > 0 then
+            insert into oresmd_cols values (r.table_name, r.column_name, n, sample);
+        end if;
+    end loop;
+end $$;
+select * from oresmd_cols order by n desc;

@@ -249,98 +249,121 @@ private:
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "generate_trades: " << assignments.size() << " entr(y/ies) to write";
         std::size_t position = 0;
+        // An entry that cannot be written is named and passed over, so one bad
+        // population does not cost every entry after it its trades.
+        std::vector<std::string> failures;
         for (const auto& entry : assignments) {
             ++position;
-            const auto entry_started = std::chrono::steady_clock::now();
-            const auto label = entry.name + " (" + std::to_string(position) + " of " +
-                               std::to_string(assignments.size()) + ")";
-            const auto phase = [&](std::string_view what) {
-                BOOST_LOG_SEV(lg(), ores::logging::info)
-                    << "generate_trades: " << label << ": " << what << " after "
-                    << seconds_since(entry_started) << "s";
-                wf.progress(label + ": " + std::string(what));
-            };
-            phase("finding the party " + entry.party);
-            const auto party = find_party(tenant_nats, entry.party);
-            if (!party)
-                throw std::runtime_error("The tenant holds no party named '" + entry.party + "'.");
-
-            /*
-             * The population is kept in the book's own currency, so the curve
-             * its bonds are discounted on is resolved from that same book. The
-             * curve configuration the party published is what the resolution
-             * reads, so the config names a series the party actually holds.
-             */
-            // Several checks read the acting party, so the work is done in a
-            // session scoped to the party it belongs to. The session names no
-            // person: it is the service, scoped to that party.
-            ores::nats::service::nats_client party_nats(
-                nats_,
-                ores::iam::client::make_tenant_session_provider(
-                    nats_,
-                    service_token_,
-                    command.tenant_id,
-                    std::chrono::seconds{60},
-                    boost::uuids::to_string(party->id)));
-
-            phase("finding the book " + entry.book);
-            const auto book = find_party_book(party_nats, party->id, entry.book);
-            if (!book)
-                throw std::runtime_error("The party holds no book named '" + entry.book +
-                                         "', so the population has nowhere to land.");
-            phase("finding the reference curve in " + book->functional_currency);
-            const auto reference_curve_id =
-                find_reference_curve_id(party_nats, party->id, book->functional_currency);
-
-            phase("recording the trade generation config");
-            const auto config_id =
-                record_trade_generation_config(party_nats, party->id, entry, reference_curve_id);
-            phase("recording the config's scope");
-            record_trade_generation_scope(party_nats, config_id, party->id, entry);
-
-            /*
-             * The population is booked in the step's own session, so a trade
-             * names the service as its author and the run holds one identity
-             * throughout.
-             */
-            /*
-             * The population is booked by this service, so a trade names the
-             * account the store can defend and no person's name is used. The
-             * fallback names that same account for a party whose staff holds
-             * no trader, which is the only case the planner asks for one.
-             */
-            ores::nats::service::nats_client service_nats(nats_, service_token_);
-            ores::iam::messaging::get_my_account_response self;
             try {
-                self = ask(service_nats, ores::iam::messaging::get_my_account_request{});
+                const auto entry_started = std::chrono::steady_clock::now();
+                const auto label = entry.name + " (" + std::to_string(position) + " of " +
+                                   std::to_string(assignments.size()) + ")";
+                const auto phase = [&](std::string_view what) {
+                    BOOST_LOG_SEV(lg(), ores::logging::info)
+                        << "generate_trades: " << label << ": " << what << " after "
+                        << seconds_since(entry_started) << "s";
+                    wf.progress(label + ": " + std::string(what));
+                };
+                phase("finding the party " + entry.party);
+                const auto party = find_party(tenant_nats, entry.party);
+                if (!party)
+                    throw std::runtime_error("The tenant holds no party named '" + entry.party +
+                                             "'.");
+
+                /*
+                 * The population is kept in the book's own currency, so the curve
+                 * its bonds are discounted on is resolved from that same book. The
+                 * curve configuration the party published is what the resolution
+                 * reads, so the config names a series the party actually holds.
+                 */
+                // Several checks read the acting party, so the work is done in a
+                // session scoped to the party it belongs to. The session names no
+                // person: it is the service, scoped to that party.
+                ores::nats::service::nats_client party_nats(
+                    nats_,
+                    ores::iam::client::make_tenant_session_provider(
+                        nats_,
+                        service_token_,
+                        command.tenant_id,
+                        std::chrono::seconds{60},
+                        boost::uuids::to_string(party->id)));
+
+                phase("finding the book " + entry.book);
+                const auto book = find_party_book(party_nats, party->id, entry.book);
+                if (!book)
+                    throw std::runtime_error("The party holds no book named '" + entry.book +
+                                             "', so the population has nowhere to land.");
+                phase("finding the reference curve in " + book->functional_currency);
+                const auto reference_curve_id =
+                    find_reference_curve_id(party_nats, party->id, book->functional_currency);
+
+                phase("recording the trade generation config");
+                const auto config_id = record_trade_generation_config(
+                    party_nats, party->id, entry, reference_curve_id);
+                phase("recording the config's scope");
+                record_trade_generation_scope(party_nats, config_id, party->id, entry);
+
+                /*
+                 * The population is booked by this service, so a trade names the
+                 * account the store can defend and no person's name is used. The
+                 * fallback names that same account for a party whose staff holds
+                 * no trader, which is the only case the planner asks for one.
+                 */
+                ores::nats::service::nats_client service_nats(nats_, service_token_);
+                ores::iam::messaging::get_my_account_response self;
+                try {
+                    self = ask(service_nats, ores::iam::messaging::get_my_account_request{});
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), ores::logging::warn)
+                        << "generate_trades: the service could not read its own account: "
+                        << e.what();
+                }
+                std::optional<ores::synthetic::domain::trade_population_trader> fallback;
+                if (self.account)
+                    fallback = ores::synthetic::domain::trade_population_trader{
+                        self.account->id, self.account->username};
+
+                ores::synthetic::service::trading_trade_population_writer writer(
+                    party_nats, {}, fallback);
+                ores::synthetic::service::trade_population_service service(writer);
+                phase("writing the population of config " + boost::uuids::to_string(config_id));
+                const auto population =
+                    service.run(config_id, [&](std::uint32_t done, std::uint32_t planned) {
+                        wf.progress(label + ": trades", done, planned);
+                    });
+
+                result.configs.push_back(boost::uuids::to_string(config_id));
+                result.parties.push_back(boost::uuids::to_string(party->id));
+                result.trades_planned += population.planned;
+                result.trades_written += population.written;
+                result.trades_already_present += population.already_present;
+
+                BOOST_LOG_SEV(lg(), ores::logging::info)
+                    << "generate_trades: " << entry.name << " for party " << entry.party
+                    << ": planned " << population.planned << ", wrote " << population.written
+                    << ", already present " << population.already_present << ", in "
+                    << seconds_since(entry_started) << "s";
+                wf.record(entry.name + " for " + entry.party + ": wrote " +
+                          std::to_string(population.written) + " trade(s), " +
+                          std::to_string(population.already_present) + " already present");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), ores::logging::warn)
-                    << "generate_trades: the service could not read its own account: " << e.what();
+                    << "generate_trades: " << entry.name << " for party " << entry.party
+                    << " was not written: " << e.what();
+                failures.push_back(entry.name + " for " + entry.party + ": " + e.what());
             }
-            std::optional<ores::synthetic::domain::trade_population_trader> fallback;
-            if (self.account)
-                fallback = ores::synthetic::domain::trade_population_trader{self.account->id,
-                                                                            self.account->username};
+        }
 
-            ores::synthetic::service::trading_trade_population_writer writer(
-                party_nats, {}, fallback);
-            ores::synthetic::service::trade_population_service service(writer);
-            phase("writing the population of config " + boost::uuids::to_string(config_id));
-            const auto population =
-                service.run(config_id, [&](std::uint32_t done, std::uint32_t planned) {
-                    wf.progress(label + ": trades", done, planned);
-                });
-
-            result.configs.push_back(boost::uuids::to_string(config_id));
-            result.parties.push_back(boost::uuids::to_string(party->id));
-            result.trades_planned += population.planned;
-            result.trades_written += population.written;
-            result.trades_already_present += population.already_present;
-
-            BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
-                << population.planned << ", wrote " << population.written << ", already present "
-                << population.already_present << ", in " << seconds_since(entry_started) << "s";
+        // The step did what it could, so it ends with warnings rather than failing: the
+        // trades it wrote stay, and a rerun writes only the populations named here.
+        if (!failures.empty()) {
+            std::vector<ores::workflow::messaging::step_log_entry> log;
+            for (const auto& failure : failures)
+                log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                               .message = "not written: " + failure,
+                               .context = {}});
+            wf.warn(ores::utility::codec::json::write(result), log);
+            return;
         }
 
         BOOST_LOG_SEV(lg(), ores::logging::info)

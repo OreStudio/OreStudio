@@ -58,6 +58,7 @@ namespace ores::workflow::domain {
         utility::codec::field{"command_subject", &workflow_plan_step::command_subject},
         utility::codec::field{"compensation_subject", &workflow_plan_step::compensation_subject},
         utility::codec::field{"timeout_seconds", &workflow_plan_step::timeout_seconds},
+        utility::codec::field{"essential", &workflow_plan_step::essential},
         utility::codec::field{"modified_by", &workflow_plan_step::modified_by},
         utility::codec::field{"performed_by", &workflow_plan_step::performed_by},
         utility::codec::field{"change_reason_code", &workflow_plan_step::change_reason_code},

@@ -364,6 +364,8 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                                                        v.schedule_dates.end());
                 if (v.wrapped_index_swap)
                     append(batch, *v.wrapped_index_swap);
+                if (v.wrapped_swap)
+                    append(batch, *v.wrapped_swap);
                 batch.instrument_options.insert(
                     batch.instrument_options.end(), v.options.begin(), v.options.end());
                 batch.instrument_option_premiums.insert(batch.instrument_option_premiums.end(),
@@ -408,6 +410,8 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.instrument_option_exercise_fees, v.option_exercise_fees);
                 append_rows(batch.instrument_option_payment_dates, v.option_payment_dates);
                 append_rows(batch.instrument_option_exercise_prices, v.option_exercise_prices);
+                append_rows(batch.instrument_barriers, v.barriers);
+                append_rows(batch.instrument_barrier_levels, v.barrier_levels);
             } else {
                 append(batch, v);
             }
@@ -487,14 +491,18 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
     if (const auto* v = find(batch.bond_instruments, trade_id))
         return *v;
     if (const auto* header = find(batch.credit_instruments, trade_id)) {
-        if (const auto* v = find(batch.credit_default_swap_instruments, trade_id))
-            return as_credit(batch, *header, *v, trade_id);
+        // An option is looked for first, because the swap it wraps is a fact
+        // row of its own type.
         if (const auto* v = find(batch.index_credit_default_swap_option_instruments, trade_id)) {
             auto data = as_credit(batch, *header, *v, trade_id);
             if (const auto* wrapped = find(batch.index_credit_default_swap_instruments, trade_id))
                 data.wrapped_index_swap = *wrapped;
+            if (const auto* wrapped = find(batch.credit_default_swap_instruments, trade_id))
+                data.wrapped_swap = *wrapped;
             return data;
         }
+        if (const auto* v = find(batch.credit_default_swap_instruments, trade_id))
+            return as_credit(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.index_credit_default_swap_instruments, trade_id))
             return as_credit(batch, *header, *v, trade_id);
         if (const auto* v = find(batch.synthetic_cdo_instruments, trade_id))
@@ -536,18 +544,19 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                          find_all(batch.instrument_schedules, trade_id),
                                          find_all(batch.instrument_schedule_dates, trade_id)};
     if (const auto* v = find(batch.scripted_instruments, trade_id))
-        return scripted_instrument_data{
-            *v,
-            find_all(batch.scripted_parameters, trade_id),
-            find_all(batch.scripted_parameter_values, trade_id),
-            find_all(batch.instrument_schedules, trade_id),
-            find_all(batch.instrument_schedule_dates, trade_id),
-            find_all(batch.instrument_underlyings, trade_id),
-            find_all(batch.instrument_options, trade_id),
-            find_all(batch.instrument_option_premiums, trade_id),
-            find_all(batch.instrument_option_exercise_fees, trade_id),
-            find_all(batch.instrument_option_payment_dates, trade_id),
-            find_all(batch.instrument_option_exercise_prices, trade_id)};
+        return scripted_instrument_data{*v,
+                                        find_all(batch.scripted_parameters, trade_id),
+                                        find_all(batch.scripted_parameter_values, trade_id),
+                                        find_all(batch.instrument_schedules, trade_id),
+                                        find_all(batch.instrument_schedule_dates, trade_id),
+                                        find_all(batch.instrument_underlyings, trade_id),
+                                        find_all(batch.instrument_options, trade_id),
+                                        find_all(batch.instrument_option_premiums, trade_id),
+                                        find_all(batch.instrument_option_exercise_fees, trade_id),
+                                        find_all(batch.instrument_option_payment_dates, trade_id),
+                                        find_all(batch.instrument_option_exercise_prices, trade_id),
+                                        find_all(batch.instrument_barriers, trade_id),
+                                        find_all(batch.instrument_barrier_levels, trade_id)};
 
     return std::monostate{};
 }

@@ -74,7 +74,7 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('RiskParticipationAgreement', 'CreditDefaultSwap', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap')),
+    check ("trade_type_code" in ('RiskParticipationAgreement', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap')),
     check ("reference_entity_id" <> ''),
     check ("reference_entity_id_type" in ('LEI', 'Internal')),
     check ("reference_entity_id_type" <> 'LEI' or char_length("reference_entity_id") = 20),

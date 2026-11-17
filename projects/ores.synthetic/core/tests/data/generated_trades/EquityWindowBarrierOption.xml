@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+    <TradeType>EquityWindowBarrierOption</TradeType>
+    <EquityWindowBarrierOptionData>
+      <Currency>USD</Currency>
+      <FixingAmount>26926.88</FixingAmount>
+      <Strike>209.18</Strike>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2035-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <StartDate>2026-01-02</StartDate>
+      <EndDate>2030-07-03</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>188.26</Level>
+        </Levels>
+      </BarrierData>
+    </EquityWindowBarrierOptionData>
+  </Trade>
+  <Trade id="630b3e61-deb7-5096-b447-eeb3d1e9e4d4">
+    <TradeType>EquityWindowBarrierOption</TradeType>
+    <EquityWindowBarrierOptionData>
+      <Currency>USD</Currency>
+      <FixingAmount>7485.13</FixingAmount>
+      <Strike>917.86</Strike>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.NDX</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2027-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <StartDate>2025-10-02</StartDate>
+      <EndDate>2026-10-02</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>826.07</Level>
+        </Levels>
+      </BarrierData>
+    </EquityWindowBarrierOptionData>
+  </Trade>
+</Portfolio>

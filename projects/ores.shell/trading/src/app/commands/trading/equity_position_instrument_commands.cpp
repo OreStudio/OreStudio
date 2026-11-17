@@ -143,7 +143,8 @@ void equity_position_instrument_commands::register_commands(cli::Menu& root_menu
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
-        "<quantity> <price> <description> <reason> <commentary>");
+        "<quantity> <price> <volatility> <drift_rate> <observation_start_date> <payment_date> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,7 +152,8 @@ void equity_position_instrument_commands::register_commands(cli::Menu& root_menu
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
-        "<quantity> <price> <description> <reason> <commentary> [--version <n>]");
+        "<quantity> <price> <volatility> <drift_rate> <observation_start_date> <payment_date> "
+        "<description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +161,8 @@ void equity_position_instrument_commands::register_commands(cli::Menu& root_menu
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
-        "<currency> <quantity> <price> <description> <reason> <commentary>");
+        "<currency> <quantity> <price> <volatility> <drift_rate> <observation_start_date> "
+        "<payment_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -362,8 +365,8 @@ void equity_position_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -381,6 +384,15 @@ void equity_position_instrument_commands::process_add(std::ostream& out,
             req.change.write.quantity, parsed->positionals[next++], "quantity");
         equity_position_instrument_read_token(
             req.change.write.price, parsed->positionals[next++], "price");
+        equity_position_instrument_read_token(
+            req.change.write.volatility, parsed->positionals[next++], "volatility");
+        equity_position_instrument_read_token(
+            req.change.write.drift_rate, parsed->positionals[next++], "drift_rate");
+        equity_position_instrument_read_token(req.change.write.observation_start_date,
+                                              parsed->positionals[next++],
+                                              "observation_start_date");
+        equity_position_instrument_read_token(
+            req.change.write.payment_date, parsed->positionals[next++], "payment_date");
         equity_position_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -427,8 +439,8 @@ void equity_position_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -446,6 +458,15 @@ void equity_position_instrument_commands::process_set(std::ostream& out,
             req.change.write.quantity, parsed->positionals[next++], "quantity");
         equity_position_instrument_read_token(
             req.change.write.price, parsed->positionals[next++], "price");
+        equity_position_instrument_read_token(
+            req.change.write.volatility, parsed->positionals[next++], "volatility");
+        equity_position_instrument_read_token(
+            req.change.write.drift_rate, parsed->positionals[next++], "drift_rate");
+        equity_position_instrument_read_token(req.change.write.observation_start_date,
+                                              parsed->positionals[next++],
+                                              "observation_start_date");
+        equity_position_instrument_read_token(
+            req.change.write.payment_date, parsed->positionals[next++], "payment_date");
         equity_position_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -504,8 +525,8 @@ void equity_position_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -525,6 +546,15 @@ void equity_position_instrument_commands::process_put_many(std::ostream& out,
                 change.write.quantity, parsed->positionals[next++], "quantity");
             equity_position_instrument_read_token(
                 change.write.price, parsed->positionals[next++], "price");
+            equity_position_instrument_read_token(
+                change.write.volatility, parsed->positionals[next++], "volatility");
+            equity_position_instrument_read_token(
+                change.write.drift_rate, parsed->positionals[next++], "drift_rate");
+            equity_position_instrument_read_token(change.write.observation_start_date,
+                                                  parsed->positionals[next++],
+                                                  "observation_start_date");
+            equity_position_instrument_read_token(
+                change.write.payment_date, parsed->positionals[next++], "payment_date");
             equity_position_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

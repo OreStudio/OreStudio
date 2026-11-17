@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 1F460B5E-5E3B-4E2C-B6FF-D2E6EA1173C0
+:END:
+#+title: Task: Point the blueprints at the vendor contributors and keep the derived source in the system
+#+description: Every system blueprint pillar reads the derived source, and every Acme party subscribes to it; point the pillars at the vendor contributors' series and take the derived source off the tenant subscriptions, so it only seeds the latent surface.
+#+type: task
+#+level: s1
+#+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party's surface is calibrated from vendor quotes, as its curves are bootstrapped from them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The blueprint dataset's pillar sources name the vendor contributors, weighted, and the derived source's inventory no longer follows them.
+- No tenant party subscribes to the derived source; the system party does, to seed the latent surface.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

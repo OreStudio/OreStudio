@@ -18,6 +18,8 @@
  *
  */
 
+\ir ./marketdata_requirement_coverage_functions_drop.sql
+
 -- Drop observations, fixings and the asset-class junction before series
 -- (they reference it).
 \ir ./marketdata_subscription_intervals_notify_trigger_drop.sql

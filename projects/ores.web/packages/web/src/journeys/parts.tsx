@@ -623,19 +623,23 @@ const STEP_TONE: Record<string, string> = {
 /** The statuses a run is still working through. */
 const OPEN_RUN = new Set(['', 'pending', 'in_progress', 'compensating']);
 
+/** The statuses of a step whose work is over and counted as done. */
+const FINISHED_STEP = new Set(['completed', 'completed_with_warnings']);
+
 /**
- * How long a step took, in the units a person reads on a rail: 400ms, 41s,
- * 2m 05s, 1h 07m.
+ * How long a span of work took, in the units a person reads on a rail: 400ms,
+ * 41s, 2m 05s, 1h 07m.
  *
  * The step's own timestamps are the fact. A step that has not started states
- * none, and a step still running has no end to measure to, so both answer
- * nothing rather than a zero.
+ * none, and a step still running is measured to the clock the rail ticks; with
+ * no clock it has no end to measure to. Either way the answer is nothing rather
+ * than a zero.
  */
-function stepDuration(startedAt: WireTimestamp | null, completedAt: WireTimestamp | null): string {
-    if (startedAt === null || completedAt === null) {
+function spanBetween(start: Date | null, end: Date | null): string {
+    if (start === null || end === null) {
         return '';
     }
-    const ms = fromWireTimestamp(completedAt).getTime() - fromWireTimestamp(startedAt).getTime();
+    const ms = end.getTime() - start.getTime();
     if (ms < 0) {
         return '';
     }
@@ -657,6 +661,68 @@ function stepDuration(startedAt: WireTimestamp | null, completedAt: WireTimestam
         : `${Math.floor(minutes / 60)}h ${remainder}m`;
 }
 
+/** The time of day an instant falls on, in the reader's own zone, to the second. */
+function clockTime(at: WireTimestamp): string {
+    return fromWireTimestamp(at).toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    });
+}
+
+/**
+ * How far through its work something is, drawn as a bar.
+ *
+ * Only a known total is drawn: a bar that guesses its end would tell a person
+ * deciding whether to wait something nobody measured.
+ */
+function ProgressBar({
+    done,
+    total,
+    label,
+}: {
+    readonly done: number;
+    readonly total: number;
+    readonly label: string;
+}): ReactNode {
+    const share = total > 0 ? Math.min(1, Math.max(0, done / total)) : 0;
+    return (
+        <span
+            role="progressbar"
+            aria-label={label}
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={done}
+            className="mt-1 block h-1 w-full overflow-hidden rounded bg-line"
+        >
+            <span
+                className="block h-1 rounded bg-accent"
+                style={{ width: `${Math.round(share * 100)}%` }}
+            />
+        </span>
+    );
+}
+
+/**
+ * An error, one piece of work to a line.
+ *
+ * A step that gives up on several pieces of work names each, separated by a
+ * semicolon, so the semicolon is where a reader's eye wants a new line.
+ */
+function errorLines(error: string): string[] {
+    return error
+        .split(/;\s*/)
+        .map((line) => line.trim())
+        .filter((line) => line !== '');
+}
+
+/** The tone of a line a step logged, by the level it logged it at. */
+const LOG_TONE: Record<string, string> = {
+    error: 'text-down',
+    warn: 'text-warn',
+    warning: 'text-warn',
+};
+
 /**
  * One line of the rail.
  *
@@ -664,19 +730,39 @@ function stepDuration(startedAt: WireTimestamp | null, completedAt: WireTimestam
  * catalogue translates them where somebody has; a run started before a step
  * had words shows the step's identity instead, which is at least the name the
  * server logs. A finished step states how long it took, because the rail is
- * what a person reads to know which part of a long run was slow.
+ * what a person reads to know which part of a long run was slow; a running step
+ * states how long it has been running, measured to the clock it is handed.
+ *
+ * A step that has started opens to show when it started and ended and every
+ * line it logged. A failed step is drawn red and its error is read by opening
+ * it: an error names every piece of work that failed, and stated on the rail it
+ * buries the steps around it. Open, the error comes first, one piece of work to
+ * a line.
  */
 export function RunStep({
     step,
     words,
+    now,
 }: {
     readonly step: WorkflowStepSummary;
     /** Translates a sentence the server sent, or returns it unchanged. */
     readonly words: (sentence: string) => string;
+    /** The rail's clock, which a running step measures its time to. */
+    readonly now?: Date;
 }): ReactNode {
+    const { t } = useTranslation();
     const tone = STEP_TONE[step.status] ?? 'text-ink';
     const label = step.label !== '' ? words(step.label) : step.name;
-    const took = stepDuration(step.started_at ?? step.created_at, step.completed_at);
+    const running = step.status === 'in_progress';
+    const took =
+        step.completed_at !== null
+            ? spanBetween(
+                  fromWireTimestamp(step.started_at ?? step.created_at),
+                  fromWireTimestamp(step.completed_at),
+              )
+            : running && step.started_at !== null
+              ? spanBetween(fromWireTimestamp(step.started_at), now ?? null)
+              : '';
     /*
      * What a running step last said it was doing, and how far through it is.
      * A step that reports nothing shows no line: the rail never invents
@@ -709,11 +795,29 @@ export function RunStep({
             >
                 {STEP_MARK[step.status] ?? '○'}
             </span>
-            <span className={step.status === 'pending' ? 'text-ink-faint' : 'text-ink'}>
+            <div
+                className={cx(
+                    'min-w-0',
+                    step.status === 'pending'
+                        ? 'text-ink-faint'
+                        : step.status === 'failed'
+                          ? 'text-down'
+                          : step.status === 'completed_with_warnings'
+                            ? 'text-warn'
+                            : 'text-ink',
+                )}
+            >
                 <span className="block">
                     {label}
                     {took !== '' && (
-                        <span className="ml-2 text-xs tabular-nums text-ink-faint">{took}</span>
+                        <span
+                            className={cx(
+                                'ml-2 text-xs tabular-nums',
+                                running ? 'text-accent-bright' : 'text-ink-faint',
+                            )}
+                        >
+                            {took}
+                        </span>
                     )}
                 </span>
                 {step.description !== '' && (
@@ -727,14 +831,107 @@ export function RunStep({
                         {counts !== '' && <span className="ml-2 text-ink-faint">{counts}</span>}
                     </span>
                 )}
+                {running && step.progress_done !== null && step.progress_total !== null && (
+                    <ProgressBar
+                        done={step.progress_done}
+                        total={step.progress_total}
+                        label={counts}
+                    />
+                )}
                 {warning !== '' && (
                     <span className="mt-0.5 block text-xs text-warn">{warning}</span>
                 )}
-                {step.error !== '' && (
-                    <span className="mt-0.5 block text-xs text-down">{words(step.error)}</span>
+                {(step.started_at !== null || step.error !== '') && (
+                    <details className="mt-1 text-xs">
+                        <summary className="cursor-pointer select-none text-ink-faint hover:text-ink">
+                            {t('journey.provisioning.details')}
+                        </summary>
+                        <div className="mt-1 space-y-1 border-l border-line-subtle pl-3">
+                            {step.error !== '' && (
+                                <ul className="space-y-0.5 text-down">
+                                    {errorLines(words(step.error)).map((line, index) => (
+                                        <li key={index}>{line}</li>
+                                    ))}
+                                </ul>
+                            )}
+                            {step.started_at !== null && (
+                                <span className="block tabular-nums text-ink-faint">
+                                    {t('journey.provisioning.started', {
+                                        time: clockTime(step.started_at),
+                                    })}
+                                    {step.completed_at !== null && (
+                                        <span className="ml-3">
+                                            {t('journey.provisioning.ended', {
+                                                time: clockTime(step.completed_at),
+                                            })}
+                                        </span>
+                                    )}
+                                </span>
+                            )}
+                            {step.log.length === 0 ? (
+                                <span className="block text-ink-faint">
+                                    {t('journey.provisioning.noLog')}
+                                </span>
+                            ) : (
+                                <ol className="space-y-0.5">
+                                    {step.log.map((entry, index) => (
+                                        <li
+                                            key={index}
+                                            className={LOG_TONE[entry.level] ?? 'text-ink-muted'}
+                                        >
+                                            {words(entry.message)}
+                                        </li>
+                                    ))}
+                                </ol>
+                            )}
+                        </div>
+                    </details>
                 )}
-            </span>
+            </div>
         </li>
+    );
+}
+
+/**
+ * How far a run has got and how long it has taken, above its steps.
+ *
+ * A run's time runs from its first step's start: to the clock while the run is
+ * open, and to its last step's end once it is not, so a finished run states the
+ * time it took rather than the time since.
+ */
+export function RunSummary({
+    steps,
+    open,
+    now,
+}: {
+    readonly steps: readonly WorkflowStepSummary[];
+    readonly open: boolean;
+    readonly now: Date;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (steps.length === 0) {
+        return null;
+    }
+    const done = steps.filter((step) => FINISHED_STEP.has(step.status)).length;
+    const instants = (pick: (step: WorkflowStepSummary) => WireTimestamp | null): number[] =>
+        steps
+            .map(pick)
+            .filter((at): at is WireTimestamp => at !== null)
+            .map((at) => fromWireTimestamp(at).getTime());
+    const starts = instants((step) => step.started_at);
+    const ends = instants((step) => step.completed_at);
+    const firstStart = starts.length > 0 ? Math.min(...starts) : null;
+    const end = open ? now : ends.length > 0 ? new Date(Math.max(...ends)) : null;
+    const elapsed = firstStart === null ? '' : spanBetween(new Date(firstStart), end);
+    const counted = t('journey.provisioning.stepsDone', { done, total: steps.length });
+    return (
+        <div className="mb-3 text-xs tabular-nums text-ink-faint">
+            <span>{counted}</span>
+            {elapsed !== '' && (
+                <span className="ml-3">{t('journey.provisioning.elapsed', { time: elapsed })}</span>
+            )}
+            <ProgressBar done={done} total={steps.length} label={counted} />
+        </div>
     );
 }
 
@@ -800,6 +997,19 @@ export function RunProgress({
         };
     }, [server, instanceId, open, attempt]);
 
+    /*
+     * The clock a running step's time is read against. It ticks only while the
+     * run is open: a finished run's times are its own, and need no clock.
+     */
+    const [now, setNow] = useState(() => new Date());
+    useEffect(() => {
+        if (!open) {
+            return undefined;
+        }
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, [open]);
+
     useEffect(() => {
         if (status === 'completed' && !reported.current) {
             reported.current = true;
@@ -830,16 +1040,24 @@ export function RunProgress({
 
     return (
         <div>
+            <RunSummary steps={steps} open={open} now={now} />
             <ol className="space-y-2">
                 {steps.map((step) => (
-                    <RunStep key={step.id} step={step} words={text} />
+                    <RunStep key={step.id} step={step} words={text} now={now} />
                 ))}
             </ol>
-            {progress?.error !== undefined && progress.error !== '' && (
-                <div className="mt-4">
-                    <Notice tone="error">{progress.error}</Notice>
-                </div>
-            )}
+            {/*
+             * A run's error is the error of the step that failed, and that step
+             * already holds it behind its own disclosure. The notice is for an
+             * error no step carries, which nothing else on the page would show.
+             */}
+            {progress?.error !== undefined &&
+                progress.error !== '' &&
+                !steps.some((step) => step.error !== '') && (
+                    <div className="mt-4">
+                        <Notice tone="error">{progress.error}</Notice>
+                    </div>
+                )}
             {failure !== undefined && (
                 <div className="mt-4">
                     <Notice tone="error">

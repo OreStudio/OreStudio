@@ -88,6 +88,20 @@ public:
     /// Reads the catalogue again and sends every adapter its demand set again.
     void refresh();
 
+    /**
+     * @brief Asks the supervisor's own thread to refresh, and returns at once.
+     *
+     * A refresh records the usage the new demand opens, which on a fresh tenant writes
+     * thousands of intervals and takes minutes. The change events that ask for one arrive on
+     * the database listener's thread, and a refresh run there held every later event behind
+     * it: a route written a second after another reached the ingest loop seven minutes late,
+     * after the derived quotes had gone to the first party alone. Requests made while a
+     * refresh runs become one refresh after it.
+     */
+    void request_refresh() noexcept {
+        refresh_requested_.store(true, std::memory_order_release);
+    }
+
     /// Called with the catalogue after each read of it, so a listener can record what changed.
     /// The call comes before start().
     void set_catalogue_listener(
@@ -147,6 +161,7 @@ private:
     std::map<std::string, std::set<served_id>> served_;
     std::function<void(const demand_catalogue&, std::chrono::system_clock::time_point)> listener_;
     std::atomic<bool> stop_{false};
+    std::atomic<bool> refresh_requested_{false};
     std::optional<ores::nats::service::subscription> announce_sub_;
     std::optional<ores::nats::service::subscription> heartbeat_sub_;
     std::thread monitor_;

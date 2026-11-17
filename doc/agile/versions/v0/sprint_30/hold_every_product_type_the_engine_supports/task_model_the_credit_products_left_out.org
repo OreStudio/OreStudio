@@ -8,12 +8,12 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-the-credit-products-left-out
-#+pr:
+#+pr: 4811
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Both types have a data model, a projection reader and writer, and a builder, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,18 @@ Both types have a data model, a projection reader and writer, and a builder, and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *CreditDefaultSwapOption*, natively in the credit family. The trade's CDS is
+  a credit default swap fact row held as the carrier's =wrapped_swap=, as an
+  index option holds its =wrapped_index_swap=; its premium leg is a leg row.
+  The option's own terms (=KnockOut=, =Term=, =StrikeType=) share the index
+  CDS option fact row, whose columns are those terms; the strike is a strike
+  row and the option block the option rows. The batch mapper looks for the
+  option fact before a plain swap.
+- *CBO*, on the class-read path. A trade states its =CBOInvestment= (tranche,
+  notional, structure id) and names a structure the reference data holds, as
+  ORE's own example does. The path reads a block of leaves only as parameters
+  named for the block and the leaf.
+- Builders: =credit_default_swap_option_builder= and =cbo_builder=.
 
 * Measurements
 
@@ -60,7 +69,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4688 cases pass | =./ores.trading.api.tests= | this branch |
+| ore core tests | 554 cases pass | =./ores.ore.core.tests= | this branch |
+| synthetic tests, not generated | 140 cases pass | =./ores.synthetic.core.tests "~[generated]"= | this branch |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | this branch |
 
 * Notes
 
@@ -85,12 +97,34 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4811][#4811]] | [trading,ore,synthetic] Hold the single name CDS option and the CBO |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | a doc comment split from its class | credit_builders.hpp | accept | moved back above the credit linked swap |
+| 2 | leaf blocks read for every class-read product | scripted_instrument_projection.cpp | decline | no other type's recorded trades changed on the re-record; no other builder states such a block |
+| 3 | a block's attributes are dropped | scripted_instrument_projection.cpp | accept | the comment says so; no block a product states carries one |
+| 4 | the mapper's option-first lookup | instrument_batch_mapper.cpp | decline | documented there |
+| 5 | an empty swap written when the wrapped swap is missing | credit_instrument_projection.cpp | decline | the index option's writer does the same |
+| 6 | the CBO pattern pins ORE's element list | generated_trade_ore_engine_tests.cpp | accept | the comment names ORE 3d75a6908 |
 
 * Result
+
+CreditDefaultSwapOption is held natively: the header row, the wrapped CDS
+fact, the premium leg, the option terms, the strike and the option block. CBO
+is held in the scripted instrument table as its investment. The round-trip test
+reads ORE's CDS option example, with a strike, strike type, knock out and term
+added, and ORE's CBO example, and writes them back. Each type has a builder,
+the catalogue routes both, and the generator books one trade of each.
+
+The ORE engine raises no error of the trade kind. A CDS option on an entity
+whose credit curve the test market lacks raises market data, as a callable bond
+on it does. A CBO's structure lives in reference data, which the engine test
+does not stage; ORE then lists every structure element as missing, and the
+test classes that one message as market data. A message missing only some
+elements stays the trade's.
+
+The builder does not state a CBO structure inline (bond basket, tranches,
+fees); a trade read from ORE with one keeps only its investment.

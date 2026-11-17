@@ -40,16 +40,16 @@
       <SubType>Fixed</SubType>
     </BondData>
   </Trade>
-  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
+  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
     <TradeType>Bond</TradeType>
     <BondData>
-      <IssuerId>Export Bank One Plc</IssuerId>
-      <SecurityId>POP218G6DL9X1</SecurityId>
+      <IssuerId>Export Bank Two Plc</IssuerId>
+      <SecurityId>POPX9KYWV80T8</SecurityId>
       <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
       <SettlementDays>2</SettlementDays>
       <Calendar>TARGET</Calendar>
       <IssueDate>2025-07-02</IssueDate>
-      <BondNotional>1036903.28</BondNotional>
+      <BondNotional>2269142.01</BondNotional>
       <PriceType>Clean</PriceType>
       <LegData>
         <Payer>false</Payer>
@@ -63,7 +63,7 @@
         <ScheduleData>
           <Rules>
             <StartDate>2025-07-02</StartDate>
-            <EndDate>2029-07-02</EndDate>
+            <EndDate>2028-07-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>

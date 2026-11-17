@@ -32,6 +32,7 @@
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <span>
 #include <string>
@@ -89,6 +90,21 @@ struct workflow_step_context {
     std::string instance_id;
     std::string tenant_id;
     ores::nats::service::client* nats;
+    /**
+     * @brief The attempt the command was sent as, which its answer is published under.
+     *
+     * The engine sends a step again as a new attempt with an identity of its own, so the
+     * stream does not take the second answer for a repeat of the first and drop it. Empty
+     * when the command carried none, and then the step id stands for it.
+     */
+    std::string attempt;
+    /**
+     * @brief What the step did, in the order it did it, sent with whatever outcome it reaches.
+     *
+     * Shared, so a helper handed a copy of the context records into the same run.
+     */
+    std::shared_ptr<std::vector<ores::workflow::messaging::step_log_entry>> done =
+        std::make_shared<std::vector<ores::workflow::messaging::step_log_entry>>();
 
     /**
      * @brief Extracts the workflow context from a NATS message.
@@ -106,7 +122,8 @@ struct workflow_step_context {
             .instance_id =
                 extract_workflow_header(msg, ores::workflow::messaging::instance_id_header),
             .tenant_id = extract_workflow_header(msg, ores::workflow::messaging::tenant_id_header),
-            .nats = &nats};
+            .nats = &nats,
+            .attempt = extract_workflow_header(msg, ores::nats::headers::nats_msg_id)};
     }
 
     /**
@@ -182,18 +199,32 @@ struct workflow_step_context {
         publish(ores::workflow::messaging::step_outcome::failed, "", error_msg, log);
     }
 
+    /**
+     * @brief Records one thing the step did, in a sentence a person reads on the run.
+     *
+     * A step records each piece of work as it finishes it, so a person who opens the step
+     * reads what it performed, and a step that fails half way still says how far it got.
+     */
+    void record(std::string message) const {
+        done->push_back({.level = ores::workflow::messaging::step_log_level::info,
+                         .message = std::move(message),
+                         .context = {}});
+    }
+
 private:
     void publish(ores::workflow::messaging::step_outcome outcome,
                  const std::string& result_json,
                  const std::string& error_msg,
                  const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
 
+        auto entries = *done;
+        entries.insert(entries.end(), log.begin(), log.end());
         ores::workflow::messaging::step_completed_event event{.workflow_instance_id = instance_id,
                                                               .step_id = step_id,
                                                               .outcome = outcome,
                                                               .result_json = result_json,
                                                               .error_message = error_msg,
-                                                              .log = log};
+                                                              .log = std::move(entries)};
 
         using namespace ores::logging;
         static auto lg = make_logger("ores.service.messaging.workflow_step_context");
@@ -206,14 +237,16 @@ private:
                                 << (error_msg.empty() ? std::string() : ": " + error_msg);
 
         const auto data = ores::nats::default_wire_codec().encode(event);
-        // The step id identifies the work, so the stream stores one completion
-        // for it however many times the publish is attempted. The engine's own
+        // The attempt identifies the work, so the stream stores one completion
+        // for it however many times the publish is attempted, and a later
+        // attempt's answer is not taken for a repeat. The engine's own
         // duplicate guard remains the second line, because the stream's window
         // is finite.
         try {
-            nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject,
-                             data,
-                             ores::nats::headers::publish_identity_headers(step_id));
+            nats->js_publish(
+                ores::workflow::messaging::step_completed_event::nats_subject,
+                data,
+                ores::nats::headers::publish_identity_headers(attempt.empty() ? step_id : attempt));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg, error) << "Step " << step_id << " could not publish its answer ("
                                      << said << "): " << e.what();

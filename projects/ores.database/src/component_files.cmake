@@ -57,6 +57,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/pool.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/result.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/session_context.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/session_context_fwd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/statement.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/store_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/text.hpp"

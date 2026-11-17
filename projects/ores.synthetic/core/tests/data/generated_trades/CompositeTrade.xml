@@ -48,16 +48,16 @@
       </Components>
     </CompositeTradeData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="9df8ee5f-9ce1-546e-ba4b-05270865af03">
     <TradeType>CompositeTrade</TradeType>
     <Envelope>
-      <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
+      <CounterParty>55555555-5555-5555-5555-555555555555</CounterParty>
     </Envelope>
     <CompositeTradeData>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <NotionalCalculation>Mean</NotionalCalculation>
       <Components>
-        <SubTrade id="8542cc55-8cdb-5038-a5a0-377660a069e7">
+        <SubTrade id="38fd00bc-1010-5aad-83f9-19b71a8c866f">
           <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
@@ -66,16 +66,16 @@
               <Style>European</Style>
               <Settlement>Cash</Settlement>
               <ExerciseDates>
-                <ExerciseDate>2027-11-02</ExerciseDate>
+                <ExerciseDate>2034-12-02</ExerciseDate>
               </ExerciseDates>
             </OptionData>
-            <Name>RIC:.STOXX50E</Name>
-            <Currency>EUR</Currency>
-            <Quantity>1455.31</Quantity>
-            <Strike>4993.67</Strike>
+            <Name>RIC:.NDX</Name>
+            <Currency>USD</Currency>
+            <Quantity>2422.77</Quantity>
+            <Strike>2847.08</Strike>
           </EquityOptionData>
         </SubTrade>
-        <SubTrade id="7f63b829-5111-5bf5-af9f-c230d7ee5bfe">
+        <SubTrade id="1f8a48a8-baa8-5659-a332-f377fc8d670b">
           <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
@@ -84,13 +84,13 @@
               <Style>European</Style>
               <Settlement>Cash</Settlement>
               <ExerciseDates>
-                <ExerciseDate>2027-11-02</ExerciseDate>
+                <ExerciseDate>2034-12-02</ExerciseDate>
               </ExerciseDates>
             </OptionData>
-            <Name>RIC:.STOXX50E</Name>
-            <Currency>EUR</Currency>
-            <Quantity>1455.31</Quantity>
-            <Strike>4993.67</Strike>
+            <Name>RIC:.NDX</Name>
+            <Currency>USD</Currency>
+            <Quantity>2422.77</Quantity>
+            <Strike>2847.08</Strike>
           </EquityOptionData>
         </SubTrade>
       </Components>

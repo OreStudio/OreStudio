@@ -104,3 +104,4 @@
 \ir ./marketdata_subscription_intervals_notify_trigger_create.sql
 
 \ir ./marketdata_publish_from_dq_create.sql
+\ir ./marketdata_requirement_coverage_functions_create.sql

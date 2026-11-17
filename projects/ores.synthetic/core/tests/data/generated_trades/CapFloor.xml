@@ -38,7 +38,7 @@
       </Caps>
     </CapFloorData>
   </Trade>
-  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
+  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
     <TradeType>CapFloor</TradeType>
     <CapFloorData>
       <LongShort>Short</LongShort>
@@ -49,12 +49,12 @@
         <DayCounter>A360</DayCounter>
         <PaymentConvention>MF</PaymentConvention>
         <Notionals>
-          <Notional>3895254.25</Notional>
+          <Notional>6103286.3</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-01-02</StartDate>
-            <EndDate>2036-01-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -72,7 +72,7 @@
         </FloatingLegData>
       </LegData>
       <Caps>
-        <Cap>0.0568</Cap>
+        <Cap>0.0372</Cap>
       </Caps>
     </CapFloorData>
   </Trade>

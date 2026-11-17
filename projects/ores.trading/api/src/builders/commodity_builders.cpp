@@ -775,7 +775,7 @@ commodity_result commodity_strike_resettable_option_builder::build() const {
     row.exercise_type.clear();
     row.position = long_short_of(option.position.get());
     row.reset_strike = terms_.reset_strike.get();
-    row.trigger_type = terms_.trigger.get() == trigger_direction::up ? "Up" : "Down";
+    row.trigger_type = trigger_type_of(terms_.trigger.get());
     row.trigger_price = terms_.trigger_price.get();
     row.settlement_date = terms_.settlement.get();
     row.premium_amount = terms_.premium.get();

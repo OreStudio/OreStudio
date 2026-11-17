@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 2189859D-6B0B-493E-A858-0435091D2365
+:END:
+#+title: Task: Bootstrap every IBOR tenor the generated trades book
+#+description: The generator books trades on IBOR indices whose curve the system does not bootstrap: GBP-LIBOR 6M, 12M and 1W, EUR-EURIBOR 12M and others. ORE then cannot find the index, and those trades fail. Bootstrap and publish a curve for each IBOR index the generated trades name, so each party holds it and the package step forwards it.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bootstrap-every-ibor-tenor-the-trades-book
+#+pr: 4818
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every IBOR index a generated trade names has a bootstrapped curve the party publishes, so no trade fails for want of its index.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The IBOR indices the generated trades name are listed from the requirements function, with the ones not bootstrapped today.
+- Each listed index has a bootstrap config, the quotes it reads, and a published curve under each party.
+- The ACCOUK NPV run reports no 'did not find object' of type ibor index for a listed index.
+- An index left out is named with its reason, such as a GENERIC index of a currency ORE does not know.
+
+* Plan
+
+1. List the IBOR indices the generated trades name, from
+   =ores_trading_market_references_fn=, against the bootstrap configs
+   (=evidence/ibor_needed_query.txt=).
+2. Add each new curve by cloning a curve the system already builds, in place,
+   so the new rows follow the existing pattern exactly: GBP-LIBOR-3M for the
+   GBP tenors, EUR-EURIBOR-6M for the EUR ones. Each clone sits right after
+   its template, in the statement the template's row is in, and only its ids,
+   its name and its index tenor change (=evidence/clone_ibor_curves_py.txt=).
+   The ICE and Tradeweb feed rows go into the provider seed's own groups, and
+   the template entries follow from them.
+3. Regenerate the vendor catalogue with =ores.marketdata.vendor-catalogue=.
+   Its documented input query needs a seeded database, and the seed refuses
+   to load while a config has no vendor id, so the input was rebuilt from the
+   seed's own generated blocks plus the new pillars
+   (=evidence/vendor_catalogue_input_py.txt=). The diff is the 35 new ids and
+   two count lines.
+4. Recreate, provision, and run the ACCOUK NPV report.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| IBOR indices the generated trades name with no bootstrapped curve | 18 (5 added here, 13 left out with their reason; 6 more are term rates the package step forwards) | =evidence/ibor_needed_query.txt= | 7cbca3c5b3 |
+| Curves each party publishes | 30 before, 35 after | =publish_party_curves= step log | this branch |
+| Index failures of the ACCOUK NPV run | 73 before, 12 after, every one a left-out index | "did not find object ... of type ibor index" in the ORE log of run =e5d89166= | this branch |
+| Trades naming a new index, and the ones failing on it | 48 named, 0 fail on the index, 22 build | the same log, by trade id | this branch |
+
+* Decisions
+
+- *Five curves, the LIBOR and EURIBOR tenors:* GBP-LIBOR 6M, 12M and 1W,
+  EUR-EURIBOR 12M and 1W. They cover 63 trades of the population.
+- *One ladder for every tenor:* each new curve keeps its template's seven
+  pillars, deposits to 1M and 3M, FRAs 3x6 and 6x12 and swaps to 2Y, 5Y and
+  10Y. That is the ladder every IBOR curve of the system uses, the 1M ones
+  included, so a 1W or a 12M curve is as market-faithful as the existing 1M
+  curves: it resolves the index and projects it, and its pillars are not the
+  instruments a desk would quote for that tenor.
+- *Left out:* the synthetic IR curve config admits a term tenor only for
+  the LIBOR and EURIBOR families, so CZK-PRIBOR-6M, CNH-HIBOR-3M,
+  HKD-HIBOR-1M, ILS-TELBOR-3M, JPY-EYTIBOR-6M, KRW-CD-91D, NOK-NIBOR-3M,
+  SAR-SAIBOR-3M and SGD-SOR-3M need that check widened first, and CNH, ILS,
+  NOK and SAR have no funding curve either. One trade each. The GENERIC
+  indices of AOA, BHD, PKR and QAR name currencies ORE does not know.
+
+* Notes
+
+- The provision of 2026-11-17 09:10 booked 180 ACCOUK trades, not 460: its
+  trade generation step stood still past its 20 minute budget while the
+  machine's load average stood at 18.7, and the step's delivery logged
+  "held by another delivery". That is the step delivery under load, not
+  these curves; the per-index evidence below does not depend on the count.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4818][#4818]] | [marketdata,refdata,synthetic] Bootstrap every IBOR tenor the trades book |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4818 review: a 1W curve on the 3M ladder is not market-faithful | task decisions | Accept | The task states that every IBOR curve of the system uses one ladder, the 1M ones included, and what that means for the new tenors. |
+| 2 | PR #4818 review: the new curves may tick at the 3M curve's level | synthetic_feeds_providers_populate.sql | Decline | Each feed row states its own CIR mean and start level: 4.55% for 1W, 4.80% for 6M and 4.90% for 12M against 4.70% for 3M. |
+| 3 | PR #4818 review: confirm the generated block regenerates with no diff | marketdata_vendor_instruments_populate.sql | Accept | Re-running ores.marketdata.vendor-catalogue on the same input reports the seed unchanged. The clone script is a one-off that wrote rows, kept as evidence, and is not meant to be rerun. |
+| 4 | PR #4818 review: confirm the main failures touch no file of this PR | report | Decline | The drift lists trading, refdata and marketdata service files, the money check two trading models, and the codegen tests the generator; none is in this diff. |
+| 5 | PR #4818 review: re-run at full volume before the story closes | story | Decline | The story's last task proves the chain on a freshly recreated database at full volume. |
+
+* Result
+
+The system now bootstraps and publishes GBP-LIBOR 6M, 12M and 1W and
+EUR-EURIBOR 12M and 1W, cloned from the curves it already built, so each
+party publishes 35 curves and the package step forwards them. On the ACCOUK
+NPV run no trade fails on one of these indices; the index failures left are
+the twelve single-trade indices whose families the synthetic config does not
+yet admit. The record also corrects the earlier claim that the trades named
+a ceased LIBOR index: the system generates LIBOR on purpose.

@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: EB839A7A-0EB6-4FD2-85E8-9847CA0D8634
+:END:
+#+title: Task: Name every market object the generated trades use in the party's market configuration
+#+description: A party's today's market names only OIS discount curves, overnight index curves, FX spots and FX volatilities, from a hand-authored seed. ORE then cannot find any IBOR index, equity, commodity, inflation index or credit curve, which is 352 of the 416 failures of the baseline run. Build the today's market and curve configurations from the population's resolved requirements, so they name every object the trades use.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/name-every-market-object-the-trades-use
+#+pr: 4810
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every object a generated trade names is declared in the market configuration its run exports, so no trade fails with did not find object.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The run's todaysmarket.xml forwards every interest rate index the portfolio names for which the market data holds a curve, and the curve configuration builds each one.
+- No trade of the baseline run fails with 'did not find object' on an index whose curve the market data holds.
+- The configuration is derived from the trades and the market data, not hand-listed per party.
+- A test fails when a named index with a curve is left out, or one without is added.
+
+Narrowed on 2026-11-17. The equity, commodity, inflation and credit objects
+have no quotes, so their configuration moved to
+[[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]],
+which supplies the data and its configuration together.
+
+* Plan
+
+A prototype came first: a run's package was amended by hand and run on the
+vendored ORE 1.8.17.0 (=ore-1.8.17.0-x64-linux=), so each rule was seen to
+work before it was coded.
+
+1. A party publishes the curves it bootstraps as =DISCOUNT/RATE/CCY/NAME/TERM=
+   factors, and the run's market data carries them. A curve built directly
+   from those factors (a =Direct= segment of type =Discount=, read with the
+   currency's tenor-based zero convention) forwards the index it is named
+   for. Added by hand for GBP-LIBOR-3M, the index stopped failing.
+2. A term rate such as =GBP-SONIA-3M= is projected off its overnight index's
+   curve. Forwarded by hand on =Yield/GBP/GBP1D=, the trades on it built:
+   31 of 416 where 1 had.
+3. Both rules run in the package step, on the files it already holds: the
+   configuration, the market data and the portfolio. Only what the
+   portfolio names is added, so the market stays what the trades use.
+
+The prototype also found that the GBP, USD, JPY and CAD OIS conventions did
+not resolve; that became
+[[id:BABA997F-305E-4FBC-9756-4CF79A704A50][Export one convention for each index id]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Trades ORE builds of 416 on the ACCOUK NPV run | 1 before, 32 after | "Built Portfolio" in the ORE log of the run's package, runs =21f9269c= and =2e6d03a7= | 7cbca3c5b3, this branch |
+| Trades that fail on an index the market does not name | 148 at the story's baseline, 73 after | "did not find object ... of type ibor index" in the same logs | 4e6e99f2e1, this branch |
+| Unit cases | 5 cases, 19 assertions | =ores.ore.core.tests "[forwarding_curves]"= | this branch |
+
+* Decisions
+
+- *Where:* the package step (=report_package_handler=), through
+  =ores::ore::xml::name_forwarding_curves=. It sees the configuration the
+  run was authored with, the market data and the portfolio together, so it
+  can add exactly what the trades name and the data holds. A seed or a
+  provisioning step would hand-list curves, and would not see a curve
+  published later.
+- *Derived from what the trades name, not from the requirements function.*
+  The package step holds the portfolio the ORE projection wrote, which names
+  each index as ORE spells it; the requirements are oresmd addresses. Using
+  the portfolio avoids a second mapping between the two spellings.
+- *Equity, commodity, inflation and credit are not configured here.* No
+  quote of those classes exists, so a configuration for them would move the
+  failure from "did not find object" to "no quotes". They belong to
+  [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]],
+  which supplies the data and its configuration together.
+
+* Notes
+
+- The live run of 2026-11-17 forwards GBP-LIBOR-3M and USD-LIBOR-1M on their
+  published curves, and GBP-SONIA-1M, 3M, 6M, 12M and CAD-CORRA-3M on their
+  overnight curves.
+- The 73 index failures left name indices no curve is published for:
+  GBP-LIBOR-6M, 12M and 1W, EUR-EURIBOR-12M, and single trades on SGD, SAR and
+  others. They need a published curve, which the market data task supplies.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4810][#4810]] | [ore] Forward each index the trades name where the market holds a curve |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the function did more than publish curves once the term rule was added | forwarding_curves.hpp | Accept | Renamed from published_curves to forwarding_curves. |
+| 2 | PR #4810 review: a term rate whose overnight curve this function adds is missed | forwarding_curves.cpp | Accept | A published curve the portfolio names only through a term rate is now added, and its term rates forwarded on it; a case covers it. |
+| 3 | PR #4810 review: a comment line in the market data breaks the parse | forwarding_curves.cpp | Accept | The market data is read line by line, and a line starting with # is skipped; the test data carries one. |
+| 4 | PR #4810 review: say why the curve's interpolation and day counter are fixed | forwarding_curves.cpp | Accept | A comment states that the pillars are discount factors, so log-linear discount interpolation reproduces them. |
+| 5 | PR #4810 review: a name in an unrelated field or comment counts as named | forwarding_curves.cpp | Decline | It adds a curve that is not needed, which is harmless, as the review says. |
+| 6 | PR #4810 review: a published name under two currencies keeps the last | forwarding_curves.cpp | Decline | Every published name is currency-prefixed, so the case does not arise. |
+| 7 | PR #4810 review: the term rate inherits the overnight curve's convention | forwarding_curves.cpp | Decline | That is how ORE projects a term rate off its overnight curve. |
+
+* Result
+
+A run now forwards each index its trades name for which the market has a
+curve: a published curve, read from its discount factors, or a term rate on
+its overnight index's curve. ORE builds 32 of ACCOUK's 416 trades, where it
+built none at the story's start, and index failures fell from 148 to 73. The
+rest wait on equity, commodity, inflation and credit data.

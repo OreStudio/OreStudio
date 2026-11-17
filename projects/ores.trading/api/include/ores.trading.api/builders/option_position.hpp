@@ -45,6 +45,13 @@ enum class option_kind { call, put };
     return kind == option_kind::call ? "Call" : "Put";
 }
 
+/// Whether a trigger fires when the price rises to it or falls to it.
+enum class trigger_direction { up, down };
+
+[[nodiscard]] inline std::string trigger_type_of(trigger_direction trigger) {
+    return trigger == trigger_direction::up ? "Up" : "Down";
+}
+
 }
 
 #endif

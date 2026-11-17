@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+    <TradeType>FxForwardVolatilityAgreement</TradeType>
+    <FxForwardVolatilityAgreementData>
+      <FvaDate>2026-08-02</FvaDate>
+      <OptionExpiry>2027-08-02</OptionExpiry>
+      <PremiumDate>2026-08-04</PremiumDate>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
+      <LongShort>Long</LongShort>
+      <ImpliedVolStrike>0.1</ImpliedVolStrike>
+      <Quantity>674201.2</Quantity>
+      <PayCcy>USD</PayCcy>
+      <SettlementDate>2027-08-07</SettlementDate>
+    </FxForwardVolatilityAgreementData>
+  </Trade>
+  <Trade id="9df8ee5f-9ce1-546e-ba4b-05270865af03">
+    <TradeType>FxForwardVolatilityAgreement</TradeType>
+    <FxForwardVolatilityAgreementData>
+      <FvaDate>2030-06-02</FvaDate>
+      <OptionExpiry>2034-12-02</OptionExpiry>
+      <PremiumDate>2030-06-04</PremiumDate>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
+      <LongShort>Short</LongShort>
+      <ImpliedVolStrike>0.1</ImpliedVolStrike>
+      <Quantity>6897809.71</Quantity>
+      <PayCcy>USD</PayCcy>
+      <SettlementDate>2034-12-07</SettlementDate>
+    </FxForwardVolatilityAgreementData>
+  </Trade>
+</Portfolio>

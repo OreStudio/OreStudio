@@ -1,0 +1,45 @@
+\set tenant '''9a5af535-73b1-40dc-989b-3fbcf1e538bd'''
+\set party '''a499c8c6-10d9-4f04-afc6-7a7bc4de4e06'''
+select set_config('app.current_tenant_id', :tenant, false);
+select set_config('app.visible_party_ids', '{' || :party || '}', false);
+
+create temp table uk_trades as
+select id, trade_type from ores_trading_trades_tbl
+where tenant_id = :tenant::uuid and party_id = :party::uuid
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+create temp table uk_refs as
+select * from ores_trading_market_references_fn(:tenant::uuid, (select array_agg(id) from uk_trades));
+
+\echo '== trades, trades with a requirement, requirements, distinct addresses'
+select (select count(*) from uk_trades) as trades,
+       (select count(distinct trade_id) from uk_refs) as trades_with_requirement,
+       (select count(*) from uk_refs) as requirement_rows,
+       (select count(distinct oresmd_uri) from uk_refs) as distinct_addresses;
+
+\echo '== coverage of the distinct addresses for ACCOUK'
+create temp table uk_cov as
+select * from ores_marketdata_requirement_coverage_fn(:tenant::uuid, :party::uuid,
+    (select array_agg(distinct oresmd_uri) from uk_refs));
+select count(*) as addresses,
+       count(*) filter (where series_id is null) as no_series,
+       count(*) filter (where series_id is not null and latest_point is null) as series_without_data,
+       count(*) filter (where latest_point is not null) as answered
+from uk_cov;
+
+\echo '== gaps by asset class'
+select split_part(split_part(oresmd_uri, '://', 2), '/', 1) as kind, count(*) as gaps
+from uk_cov where latest_point is null group by 1 order by 2 desc;
+
+\echo '== the same addresses answered under the system party'
+select count(*) filter (where latest_point is not null) as answered_by_system_party
+from ores_marketdata_requirement_coverage_fn(:tenant::uuid,
+    (select id from ores_refdata_parties_tbl where short_code = 'system_party'
+       and valid_to = ores_utility_infinity_timestamp_fn() limit 1),
+    (select array_agg(distinct oresmd_uri) from uk_refs));
+
+\echo '== trade types with no requirement'
+select t.trade_type, count(*) as trades
+from uk_trades t
+where not exists (select 1 from uk_refs r where r.trade_id = t.id)
+group by 1 order by 2 desc, 1;

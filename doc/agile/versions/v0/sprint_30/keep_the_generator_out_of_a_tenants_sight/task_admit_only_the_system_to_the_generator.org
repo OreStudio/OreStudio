@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 0A4D7B25-1E75-4D0D-89C4-2C7404DB972E
+:END:
+#+title: Task: Prove no tenant-side process reads the generator's data
+#+description: A search finds the synthetic tables read only by the synthetic service, its HTTP routes, its shell commands and its SQL tests; encode that as a check, so a tenant-side process that starts to read the generator fails the gate.
+#+type: task
+#+level: s1
+#+filetags: :keep_the_generator_out_of_a_tenants_sight:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DC3AB56C-BA30-4819-868D-8F7ED367A202][Keep the market data generator out of a tenant's sight]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Nothing a party builds or prices can come to depend on the generator unnoticed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DC3AB56C-BA30-4819-868D-8F7ED367A202][Keep the market data generator out of a tenant's sight]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- A local check lists every reader of a synthetic table or the synthetic service's read verbs outside the generator's own components, and fails on a new one.
+- The provisioning, bootstrapping, calibration and forward paths are shown, by that check, to read none.
+- A tenant administrator's write to a system generator row, by the service and by SQL, is shown
+  refused; the row policies apply to every command, so this is checked, not assumed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

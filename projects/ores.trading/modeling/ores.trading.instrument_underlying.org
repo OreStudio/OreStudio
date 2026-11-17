@@ -58,7 +58,7 @@ The trade this underlying belongs to.
 :nullable:     false
 :END:
 
-Which list of the product states the underlying: =underlying= for the product's =Underlying= or =Underlyings=. A product that states each block as its own element names that element instead: =DoubleDigitalOption= states =Underlying1= to =Underlying4=, so a row of it holds =underlying1= to =underlying4= and the element it belongs to is the row's role.
+Which list of the product states the underlying: =underlying= for the product's =Underlying= or =Underlyings=. A product that states each block as its own element names that element instead: =DoubleDigitalOption= states =Underlying1= to =Underlying4=, so a row of it holds =underlying1= to =underlying4= and the element it belongs to is the row's role. =EuropeanOptionBarrier= states =OptionUnderlying= and =BarrierUnderlying=, so its rows hold =optionunderlying= and =barrierunderlying=.
 
 #+begin_src cpp :name generator
 std::string("underlying")
@@ -286,7 +286,7 @@ is immutable.
 
 | expression |
 |---|
-| "underlying_role" in ('underlying', 'underlying1', 'underlying2', 'underlying3', 'underlying4') |
+| "underlying_role" in ('underlying', 'underlying1', 'underlying2', 'underlying3', 'underlying4', 'optionunderlying', 'barrierunderlying') |
 | "sequence_number" >= 1 |
 
 ** Indexes

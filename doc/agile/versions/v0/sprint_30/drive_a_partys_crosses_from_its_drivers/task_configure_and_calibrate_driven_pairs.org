@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 6C8D07FA-8CF8-48DB-A2FD-9C8CF5B05EA6
+:END:
+#+title: Task: Configure a party's driven pairs and calibrate their surfaces
+#+description: Model the party's driven pairs, their drivers and their relationship, copy them with the party's blueprints, and calibrate a driven surface from its driver surfaces.
+#+type: task
+#+level: s1
+#+filetags: :drive_a_partys_crosses_from_its_drivers:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 29A8F8A2-25FC-4858-B233-B3F985C4FE43
+#+blocked_since: 2026-11-17
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party's driven cross is published from its drivers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- A party configures EUR/GBP as correlation-driven by EUR/USD and GBP/USD, and its published surface names those drivers.
+- A basis-driven pair publishes its driver's ATM plus the stated spread.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

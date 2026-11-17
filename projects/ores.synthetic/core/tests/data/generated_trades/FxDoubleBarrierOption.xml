@@ -26,30 +26,30 @@
       <SoldAmount>3243480.22</SoldAmount>
     </FxDoubleBarrierOptionData>
   </Trade>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
     <TradeType>FxDoubleBarrierOption</TradeType>
     <FxDoubleBarrierOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2035-01-02</ExerciseDate>
+          <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>0.4859</Level>
-          <Level>0.5939</Level>
+          <Level>0.9164</Level>
+          <Level>1.12</Level>
         </Levels>
       </BarrierData>
       <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>5632565.12</BoughtAmount>
+      <BoughtAmount>3117528.29</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>3041021.91</SoldAmount>
+      <SoldAmount>3174267.3</SoldAmount>
     </FxDoubleBarrierOptionData>
   </Trade>
 </Portfolio>

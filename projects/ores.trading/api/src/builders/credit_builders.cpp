@@ -273,6 +273,65 @@ index_credit_default_swap_option_builder::build() const {
     return out;
 }
 
+credit_default_swap_option_builder::credit_default_swap_option_builder(
+    const convention_lookup& conventions, credit_default_swap_option_terms terms)
+    : conventions_(conventions)
+    , terms_(std::move(terms)) {}
+
+std::expected<domain::credit_instrument_data, build_error>
+credit_default_swap_option_builder::build() const {
+    if (terms_.expiry.get() >= terms_.swap.start.get())
+        return std::unexpected(build_error{"expiry", "must be before the swap starts"});
+    if (terms_.strike.get() <= decimal{})
+        return std::unexpected(build_error{"strike", "must be positive"});
+
+    auto out = credit_default_swap_builder(conventions_, terms_.swap).build();
+    if (!out)
+        return out;
+
+    // The swap's fact row is the wrapped swap's; the option states its own terms.
+    out->instrument.identity.trade_type_code = std::string(trade_type);
+    out->wrapped_swap = out->credit_default_swap_instruments.front();
+    out->credit_default_swap_instruments.clear();
+
+    domain::index_credit_default_swap_option_instrument fact{};
+    fact.knock_out = false;
+    fact.strike_type = "Spread";
+    out->index_credit_default_swap_option_instruments.push_back(std::move(fact));
+
+    domain::instrument_strike strike{};
+    strike.strike_role = "single";
+    strike.sequence_number = 1;
+    strike.bare_value = terms_.strike.get();
+    out->strikes.push_back(std::move(strike));
+
+    domain::instrument_option option{};
+    option.long_short = long_short_of(terms_.position.get());
+    option.option_type = option_type_of(terms_.kind.get());
+    option.style = "European";
+    option.settlement = "Cash";
+    option.pay_off_at_expiry = "false";
+    out->options.push_back(std::move(option));
+
+    domain::instrument_schedule exercise{};
+    exercise.owner_role = "option";
+    exercise.owner_number = 1;
+    exercise.schedule_role = "exercise_dates";
+    exercise.sequence_number = 1;
+    exercise.schedule_kind = "dates";
+    out->schedules.push_back(std::move(exercise));
+
+    domain::instrument_schedule_date date{};
+    date.owner_role = "option";
+    date.owner_number = 1;
+    date.schedule_role = "exercise_dates";
+    date.schedule_sequence_number = 1;
+    date.sequence_number = 1;
+    date.schedule_date = terms_.expiry.get();
+    out->schedule_dates.push_back(std::move(date));
+    return out;
+}
+
 credit_linked_swap_builder::credit_linked_swap_builder(const convention_lookup& conventions,
                                                        credit_protection_terms terms)
     : conventions_(conventions)

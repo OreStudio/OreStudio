@@ -111,6 +111,14 @@ own copy.
    AMD-GENERIC-3M-SWAP: ORE refuses the index, so no run can use them. They
    are left out, and propose_decisions.tsv names each.
 
+   CAD-CORRA, GBP-SONIA, JPY-TONAR, MXN-TIIE and USD-SOFR were both an
+   IborIndex and an OvernightIndex, and CNH-HIBOR the same. ORE holds one
+   convention for each id, so on 2026-11-17 each kept one row: the overnight
+   rates their OvernightIndex, which their funding curves are named after, and
+   CNH-HIBOR, which no funding curve names, its IborIndex. ORE parses a term
+   index such as GBP-SONIA-3M or MXN-TIIE-28D without a convention. The check
+   requires one row for each id.
+
    EUR-ESTR and JPY-TONA are OreStudio ids of the indices ORE names EUR-ESTER
    and JPY-TONAR. The curve configs name them, and they state the same terms,
    so the convention lookup reads each pair as one index.
@@ -4025,7 +4033,7 @@ begin
             (v_dataset_id, v_tenant_id, 'ZAR-SEK-FXOPTION', 1, v_party_id, 'ZAR-SEK-FX', 'AtmDeltaNeutral', 'Spot', '0D', 'AtmDeltaNeutral', 'Spot', 'Call', 'Broker', null);
     end if;
 
-    -- IborIndex: 111 rows
+    -- IborIndex: 106 rows
     if not exists (
         select 1 from ores_dq_ibor_index_conventions_artefact_tbl
         where dataset_id = v_dataset_id
@@ -4043,7 +4051,6 @@ begin
             (v_dataset_id, v_tenant_id, 'BRL-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/BRL?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'BWP-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/BWP?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'CAD-CDOR', 1, 'Canada', 'ACT/365.FIXED', '0', 'ModifiedFollowing', 'false', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CDOR'),
-            (v_dataset_id, v_tenant_id, 'CAD-CORRA', 1, 'Canada', 'ACT/365.FIXED', '2', 'ModifiedFollowing', 'false', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
             (v_dataset_id, v_tenant_id, 'CAD-LIBOR', 1, 'London stock exchange', 'ACT/365.FIXED', '0', 'ModifiedFollowing', 'true', 'oresmd://ir/CAD?type=fixing&index=ibor&name=LIBOR'),
             (v_dataset_id, v_tenant_id, 'CHF-LIBOR', 1, 'London stock exchange', 'ACT/360', '2', 'ModifiedFollowing', 'true', 'oresmd://ir/CHF?type=fixing&index=ibor&name=LIBOR'),
             (v_dataset_id, v_tenant_id, 'CLF-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/CLF?type=fixing&index=ibor&name=GENERIC'),
@@ -4066,7 +4073,6 @@ begin
             (v_dataset_id, v_tenant_id, 'EUR-EURIBOR365', 1, 'TARGET', 'ACT/365.FIXED', '2', 'ModifiedFollowing', 'true', 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR365'),
             (v_dataset_id, v_tenant_id, 'EUR-LIBOR', 1, 'JoinHolidays(London stock exchange, TARGET)', 'ACT/360', '2', 'ModifiedFollowing', 'true', 'oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR'),
             (v_dataset_id, v_tenant_id, 'GBP-LIBOR', 1, 'London stock exchange', 'ACT/365.FIXED', '0', 'ModifiedFollowing', 'true', 'oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR'),
-            (v_dataset_id, v_tenant_id, 'GBP-SONIA', 1, 'London stock exchange', 'ACT/360', '2', 'ModifiedFollowing', 'false', 'oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
             (v_dataset_id, v_tenant_id, 'GEL-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/GEL?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'GHS-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/GHS?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'HKD-HIBOR', 1, 'Hong Kong stock exchange', 'ACT/365.FIXED', '0', 'ModifiedFollowing', 'false', 'oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR'),
@@ -4083,7 +4089,6 @@ begin
             (v_dataset_id, v_tenant_id, 'JPY-EYTIBOR', 1, 'Japan', 'ACT/360', '2', 'ModifiedFollowing', 'false', 'oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR'),
             (v_dataset_id, v_tenant_id, 'JPY-LIBOR', 1, 'London stock exchange', 'ACT/360', '2', 'ModifiedFollowing', 'true', 'oresmd://ir/JPY?type=fixing&index=ibor&name=LIBOR'),
             (v_dataset_id, v_tenant_id, 'JPY-TIBOR', 1, 'Japan', 'ACT/365.FIXED', '2', 'ModifiedFollowing', 'false', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TIBOR'),
-            (v_dataset_id, v_tenant_id, 'JPY-TONAR', 1, 'Japan', 'ACT/365.FIXED', '2', 'ModifiedFollowing', 'false', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
             (v_dataset_id, v_tenant_id, 'KES-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/KES?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'KRW-CD', 1, 'South-Korean settlement', 'ACT/365.FIXED', '1', 'ModifiedFollowing', 'false', 'oresmd://ir/KRW?type=fixing&index=ibor&name=CD'),
             (v_dataset_id, v_tenant_id, 'KRW-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/KRW?type=fixing&index=ibor&name=GENERIC'),
@@ -4093,7 +4098,6 @@ begin
             (v_dataset_id, v_tenant_id, 'LKR-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/LKR?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MAD-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MAD?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MUR-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MUR?type=fixing&index=ibor&name=GENERIC'),
-            (v_dataset_id, v_tenant_id, 'MXN-TIIE', 1, 'Mexican stock exchange', 'ACT/360', '1', 'Following', 'false', 'oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE'),
             (v_dataset_id, v_tenant_id, 'MXV-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MXV?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MYR-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'MYR-KLIBOR', 1, 'Malaysia Stock Exchange', 'ACT/365.FIXED', '0', 'ModifiedFollowing', 'false', 'oresmd://ir/MYR?type=fixing&index=ibor&name=KLIBOR'),
@@ -4138,7 +4142,6 @@ begin
             (v_dataset_id, v_tenant_id, 'USD-BSBY-6M', 1, 'US', 'ACT/360', '0', 'ModifiedFollowing', 'false', 'oresmd://ir/USD?type=fixing&index=ibor&name=BSBY&tenor=6M'),
             (v_dataset_id, v_tenant_id, 'USD-LIBOR', 1, 'London stock exchange', 'ACT/360', '2', 'ModifiedFollowing', 'true', 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR'),
             (v_dataset_id, v_tenant_id, 'USD-SIFMA', 1, 'US government bond market', 'ACT/ACT.ISDA', '1', 'ModifiedFollowing', 'false', 'oresmd://ir/USD?type=fixing&index=ibor&name=SIFMA'),
-            (v_dataset_id, v_tenant_id, 'USD-SOFR', 1, 'SOFR fixing calendar', 'ACT/360', '2', 'ModifiedFollowing', 'false', 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
             (v_dataset_id, v_tenant_id, 'UYU-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/UYU?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'VND-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/VND?type=fixing&index=ibor&name=GENERIC'),
             (v_dataset_id, v_tenant_id, 'XOF-GENERIC', 1, 'TARGET', 'ACT/360', '2', 'Following', 'false', 'oresmd://ir/XOF?type=fixing&index=ibor&name=GENERIC'),
@@ -4252,7 +4255,7 @@ begin
             (v_dataset_id, v_tenant_id, 'ZAR-ZARONIA-OIS', 1, v_party_id, '1', 'ZAR-ZARONIA', 'ACT/365.FIXED', null, '2', 'false', 'Quarterly', 'Following', 'Following', 'Backward', null, null, 'oresmd://ir/ZAR?type=fixing&index=ibor&name=ZARONIA');
     end if;
 
-    -- OvernightIndex: 53 rows
+    -- OvernightIndex: 52 rows
     if not exists (
         select 1 from ores_dq_overnight_index_conventions_artefact_tbl
         where dataset_id = v_dataset_id
@@ -4268,7 +4271,6 @@ begin
             (v_dataset_id, v_tenant_id, 'CHF-SARON', 1, 'Switzerland', 'ACT/360', '0', 'oresmd://ir/CHF?type=fixing&index=ibor&name=SARON'),
             (v_dataset_id, v_tenant_id, 'CHF-TOIS', 1, 'Switzerland', 'ACT/360', '1', 'oresmd://ir/CHF?type=fixing&index=ibor&name=TOIS'),
             (v_dataset_id, v_tenant_id, 'CLP-CAMARA', 1, 'Santiago Stock Exchange', 'ACT/360', '2', 'oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA'),
-            (v_dataset_id, v_tenant_id, 'CNH-HIBOR', 1, 'HongKong', 'ACT/365.FIXED', '0', 'oresmd://ir/CNH?type=fixing&index=ibor&name=HIBOR'),
             (v_dataset_id, v_tenant_id, 'COP-IBR', 1, 'Colombia Stock Exchange', 'ACT/360', '0', 'oresmd://ir/COP?type=fixing&index=ibor&name=IBR'),
             (v_dataset_id, v_tenant_id, 'CZK-CZEONIA', 1, 'CZK', 'ACT/365.FIXED', '0', 'oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA'),
             (v_dataset_id, v_tenant_id, 'DKK-CITA', 1, 'Denmark', 'ACT/360', '1', 'oresmd://ir/DKK?type=fixing&index=ibor&name=CITA'),

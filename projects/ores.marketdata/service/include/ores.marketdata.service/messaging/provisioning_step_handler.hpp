@@ -313,11 +313,15 @@ private:
                                                                         command.tenant_id,
                                                                         std::chrono::seconds{60},
                                                                         id_text));
-                    for (const auto& feed : feeds)
+                    std::string named;
+                    for (const auto& feed : feeds) {
                         subscribe_party(party_nats,
                                         party.id,
                                         feed.provider,
                                         source_of(feed.provider, feed.source));
+                        named += (named.empty() ? "" : ", ") + feed.provider;
+                    }
+                    wf.record(party.full_name + ": subscribed to " + named);
                 }
                 subscribed.push_back(id_text);
             }

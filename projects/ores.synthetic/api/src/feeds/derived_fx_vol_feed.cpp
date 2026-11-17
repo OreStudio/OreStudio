@@ -122,28 +122,14 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
                               const std::set<std::string>& ids,
                               std::chrono::year_month_day today,
                               std::chrono::year_month_day& day) {
-    const auto legs = ecb_legs_of(pair);
-    const auto read = [&](const std::optional<std::string>& item)
-        -> std::expected<std::optional<dated_series>, std::string> {
-        if (!item)
-            return std::optional<dated_series>{};
-        auto series = readers_.fixings(*item, today);
-        if (!series)
-            return std::unexpected("the fixings of " + *item + ": " + series.error());
-        return std::optional<dated_series>{std::move(*series)};
-    };
-    const auto plus = read(legs.plus);
-    if (!plus)
-        return std::unexpected(plus.error());
-    const auto minus = read(legs.minus);
-    if (!minus)
-        return std::unexpected(minus.error());
-    const auto returns = pair_log_returns(*plus, *minus);
-    if (!returns)
-        return std::unexpected(returns.error());
-    if (!returns->last)
-        return std::unexpected("the legs share no day of fixings");
-    day = *returns->last;
+    const auto levels = readers_.levels(pair, today);
+    if (!levels)
+        return std::unexpected("the levels of " + pair.base + "/" + pair.quote + ": " +
+                               levels.error());
+    const auto returns = pair_log_returns(*levels);
+    if (!returns.last)
+        return std::unexpected("the pair has no level");
+    day = *returns.last;
 
     std::set<std::string> owed;
     std::set<std::string> owed_expiries;
@@ -161,15 +147,19 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     if (!convention)
         return std::unexpected("the convention: " + convention.error());
     std::vector<qm::fx_expiry> expiries;
-    for (const auto& e : derived_fx_expiries) {
-        if (!owed_expiries.contains(std::string(e.label)))
-            continue;
+    // The source quotes the expiries the pair's sample reaches and names the rest, rather than
+    // deriving an expiry its history cannot cover.
+    const auto ladder = derived_fx_ladder(owed_expiries);
+    const auto reach = derived_fx_reach_of(ladder, returns.returns.size(), settings_);
+    if (!reach.unreached.empty())
+        notices_.push_back(describe_reach(pair, reach, returns.returns.size()));
+    for (const auto& e : reach.reached) {
         const auto at = convention_at(*convention, e.label);
         if (!at)
-            return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
-        expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});
+            return std::unexpected("the convention at " + e.label + ": " + at.error());
+        expiries.push_back({.label = e.label, .years = e.years, .convention = *at});
     }
-    const auto derivation = qm::derive_fx_quotes(returns->returns, expiries, settings_);
+    const auto derivation = qm::derive_fx_quotes(returns.returns, expiries, settings_);
     if (!derivation)
         return std::unexpected(derivation.error());
     for (const auto& expiry : derivation->expiries)
@@ -186,10 +176,15 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
     if (!store_)
         return 0;
     failures_.clear();
+    // Each pair is derived at the expiries its ids name, which is the ladder its blueprint
+    // states.
     std::map<std::string, derived_fx_pair> pairs;
+    std::map<std::string, std::set<std::string>> labels;
     for (const auto& id : universe_)
-        if (const auto quote = parse_derived_fx_external_id(id))
+        if (const auto quote = parse_derived_fx_external_id(id)) {
             pairs.emplace(key_of(quote->pair), quote->pair);
+            labels[key_of(quote->pair)].insert(quote->expiry);
+        }
 
     using namespace ores::logging;
     const auto pass_started = std::chrono::steady_clock::now();
@@ -229,39 +224,24 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
         }
         auto& [series_id, held] = kept->second;
 
-        const auto legs = ecb_legs_of(pair);
-        const auto read = [&](const std::optional<std::string>& item)
-            -> std::expected<std::optional<dated_series>, std::string> {
-            if (!item)
-                return std::optional<dated_series>{};
-            auto series = readers_.fixings(*item, today);
-            if (!series)
-                return std::unexpected("the fixings of " + *item + ": " + series.error());
-            return std::optional<dated_series>{std::move(*series)};
-        };
         auto started = std::chrono::steady_clock::now();
-        const auto plus = read(legs.plus);
-        const auto minus = plus ? read(legs.minus) : plus;
-        if (!plus || !minus) {
-            fail(key, !plus ? plus.error() : minus.error());
+        const auto levels = readers_.levels(pair, today);
+        if (!levels) {
+            fail(key, "the levels: " + levels.error());
             continue;
         }
-        const auto returns = pair_log_returns(*plus, *minus);
-        if (!returns) {
-            fail(key, returns.error());
-            continue;
-        }
+        const auto returns = pair_log_returns(*levels);
         BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
-            << "Derived history of " << key << ": " << returns->dates.size()
-            << " daily return(s) from the fixings, read in " << seconds_since(started) << "s";
+            << "Derived history of " << key << ": " << returns.dates.size()
+            << " daily return(s) from the levels, read in " << seconds_since(started) << "s";
         // The tail a feed keeps is what it owes: a tail already held needs no derivation, and
         // reading the pair's convention to discover that would cost a query per pair per pass.
         const auto first = static_cast<std::size_t>(std::max(settings_.minimum_window, 1)) - 1;
-        const auto tail_from = returns->dates.size() > history_days ?
-                                   std::max(first, returns->dates.size() - history_days) :
+        const auto tail_from = returns.dates.size() > history_days ?
+                                   std::max(first, returns.dates.size() - history_days) :
                                    first;
         const bool whole = std::ranges::all_of(
-            std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(tail_from)),
+            std::views::drop(returns.dates, static_cast<std::ptrdiff_t>(tail_from)),
             [&](const std::chrono::year_month_day d) { return held.contains(d); });
         if (whole) {
             BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
@@ -276,8 +256,15 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
         started = std::chrono::steady_clock::now();
         // A feed publishes the current day, so it asks for a short tail: the whole history is a
         // vintage's business, and deriving it per tenant is what stalled a fresh one.
-        const auto missing = derive_missing_days(
-            pair, *returns, *convention, held, settings_, settings_.minimum_window, history_days);
+        const auto ladder = derived_fx_ladder(labels[key]);
+        const auto missing = derive_missing_days(pair,
+                                                 ladder,
+                                                 returns,
+                                                 *convention,
+                                                 held,
+                                                 settings_,
+                                                 settings_.minimum_window,
+                                                 history_days);
         if (!missing) {
             fail(key, missing.error());
             continue;
@@ -314,6 +301,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
 std::size_t derived_fx_vol_feed::refresh(std::chrono::year_month_day today,
                                          const publish_fn& publish) {
     failures_.clear();
+    notices_.clear();
     std::map<std::string, std::pair<derived_fx_pair, std::set<std::string>>> pairs;
     for (const auto& id : demanded_)
         if (const auto quote = parse_derived_fx_external_id(id)) {

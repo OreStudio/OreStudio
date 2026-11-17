@@ -247,6 +247,8 @@ describe('the routes of the application', () => {
         // The Import steps, opened from the kind's list's Import (RS-ORE-05).
         '/refdata/currencies/import',
         `${PATHS.pricingEngines}/import`,
+        // Opened from the setup report notice, so no card leads to it.
+        '/setup-report',
     ]);
 
     /**

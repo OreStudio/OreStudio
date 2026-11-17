@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/barrier_block_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
@@ -81,6 +82,27 @@ constexpr class_read_product class_read_products[] = {
     {"FxBasketOption", "FxBasketOptionData"},
     {"EquityRainbowOption", "EquityRainbowOptionData"},
     {"FxRainbowOption", "FxRainbowOptionData"},
+    {"EquityBestEntryOption", "EquityBestEntryOptionData"},
+    {"FxBestEntryOption", "FxBestEntryOptionData"},
+    {"EquityStrikeResettableOption", "EquityStrikeResettableOptionData"},
+    {"FxStrikeResettableOption", "FxStrikeResettableOptionData"},
+    {"EquityWindowBarrierOption", "EquityWindowBarrierOptionData"},
+    {"FxWindowBarrierOption", "FxWindowBarrierOptionData"},
+    {"EquityGenericBarrierOption", "EquityGenericBarrierOptionData"},
+    {"EquityBasketVarianceSwap", "EquityBasketVarianceSwapData"},
+    {"FxBasketVarianceSwap", "FxBasketVarianceSwapData"},
+    {"EquityPairwiseVarianceSwap", "EquityPairwiseVarianceSwapData"},
+    {"FxPairwiseVarianceSwap", "FxPairwiseVarianceSwapData"},
+    {"EquityForwardVolatilityAgreement", "EquityForwardVolatilityAgreementData"},
+    {"FxForwardVolatilityAgreement", "FxForwardVolatilityAgreementData"},
+    {"EuropeanOptionBarrier", "EuropeanOptionBarrierData"},
+    {"FxWorstOfBasketSwap", "FxWorstOfBasketSwapData"},
+    {"EquityFutureOption", "EquityFutureOptionData"},
+    {"BondFutureOption", "BondFutureOptionData"},
+    {"FxAsianOption", "FxAsianOptionData"},
+    {"RateDigitalOption", "RateDigitalOptionData"},
+    {"CBO", "CBOData"},
+    {"CashPosition", "CashPositionData"},
 };
 
 auto class_read_product_of(std::string_view trade_type) -> const class_read_product* {
@@ -491,6 +513,9 @@ auto container_leaf_of(const xml::record_type& type, std::string_view member) ->
 
 /// The type a member of such a product's element states, which the schema gives it.
 auto declared_type_of(const xml::field& member) -> std::string {
+    // A list of indices is an Index list, which holds each as an address.
+    if (member.type != nullptr && member.type->name == "stFreeStyleIndexVector")
+        return "Index";
     if (const auto* leaf = container_leaf_of(member))
         return std::string(leaf_kind_name(leaf->scalar));
     return std::string(member_kind_name(member.kind));
@@ -512,6 +537,40 @@ auto states_option_data(const xml::field& member) -> bool {
 auto states_a_schedule(const xml::field& member) -> bool {
     return member.kind == xml::field_kind::nested && member.type != nullptr &&
            member.type->name == "scheduleData";
+}
+
+/**
+ * @brief Whether the member is a free style scalar: an element whose value is
+ * its own text, beside an optional type attribute.
+ */
+auto states_a_free_style_scalar(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           member.type->name.starts_with("stFreeStyle") &&
+           xml::find_field(*member.type, "Value", false) == nullptr &&
+           xml::find_field(*member.type, "ScheduleData", false) == nullptr;
+}
+
+/// The type a free style scalar declares: its type attribute, or the name its schema type gives.
+auto free_style_type_of(const xml::field& member, const xml::record_reader& element)
+    -> std::string {
+    if (const auto stated = element.text("type"); stated && !stated->empty())
+        return *stated;
+    return std::string(member.type->name.substr(std::string_view("stFreeStyle").size()));
+}
+
+/// Whether the member is one BarrierData block, which the barrier rows hold.
+auto states_a_barrier(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           member.type->name == "barrierData" && member.name == "BarrierData";
+}
+
+/**
+ * @brief Whether the member holds BarrierData blocks with the terms that
+ * monitor them, as a generic barrier option's Barriers does.
+ */
+auto holds_barriers(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           xml::find_field(*member.type, "BarrierData", false) != nullptr;
 }
 
 /// Whether the member states its value as one leaf, which is what a parameter holds.
@@ -564,6 +623,120 @@ auto role_of_member(std::string_view element) -> std::string {
     return role;
 }
 
+/**
+ * @brief The role a member's barrier rows are kept under, in the vocabulary
+ * every family's barriers share: a product's own barriers and a generic
+ * barrier option's Barriers are the barrier, its TransatlanticBarrier the
+ * transatlantic one.
+ */
+auto barrier_role_of(std::string_view member) -> std::string {
+    return member == "TransatlanticBarrier" ? "transatlantic" : "barrier";
+}
+
+/**
+ * @brief Whether the member is a block of leaves only, such as a CBO's
+ * CBOInvestment, whose leaves are parameters named for the block and the leaf.
+ * A block's attributes are not held; no block a product states carries one.
+ */
+auto states_a_leaf_block(const xml::field& member) -> bool {
+    if (member.kind != xml::field_kind::nested || member.type == nullptr ||
+        member.type->name.starts_with("stFreeStyle") || member.type->field_count == 0)
+        return false;
+    for (std::uint8_t i = 0; i < member.type->field_count; ++i)
+        if (!member.type->fields[i].is_attribute && !states_a_leaf(member.type->fields[i]))
+            return false;
+    return true;
+}
+
+/// The name a leaf of a barrier holder is kept under: the holder, a dot, the leaf.
+auto holder_leaf_name(std::string_view holder, std::string_view leaf) -> std::string {
+    return std::string(holder) + "." + std::string(leaf);
+}
+
+/// The role the schedule a barrier holder monitors its barriers on is kept under.
+auto holder_schedule_role(std::string_view holder) -> std::string {
+    return barrier_role_of(holder) + "_schedule";
+}
+
+/**
+ * @brief Reads a barrier holder: its barriers under the holder's role, each
+ * schedule it states under a role of its own, and each of its leaves as a
+ * parameter named for the holder and the leaf.
+ */
+void read_barrier_holder(scripted_instrument_data& data,
+                         const xml::record_reader& holder,
+                         const xml::field& member) {
+    barrier_block::read_barriers(data, holder, barrier_role_of(member.name));
+    const auto& type = *member.type;
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (f.name == "BarrierData" || !holder.has(f.name))
+            continue;
+        if (states_a_schedule(f)) {
+            option_block::read_schedule(
+                data, *holder.child(f.name), "option", 1, holder_schedule_role(member.name));
+        } else if (states_a_leaf(f)) {
+            if (const auto value = scalar_text(holder, f.name)) {
+                auto& parameter = make_parameter(
+                    data, holder_leaf_name(member.name, f.name), declared_type_of(f));
+                parameter.value = *value;
+            }
+        }
+    }
+}
+
+void write_leaf_block(xml::record_writer& product,
+                      const scripted_instrument_data& data,
+                      const xml::field& member) {
+    const auto& type = *member.type;
+    std::optional<xml::record_writer> block;
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& leaf = type.fields[i];
+        const auto name = holder_leaf_name(member.name, leaf.name);
+        for (const auto& p : data.parameters)
+            if (p.name == name && p.value) {
+                if (!block)
+                    block = product.child(member.name);
+                set_scalar_text(*block, leaf.name, *p.value);
+            }
+    }
+}
+
+void write_barrier_holder(xml::record_writer& product,
+                          const scripted_instrument_data& data,
+                          const xml::field& member) {
+    const auto role = barrier_role_of(member.name);
+    const auto& type = *member.type;
+    const auto leaf_value = [&](std::string_view leaf) -> const std::string* {
+        const auto name = holder_leaf_name(member.name, leaf);
+        for (const auto& p : data.parameters)
+            if (p.name == name && p.value)
+                return &*p.value;
+        return nullptr;
+    };
+    bool holds_any = barrier_block::has_barriers(data, role);
+    for (std::uint8_t i = 0; i < type.field_count && !holds_any; ++i) {
+        const auto& f = type.fields[i];
+        holds_any =
+            states_a_schedule(f) ?
+                option_block::has_product_schedule(data, holder_schedule_role(member.name)) :
+                leaf_value(f.name) != nullptr;
+    }
+    if (!holds_any)
+        return;
+    auto holder = product.child(member.name);
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (f.name == "BarrierData")
+            barrier_block::write_barriers(holder, data, role);
+        else if (states_a_schedule(f))
+            option_block::write_product_schedule(
+                holder, data, f.name, holder_schedule_role(member.name));
+        else if (const auto* value = leaf_value(f.name))
+            set_scalar_text(holder, f.name, *value);
+    }
+}
+
 void read_class_members(scripted_instrument_data& data, const xml::record_reader& product) {
     const auto& type = product.type();
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
@@ -581,6 +754,30 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
                     data, *product.child(f.name), "option", 1, role_of_member(f.name));
             continue;
         }
+        if (states_a_barrier(f)) {
+            barrier_block::read_barriers(data, product, barrier_role_of(f.name));
+            continue;
+        }
+        if (states_a_leaf_block(f)) {
+            if (const auto block = product.child(f.name))
+                for (std::uint8_t j = 0; j < f.type->field_count; ++j) {
+                    const auto& leaf = f.type->fields[j];
+                    if (leaf.is_attribute)
+                        continue;
+                    if (const auto value = scalar_text(*block, leaf.name)) {
+                        auto& parameter = make_parameter(
+                            data, holder_leaf_name(f.name, leaf.name), declared_type_of(leaf));
+                        parameter.value = *value;
+                    }
+                }
+            continue;
+        }
+        // A barrier holder may state a ScheduleData, so it is checked before an event.
+        if (holds_barriers(f)) {
+            if (product.has(f.name))
+                read_barrier_holder(data, *product.child(f.name), f);
+            continue;
+        }
         if (holds_a_schedule(f)) {
             if (product.has(f.name)) {
                 auto& parameter = make_parameter(data, std::string(f.name), "Event");
@@ -591,6 +788,15 @@ void read_class_members(scripted_instrument_data& data, const xml::record_reader
         // A member is a parameter only when it states a leaf, or a list of leaves.
         // Anything else is content the projection holds no row for, and reading it
         // as a leaf would refuse the document.
+        if (states_a_free_style_scalar(f)) {
+            if (const auto element = product.child(f.name)) {
+                auto& parameter =
+                    make_parameter(data, std::string(f.name), free_style_type_of(f, *element));
+                if (const auto value = element->own_text())
+                    parameter.value = stored_value_of(parameter, *value);
+            }
+            continue;
+        }
         const auto* leaf = container_leaf_of(f);
         if (leaf == nullptr && !states_a_leaf(f))
             continue;
@@ -635,9 +841,14 @@ void write_class_members(xml::record_writer& product, const scripted_instrument_
                 continue;
             auto container = product.child(parameter->name);
             for (const auto& value : values_of(data, parameter->sequence_number))
-                append_leaf(container, leaf->name, value);
+                append_leaf(container, leaf->name, stated_value_of(*parameter, value));
         } else if (parameter->value) {
-            set_scalar_text(product, parameter->name, *parameter->value);
+            const auto* f = field_named(product, parameter->name);
+            if (f != nullptr && states_a_free_style_scalar(*f))
+                product.child(parameter->name)
+                    .set_own_text(stated_value_of(*parameter, *parameter->value));
+            else
+                set_scalar_text(product, parameter->name, *parameter->value);
         }
     }
 }
@@ -650,7 +861,34 @@ void write_class_blocks(xml::record_writer& product, const scripted_instrument_d
             option_block::write_option_data(product.child(f.name), data);
         else if (states_a_schedule(f))
             option_block::write_product_schedule(product, data, f.name, role_of_member(f.name));
+        else if (states_a_barrier(f))
+            barrier_block::write_barriers(product, data, barrier_role_of(f.name));
+        else if (holds_barriers(f))
+            write_barrier_holder(product, data, f);
+        else if (states_a_leaf_block(f))
+            write_leaf_block(product, data, f);
     }
+}
+
+/**
+ * @brief Whether the element states both one Underlying and a list of them
+ * under the role, as a generic barrier option does; the rows then say which.
+ *
+ * One row is written as the single form, so a list of one comes back as one
+ * Underlying, which ORE reads the same.
+ */
+auto states_one_or_a_list(const xml::record_type& type, const std::string& role) -> bool {
+    bool one = false;
+    bool list = false;
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (states_an_underlying(f) && role_of_member(f.name) == role)
+            one = true;
+        else if (const auto* block = repeated_underlying_of(f);
+                 block != nullptr && role_of_member(block->name) == role)
+            list = true;
+    }
+    return one && list;
 }
 
 void write_class_underlyings(xml::record_writer& product, const scripted_instrument_data& data) {
@@ -658,11 +896,16 @@ void write_class_underlyings(xml::record_writer& product, const scripted_instrum
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
         if (states_an_underlying(f)) {
+            const auto role = role_of_member(f.name);
+            if (states_one_or_a_list(type, role) &&
+                underlying_block::underlyings_of(data, role).size() > 1)
+                continue;
             // The element states one block, which is the first row under its role.
-            underlying_block::write_underlyings(product, f.name, data, role_of_member(f.name));
+            underlying_block::write_underlyings(product, f.name, data, role);
         } else if (const auto* block = repeated_underlying_of(f)) {
-            const auto rows = underlying_block::underlyings_of(data, role_of_member(block->name));
-            if (rows.empty())
+            const auto role = role_of_member(block->name);
+            const auto rows = underlying_block::underlyings_of(data, role);
+            if (rows.empty() || (rows.size() == 1 && states_one_or_a_list(type, role)))
                 continue;
             auto container = product.child(f.name);
             for (const auto* row : rows)

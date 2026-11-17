@@ -18,6 +18,7 @@
  */
 #include "ores.database/pq/transaction.hpp"
 #include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/session_context.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -56,6 +57,21 @@ struct sent_command {
     const sent_statement* statement;
 };
 
+/**
+ * @brief The settings of a session, as the arguments of =set_context=.
+ *
+ * They go out once, with the first statement of the transaction, so the
+ * encoding happens here rather than on every round trip.
+ */
+std::array<param, 5> encode_context(const session_context& context) {
+    return set_context.encode(context.tenant.to_string(),
+                              context.party ? boost::uuids::to_string(*context.party) :
+                                              std::string(),
+                              visible_text(context.visible_parties),
+                              context.actor,
+                              context.service);
+}
+
 [[noreturn]] void lost(const connection& c, std::string_view what) {
     const bool broken = !c.healthy();
     throw store_error(std::string(what) + ": " + PQerrorMessage(c.native()),
@@ -67,9 +83,9 @@ constexpr std::size_t copy_chunk = 1 << 20;
 
 }
 
-transaction::transaction(connection& c, session_context context)
+transaction::transaction(connection& c, const session_context& context)
     : connection_(c)
-    , context_(std::move(context)) {}
+    , context_params_(encode_context(context)) {}
 
 
 void transaction::round_trip(std::span<const sent_statement> statements) {
@@ -80,16 +96,10 @@ void transaction::round_trip(std::span<const sent_statement> statements) {
     if (PQenterPipelineMode(c) != 1)
         lost(connection_, "Could not enter pipeline mode");
 
-    const auto context_params = set_context.encode(
-        context_.tenant.to_string(),
-        context_.party ? boost::uuids::to_string(*context_.party) : std::string(),
-        visible_text(context_.visible_parties),
-        context_.actor,
-        context_.service);
     const sent_statement context_statement{set_context.name(),
                                            set_context.sql(),
                                            set_context.param_oids,
-                                           context_params,
+                                           context_params_,
                                            &set_context.counters(),
                                            nullptr};
 

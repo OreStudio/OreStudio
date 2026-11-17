@@ -207,9 +207,11 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     // or derives. A session that sees several parties would otherwise write each party's copy of
     // one key, and ORE would read several values for it.
     const auto party = ctx_.party_id();
+    int exported_series = 0;
     for (const auto& s : series) {
         if (party && s.party_id != *party)
             continue;
+        ++exported_series;
         // A quote series has a URI the datum codec reads and a fixing series one
         // the index codec reads. A series neither reads is a data-integrity error
         // and names both reasons.
@@ -303,7 +305,7 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                               << fixings.size() << " fixing(s) in " << lapped() << " ms";
 
     ore_export_result result;
-    result.series_count = static_cast<int>(series.size());
+    result.series_count = exported_series;
     result.observation_count = static_cast<int>(data.size());
     result.fixing_count = static_cast<int>(fixings.size());
     result.carried_forward_count = carried_forward;

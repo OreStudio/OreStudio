@@ -90,8 +90,9 @@ constexpr std::string_view credit_instrument_projection_change_commentary = "Imp
  */
 constexpr bool is_credit_trade_type(std::string_view type) {
     return type == "CreditDefaultSwap" || type == "IndexCreditDefaultSwap" ||
-           type == "IndexCreditDefaultSwapOption" || type == "CreditLinkedSwap" ||
-           type == "SyntheticCDO" || type == "RiskParticipationAgreement";
+           type == "IndexCreditDefaultSwapOption" || type == "CreditDefaultSwapOption" ||
+           type == "CreditLinkedSwap" || type == "SyntheticCDO" ||
+           type == "RiskParticipationAgreement";
 }
 
 void stamp(swap_leg& row) {
@@ -146,15 +147,15 @@ auto credit_instrument_projection_to_ore_date(const std::optional<std::chrono::y
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto credit_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto credit_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto credit_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto credit_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -389,12 +390,11 @@ auto read_index_swap(const record_reader& d) -> index_credit_default_swap_instru
     return fact;
 }
 
-auto read_cds(const record_reader& trade) -> credit_instrument_data {
-    credit_instrument_data result;
-    result.instrument = make_header("CreditDefaultSwap");
-
+/// The CreditDefaultSwapData element, as the swap's fact row and its premium leg.
+auto read_cds_data(credit_instrument_data& result, const std::optional<record_reader>& d)
+    -> credit_default_swap_instrument {
     credit_default_swap_instrument fact;
-    if (const auto d = trade.child("CreditDefaultSwapData")) {
+    if (d) {
         if (const auto curve = d->text("CreditCurveId"))
             fact.credit_curve_id = *curve;
         fact.issuer_id = d->text("IssuerId");
@@ -418,7 +418,46 @@ auto read_cds(const record_reader& trade) -> credit_instrument_data {
         }
     }
     credit_instrument_projection_stamp_row(fact);
-    result.credit_default_swap_instruments.push_back(std::move(fact));
+    return fact;
+}
+
+auto read_cds(const record_reader& trade) -> credit_instrument_data {
+    credit_instrument_data result;
+    result.instrument = make_header("CreditDefaultSwap");
+    result.credit_default_swap_instruments.push_back(
+        read_cds_data(result, trade.child("CreditDefaultSwapData")));
+    return result;
+}
+
+/**
+ * @brief An option on a single name credit default swap: the swap is the
+ * wrapped swap's row, and the option's own terms share the index option's
+ * fact row, whose columns are the same terms.
+ */
+auto read_cds_option(const record_reader& trade) -> credit_instrument_data {
+    credit_instrument_data result;
+    result.instrument = make_header("CreditDefaultSwapOption");
+
+    index_credit_default_swap_option_instrument fact;
+    if (const auto od = trade.child("CreditDefaultSwapOptionData")) {
+        fact.knock_out = od->flag("KnockOut");
+        fact.index_term = od->text("Term");
+        if (od->has("StrikeType"))
+            fact.strike_type = credit_instrument_projection_spelling_of(*od, "StrikeType");
+        result.wrapped_swap = read_cds_data(result, od->child("CreditDefaultSwapData"));
+        if (const auto strike = od->decimal("Strike")) {
+            instrument_strike row;
+            row.strike_role = "single";
+            row.sequence_number = 1;
+            row.bare_value = *strike;
+            credit_instrument_projection_stamp_row(row);
+            result.strikes.push_back(std::move(row));
+        }
+        if (const auto option = od->child("OptionData"))
+            option_block::read_option_block(result, *option);
+    }
+    credit_instrument_projection_stamp_row(fact);
+    result.index_credit_default_swap_option_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -904,6 +943,23 @@ void write_cds(record_writer& trade, const credit_instrument_data& v) {
     write_cds_data(data, fact_of<credit_default_swap_instrument>(v), v);
 }
 
+void write_cds_option(record_writer& trade, const credit_instrument_data& v) {
+    const auto& fact = fact_of<index_credit_default_swap_option_instrument>(v);
+    auto data = trade.child("CreditDefaultSwapOptionData");
+    option_block::write_option_data(data.child("OptionData"), v);
+    auto swap_data = data.child("CreditDefaultSwapData");
+    write_cds_data(swap_data, v.wrapped_swap.value_or(credit_default_swap_instrument{}), v);
+    const auto strike = std::find_if(v.strikes.begin(), v.strikes.end(), [](const auto& row) {
+        return row.strike_role == "single";
+    });
+    if (strike != v.strikes.end() && strike->bare_value)
+        set_decimal_from_double(data, "Strike", strike->bare_value->to_double());
+    if (fact.strike_type)
+        data.set_spelling("StrikeType", *fact.strike_type, "strike type");
+    data.set_optional_flag("KnockOut", fact.knock_out);
+    data.set_optional_text("Term", fact.index_term);
+}
+
 void write_index_cds(record_writer& trade, const credit_instrument_data& v) {
     auto data = trade.child("IndexCreditDefaultSwapData");
     write_index_swap_data(data, fact_of<index_credit_default_swap_instrument>(v), v);
@@ -1020,6 +1076,8 @@ auto read_credit_instrument(xml::record_reader trade, std::string_view trade_typ
         return trading::domain::trade_instrument{read_index_cds(trade)};
     if (trade_type == "IndexCreditDefaultSwapOption")
         return trading::domain::trade_instrument{read_index_cds_option(trade)};
+    if (trade_type == "CreditDefaultSwapOption")
+        return trading::domain::trade_instrument{read_cds_option(trade)};
     if (trade_type == "CreditLinkedSwap")
         return trading::domain::trade_instrument{read_credit_linked_swap(trade)};
     if (trade_type == "SyntheticCDO")
@@ -1054,6 +1112,9 @@ auto write_credit_instrument(xml::record_writer& trade,
     if (named.wrapped_index_swap)
         named.wrapped_index_swap->credit_curve_id =
             projection.ore_name_or_stored(named.wrapped_index_swap->credit_curve_id);
+    if (named.wrapped_swap && named.wrapped_swap->credit_curve_id)
+        named.wrapped_swap->credit_curve_id =
+            projection.ore_name_or_stored(*named.wrapped_swap->credit_curve_id);
     v = &named;
 
     if (trade_type == "CreditDefaultSwap")
@@ -1062,6 +1123,8 @@ auto write_credit_instrument(xml::record_writer& trade,
         write_index_cds(trade, *v);
     else if (trade_type == "IndexCreditDefaultSwapOption")
         write_index_cds_option(trade, *v);
+    else if (trade_type == "CreditDefaultSwapOption")
+        write_cds_option(trade, *v);
     else if (trade_type == "CreditLinkedSwap")
         write_credit_linked_swap(trade, *v);
     else if (trade_type == "SyntheticCDO")

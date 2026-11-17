@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 0E718054-03B7-43A5-9289-61E505235BBD
+:END:
+#+title: Story: Run a report on the generated trades with the market data they need
+#+description: A report over the generated ACME trades gathers an empty market. Find why, state the market data the population needs, generate and seed what is missing, export it at the run's as-of, and value every generated type in a report against ORE's own NPVs on a freshly recreated database.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:reporting:synthetic:ore:sprint_30:v0:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report over the trades the generator books runs to completion, and ORE
+values every generated trade type from market data the system holds.
+
+The generator books trades that ORE builds, and a report over them fails.
+The first task measured why, on ACCOUK's NPV run over 460 trades. The
+market file was not empty: it held 3,313 FX and IR data points. But 416
+trades failed, for three reasons:
+
+- The party's market configuration names only OIS curves, overnight
+  indices and FX. ORE cannot find any IBOR index, equity, commodity,
+  inflation index or credit curve (352 failures).
+- No equity, commodity, inflation or credit quotes exist.
+- The fixings file is empty, because every fixing sits under the system
+  party and the export writes only the reporting party's series.
+
+The pieces this story needs were spread over eight stories, and no story
+owned the whole path. This story is that path. It is one arc:
+
+1. *Know why the run fails.* Measure the cause on a freshly provisioned
+   ACME, and record the ORE errors by trade type. That record is the
+   baseline every later task reduces. Done.
+2. *State what the trades need.* Resolve the generated population to the
+   market data it requires, as oresmd addresses. Name every object it uses
+   in the market configuration, and give each generated type its market
+   data and its pricing engine configuration.
+3. *Supply what is missing.* Give each party the fixings of its indices,
+   seed the public fixings history, generate the fixings no publisher
+   gives, and make the curve quote names match the series the feeds
+   produce.
+4. *Export it at the run's as-of.* Narrow the export to the population's
+   requirements, read at the as-of of the run.
+5. *Prove it.* Value every generated type in a report against ORE's own
+   NPVs, then run the whole chain from a freshly recreated database.
+
+The trade population is the one the generator books. The relative-time DQ
+trade corpus that [[id:86B6BF9C-CEEA-4FCB-8048-7CA94E927584][Seed a relative-time trade population with the market data it needs]]
+proposed is not built: it predates the generator, and the generated
+population answers the same question.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Each index the trades name is forwarded where the market holds a curve, and the GBP, USD, JPY and CAD OIS curves build. ORE builds 32 of ACCOUK's 416 trades, where it built none; the rest wait on equity, commodity, inflation and credit data. |
+| Waiting on    | Nothing for the first task. See Dependencies for the later ones. |
+| Next          | [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]]. |
+| Last touched  | 2026-11-17 |
+
+* Acceptance
+
+- The cause of the failing run is measured and recorded, with the command
+  and the commit, before any fix lands.
+- The market data a generated population requires is resolved from its
+  trades, not listed by hand.
+- Every generated trade type has its market data and its pricing engine
+  configuration, or leaves the generator with its reason stated.
+- Every index that a generated floating leg uses has fixings back to the
+  leg's earliest reset, and the fixings are deterministic for a seed.
+- The export writes only the population's requirements, read at the as-of
+  of the run.
+- A report over every generated type completes, and each type matches ORE's
+  own NPV within 0.01% of the reference NPV, or 0.0001% of notional if that
+  is larger.
+- The same run completes from a freshly recreated database with no hand
+  step and no file imported from =external/ore=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:746AC903-8811-4011-96B7-15DCDB669611][Scaffold story: Run a report on the generated trades with the market data they need]] | DONE | | 2026-11-17 | Form the story from the eight that held the market data path, move their open tasks into it in arc order, and close the stories it empties. |
+| [[id:869E7992-1479-440F-9AB8-3B7CA6447DF0][Find why a report on the generated trades gathers no market data]] | DONE | | 2026-11-17 | A report run over the generated ACME trades packs an empty market file. The export writes every series the reporting party holds at the valuation date, so either the party holds none or the export drops them. Measure which, on a freshly provisioned ACME, and record the baseline the rest of the story moves. |
+| [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a trade set's market data requirements]] | DONE | 2026-11-17 | 2026-11-17 | gather_market_data exports every series the tenant holds, at whatever the database happens to contain now, because no one can say which market data a set of trades actually needs. Resolve it, for one trade set: from its trades to the market data requirements they imply, expressed as oresmd, and from those requirements to the series, observations and fixings that answer them. The as-of is the set's. Decide how much of that resolution belongs in SQL, where the joins already live, and how much in the services. |
+| [[id:BABA997F-305E-4FBC-9756-4CF79A704A50][Export one convention for each index id]] | DONE | 2026-11-17 | 2026-11-17 | The curated convention set holds an IborIndex and an OvernightIndex convention under the same id for CAD-CORRA, CNH-HIBOR, GBP-SONIA, JPY-TONAR, MXN-TIIE and USD-SOFR. ORE keys conventions by id, keeps the IborIndex, and then cannot build the OIS convention on that index, so the GBP, USD, JPY and CAD discount curves fail and every trade discounted on them fails with them. |
+| [[id:EB839A7A-0EB6-4FD2-85E8-9847CA0D8634][Name every market object the generated trades use in the party's market configuration]] | DONE | 2026-11-17 | 2026-11-17 | A party's today's market names only OIS discount curves, overnight index curves, FX spots and FX volatilities, from a hand-authored seed. ORE then cannot find any IBOR index, equity, commodity, inflation index or credit curve, which is 352 of the 416 failures of the baseline run. Build the today's market and curve configurations from the population's resolved requirements, so they name every object the trades use. |
+| [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]] | BACKLOG | |  | Every type can be priced, or leaves the generator with a stated reason. |
+| [[id:610271AD-8219-48C5-BD19-C21B82B1820F][Give each party the fixings of the indices its trades use]] | BACKLOG | | | Every fixing in the tenant sits under system_party: 301,650 FX and IR fixings. The export writes only the reporting party's series, and ACME parties receive the system's raw quotes through subscriptions but no fixings, so a run's fixings file is empty. Give each party the public fixings of the indices its trades use, the way it receives raw quotes. |
+| [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
+| [[id:06886D23-1A52-4BBC-B305-4609D606EEA7][Generate the historical fixings the generated trades need]] | BACKLOG | | | A floating leg that has already reset needs the fixing of its index on each past reset date, and ores.synthetic generates only FX spot and IR curves. Generate the index fixings back from the as-of for the indices the population uses, derived from the generated curve of that index and tenor, deterministic for a seed, in the series the conventions' oresmd URIs name. |
+| [[id:6C76E6D4-7E07-45F1-A2E9-7B68696E4558][Resolve the curve quote names against the synthetic feeds]] | BACKLOG | | | Check that the quote keys of the ACME curve configurations match the series that the synthetic feeds produce, once the feed naming refactor lands. |
+| [[id:86994A25-E1C5-41AF-BE1D-E13F0667EFB1][Export the market data a trade set requires]] | BACKLOG | | | marketdata.v1.ops.export_market_data_to_storage takes no set and no date and writes the whole tenant's market data as one market file and one fixings file. A run that gathers per trade set needs the export narrowed to that set's resolved requirements and read at the set's as-of, so two runs of one set on different dates read different rows. |
+| [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
+| [[id:D42DC42B-1729-4B1C-9EE8-658208319355][Prove a run on generated trades and market data]] | BACKLOG | | | Every end-to-end run so far has depended on hand-seeded ACME data, which is why a run fails for a data reason rather than a chain reason. The synthetic component already generates the trade population (bond books, counterparties, trade generation configs) and publishes market data (IR curve and FX spot generation configs, feeds into ores.marketdata). Prove a report runs to completion on data the system generates: generate the trades, generate the market data they need, point a report definition at those books, and run it. Record what the generated data cannot yet express, which is the gap a gather has to respect. |
+| [[id:2189859D-6B0B-493E-A858-0435091D2365][Bootstrap every IBOR tenor the generated trades book]] | DONE | 2026-11-17 | 2026-11-17 | The generator books trades on IBOR indices whose curve the system does not bootstrap: GBP-LIBOR 6M, 12M and 1W, EUR-EURIBOR 12M and others. ORE then cannot find the index, and those trades fail. Bootstrap and publish a curve for each IBOR index the generated trades name, so each party holds it and the package step forwards it. |
+
+* Decisions
+
+Settled on 2026-11-17, when this story was formed:
+
+1. *One story owns the path.* The open BACKLOG tasks moved here from the
+   stories that held them, with their UUIDs intact:
+   - From [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]]:
+     resolve the requirements, and export the market data.
+   - From [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]]:
+     the market data and engines, and the valuation.
+   - From [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]]:
+     its only task.
+   - From [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]]:
+     the curve quote names.
+   - From [[id:C9FC5224-69D3-444A-8D9E-4669ACC88F36][Prove the report grid run end to end — the remaining work]]:
+     the run on generated data.
+   STARTED tasks stay where they are and are dependencies. The owners of
+   the source stories review the moves later.
+2. *The generated trades drive the requirements.* The relative-time DQ
+   corpus is not built.
+3. *One run is one trade set.* The moved tasks say "trade set". Until the
+   fan-out exists, a run's whole population is its one set.
+
+Evidence already on record:
+
+- PR #4708 (merged 2026-11-14, under the valuation task) put every product
+  type ORE documents into every pricing engine configuration. A provisioned
+  ACME book of 1,000 trades then ran to "Report execution completed." with
+  1,440 priced rows and no pricing engine errors. The PR states that the
+  remaining errors are market data. So the engine half of
+  "Give every generated trade type its market data and pricing engines" is
+  mostly done, and the market data half is open.
+
+* Dependencies
+
+Work in other stories that this arc reads. It is not moved here.
+
+- [[id:6EDB96AD-45A3-419A-A723-70265C9C964B][Triangulate each party's rates from the series it holds]]:
+  its derived quotes are still written under the system party. The export
+  reads only the reporting party's series, so this can be a cause the first
+  task finds.
+- [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]]:
+  "Export a published surface to ORE through the report binding" gives the
+  FX option types their volatilities.
+- [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]]:
+  the published curves the export writes.
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]:
+  every generated type built by its builder and accepted by ORE.
+
+Backlog captures this story answers or reads:
+
+- /The market data feeds the ACME reports need, by asset class/
+  (=product_backlog/inbox/feeds_required_to_run_the_acme_reports.org=):
+  the asset classes the requirements resolution must cover.
+- /Trade-aware market data filtering for report execution/
+  (=product_backlog/deferred/trade_aware_market_data_filtering_for_report_execution.org=):
+  the same need as the requirements task.
+- /Seeded market data covers FX and leaves every currency curve without
+  quotes/ and /Seeded IR swap series break the market data export/
+  (=product_backlog/inbox/=): titles only, with no body. The first task
+  checks whether either is still true.
+
+* Out of scope
+
+- The trade-set fan-out: partitioning a run, a per-set archive, the
+  configuration hand-off and the package assembly. They stay in
+  [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]].
+- The analytic and exposure input documents, the platform report type and
+  the intraday reports. They stay in
+  [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]].
+- A vendor producer for real fixings. None exists.
+- Configuring every seeded ACME report from the ORE examples. This story
+  needs one report definition over the generated books.

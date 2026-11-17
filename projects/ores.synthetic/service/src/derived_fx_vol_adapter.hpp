@@ -56,10 +56,12 @@ struct derived_fx_vol_timing final {
 /**
  * @brief The derived source of FX volatility quotes as an adapter of the market data service.
  *
- * It reads its universe from the catalogue, the ECB fixings of each pair through the market
- * data reader as the system party, and each pair's quoting convention from refdata. It
- * keeps every day's quotes as the observations of a series of its own, filling the history
- * the fixings cover, and publishes the demanded quotes through the adapter's four messages.
+ * It reads its universe from the catalogue, each pair's daily levels from the market data
+ * service as the system party, and each pair's quoting convention from refdata. The service
+ * composes a level from the fixings of whichever source quotes the pair, so the adapter
+ * names no publisher. It keeps every day's quotes as the observations of a series of its
+ * own, filling the history the levels cover, and publishes the demanded quotes through the
+ * adapter's four messages.
  * It fetches nothing from outside: every input is already stored.
  */
 class derived_fx_vol_adapter final {

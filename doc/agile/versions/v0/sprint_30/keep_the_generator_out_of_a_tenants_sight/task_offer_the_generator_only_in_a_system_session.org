@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 131D7D77-3FF8-4836-8849-E721B24A3ADE
+:END:
+#+title: Task: Decide what a tenant sees of the generator, and hide what adds nothing
+#+description: A tenant administrator's Synthetic card lists the system's generator configurations, which a tenant does not use (whether it can change them is the other task's to show); decide whether any of it helps a tenant, keep that with its reason, and offer the rest only in a system session.
+#+type: task
+#+level: s1
+#+filetags: :keep_the_generator_out_of_a_tenants_sight:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DC3AB56C-BA30-4819-868D-8F7ED367A202][Keep the market data generator out of a tenant's sight]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant's screens show the generator only where that helps the tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DC3AB56C-BA30-4819-868D-8F7ED367A202][Keep the market data generator out of a tenant's sight]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- Each generator screen and verb a tenant session reaches is kept with a stated reason or offered only in a system session.
+- A test signs in as Acme's administrator and finds what was decided.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -38,6 +38,8 @@ Every product ORE carries in both forms is booked in both: once as its own eleme
 - the catalogue names, for each product with two forms, the library script that carries its second form
 - every generic ScriptedTrade the generator books goes through the scripted builder of the scripted builders task, and each twin's variables are a recipe held as data
 - the generated population holds one trade of each such product in each form
+- each pair states the same economic terms in both forms, so the two can be
+  valued and compared
 - the ORE engine test reads and builds both forms of each, with no error of the trade kind
 
 * Plan

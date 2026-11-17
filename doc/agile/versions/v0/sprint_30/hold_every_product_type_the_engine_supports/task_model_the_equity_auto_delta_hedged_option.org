@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: B9D6D5E2-05E5-45D4-AC50-155FA746359F
+:END:
+#+title: Task: Model the equity auto delta hedged option
+#+description: EquityAutoDeltaHedgedOption is a native ORE product: batches of equity options, each with its own option block, name, currency, strike and quantity, under a hedging volatility, drift and window. The option rows hold one block a trade, so its batches need rows of their own.
+#+type: task
+#+level: s1
+#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+owner: marco
+#+branch: feature/model-the-equity-auto-delta-hedged-option
+#+pr: 4813
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+EquityAutoDeltaHedgedOption has a data model, a projection reader and writer,
+and a builder; a trade of it is booked, exported as the element ORE reads, and
+imported back unchanged.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- the type names an instrument table, and each batch is a row with its option
+  terms, name, currency, strike, strike currency and quantity
+- the hedging volatility, drift rate, observation start and payment date are
+  columns
+- the projection reads and writes the element, value for value
+- the type has a builder, and the catalogue routes it
+- the generator books one trade of it through its builder, and the recorded
+  trades hold it
+- the ORE engine test reads and builds it, with no error of the trade kind
+
+* Plan
+
+The option rows hold one block a trade, and this product states one a batch,
+so the batches need rows of their own. The equity position option underlyings
+already hold an option position's entries, the same shape less a few terms,
+so both product kinds share them.
+
+- =equity_position_instrument= gains =volatility=, =drift_rate=,
+  =observation_start_date= and =payment_date=, all optional.
+- =equity_position_option_underlying= gains =currency=, =strike_currency=,
+  =quantity=, =premium_amount=, =premium_currency= and =premium_pay_date=, all
+  optional. ORE requires exactly one premium a batch.
+- The codegen regenerates both entities across SQL, domain, mappers,
+  repositories, services, shell commands and wire types.
+- The projection reads a batch's premium from =Premiums= or from the legacy
+  =PremiumAmount= form, and writes =Premiums=.
+- =equity_auto_delta_hedged_option_builder=; the equity planner books a call
+  and a put at the level on the slot's equity.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| trading api tests | 4692 cases pass | =./ores.trading.api.tests= | this branch |
+| trading core tests | 252 cases pass | =./ores.trading.core.tests= | this branch |
+| shell trading tests | 1330 cases pass | =./ores.shell.trading.tests= | this branch |
+| ore core tests | 561 cases pass | =./ores.ore.core.tests= | this branch |
+| synthetic tests, not generated | 140 cases pass | =./ores.synthetic.core.tests "~[generated]"= | this branch |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | this branch |
+
+* Notes
+
+Split from [[id:689DD23D-9D6F-4643-BC3E-7BA2AF083CFC][Model the equity and fx products left out]]. The equity
+position option underlying already holds a batch's option terms, name, strike
+and weight; it lacks the currency, strike currency and quantity.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4813][#4813]] | [trading,ore,synthetic] Hold the equity auto delta hedged option |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | only the first premium and exercise date are read | equity_instrument_projection.cpp | accept | the comment states a batch is European and ORE requires one premium on it |
+| 2 | a malformed strike reads as zero | equity_instrument_projection.cpp | decline | the option position's reader does the same; out of this task |
+| 3 | the position row's quantity stays zero | equity_builders.cpp | accept | the comment says the quantities are the batches' |
+| 4 | no migration for the new columns | trading_equity_position_instruments_create.sql | decline | the schema is recreated, not migrated |
+| 5 | a long comment line in the create script | trading_equity_position_instruments_create.sql | decline | the codegen flows it from the model |
+| 7 | the wire types are not built | - | decline | stated as a limitation; four optional fields |
+
+* Result
+
+EquityAutoDeltaHedgedOption is held natively: the hedge's terms on the equity
+position row, each batch a row with its option terms, name, currency, strike,
+strike currency, quantity and premium. The round-trip test reads the user
+guide's example, with both premium forms and an optional strike currency, and
+writes it back. The type has a builder, the catalogue routes it, and the
+generator books one trade of it. The ORE engine builds the recorded trades with
+no error of the trade kind; it raises an engine configuration error, because
+ORE's Products example configuration names no engine for it, which the known
+list holds and the valuation story owns.
+
+The first engine run refused the trades for want of a premium a batch, which
+the premium columns answer.

@@ -20,6 +20,7 @@
 #define ORES_DATABASE_PQ_UNIT_OF_WORK_HPP
 
 #include "ores.database/pq/pool.hpp"
+#include "ores.database/pq/session_context_fwd.hpp"
 #include "ores.database/pq/transaction.hpp"
 #include <type_traits>
 #include <utility>
@@ -36,9 +37,8 @@ namespace ores::database::pq {
  * the connection on every path.
  */
 template <typename Work>
-auto transact(pool& p,
-              const session_context& context,
-              Work&& work) -> std::invoke_result_t<Work, transaction&> {
+auto transact(pool& p, const session_context& context, Work&& work)
+    -> std::invoke_result_t<Work, transaction&> {
     auto lease = p.acquire();
     transaction tx(lease.get(), context);
     try {

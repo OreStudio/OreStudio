@@ -18,22 +18,22 @@
       <SoldAmount>4069109.38</SoldAmount>
     </FxOptionData>
   </Trade>
-  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
     <TradeType>FxOption</TradeType>
     <FxOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2028-11-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>4187691.98</BoughtAmount>
+      <BoughtAmount>4801709.49</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>3846395.08</SoldAmount>
+      <SoldAmount>4742168.29</SoldAmount>
     </FxOptionData>
   </Trade>
 </Portfolio>

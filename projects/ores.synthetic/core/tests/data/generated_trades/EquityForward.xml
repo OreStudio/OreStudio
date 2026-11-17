@@ -11,15 +11,15 @@
       <Quantity>2905</Quantity>
     </EquityForwardData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
     <TradeType>EquityForward</TradeType>
     <EquityForwardData>
       <LongShort>Long</LongShort>
-      <Maturity>2031-08-02</Maturity>
-      <Name>RIC:.NDX</Name>
+      <Maturity>2027-09-02</Maturity>
+      <Name>RIC:.SPX</Name>
       <Currency>USD</Currency>
-      <Strike>1937.73</Strike>
-      <Quantity>1888</Quantity>
+      <Strike>1842.92</Strike>
+      <Quantity>4782</Quantity>
     </EquityForwardData>
   </Trade>
 </Portfolio>

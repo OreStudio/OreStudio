@@ -198,6 +198,15 @@ struct step_kind_words {
      * here without stating both.
      */
     std::chrono::seconds timeout;
+    /**
+     * @brief Whether the tenant needs the kind's work to be usable.
+     *
+     * A kind that is not essential and fails ends with warnings, and the run
+     * goes on without its work: market data, trades and reports a tenant can
+     * use the system without, and a person can complete afterwards. The
+     * tenant's administrator reads what is missing from the run.
+     */
+    bool essential = true;
 };
 
 /**
@@ -261,7 +270,8 @@ inline constexpr step_owner provision_step_owners[] = {
                 "Bootstraps each IR curve the system tenant holds a config for from its quotes "
                 "and publishes it, so forwards can be read at once. A curve whose quotes have not "
                 "arrived in time is named with its reason, and the run goes on.",
-                orchestrating_step_timeout};
+                orchestrating_step_timeout,
+                false};
     if (kind == publish_bundle_step_kind)
         return {"Publish the reference data",
                 "Publishes the reference data the tenant works from: the bundles the starting "
@@ -305,52 +315,62 @@ inline constexpr step_owner provision_step_owners[] = {
     if (kind == attach_photos_step_kind)
         return {"Attach the photographs",
                 "Gives the accounts their photographs, and the tenant's party its logo.",
-                write_step_timeout};
+                write_step_timeout,
+                false};
     if (kind == subscribe_market_data_step_kind)
         return {"Subscribe to market data",
                 "Gives each party of the tenant a subscription to a provider and a route to the "
-                "provider's source.",
-                orchestrating_step_timeout};
+                "provider's source. If it fails, the run goes on without market data.",
+                orchestrating_step_timeout,
+                false};
     if (kind == publish_party_curves_step_kind)
         return {"Publish each party's curves",
                 "Gives each party it names its own copy of the system's curve blueprints, "
                 "bootstraps each curve from the quotes the party's subscriptions deliver, and "
                 "publishes it. A curve that does not publish is named with its party and its "
-                "reason, and the step fails.",
-                orchestrating_step_timeout};
+                "reason, the step ends with warnings, and the run goes on.",
+                orchestrating_step_timeout,
+                false};
     if (kind == give_party_surface_blueprints_step_kind)
         return {"Give each party its surface blueprints",
                 "Gives each party it names its own copy of the system's FX volatility surface "
                 "blueprints, reading the volatility quotes the party's subscriptions deliver. A "
-                "blueprint whose quotes do not arrive in time is named with its party, and the "
-                "step fails.",
-                orchestrating_step_timeout};
+                "blueprint whose quotes do not arrive in time is named with its party, the step "
+                "ends with warnings, and the run goes on.",
+                orchestrating_step_timeout,
+                false};
     if (kind == publish_party_forwards_step_kind)
         return {"Publish each party's FX forwards",
                 "Publishes a forward set for every currency pair convention each party it names "
                 "can build from its spot and its published funding curves. A pair the party "
                 "cannot build is named with the reason. A forward that does not publish is named "
-                "with its party, and the step fails.",
-                orchestrating_step_timeout};
+                "with its party, the step ends with warnings, and the run goes on.",
+                orchestrating_step_timeout,
+                false};
     if (kind == publish_party_surfaces_step_kind)
         return {"Publish each party's volatility surfaces",
                 "Calibrates each surface blueprint of each party it names from the party's "
                 "volatility quotes and published forward sets, and publishes it. A surface that "
                 "fails its arbitrage or error checks is named and left unpublished. A surface "
-                "that cannot be calibrated or does not publish is named with its party, and the "
-                "step fails.",
-                orchestrating_step_timeout};
+                "that cannot be calibrated or does not publish is named with its party, the step "
+                "ends with warnings, and the run goes on.",
+                orchestrating_step_timeout,
+                false};
     if (kind == generate_trades_step_kind)
         return {"Generate the trades",
                 "Records a trade generation config for each party the starting point names and "
-                "writes the population it states into that party's own books.",
-                orchestrating_step_timeout};
+                "writes the population it states into that party's own books. Trades that are "
+                "not written are named, the step ends with warnings, and the run goes on.",
+                orchestrating_step_timeout,
+                false};
     if (kind == schedule_reports_step_kind)
         return {"Schedule the reports",
                 "Schedules every report definition each party it names publishes, as the run's "
                 "administrator, so the catalogue ticks without a person acting. A report whose "
-                "schedule is the on-demand placeholder is left to be asked for by hand.",
-                orchestrating_step_timeout};
+                "schedule is the on-demand placeholder is left to be asked for by hand. If it "
+                "fails, the run goes on and the reports can be scheduled later.",
+                orchestrating_step_timeout,
+                false};
     if (kind == start_tenant_setup_step_kind)
         return {"Hand the tenant to its administrator",
                 "Starts the tenant's own setup run, which runs as the tenant "
@@ -598,6 +618,7 @@ make_step(const provision_tenant_workflow_request& run,
     step.command_subject = std::string(step_subject_for_kind(kind));
     step.compensation_subject = "";
     step.timeout = words.timeout;
+    step.essential = words.essential;
 
     provision_tenant_step_command command;
     command.kind = kind;

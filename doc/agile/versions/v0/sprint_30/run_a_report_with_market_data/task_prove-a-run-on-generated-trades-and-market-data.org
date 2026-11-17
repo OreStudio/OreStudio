@@ -5,7 +5,7 @@
 #+description: Every end-to-end run so far has depended on hand-seeded ACME data, which is why a run fails for a data reason rather than a chain reason. The synthetic component already generates the trade population (bond books, counterparties, trade generation configs) and publishes market data (IR curve and FX spot generation configs, feeds into ores.marketdata). Prove a report runs to completion on data the system generates: generate the trades, generate the market data they need, point a report definition at those books, and run it. Record what the generated data cannot yet express, which is the gap a gather has to respect.
 #+type: task
 #+level: s1
-#+filetags: :prove-the-report-grid-run-end-to-end-remaining-2:sprint_30:v0:
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C9FC5224-69D3-444A-8D9E-4669ACC88F36][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,7 +30,7 @@ that gap is what a gather must respect.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:C9FC5224-69D3-444A-8D9E-4669ACC88F36][Prove the report grid run end to end — the remaining work]] |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
 | Now          | Open. No run yet on data the system generates. |
 | Waiting on   | Nothing.                               |
 | Next         | Generate a bond book and the market data it needs, point a report definition at it, and run the report. |

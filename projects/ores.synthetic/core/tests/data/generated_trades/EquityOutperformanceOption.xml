@@ -28,7 +28,7 @@
       <KnockInPrice>1388.65</KnockInPrice>
     </EquityOutperformanceOptionData>
   </Trade>
-  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
+  <Trade id="06ac4b98-591b-5627-8744-f749d53ac7ca">
     <TradeType>EquityOutperformanceOption</TradeType>
     <EquityOutperformanceOptionData>
       <OptionData>
@@ -37,23 +37,23 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2034-08-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Currency>USD</Currency>
-      <Notional>1298135.3</Notional>
+      <Notional>6728487.81</Notional>
       <Underlying1>
         <Type>Equity</Type>
-        <Name>RIC:.NDX</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying1>
       <Underlying2>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:.NDX</Name>
       </Underlying2>
-      <InitialPrice1>2272.91</InitialPrice1>
-      <InitialPrice2>2500.2</InitialPrice2>
+      <InitialPrice1>772.34</InitialPrice1>
+      <InitialPrice2>849.57</InitialPrice2>
       <StrikeReturn>0.01</StrikeReturn>
-      <KnockInPrice>2386.56</KnockInPrice>
+      <KnockInPrice>810.96</KnockInPrice>
     </EquityOutperformanceOptionData>
   </Trade>
 </Portfolio>

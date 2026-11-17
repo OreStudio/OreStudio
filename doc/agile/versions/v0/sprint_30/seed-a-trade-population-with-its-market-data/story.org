@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_30:v0:
 #+created: 2026-10-10
-#+updated: 2026-11-08
+#+updated: 2026-11-17
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -56,12 +56,12 @@ story must pick one (see Decisions).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started. |
+| Now           | Closed on 2026-11-17 into [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]]. Its goal is that story's arc; the generated trades replace the relative-time DQ corpus, and the fixings it asked for are that story's fixings task. |
 | Waiting on    | Nothing.                               |
-| Next          | Settle the decisions in order, then cut the work tasks. |
-| Last touched  | 2026-11-08 |
+| Next          | Nothing. |
+| Last touched  | 2026-11-17 |
 
 * Acceptance
 

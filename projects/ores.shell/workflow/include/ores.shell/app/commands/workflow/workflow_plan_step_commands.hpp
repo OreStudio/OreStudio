@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <workflow_id> <step_index> <name> <label> <description> <command_subject>
-     * <compensation_subject> <timeout_seconds> <reason> <commentary>
+     * <compensation_subject> <timeout_seconds> <essential> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <workflow_id> <step_index> <name> <label> <description> <command_subject>
-     * <compensation_subject> <timeout_seconds> <reason> <commentary> [--version <n>]
+     * <compensation_subject> <timeout_seconds> <essential> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <workflow_id> <step_index> <name> <label> <description>
-     * <command_subject> <compensation_subject> <timeout_seconds> <reason> <commentary>
+     * <command_subject> <compensation_subject> <timeout_seconds> <essential> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

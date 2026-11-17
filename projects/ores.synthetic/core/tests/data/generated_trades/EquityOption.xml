@@ -18,7 +18,7 @@
       <Strike>2538.69</Strike>
     </EquityOptionData>
   </Trade>
-  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
     <TradeType>EquityOption</TradeType>
     <EquityOptionData>
       <OptionData>
@@ -27,13 +27,13 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2029-01-02</ExerciseDate>
+          <ExerciseDate>2034-08-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>RIC:.STOXX50E</Name>
-      <Currency>EUR</Currency>
-      <Quantity>1760.76</Quantity>
-      <Strike>4255.09</Strike>
+      <Name>RIC:.NDX</Name>
+      <Currency>USD</Currency>
+      <Quantity>571.13</Quantity>
+      <Strike>2272.91</Strike>
     </EquityOptionData>
   </Trade>
 </Portfolio>

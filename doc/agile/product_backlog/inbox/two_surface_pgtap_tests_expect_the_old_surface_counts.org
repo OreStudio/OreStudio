@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 1C283730-B9B0-440A-B97A-7002B986F11B
+:END:
+#+title: Two surface pgTAP tests expect the surface counts before every pair was surfaced
+#+description: On a fresh database at main 4e6e99f2e1, acme_fx_volatility_configs_test fails 3 of 9 (54 surfaces where it wants 22) and refdata_fx_vol_surface_blueprints_publish_test fails 2 of 15 (35 pairs where it wants 10) and then dies on a duplicate market series. The seed now surfaces every pair the ladder carries, so the tests' counts are stale.
+#+type: capture
+#+level: cross
+#+filetags: :pgtap:marketdata:surfaces:keep_main_green:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+On a fresh database at main =4e6e99f2e1=, two pgTAP suites fail.
+=acme_fx_volatility_configs_test.sql= fails 3 of 9: the ACME entities read
+54 surfaces where the test wants 22, and nine entity and pair rows it does
+not list. =refdata_fx_vol_surface_blueprints_publish_test.sql= fails 2 of
+15: the derived source quotes 35 pairs where the test wants 10. It then
+stops on a duplicate key in =market_series_party_id_oresmd_uri_provider_code_uniq_idx=,
+because the series its fixture inserts already exists. Update the counts and
+the fixture pair to the seed as it now stands.
+
+* Why
+
+The seed now surfaces every pair the ladder carries, out to ten years, and
+the two tests still state the counts from before. A red pgTAP suite hides a
+real failure among the stale ones.
+
+* References
+
+- Found by the full pgTAP run of the task "Resolve a trade set's market data
+  requirements", on 2026-11-17.
+
+* See also
+
+-

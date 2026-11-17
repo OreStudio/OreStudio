@@ -122,10 +122,10 @@ std::pair<usd_leg, spot_reading> read_usd_leg(const context& ctx,
                   currency + ".");
 }
 
-funding_curve read_funding_curve(const context& ctx,
-                                 const std::string& currency,
-                                 const std::string& party_id,
-                                 time_point as_of) {
+/// The one funding curve configured for a currency, or a refusal. Read before any curve is,
+/// because it is the cheap check that most often refuses.
+ores::refdata::domain::ir_curve_bootstrap_config
+find_funding_config(const context& ctx, const std::string& currency, const std::string& party_id) {
     refdata_repo::ir_curve_bootstrap_config_repository config_repo;
     // The currency's funding curves, read through the filter the store applies.
     // The party is narrowed after the read, because the store keeps no filter
@@ -144,8 +144,13 @@ funding_curve read_funding_curve(const context& ctx,
     if (configs.size() > 1)
         throw refused("More than one funding curve is configured for " + currency +
                       ". Name the party.");
-    const auto& config = configs.front();
+    return configs.front();
+}
 
+funding_curve read_funding_curve(const context& ctx,
+                                 const std::string& currency,
+                                 const ores::refdata::domain::ir_curve_bootstrap_config& config,
+                                 time_point as_of) {
     repository::curve_publish_repository publish_repo;
     const auto sets = publish_repo.read_applied_for_series(ctx, config.output_series_id);
     const auto set = select_published_set(sets, as_of);
@@ -195,16 +200,9 @@ computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& requ
     if (conventions.empty())
         throw refused("No convention is published for " + request.pair_code + ".");
     const auto& convention = conventions.front();
-    // The dates the ladder publishes are the pair's rule's, read once: the same rule a surface
-    // dates its expiries with, so the ladder and the surface cannot disagree about a tenor.
-    const auto expiry_rule =
-        ores::refdata::service::read_pair_expiry_date_rule(ctx, request.pair_code);
-    if (!expiry_rule)
-        throw refused(expiry_rule.error());
 
     computed_fx_forward_set computed;
     computed.convention_version = convention.version;
-    computed.calendar_codes = expiry_rule->calendar_codes;
     const int spot_days = read_spot_days(ctx, *pair);
     std::optional<boost::uuids::uuid> party;
     if (!request.party_id.empty())
@@ -238,8 +236,22 @@ computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& requ
         spot.value = cross_rate(base_leg, quote_leg);
         spot.observed_at = std::min(base_spot.observed_at, quote_spot.observed_at);
     }
-    auto base = read_funding_curve(ctx, pair->base, request.party_id, request.as_of);
-    auto quote = read_funding_curve(ctx, pair->quote, request.party_id, request.as_of);
+    // The checks that refuse cheaply run first: a pair a party cannot build is asked for on
+    // every provisioning run, and reading the calendars or a curve before refusing it made
+    // each refusal cost seconds.
+    const auto base_config = find_funding_config(ctx, pair->base, request.party_id);
+    const auto quote_config = find_funding_config(ctx, pair->quote, request.party_id);
+
+    // The dates the ladder publishes are the pair's rule's, read once: the same rule a surface
+    // dates its expiries with, so the ladder and the surface cannot disagree about a tenor.
+    const auto expiry_rule =
+        ores::refdata::service::read_pair_expiry_date_rule(ctx, request.pair_code);
+    if (!expiry_rule)
+        throw refused(expiry_rule.error());
+    computed.calendar_codes = expiry_rule->calendar_codes;
+
+    auto base = read_funding_curve(ctx, pair->base, base_config, request.as_of);
+    auto quote = read_funding_curve(ctx, pair->quote, quote_config, request.as_of);
     if (base.interpolation != quote.interpolation)
         throw refused("The funding curves of " + request.pair_code +
                       " use different interpolation methods.");

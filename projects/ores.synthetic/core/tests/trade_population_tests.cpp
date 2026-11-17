@@ -152,8 +152,8 @@ domain::trade_generation_scope bond_scope() {
 }
 
 /*
- * A scope of the rate family. The seven trade types the router sends to
- * rate_instrument are nine here, and the catalogue is the tenant's own, so the
+ * A scope of the rate family. The trade types the router sends to
+ * rate_instrument are eleven here, and the catalogue is the tenant's own, so the
  * scope states three indices of one currency and one of another.
  */
 domain::trade_generation_scope rate_scope() {
@@ -194,7 +194,7 @@ domain::trade_generation_scope inflation_scope() {
 }
 
 /*
- * A scope of the FX family. The routed types are eighteen here, and the
+ * A scope of the FX family. The routed types are twenty-six here, and the
  * catalogue carries one pair of the book's currency and one that names neither
  * side of it, so the preference is testable.
  */
@@ -203,6 +203,7 @@ domain::trade_generation_scope fx_scope() {
     scope.asset_class_code = "fx";
     scope.currency_code = "EUR";
     scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
+    scope.floating_index_codes = {"EUR-ESTR", "USD-SOFR"};
     return scope;
 }
 
@@ -326,6 +327,11 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
+        // A CBO names a structure the reference data holds, in the scripted table.
+        if (slot.trade_type_code == "CBO") {
+            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            continue;
+        }
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
         const auto& row = slot.instruments.credit_instruments.front();
         CHECK_FALSE(slot.instruments.swap_legs.empty());
@@ -430,7 +436,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 22;
+    wide.trades_per_book = 33;
 
     const auto plan = plan_of(wide);
 
@@ -443,15 +449,15 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     }
 
     /*
-     * Twenty-two codes, nineteen products and three containers, and the
-     * planner cycles through them, so one book of twenty-two reaches every one. The
+     * Thirty-three codes, thirty products and three containers, and the
+     * planner cycles through them, so one book of thirty-three reaches every one. The
      * composite holds two options and each return swap one position, which
      * are trades of their own.
      */
-    REQUIRE(types.size() == 22u);
+    REQUIRE(types.size() == 33u);
     const auto books = wide.book_ids.size();
     CHECK(held == 4u * books);
-    CHECK(plan.slots.size() == 26u * books);
+    CHECK(plan.slots.size() == 37u * books);
     CHECK(plan.structures.size() == 3u * books);
 }
 
@@ -628,6 +634,12 @@ TEST_CASE("a_bond_slot_states_its_instrument_and_its_security", "[trade_populati
     const auto plan = plan_of(bond_scope());
 
     for (const auto& slot : plan.slots) {
+        // An option on a bond future names a contract, so its batch is scripted.
+        if (slot.trade_type_code == "BondFutureOption") {
+            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            CHECK(slot.bond_issue.has_value());
+            continue;
+        }
         /*
          * A bond states a security before it states a trade, so the plan carries
          * the issue with the rows the composite write takes, beside the batch.
@@ -773,11 +785,12 @@ TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_popu
     /*
      * Recorded from the planner as it stood before the envelope was extracted,
      * so this case fails if the extraction changed anything a slot states. The
-     * value moved once since, deliberately: the bond planner now draws every
+     * value moved twice since, deliberately: the bond planner draws every
      * code the catalogue routes rather than a plain Bond alone, and the trade
-     * type is part of the envelope.
+     * type is part of the envelope; then the option on a bond future joined
+     * the cycle.
      */
-    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 15911127303722676035ULL);
+    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 5144697870441103994ULL);
 }
 
 TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_population]") {
@@ -786,6 +799,11 @@ TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_popu
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
+        // A rate digital option holds no legs; the scripted table holds its terms.
+        if (slot.trade_type_code == "RateDigitalOption") {
+            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            continue;
+        }
         /*
          * The family states its rows and no bag: the legs, the amounts, the
          * rates and the strikes are what the writer persists.
@@ -826,11 +844,16 @@ TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_popu
 }
 
 TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", "[trade_population]") {
-    const auto scope = rate_scope();
+    auto scope = rate_scope();
+    scope.trades_per_book = 11;
     const auto plan = plan_of(scope);
 
-    // The nine the router sends to rate_instrument, less the inflation swap.
-    CHECK(codes_of(plan).size() == 9);
+    /*
+     * The eleven the planner books, which are the ones the router sends to
+     * rate_instrument less the inflation swap, and the rate digital option the
+     * scripted table holds.
+     */
+    CHECK(codes_of(plan).size() == 11);
 }
 
 TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
@@ -843,7 +866,7 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     auto wide = rate_scope();
     wide.trades_per_book = 64;
     const auto routed = codes_of(plan_of(wide));
-    REQUIRE(routed.size() == 9);
+    REQUIRE(routed.size() == 11);
 
     auto seeded = rate_scope();
     seeded.book_ids = {bond_book};
@@ -986,27 +1009,27 @@ TEST_CASE("a month_end_anchor_still_dates_every_fx_trade", "[trade_population]")
 
 TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto scope = fx_scope();
-    scope.trades_per_book = 18;
+    scope.trades_per_book = 26;
     const auto plan = plan_of(scope);
 
     std::set<std::string> types;
     for (const auto& slot : plan.slots)
         types.insert(slot.trade_type_code);
 
-    CHECK(types.size() == 18);
+    CHECK(types.size() == 26);
 }
 
 TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
           "[trade_population]") {
     /*
-     * The fx planner cycles eighteen routed codes. A config of eight slots never
+     * The fx planner cycles twenty-six routed codes. A config of eight slots never
      * reaches the variance swap or the accumulator, which is what a tenant held
      * before the seeded configs stated one trade per code.
      */
     auto wide = fx_scope();
     wide.trades_per_book = 64;
     const auto routed = codes_of(plan_of(wide));
-    REQUIRE(routed.size() == 18);
+    REQUIRE(routed.size() == 26);
 
     auto seeded = fx_scope();
     seeded.book_ids = {bond_book};
@@ -1043,6 +1066,31 @@ TEST_CASE("an_fx_variance_swap_states_a_window_with_a_length", "[trade_populatio
         CHECK(row.end_date.year() != std::chrono::year{0});
     }
     REQUIRE(found);
+}
+
+TEST_CASE("a_basket_in_a_book_whose_currency_no_second_pair_quotes_is_still_planned",
+          "[trade_population]") {
+    /*
+     * The UK book's currency is GBP, and EUR/GBP is the only pair quoted in it,
+     * so a slot of a product on two pairs that drew EUR/GBP had no partner and
+     * refused the whole population. Such a slot now draws from the pairs that
+     * have one.
+     */
+    auto scope = fx_scope();
+    scope.currency_code = "GBP";
+    scope.currency_pairs = {{.base = "EUR", .quote = "GBP"},
+                            {.base = "EUR", .quote = "USD"},
+                            {.base = "GBP", .quote = "USD"}};
+    scope.trades_per_book = 64;
+
+    domain::trade_population_plan plan;
+    REQUIRE_NOTHROW(plan = plan_of(scope));
+    const auto codes = codes_of(plan);
+    CHECK(codes.contains("FxBasketOption"));
+    CHECK(codes.contains("FxRainbowOption"));
+    CHECK(codes.contains("FxBasketVarianceSwap"));
+    CHECK(codes.contains("FxPairwiseVarianceSwap"));
+    CHECK(codes.contains("FxWorstOfBasketSwap"));
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {
@@ -1171,8 +1219,8 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_variables_it_reads",
         types.insert(row.identity.trade_type_code);
     }
 
-    // The four codes the scripted family books, each through its builder.
-    CHECK(types.size() == 4u);
+    // The five codes the scripted family books, each through its builder.
+    CHECK(types.size() == 5u);
     CHECK(types.contains("Autocallable_01"));
     CHECK(observed.size() > 1u);
 }
@@ -1202,6 +1250,7 @@ TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade
 
     CHECK(names_by_type["DoubleDigitalOption"] == 2u);
     CHECK(names_by_type["PerformanceOption_01"] == 2u);
+    CHECK(names_by_type["EuropeanOptionBarrier"] == 2u);
     CHECK(names_by_type["ScriptedTrade"] == 0u);
 }
 
@@ -1311,6 +1360,22 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", "[trade
         REQUIRE(bond_of(slot).maturity_date == bond_of(found->second).maturity_date);
         REQUIRE(bond_of(slot).tenor_years == bond_of(found->second).tenor_years);
     }
+}
+
+TEST_CASE("a_forward_bond_matures_before_its_bond_does", "[trade_population]") {
+    auto scope = bond_scope();
+    scope.trades_per_book = 64;
+    std::size_t forwards = 0;
+    for (const auto& slot : plan_of(scope).slots) {
+        for (const auto& forward : slot.instruments.bond_forwards) {
+            REQUIRE(forward.forward_maturity_date.has_value());
+            const auto bond_maturity = std::format("{:%Y-%m-%d}", bond_of(slot).maturity_date);
+            INFO("forward " << *forward.forward_maturity_date << " bond " << bond_maturity);
+            CHECK(*forward.forward_maturity_date < bond_maturity);
+            ++forwards;
+        }
+    }
+    CHECK(forwards > 0u);
 }
 
 TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", "[trade_population]") {
@@ -1509,7 +1574,7 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
     auto scope = fx_scope();
     scope.min_tenor_code = "1M";
     scope.max_tenor_code = "2Y";
-    scope.trades_per_book = 16;
+    scope.trades_per_book = 26;
     scope.seed = 44;
     /*
      * The day a run anchors on is the day the population draws its months back
@@ -1529,7 +1594,7 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
             CHECK(row.end_date > row.start_date);
         }
     }
-    /* One per book: sixteen types in the cycle, two books in the scope. */
+    /* One per book: twenty-six types in the cycle, two books in the scope. */
     CHECK(swaps == 2);
 }
 
@@ -1670,8 +1735,9 @@ std::vector<domain::trade_generation_scope> every_class_scope() {
                                                        commodity_scope(),
                                                        equity_scope(),
                                                        credit_scope()};
+    // About eight trades of each type a book, so a drawn either-or reaches both of its ways.
     for (auto& scope : scopes)
-        scope.trades_per_book = 64;
+        scope.trades_per_book = 256;
     return scopes;
 }
 

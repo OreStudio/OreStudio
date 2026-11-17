@@ -28,8 +28,8 @@
  * whose fixings fed them, and the provider carries no terms of its own.
  *
  * The rows: the provider, the session and feed the synthetic service serves it
- * through, a vendor instrument for each pair, expiry and label mapped to its
- * fx_option item, the feed's scopes, and the system party's subscription and route.
+ * through, and the system party's subscription and route. The quotes it serves are
+ * in marketdata_derived_inventory_populate.sql, which reads the blueprints.
  *
  * This script is idempotent.
  */
@@ -85,96 +85,6 @@ values
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
-
-\echo '--- Derived Source: Vendor Instruments, Mappings and Scopes ---'
-
--- A vendor id names a pair, an expiry and a label, such as EURUSD/1Y/25RR, in the
--- derived source's own notation. Each maps to the fx_option quote of the pair in its
--- base/quote order.
-create temporary table t_derived_inventory (
-    external_id text, oresmd_uri text
-) on commit drop;
-
-insert into t_derived_inventory (external_id, oresmd_uri)
-select p.base || p.quote || '/' || e.expiry || '/' || l.label,
-       'oresmd://fx/' || p.base || '?type=quote&instrument=fx_option&quote=rate_lnvol&ccy='
-           || p.quote || '&expiry=' || e.expiry || '&strike_label=' || l.label
-from (values ('AUD', 'CAD'), ('AUD', 'CHF'), ('AUD', 'JPY'), ('AUD', 'NZD'),
-             ('AUD', 'USD'), ('CAD', 'JPY'), ('CHF', 'JPY'), ('EUR', 'AUD'),
-             ('EUR', 'CAD'), ('EUR', 'CHF'), ('EUR', 'DKK'), ('EUR', 'GBP'),
-             ('EUR', 'JPY'), ('EUR', 'NZD'), ('EUR', 'SEK'), ('EUR', 'TRY'),
-             ('EUR', 'USD'), ('GBP', 'AUD'), ('GBP', 'CAD'), ('GBP', 'CHF'),
-             ('GBP', 'JPY'), ('GBP', 'NZD'), ('GBP', 'USD'), ('NZD', 'JPY'),
-             ('NZD', 'USD'), ('USD', 'CAD'), ('USD', 'CHF'), ('USD', 'CZK'),
-             ('USD', 'HKD'), ('USD', 'INR'), ('USD', 'JPY'), ('USD', 'KRW'),
-             ('USD', 'MXN'), ('USD', 'SGD'), ('USD', 'ZAR')) as p (base, quote)
-cross join (values ('1W'), ('1M'), ('2M'), ('3M'), ('6M'), ('9M'), ('1Y'), ('18M'),
-                    ('2Y'), ('3Y'), ('5Y'), ('7Y'), ('10Y')) as e (expiry)
-cross join (values ('ATM'), ('25RR'), ('25BF'), ('10RR'), ('10BF')) as l (label);
-
-insert into ores_marketdata_market_data_vendor_instruments_tbl (
-    id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
-    modified_by, performed_by, change_reason_code, change_commentary
-)
-select md5('derived|derived_fx_vol|' || t.external_id || '|rate_lnvol')::uuid,
-       ores_utility_system_tenant_id_fn(), 0, 'derived', 'derived_fx_vol', t.external_id,
-       'rate_lnvol', false, '', current_user, current_user, 'system.initial_load',
-       'Initial population of the derived source'
-from t_derived_inventory t
-where not exists (
-    select 1 from ores_marketdata_market_data_vendor_instruments_tbl v
-    where v.tenant_id = ores_utility_system_tenant_id_fn()
-      and v.provider_code = 'derived'
-      and v.id_scheme = 'derived_fx_vol'
-      and v.external_id = t.external_id
-      and v.field = 'rate_lnvol'
-      and v.valid_to = ores_utility_infinity_timestamp_fn()
-);
-
-insert into ores_marketdata_market_data_mappings_tbl (
-    id, tenant_id, version, vendor_instrument_id, oresmd_uri, effective_from,
-    modified_by, performed_by, change_reason_code, change_commentary
-)
-select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, v.id, t.oresmd_uri,
-       timestamptz '2026-01-01 00:00:00+00', current_user, current_user, 'system.initial_load',
-       'Initial population of the derived source'
-from t_derived_inventory t
-join ores_marketdata_market_data_vendor_instruments_tbl v
-  on v.tenant_id = ores_utility_system_tenant_id_fn()
- and v.provider_code = 'derived'
- and v.id_scheme = 'derived_fx_vol'
- and v.external_id = t.external_id
- and v.field = 'rate_lnvol'
- and v.valid_to = ores_utility_infinity_timestamp_fn()
-where not exists (
-    select 1 from ores_marketdata_market_data_mappings_tbl m
-    where m.tenant_id = ores_utility_system_tenant_id_fn()
-      and m.vendor_instrument_id = v.id
-      and m.valid_to = ores_utility_infinity_timestamp_fn()
-);
-
-insert into ores_marketdata_feed_scopes_tbl (
-    id, tenant_id, version, feed_id, asset_class, item, vendor_instrument_id,
-    modified_by, performed_by, change_reason_code, change_commentary
-)
-select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0,
-       'afd34349-1c6c-56b2-a686-97b623ee051a', 'fx', m.oresmd_uri, v.id,
-       current_user, current_user, 'system.initial_load', 'Initial population of the derived source'
-from ores_marketdata_market_data_vendor_instruments_tbl v
-join ores_marketdata_market_data_mappings_tbl m
-  on m.vendor_instrument_id = v.id
- and m.tenant_id = ores_utility_system_tenant_id_fn()
- and m.valid_to = ores_utility_infinity_timestamp_fn()
-where v.tenant_id = ores_utility_system_tenant_id_fn()
-  and v.provider_code = 'derived'
-  and v.valid_to = ores_utility_infinity_timestamp_fn()
-  and not exists (
-      select 1 from ores_marketdata_feed_scopes_tbl s
-      where s.tenant_id = ores_utility_system_tenant_id_fn()
-        and s.feed_id = 'afd34349-1c6c-56b2-a686-97b623ee051a'
-        and s.item = m.oresmd_uri
-        and s.valid_to = ores_utility_infinity_timestamp_fn()
-  );
 
 \echo '--- Derived Source: Subscription and Route of the System Party ---'
 

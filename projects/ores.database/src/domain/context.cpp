@@ -18,7 +18,7 @@
  */
 #include "ores.database/domain/context.hpp"
 #include "ores.database/pq/pool.hpp"
-#include "ores.database/pq/transaction.hpp"
+#include "ores.database/pq/session_context.hpp"
 #include <mutex>
 
 namespace ores::database {

@@ -475,9 +475,6 @@ private:
     commodity_window_barrier_option_terms terms_;
 };
 
-/// Whether a trigger fires when the price rises to it or falls to it.
-enum class trigger_direction { up, down };
-
 /**
  * @brief An option whose strike resets when the commodity's price reaches the
  * trigger on an observation date, observed monthly from a start to the expiry.

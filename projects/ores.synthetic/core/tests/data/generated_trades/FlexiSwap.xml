@@ -61,7 +61,7 @@
       </LegData>
     </FlexiSwapData>
   </Trade>
-  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>FlexiSwap</TradeType>
     <FlexiSwapData>
       <OptionLongShort>Short</OptionLongShort>
@@ -72,12 +72,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>6103286.3</Notional>
+          <Notional>9466062.35</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-11-02</StartDate>
-            <EndDate>2027-11-02</EndDate>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2033-09-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -87,7 +87,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0372</Rate>
+            <Rate>0.0559</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -98,12 +98,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>6103286.3</Notional>
+          <Notional>9466062.35</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-11-02</StartDate>
-            <EndDate>2027-11-02</EndDate>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2033-09-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>

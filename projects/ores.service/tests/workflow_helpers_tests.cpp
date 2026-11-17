@@ -60,6 +60,21 @@ TEST_CASE("workflow step context reads the three headers off a command", "[workf
     REQUIRE(ctx->nats == &nats);
 }
 
+TEST_CASE("workflow step context reads the attempt a command was sent as", "[workflow_helpers]") {
+    // A re-run sends the same step under a new attempt; its answer is published
+    // under that attempt, so the stream does not drop it as the first answer's repeat.
+    ores::nats::service::client nats{ores::nats::config::nats_options{}};
+    ores::nats::message msg;
+    msg.headers[std::string(step_id_header)] = "step-1";
+    REQUIRE(workflow_step_context::from_message(nats, msg)->attempt.empty());
+
+    msg.headers[std::string(ores::nats::headers::nats_msg_id)] = "attempt-2";
+    const auto ctx = workflow_step_context::from_message(nats, msg);
+    REQUIRE(ctx.has_value());
+    CHECK(ctx->step_id == "step-1");
+    CHECK(ctx->attempt == "attempt-2");
+}
+
 TEST_CASE("workflow step context is absent on a message that is not a workflow command",
           "[workflow_helpers]") {
     ores::nats::service::client nats{ores::nats::config::nats_options{}};

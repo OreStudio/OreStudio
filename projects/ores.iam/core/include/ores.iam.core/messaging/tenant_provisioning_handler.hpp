@@ -1066,7 +1066,9 @@ private:
                                              super_actor->username);
         publish_bundle_or_throw(
             admin_client, bundle_code, super_actor->username, params_json, command.kind);
+        wf.record("Published the bundle " + bundle_code);
         complete_system_onboarding(admin_client);
+        wf.record("Marked the system's onboarding complete");
         wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
     }
@@ -1476,6 +1478,8 @@ private:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_forwards: " << party_name << ": published " << published << " of "
                 << pairs.size() << " pair(s)";
+            wf.record(party_name + ": published forward sets for " + std::to_string(published) +
+                      " of " + std::to_string(pairs.size()) + " pair(s)");
             // A refusal reads as a skip, so a service that refuses every pair for a reason of
             // its own, such as a permission, would otherwise pass the step with nothing published.
             if (published == 0 && held == 0)
@@ -1638,6 +1642,8 @@ private:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_surfaces: " << party_name << ": published " << published << " of "
                 << blueprints.size() << " surface(s)";
+            wf.record(party_name + ": published " + std::to_string(published) + " of " +
+                      std::to_string(blueprints.size()) + " surface(s)");
             result.parties.push_back(boost::uuids::to_string(party->id));
         }
 
@@ -1676,6 +1682,8 @@ private:
         if (response.result.outcome != ores::utility::domain::outcome::ok)
             throw std::runtime_error("The approvals mode was not changed: " +
                                      response.result.message);
+        wf.record(auto_approved ? "Turned auto-approval on: " + reason :
+                                  "Turned auto-approval off: " + reason);
 
         provision_step_result result;
         result.kind = command.kind;
@@ -1703,8 +1711,10 @@ private:
         if (!actor.party_id.is_nil())
             params.party_id = boost::uuids::to_string(actor.party_id);
         const auto params_json = dq::messaging::build_params_json(params);
-        for (const auto& bundle_code : arguments.bundles)
+        for (const auto& bundle_code : arguments.bundles) {
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
+            wf.record("Published the bundle " + bundle_code);
+        }
 
         wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .bundles = arguments.bundles}));
@@ -1741,8 +1751,11 @@ private:
         dq::messaging::publish_bundle_params params;
         params.lei_parties = dq::messaging::lei_parties_params{.root_lei = arguments.root_lei};
         const auto params_json = dq::messaging::build_params_json(params);
-        for (const auto& bundle_code : arguments.bundles)
+        for (const auto& bundle_code : arguments.bundles) {
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
+            wf.record("Published the bundle " + bundle_code + " for the legal entity " +
+                      arguments.root_lei + " and the entities below it");
+        }
 
         wf.complete(ores::utility::codec::json::write(provision_step_result{
             .kind = command.kind, .bundles = arguments.bundles, .root_lei = arguments.root_lei}));
@@ -1785,12 +1798,16 @@ private:
             dq::messaging::publish_bundle_params params;
             params.party_id = party_id;
             const auto params_json = dq::messaging::build_params_json(params);
-            for (const auto& bundle_code : arguments.bundles)
+            for (const auto& bundle_code : arguments.bundles) {
                 publish_bundle_or_throw(client, bundle_code, actor.username, params_json, party_id);
+                wf.record(party.full_name + ": published the bundle " + bundle_code);
+            }
 
             activate_party(client, party);
             complete_party_onboarding(client, party.id);
             associate_account_with_party(client, actor.account_id, party.id);
+            wf.record(party.full_name +
+                      ": activated, onboarded, and the administrator given access to it");
 
             /*
              * Last, because it is the one write here that touches the party
@@ -1798,8 +1815,10 @@ private:
              * belongs to, and a party the step has already saved would then be
              * refused as one that moved on.
              */
-            if (!arguments.lei.empty())
+            if (!arguments.lei.empty()) {
                 record_party_lei(client, party, arguments.lei);
+                wf.record(party.full_name + ": recorded its LEI " + arguments.lei);
+            }
 
             provisioned.push_back(party_id);
         }
@@ -1830,15 +1849,19 @@ private:
             dq::messaging::publish_bundle_params params;
             params.party_id = boost::uuids::to_string(party->id);
             const auto params_json = dq::messaging::build_params_json(params);
-            for (const auto& bundle_code : assignment.bundles)
+            for (const auto& bundle_code : assignment.bundles) {
                 publish_bundle_or_throw(
                     client, bundle_code, actor.username, params_json, assignment.party_name);
+                wf.record(assignment.party_name + ": published the staff bundle " + bundle_code);
+            }
 
             activate_party(client, *party);
             complete_party_onboarding(client, party->id);
             associate_account_with_party(client, actor.account_id, party->id);
-            if (assignment.is_default)
+            if (assignment.is_default) {
                 set_account_default_party(client, party->id);
+                wf.record(assignment.party_name + ": made the administrator's default party");
+            }
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
@@ -1888,6 +1911,7 @@ private:
         }
 
         if (account_ids.empty()) {
+            wf.record("The tenant holds no staff account to give a password to");
             wf.complete(
                 ores::utility::codec::json::write(provision_step_result{.kind = command.kind}));
             return;
@@ -1928,6 +1952,8 @@ private:
                         static_cast<std::int64_t>(account_ids.size()));
         }
 
+        wf.record("Gave " + std::to_string(set.size()) +
+                  " staff account(s) the password the starting point states");
         wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .accounts = set}));
     }
@@ -1950,6 +1976,7 @@ private:
         // The administrators' pictures are the product's own, so they are
         // attached every time the kind runs, not from the profile's data.
         attach_administrator_photos(discover, tenant_ctx, command, actor, images);
+        wf.record("Attached " + std::to_string(images.size()) + " image(s) to the administrators");
 
         for (const auto& assignment : arguments.parties) {
             auto party = find_party(discover, assignment.party_name);
@@ -1959,15 +1986,20 @@ private:
 
             auto client =
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+            const auto before = images.size();
             attach_staff_photos(client, tenant_ctx, command.tenant_id, images);
+            wf.record(assignment.party_name + ": attached " +
+                      std::to_string(images.size() - before) + " staff photo(s)");
 
             // The party is read here, after any earlier step that wrote it, so
             // the version the logo's write states is the version the store
             // holds. Giving the logo its own read is what keeps that true
             // whatever order the profile states the kinds in.
-            if (!arguments.party_logo.empty() && !party->image_id)
+            if (!arguments.party_logo.empty() && !party->image_id) {
                 attach_party_logo(
                     client, tenant_ctx, *party, arguments.party_logo, command.tenant_id, images);
+                wf.record(assignment.party_name + ": attached its logo");
+            }
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
@@ -2074,6 +2106,10 @@ private:
                 << "schedule_reports: " << party_name << ": scheduled " << schedule.scheduled
                 << ", already scheduled " << schedule.already_scheduled << ", on demand "
                 << schedule.on_demand << ", not a cron " << schedule.not_a_cron;
+            wf.record(party_name + ": scheduled " + std::to_string(schedule.scheduled) +
+                      " report(s), " + std::to_string(schedule.already_scheduled) +
+                      " already scheduled, " + std::to_string(schedule.on_demand) +
+                      " run on demand");
             result.parties.push_back(boost::uuids::to_string(party->id));
             result.report_schedules.push_back(std::move(schedule));
         }
@@ -2131,6 +2167,7 @@ private:
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Started " << start.type << " for tenant " << run.tenant_code
             << " (instance: " << instance_id << ")";
+        wf.record("Started the setup of tenant " + run.tenant_code);
 
         wf.complete(ores::utility::codec::json::write(provision_step_result{
             .kind = command.kind, .tenant_id = run.tenant_id, .child_instance_id = instance_id}));
@@ -2156,6 +2193,7 @@ private:
             "complete_provisioning_step");
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Tenant marked active: " << command.tenant_id;
+        wf.record("Marked the tenant active");
 
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
@@ -2188,6 +2226,7 @@ private:
             if (resp.result.outcome == ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "Bootstrap mode cleared for tenant: " << command.tenant_id;
+                wf.record("Took the tenant out of bootstrap mode");
                 wf.complete(result);
                 return;
             }

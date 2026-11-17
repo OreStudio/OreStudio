@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+    <TradeType>FxWindowBarrierOption</TradeType>
+    <FxWindowBarrierOptionData>
+      <Currency>USD</Currency>
+      <FixingAmount>4187691.98</FixingAmount>
+      <Strike>0.9185</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2028-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2027-05-04</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>0.8267</Level>
+        </Levels>
+      </BarrierData>
+    </FxWindowBarrierOptionData>
+  </Trade>
+  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
+    <TradeType>FxWindowBarrierOption</TradeType>
+    <FxWindowBarrierOptionData>
+      <Currency>USD</Currency>
+      <FixingAmount>3698285.51</FixingAmount>
+      <Strike>0.9102</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2029-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <StartDate>2025-09-02</StartDate>
+      <EndDate>2027-09-02</EndDate>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>0.8192</Level>
+        </Levels>
+      </BarrierData>
+    </FxWindowBarrierOptionData>
+  </Trade>
+</Portfolio>

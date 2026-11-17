@@ -136,6 +136,9 @@ struct prepared_surface_calibration final {
     std::vector<missing_surface_pillar> missing;
     /// The sources of each quoted pillar, by its point, such as 1Y/25RR.
     std::map<std::string, std::vector<used_surface_source>> sources_by_point;
+    /// Each expiry the surface could not fit, with why, such as "10Y: no pillar quoted". Its
+    /// pillars are in missing, and the output grid leaves it out.
+    std::vector<std::string> unfitted_expiries;
 };
 
 /**
@@ -145,8 +148,10 @@ struct prepared_surface_calibration final {
  * own row, or a log-linear interpolation between the rows around the expiry's value date. Its
  * time is the expiry's length from the as-of in years of 365 days. A pillar's quote is each
  * quoting contributor's volatility at its weight; a pillar no contributor quoted is reported as
- * missing, and an expiry left short of the pillars SSVI needs is refused, naming the series it
- * could not read.
+ * missing. An expiry left short of the pillars SSVI needs is not fitted: it is named in
+ * unfitted_expiries, and the output grid keeps only the expiries the fit covers, so a surface
+ * never quotes past its data. A surface that fits fewer than @p minimum_expiries is refused,
+ * naming how many it had and why the others were left out.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT
     std::expected<prepared_surface_calibration, std::string>
@@ -154,7 +159,8 @@ struct prepared_surface_calibration final {
                         const checked_recipe& checked,
                         const surface_forward_set& forwards,
                         const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
-                        double pillar_tolerance);
+                        double pillar_tolerance,
+                        std::size_t minimum_expiries);
 
 /// The items of a blueprint's comma-separated list, such as its output strikes, trimmed.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string>

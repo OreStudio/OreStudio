@@ -12,27 +12,24 @@ shows come from the quotes its pillars read.
 
 1. PAIRS
 
-   One blueprint for each of the ten pairs the derived source of FX
-   volatility quotes publishes: EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD,
-   USD/CAD, NZD/USD, EUR/GBP, EUR/JPY and EUR/CHF. The source's inventory is
-   in projects/ores.sql/populate/marketdata/marketdata_derived_catalogue_populate.sql.
-   These are the G10 pairs that carry most FX option turnover (BIS Triennial
-   Central Bank Survey of foreign exchange and OTC derivatives markets, 2022).
-   A pair keeps market quoting order: EUR, GBP, AUD and NZD quote against USD,
-   USD quotes against CAD, CHF and JPY, and EUR quotes against GBP, JPY and CHF.
+   One blueprint for each of the 35 pairs the derived source of FX volatility
+   quotes publishes: the G10 crosses that carry most FX option turnover (BIS
+   Triennial Central Bank Survey of foreign exchange and OTC derivatives
+   markets, 2022) and the emerging-market pairs quoted against USD or EUR. A
+   pair keeps market quoting order. The derived source's inventory is read
+   from these blueprints (marketdata_derived_inventory_populate.sql), so the
+   pairs and the ladder below are stated here and nowhere else.
 
 2. PILLARS
 
-   Each blueprint reads 35 points: the expiries 1W, 1M, 2M, 3M, 6M, 9M and 1Y,
-   each quoted as ATM, the 25 and 10 delta risk reversals (25RR, 10RR) and the
-   25 and 10 delta butterflies (25BF, 10BF). This is the quote set an FX option
-   broker shows for a pair (I. Clark, Foreign Exchange Option Pricing: A
-   Practitioner's Guide, Wiley 2011, chapter 3; D. Reiswich and U. Wystup, FX
-   Volatility Smile Construction, Wilmott 2012).
-
-   The 2Y expiry is left out. The derived source quotes 2Y only from two years
-   of fixings, and the seeded history does not reach that far. A blueprint
-   whose pillar has no quote cannot be calibrated.
+   Each blueprint reads 65 points: the expiries 1W, 1M, 2M, 3M, 6M, 9M, 1Y,
+   18M, 2Y, 3Y, 5Y, 7Y and 10Y, each quoted as ATM, the 25 and 10 delta risk
+   reversals (25RR, 10RR) and the 25 and 10 delta butterflies (25BF, 10BF).
+   This is the quote set an FX option broker shows for a pair (I. Clark,
+   Foreign Exchange Option Pricing: A Practitioner's Guide, Wiley 2011,
+   chapter 3; D. Reiswich and U. Wystup, FX Volatility Smile Construction,
+   Wilmott 2012). This ladder is the one the derived source quotes: it serves
+   one quote for each pillar a blueprint reads from it.
 
 3. SOURCES
 

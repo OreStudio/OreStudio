@@ -1,0 +1,26 @@
+# Run 674d2887-291d-4241-9c5b-e6da510c3ab6: ACCOUK NPV, 2026-11-17, main 4e6e99f2e1
+# Trade errors grouped by cause. Query: errors_by_cause_query.txt beside this file.
+# The run failed with outcome 3: 473 engine errors, 185 warnings. ACCOUK holds 460 trades.
+
+cause                                          | errors | trades | trade types
+-----------------------------------------------+--------+--------+------------
+index not in the market: ibor/overnight index  |    148 |    148 | Ascot, BalanceGuaranteedSwap, BondRepo, BondTRS, CallableBond, CallableSwap, CapFloor, CommodityWorstOfBasketSwap, ConvertibleBond, CrossCurrencySwap, EquitySwap, EquityWorstOfBasketSwap, FlexiSwap, ForwardRateAgreement, RiskParticipationAgreement, Swap, Swaption
+equity not in the market                       |    118 |    118 | Autocallable_01, CompositeTrade, ContractForDifference, DoubleDigitalOption, EquityAccumulator, EquityBarrierOption, EquityBasketOption, EquityBestEntryOption, EquityCliquetOption, EquityDigitalOption, EquityDoubleBarrierOption, EquityEuropeanBarrierOption, EquityForward, EquityOption, EquityOptionPosition, EquityPosition, EquityRainbowOption, EquityStrikeResettableOption, EquityTaRF, EquityTouchOption, EquityVarianceSwap, PerformanceOption_01, TotalReturnSwap
+commodity not in the market                    |     40 |     40 | CommodityAccumulator, CommodityAveragePriceOption, CommodityBasketOption, CommodityBasketVarianceSwap, CommodityBestEntryOption, CommodityDigitalAveragePriceOption, CommodityDigitalOption, CommodityForward, CommodityForwardVolatilityAgreement, CommodityGenericBarrierOption, CommodityOption, CommodityPosition, CommodityRainbowOption, CommoditySpreadOption, CommodityStrikeResettableOption, CommoditySwap, CommoditySwaption, CommodityTaRF, CommodityVarianceSwap, CommodityWindowBarrierOption, IntradayPowerForward
+no reference data for baskets                  |     28 |     28 | IndexCreditDefaultSwap, IndexCreditDefaultSwapOption, SyntheticCDO
+inflation index not in the market              |     28 |     28 | InflationSwap
+credit not in the market                       |     18 |     18 | CreditDefaultSwap, CreditLinkedSwap
+curve convention not found                     |     14 |     14 | KnockOutSwap
+no script library                              |      7 |      7 | ScriptedTrade
+missing fixing                                 |      6 |      6 | CommodityAsianOption, EquityAsianOption
+no pricing engine                              |      5 |      5 | EquityOutperformanceOption
+commodity future convention missing (PM:XAUUSD)|      2 |      2 | CommodityOptionStrip
+bond reference data missing (BondPosition)     |      1 |      1 | BondPosition
+discount curve build failed (GBP1D)            |      1 |      1 | KnockOutSwap
+-----------------------------------------------+--------+--------+------------
+total                                          |    416 |    416 |
+
+# The indices the "index not in the market" rows name, with their error counts:
+# GBP-LIBOR-3M/6M 47, GBP-SONIA-3M/6M 45, GBP-LIBOR-1W 15, EUR-EURIBOR-3M/6M 13,
+# USD-LIBOR-3M/6M 8, GBP-SONIA (yield curve / ibor index) 5. 70 of the 148 name a
+# LIBOR index, which the system generates; see the task's notes for the causes.

@@ -74,7 +74,7 @@
       </LegData>
     </CallableSwapData>
   </Trade>
-  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
     <TradeType>CallableSwap</TradeType>
     <CallableSwapData>
       <OptionData>
@@ -82,14 +82,8 @@
         <Style>Bermudan</Style>
         <Settlement>Physical</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-03-02</ExerciseDate>
-          <ExerciseDate>2027-03-02</ExerciseDate>
-          <ExerciseDate>2028-03-02</ExerciseDate>
-          <ExerciseDate>2029-03-02</ExerciseDate>
-          <ExerciseDate>2030-03-02</ExerciseDate>
-          <ExerciseDate>2031-03-02</ExerciseDate>
-          <ExerciseDate>2032-03-02</ExerciseDate>
-          <ExerciseDate>2033-03-02</ExerciseDate>
+          <ExerciseDate>2026-07-02</ExerciseDate>
+          <ExerciseDate>2027-07-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <LegData>
@@ -99,12 +93,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional>9466062.35</Notional>
+          <Notional>4118292.15</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2033-09-02</EndDate>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2028-01-02</EndDate>
             <Tenor>1Y</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
@@ -114,7 +108,7 @@
         </ScheduleData>
         <FixedLegData>
           <Rates>
-            <Rate>0.0559</Rate>
+            <Rate>0.0497</Rate>
           </Rates>
         </FixedLegData>
       </LegData>
@@ -125,12 +119,12 @@
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>9466062.35</Notional>
+          <Notional>4118292.15</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2033-09-02</EndDate>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2028-01-02</EndDate>
             <Tenor>6M</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>

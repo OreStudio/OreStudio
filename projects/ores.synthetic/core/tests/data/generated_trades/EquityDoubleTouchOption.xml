@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+    <TradeType>EquityDoubleTouchOption</TradeType>
+    <EquityDoubleTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
+        <ExerciseDates>
+          <ExerciseDate>2029-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockIn</Type>
+        <Levels>
+          <Level>3829.58</Level>
+          <Level>4680.6</Level>
+        </Levels>
+      </BarrierData>
+      <Name>RIC:.STOXX50E</Name>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <PayoffAmount>7492174.07</PayoffAmount>
+      <Calendar>TARGET</Calendar>
+      <EQIndex>EQ-RIC:.STOXX50E</EQIndex>
+    </EquityDoubleTouchOptionData>
+  </Trade>
+  <Trade id="45de59e1-86ba-57a0-933b-129740a11052">
+    <TradeType>EquityDoubleTouchOption</TradeType>
+    <EquityDoubleTouchOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
+        <ExerciseDates>
+          <ExerciseDate>2027-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockIn</Type>
+        <Levels>
+          <Level>2368.03</Level>
+          <Level>2894.25</Level>
+        </Levels>
+      </BarrierData>
+      <Name>RIC:DHER.DE</Name>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <PayoffAmount>9214140.07</PayoffAmount>
+      <Calendar>TARGET</Calendar>
+      <EQIndex>EQ-RIC:DHER.DE</EQIndex>
+    </EquityDoubleTouchOptionData>
+  </Trade>
+</Portfolio>

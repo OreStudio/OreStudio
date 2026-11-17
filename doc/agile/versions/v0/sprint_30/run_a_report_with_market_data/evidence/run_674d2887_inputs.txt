@@ -1,0 +1,42 @@
+# Run 674d2887-291d-4241-9c5b-e6da510c3ab6: ACCOUK NPV, 2026-11-17, main 4e6e99f2e1
+## market.txt quote types (key prefix, count)
+   2275 FX_OPTION/RATE_LNVOL
+    466 IR_SWAP/RATE
+    362 FX/RATE
+    210 DISCOUNT/RATE
+## market.txt dates (count, date)
+     13 20160104
+     13 20160129
+     13 20160201
+     13 20160205
+     13 20160229
+     13 20160301
+     13 20160331
+     13 20160401
+     13 20160429
+     13 20160502
+     13 20160531
+     13 20160601
+     13 20160630
+     13 20160701
+     13 20160729
+     13 20160801
+     13 20160831
+     13 20160901
+     13 20160930
+     13 20161003
+     13 20161031
+     13 20161101
+     13 20161130
+     13 20161201
+     13 20161230
+   2988 20261117
+## fixings.txt bytes
+0
+## todaysmarket.xml collections
+<DiscountingCurves id="ois">
+<IndexForwardingCurves id="default">
+<FxSpots id="default">
+<FxVolatilities id="default">
+## todaysmarket.xml forwarding indices
+GBP-SONIA EUR-ESTER USD-SOFR CHF-SARON JPY-TONAR CAD-CORRA AUD-AONIA NZD-OCR SEK-SIOR NOK-NOWA DKK-DESTR ZAR-ZARONIA TRY-TLREF PLN-POLONIA CZK-CZEONIA HUF-HUFONIA ILS-SHIR 

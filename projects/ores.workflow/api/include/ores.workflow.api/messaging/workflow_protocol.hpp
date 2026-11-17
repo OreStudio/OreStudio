@@ -505,11 +505,14 @@ struct list_workflow_definitions_response {
 };
 
 /**
- * @brief Asks the engine to resume a stopped run from the step that failed.
+ * @brief Asks the engine to resume a stopped run from the step that failed,
+ * or to run again a step of a completed run that ended with warnings.
  *
  * A retry is the second half of the failure policy the workflow definition
  * declares: a failure stops the run and keeps every completed step, and a
- * retry re-dispatches the step that failed so the run can finish.
+ * retry re-dispatches the step that failed so the run can finish. A step that
+ * is not essential ends with warnings instead, and the run completes without
+ * its work; naming that step runs it again, so the run can still finish it.
  */
 struct retry_workflow_instance_request {
     using response_type = struct retry_workflow_instance_response;

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+    <TradeType>EuropeanOptionBarrier</TradeType>
+    <EuropeanOptionBarrierData>
+      <Quantity>6352895.59</Quantity>
+      <PutCall>Call</PutCall>
+      <LongShort>Long</LongShort>
+      <Strike>0.9115</Strike>
+      <PremiumAmount>0</PremiumAmount>
+      <PremiumCurrency>EUR</PremiumCurrency>
+      <PremiumDate>2026-01-02</PremiumDate>
+      <OptionExpiry>2032-09-02</OptionExpiry>
+      <OptionUnderlying>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+      </OptionUnderlying>
+      <BarrierUnderlying>
+        <Type>Equity</Type>
+        <Name>RIC:.NDX</Name>
+      </BarrierUnderlying>
+      <BarrierLevel>0.8204</BarrierLevel>
+      <BarrierType>DownAndOut</BarrierType>
+      <BarrierStyle>European</BarrierStyle>
+      <SettlementDate>2032-11-02</SettlementDate>
+      <PayCcy>EUR</PayCcy>
+    </EuropeanOptionBarrierData>
+  </Trade>
+  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+    <TradeType>EuropeanOptionBarrier</TradeType>
+    <EuropeanOptionBarrierData>
+      <Quantity>3138745.1</Quantity>
+      <PutCall>Call</PutCall>
+      <LongShort>Short</LongShort>
+      <Strike>1.1515</Strike>
+      <PremiumAmount>0</PremiumAmount>
+      <PremiumCurrency>EUR</PremiumCurrency>
+      <PremiumDate>2026-01-02</PremiumDate>
+      <OptionExpiry>2031-10-02</OptionExpiry>
+      <OptionUnderlying>
+        <Type>Equity</Type>
+        <Name>RIC:.NDX</Name>
+      </OptionUnderlying>
+      <BarrierUnderlying>
+        <Type>Equity</Type>
+        <Name>RIC:.STOXX50E</Name>
+      </BarrierUnderlying>
+      <BarrierLevel>1.0364</BarrierLevel>
+      <BarrierType>DownAndOut</BarrierType>
+      <BarrierStyle>European</BarrierStyle>
+      <SettlementDate>2031-12-02</SettlementDate>
+      <PayCcy>EUR</PayCcy>
+    </EuropeanOptionBarrierData>
+  </Trade>
+</Portfolio>

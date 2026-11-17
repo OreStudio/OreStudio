@@ -38,17 +38,17 @@
       </LegData>
     </CdoData>
   </Trade>
-  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
+  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
     <TradeType>SyntheticCDO</TradeType>
     <CdoData>
       <Qualifier>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</Qualifier>
-      <ProtectionStart>2025-08-02</ProtectionStart>
-      <UpfrontDate>2025-08-02</UpfrontDate>
+      <ProtectionStart>2025-12-02</ProtectionStart>
+      <UpfrontDate>2025-12-02</UpfrontDate>
       <UpfrontFee>0</UpfrontFee>
       <SettlesAccrual>Y</SettlesAccrual>
       <PaysAtDefaultTime>Y</PaysAtDefaultTime>
-      <AttachmentPoint>0.12</AttachmentPoint>
-      <DetachmentPoint>1</DetachmentPoint>
+      <AttachmentPoint>0.03</AttachmentPoint>
+      <DetachmentPoint>0.06</DetachmentPoint>
       <LegData>
         <Payer>true</Payer>
         <LegType>Fixed</LegType>
@@ -56,12 +56,12 @@
         <PaymentConvention>Following</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
-          <Notional>2269142.01</Notional>
+          <Notional>5709785.78</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
-            <EndDate>2028-08-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2026-12-02</EndDate>
             <Tenor>3M</Tenor>
             <Calendar>WeekendsOnly</Calendar>
             <Convention>Following</Convention>

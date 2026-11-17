@@ -63,27 +63,54 @@ struct derived_fx_pair final {
 
 /// An expiry the derived source quotes: its tenor label and its length in years.
 ///
-/// The list is the grid a surface may name, and every one of them needs a window of daily
-/// returns as long as its own length, so the fixing history the source reads bounds how far
-/// this list can reach.
+/// Every expiry needs a window of daily returns as long as its own length, so the fixing
+/// history the source reads bounds how far a pair's ladder can reach.
 struct derived_fx_expiry final {
-    std::string_view label;
+    std::string label;
     double years;
+
+    friend bool operator==(const derived_fx_expiry&, const derived_fx_expiry&) = default;
 };
 
-inline constexpr std::array<derived_fx_expiry, 13> derived_fx_expiries{{{"1W", 7.0 / 365.0},
-                                                                        {"1M", 1.0 / 12.0},
-                                                                        {"2M", 2.0 / 12.0},
-                                                                        {"3M", 0.25},
-                                                                        {"6M", 0.5},
-                                                                        {"9M", 0.75},
-                                                                        {"1Y", 1.0},
-                                                                        {"18M", 1.5},
-                                                                        {"2Y", 2.0},
-                                                                        {"3Y", 3.0},
-                                                                        {"5Y", 5.0},
-                                                                        {"7Y", 7.0},
-                                                                        {"10Y", 10.0}}};
+/// A pair's ladder: the expiries its quotes name, shortest first.
+///
+/// The ladder is data: the source serves one quote for each pillar a published blueprint
+/// reads from it, so the expiries of a pair are the ones its vendor ids name. An expiry's
+/// length is the one the surface is quoted and calibrated on, fx_vol_tenor_years, so a label
+/// means the same time to the derivation as to the calibration. A label that is not a tenor
+/// is left out.
+ORES_SYNTHETIC_API_EXPORT std::vector<derived_fx_expiry>
+derived_fx_ladder(const std::set<std::string>& labels);
+
+/// An expiry a pair's sample does not cover, and the returns its window needs.
+struct derived_fx_short_expiry final {
+    derived_fx_expiry expiry;
+    int needs;
+};
+
+/// How far a pair's sample reaches along its ladder: the expiries its returns cover, and the
+/// ones they do not.
+struct derived_fx_reach final {
+    std::vector<derived_fx_expiry> reached;
+    std::vector<derived_fx_short_expiry> unreached;
+};
+
+/**
+ * @brief The expiries of @p ladder that @p returns cover.
+ *
+ * An expiry is reached when its window, fx_derivation_window, holds no more returns than the
+ * sample, so a longer sample reaches at least as far. The reach is read from the sample a party
+ * holds, never from a constant.
+ */
+ORES_SYNTHETIC_API_EXPORT derived_fx_reach
+derived_fx_reach_of(std::span<const derived_fx_expiry> ladder,
+                    std::size_t returns,
+                    const analytics::quant::math::fx_derivation_settings& settings);
+
+/// One line that names where a pair's reach stops and what each expiry past it needs, such as
+/// "USDCLP reaches 7Y with 2345 returns; 10Y needs 2520".
+ORES_SYNTHETIC_API_EXPORT std::string
+describe_reach(const derived_fx_pair& pair, const derived_fx_reach& reach, std::size_t returns);
 
 /// The labels of an expiry's quotes, the strike_label of their fx_option items.
 inline constexpr std::array<std::string_view, 5> derived_fx_labels{
@@ -114,25 +141,7 @@ ORES_SYNTHETIC_API_EXPORT std::string derived_fx_quote_uri(const derived_fx_quot
 /// The id of a pair's fx_option_convention in refdata, such as EUR-USD-FXOPTION.
 ORES_SYNTHETIC_API_EXPORT std::string fx_option_convention_id(const derived_fx_pair& pair);
 
-/// The ECB reference fixing item of the euro in a currency.
-ORES_SYNTHETIC_API_EXPORT std::string ecb_fixing_item(std::string_view currency);
-
-/**
- * @brief The ECB fixings a pair's log returns are read from.
- *
- * The ECB quotes every currency against the euro, so base/quote is EUR/quote over
- * EUR/base and its log return is the return of the first less that of the second. A
- * side that is the euro itself has no leg. The legs are inputs to our computation;
- * the pair's returns are never presented as an ECB statistic.
- */
-struct pair_legs final {
-    std::optional<std::string> plus;
-    std::optional<std::string> minus;
-};
-
-ORES_SYNTHETIC_API_EXPORT pair_legs ecb_legs_of(const derived_fx_pair& pair);
-
-/// A fixing series as the reader returns it: dates and values in step.
+/// A pair's daily levels as the reader returns them: dates and values in step.
 struct dated_series final {
     std::vector<std::chrono::year_month_day> dates;
     std::vector<double> values;
@@ -146,13 +155,12 @@ struct pair_returns final {
 };
 
 /**
- * @brief The pair's daily log returns, over the dates every leg holds.
+ * @brief The pair's daily log returns, each from one day's level to the next one held.
  *
- * A date one leg lacks is skipped in both, so a cross never mixes two days. A value
- * that is not positive is skipped as no observation. Refuses a pair with no leg.
+ * A value that is not positive is skipped as no observation, so the return spans the
+ * gap rather than reading a zero.
  */
-ORES_SYNTHETIC_API_EXPORT std::expected<pair_returns, std::string>
-pair_log_returns(const std::optional<dated_series>& plus, const std::optional<dated_series>& minus);
+ORES_SYNTHETIC_API_EXPORT pair_returns pair_log_returns(const dated_series& levels);
 
 /**
  * @brief The quoting convention of a pair's convention at an expiry label such as 1M, read by
@@ -211,6 +219,7 @@ struct derived_history final {
 
 ORES_SYNTHETIC_API_EXPORT std::expected<derived_history, std::string>
 derive_missing_days(const derived_fx_pair& pair,
+                    std::span<const derived_fx_expiry> ladder,
                     const pair_returns& returns,
                     const refdata::domain::fx_option_convention& convention,
                     const std::set<std::chrono::year_month_day>& stored,

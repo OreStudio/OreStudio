@@ -35,6 +35,7 @@ import { useHeld } from '../access/holds.js';
 import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
 import { AccessNotice } from '../shell/AccessNotice.js';
+import { SetupReportNotice } from '../shell/SetupReport.js';
 import { MENU, modeKey, offered } from '../shell/areas.js';
 import { LanguageMenu } from '../shell/LanguageMenu.js';
 import { ThemeToggle } from '../shell/ThemeToggle.js';
@@ -221,6 +222,7 @@ export function AppShell({
                 <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>
                     <AccessNotice />
                     <ApprovalsModeNotice />
+                    <SetupReportNotice />
                     {children}
                 </div>
             </main>

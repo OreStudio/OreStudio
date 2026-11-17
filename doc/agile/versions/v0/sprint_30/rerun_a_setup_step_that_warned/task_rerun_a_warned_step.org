@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: DE4C29C3-EB45-4014-BD38-596B2B7C1C34
+:END:
+#+title: Task: Re-run a setup step that ended with warnings
+#+description: The engine resumes only a stopped run, under the step's old idempotency key; add a re-run of one warned step of a finished run, and offer it in the setup report in the shell and the web.
+#+type: task
+#+level: s1
+#+filetags: :rerun_a_setup_step_that_warned:sprint_30:v0:
+#+owner: marco
+#+branch: feature/derive-from-the-pairs-levels
+#+pr: 4790
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-16
+#+updated: 2026-11-16
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant administrator re-runs a step that ended with warnings from the setup report, and the step does only the work it did not finish.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AF3D97BC-EA58-4ABD-B932-1EEB569CC232][Re-run a setup step that ended with warnings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-16                               |
+
+* Acceptance
+
+- The engine re-runs a completed_with_warnings step that is not essential, of a finished run, under a new idempotency key, and records the new outcome; other steps and running runs are refused with their reason.
+- setup-rerun STEP in the shell and a Re-run button on /setup-report start it and show its outcome.
+- Each of the nine steps that are not essential, re-run on a provisioned Acme tenant, adds nothing that was already there.
+
+* Plan
+
+- *The retry carries the re-run.* A retry that names a step of a completed run, where the step
+  is not essential and ended with warnings, runs it again. The message, its permission, the
+  shell's =workflow retry= and the web client already exist, so nothing new is added to the
+  protocol.
+- *A new attempt, the same step.* The step keeps its id, which is how the run names it and how
+  a service finds it; a service answers a step id from its record only while the step is
+  settled, and a re-run puts it back to work first. The attempt gets a new idempotency key,
+  and commands now send that key as =Nats-Msg-Id=, so the stream does not drop a re-run inside
+  its duplicate window. A dispatch, retry or recovery sends the same value as before, because
+  there the key is the step id.
+- *The run reopens.* The run goes back to in progress while the step runs, and the step's
+  answer completes it again, so its completion time and the login summary follow the re-run.
+- *Proof by snapshot.* The count of current rows in every bitemporal table is taken before and
+  after; any growth is attributed to its writer and time.
+- *Nine became eight.* publish_system_curves belongs to the system's provisioning run, not the
+  tenant setup, so setup-rerun cannot reach it; it publishes through the same helper as the
+  party curves.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| attach_photos re-run | 0 images attached; no table grew but the live feed's | =setup-rerun attach_photos=, then a row count of all 554 bitemporal tables | 07d2a25091 |
+| Seven market data, trade and report steps re-run | curves 0 published (30 already, per party); blueprints 0; forwards 0 of 179; surfaces 0 of 35; trades 0 written; reports 0 scheduled | =setup-rerun= of each, in turn | 07d2a25091 |
+| Growth across those re-runs, attributed | 30 curve publishes and 30 approvals: the scheduler's System Party publishes every 15 min; 20 surface calibrations: the 5 held-back surfaces of each party, never published, tried again; 6 report runs: the schedule | the snapshot diff, then the writer and time of each new row | 07d2a25091 |
+| Engine tests | ores.workflow.core.tests passed, with the re-run and refusal cases | =compass test run -- -R ores.workflow.core.tests= | 07d2a25091 |
+
+* Notes
+
+- The forwards step took 8 minutes to re-run and publish nothing (00:08:55 to 00:16:58). It is
+  idempotent but slow; it was not investigated here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Claude review 2: confirm whether a re-run keeps the first attempt's log | workflow_engine.cpp | Decline | Intentional: the report shows what is missing now; the first attempt stays in the step's history. |
+| 2 | Claude review 2: a failed cache refresh reads as a failed re-run | SetupReport.tsx | Accept | The refresh is detached from the note. |
+| 3 | Claude review 2: a crash between the re-run's writes leaves a completed run with a running step | workflow_engine.cpp | Decline | A rare window the retry of a stopped run shares: the step would read in progress on a completed run, and a second re-run would be refused, so it would need a hand fix. Not closed here. |
+| 4 | Claude review 2: test a re-run step that outlives its deadline | workflow_engine_tests.cpp | Decline | The re-run registers the step with note_awaiting as the retry does, whose deadline path is tested. |
+| 5 | Claude review 2: disable Run again while a re-run is open; the notice and the alert show together on the dashboard; shell progress dots | SetupReport.tsx | Decline | The engine refuses a second re-run with its reason, which the page shows; the notice can be dismissed and the alert is the one that stays; the shell prints the step's outcome. |
+
+* Result
+
+A tenant administrator re-runs a setup step that ended with warnings from the setup report: the
+=Run again= button on =/setup-report=, or =setup-rerun STEP= in the shell, which reports only that
+step. The engine sends the step again as a new attempt under a new idempotency key, reopens the
+run, and completes it again when the step answers; it refuses a clean step, an essential one, an
+unknown one and an unnamed one, with the reason. The person checked the button in the browser.
+
+All eight tenant setup steps that are not essential were re-run on a provisioned Acme tenant and
+added nothing that was already there (see the Measurements). The ninth, publish_system_curves,
+belongs to the system's run and cannot be reached from the setup report; it publishes through the
+helper the party curves step uses, whose re-run published nothing.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:glossary:terminology:
 #+created: 2026-05-18
-#+updated: 2026-10-22
+#+updated: 2026-11-17
 
 Every term used across the ORE Studio [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][information architecture]] has a single
 definition here. Other documents link to these entries with =[[id:...]]= so
@@ -46,6 +46,8 @@ retirement notice.
 | The topic a journey is grouped under | journey group | menu section, module, area, category |
 | Where a journey happens          | screen    | page, surface, view                      |
 | A position within a screen       | step      | stage, phase                             |
+| An FX pair whose vol surface is quoted and managed on its own | driver pair | — |
+| An FX pair whose vol surface is implied from driver pairs | driven pair | — |
 
 Two terms admit a misreading, and both are worth stating negatively.
 

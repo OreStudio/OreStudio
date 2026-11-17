@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+    <TradeType>EquityFutureOption</TradeType>
+    <EquityFutureOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2031-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.NDX</Name>
+      </Underlying>
+      <Currency>USD</Currency>
+      <Strike>1937.73</Strike>
+      <Quantity>1887.83</Quantity>
+      <FutureExpiryDate>2031-09-02</FutureExpiryDate>
+    </EquityFutureOptionData>
+  </Trade>
+  <Trade id="efaa3e0a-4eda-59a6-bd4f-1221214c99bd">
+    <TradeType>EquityFutureOption</TradeType>
+    <EquityFutureOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2032-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.STOXX50E</Name>
+      </Underlying>
+      <Currency>EUR</Currency>
+      <Strike>210.78</Strike>
+      <Quantity>18572.99</Quantity>
+      <FutureExpiryDate>2032-12-02</FutureExpiryDate>
+    </EquityFutureOptionData>
+  </Trade>
+</Portfolio>

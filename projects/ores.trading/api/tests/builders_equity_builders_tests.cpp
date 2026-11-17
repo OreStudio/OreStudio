@@ -485,3 +485,92 @@ TEST_CASE("a_barrier_at_zero_fails", equity_tags) {
     REQUIRE_FALSE(option.has_value());
     CHECK(option.error().term == "barrier");
 }
+
+TEST_CASE("an_equity_double_touch_states_both_levels_as_one_barrier", equity_tags) {
+    const auto touch =
+        equity_double_touch_option_builder({.underlying = spx(),
+                                            .currency = std::string("USD"),
+                                            .payout = equity_amount("100000"),
+                                            .barrier_type = std::string("KnockIn"),
+                                            .lower = equity_amount("4500"),
+                                            .upper = equity_amount("5500"),
+                                            .expiry = 2027y / 1 / 5,
+                                            .position = option_position::long_option})
+            .build();
+    REQUIRE(touch.has_value());
+    REQUIRE(touch->barriers.size() == 1);
+    CHECK(touch->barriers[0].barrier_type == "KnockIn");
+    REQUIRE(touch->barrier_levels.size() == 2);
+    CHECK(touch->barrier_levels[0].level == equity_amount("4500"));
+    CHECK(touch->barrier_levels[1].level == equity_amount("5500"));
+}
+
+TEST_CASE("an_equity_double_touch_refuses_levels_out_of_order", equity_tags) {
+    const auto touch =
+        equity_double_touch_option_builder({.underlying = spx(),
+                                            .currency = std::string("USD"),
+                                            .payout = equity_amount("100000"),
+                                            .barrier_type = std::string("KnockOut"),
+                                            .lower = equity_amount("5500"),
+                                            .upper = equity_amount("4500"),
+                                            .expiry = 2027y / 1 / 5,
+                                            .position = option_position::long_option})
+            .build();
+    REQUIRE_FALSE(touch.has_value());
+    CHECK(touch.error().term == "barrier");
+}
+
+TEST_CASE("an_auto_delta_hedged_option_states_its_hedge_and_one_row_a_batch", equity_tags) {
+    const auto batch = [](option_kind kind) {
+        return delta_hedged_batch{.underlying = spx(),
+                                  .currency = "USD",
+                                  .strike = equity_amount("4000"),
+                                  .quantity = equity_amount("100"),
+                                  .kind = kind,
+                                  .position = option_position::long_option,
+                                  .expiry = 2027y / 1 / 5,
+                                  .premium = equity_amount("9.36"),
+                                  .premium_date = 2026y / 1 / 5};
+    };
+    const auto hedged = equity_auto_delta_hedged_option_builder(
+                            {.volatility = equity_amount("0.2"),
+                             .drift_rate = equity_amount("0"),
+                             .observation_start = 2026y / 1 / 5,
+                             .payment_date = 2027y / 1 / 12,
+                             .batches = std::vector<delta_hedged_batch>{batch(option_kind::call),
+                                                                        batch(option_kind::put)}})
+                            .build();
+    REQUIRE(hedged.has_value());
+    const auto* row =
+        std::get_if<ores::trading::domain::equity_position_instrument>(&hedged->instrument);
+    REQUIRE(row != nullptr);
+    CHECK(row->volatility == equity_amount("0.2"));
+    CHECK(row->payment_date == std::optional(2027y / 1 / 12));
+    REQUIRE(hedged->underlyings.size() == 2);
+    CHECK(hedged->underlyings[1].option_type == "Put");
+    CHECK(hedged->underlyings[1].quantity == equity_amount("100"));
+    CHECK(hedged->underlyings[1].currency == std::optional<std::string>("USD"));
+    CHECK(hedged->underlyings[1].premium_amount == equity_amount("9.36"));
+}
+
+TEST_CASE("an_auto_delta_hedged_option_refuses_a_batch_that_expires_after_the_payment",
+          equity_tags) {
+    const auto hedged =
+        equity_auto_delta_hedged_option_builder(
+            {.volatility = equity_amount("0.2"),
+             .drift_rate = equity_amount("0"),
+             .observation_start = 2026y / 1 / 5,
+             .payment_date = 2026y / 6 / 1,
+             .batches = std::vector<delta_hedged_batch>{{.underlying = spx(),
+                                                         .currency = "USD",
+                                                         .strike = equity_amount("4000"),
+                                                         .quantity = equity_amount("100"),
+                                                         .kind = option_kind::call,
+                                                         .position = option_position::long_option,
+                                                         .expiry = 2027y / 1 / 5,
+                                                         .premium = equity_amount("9.36"),
+                                                         .premium_date = 2026y / 1 / 5}}})
+            .build();
+    REQUIRE_FALSE(hedged.has_value());
+    CHECK(hedged.error().term == "batches");
+}

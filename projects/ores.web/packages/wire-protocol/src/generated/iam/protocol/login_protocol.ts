@@ -99,6 +99,16 @@ export interface LoginResponse {
      * this question on its own.
      */
     tenant_bootstrapping: boolean;
+    /**
+     * @brief When the account last logged in before this login, as a wire
+     * timestamp, or empty when this is its first.
+     *
+     * The login records itself as the last one, so this is read before that write.
+     * A client compares it with the time something happened to tell a person
+     * about it once: the shell prints the setup report on the first login after
+     * the tenant's setup finished.
+     */
+    previous_login: string;
     party_setup_required: boolean;
     /**
      * @brief Set when the party provisioner wizard has completed

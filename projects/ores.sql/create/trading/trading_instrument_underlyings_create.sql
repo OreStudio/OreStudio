@@ -76,7 +76,7 @@ create table if not exists "ores_trading_instrument_underlyings_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("underlying_role" <> ''),
-    check ("underlying_role" in ('underlying', 'underlying1', 'underlying2', 'underlying3', 'underlying4')),
+    check ("underlying_role" in ('underlying', 'underlying1', 'underlying2', 'underlying3', 'underlying4', 'optionunderlying', 'barrierunderlying')),
     check ("sequence_number" >= 1)
 );
 

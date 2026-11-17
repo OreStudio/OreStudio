@@ -33,17 +33,17 @@
       </ObservationDates>
     </EquityAsianOptionData>
   </Trade>
-  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
     <TradeType>EquityAsianOption</TradeType>
     <EquityAsianOptionData>
       <Currency>EUR</Currency>
-      <Quantity>139.59</Quantity>
+      <Quantity>3780.36</Quantity>
       <StrikeData>
-        <Value>4829.91</Value>
+        <Value>1125.18</Value>
       </StrikeData>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:DHER.DE</Name>
+        <Name>RIC:.STOXX50E</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
@@ -51,13 +51,13 @@
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
         <ExerciseDates>
-          <ExerciseDate>2027-08-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2027-08-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2026-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>TARGET</Calendar>
           <Convention>F</Convention>

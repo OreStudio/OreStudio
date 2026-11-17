@@ -56,7 +56,7 @@
       </BondData>
     </BondOptionData>
   </Trade>
-  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
+  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
     <TradeType>BondOption</TradeType>
     <BondOptionData>
       <OptionData>
@@ -68,19 +68,19 @@
           <ExerciseDate>2027-01-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>100.16</Strike>
+      <Strike>97.45</Strike>
       <Redemption>100</Redemption>
       <PriceType>Clean</PriceType>
       <KnocksOut>false</KnocksOut>
       <BondData>
-        <IssuerId>Export Bank Two Plc</IssuerId>
-        <SecurityId>POPPD9V2UE1T1</SecurityId>
+        <IssuerId>Export Bank One Plc</IssuerId>
+        <SecurityId>POP6IG9YFEUZ8</SecurityId>
         <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <VolatilityCurveId>BondOptionVols-EUR</VolatilityCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
-        <BondNotional>2269142.01</BondNotional>
+        <BondNotional>3895254.25</BondNotional>
         <PriceType>Clean</PriceType>
         <LegData>
           <Payer>false</Payer>
@@ -94,7 +94,7 @@
           <ScheduleData>
             <Rules>
               <StartDate>2025-07-02</StartDate>
-              <EndDate>2028-07-02</EndDate>
+              <EndDate>2035-07-02</EndDate>
               <Tenor>1Y</Tenor>
               <Calendar>TARGET</Calendar>
               <Convention>F</Convention>

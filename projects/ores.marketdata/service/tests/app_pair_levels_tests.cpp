@@ -77,7 +77,7 @@ get_pair_levels_request pair(const std::string& base, const std::string& quote) 
     return {.party_id = "p",
             .base_currency_code = base,
             .quote_currency_code = quote,
-            .to = day_of(10),
+            .to = day_of(5),
             .days = 10};
 }
 
@@ -153,6 +153,36 @@ TEST_CASE("a_pair_only_a_source_read_later_quotes_is_read_from_that_source", tag
     CHECK(r.pivot_currency_code == "BBB");
     REQUIRE(r.levels.size() == 1);
     CHECK(r.levels[0] == Catch::Approx(900.0).epsilon(1e-12));
+}
+
+TEST_CASE("a_side_whose_fixing_stopped_is_refused_with_its_provider_and_last_day", tag) {
+    const auto party = one_source("imf", "USD", {"COP"});
+    const auto read = reader_of({{"imf:COP", {{1, "3900"}, {2, "3910"}}}});
+
+    auto asked = pair("USD", "COP");
+    asked.to = day_of(10);
+
+    const auto r = compose_pair_levels(party, asked, read);
+
+    CHECK(r.result.outcome == outcome::missing);
+    CHECK(r.result.code == "fixing_stopped");
+    CHECK(r.result.message.find("imf") != std::string::npos);
+    CHECK(r.result.message.find("COP") != std::string::npos);
+    CHECK(r.result.message.find("2026-03-02") != std::string::npos);
+    CHECK(r.levels.empty());
+}
+
+TEST_CASE("a_side_fixed_within_a_week_of_the_last_day_is_not_stopped", tag) {
+    const auto party = one_source("imf", "USD", {"COP"});
+    const auto read = reader_of({{"imf:COP", {{2, "3900"}, {3, "3910"}}}});
+
+    auto asked = pair("USD", "COP");
+    asked.to = day_of(10);
+
+    const auto r = compose_pair_levels(party, asked, read);
+
+    REQUIRE(r.result.outcome == outcome::ok);
+    CHECK(r.levels.size() == 2);
 }
 
 TEST_CASE("a_pair_no_source_can_express_is_refused_by_name", tag) {

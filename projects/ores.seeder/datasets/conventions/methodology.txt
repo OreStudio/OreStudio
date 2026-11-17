@@ -59,6 +59,14 @@ own copy.
    AMD-GENERIC-3M-SWAP: ORE refuses the index, so no run can use them. They
    are left out, and propose_decisions.tsv names each.
 
+   CAD-CORRA, GBP-SONIA, JPY-TONAR, MXN-TIIE and USD-SOFR were both an
+   IborIndex and an OvernightIndex, and CNH-HIBOR the same. ORE holds one
+   convention for each id, so on 2026-11-17 each kept one row: the overnight
+   rates their OvernightIndex, which their funding curves are named after, and
+   CNH-HIBOR, which no funding curve names, its IborIndex. ORE parses a term
+   index such as GBP-SONIA-3M or MXN-TIIE-28D without a convention. The check
+   requires one row for each id.
+
    EUR-ESTR and JPY-TONA are OreStudio ids of the indices ORE names EUR-ESTER
    and JPY-TONAR. The curve configs name them, and they state the same terms,
    so the convention lookup reads each pair as one index.

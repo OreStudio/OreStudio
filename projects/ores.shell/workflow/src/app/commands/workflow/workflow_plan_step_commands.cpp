@@ -140,7 +140,7 @@ void workflow_plan_step_commands::register_commands(cli::Menu& root_menu, nats_c
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <workflow_id> <step_index> <name> <label> <description> <command_subject> "
-        "<compensation_subject> <timeout_seconds> <reason> <commentary>");
+        "<compensation_subject> <timeout_seconds> <essential> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -148,7 +148,8 @@ void workflow_plan_step_commands::register_commands(cli::Menu& root_menu, nats_c
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <workflow_id> <step_index> <name> <label> <description> <command_subject> "
-        "<compensation_subject> <timeout_seconds> <reason> <commentary> [--version <n>]");
+        "<compensation_subject> <timeout_seconds> <essential> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -156,7 +157,8 @@ void workflow_plan_step_commands::register_commands(cli::Menu& root_menu, nats_c
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <workflow_id> <step_index> <name> <label> <description> "
-        "<command_subject> <compensation_subject> <timeout_seconds> <reason> <commentary>");
+        "<command_subject> <compensation_subject> <timeout_seconds> <essential> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -364,8 +366,8 @@ void workflow_plan_step_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -385,6 +387,8 @@ void workflow_plan_step_commands::process_add(std::ostream& out,
                                       "compensation_subject");
         workflow_plan_step_read_token(
             req.change.write.timeout_seconds, parsed->positionals[next++], "timeout_seconds");
+        workflow_plan_step_read_token(
+            req.change.write.essential, parsed->positionals[next++], "essential");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -429,8 +433,8 @@ void workflow_plan_step_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -450,6 +454,8 @@ void workflow_plan_step_commands::process_set(std::ostream& out,
                                       "compensation_subject");
         workflow_plan_step_read_token(
             req.change.write.timeout_seconds, parsed->positionals[next++], "timeout_seconds");
+        workflow_plan_step_read_token(
+            req.change.write.essential, parsed->positionals[next++], "essential");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -506,8 +512,8 @@ void workflow_plan_step_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -529,6 +535,8 @@ void workflow_plan_step_commands::process_put_many(std::ostream& out,
                                           "compensation_subject");
             workflow_plan_step_read_token(
                 change.write.timeout_seconds, parsed->positionals[next++], "timeout_seconds");
+            workflow_plan_step_read_token(
+                change.write.essential, parsed->positionals[next++], "essential");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

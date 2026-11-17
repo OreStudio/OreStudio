@@ -57,6 +57,7 @@ set(files
     "xml_emitter_tests.cpp"
     "xml_exporter_directory_roundtrip_tests.cpp"
     "xml_exporter_tests.cpp"
+    "xml_forwarding_curves_tests.cpp"
     "xml_fx_convention_mapper_roundtrip_tests.cpp"
     "xml_importer_tests.cpp"
     "xml_ore_run_document_projection_roundtrip_tests.cpp"

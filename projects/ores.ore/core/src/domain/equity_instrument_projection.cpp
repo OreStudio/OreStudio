@@ -74,12 +74,13 @@ constexpr std::string_view equity_instrument_projection_change_commentary = "Imp
 
 /// The trade types the family states, which are the ones the old dispatcher took.
 constexpr bool is_equity_trade_type(std::string_view type) {
-    return type == "EquityPosition" || type == "EquityOptionPosition" || type == "EquityOption" ||
+    return type == "EquityPosition" || type == "EquityOptionPosition" ||
+           type == "EquityAutoDeltaHedgedOption" || type == "EquityOption" ||
            type == "EquityForward" || type == "EquitySwap" || type == "EquityVarianceSwap" ||
            type == "EquityBarrierOption" || type == "EquityAsianOption" ||
            type == "EquityDigitalOption" || type == "EquityTouchOption" ||
-           type == "EquityOutperformanceOption" || type == "EquityAccumulator" ||
-           type == "EquityTaRF" || type == "EquityCliquetOption" ||
+           type == "EquityDoubleTouchOption" || type == "EquityOutperformanceOption" ||
+           type == "EquityAccumulator" || type == "EquityTaRF" || type == "EquityCliquetOption" ||
            type == "EquityWorstOfBasketSwap" || type == "EquityDoubleBarrierOption" ||
            type == "EquityEuropeanBarrierOption";
 }
@@ -404,11 +405,12 @@ auto read_equity_digital_option(const record_reader& trade) -> equity_digital_op
 }
 
 // A touch option is the digital row with a barrier instead of a strike, which
-// is the shape the old mapper gave it.
-auto read_equity_touch_option(const record_reader& trade) -> equity_digital_option_instrument {
-    auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(
-        "EquityTouchOption");
-    const auto data = trade.child("EquityTouchOptionData");
+// is the shape the old mapper gave it. A double touch states the same element
+// with two levels, which the barrier rows hold.
+auto read_equity_touch_option(const record_reader& trade, std::string_view trade_type)
+    -> equity_digital_option_instrument {
+    auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(trade_type);
+    const auto data = trade.child(std::string(trade_type) + "Data");
     if (!data)
         return r;
     r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
@@ -651,6 +653,85 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
     return equity_instrument_data{std::move(inst), std::move(underlyings)};
 }
 
+/**
+ * @brief Batches of equity options under a delta hedge: the hedge's terms are
+ * the position row's, and each batch is a row of the option underlyings, with
+ * its own currency, strike currency and quantity.
+ *
+ * A batch is European and ORE requires one premium on it, so a batch's first
+ * exercise date and first premium are its only ones.
+ */
+auto read_equity_auto_delta_hedged_option(const record_reader& trade) -> equity_instrument_data {
+    auto inst = equity_instrument_projection_make_row<equity_position_instrument>(
+        "EquityAutoDeltaHedgedOption");
+    std::vector<equity_position_option_underlying> batches;
+    if (const auto data = trade.child("EquityAutoDeltaHedgedOptionData")) {
+        inst.volatility = data->decimal("Volatility");
+        inst.drift_rate = data->decimal("DriftRate");
+        if (const auto start = data->text("ObservationStartDate"))
+            inst.observation_start_date = equity_instrument_projection_to_domain_date(*start);
+        if (const auto payment = data->text("PaymentDate"))
+            inst.payment_date = equity_instrument_projection_to_domain_date(*payment);
+        if (const auto list = data->child("Underlyings")) {
+            int sequence_number = 0;
+            for (const auto& entry : list->children("Underlying")) {
+                equity_position_option_underlying row;
+                row.sequence_number = ++sequence_number;
+                row.underlying_name =
+                    equity_address_of(equity_instrument_projection_text_of(entry, "Name"));
+                row.currency = entry.text("Currency");
+                row.strike_currency = entry.text("StrikeCurrency");
+                row.quantity = entry.decimal("Quantity");
+                if (const auto strike = entry.text("Strike"))
+                    if (const auto parsed = decimal::from_string(*strike))
+                        row.strike = *parsed;
+                if (const auto option = entry.child("OptionData")) {
+                    row.long_short = equity_instrument_projection_text_of(*option, "LongShort");
+                    row.option_type = equity_instrument_projection_option_type_of(option);
+                    row.exercise_type = equity_instrument_projection_exercise_style_of(option);
+                    row.settlement_type =
+                        equity_instrument_projection_spelling_of(*option, "Settlement");
+                    if (const auto dates = option->child("ExerciseDates")) {
+                        const auto values = dates->values("ExerciseDate");
+                        if (!values.empty())
+                            row.exercise_date =
+                                equity_instrument_projection_to_domain_date(values.front());
+                    }
+                    // A batch's one premium, in either of the two forms ORE reads.
+                    std::optional<record_reader> premium;
+                    if (const auto premiums = option->child("Premiums")) {
+                        const auto listed = premiums->children("Premium");
+                        if (!listed.empty())
+                            premium = listed.front();
+                    }
+                    if (premium) {
+                        row.premium_amount = premium->decimal("Amount");
+                        row.premium_currency = premium->text("Currency");
+                        if (const auto paid = premium->text("PayDate"))
+                            row.premium_pay_date =
+                                equity_instrument_projection_to_domain_date(*paid);
+                    } else if (const auto amount = option->text("PremiumAmount")) {
+                        // The legacy form states the amount as text.
+                        if (const auto parsed = decimal::from_string(*amount))
+                            row.premium_amount = *parsed;
+                        row.premium_currency = option->text("PremiumCurrency");
+                        if (const auto paid = option->text("PremiumPayDate"))
+                            row.premium_pay_date =
+                                equity_instrument_projection_to_domain_date(*paid);
+                    }
+                }
+                equity_instrument_projection_stamp_columns(row);
+                batches.push_back(std::move(row));
+            }
+        }
+    }
+    if (!batches.empty()) {
+        inst.underlying_name = batches.front().underlying_name;
+        inst.currency = batches.front().currency.value_or("");
+    }
+    return equity_instrument_data{std::move(inst), std::move(batches)};
+}
+
 // ---------------------------------------------------------------------------
 // Writing: the shared shapes
 // ---------------------------------------------------------------------------
@@ -871,9 +952,10 @@ void write_equity_digital_option(record_writer& trade,
 }
 
 void write_equity_touch_option(record_writer& trade,
+                               std::string_view element,
                                const equity_digital_option_instrument& v,
                                const equity_instrument_data& carrier) {
-    auto data = trade.child("EquityTouchOptionData");
+    auto data = trade.child(element);
     write_option_entry(data.child("OptionData"), v);
     write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("PayoffCurrency", v.currency, "currency");
@@ -1116,6 +1198,64 @@ void write_equity_option_position(record_writer& trade,
     }
 }
 
+void write_equity_auto_delta_hedged_option(
+    record_writer& trade,
+    const equity_position_instrument& v,
+    const std::vector<equity_position_option_underlying>& rows) {
+    auto data = trade.child("EquityAutoDeltaHedgedOptionData");
+    if (v.volatility)
+        data.set_decimal("Volatility", *v.volatility);
+    if (v.drift_rate)
+        data.set_decimal("DriftRate", *v.drift_rate);
+    if (v.observation_start_date)
+        data.set_text("ObservationStartDate",
+                      equity_instrument_projection_to_ore_date(*v.observation_start_date));
+    if (v.payment_date)
+        data.set_text("PaymentDate", equity_instrument_projection_to_ore_date(*v.payment_date));
+
+    std::vector<const equity_position_option_underlying*> ordered;
+    ordered.reserve(rows.size());
+    for (const auto& row : rows)
+        ordered.push_back(&row);
+    std::sort(ordered.begin(), ordered.end(), [](const auto* a, const auto* b) {
+        return a->sequence_number < b->sequence_number;
+    });
+    auto list = data.child("Underlyings");
+    for (const auto* row : ordered) {
+        auto entry = list.append("Underlying");
+        auto option = entry.child("OptionData");
+        option.set_text("LongShort", row->long_short);
+        if (!row->option_type.empty())
+            option.set_text("OptionType", row->option_type);
+        if (!row->exercise_type.empty())
+            option.set_text("Style", row->exercise_type);
+        if (!row->settlement_type.empty())
+            option.set_spelling(
+                "Settlement", settlement_spelling_of(row->settlement_type), "settlement type");
+        if (row->exercise_date)
+            option.child("ExerciseDates")
+                .append_value("ExerciseDate",
+                              equity_instrument_projection_to_ore_date(*row->exercise_date));
+        if (row->premium_amount) {
+            auto premium = option.child("Premiums").append("Premium");
+            premium.set_decimal("Amount", *row->premium_amount);
+            if (row->premium_currency)
+                premium.set_text("Currency", *row->premium_currency);
+            if (row->premium_pay_date)
+                premium.set_text("PayDate",
+                                 equity_instrument_projection_to_ore_date(*row->premium_pay_date));
+        }
+        entry.set_text("Name", underlying_name_of(row->underlying_name));
+        if (row->currency)
+            entry.set_text("Currency", *row->currency);
+        entry.set_text("Strike", row->strike.to_string());
+        if (row->strike_currency)
+            entry.set_text("StrikeCurrency", *row->strike_currency);
+        if (row->quantity)
+            entry.set_decimal("Quantity", *row->quantity);
+    }
+}
+
 /**
  * @brief The element of an equity product that states an OptionData block, or
  * nothing for a product that states none.
@@ -1199,6 +1339,7 @@ constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
     {"EquityAsianOption", "", "Underlying", "underlying"},
     {"EquityDigitalOption", "", "Underlying", "underlying"},
     {"EquityTouchOption", "", "Underlying", "underlying"},
+    {"EquityDoubleTouchOption", "", "Underlying", "underlying"},
     {"EquityCliquetOption", "", "Underlying", "underlying"},
     {"EquityAccumulator", "", "Underlying", "underlying"},
     {"EquityTaRF", "", "Underlying", "underlying"},
@@ -1213,6 +1354,7 @@ constexpr barrier_block::barrier_holder equity_barrier_holders[] = {
     {"EquityDoubleBarrierOption", "", "barrier"},
     {"EquityEuropeanBarrierOption", "", "barrier"},
     {"EquityTouchOption", "", "barrier"},
+    {"EquityDoubleTouchOption", "", "barrier"},
     {"EquityAccumulator", "Barriers", "barrier"},
     {"EquityTaRF", "Barriers", "barrier"},
 };
@@ -1238,6 +1380,7 @@ std::optional<std::string> equity_option_data_element(std::string_view trade_typ
         "EquityAsianOption",
         "EquityDigitalOption",
         "EquityTouchOption",
+        "EquityDoubleTouchOption",
         "EquityOutperformanceOption",
         "EquityAccumulator",
         "EquityTaRF",
@@ -1254,6 +1397,8 @@ auto read_equity_product(const xml::record_reader& trade, std::string_view trade
         return trading::domain::trade_instrument{read_equity_position(trade)};
     if (trade_type == "EquityOptionPosition")
         return trading::domain::trade_instrument{read_equity_option_position(trade)};
+    if (trade_type == "EquityAutoDeltaHedgedOption")
+        return trading::domain::trade_instrument{read_equity_auto_delta_hedged_option(trade)};
 
     const auto wrap = [](auto row) {
         return trading::domain::trade_instrument{equity_instrument_data{std::move(row), {}}};
@@ -1278,8 +1423,8 @@ auto read_equity_product(const xml::record_reader& trade, std::string_view trade
         return wrap(read_equity_asian_option(trade));
     if (trade_type == "EquityDigitalOption")
         return wrap(read_equity_digital_option(trade));
-    if (trade_type == "EquityTouchOption")
-        return wrap(read_equity_touch_option(trade));
+    if (trade_type == "EquityTouchOption" || trade_type == "EquityDoubleTouchOption")
+        return wrap(read_equity_touch_option(trade, trade_type));
     if (trade_type == "EquityOutperformanceOption")
         return wrap(read_equity_outperformance_option(trade));
     if (trade_type == "EquityAccumulator")
@@ -1350,9 +1495,13 @@ auto write_equity_instrument(xml::record_writer& trade,
             using Row = std::decay_t<decltype(row)>;
             if constexpr (std::is_same_v<Row, equity_position_instrument>) {
                 // A position that holds option entries is the option position,
-                // whatever the anchor says, which is the choice the exporter made.
-                if (!v->underlyings.empty() ||
-                    row.identity.trade_type_code == "EquityOptionPosition") {
+                // whatever the anchor says, which is the choice the exporter made;
+                // the delta hedged option's batches are entries of its own.
+                if (trade_type == "EquityAutoDeltaHedgedOption") {
+                    write_equity_auto_delta_hedged_option(trade, row, v->underlyings);
+                    matched = true;
+                } else if (!v->underlyings.empty() ||
+                           row.identity.trade_type_code == "EquityOptionPosition") {
                     write_equity_option_position(trade, row, v->underlyings);
                     matched = true;
                 } else {
@@ -1405,8 +1554,9 @@ auto write_equity_instrument(xml::record_writer& trade,
                 if (trade_type == "EquityDigitalOption") {
                     write_equity_digital_option(trade, row, *v);
                     matched = true;
-                } else if (trade_type == "EquityTouchOption") {
-                    write_equity_touch_option(trade, row, *v);
+                } else if (trade_type == "EquityTouchOption" ||
+                           trade_type == "EquityDoubleTouchOption") {
+                    write_equity_touch_option(trade, std::string(trade_type) + "Data", row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>) {

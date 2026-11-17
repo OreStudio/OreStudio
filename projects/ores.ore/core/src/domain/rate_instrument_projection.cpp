@@ -83,9 +83,9 @@ constexpr std::string_view rate_instrument_projection_change_commentary = "Impor
 /// The trade types the family states, which are the ones the old dispatcher took.
 constexpr bool is_rate_trade_type(std::string_view type) {
     return type == "Swap" || type == "CrossCurrencySwap" || type == "ForwardRateAgreement" ||
-           type == "CapFloor" || type == "Swaption" || type == "CallableSwap" ||
-           type == "KnockOutSwap" || type == "InflationSwap" || type == "FlexiSwap" ||
-           type == "BalanceGuaranteedSwap";
+           type == "CapFloor" || type == "Swaption" || type == "SwaptionStraddle" ||
+           type == "CallableSwap" || type == "KnockOutSwap" || type == "InflationSwap" ||
+           type == "FlexiSwap" || type == "BalanceGuaranteedSwap";
 }
 
 void rate_instrument_projection_stamp(trading::domain::swap_leg& row) {
@@ -140,15 +140,15 @@ auto rate_instrument_projection_to_ore_date(const std::optional<std::chrono::yea
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto rate_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto rate_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto rate_instrument_projection_spelling_of(const record_reader& r,
-                                            std::string_view name) -> std::string {
+auto rate_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -160,8 +160,8 @@ auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal 
 }
 
 /// A schema decimal element as the domain's exact decimal.
-auto rate_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto rate_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -421,12 +421,14 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
     return result;
 }
 
-auto read_swaption(const record_reader& trade) -> swap_instrument_data {
+// A straddle states a swaption's element under its own name, so both read here.
+auto read_swaption(const record_reader& trade, std::string_view trade_type)
+    -> swap_instrument_data {
     swap_instrument_data result;
-    result.header = rate_instrument_projection_make_header("Swaption");
+    result.header = rate_instrument_projection_make_header(trade_type);
     result.facts = swaption_instrument{};
 
-    const auto data = trade.child("SwaptionData");
+    const auto data = trade.child(std::string(trade_type) + "Data");
     if (!data)
         return result;
 
@@ -746,9 +748,11 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     }
 }
 
-void write_swaption(record_writer& trade, const swap_instrument_data& v) {
+void write_swaption(record_writer& trade,
+                    std::string_view trade_type,
+                    const swap_instrument_data& v) {
     const auto& fact = std::get<swaption_instrument>(v.facts);
-    auto data = trade.child("SwaptionData");
+    auto data = trade.child(std::string(trade_type) + "Data");
     auto option = data.child("OptionData");
 
     const auto dates = option_block::exercise_dates_of(v);
@@ -887,8 +891,8 @@ auto read_rate_instrument(xml::record_reader trade, std::string_view trade_type)
         return trading::domain::trade_instrument{read_fra(trade)};
     if (trade_type == "CapFloor")
         return trading::domain::trade_instrument{read_capfloor(trade)};
-    if (trade_type == "Swaption")
-        return trading::domain::trade_instrument{read_swaption(trade)};
+    if (trade_type == "Swaption" || trade_type == "SwaptionStraddle")
+        return trading::domain::trade_instrument{read_swaption(trade, trade_type)};
     if (trade_type == "CallableSwap")
         return trading::domain::trade_instrument{read_callable_swap(trade)};
     if (trade_type == "KnockOutSwap")
@@ -914,8 +918,8 @@ auto write_rate_instrument(xml::record_writer& trade,
         write_fra(trade, *v);
     else if (trade_type == "CapFloor")
         write_capfloor(trade, *v);
-    else if (trade_type == "Swaption")
-        write_swaption(trade, *v);
+    else if (trade_type == "Swaption" || trade_type == "SwaptionStraddle")
+        write_swaption(trade, trade_type, *v);
     else if (trade_type == "CallableSwap")
         write_callable_swap(trade, *v);
     else if (trade_type == "KnockOutSwap")

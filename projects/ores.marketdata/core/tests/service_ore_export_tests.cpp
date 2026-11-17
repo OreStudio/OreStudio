@@ -695,7 +695,9 @@ TEST_CASE("export_for_a_party_writes_its_own_series_and_no_other_party_s",
     t.ctx = base;
 
     for (std::size_t i = 0; i < parties.size(); ++i) {
-        const auto market = ore_export_service(as_party(parties[i])).write_all().market_data;
+        const auto written = ore_export_service(as_party(parties[i])).write_all();
+        CHECK(written.series_count == 1);
+        const auto& market = written.market_data;
         CHECK(std::ranges::count(body_keys(market), std::string("FX/RATE/EUR/USD")) == 1);
         CHECK(market.contains("FX/RATE/EUR/USD\t" + values[i]));
     }

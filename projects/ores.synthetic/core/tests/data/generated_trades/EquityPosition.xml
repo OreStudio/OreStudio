@@ -10,13 +10,13 @@
       </Underlying>
     </EquityPositionData>
   </Trade>
-  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
     <TradeType>EquityPosition</TradeType>
     <EquityPositionData>
-      <Quantity>1201</Quantity>
+      <Quantity>2252</Quantity>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.SPX</Name>
+        <Name>RIC:DHER.DE</Name>
       </Underlying>
     </EquityPositionData>
   </Trade>

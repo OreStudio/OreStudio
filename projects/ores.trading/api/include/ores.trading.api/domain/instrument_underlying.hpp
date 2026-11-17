@@ -72,6 +72,8 @@ struct instrument_underlying final {
      * Underlying or Underlyings. A product that states each block as its own element names that
      * element instead: DoubleDigitalOption states Underlying1 to Underlying4, so a row of it holds
      * underlying1 to underlying4 and the element it belongs to is the row's role.
+     * EuropeanOptionBarrier states OptionUnderlying and BarrierUnderlying, so its rows hold
+     * optionunderlying and barrierunderlying.
      */
     std::string underlying_role;
 

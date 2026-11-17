@@ -165,6 +165,12 @@ domain::equity_position_option_underlying equity_position_option_underlying_to_d
     v.settlement_type = write.settlement_type;
     v.identifier_type = write.identifier_type;
     v.exercise_date = write.exercise_date;
+    v.currency = write.currency;
+    v.strike_currency = write.strike_currency;
+    v.quantity = write.quantity;
+    v.premium_amount = write.premium_amount;
+    v.premium_currency = write.premium_currency;
+    v.premium_pay_date = write.premium_pay_date;
     return v;
 }
 

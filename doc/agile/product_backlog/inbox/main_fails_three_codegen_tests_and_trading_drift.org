@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 17600013-73C4-4176-9CE7-270752706982
+:END:
+#+title: Main fails three codegen tests and the trading component drift check
+#+description: At main ed926fbead the local gate's codegen-tests check fails three tests (domain headers that include optional without using it, and two own-or-system-tenant RLS template tests), and component-drift reports that regenerating ores.trading would change script_variant_repository.cpp.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:trading:keep_main_green:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The local gate's =codegen-tests= check fails three tests on main:
+=test_no_domain_header_declares_a_standard_header_it_does_not_use= (four
+headers, among them =ores.trading.api/domain/script_calibration.hpp=,
+include =<optional>= and use no =std::optional=), and both tests in
+=test_rls_own_or_system_tenant_rows.py=. The =component-drift= check reports
+that regenerating =ores.trading= would add a claim filter to
+=script_variant_repository.cpp=. Fix the headers and the template, and
+regenerate or bind the repository.
+
+* Why
+
+Any branch that touches =ores.trading= or a modeling file runs these checks
+and fails for a reason it did not cause, so its author must prove the
+failure is not theirs.
+
+* References
+
+- Found by the local gate of the task "Resolve a trade set's market data
+  requirements", on 2026-11-17, against base =ed926fbead=.
+
+* See also
+
+-

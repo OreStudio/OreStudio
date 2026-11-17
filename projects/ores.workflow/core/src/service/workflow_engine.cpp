@@ -153,6 +153,7 @@ std::vector<domain::workflow_plan_step> plan_steps_of(const domain::workflow_ins
         row.command_subject = step.command_subject;
         row.compensation_subject = step.compensation_subject;
         row.timeout_seconds = static_cast<std::int32_t>(step.timeout.count());
+        row.essential = step.essential;
         row.modified_by = actor;
         row.performed_by = actor;
         rows.push_back(std::move(row));
@@ -310,15 +311,17 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     // two can be joined by one grep. with_correlation_id() only applies to
     // request/reply, so a command has to set it here.
     try {
-        // The step id is the identity of this piece of work, so the stream can
-        // deduplicate a re-dispatch of it: a retry after a lost publish ack
-        // stores one command, not two.
+        // The idempotency key is the identity of this attempt at the work, so
+        // the stream can deduplicate a re-dispatch of it: a retry after a lost
+        // publish ack stores one command, not two. A re-run is a new attempt
+        // and carries a new key, so the stream does not drop it as a repeat.
+        const auto& attempt = step.idempotency_key.empty() ? step_id_str : step.idempotency_key;
         nats_.js_publish(step.command_subject,
                          data,
                          {{std::string(step_id_header), step_id_str},
                           {std::string(instance_id_header), inst_id_str},
                           {std::string(tenant_id_header), tenant_id_str},
-                          {std::string(ores::nats::headers::nats_msg_id), step_id_str},
+                          {std::string(ores::nats::headers::nats_msg_id), attempt},
                           {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
     } catch (const std::exception& e) {
         // Nothing was accepted, so nothing will answer and the step would sit
@@ -503,6 +506,39 @@ void workflow_engine::set_step_state(const domain::workflow_step& step,
                               << " state=" << state_name(step_states_, from_state_id) << "->"
                               << state_name(step_states_, state_id)
                               << " at=" << ores::platform::time::datetime::to_iso8601_utc(now);
+}
+
+bool workflow_engine::is_essential_step(const boost::uuids::uuid& instance_id,
+                                        const std::string& step_name) {
+    const auto chain = plan_step_repo_.read_latest_by_workflow_id(
+        ctx_, boost::uuids::to_string(instance_id), 0, 1000);
+    const auto found = std::ranges::find(chain, step_name, &domain::workflow_plan_step::name);
+    if (found == chain.end()) {
+        BOOST_LOG_SEV(lg(), warn) << "The plan of workflow " << boost::uuids::to_string(instance_id)
+                                  << " names no step '" << step_name
+                                  << "', so the step is treated as essential.";
+        return true;
+    }
+    return found->essential;
+}
+
+void workflow_engine::settle_with_warnings(
+    const domain::workflow_step& step,
+    const std::string& result_json,
+    const std::string& failure,
+    std::vector<ores::workflow::messaging::step_log_entry> log) {
+    BOOST_LOG_SEV(lg(), warn) << "Step " << step.name
+                              << " is not essential, so it ends with warnings and the run goes "
+                                 "on without its work: "
+                              << failure;
+    log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                   .message = failure,
+                   .context = {}});
+    set_step_state(step,
+                   step_states_.require("completed_with_warnings"),
+                   result_json,
+                   "",
+                   ores::utility::codec::json::write(log));
 }
 
 void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) {
@@ -950,7 +986,9 @@ void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
     const auto log_json =
         event.log.empty() ? std::string{} : ores::utility::codec::json::write(event.log);
 
-    // Update step state.
+    // Update step state. A step that is not essential and failed is settled
+    // with warnings, and the run goes on as it would after a success.
+    bool went_on_without = false;
     using outcome = ores::workflow::messaging::step_outcome;
     switch (event.outcome) {
         case outcome::completed:
@@ -968,6 +1006,11 @@ void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
                            log_json);
             break;
         case outcome::failed:
+            if (step.step_index >= 0 && !is_essential_step(step.workflow_id, step.name)) {
+                settle_with_warnings(step, event.result_json, event.error_message, event.log);
+                went_on_without = true;
+                break;
+            }
             set_step_state(step, step_states_.require("failed"), "", event.error_message, log_json);
             break;
     }
@@ -993,8 +1036,8 @@ void workflow_engine::on_step_completed(ores::nats::delivery delivery) {
 
     // Distinguish between forward steps and compensation steps.
     using outcome = ores::workflow::messaging::step_outcome;
-    const bool is_success =
-        event.outcome == outcome::completed || event.outcome == outcome::completed_with_warnings;
+    const bool is_success = event.outcome == outcome::completed ||
+                            event.outcome == outcome::completed_with_warnings || went_on_without;
 
     if (step.step_index < 0) {
         // Compensation step completed — check if all compensations are done.
@@ -1404,6 +1447,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
     const auto step_failed = step_states_.require("failed");
 
     std::size_t expired = 0;
+    std::set<boost::uuids::uuid> went_on_without;
     // The pass walks the steps the engine dispatched, not every run the store
     // holds: what it is looking for is work in flight, and that is what the
     // engine itself handed out. The step row decides whether the step is still
@@ -1505,11 +1549,25 @@ std::size_t workflow_engine::expire_overdue_steps() {
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;
 
-            set_step_state(step, step_failed, "", reason);
             ++expired;
-
             const auto instances =
                 instance_repo_.read_latest(ctx_, boost::uuids::to_string(waiting.instance_id));
+
+            /*
+             * A step that is not essential is settled with warnings and the run
+             * goes on without it. Its work is unknown, as below, but nothing
+             * after it needs that work, so the run has no reason to wait for a
+             * person. A late answer from it is then a duplicate. The run is
+             * advanced after the pass, because a dispatch adds to the list the
+             * pass walks.
+             */
+            if (!is_essential_step(waiting.instance_id, step.name)) {
+                settle_with_warnings(step, "", reason, {});
+                went_on_without.insert(waiting.instance_id);
+                it = awaiting_.erase(it);
+                continue;
+            }
+            set_step_state(step, step_failed, "", reason);
             /*
              * The run stops, whatever failure policy its definition declares.
              *
@@ -1536,8 +1594,22 @@ std::size_t workflow_engine::expire_overdue_steps() {
         }
     }
 
+    // Each run is advanced once, from its row as it stands after the pass,
+    // however many of its steps the pass settled.
+    for (const auto& instance_id : went_on_without) {
+        try {
+            auto instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+            if (!instances.empty())
+                dispatch_ready_steps(instances.front());
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "A run that went on without an overdue step was not advanced: workflow="
+                << boost::uuids::to_string(instance_id) << " reason=" << e.what();
+        }
+    }
+
     if (expired > 0)
-        BOOST_LOG_SEV(lg(), warn) << "Expiry pass failed " << expired << " overdue step(s).";
+        BOOST_LOG_SEV(lg(), warn) << "Expiry pass settled " << expired << " overdue step(s).";
     return expired;
 }
 
@@ -1560,6 +1632,9 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
     if (instance.tenant_id != caller_tenant && caller_tenant != utility::uuid::tenant_id::system())
         return {.reason = "Workflow instance not found."};
 
+    const bool finished = instance.state_id == instance_states_.require("completed");
+    if (finished)
+        return rerun_warned_step(instance, step_name);
     if (instance.state_id != instance_states_.require("failed"))
         return {.reason = "The run has not stopped, so there is nothing to resume."};
 
@@ -1640,6 +1715,53 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
                               << ") for instance " << instance_id_str;
 
     return {.resumed = true, .step_index = target->step_index, .step_name = target->name};
+}
+
+workflow_engine::retry_outcome
+workflow_engine::rerun_warned_step(const domain::workflow_instance& instance,
+                                   const std::string& step_name) {
+    if (step_name.empty())
+        return {.reason = "The run has completed; name the step that ended with warnings to "
+                          "run it again."};
+
+    const auto instance_id_str = boost::uuids::to_string(instance.id);
+    const auto steps = step_repo_.read_latest_by_workflow_id(ctx_, instance_id_str, 0, 1000);
+    const auto found = std::ranges::find_if(steps, [&](const domain::workflow_step& s) {
+        return s.step_index >= 0 && s.name == step_name;
+    });
+    if (found == steps.end())
+        return {.reason = "The run holds no step named '" + step_name + "'."};
+    if (found->state_id != step_states_.require("completed_with_warnings"))
+        return {.reason = "The step '" + step_name +
+                          "' did not end with warnings, so there is nothing to run again."};
+    if (is_essential_step(instance.id, step_name))
+        return {.reason = "The step '" + step_name +
+                          "' is essential, and a completed run runs again only a step that "
+                          "is not."};
+
+    /*
+     * The step goes back to work as a new attempt: a new idempotency key, so
+     * the stream does not drop the command as a repeat of the first one, and
+     * a start of its own, so its time is this attempt's. The step id stays,
+     * because it is how the run names the step, and a service answers a step
+     * id from its record only while the step is settled, which it no longer
+     * is. The run is back in progress until the step answers, and the answer
+     * completes it again, as any last answer does.
+     */
+    auto attempt = *found;
+    attempt.idempotency_key = boost::uuids::to_string(boost::uuids::random_generator()());
+    attempt.started_at = std::chrono::system_clock::now();
+    step_repo_.write(ctx_, attempt);
+    set_step_state(attempt, step_states_.require("in_progress"), "", "", "[]");
+    set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
+    publish_command(attempt, instance.id, instance.tenant_id.to_uuid());
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
+    note_awaiting(attempt, instance.id, instance.tenant_id.to_uuid());
+    stamp_command_published(attempt.id);
+
+    BOOST_LOG_SEV(lg(), info) << "Re-ran step " << attempt.step_index << " (" << attempt.name
+                              << ") of completed instance " << instance_id_str;
+    return {.resumed = true, .step_index = attempt.step_index, .step_name = attempt.name};
 }
 
 }

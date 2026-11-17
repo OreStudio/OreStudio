@@ -50,6 +50,7 @@ Developers start work from a commit that CI has proven green, and main only move
 | [[id:2585BB37-1F7F-4D2A-B3C7-EEA6B1805A54][Show the branch of each build in CDash]] | BACKLOG | | | Submit each CI build to a CDash group named after the branch it built: dev, integration or main. |
 | [[id:AC551901-58D0-4F99-8C4E-AABC7BF70858][Fix the nightly compile errors]] | STARTED | 2026-11-12 | | Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean. |
 | [[id:F15CA18F-4DC9-48A1-92F7-65E7E987E8C2][Record the XML benchmark after the format pass]] | BACKLOG | | | A nightly format pass changed the measured XML code and no benchmark row followed it, so the local check gate refused every branch cut from main. |
+| [[id:7F2DAB93-6627-46BB-8515-A45AAE64E064][Fix the checks main fails on the new trade tables]] | DONE | | 2026-11-17 | Four instrument tables landed without the three things every trading table needs: row-level security, the permission codes their handlers check, and an entry in the ER diagrams. Each absence turns one local check red on main, so every branch raised from main inherits a red gate. |
 
 * Decisions
 

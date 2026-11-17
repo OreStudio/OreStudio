@@ -21,6 +21,7 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -72,8 +73,9 @@ std::string family_name(const market_series_identity& row, const market_series& 
 
 }
 
-std::string text_of(const market_series_identity& row, std::string_view column) {
-    std::string out;
+std::optional<std::string> text_of(const market_series_identity& row,
+                                   std::string_view column) {
+    std::optional<std::string> out;
     ores::utility::codec::apply_fields(
         [&](const auto&... one) {
             (
@@ -106,14 +108,25 @@ void check_identity_shape(const std::vector<series_identity_shape>& stated,
     const auto shape = book.find(family_key_of(row, series));
     if (shape == book.end())
         return;
+    // A row that names a column the identity does not hold states nothing the
+    // guard can check. Ignoring it would let a misspelt forbidden field pass every
+    // row, so the row is refused as the shape's fault, not the series'.
+    const auto held = [&](const std::string& field) {
+        const auto text = text_of(row, field);
+        if (!text)
+            throw std::invalid_argument("the " + family_name(row, series) +
+                                        " shape names field '" + field +
+                                        "', which an identity does not hold as text");
+        return *text;
+    };
     for (const auto& field : shape->second.required) {
-        if (text_of(row, field).empty())
+        if (held(field).empty())
             throw std::invalid_argument("series '" + series.oresmd_uri + "' is not a " +
                                         family_name(row, series) + " identity: field '" + field +
                                         "' is required");
     }
     for (const auto& field : shape->second.forbidden) {
-        if (!text_of(row, field).empty())
+        if (!held(field).empty())
             throw std::invalid_argument("series '" + series.oresmd_uri + "' is not a " +
                                         family_name(row, series) + " identity: field '" + field +
                                         "' is forbidden");

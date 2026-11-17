@@ -46,9 +46,10 @@
  * what a series of this identity is -- and because a family the taxonomy gains
  * gains its shape in the same place rather than in a second mechanism.
  *
- * A family with no row here is not an unconstrained family: the writer refuses to
- * project a series whose family it holds no shape for, so a new family cannot ship
- * unguarded by failing to declare one.
+ * A family with no row here is not enforced: the writer projects its series
+ * unguarded, and the backfill counts them as unstated. The catalogue grows family by
+ * family, and refusing every family nobody has stated yet would stop an ingest for a
+ * reason that is the catalogue's.
  */
 
 create table if not exists "ores_marketdata_series_identity_shapes_tbl" (

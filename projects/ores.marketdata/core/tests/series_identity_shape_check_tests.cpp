@@ -148,6 +148,20 @@ TEST_CASE("a_forbidden_field_is_refused_while_a_field_nobody_states_is_left_alon
     CHECK_NOTHROW(check_identity_shape(shape, series, row));
 }
 
+TEST_CASE("a_shape_that_names_a_field_an_identity_does_not_hold_is_refused", shape_tags) {
+    auto lg(make_logger(test_suite));
+
+    // A misspelt forbidden field would otherwise pass every row of its family.
+    const std::vector<series_identity_shape> shape{
+        stated("index_fixing", "ibor", "unit_currency", "forbidden")};
+    const auto series =
+        series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+
+    CHECK_THROWS_WITH(check_identity_shape(shape, series, ibor_fixing("USD", "SOFR")),
+                      Catch::Matchers::ContainsSubstring(
+                          "shape names field 'unit_currency', which an identity does not hold"));
+}
+
 TEST_CASE("a_fixing_whose_series_subclass_says_something_else_is_refused_by_name", shape_tags) {
     auto lg(make_logger(test_suite));
 

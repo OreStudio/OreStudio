@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -33,10 +34,10 @@ namespace ores::marketdata::repository {
  * @brief The text one column of an identity row holds, read by name.
  *
  * The name is the column the shape table states, and the identity type's own field
- * list is what turns it into a member, so a name the type does not hold reads as
- * empty rather than needing a second mapping to keep in step.
+ * list is what turns it into a member, so no second mapping has to be kept in step.
+ * A name the type does not hold as text gives no value.
  */
-[[nodiscard]] ORES_MARKETDATA_CORE_EXPORT std::string
+[[nodiscard]] ORES_MARKETDATA_CORE_EXPORT std::optional<std::string>
 text_of(const domain::market_series_identity& row, std::string_view column);
 
 /**

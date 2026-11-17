@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 109 types name an instrument table, and the generator records 109.
+- 111 types name an instrument table, and the generator records 111.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -101,7 +101,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =BalanceGuaranteedSwap= | native | native | =BalanceGuaranteedSwapData= | =rate_instrument= | yes | - | - | - |
 | =Bond= | native | native | =BondData= | =bond_instrument= | yes | - | - | - |
 | =BondFuture= | native | native | =BondFutureData= | =bond_instrument= | yes | - | - | - |
-| =BondFutureOption= | native | native | =BondFutureOptionData= | - | no | - | - | [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
+| =BondFutureOption= | native | native | =BondFutureOptionData= | =scripted_instrument= | yes | - | - | [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
 | =BondOption= | native | native | =BondOptionData= | =bond_instrument= | yes | - | - | - |
 | =BondPosition= | native | native | =BondBasketData= | =bond_instrument= | yes | - | - | - |
 | =BondRepo= | native | native | =BondRepoData= | =bond_instrument= | yes | - | - | - |
@@ -157,7 +157,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =EquityEuropeanBarrierOption= | native | native | =EquityEuropeanBarrierOptionData= | =equity_barrier_option_instrument= | yes | - | - | - |
 | =EquityForward= | native | native | =EquityForwardData= | =equity_forward_instrument= | yes | - | - | - |
 | =EquityForwardVolatilityAgreement= | scripted | scripted | =EquityForwardVolatilityAgreementData= | =scripted_instrument= | yes | =ForwardVolatilityAgreement= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:C78BE8BE-4947-4C30-8544-67DBDAA3849E][Model the variance and forward-volatility products]] |
-| =EquityFutureOption= | native | native | =EquityFutureOptionData= | - | no | - | - | [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
+| =EquityFutureOption= | native | native | =EquityFutureOptionData= | =scripted_instrument= | yes | - | - | [[id:567D67C8-B166-4E68-834F-F94B5876939D][Model the options on futures]] |
 | =EquityGenericBarrierOption= | scripted | scripted | =EquityGenericBarrierOptionData= | =scripted_instrument= | yes | =GenericBarrierOption= | named | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:126C0B47-0111-4772-B314-611844156B82][Model the window and generic barrier products]] |
 | =EquityOption= | native | native | =EquityOptionData= | =equity_option_instrument= | yes | - | - | - |
 | =EquityOptionPosition= | native | native | =EquityOptionPositionData= | =equity_position_instrument= | yes | - | - | - |

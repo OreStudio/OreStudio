@@ -26,11 +26,11 @@ Both product types have a data model, a projection reader and writer, and a buil
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,20 @@ Both product types have a data model, a projection reader and writer, and a buil
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both elements are flat: an option block, the underlying (or the contract), and
+scalar terms. They route to the scripted instrument table through the
+class-read path. A native home would need a new bond fact entity for the option
+on a bond future and a future expiry column on the equity option row; the
+flat element needs neither.
+
+- The future's terms are parameters: =FutureExpiryDate= for the equity future,
+  =ContractName= and =ContractNotional= for the bond future.
+- Builders: =equity_future_option_builder= (European, cash settled; the future
+  expires on or after the option) and =bond_future_option_builder=.
+- The generator books the equity option in the equity family, its future a
+  month after the option, and the bond option in the bond family on the
+  contracts BondFuture names, expiring a month out. A bond future option slot
+  states the slot's security as every bond slot does, with a scripted batch.
 
 * Measurements
 
@@ -60,7 +71,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4678 cases pass | =./ores.trading.api.tests= | 8a8263939c |
+| ore core tests | 551 cases pass | =./ores.ore.core.tests= | 8a8263939c |
+| synthetic tests, not generated | 138 cases pass | =./ores.synthetic.core.tests "~[generated]"= | 8a8263939c |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | 8a8263939c |
 
 * Notes
 
@@ -88,3 +102,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+EquityFutureOption and BondFutureOption are held in the scripted instrument
+table, the option block in the option rows and the future's terms as
+parameters. The round-trip test reads the user guide's examples of both and
+writes them back. Each type has a builder, the catalogue routes both, and the
+generator books one trade of each. The ORE engine builds the recorded trades
+with no error of the trade kind; both raise an engine configuration error,
+because ORE's Products example configuration names no engine for them, which
+the known list holds and the valuation story owns.
+
+Adding the bond type moved the bond slots and showed two planner defects, both
+fixed: a forward bond could mature after its bond, and a callable bond drew its
+credit curve by slot, so two slots holding one security restated its issue with
+different curves.

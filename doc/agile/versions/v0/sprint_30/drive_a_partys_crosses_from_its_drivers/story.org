@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 305E3F4D-6A79-40F3-9F57-5D149A142B73
+:END:
+#+title: Story: Drive a party's crosses from its driver pairs
+#+description: A party may treat a cross as driven: its surface implied from driver pairs by correlation, or by a basis spread over one driver, configured at the party level as the cross-rate engine's driver pairs are.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A party chooses which of its pairs are driven, by which drivers and through which relationship, and its driven surfaces are calibrated from its driver surfaces rather than from the cross's own quotes, so a firm can manage fewer surfaces and keep its crosses consistent with them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first task. |
+| Last touched  | 2026-11-17                               |
+
+* Acceptance
+
+- A party's driven pairs, their drivers and their relationship (correlation or basis) are the party's own configuration, copied with its blueprints.
+- A correlation-driven surface is implied from its two driver surfaces and a stated correlation source; a basis-driven one from its driver plus a spread.
+- A driven pair's quotes, if a vendor sends any, are not what its surface is calibrated from, and the publish says which drivers it came from.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7A39E1DC-6F9D-46D5-8932-FDA6588095E5][Choose where a correlation-driven cross reads its correlation]] | BACKLOG | | | A correlation-driven surface needs a correlation between its drivers that no quote states; decide whether it is read from the party's own spot history, implied from a previous cross surface, or set by the party, and record why. |
+| [[id:6C8D07FA-8CF8-48DB-A2FD-9C8CF5B05EA6][Configure a party's driven pairs and calibrate their surfaces]] | BACKLOG | | | Model the party's driven pairs, their drivers and their relationship, copy them with the party's blueprints, and calibrate a driven surface from its driver surfaces. |
+
+* Decisions
+
+* Out of scope
+
+-

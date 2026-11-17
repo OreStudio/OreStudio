@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: DC3AB56C-BA30-4819-868D-8F7ED367A202
+:END:
+#+title: Story: Keep the market data generator out of a tenant's sight
+#+description: Any tenant reads the system tenant's generator configuration: the synthetic tables' row policies admit the system tenant's rows, and a tenant administrator holds the permissions the Synthetic screen asks for, so Acme's administrator lists the Vasicek processes behind its curves.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A tenant sees market data as a firm sees its vendors' data: quotes, series, feeds and providers, never the processes, parameters or contributors that generate them. The generator is the system tenant's alone, so a real vendor can replace it with no change a tenant can tell.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first task. |
+| Last touched  | 2026-11-17                               |
+
+* Acceptance
+
+- The synthetic tables admit only the system tenant's sessions to the system tenant's rows.
+- The Synthetic screen and the synthetic verbs are offered only in a system session.
+- A test signs in as a tenant administrator and reads no generator configuration, by the service and by the web.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0A4D7B25-1E75-4D0D-89C4-2C7404DB972E][Admit only the system tenant to the generator's rows]] | BACKLOG | | | Sixteen synthetic row policies admit any tenant to the system tenant's rows; Acme's tenant administrator listed the Vasicek processes behind its curves. Admit a tenant only to its own rows, and the system tenant to all. |
+| [[id:131D7D77-3FF8-4836-8849-E721B24A3ADE][Offer the generator's screen and verbs only in a system session]] | BACKLOG | | | The Synthetic card is gated by synthetic read permissions, which a tenant administrator holds through its wildcard; offer the screen, its card and the synthetic verbs only to a system session. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -25,6 +25,7 @@
 #include "ores.ore.core/log/engine_log.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/forwarding_curves.hpp"
 #include "ores.ore.core/xml/run_package.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
@@ -295,7 +296,12 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
         // engine reads them. The documents come from their owners through the
         // owners' operations, carrying the run token, so ore never reads their
         // tables.
-        const auto input = ores::ore::xml::archive_layout(run_input);
+        // A curve the party publishes is in the market data but not in the
+        // configuration the run was authored with, so each one a trade names is
+        // added to the configuration before it is laid out.
+        const auto configured = ores::ore::xml::name_forwarding_curves(
+            run_input, std::string_view{market_data.data(), market_data.size()}, portfolio);
+        const auto input = ores::ore::xml::archive_layout(configured);
         for (const auto& [path, content] : input) {
             const auto target = stage_dir / path;
             std::filesystem::create_directories(target.parent_path());

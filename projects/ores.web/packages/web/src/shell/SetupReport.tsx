@@ -186,7 +186,9 @@ export function SetupReportPage(): ReactNode {
             );
             if (answer.success) {
                 setRound((value) => value + 1);
-                await queryClient.invalidateQueries({ queryKey: ['setup-report'] });
+                // A refresh that fails is not a re-run that failed, so it is
+                // left to the run below rather than to this note.
+                void queryClient.invalidateQueries({ queryKey: ['setup-report'] });
             }
         } catch (error) {
             setNote(error instanceof Error ? error.message : String(error));

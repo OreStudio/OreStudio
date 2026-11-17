@@ -119,10 +119,15 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
 - A type held by value in a header drags its definition into that header, and
   that is what kept the forward-declaration rule from finishing. Splitting the
-  type out is the fix, and it moves no rebuild radius: the header that held the
-  copy still includes the definition, so the same objects reach it. What moves
-  is the parse cost of a consumer that names the type alone, and the check's
-  offender count, which is now zero.
+  type out is part of the fix; the other part is asking what the holder needs.
+  A transaction kept a copy of the session context to encode five =set_config=
+  arguments and re-encoded them on every round trip: it now keeps the encoded
+  parameters, so the copy is gone and the encoding runs once.
+- Splitting a type out does not by itself move reach. The header that
+  constructs the type still needs the definition, and where that header is
+  ubiquitous (the transaction template every repository source includes) the
+  same objects reach it. What moves is the parse cost of a consumer that names
+  the type alone, and the check's offender count, which is now zero.
 
 * Out of scope
 

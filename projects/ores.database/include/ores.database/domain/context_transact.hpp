@@ -20,6 +20,7 @@
 #define ORES_DATABASE_DOMAIN_CONTEXT_TRANSACT_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/pq/session_context.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/unit_of_work.hpp"
 #include <utility>

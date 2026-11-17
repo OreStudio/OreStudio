@@ -22,27 +22,14 @@
 #include "ores.database/export.hpp"
 #include "ores.database/pq/connection_fwd.hpp"
 #include "ores.database/pq/result.hpp"
+#include "ores.database/pq/session_context_fwd.hpp"
 #include "ores.database/pq/statement.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <optional>
+#include <array>
 #include <span>
 #include <string>
 #include <vector>
 
 namespace ores::database::pq {
-
-/**
- * @brief Who a transaction acts for. The policies of row-level security read
- * these settings, and the audit columns name the actor and the service.
- */
-struct session_context final {
-    utility::uuid::tenant_id tenant = utility::uuid::tenant_id::system();
-    std::optional<boost::uuids::uuid> party;
-    std::vector<boost::uuids::uuid> visible_parties;
-    std::string actor;
-    std::string service;
-};
 
 /**
  * @brief One statement of a round trip: what to prepare, what to send, and
@@ -65,15 +52,17 @@ struct sent_statement final {
  * Nothing is sent until the first statement. That statement goes out in one
  * pipeline with =begin= and the =set_config(..., true)= of the session
  * context, so the context costs no round trip of its own, and it ends with
- * the transaction. A statement not yet prepared on the connection is prepared
- * in the same pipeline.
+ * the transaction. The settings are the only part of the session context the
+ * transaction keeps, encoded once when it opens: a caller may build the context
+ * as a temporary, so the transaction cannot hold on to it. A statement not yet
+ * prepared on the connection is prepared in the same pipeline.
  *
  * Only a unit of work makes, commits and rolls back a transaction: see
  * transact().
  */
 class ORES_DATABASE_EXPORT transaction final {
 public:
-    transaction(connection& c, session_context context);
+    transaction(connection& c, const session_context& context);
 
     transaction(const transaction&) = delete;
     transaction& operator=(const transaction&) = delete;
@@ -259,7 +248,7 @@ private:
     void round_trip(std::span<const sent_statement> statements);
 
     connection& connection_;
-    session_context context_;
+    std::array<param, 5> context_params_;
     bool begun_ = false;
     bool done_ = false;
 };

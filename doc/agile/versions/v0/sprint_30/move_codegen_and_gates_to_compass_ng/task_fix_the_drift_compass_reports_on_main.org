@@ -39,6 +39,7 @@ Every drift finding compass reports at the start of this story is fixed in the s
 - Each hand edit in a generated file has a decision: market_fixing_repository read_latest_for_series (compass generate deletes it), marketdata options.hpp zero initialisers, ores.ore core tests CMakeLists.txt pugixml. The change moves into the model or template, or it is dropped.
 - The 52 shell recipe scripts compass tangles but the tree lacks are written, and the shell recipe inventory and HTTP route inventory are current.
 - The 12 handler_permissions, 1 bff_list_requests and 1 parameter_value_sets findings are fixed or shown to be compass bugs.
+- The 4 trading tables without RLS (cash_position_instruments, equity_pairwise_variance_swap_instruments, fx_asian_option_instruments, fx_pairwise_variance_swap_instruments) get tenant and party isolation policies. Python er-diagram --strict finds this and compass does not.
 - compass diff writes nothing on the branch.
 
 * Plan

@@ -39,6 +39,8 @@ A local check of a change takes seconds for the build-free gates, and gives the 
 - Not ported stays in Python: boost-deps, xml-benchmark-recorded, format, no-committed-credentials, the self-tests, xml-bindings-drift, file-types-seed, ore-parameters-seed, site-page, and the build, database and test gates.
 - If compass-ng is missing, the runner falls back to the Python gates and says so.
 - Wall time of a docs-only and a codegen change is recorded before and after.
+- Before a gate moves to compass, a planted violation proves compass reports it; gates green on main are tested this way, as in the pilot's 10 plants.
+- A gate whose verdicts differ (er-diagram today) stays in Python until compass is fixed.
 
 * Plan
 

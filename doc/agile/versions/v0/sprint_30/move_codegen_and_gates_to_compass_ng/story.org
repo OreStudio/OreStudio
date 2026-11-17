@@ -59,6 +59,13 @@ compass-ng generates the code and runs the build-free gates for every environmen
 
 * Decisions
 
+- Replace one area at a time, and only after the two tools agree on the same commit; keep the Python gate for any rule where they differ.
+- compass-ng bugs go to the compass repository; ORE Studio does not work around them.
+- CI and external developers install a released, pinned compass-ng; nobody builds it from source to use it.
+
 * Out of scope
 
--
+- HTML site export: compass-ng does not export HTML yet; the Emacs site export and site-page stay.
+- The document verbs of the Python compass (bearings, where, search, story, task, journal, env, db, services, pr): compass-ng has no replacement yet; the compass repository's Retire legacy tooling story tracks them.
+- Building and publishing compass-ng binaries and its CDash dashboard: compass repository stories Publish installable binaries and Report builds and tests to CDash.
+

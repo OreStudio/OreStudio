@@ -109,7 +109,12 @@ The suite's scope is now stated where it is used. If a later task wants a tenant
 identities held to the catalogue in SQL, it needs an account in the fixture tenant first,
 which is a seeding question and not a shape question.
 
-* Test Scenarios* Test Scenarios
+The local gate fails =component-drift= for the marketdata component on a tree this branch
+did not touch: the service options header carries two initialisers by hand, because the
+options template never emits the =:default:= its model states, and the fixing repository
+carries a four-argument read that nothing calls. Regenerating deletes both, so the branch
+leaves them alone, and the finding is captured as
+[[id:AAA470A4-D202-4E6B-B56B-490E5EE54174][The service config options ignore the default a model states]].
 
 * Test Scenarios
 

@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-the-cash-position
-#+pr:
+#+pr: 4812
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4812][#4812]] | [trading,ore,synthetic] Hold the cash position |
 
 * Review
 

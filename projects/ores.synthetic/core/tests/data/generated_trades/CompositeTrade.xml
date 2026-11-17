@@ -48,16 +48,16 @@
       </Components>
     </CompositeTradeData>
   </Trade>
-  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
+  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
     <TradeType>CompositeTrade</TradeType>
     <Envelope>
       <CounterParty>44444444-4444-4444-4444-444444444444</CounterParty>
     </Envelope>
     <CompositeTradeData>
-      <Currency>USD</Currency>
+      <Currency>EUR</Currency>
       <NotionalCalculation>Mean</NotionalCalculation>
       <Components>
-        <SubTrade id="4158165a-fb6f-580e-86f3-25b5e1e324a3">
+        <SubTrade id="8542cc55-8cdb-5038-a5a0-377660a069e7">
           <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
@@ -66,16 +66,16 @@
               <Style>European</Style>
               <Settlement>Cash</Settlement>
               <ExerciseDates>
-                <ExerciseDate>2030-01-02</ExerciseDate>
+                <ExerciseDate>2027-11-02</ExerciseDate>
               </ExerciseDates>
             </OptionData>
-            <Name>RIC:.SPX</Name>
-            <Currency>USD</Currency>
-            <Quantity>696.86</Quantity>
-            <Strike>4586.31</Strike>
+            <Name>RIC:.STOXX50E</Name>
+            <Currency>EUR</Currency>
+            <Quantity>1455.31</Quantity>
+            <Strike>4993.67</Strike>
           </EquityOptionData>
         </SubTrade>
-        <SubTrade id="21859193-27dc-56c5-a410-2cb7495f0376">
+        <SubTrade id="7f63b829-5111-5bf5-af9f-c230d7ee5bfe">
           <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
@@ -84,13 +84,13 @@
               <Style>European</Style>
               <Settlement>Cash</Settlement>
               <ExerciseDates>
-                <ExerciseDate>2030-01-02</ExerciseDate>
+                <ExerciseDate>2027-11-02</ExerciseDate>
               </ExerciseDates>
             </OptionData>
-            <Name>RIC:.SPX</Name>
-            <Currency>USD</Currency>
-            <Quantity>696.86</Quantity>
-            <Strike>4586.31</Strike>
+            <Name>RIC:.STOXX50E</Name>
+            <Currency>EUR</Currency>
+            <Quantity>1455.31</Quantity>
+            <Strike>4993.67</Strike>
           </EquityOptionData>
         </SubTrade>
       </Components>

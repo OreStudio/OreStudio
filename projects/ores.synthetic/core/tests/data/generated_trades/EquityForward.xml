@@ -11,15 +11,15 @@
       <Quantity>2905</Quantity>
     </EquityForwardData>
   </Trade>
-  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
     <TradeType>EquityForward</TradeType>
     <EquityForwardData>
       <LongShort>Long</LongShort>
-      <Maturity>2027-10-02</Maturity>
-      <Name>RIC:DHER.DE</Name>
-      <Currency>EUR</Currency>
-      <Strike>1138.67</Strike>
-      <Quantity>167</Quantity>
+      <Maturity>2031-08-02</Maturity>
+      <Name>RIC:.NDX</Name>
+      <Currency>USD</Currency>
+      <Strike>1937.73</Strike>
+      <Quantity>1888</Quantity>
     </EquityForwardData>
   </Trade>
 </Portfolio>

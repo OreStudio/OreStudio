@@ -191,3 +191,82 @@ TEST_CASE("an_autocallable_whose_fixings_end_before_they_start_fails", scripted_
             .build();
     REQUIRE_FALSE(note.has_value());
 }
+
+namespace {
+
+basket_option_terms spx_and_ndx(std::string payoff_type) {
+    return {.currency = std::string("USD"),
+            .notional = scripted_amount("1"),
+            .strike = scripted_amount("20000"),
+            .members = std::vector<basket_option_member>{{.underlying = scripted_equity(".SPX"),
+                                                          .currency = std::nullopt,
+                                                          .weight = scripted_amount("1")},
+                                                         {.underlying = scripted_equity(".NDX"),
+                                                          .currency = std::nullopt,
+                                                          .weight = scripted_amount("0.5")}},
+            .payoff_type = std::move(payoff_type),
+            .kind = option_kind::call,
+            .position = option_position::long_option,
+            .expiry = 2027y / 1 / 5,
+            .settlement = 2027y / 1 / 7};
+}
+
+}
+
+TEST_CASE("a_basket_option_states_its_members_its_option_block_and_its_exercise_date",
+          scripted_tags) {
+    const auto built =
+        basket_option_builder<basket_product::equity_basket>(spx_and_ndx("Vanilla")).build();
+    REQUIRE(built.has_value());
+    CHECK(built->instrument.identity.trade_type_code == "EquityBasketOption");
+    REQUIRE(built->instrument_underlyings.size() == 2);
+    CHECK(built->instrument_underlyings[0].underlying_type == "Equity");
+    CHECK(built->instrument_underlyings[0].sequence_number == 1);
+    CHECK(built->instrument_underlyings[1].sequence_number == 2);
+    CHECK(built->instrument_underlyings[1].weight == 0.5);
+    REQUIRE(built->options.size() == 1);
+    CHECK(built->options[0].payoff_type == "Vanilla");
+    CHECK(built->options[0].option_type == "Call");
+    REQUIRE(built->schedule_dates.size() == 1);
+    CHECK(built->schedule_dates[0].schedule_role == "exercise_dates");
+    CHECK(built->schedule_dates[0].schedule_date == 2027y / 1 / 5);
+}
+
+TEST_CASE("a_rainbow_on_a_best_of_payoff_states_no_option_type", scripted_tags) {
+    const auto built =
+        basket_option_builder<basket_product::fx_rainbow>(spx_and_ndx("BestOfAssetOrCash")).build();
+    REQUIRE(built.has_value());
+    CHECK(built->instrument.identity.trade_type_code == "FxRainbowOption");
+    CHECK(built->instrument_underlyings[0].underlying_type == "FX");
+    REQUIRE(built->options.size() == 1);
+    CHECK_FALSE(built->options[0].option_type.has_value());
+}
+
+TEST_CASE("a_basket_option_refuses_a_payoff_of_the_other_product", scripted_tags) {
+    const auto basket =
+        basket_option_builder<basket_product::equity_basket>(spx_and_ndx("MaxRainbow")).build();
+    REQUIRE_FALSE(basket.has_value());
+    CHECK(basket.error().term == "payoff_type");
+    const auto rainbow =
+        basket_option_builder<basket_product::equity_rainbow>(spx_and_ndx("Vanilla")).build();
+    REQUIRE_FALSE(rainbow.has_value());
+    CHECK(rainbow.error().term == "payoff_type");
+}
+
+TEST_CASE("a_basket_option_refuses_one_member_and_a_member_named_twice", scripted_tags) {
+    auto terms = spx_and_ndx("Vanilla");
+    auto members = terms.members.get();
+    members.pop_back();
+    terms.members = members;
+    auto built = basket_option_builder<basket_product::equity_basket>(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "members");
+
+    terms = spx_and_ndx("Vanilla");
+    members = terms.members.get();
+    members[1].underlying = scripted_equity(".SPX");
+    terms.members = members;
+    built = basket_option_builder<basket_product::equity_basket>(terms).build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "members");
+}

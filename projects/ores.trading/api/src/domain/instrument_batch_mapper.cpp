@@ -403,6 +403,11 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 append_rows(batch.instrument_schedules, v.schedules);
                 append_rows(batch.instrument_schedule_dates, v.schedule_dates);
                 append_rows(batch.instrument_underlyings, v.instrument_underlyings);
+                append_rows(batch.instrument_options, v.options);
+                append_rows(batch.instrument_option_premiums, v.option_premiums);
+                append_rows(batch.instrument_option_exercise_fees, v.option_exercise_fees);
+                append_rows(batch.instrument_option_payment_dates, v.option_payment_dates);
+                append_rows(batch.instrument_option_exercise_prices, v.option_exercise_prices);
             } else {
                 append(batch, v);
             }
@@ -531,12 +536,18 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
                                          find_all(batch.instrument_schedules, trade_id),
                                          find_all(batch.instrument_schedule_dates, trade_id)};
     if (const auto* v = find(batch.scripted_instruments, trade_id))
-        return scripted_instrument_data{*v,
-                                        find_all(batch.scripted_parameters, trade_id),
-                                        find_all(batch.scripted_parameter_values, trade_id),
-                                        find_all(batch.instrument_schedules, trade_id),
-                                        find_all(batch.instrument_schedule_dates, trade_id),
-                                        find_all(batch.instrument_underlyings, trade_id)};
+        return scripted_instrument_data{
+            *v,
+            find_all(batch.scripted_parameters, trade_id),
+            find_all(batch.scripted_parameter_values, trade_id),
+            find_all(batch.instrument_schedules, trade_id),
+            find_all(batch.instrument_schedule_dates, trade_id),
+            find_all(batch.instrument_underlyings, trade_id),
+            find_all(batch.instrument_options, trade_id),
+            find_all(batch.instrument_option_premiums, trade_id),
+            find_all(batch.instrument_option_exercise_fees, trade_id),
+            find_all(batch.instrument_option_payment_dates, trade_id),
+            find_all(batch.instrument_option_exercise_prices, trade_id)};
 
     return std::monostate{};
 }

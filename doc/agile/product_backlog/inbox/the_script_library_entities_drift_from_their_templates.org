@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: F931EFA7-F90D-4FFD-BFE6-E4A10F9B31B5
+:END:
+#+title: The script library entities drift from their templates
+#+description: On main, a trading regeneration rewrites 21 script library files: SQL, events and repositories.
+#+type: capture
+#+level: cross
+#+filetags: :trading:codegen:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerate the trading component and commit the 21 script library files it
+rewrites. The files are the create scripts of the script, variant, input,
+result, calibration, calibration strike and coarsening tables, their event
+headers and their repositories. The rendered repositories gain a claim-rows
+filter that keeps only the caller's own rows when a write checks its claim.
+
+* Why
+
+The component-drift check covers every file of a component when a branch
+changes that component's model. A branch that changes the trading catalogue
+then fails the check on files it did not touch. The repository change also
+matters by itself: without the filter, a claim can take the system tenant's
+row in place of the caller's, and the store refuses a write the caller may
+make.
+
+* References
+
+- =projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp=
+- Commit 424d2f0a59, the last regeneration of the script library policies.
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]

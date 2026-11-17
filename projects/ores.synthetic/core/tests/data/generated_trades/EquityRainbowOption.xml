@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
+    <TradeType>EquityRainbowOption</TradeType>
+    <EquityRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>4727</Notional>
+      <Strike>3712.36</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.NDX</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.SPX</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>MaxRainbow</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2027-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2027-10-02</Settlement>
+    </EquityRainbowOptionData>
+  </Trade>
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+    <TradeType>EquityRainbowOption</TradeType>
+    <EquityRainbowOptionData>
+      <Currency>EUR</Currency>
+      <Notional>2252.33</Notional>
+      <Strike>8808.36</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:DHER.DE</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.STOXX50E</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>MaxRainbow</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2032-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2032-12-02</Settlement>
+    </EquityRainbowOptionData>
+  </Trade>
+</Portfolio>

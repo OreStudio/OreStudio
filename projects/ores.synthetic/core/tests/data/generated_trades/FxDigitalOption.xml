@@ -18,7 +18,7 @@
       <DomesticCurrency>USD</DomesticCurrency>
     </FxDigitalOptionData>
   </Trade>
-  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
     <TradeType>FxDigitalOption</TradeType>
     <FxDigitalOptionData>
       <OptionData>
@@ -27,11 +27,11 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-12-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Strike>0.763</Strike>
-      <PayoffAmount>4191327.35</PayoffAmount>
+      <Strike>0.87</Strike>
+      <PayoffAmount>8774166.11</PayoffAmount>
       <ForeignCurrency>EUR</ForeignCurrency>
       <DomesticCurrency>USD</DomesticCurrency>
     </FxDigitalOptionData>

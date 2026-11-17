@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: E207DBDE-DC39-4579-BD6D-4BD31241C325
+:END:
+#+title: Build an Asian basket option
+#+description: The basket builder makes only the Vanilla payoff; an Asian basket is held and round-trips, but nothing builds or generates one.
+#+type: capture
+#+level: cross
+#+filetags: :trading:synthetic:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let the basket builder take the Asian payoff with its observation dates, and
+let the generator book an Asian basket beside the Vanilla one.
+
+* Why
+
+The basket option states Vanilla or Asian. The scripted rows hold an Asian
+basket's ObservationDates as a product schedule, and the projection reads and
+writes it, but the builder refuses any payoff other than Vanilla. So no
+generated trade proves that the ORE engine builds an Asian basket from these
+rows.
+
+* References
+
+- [[id:37493502-8D46-489E-BB99-149FAC02189B][Model the basket and rainbow products]]
+- PR #4792, review note 6.
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]

@@ -74,7 +74,9 @@ public:
         out_.schedules.push_back(std::move(row));
     }
 
-    void underlying(std::string role, const marketdata::datum::market_reference& address) {
+    domain::instrument_underlying& underlying(std::string role,
+                                              const marketdata::datum::market_reference& address,
+                                              std::string type = "Equity") {
         int sequence = 0;
         for (const auto& row : out_.instrument_underlyings)
             if (row.underlying_role == role)
@@ -82,9 +84,30 @@ public:
         domain::instrument_underlying row;
         row.underlying_role = std::move(role);
         row.sequence_number = sequence + 1;
-        row.underlying_type = "Equity";
+        row.underlying_type = std::move(type);
         row.name = address.uri();
         out_.instrument_underlyings.push_back(std::move(row));
+        return out_.instrument_underlyings.back();
+    }
+
+    /// A European OptionData block exercised on the one date.
+    void option(domain::instrument_option row, const ymd& exercise) {
+        out_.options.push_back(std::move(row));
+        domain::instrument_schedule schedule;
+        schedule.owner_role = "option";
+        schedule.owner_number = 1;
+        schedule.schedule_role = "exercise_dates";
+        schedule.sequence_number = 1;
+        schedule.schedule_kind = "dates";
+        out_.schedules.push_back(std::move(schedule));
+        domain::instrument_schedule_date date;
+        date.owner_role = "option";
+        date.owner_number = 1;
+        date.schedule_role = "exercise_dates";
+        date.schedule_sequence_number = 1;
+        date.sequence_number = 1;
+        date.schedule_date = exercise;
+        out_.schedule_dates.push_back(std::move(date));
     }
 
     domain::scripted_instrument_data take() {
@@ -249,6 +272,60 @@ scripted_result performance_option_builder::build() const {
     out.value("PayCcy", "enumeration", terms_.pay_currency.get());
     for (const auto& underlying : terms_.underlyings.get())
         out.underlying("underlying", underlying);
+    return out.take();
+}
+
+scripted_result build_basket_option(std::string_view trade_type,
+                                    std::string_view underlying_type,
+                                    bool rainbow,
+                                    const basket_option_terms& terms) {
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must name a currency"});
+    if (auto refusal = positive_amount("notional", terms.notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms.strike.get() < decimal{})
+        return std::unexpected(build_error{"strike", "must not be negative"});
+    const auto& members = terms.members.get();
+    if (members.size() < 2)
+        return std::unexpected(build_error{"members", "a basket names at least two underlyings"});
+    for (std::size_t i = 0; i < members.size(); ++i) {
+        if (auto refusal = positive_amount("weight", members[i].weight))
+            return std::unexpected(std::move(*refusal));
+        for (std::size_t j = 0; j < i; ++j)
+            if (members[j].underlying.uri() == members[i].underlying.uri())
+                return std::unexpected(build_error{"members", "names an underlying twice"});
+    }
+    const auto& payoff = terms.payoff_type.get();
+    static constexpr std::string_view rainbow_payoffs[] = {
+        "BestOfAssetOrCash", "WorstOfAssetOrCash", "MaxRainbow", "MinRainbow"};
+    const bool known =
+        rainbow ? std::ranges::find(rainbow_payoffs, payoff) != std::ranges::end(rainbow_payoffs) :
+                  payoff == "Vanilla";
+    if (!known)
+        return std::unexpected(build_error{
+            "payoff_type",
+            rainbow ? "must be BestOfAssetOrCash, WorstOfAssetOrCash, MaxRainbow or MinRainbow" :
+                      "must be Vanilla"});
+    if (terms.settlement.get() < terms.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+
+    scripted_rows out(trade_type, std::string(trade_type));
+    out.value("Currency", "enumeration", terms.currency.get());
+    out.value("Notional", "decimal", scripted_text(terms.notional.get()));
+    out.value("Strike", "decimal", scripted_text(terms.strike.get()));
+    out.value("Settlement", "text", scripted_date(terms.settlement.get()));
+    for (const auto& member : members) {
+        auto& row = out.underlying("underlying", member.underlying, std::string(underlying_type));
+        row.currency = member.currency;
+        row.weight = member.weight.to_double();
+    }
+    domain::instrument_option option;
+    option.long_short = long_short_of(terms.position.get());
+    option.payoff_type = payoff;
+    // An asset-or-cash payoff pays the best or worst member, so it has no call or put.
+    if (payoff == "Vanilla" || payoff == "MaxRainbow" || payoff == "MinRainbow")
+        option.option_type = option_type_of(terms.kind.get());
+    out.option(std::move(option), terms.expiry.get());
     return out.take();
 }
 

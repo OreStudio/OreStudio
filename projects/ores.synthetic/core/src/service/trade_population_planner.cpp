@@ -1715,7 +1715,9 @@ constexpr std::string_view fx_types[] = {"FxForward",
                                          "FxDigitalBarrierOption",
                                          "FxVarianceSwap",
                                          "FxAccumulator",
-                                         "FxTaRF"};
+                                         "FxTaRF",
+                                         "FxBasketOption",
+                                         "FxRainbowOption"};
 constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 
 /*
@@ -1759,6 +1761,19 @@ ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pai
         throw trade_population_error("The pair " + pair.base + pair.quote +
                                      " has no FX index: " + reference.error());
     return std::move(*reference);
+}
+
+/// The rows of a product ORE reads through a class of its own, as a batch.
+ores::trading::domain::instrument_batch
+scripted_batch_of(ores::trading::builders::scripted_result built,
+                  const std::string& trade_type_code) {
+    if (!built)
+        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(
+        batch, ores::trading::domain::trade_instrument{std::move(*built)});
+    return batch;
 }
 
 ores::trading::domain::instrument_batch
@@ -1843,6 +1858,42 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
     const auto built = [&](auto result) {
         return fx_batch_of(std::move(result), type);
     };
+    if (type == "FxBasketOption" || type == "FxRainbowOption") {
+        /*
+         * The basket holds the slot's pair and another the tenant holds in the
+         * same quote currency, which the option pays in.
+         */
+        const domain::currency_pair_reference* other = nullptr;
+        for (const auto& candidate : scope.currency_pairs) {
+            if (other == nullptr && candidate.quote == pair.quote && candidate.base != pair.base)
+                other = &candidate;
+        }
+        if (other == nullptr)
+            throw trade_population_error("An FX basket names two pairs in one quote currency, and "
+                                         "the tenant holds no second pair quoted in " +
+                                         pair.quote + ".");
+        // Two unit weights put the basket near twice one member, so the strike sits there.
+        const tb::basket_option_terms basket{
+            .currency = pair.quote,
+            .notional = money(notional),
+            .strike = level(rate * 2.0),
+            .members =
+                std::vector<tb::basket_option_member>{
+                    {.underlying = index, .currency = std::nullopt, .weight = level(1.0)},
+                    {.underlying = fx_index_of(*other),
+                     .currency = std::nullopt,
+                     .weight = level(1.0)}},
+            .payoff_type = std::string(type == "FxBasketOption" ? "Vanilla" : "MaxRainbow"),
+            .kind = kind,
+            .position = position,
+            .expiry = end,
+            .settlement = end};
+        if (type == "FxBasketOption")
+            return scripted_batch_of(
+                tb::basket_option_builder<tb::basket_product::fx_basket>(basket).build(), type);
+        return scripted_batch_of(
+            tb::basket_option_builder<tb::basket_product::fx_rainbow>(basket).build(), type);
+    }
     const auto barrier = [&]<tb::fx_barrier_product Product>(std::vector<tb::fx_barrier> barriers) {
         return built(tb::fx_barrier_option_builder<Product>(
                          {.option = option, .barriers = std::move(barriers), .fx_index = index})
@@ -2012,7 +2063,9 @@ constexpr std::string_view equity_types[] = {"EquityAccumulator",
                                              "CompositeTrade",
                                              "ContractForDifference",
                                              "TotalReturnSwap",
-                                             "EquityOutperformanceOption"};
+                                             "EquityOutperformanceOption",
+                                             "EquityBasketOption",
+                                             "EquityRainbowOption"};
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -2678,11 +2731,11 @@ build_equity_trade(const domain::trade_generation_scope& scope,
 
     if (type == "EquityOption")
         return built(tb::equity_option_builder(option).build());
-    if (type == "EquityOutperformanceOption") {
-        /*
-         * The two equities are quoted in one currency, so neither initial
-         * price needs FX terms to meet the option's currency.
-         */
+    /*
+     * A product on two equities draws them quoted in one currency, so no
+     * price it states needs FX terms to meet the option's currency.
+     */
+    const auto same_currency_pair = [&] {
         std::vector<std::pair<const domain::equity_underlying_reference*,
                               const domain::equity_underlying_reference*>>
             pairs;
@@ -2692,9 +2745,39 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                     first.currency == second.currency)
                     pairs.emplace_back(&first, &second);
         if (pairs.empty())
-            throw trade_population_error("An outperformance option names two equities in one "
-                                         "currency, and the tenant holds no such pair.");
-        const auto [first, second] = pairs[slot % pairs.size()];
+            throw trade_population_error("A " + type +
+                                         " names two equities in one currency, "
+                                         "and the tenant holds no such pair.");
+        return pairs[slot % pairs.size()];
+    };
+    if (type == "EquityBasketOption" || type == "EquityRainbowOption") {
+        const auto [first, second] = same_currency_pair();
+        // Two unit weights put the basket near twice one member, so the strike sits there.
+        const tb::basket_option_terms basket{
+            .currency = first->currency.empty() ? std::string("USD") : first->currency,
+            .notional = money(notional / level),
+            .strike = money(level * 2.0),
+            .members =
+                std::vector<tb::basket_option_member>{
+                    {.underlying = equity_address_of(first->code),
+                     .currency = std::nullopt,
+                     .weight = money(1.0)},
+                    {.underlying = equity_address_of(second->code),
+                     .currency = std::nullopt,
+                     .weight = money(1.0)}},
+            .payoff_type = std::string(type == "EquityBasketOption" ? "Vanilla" : "MaxRainbow"),
+            .kind = kind,
+            .position = position,
+            .expiry = end,
+            .settlement = end};
+        if (type == "EquityBasketOption")
+            return scripted_batch_of(
+                tb::basket_option_builder<tb::basket_product::equity_basket>(basket).build(), type);
+        return scripted_batch_of(
+            tb::basket_option_builder<tb::basket_product::equity_rainbow>(basket).build(), type);
+    }
+    if (type == "EquityOutperformanceOption") {
+        const auto [first, second] = same_currency_pair();
         const auto pair_currency = first->currency.empty() ? std::string("USD") : first->currency;
         return built(tb::equity_outperformance_option_builder(
                          {.underlying_1 = equity_address_of(first->code),

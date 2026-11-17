@@ -112,53 +112,101 @@
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
-  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
-      <Currency>EUR</Currency>
-      <Quantity>2449079.16</Quantity>
+      <Currency>USD</Currency>
+      <Quantity>482126.28</Quantity>
       <Underlyings>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:DHER.DE</Name>
+          <Name>RIC:.NDX</Name>
         </Underlying>
         <Underlying>
           <Type>Equity</Type>
-          <Name>RIC:.STOXX50E</Name>
+          <Name>RIC:.SPX</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>
-        <InitialPrice>2753.31</InitialPrice>
-        <InitialPrice>3028.64</InitialPrice>
+        <InitialPrice>4232.82</InitialPrice>
+        <InitialPrice>4656.1</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
-          <Calendar>TARGET</Calendar>
+          <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-08-02</Date>
-            <Date>2025-11-02</Date>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-02</Date>
-            <Date>2026-08-02</Date>
+            <Date>2025-12-02</Date>
+            <Date>2026-03-02</Date>
+            <Date>2026-06-02</Date>
+            <Date>2026-09-02</Date>
+            <Date>2026-12-02</Date>
+            <Date>2027-03-02</Date>
+            <Date>2027-06-02</Date>
+            <Date>2027-09-02</Date>
+            <Date>2027-12-02</Date>
+            <Date>2028-03-02</Date>
+            <Date>2028-06-02</Date>
+            <Date>2028-09-02</Date>
+            <Date>2028-12-02</Date>
+            <Date>2029-03-02</Date>
+            <Date>2029-06-02</Date>
+            <Date>2029-09-02</Date>
+            <Date>2029-12-02</Date>
+            <Date>2030-03-02</Date>
+            <Date>2030-06-02</Date>
+            <Date>2030-09-02</Date>
+            <Date>2030-12-02</Date>
           </Dates>
         </Dates>
       </FloatingPeriodSchedule>
       <FloatingPayDates>
         <Dates>
-          <Calendar>TARGET</Calendar>
+          <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
-            <Date>2025-08-02</Date>
-            <Date>2025-11-02</Date>
-            <Date>2026-02-02</Date>
-            <Date>2026-05-02</Date>
-            <Date>2026-08-02</Date>
+            <Date>2025-12-02</Date>
+            <Date>2026-03-02</Date>
+            <Date>2026-06-02</Date>
+            <Date>2026-09-02</Date>
+            <Date>2026-12-02</Date>
+            <Date>2027-03-02</Date>
+            <Date>2027-06-02</Date>
+            <Date>2027-09-02</Date>
+            <Date>2027-12-02</Date>
+            <Date>2028-03-02</Date>
+            <Date>2028-06-02</Date>
+            <Date>2028-09-02</Date>
+            <Date>2028-12-02</Date>
+            <Date>2029-03-02</Date>
+            <Date>2029-06-02</Date>
+            <Date>2029-09-02</Date>
+            <Date>2029-12-02</Date>
+            <Date>2030-03-02</Date>
+            <Date>2030-06-02</Date>
+            <Date>2030-09-02</Date>
+            <Date>2030-12-02</Date>
           </Dates>
         </Dates>
       </FloatingPayDates>
       <KnockOutLevels>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
@@ -169,9 +217,25 @@
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
       </FixedTriggerLevels>
       <FixedRate>0</FixedRate>
-      <FloatingIndex>EUR-EURIBOR-6M</FloatingIndex>
+      <FloatingIndex>USD-LIBOR-3M</FloatingIndex>
       <FloatingSpread>0</FloatingSpread>
       <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>

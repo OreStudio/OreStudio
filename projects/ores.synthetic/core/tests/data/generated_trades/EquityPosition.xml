@@ -10,13 +10,13 @@
       </Underlying>
     </EquityPositionData>
   </Trade>
-  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
     <TradeType>EquityPosition</TradeType>
     <EquityPositionData>
-      <Quantity>1761</Quantity>
+      <Quantity>1201</Quantity>
       <Underlying>
         <Type>Equity</Type>
-        <Name>RIC:.STOXX50E</Name>
+        <Name>RIC:.SPX</Name>
       </Underlying>
     </EquityPositionData>
   </Trade>

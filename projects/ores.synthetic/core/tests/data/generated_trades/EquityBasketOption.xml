@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+    <TradeType>EquityBasketOption</TradeType>
+    <EquityBasketOptionData>
+      <Currency>USD</Currency>
+      <Notional>1995.71</Notional>
+      <Strike>4196.7</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.SPX</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.NDX</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2028-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2028-11-02</Settlement>
+    </EquityBasketOptionData>
+  </Trade>
+  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
+    <TradeType>EquityBasketOption</TradeType>
+    <EquityBasketOptionData>
+      <Currency>EUR</Currency>
+      <Notional>1833.24</Notional>
+      <Strike>5995.6</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:.STOXX50E</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:DHER.DE</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2027-01-02</Settlement>
+    </EquityBasketOptionData>
+  </Trade>
+</Portfolio>

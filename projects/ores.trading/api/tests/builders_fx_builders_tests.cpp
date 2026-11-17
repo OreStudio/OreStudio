@@ -189,6 +189,7 @@ TEST_CASE("an_average_forward_observes_monthly_until_it_pays", fx_tags) {
     REQUIRE(forward->schedules.size() == 1);
     CHECK(forward->schedules[0].schedule_role == "observation_schedule");
     CHECK(forward->schedules[0].end_date == 2027y / 1 / 5);
+    CHECK(forward->schedules[0].term_convention == "P");
     CHECK(forward->asian_forwards[0].fx_index == eur_usd().uri());
 }
 

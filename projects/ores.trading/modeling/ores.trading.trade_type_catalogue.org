@@ -96,8 +96,8 @@ absent: it is a placeholder, not a product.
 | FxTaRF | FX Target Redemption Forward | forward | scripted | fx! | false | false | fx_asian_forward_instrument |
 | FxWorstOfBasketSwap | FX Worst-Of Basket Swap | swap | scripted | fx! | false | false |  |
 | FxBestEntryOption | FX Best Entry Option | option | scripted | fx! | true | false |  |
-| FxBasketOption | FX Basket Option | option | scripted | fx! | true | false |  |
-| FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false |  |
+| FxBasketOption | FX Basket Option | option | scripted | fx! | true | false | scripted_instrument |
+| FxRainbowOption | FX Rainbow Option | option | scripted | fx! | true | false | scripted_instrument |
 | FxStrikeResettableOption | FX Strike Resettable Option | option | scripted | fx! | true | false |  |
 | CreditDefaultSwap | Credit Default Swap | swap | native | credit! | false | false | credit_instrument |
 | CreditDefaultSwapOption | Credit Default Swap Option |   | native | credit! | false | true |  |
@@ -140,8 +140,8 @@ absent: it is a placeholder, not a product.
 | EquityTaRF | Equity Target Redemption Forward | forward | scripted | equity! | false | false | equity_accumulator_instrument |
 | EquityWorstOfBasketSwap | Equity Worst-Of Basket Swap | swap | scripted | equity! | false | false | equity_swap_instrument |
 | EquityBestEntryOption | Equity Best Entry Option | option | scripted | equity! | true | false |  |
-| EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false |  |
-| EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false |  |
+| EquityBasketOption | Equity Basket Option | option | scripted | equity! | true | false | scripted_instrument |
+| EquityRainbowOption | Equity Rainbow Option | option | scripted | equity! | true | false | scripted_instrument |
 | EquityOutperformanceOption | Equity Outperformance Option | option | native | equity! | true | false | equity_option_instrument |
 | EquityStrikeResettableOption | Equity Strike Resettable Option | option | scripted | equity! | true | false |  |
 | TotalReturnSwap | Total Return Swap | swap | native | equity! | false | false | composite_instrument |

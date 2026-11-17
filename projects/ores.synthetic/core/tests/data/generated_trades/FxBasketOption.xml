@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+    <TradeType>FxBasketOption</TradeType>
+    <FxBasketOptionData>
+      <Currency>USD</Currency>
+      <Notional>9466062.35</Notional>
+      <Strike>2.836</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-EUR-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-GBP-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2033-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2033-09-02</Settlement>
+    </FxBasketOptionData>
+  </Trade>
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+    <TradeType>FxBasketOption</TradeType>
+    <FxBasketOptionData>
+      <Currency>USD</Currency>
+      <Notional>4253585.58</Notional>
+      <Strike>1.447</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-EUR-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>FX</Type>
+          <Name>TR20H-GBP-USD</Name>
+          <Weight>1</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <ExerciseDates>
+          <ExerciseDate>2026-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Settlement>2026-09-02</Settlement>
+    </FxBasketOptionData>
+  </Trade>
+</Portfolio>

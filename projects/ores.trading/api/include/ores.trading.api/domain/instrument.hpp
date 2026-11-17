@@ -178,6 +178,14 @@ struct scripted_instrument_data {
      * @brief The product's Underlying blocks, one row per block.
      */
     std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief The OptionData block of a product whose fixed element states one.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
 };
 
 // A commodity basket states a constituent collection beside the instrument
@@ -739,6 +747,11 @@ inline void stamp_ids(scripted_instrument_data& data,
     stamp_one(data.schedules);
     stamp_one(data.schedule_dates);
     stamp_one(data.instrument_underlyings);
+    stamp_one(data.options);
+    stamp_one(data.option_premiums);
+    stamp_one(data.option_exercise_fees);
+    stamp_one(data.option_payment_dates);
+    stamp_one(data.option_exercise_prices);
 }
 
 inline void stamp_ids(commodity_instrument_data& data,

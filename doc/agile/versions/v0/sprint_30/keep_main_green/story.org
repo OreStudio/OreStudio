@@ -8,7 +8,7 @@
 #+filetags: :ci:branching:sprint_30:v0:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment: eager_maxwell
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -51,6 +51,7 @@ Developers start work from a commit that CI has proven green, and main only move
 | [[id:AC551901-58D0-4F99-8C4E-AABC7BF70858][Fix the nightly compile errors]] | STARTED | 2026-11-12 | | Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean. |
 | [[id:F15CA18F-4DC9-48A1-92F7-65E7E987E8C2][Record the XML benchmark after the format pass]] | BACKLOG | | | A nightly format pass changed the measured XML code and no benchmark row followed it, so the local check gate refused every branch cut from main. |
 | [[id:7F2DAB93-6627-46BB-8515-A45AAE64E064][Fix the checks main fails on the new trade tables]] | DONE | | 2026-11-17 | Four instrument tables landed without the three things every trading table needs: row-level security, the permission codes their handlers check, and an entry in the ER diagrams. Each absence turns one local check red on main, so every branch raised from main inherits a red gate. |
+| [[id:08035698-916F-4134-8D93-B89D2C284BE4][Regenerate the output that drifted from its models]] | STARTED | 2026-11-17 | | Two checks are red on main because generated files no longer match the models they are generated from: 26 files differ across the component set, and the BFF list request descriptor table is stale. Neither is a hand-edit gone wrong that needs reading; both are what the generators produce when they are run. |
 
 * Decisions
 

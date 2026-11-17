@@ -1871,6 +1871,120 @@ TEST_CASE("an overdue step that is not essential ends with warnings and the run 
     BOOST_LOG_SEV(lg, debug) << "An overdue optional step left the run going.";
 }
 
+TEST_CASE("a step of a completed run that ended with warnings runs again as a new attempt",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_rerun_warned_workflow",
+                     {"one", "two"},
+                     failure_policy::stop,
+                     write_step_timeout,
+                     {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_delivery(start_for("test_rerun_warned_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto step_named = [&](const std::string& name) {
+        const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+        const auto it = std::ranges::find(rows, name, &ores::workflow::domain::workflow_step::name);
+        REQUIRE(it != rows.end());
+        return *it;
+    };
+
+    const auto one_id = boost::uuids::to_string(step_named("one").id);
+    f.engine->on_step_completed(
+        as_delivery(completion_for(instance_id, one_id, step_outcome::failed, "one broke")));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+    f.engine->on_step_completed(as_delivery(completion_for(
+        instance_id, boost::uuids::to_string(step_named("two").id), step_outcome::completed)));
+    REQUIRE(instances.read_latest(f.h.context(), instance_id).front().state_id ==
+            f.instance_states.require("completed"));
+    const auto first_key = step_named("one").idempotency_key;
+
+    const auto outcome = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "one", f.h.context().tenant_id());
+    REQUIRE(outcome.resumed);
+    CHECK(outcome.step_name == "one");
+    REQUIRE(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
+
+    auto one = step_named("one");
+    CHECK(one.state_id == f.step_states.require("in_progress"));
+    CHECK(boost::uuids::to_string(one.id) == one_id);
+    CHECK(one.idempotency_key != first_key);
+    CHECK(one.step_log_json.find("one broke") == std::string::npos);
+    CHECK(instances.read_latest(f.h.context(), instance_id).front().state_id ==
+          f.instance_states.require("in_progress"));
+
+    f.engine->on_step_completed(
+        as_delivery(completion_for(instance_id, one_id, step_outcome::completed)));
+    one = step_named("one");
+    CHECK(one.state_id == f.step_states.require("completed"));
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("completed"));
+    CHECK(instance.front().completed_at.has_value());
+    BOOST_LOG_SEV(lg, debug) << "The warned step ran again and the run completed again.";
+}
+
+TEST_CASE("a completed run refuses to run again a step that did not end with warnings or is "
+          "essential",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_rerun_refusal_workflow",
+                     {"one", "two", "three"},
+                     failure_policy::stop,
+                     write_step_timeout,
+                     {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_delivery(start_for("test_rerun_refusal_workflow", f.tenant(), instance_id)));
+
+    workflow_step_repository steps;
+    const auto answer = [&](std::size_t dispatched, step_outcome result) {
+        REQUIRE(
+            wait_for_instance(commands, instance_id, dispatched, std::chrono::seconds(5)).size() ==
+            dispatched);
+        auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+        std::ranges::sort(rows, {}, &ores::workflow::domain::workflow_step::step_index);
+        f.engine->on_step_completed(as_delivery(
+            completion_for(instance_id, boost::uuids::to_string(rows.back().id), result)));
+    };
+    // One is not essential and completes cleanly, two is essential and warns
+    // by itself, three completes cleanly.
+    answer(1, step_outcome::completed);
+    answer(2, step_outcome::completed_with_warnings);
+    answer(3, step_outcome::completed);
+
+    const auto id = boost::uuids::string_generator{}(instance_id);
+    const auto tenant = f.h.context().tenant_id();
+    const auto unnamed = f.engine->retry_instance(id, "", tenant);
+    CHECK_FALSE(unnamed.resumed);
+    CHECK(unnamed.reason.find("name the step") != std::string::npos);
+
+    const auto clean = f.engine->retry_instance(id, "one", tenant);
+    CHECK_FALSE(clean.resumed);
+    CHECK(clean.reason.find("did not end with warnings") != std::string::npos);
+
+    const auto essential = f.engine->retry_instance(id, "two", tenant);
+    CHECK_FALSE(essential.resumed);
+    CHECK(essential.reason.find("is essential") != std::string::npos);
+
+    const auto unknown = f.engine->retry_instance(id, "four", tenant);
+    CHECK_FALSE(unknown.resumed);
+    CHECK(unknown.reason.find("no step named") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "A completed run refused every step it may not run again.";
+}
+
 TEST_CASE("workflow_engine leaves a queued step alone", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 

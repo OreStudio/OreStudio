@@ -226,14 +226,19 @@ public:
     };
 
     /**
-     * @brief Resumes a stopped run from the step that failed.
+     * @brief Resumes a stopped run from the step that failed, or runs again a
+     * step of a completed run that ended with warnings.
      *
-     * The run must have stopped, the target step must be one the run has not
+     * For a stopped run, the target step must be one the run has not
      * completed, and every step before it must have completed, so a retry
      * never resumes past work that did not finish and never repeats work that
      * did. The target is re-dispatched under the step id it already holds —
      * its idempotency key — with its command as the store persisted it, and
      * the target's error and the instance's error are cleared.
+     *
+     * For a completed run, the named step must be one that is not essential
+     * and ended with warnings: its work is what the run still owes. It is sent
+     * again as a new attempt, under a new idempotency key.
      *
      * @param instance_id   The run to resume.
      * @param step_name     The step to resume from, or empty for the step that
@@ -459,6 +464,13 @@ private:
      * engine cannot read is never let past a failure.
      */
     bool is_essential_step(const boost::uuids::uuid& instance_id, const std::string& step_name);
+
+    /**
+     * @brief Sends again the named step of a completed run that ended with
+     * warnings, as a new attempt. The caller holds the engine's lock.
+     */
+    retry_outcome rerun_warned_step(const domain::workflow_instance& instance,
+                                    const std::string& step_name);
 
     /**
      * @brief Ends a step that is not essential, and failed, with warnings.

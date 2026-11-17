@@ -311,15 +311,17 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     // two can be joined by one grep. with_correlation_id() only applies to
     // request/reply, so a command has to set it here.
     try {
-        // The step id is the identity of this piece of work, so the stream can
-        // deduplicate a re-dispatch of it: a retry after a lost publish ack
-        // stores one command, not two.
+        // The idempotency key is the identity of this attempt at the work, so
+        // the stream can deduplicate a re-dispatch of it: a retry after a lost
+        // publish ack stores one command, not two. A re-run is a new attempt
+        // and carries a new key, so the stream does not drop it as a repeat.
+        const auto& attempt = step.idempotency_key.empty() ? step_id_str : step.idempotency_key;
         nats_.js_publish(step.command_subject,
                          data,
                          {{std::string(step_id_header), step_id_str},
                           {std::string(instance_id_header), inst_id_str},
                           {std::string(tenant_id_header), tenant_id_str},
-                          {std::string(ores::nats::headers::nats_msg_id), step_id_str},
+                          {std::string(ores::nats::headers::nats_msg_id), attempt},
                           {std::string(ores::nats::headers::nats_correlation_id), step_id_str}});
     } catch (const std::exception& e) {
         // Nothing was accepted, so nothing will answer and the step would sit
@@ -1621,6 +1623,9 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
     if (instance.tenant_id != caller_tenant && caller_tenant != utility::uuid::tenant_id::system())
         return {.reason = "Workflow instance not found."};
 
+    const bool finished = instance.state_id == instance_states_.require("completed");
+    if (finished)
+        return rerun_warned_step(instance, step_name);
     if (instance.state_id != instance_states_.require("failed"))
         return {.reason = "The run has not stopped, so there is nothing to resume."};
 
@@ -1701,6 +1706,53 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
                               << ") for instance " << instance_id_str;
 
     return {.resumed = true, .step_index = target->step_index, .step_name = target->name};
+}
+
+workflow_engine::retry_outcome
+workflow_engine::rerun_warned_step(const domain::workflow_instance& instance,
+                                   const std::string& step_name) {
+    if (step_name.empty())
+        return {.reason = "The run has completed; name the step that ended with warnings to "
+                          "run it again."};
+
+    const auto instance_id_str = boost::uuids::to_string(instance.id);
+    const auto steps = step_repo_.read_latest_by_workflow_id(ctx_, instance_id_str, 0, 1000);
+    const auto found = std::ranges::find_if(steps, [&](const domain::workflow_step& s) {
+        return s.step_index >= 0 && s.name == step_name;
+    });
+    if (found == steps.end())
+        return {.reason = "The run holds no step named '" + step_name + "'."};
+    if (found->state_id != step_states_.require("completed_with_warnings"))
+        return {.reason = "The step '" + step_name +
+                          "' did not end with warnings, so there is nothing to run again."};
+    if (is_essential_step(instance.id, step_name))
+        return {.reason = "The step '" + step_name +
+                          "' is essential, and a completed run runs again only a step that "
+                          "is not."};
+
+    /*
+     * The step goes back to work as a new attempt: a new idempotency key, so
+     * the stream does not drop the command as a repeat of the first one, and
+     * a start of its own, so its time is this attempt's. The step id stays,
+     * because it is how the run names the step, and a service answers a step
+     * id from its record only while the step is settled, which it no longer
+     * is. The run is back in progress until the step answers, and the answer
+     * completes it again, as any last answer does.
+     */
+    auto attempt = *found;
+    attempt.idempotency_key = boost::uuids::to_string(boost::uuids::random_generator()());
+    attempt.started_at = std::chrono::system_clock::now();
+    step_repo_.write(ctx_, attempt);
+    set_step_state(attempt, step_states_.require("in_progress"), "", "", "[]");
+    set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
+    publish_command(attempt, instance.id, instance.tenant_id.to_uuid());
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
+    note_awaiting(attempt, instance.id, instance.tenant_id.to_uuid());
+    stamp_command_published(attempt.id);
+
+    BOOST_LOG_SEV(lg(), info) << "Re-ran step " << attempt.step_index << " (" << attempt.name
+                              << ") of completed instance " << instance_id_str;
+    return {.resumed = true, .step_index = attempt.step_index, .step_name = attempt.name};
 }
 
 }

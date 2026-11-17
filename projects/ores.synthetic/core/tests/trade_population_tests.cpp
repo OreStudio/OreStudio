@@ -152,8 +152,8 @@ domain::trade_generation_scope bond_scope() {
 }
 
 /*
- * A scope of the rate family. The seven trade types the router sends to
- * rate_instrument are nine here, and the catalogue is the tenant's own, so the
+ * A scope of the rate family. The trade types the router sends to
+ * rate_instrument are eleven here, and the catalogue is the tenant's own, so the
  * scope states three indices of one currency and one of another.
  */
 domain::trade_generation_scope rate_scope() {
@@ -794,6 +794,11 @@ TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_popu
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
+        // A rate digital option holds no legs; the scripted table holds its terms.
+        if (slot.trade_type_code == "RateDigitalOption") {
+            CHECK(slot.instruments.scripted_instruments.size() == 1u);
+            continue;
+        }
         /*
          * The family states its rows and no bag: the legs, the amounts, the
          * rates and the strikes are what the writer persists.
@@ -834,11 +839,16 @@ TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_popu
 }
 
 TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", "[trade_population]") {
-    const auto scope = rate_scope();
+    auto scope = rate_scope();
+    scope.trades_per_book = 11;
     const auto plan = plan_of(scope);
 
-    // The nine the router sends to rate_instrument, less the inflation swap.
-    CHECK(codes_of(plan).size() == 9);
+    /*
+     * The eleven the planner books, which are the ones the router sends to
+     * rate_instrument less the inflation swap, and the rate digital option the
+     * scripted table holds.
+     */
+    CHECK(codes_of(plan).size() == 11);
 }
 
 TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
@@ -851,7 +861,7 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     auto wide = rate_scope();
     wide.trades_per_book = 64;
     const auto routed = codes_of(plan_of(wide));
-    REQUIRE(routed.size() == 9);
+    REQUIRE(routed.size() == 11);
 
     auto seeded = rate_scope();
     seeded.book_ids = {bond_book};

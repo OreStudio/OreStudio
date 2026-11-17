@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 113 types name an instrument table, and the generator records 113.
+- 115 types name an instrument table, and the generator records 115.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -209,12 +209,12 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =IntradayPowerForward= | native | native | =IntradayPowerForwardData= | =commodity_instrument= | yes | - | - | - |
 | =KnockOutSwap= | scripted | scripted | =KnockOutSwapData= | =rate_instrument= | yes | - | - | - |
 | =PerformanceOption_01= | scripted | scripted | =PerformanceOption01Data= | =scripted_instrument= | yes | - | - | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] |
-| =RateDigitalOption= | native | native | =RateDigitalOptionData= | - | no | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
+| =RateDigitalOption= | native | native | =RateDigitalOptionData= | =scripted_instrument= | yes | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
 | =RiskParticipationAgreement= | native | native | =RiskParticipationAgreementData= | =credit_instrument= | yes | - | - | - |
 | =ScriptedTrade= | scripted | script | =ScriptedTradeData= | =scripted_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]], [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]], [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]], [[id:CF1384A9-A358-4E56-82F7-AFC089AD4FEB][Generate the script-only equity, FX and commodity payoffs]], [[id:3ACCEBF0-131F-49EC-BB5D-24F2BBCD6ED0][Hold ORE's script library as reference data]], [[id:B8BF800F-CD40-4200-8DA6-4FBF926DBA7D][Model the class-read scripted products]], [[id:8F1B7D90-0D95-405B-845C-207AA1C92BE3][State which form each product takes]], [[id:80315472-7360-4C53-B6F7-57F7BCE78A1C][Tag the types the engine cannot carry]] |
 | =Swap= | native | native | =SwapData= | =rate_instrument= | yes | - | - | - |
 | =Swaption= | native | native | =SwaptionData= | =rate_instrument= | yes | - | - | - |
-| =SwaptionStraddle= | native | native | =SwaptionStraddleData= | - | no | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
+| =SwaptionStraddle= | native | native | =SwaptionStraddleData= | =rate_instrument= | yes | - | - | [[id:D9B48B85-53F2-4A35-B670-A4DF51C6F2A2][Model the rates products left out]] |
 | =SyntheticCDO= | native | native | =CdoData= | =credit_instrument= | yes | - | - | [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
 | =TotalReturnSwap= | native | native | =TotalReturnSwapData= | =composite_instrument= | yes | - | - | [[id:742F9E67-CDCA-4FA6-BE8B-945C64C27A50][Generate the container trades]], [[id:43BAFC5D-69D9-47B7-BB82-0ED1E1E1CEEB][Generate the routed types the generator skips]] |
 

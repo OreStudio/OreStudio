@@ -8,12 +8,12 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-the-rates-products-left-out
-#+pr:
+#+pr: 4806
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Both types have a data model under the rates header, a projection reader and wri
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,16 @@ Both types have a data model under the rates header, a projection reader and wri
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =SwaptionStraddleData= is the same schema type as =SwaptionData=, so the
+  straddle routes to the rates header row with the swaption fact, natively.
+  The swaption reader and writer take the trade type, and
+  =swaption_straddle_builder= wraps the swaption builder.
+- =RateDigitalOptionData= is flat: an option block, the index, the strike, the
+  payoff and two dates. It routes to the scripted instrument table through the
+  class-read path; the index is stated by ORE's name, which the planner takes
+  from the index's subject.
+- The rates planner books the straddle as it does a swaption, and the digital
+  as a scripted batch fixing a year out.
 
 * Measurements
 
@@ -60,7 +67,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4684 cases pass | =./ores.trading.api.tests= | this branch |
+| ore core tests | 553 cases pass | =./ores.ore.core.tests= | this branch |
+| synthetic tests, not generated | 140 cases pass | =./ores.synthetic.core.tests "~[generated]"= | this branch |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | this branch |
 
 * Notes
 
@@ -79,12 +89,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4806][#4806]] | [trading,ore,synthetic] Hold the swaption straddle and rate digital option |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | a negative strike is refused | scripted_builders.cpp | accept | a rate fixes below zero, so the strike may; tested |
+| 2 | the payoff can round to zero | trade_population_planner.cpp | accept | floored at one |
+| 3 | the straddle states no LongShort list | rate_builders.hpp | decline | a limitation stated on the task and the PR |
+| 4 | format-only reflows | rate_instrument_projection.cpp | decline | clang-format's output on the file the change touched |
+| 5 | thin digital builder tests | builders_scripted_builders_tests.cpp | accept | negative strike and empty index tested |
+| 6 | the uri fallback for the index | trade_population_planner.cpp | accept | a convention that names a datum is refused instead |
 
 * Result
+
+SwaptionStraddle is held natively in the rates header row with the swaption
+fact, the option block and the legs. RateDigitalOption is held in the scripted
+instrument table. The round-trip test reads a straddle and the user guide's
+rate digital option and writes them back. Each type has a builder, the
+catalogue routes both, and the generator books one trade of each. The ORE
+engine builds the recorded straddles with no error; the digital raises an
+engine configuration error, which the known list holds and the valuation story
+owns.

@@ -81,7 +81,7 @@ create table if not exists "ores_trading_rate_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'InflationSwap')),
+    check ("trade_type_code" in ('SwaptionStraddle', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'InflationSwap')),
     check ("maturity_date" is null or "start_date" is null or "maturity_date" > "start_date")
 );
 

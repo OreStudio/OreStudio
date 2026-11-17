@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
+    <TradeType>RateDigitalOption</TradeType>
+    <RateDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Index>EUR</Index>
+      <Strike>0.0141</Strike>
+      <PayoffAmount>10369</PayoffAmount>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <FixingDate>2027-01-02</FixingDate>
+      <PaymentDate>2027-01-04</PaymentDate>
+    </RateDigitalOptionData>
+  </Trade>
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
+    <TradeType>RateDigitalOption</TradeType>
+    <RateDigitalOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Index>EUR</Index>
+      <Strike>0.0285</Strike>
+      <PayoffAmount>87742</PayoffAmount>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <FixingDate>2027-01-02</FixingDate>
+      <PaymentDate>2027-01-04</PaymentDate>
+    </RateDigitalOptionData>
+  </Trade>
+</Portfolio>

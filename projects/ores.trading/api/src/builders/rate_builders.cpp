@@ -240,6 +240,17 @@ swap_result swaption_builder::build() const {
     return out;
 }
 
+swaption_straddle_builder::swaption_straddle_builder(conventions_ref conventions,
+                                                     swaption_terms terms)
+    : swaption_(conventions, std::move(terms)) {}
+
+swap_result swaption_straddle_builder::build() const {
+    auto out = swaption_.build();
+    if (out)
+        out->header.identity.trade_type_code = std::string(trade_type);
+    return out;
+}
+
 callable_swap_builder::callable_swap_builder(conventions_ref conventions, callable_swap_terms terms)
     : conventions_(conventions)
     , terms_(std::move(terms)) {}

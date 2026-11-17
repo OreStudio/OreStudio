@@ -3609,6 +3609,129 @@ TEST_CASE("an_equity_double_touch_and_an_fx_asian_option_hold_their_terms_as_row
     check_asian(rebuild(items[1]));
 }
 
+TEST_CASE("a_swaption_straddle_and_a_rate_digital_option_hold_their_terms_as_rows",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(R"(<Portfolio>
+  <Trade id="SwaptionStraddle#1">
+    <TradeType>SwaptionStraddle</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <SwaptionStraddleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <SettlementMethod>ParYieldCurve</SettlementMethod>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>30/360</DayCounter>
+        <Notionals>
+          <Notional>5790664.33</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-04</StartDate>
+            <EndDate>2034-01-04</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0239</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>5790664.33</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-04</StartDate>
+            <EndDate>2034-01-04</EndDate>
+            <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
+          <Spreads>
+            <Spread>0</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </SwaptionStraddleData>
+  </Trade>
+  <Trade id="RateDigitalOption#1">
+    <TradeType>RateDigitalOption</TradeType>
+    <Envelope><CounterParty>CPTY_A</CounterParty><NettingSetId>CPTY_A</NettingSetId></Envelope>
+    <RateDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates><ExerciseDate>2027-06-20</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Index>EUR-EURIBOR-6M</Index>
+      <Strike>0.02</Strike>
+      <PayoffAmount>10000.0</PayoffAmount>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <FixingDate>2027-06-18</FixingDate>
+      <PaymentDate>2027-06-20</PaymentDate>
+    </RateDigitalOptionData>
+  </Trade>
+</Portfolio>)");
+    const auto check_straddle = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data =
+            std::get_if<ores::trading::domain::swap_instrument_data>(&item.instrument);
+        REQUIRE(data != nullptr);
+        CHECK(data->header.identity.trade_type_code == "SwaptionStraddle");
+        CHECK(std::holds_alternative<ores::trading::domain::swaption_instrument>(data->facts));
+        CHECK(data->legs.size() == 2u);
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].settlement == std::optional<std::string>("Cash"));
+    };
+    const auto check_digital = [&](const ores::ore::xml::trade_import_item& item) {
+        const auto* data = scripted_data_of(item.instrument);
+        REQUIRE(data != nullptr);
+        std::string index;
+        for (const auto& p : data->parameters)
+            if (p.name == "Index")
+                index = p.value.value_or("");
+        CHECK(index == "EUR-EURIBOR-6M");
+        REQUIRE(data->options.size() == 1);
+        CHECK(data->options[0].option_type == std::optional<std::string>("Call"));
+    };
+
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    check_straddle(items[0]);
+    check_straddle(rebuild(items[0]));
+    check_digital(items[1]);
+    check_digital(rebuild(items[1]));
+}
+
 TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));

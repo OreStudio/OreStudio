@@ -88,7 +88,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 - The catalogue declares 121 types. ORE registers 119 of them, 39 read through a =ScriptedTrade= class and 80 natively.
 - 2 catalogue types have no ORE trade builder: =CommodityPairwiseVarianceSwap=, =ForwardVolatilityAgreement=.
 - ORE registers 1 type the catalogue leaves out: =Failed=.
-- 117 types name an instrument table, and the generator records 117.
+- 118 types name an instrument table, and the generator records 118.
 - 0 registered types state a form in the catalogue that ORE does not read them as.
 - 35 types have a library script that carries the same product.
 
@@ -110,7 +110,7 @@ Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_ty
 | =CallableBond= | native | native | =CallableBondData= | =bond_instrument= | yes | - | - | [[id:8EED2EBB-E9D5-4F3E-BC2C-0F3BC31F577A][Fix the trade errors ORE raises on the recorded trades]] |
 | =CallableSwap= | native | native | =CallableSwapData= | =rate_instrument= | yes | - | - | - |
 | =CapFloor= | native | native | =CapFloorData= | =rate_instrument= | yes | - | - | - |
-| =CashPosition= | native | native | =CashPositionData= | - | no | - | - | [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] |
+| =CashPosition= | native | native | =CashPositionData= | =scripted_instrument= | yes | - | - | [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] |
 | =CommodityAccumulator= | scripted | scripted | =CommodityAccumulatorData= | =commodity_instrument= | yes | =Accumulator01=, =Accumulator02= | near | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] |
 | =CommodityAsianOption= | native | native | =CommodityAsianOptionData= | =commodity_instrument= | yes | - | - | - |
 | =CommodityAveragePriceOption= | native | native | =CommodityAveragePriceOptionData= | =commodity_instrument= | yes | - | - | - |

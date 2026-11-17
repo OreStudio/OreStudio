@@ -115,6 +115,14 @@ data-oriented design, and prices the trades.
 | [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]] | BACKLOG |  |  | The last task. Every type ORE carries is held, built, generated in each of its forms and accepted by ORE; the old constructors are gone; the known lists hold only market data and engine configuration; and a check fails when the catalogue and ORE drift apart. |
 | [[id:FD598D4A-3CBE-4690-9290-F4E16C0272BA][Close out the coverage]] | ABANDONED |  |  | The last task: the catalogue names a table for every type, the generator books every type, and the exclusions are the only types absent. |
 | [[id:B9D6D5E2-05E5-45D4-AC50-155FA746359F][Model the equity auto delta hedged option]] | DONE | 2026-11-17 | 2026-11-17 | EquityAutoDeltaHedgedOption is a native ORE product: batches of equity options, each with its own option block, name, currency, strike and quantity, under a hedging volatility, drift and window. The option rows hold one block a trade, so its batches need rows of their own. |
+| [[id:3F138571-5512-453F-BEBB-192E6525D79B][Hold the native equity and fx types on their tables]] | BACKLOG | | | CashPosition, EquityFutureOption, EquityPairwiseVarianceSwap, FxPairwiseVarianceSwap and FxAsianOption are native ORE products held as parameter rows of the scripted instrument table. Each moves to a table of its family, with its terms as columns. |
+| [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]] | BACKLOG | | | RateDigitalOption, BondFutureOption and CBO are native ORE products held as parameter rows of the scripted instrument table. Each moves to a table of its family, with its terms as columns. |
+| [[id:65AD3D3E-EDD6-411B-A3D4-28D5B20CC399][Hold the basket and rainbow options on their tables]] | BACKLOG | | | EquityBasketOption, FxBasketOption, EquityRainbowOption and FxRainbowOption state elements of their own, held only as parameter rows. Each element gets a table with its terms as columns; the generic ScriptedTrade form stays in the scripted table. |
+| [[id:F3E1E7BD-7258-4036-9CC4-AE5937ACB187][Hold the variance swaps and FVAs on their tables]] | BACKLOG | | | EquityBasketVarianceSwap, FxBasketVarianceSwap, EquityForwardVolatilityAgreement and FxForwardVolatilityAgreement state elements of their own, held only as parameter rows. Each element gets a table with its terms as columns. |
+| [[id:B606C2B4-9C1C-4DCA-9583-4D08417BC0AB][Hold the best-entry and strike-resettable options on their tables]] | BACKLOG | | | EquityBestEntryOption, FxBestEntryOption, EquityStrikeResettableOption and FxStrikeResettableOption state elements of their own, held only as parameter rows. Each element gets a table with its terms as columns. |
+| [[id:1BE804A1-410D-495B-88BD-B428D6FC1A2E][Hold the window and generic barrier options on their tables]] | BACKLOG | | | EquityWindowBarrierOption, FxWindowBarrierOption and EquityGenericBarrierOption state elements of their own, held only as parameter rows. Each element gets a table with its terms as columns, beside the shared barrier rows. |
+| [[id:8763CC4E-82DC-447D-A97C-BFA4ED0F7D1C][Hold the remaining fixed-element products on their tables]] | BACKLOG | | | EuropeanOptionBarrier, FxWorstOfBasketSwap, DoubleDigitalOption, PerformanceOption_01 and Autocallable_01 state elements of their own, held only as parameter rows. Each element gets a table with its terms as columns. |
+| [[id:DB302F8B-6376-48C0-9721-06D8B10064E8][Compare the two forms of each product]] | BACKLOG | | | A product ORE carries both as an element of its own and as a generic ScriptedTrade will be booked in both forms on the same terms. Nothing values the two and compares them, so a difference between the native and the scripted implementation goes unseen. |
 
 * Decisions
 
@@ -127,6 +135,15 @@ data-oriented design, and prices the trades.
 - Where ORE's script library holds a script with the same payoff as a product's
   own element, the product has two forms, and the generator books both, so each
   is tested. The generic form is a =ScriptedTrade= naming the library script.
+- Both forms are held, each in its own shape, so the two implementations can be
+  compared. A product's element form sits on a table of its own, with its terms
+  as columns and its lists and schedules as rows; the scripted instrument table
+  holds only the generic =ScriptedTrade= form. The class-read path first held
+  twenty-eight element forms as parameter rows of the scripted table, eight of them
+  products ORE builds natively. That held every value but gave no element a
+  table, so the "Hold ... on their tables" tasks move each element to one, and
+  "Compare the two forms of each product" values each twin pair and compares
+  them.
 - A trade type the engine cannot carry stays in the catalogue, tagged
   unsupported with its reason and the evidence from ORE's source, rather than
   leaving it. A person sees it on the coverage page; nothing can book, import or

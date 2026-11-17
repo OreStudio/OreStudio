@@ -11,6 +11,11 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Discarded
+
+Absorbed by [[id:1A039407-DDBF-4EB6-B9A2-92746C0CB6CD][Hold the native rates, bond and credit types on their tables]], which
+holds the CBO natively with its structure.
+
 * What
 
 Hold a CBO's =CBOStructure= when a trade states it inline: the day counters,

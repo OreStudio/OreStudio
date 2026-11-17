@@ -46,7 +46,8 @@ using ores::testing::database_helper;
 /// codec, so the series has no identity row. Returns its id.
 std::string insert_without_identity(const ores::database::context& ctx,
                                     const boost::uuids::uuid& party,
-                                    const std::string& uri) {
+                                    const std::string& uri,
+                                    const std::string& subclass = "yield") {
     const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());
     auto lg(make_logger(test_suite));
     ores::database::query_builder::execute_parameterized_multi_column_query(
@@ -55,12 +56,12 @@ std::string insert_without_identity(const ores::database::context& ctx,
         "    tenant_id, id, version, party_id, oresmd_uri, series_subclass,"
         "    provider_code, derivation_kind, derivation_config_id, derivation_config_version,"
         "    modified_by, performed_by, change_reason_code, change_commentary)"
-        " values ($1::uuid, $2::uuid, 0, $3::uuid, $4, 'yield',"
+        " values ($1::uuid, $2::uuid, 0, $3::uuid, $4, $5,"
         "    'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,"
         "    current_user, current_user, 'system.external_data_import',"
         "    'inserted in SQL by a backfill test')"
         " returning id::text",
-        {ctx.tenant_id().to_string(), id, boost::uuids::to_string(party), uri},
+        {ctx.tenant_id().to_string(), id, boost::uuids::to_string(party), uri, subclass},
         lg,
         "Inserting a series without its identity row");
     return id;
@@ -155,6 +156,49 @@ TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried",
     CHECK(again.projected == 0);
     CHECK(again.unreadable == 0);
     CHECK(identity_rows(h, odd) == 1);
+}
+
+TEST_CASE("a_series_the_shape_refuses_is_counted_and_left_unprojected",
+          "[repository][series_identity][backfill]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    // A fixing URI with a series subclass a fixing never carries: the identity kind
+    // refuses it before a family is looked up, so the backfill must count it and leave
+    // the series without an identity rather than write a row it cannot state.
+    const auto refused = insert_without_identity(
+        h.context(),
+        party,
+        "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M",
+        "yield");
+
+    const auto done = market_series_identity_projector::project_missing(h.context());
+
+    CHECK(done.refused >= 1);
+    CHECK(identity_rows(h, refused) == 0);
+}
+
+TEST_CASE("a_series_in_a_family_no_shape_states_is_projected_and_counted",
+          "[repository][series_identity][backfill]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    // The FX spot family is stated; a basis series is not, and the tolerance is what
+    // lets the catalogue grow: the row is projected and the count says it was unguarded.
+    // The quote is not the USD one the import test counts by URI, so the two fixtures
+    // stay apart in a tenant they share.
+    const auto unguarded = insert_without_identity(
+        h.context(),
+        party,
+        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=SEK",
+        "basis");
+
+    const auto done = market_series_identity_projector::project_missing(h.context());
+
+    CHECK(done.unstated >= 1);
+    CHECK(identity_rows(h, unguarded) == 1);
 }
 
 TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected",

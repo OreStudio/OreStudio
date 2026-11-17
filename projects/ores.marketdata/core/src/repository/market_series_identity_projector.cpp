@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_check.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -44,6 +45,11 @@ namespace ores::marketdata::repository {
 namespace {
 
 using datum::field;
+
+auto& projector_lg() {
+    static auto instance = make_logger("ores.marketdata.repository.market_series_identity_projector");
+    return instance;
+}
 
 /**
  * @brief What the shape table says about the families it states.
@@ -423,7 +429,10 @@ market_series_identity_projector::project_missing(const ores::database::context&
             ++result.unstated;
         try {
             shapes.check(s, p.row);
-        } catch (const std::invalid_argument&) {
+        } catch (const std::invalid_argument& e) {
+            // The message names the series, its family and the field, which is what an
+            // operator needs to repair the row; the count says how many were left.
+            BOOST_LOG_SEV(projector_lg(), warn) << e.what();
             ++result.refused;
             continue;
         }

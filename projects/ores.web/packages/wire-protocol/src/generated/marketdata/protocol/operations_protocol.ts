@@ -1311,6 +1311,22 @@ export interface BackfillSeriesIdentityResponse {
      * what says how many identities the database could not state.
      */
     unreadable_count: number;
+    /**
+     * @brief How many series the shape refused, and so were left unprojected.
+     *
+     * A series whose identity contradicts the shape its family states is a repair the
+     * caller has to make, not a projection this call can write. The count says how many
+     * were left as they are, and the series is named in the log.
+     */
+    refused_count: number;
+    /**
+     * @brief How many series fall in a family no shape states, so were projected unguarded.
+     *
+     * The catalogue grows: a family nothing has stated yet is projected rather than refused,
+     * because refusing would stop an ingest over a gap that is the catalogue's. The count says
+     * how many identities that tolerance covered, so the gap is visible instead of silent.
+     */
+    unstated_count: number;
 }
 
 /**

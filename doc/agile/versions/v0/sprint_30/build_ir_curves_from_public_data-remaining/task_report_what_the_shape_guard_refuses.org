@@ -28,9 +28,9 @@ The shape guard is observable and honest: every refusal and every family no shap
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | The scan now reads the shapes the way the writer reads them, and the file states what a session can see. The counts are still dropped. |
+| Now          | Both counts are on the wire: the backfill response carries the rows the shape refused and the series in a family no shape states, the refusal is logged by name, and the projector's tests assert each. |
 | Waiting on   | Nothing.                               |
-| Next         | Take =refused_count= and =unstated_count= from the projector to the protocol, and assert them. |
+| Next         | Review the branch and raise the PR. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -81,7 +81,12 @@ The second finding stands as first reported. The projector counts what it refuse
 (=unstated=), and the backfill response carries neither: it reports projected, already
 projected and unreadable. A refusal and an unguarded family are what an operator most
 needs to see, and today neither leaves the process. The response gains =refused_count=
-and =unstated_count= from the model, and a test asserts them.
+and =unstated_count= from the model, the handler fills them and says them in its message,
+and the projector's backfill counts are asserted by two cases: one series the shape refuses
+is counted and left without an identity, and one series in a family no shape states is
+projected and counted as unguarded. The refusal is also logged by name, which the field's
+comment promised and the code did not do: the exception already names the series, its
+family and the field.
 
 * Measurements
 
@@ -91,7 +96,8 @@ and =unstated_count= from the model, and a test asserts them.
 | Pairs the scan examines, tenant-equal join | 1,320 | the =shape_scan= query as a =bypassrls= session | 67803175ce |
 | Pairs the scan examines, writer's read | 8,370 | the same query with the join on the shared read | 67803175ce |
 | Assertions that fail with the join reverted | 0 of 9 | a temporary copy of the suite with =st.tenant_id = i.tenant_id= | 7f8a3089e2 |
-| Counts the response carries for refusals and unguarded families | none | =backfill_series_identity_response= in =operations_protocol.hpp= | 67803175ce |
+| Counts the response carries for refusals and unguarded families | =refused_count= and =unstated_count= | =backfill_series_identity_response= in =operations_protocol.hpp= | 727350300a |
+| Identity tests after the change | 42 assertions in 17 cases, pass | `publish/bin/ores.marketdata.core.tests "[series_identity]"` | 727350300a |
 
 * Notes
 

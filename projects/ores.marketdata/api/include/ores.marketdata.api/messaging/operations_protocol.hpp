@@ -1708,6 +1708,22 @@ struct backfill_series_identity_response {
      * what says how many identities the database could not state.
      */
     int unreadable_count = 0;
+    /**
+     * @brief How many series the shape refused, and so were left unprojected.
+     *
+     * A series whose identity contradicts the shape its family states is a repair the
+     * caller has to make, not a projection this call can write. The count says how many
+     * were left as they are, and the series is named in the log.
+     */
+    int refused_count = 0;
+    /**
+     * @brief How many series fall in a family no shape states, so were projected unguarded.
+     *
+     * The catalogue grows: a family nothing has stated yet is projected rather than refused,
+     * because refusing would stop an ingest over a gap that is the catalogue's. The count says
+     * how many identities that tolerance covered, so the gap is visible instead of silent.
+     */
+    int unstated_count = 0;
 
     friend bool operator==(const backfill_series_identity_response&,
                            const backfill_series_identity_response&) = default;
@@ -3265,6 +3281,10 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
                                       &backfill_series_identity_response::already_projected_count},
         ::ores::utility::codec::field{"unreadable_count",
                                       &backfill_series_identity_response::unreadable_count},
+        ::ores::utility::codec::field{"refused_count",
+                                      &backfill_series_identity_response::refused_count},
+        ::ores::utility::codec::field{"unstated_count",
+                                      &backfill_series_identity_response::unstated_count},
     };
 }
 

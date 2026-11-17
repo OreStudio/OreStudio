@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/resolve-a-trade-sets-market-data-requirements
-#+pr:
+#+pr: 4802
 #+blocked_on: The batcher, whose batch keys name the trade set this reads.
 #+blocked_since:
 #+created: 2026-10-07
@@ -150,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4802][#4802]] | [trading,marketdata,sql] Resolve the market data a set of trades needs |
 
 * Review
 

@@ -342,11 +342,9 @@ What this stage does not do, and the plan's later stages cover:
   still links =ores.refdata.core= for the party repository that its identity
   handlers read,
   which is identity work and not this task's to remove.
-- That the parallel steps of a run execute in different services at once is not
-  yet measured. Nothing in the definition dispatches two *parallel* kinds to two
-  services today: =build_calendars= sits in the tenant-setup run beside the
-  identity steps, which all run in iam. The line is proven when a kind that runs
-  beside another in the same run moves, which stages 2 and 4 bring.
+- That the parallel steps of a run execute in different services at once was
+  not measured at this stage: nothing in the definition dispatched two
+  *parallel* kinds to two services then. Stage 4 measured it, on run =9666da04=.
 
 Proven end to end on 2026-11-13. =compass smoke ticks --fresh= provisioned
 Acme from a recreated database, and the calendar step was dispatched to
@@ -375,3 +373,25 @@ The run also found two defects in this change, both fixed before the proof run:
 - The calendar step wrote =modified_by = "system"=, which the account trigger
   refuses now that the tenant has accounts. The step acts as its own service
   account, which is an account of the system tenant, so the trigger accepts it.
+
+Stage 4 is done but for the installation's own curves. =step_subject_for_kind()=
+answers =marketdata.v1.ops.provision_tenant_step= for five kinds now: the
+subscription, the party curves, the surface blueprints, the party forwards and
+the party surfaces. Thirteen of the eighteen kinds still run in ores.iam.
+
+- The two party publishes left iam with their machinery. Each party is found
+  across the tenant and its work runs in a session scoped to that party,
+  entered by the service as itself. The forward publish reads back what an
+  earlier attempt did before it raises a second request, and the surface
+  hold-back rule moved to ores.marketdata.core with its tests. iam keeps no
+  executor, no dispatch case and no result fields for either kind.
+- The run kept as =9666da04= completed all 17 steps in 26 min 34 s: 156
+  forward sets and 120 surfaces published by ores.marketdata, 20 surfaces held
+  back for a decider, and none left unpublished. The suites are green
+  (103 of 103), and every step stream carries its own consumer (19 streams).
+- The line about parallel steps is measured. iam, refdata, synthetic and
+  marketdata worked overlapping steps in that run, which the story records.
+- What stage 4 does not do: =publish_system_curves= still runs in iam, because
+  it publishes in the system tenant as the installation's administrator and
+  both entries a service may use refuse that tenant by design. iam still links
+  =ores.refdata.core= for the party reads its identity handlers make.

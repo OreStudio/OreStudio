@@ -1,0 +1,23 @@
+compiler : /usr/bin/clang++
+flags    : 135 include and define flags (union over the build)
+
+ wall_s  trace_s  header
+   2.78  2750.68  ores.database/domain/context.hpp
+   1.76  1736.36  ores.database/domain/connection.hpp
+   0.02     2.76  ores.database/domain/context_fwd.hpp
+
+== where each probe spends its trace time (top 5 per header)
+ores.database/domain/context.hpp (2.78s wall)
+       245.8 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/format
+       196.4 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/chrono_io.h
+       190.2 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/chrono
+        64.9 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/stl_bvector.h
+        59.1 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/basic_string.h
+ores.database/domain/connection.hpp (1.76s wall)
+       172.0 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/format
+       133.7 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/chrono
+       107.4 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/chrono_io.h
+        57.2 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/basic_string.h
+        54.4 ms  /usr/lib/gcc/x86_64-linux-gnu/16/../../../../include/c++/16/bits/stl_bvector.h
+ores.database/domain/context_fwd.hpp (0.02s wall)
+

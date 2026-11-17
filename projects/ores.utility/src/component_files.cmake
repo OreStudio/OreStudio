@@ -90,6 +90,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/string/string.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/uuid/ores.utility.uuid.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/uuid/tenant_id.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/uuid/tenant_id_fwd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/uuid/uuid_v7_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/version/ores.utility.version.hpp"
 )

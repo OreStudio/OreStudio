@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-every-ibor-tenor-the-trades-book
-#+pr:
+#+pr: 4818
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4818][#4818]] | [marketdata,refdata,synthetic] Bootstrap every IBOR tenor the trades book |
 
 * Review
 

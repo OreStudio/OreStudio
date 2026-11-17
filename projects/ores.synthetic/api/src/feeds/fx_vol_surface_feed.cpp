@@ -22,6 +22,7 @@
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
@@ -29,6 +30,7 @@
 #include <chrono>
 #include <format>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -308,23 +310,68 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     const auto now = context.observed_at;
     std::size_t sent = 0;
     const auto per_contributor = emitter_.points_per_contributor();
+    std::shared_ptr<const sink_map> sinks;
+    {
+        const std::lock_guard lock(sinks_mu_);
+        sinks = sinks_;
+    }
     for (std::size_t c = 0; c < emitter_.contributor_count(); ++c) {
         const auto& who = emitter_.contributor_name(c);
         for (std::size_t i = 0; i < per_contributor; ++i) {
             const auto& point = points[c * per_contributor + i];
             if (!point.value)
                 continue;
-            ores::marketdata::messaging::market_tick shown;
-            shown.oresmd_uri = series_uris_[i];
-            shown.value = std::format("{}", *point.value);
-            shown.observation_time = now;
-            shown.source = source_name_ + "." + who;
-            nats_.publish(nats_subject_, codec.encode(shown));
-            ++sent;
+            if (sinks->empty()) {
+                ores::marketdata::messaging::market_tick shown;
+                shown.oresmd_uri = series_uris_[i];
+                shown.value = std::format("{}", *point.value);
+                shown.observation_time = now;
+                shown.source = source_name_ + "." + who;
+                nats_.publish(nats_subject_, codec.encode(shown));
+                ++sent;
+                continue;
+            }
+            // Each adapter that serves this contributor gets the point under the vendor's id, as
+            // an adapter of a live vendor sends it; the service finds the parties from the id.
+            const auto key = std::pair{emitter_.points()[i].expiry_id, emitter_.points()[i].label};
+            for (const auto& [adapter, sink] : *sinks) {
+                if (sink.contributor != who)
+                    continue;
+                const auto target = sink.targets.find(key);
+                if (target == sink.targets.end())
+                    continue;
+                ores::marketdata::messaging::adapter_tick tick;
+                tick.id_scheme = target->second.id.id_scheme;
+                tick.external_id = target->second.id.external_id;
+                tick.field = target->second.id.field;
+                tick.value = std::format("{}", *point.value);
+                tick.vendor_time = now;
+                tick.sequence = published_.load(std::memory_order_relaxed) + sent;
+                nats_.publish(target->second.subject, codec.encode(tick));
+                ++sent;
+            }
         }
     }
     published_.fetch_add(sent, std::memory_order_relaxed);
     return std::format("{} point(s)", sent);
+}
+
+void fx_vol_surface_feed::attach(const std::string& adapter_id,
+                                 const std::string& contributor,
+                                 point_targets targets) {
+    const std::lock_guard lock(sinks_mu_);
+    auto next = std::make_shared<sink_map>(*sinks_);
+    next->insert_or_assign(adapter_id,
+                           sink{.contributor = contributor, .targets = std::move(targets)});
+    sinks_ = std::move(next);
+}
+
+std::size_t fx_vol_surface_feed::detach(const std::string& adapter_id) {
+    const std::lock_guard lock(sinks_mu_);
+    auto next = std::make_shared<sink_map>(*sinks_);
+    next->erase(adapter_id);
+    sinks_ = std::move(next);
+    return sinks_->size();
 }
 
 void fx_vol_surface_feed::stop() {

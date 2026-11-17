@@ -29,14 +29,19 @@
 #include "ores.synthetic.api/domain/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_expiry.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <map>
+#include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ores::synthetic::feed {
@@ -195,6 +200,22 @@ public:
         return published_.load(std::memory_order_relaxed);
     }
 
+    /// The adapter target of each point a contributor quotes, by expiry and strike label.
+    using point_targets = std::map<std::pair<std::string, std::string>, adapter_target>;
+
+    /**
+     * @brief Sends one contributor's points to an adapter, under that contributor's vendor ids.
+     *
+     * Every contributor observes the one latent surface this feed holds, so the vendors quote one
+     * market whichever adapters attach. A surface no adapter is attached to publishes its points
+     * as market ticks, as it did before adapters could serve it.
+     */
+    void
+    attach(const std::string& adapter_id, const std::string& contributor, point_targets targets);
+
+    /// Stops sending to an adapter, and answers how many adapters remain attached.
+    std::size_t detach(const std::string& adapter_id);
+
 private:
     /// Where this surface's three inputs are on the run's values, resolved when it is built.
     std::optional<ores::analytics::quant::domain::market_board::member_id> base_curve_id_;
@@ -219,6 +240,15 @@ private:
     double sensitivity_ = 1.0;
     std::optional<std::size_t> handle_;
     std::atomic<std::uint64_t> published_{0};
+    /// The adapters attached, each with the contributor it serves and that contributor's targets.
+    struct sink final {
+        std::string contributor;
+        point_targets targets;
+    };
+    using sink_map = std::map<std::string, sink>;
+    /// Replaced, never changed, so a tick reads its sinks without holding the lock to publish.
+    mutable std::mutex sinks_mu_;
+    std::shared_ptr<const sink_map> sinks_ = std::make_shared<const sink_map>();
 };
 
 }

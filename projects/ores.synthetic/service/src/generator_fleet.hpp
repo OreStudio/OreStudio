@@ -23,6 +23,7 @@
 #include "generator_runner.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "running_set.hpp"
+#include "shared_surfaces.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -52,6 +53,11 @@ public:
     /** The set every runner of the service claims the feeds it runs in. */
     [[nodiscard]] running_set& running_names() {
         return names_;
+    }
+
+    /** The latent surfaces the adapters share, so every vendor quotes one market. */
+    [[nodiscard]] shared_surfaces& surfaces() {
+        return surfaces_;
     }
 
     /** The source names of the feeds the service runs now. */
@@ -129,6 +135,7 @@ private:
 
     mutable std::mutex mu_;
     std::vector<generator_runner*> attached_;
+    shared_surfaces surfaces_;
     running_set names_;
     // The runner the operator drives. No generator is offered to it, because a manual run is
     // built from a feed's config by the verb that asks for it.

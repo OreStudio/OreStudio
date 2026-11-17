@@ -39,6 +39,7 @@
 #include "ores.synthetic.core/repository/folder_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_fixing_item_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_contributor_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_expiry_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_repository.hpp"
@@ -678,6 +679,27 @@ feed_kind make_fx_vol_surface_kind() {
                                                 .spot_variance = cfg.spot_variance_correlation,
                                                 .spot_skew = cfg.spot_skew_correlation,
                                                 .neighbour = cfg.segment_correlation};
+            }
+            // The points the surface quotes, and who quotes them: each expiry at the labels the
+            // feed quotes, and each contributor's provider, whose adapter is offered its points.
+            {
+                repo::fx_vol_surface_feed_expiry_repository point_repo;
+                for (const auto& e : point_repo.read_latest(ctx))
+                    if (e.feed_id == cfg.id)
+                        for (const auto label : {"ATM", "25RR", "25BF", "10RR", "10BF"})
+                            c.option_points.push_back(ores::marketdata::vendor::fx_option_quote{
+                                cfg.base_currency_code, cfg.quote_currency_code, e.tenor, label});
+                std::map<std::string, std::string> providers;
+                repo::fx_vol_contributor_repository who_repo;
+                for (const auto& who : who_repo.read_latest(ctx))
+                    providers.emplace(boost::uuids::to_string(who.id), who.provider_code);
+                repo::fx_vol_surface_feed_contributor_repository link_repo;
+                for (const auto& link : link_repo.read_latest(ctx))
+                    if (link.feed_id == cfg.id)
+                        if (const auto found =
+                                providers.find(boost::uuids::to_string(link.contributor_id));
+                            found != providers.end())
+                            c.contributor_providers.emplace(found->first, found->second);
             }
             c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 static_cast<void>(adapter);

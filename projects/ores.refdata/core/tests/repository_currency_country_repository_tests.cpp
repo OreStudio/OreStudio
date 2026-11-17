@@ -195,8 +195,12 @@ TEST_CASE("read_latest_currency_countries_by_country", "[repository][currency_co
     auto read_ccs = repo.read_latest_by_country(countries[4].alpha2_code);
     BOOST_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
 
+    // The country is a shared catalogue, so the read lists the system tenant's
+    // pairings for it beside the caller's own.
     REQUIRE(read_ccs.size() >= 1);
-    CHECK(read_ccs[0].currency_iso_code == currencies[4].iso_code);
+    CHECK(std::ranges::any_of(read_ccs, [&](const auto& r) {
+        return r.currency_iso_code == currencies[4].iso_code;
+    }));
 }
 
 TEST_CASE("remove_currency_country", "[repository][currency_country]") {

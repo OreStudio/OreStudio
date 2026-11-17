@@ -42,6 +42,26 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
+namespace {
+
+/**
+ * @brief The rows the caller owns.
+ *
+ * A country is a shared catalogue: the read names the system tenant's rows
+ * beside the caller's own, and a code the platform already publishes is
+ * therefore two rows. A test about the row it wrote takes the one it owns.
+ */
+std::vector<country> own_rows(const std::vector<country>& rows,
+                              const ores::database::context& ctx) {
+    std::vector<country> own;
+    own.reserve(rows.size());
+    std::ranges::copy_if(
+        rows, std::back_inserter(own), [&](const country& c) { return c.tenant_id == ctx.tenant_id(); });
+    return own;
+}
+
+}
+
 TEST_CASE("write_single_country", "[repository]") {
     auto lg(make_logger(test_suite));
 
@@ -55,7 +75,7 @@ TEST_CASE("write_single_country", "[repository]") {
     country_repository repo;
     repo.write(h.context(), cntry);
 
-    const auto read_countries = repo.read_latest(h.context(), cntry.alpha2_code);
+    const auto read_countries = own_rows(repo.read_latest(h.context(), cntry.alpha2_code), h.context());
     REQUIRE(read_countries.size() == 1);
     CHECK(read_countries[0].name == cntry.name);
 }
@@ -71,7 +91,7 @@ TEST_CASE("write_multiple_countries", "[repository]") {
     country_repository repo;
     repo.write(h.context(), countries);
 
-    const auto read_countries = repo.read_latest(h.context());
+    const auto read_countries = own_rows(repo.read_latest(h.context()), h.context());
     for (const auto& written : countries) {
         const auto it = std::ranges::find_if(
             read_countries, [&](const country& c) { return c.alpha2_code == written.alpha2_code; });
@@ -91,7 +111,7 @@ TEST_CASE("read_latest_countries", "[repository]") {
     country_repository repo;
     repo.write(h.context(), written_countries);
 
-    auto read_countries = repo.read_latest(h.context());
+    auto read_countries = own_rows(repo.read_latest(h.context()), h.context());
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
     for (const auto& written : written_countries) {
@@ -120,7 +140,7 @@ TEST_CASE("read_latest_country_by_alpha2_code", "[repository]") {
     cntry.name = original_name + " v2";
     repo.write(h.context(), cntry);
 
-    auto read_countries = repo.read_latest(h.context(), cntry.alpha2_code);
+    auto read_countries = own_rows(repo.read_latest(h.context(), cntry.alpha2_code), h.context());
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
     REQUIRE(read_countries.size() == 1);

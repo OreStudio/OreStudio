@@ -159,6 +159,10 @@ TEST_CASE("a_ladder_is_the_tenors_its_labels_name_shortest_first", derived_tags)
     CHECK(ladder[2].label == "18M");
     CHECK(ladder[3].label == "10Y");
 
+    // A day-counted tenor is a tenor to the calibration, so it is one to the ladder too.
+    REQUIRE(derived_fx_ladder({"3D"}).size() == 1);
+    CHECK(derived_fx_ladder({"3D"}).front().years == Approx(3.0 / 365.0));
+
     const auto ties = derived_fx_ladder({"1Y", "12M"});
     REQUIRE(ties.size() == 2);
     CHECK(ties[0].label == "12M");

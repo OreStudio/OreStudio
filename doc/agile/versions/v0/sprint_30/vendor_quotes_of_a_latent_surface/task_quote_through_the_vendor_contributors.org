@@ -8,7 +8,7 @@
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
 #+branch: feature/quote-through-the-vendor-contributors
-#+pr:
+#+pr: 4824
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4824][#4824]] | [synthetic,marketdata] Quote the latent surfaces through their vendors' adapters |
 
 * Review
 

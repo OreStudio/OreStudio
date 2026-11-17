@@ -48,28 +48,28 @@ using datum::field;
 /**
  * @brief What the shape table says about the families it states.
  *
- * Read once per call, because a projection writes a batch and the table is small.
- * The statement and its enforcement live in =series_identity_shape_check=, which a
- * test can call without a database.
+ * Read and grouped once per call, because a projection writes a batch and the table
+ * is small. The statement and its enforcement live in =series_identity_shape_check=,
+ * which a test can call without a database.
  */
 class shape_book final {
 public:
     explicit shape_book(const ores::database::context& ctx)
-        : stated_(repository::series_identity_shape_repository{}.read_latest(ctx)) {}
+        : book_(repository::series_identity_shape_repository{}.read_latest(ctx)) {}
 
     void check(const domain::market_series& series,
                const domain::market_series_identity& row) const {
         check_identity_kind(series, row);
-        check_identity_shape(stated_, series, row);
+        book_.check(series, row);
     }
 
     [[nodiscard]] bool states(const domain::market_series& series,
                               const domain::market_series_identity& row) const {
-        return states_identity_shape(stated_, series, row);
+        return book_.states(series, row);
     }
 
 private:
-    std::vector<domain::series_identity_shape> stated_;
+    identity_shape_book book_;
 };
 
 constexpr std::string_view kind_series = "series";
@@ -408,8 +408,11 @@ market_series_identity_projector::project_missing(const ores::database::context&
     // A backfill is a repair, and a repair that aborts on the first legacy row it
     // cannot state is no repair: the rows the shape refuses are counted and left
     // as they are, so the caller can report them while the rest are projected.
+    // A shape row that names a field no identity holds throws std::logic_error,
+    // which this catch does not take: that is a fault of the catalogue, and it
+    // stops the backfill rather than being counted against every series.
     const shape_book shapes(ctx);
-    std::vector<domain::market_series> accepted;
+    std::vector<domain::market_series_identity> accepted;
     accepted.reserve(missing.size());
     backfill_result result;
     for (const auto& s : missing) {
@@ -424,13 +427,12 @@ market_series_identity_projector::project_missing(const ores::database::context&
             ++result.refused;
             continue;
         }
-        accepted.push_back(s);
+        accepted.push_back(std::move(p.row));
     }
     result.already_projected = series.size() - missing.size();
     result.projected = accepted.size();
-    market_series_identity_projector::project(ctx, accepted);
-    // project() counts the unreadable rows again from its own projection; the count
-    // this call reports is the one it made above, so the two are not added twice.
+    if (!accepted.empty())
+        market_series_identity_repository{}.write(ctx, accepted);
     return result;
 }
 

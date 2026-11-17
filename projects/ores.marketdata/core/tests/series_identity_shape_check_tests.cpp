@@ -21,6 +21,7 @@
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,7 @@ using ores::marketdata::domain::market_series_identity;
 using ores::marketdata::domain::series_identity_shape;
 using ores::marketdata::repository::check_identity_kind;
 using ores::marketdata::repository::check_identity_shape;
+using ores::marketdata::repository::identity_shape_book;
 using ores::marketdata::repository::states_identity_shape;
 
 constexpr const char* shape_tags = "[series_identity][shape]";
@@ -160,6 +162,37 @@ TEST_CASE("a_shape_that_names_a_field_an_identity_does_not_hold_is_refused", sha
     CHECK_THROWS_WITH(check_identity_shape(shape, series, ibor_fixing("USD", "SOFR")),
                       Catch::Matchers::ContainsSubstring(
                           "shape names field 'unit_currency', which an identity does not hold"));
+
+    // The backfill counts an std::invalid_argument as a refused series. A fault of the
+    // catalogue must not be counted that way, so it is a logic_error and nothing more.
+    bool refused_as_a_series = false;
+    bool faulted_the_catalogue = false;
+    try {
+        check_identity_shape(shape, series, ibor_fixing("USD", "SOFR"));
+    } catch (const std::invalid_argument&) {
+        refused_as_a_series = true;
+    } catch (const std::logic_error&) {
+        faulted_the_catalogue = true;
+    }
+    CHECK_FALSE(refused_as_a_series);
+    CHECK(faulted_the_catalogue);
+}
+
+TEST_CASE("a_book_answers_as_the_stated_rows_do", shape_tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::vector<series_identity_shape> shape{
+        stated("index_fixing", "ibor", "index_name", "required"),
+        stated("index_fixing", "ibor", "unit_ccy", "forbidden")};
+    const identity_shape_book book(shape);
+    const auto series =
+        series_of("index_fixing", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+
+    CHECK_NOTHROW(book.check(series, ibor_fixing("USD", "SOFR")));
+    CHECK(book.states(series, ibor_fixing("USD", "SOFR")));
+    CHECK_THROWS_AS(book.check(series, ibor_fixing("USD", "")), std::invalid_argument);
+    CHECK_THROWS_AS(book.check(series, ibor_fixing("USD", "SOFR", "EUR")), std::invalid_argument);
+    CHECK_FALSE(book.states(series_of("yield", series.oresmd_uri), ibor_fixing("USD", "SOFR")));
 }
 
 TEST_CASE("a_fixing_whose_series_subclass_says_something_else_is_refused_by_name", shape_tags) {

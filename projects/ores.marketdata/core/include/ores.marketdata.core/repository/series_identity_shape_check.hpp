@@ -23,9 +23,11 @@
 #include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <map>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -51,11 +53,38 @@ text_of(const domain::market_series_identity& row, std::string_view column);
  * that is the catalogue's.
  *
  * @throws std::invalid_argument naming the series, the family and the field.
+ * @throws std::logic_error when a stated row names a field no identity holds as
+ * text. That is a fault of the catalogue, not of the series, so it is not an
+ * @c std::invalid_argument and a caller that counts refused series does not count it.
  */
 ORES_MARKETDATA_CORE_EXPORT void
 check_identity_shape(const std::vector<domain::series_identity_shape>& stated,
                      const domain::market_series& series,
                      const domain::market_series_identity& row);
+
+/**
+ * @brief The stated shapes, grouped by family once, so a batch checks every row
+ * against one map.
+ */
+class ORES_MARKETDATA_CORE_EXPORT identity_shape_book final {
+public:
+    explicit identity_shape_book(const std::vector<domain::series_identity_shape>& stated);
+
+    /// As @c check_identity_shape, against the shapes this book holds.
+    void check(const domain::market_series& series,
+               const domain::market_series_identity& row) const;
+
+    /// As @c states_identity_shape, against the shapes this book holds.
+    [[nodiscard]] bool states(const domain::market_series& series,
+                              const domain::market_series_identity& row) const;
+
+private:
+    struct family_shape final {
+        std::vector<std::string> required;
+        std::vector<std::string> forbidden;
+    };
+    std::map<std::tuple<std::string, std::string, std::string>, family_shape> families_;
+};
 
 /**
  * @brief Refuses a series whose identity is an index and whose subclass says otherwise.

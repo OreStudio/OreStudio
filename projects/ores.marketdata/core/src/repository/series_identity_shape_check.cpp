@@ -45,26 +45,8 @@ constexpr std::string_view forbidden_says = "forbidden";
 constexpr std::string_view index_series_kind = "index";
 constexpr std::string_view index_subclass = "index_fixing";
 
-/// The fields one family requires and the ones it forbids.
-struct family_shape final {
-    std::vector<std::string> required;
-    std::vector<std::string> forbidden;
-};
-
 family_key family_key_of(const market_series_identity& row, const market_series& series) {
     return family_key{row.asset_class, series.series_subclass, row.index};
-}
-
-std::map<family_key, family_shape> book_of(const std::vector<series_identity_shape>& stated) {
-    std::map<family_key, family_shape> book;
-    for (const auto& row : stated) {
-        auto& shape = book[family_key{row.asset_class, row.series_subclass, row.index_family}];
-        if (row.requirement == required_says)
-            shape.required.push_back(row.field);
-        else if (row.requirement == forbidden_says)
-            shape.forbidden.push_back(row.field);
-    }
-    return book;
 }
 
 std::string family_name(const market_series_identity& row, const market_series& series) {
@@ -100,21 +82,29 @@ void check_identity_kind(const market_series& series, const market_series_identi
                                 series.series_subclass + "'");
 }
 
-void check_identity_shape(const std::vector<series_identity_shape>& stated,
-                          const market_series& series,
-                          const market_series_identity& row) {
-    const auto book = book_of(stated);
-    const auto shape = book.find(family_key_of(row, series));
-    if (shape == book.end())
+identity_shape_book::identity_shape_book(const std::vector<series_identity_shape>& stated) {
+    for (const auto& row : stated) {
+        auto& shape = families_[family_key{row.asset_class, row.series_subclass, row.index_family}];
+        if (row.requirement == required_says)
+            shape.required.push_back(row.field);
+        else if (row.requirement == forbidden_says)
+            shape.forbidden.push_back(row.field);
+    }
+}
+
+void identity_shape_book::check(const market_series& series,
+                                const market_series_identity& row) const {
+    const auto shape = families_.find(family_key_of(row, series));
+    if (shape == families_.end())
         return;
     // A row that names a column the identity does not hold states nothing the
     // guard can check. Ignoring it would let a misspelt forbidden field pass every
-    // row, so the row is refused as the shape's fault, not the series'.
+    // row, so it is refused as a fault of the catalogue, not of the series.
     const auto held = [&](const std::string& field) {
         const auto text = text_of(row, field);
         if (!text)
-            throw std::invalid_argument("the " + family_name(row, series) + " shape names field '" +
-                                        field + "', which an identity does not hold as text");
+            throw std::logic_error("the " + family_name(row, series) + " shape names field '" +
+                                   field + "', which an identity does not hold as text");
         return *text;
     };
     for (const auto& field : shape->second.required) {
@@ -131,11 +121,21 @@ void check_identity_shape(const std::vector<series_identity_shape>& stated,
     }
 }
 
+bool identity_shape_book::states(const market_series& series,
+                                 const market_series_identity& row) const {
+    return families_.contains(family_key_of(row, series));
+}
+
+void check_identity_shape(const std::vector<series_identity_shape>& stated,
+                          const market_series& series,
+                          const market_series_identity& row) {
+    identity_shape_book(stated).check(series, row);
+}
+
 bool states_identity_shape(const std::vector<series_identity_shape>& stated,
                            const market_series& series,
                            const market_series_identity& row) {
-    const auto book = book_of(stated);
-    return book.contains(family_key_of(row, series));
+    return identity_shape_book(stated).states(series, row);
 }
 
 }

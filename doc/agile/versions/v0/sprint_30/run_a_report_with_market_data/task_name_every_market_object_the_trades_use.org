@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-17
 #+updated: 2026-11-17
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every object a generated trade names is declared in the market configuration its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

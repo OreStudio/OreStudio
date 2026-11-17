@@ -21,10 +21,14 @@
 # To modify, update the template and regenerate.
 set(files
     "routes/compute/compute_routes.cpp"
+    "routes/compute/grid_views.cpp"
+    "routes/compute/job_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.compute.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/compute_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/grid_views.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/job_routes.hpp"
 )

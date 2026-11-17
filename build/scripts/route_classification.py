@@ -807,6 +807,14 @@ RULES = (
          "The cuts a party holds, and one cut's record: the body's facts, the state and the"
          " label the reporting service derives, the kind the body was taken under, the gaps"
          " the assembly could not fill and the runs that priced from it."),
+    Rule("the grid's jobs route",
+         ("regex", r"^GET /api/operations/grid/jobs/(batches|workunits|results)"
+                   r"(/\{id\}(/workunits|/results)?)?$"),
+         CPP, RESOURCE, "grid",
+         "The grid's jobs at the addresses and in the shapes the BFF answered: one page of the"
+         " batches the session may see with the name of the run and the party that made each,"
+         " one batch, the work units of one batch, one work unit, the runs of one work unit,"
+         " one page of the runs that ended with an outcome, and one run."),
     Rule("a grid artefact",
          ("regex", r"^GET /api/operations/grid/jobs/(workunits/:id/input|results/:id/output)"),
          BFF, RESOURCE, "grid",

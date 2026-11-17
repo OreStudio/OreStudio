@@ -28,10 +28,10 @@ The gateway has no part for the grid area. Add the part with the adapter recipe,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part is stood up and registered; its routes follow. |
+| Now          | The part serves the seven jobs reads. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the batches, work units and results. |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the stored bytes and the app versions. |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
@@ -69,6 +69,13 @@ The grid's own paths stay as the BFF wrote them, =/api/operations/grid/...=, so 
 browser leaves the BFF with no change, and each route is paired in the inventory
 under the =grid= area.
 
+The jobs' seven reads are served first: the two pages the grid screens open on,
+the batch's children, the work unit's children, and the three single rows. One
+unit states the join the four share, =grid_views=, so the page's sentence, the
+party names and the run names are stated once. Two departures from the BFF are
+recorded below: the node a run ran on is shown to the system tenant alone, and
+the party names are one read per page rather than the session's own list.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -81,9 +88,34 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The compute part's test suite | 18 cases, 252 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.compute.tests= | the jobs unit commit |
+| The grid area's routes the C++ server answers | 7 of 14 paired | =python3 build/scripts/route_inventory.py --check= | the jobs unit commit |
+| The gateway's routes in the inventory | 1358 routes, 1030 answered by the gateway, 264 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the jobs unit commit |
 
 * Notes
+
+** The join the jobs reads share
+
+The BFF read the party names off the session it held, which the gateway does not
+keep, so the part reads the parties of the caller's own account once per page.
+A batch with no party, or a read of the parties that fails, states no party name
+and the page still answers.
+
+The runs a batch names in its =external_ref= are read in one list request for
+the whole page, as the BFF read them. A reference that is not an identifier, or a
+run the caller may not read, states no run name.
+
+** The node a run ran on
+
+A run states its node only to a caller whose token is scoped to the system
+tenant; every other caller reads =host_hidden= where the node is known. That is
+the rule the BFF applied, read from the token rather than from a session.
+
+** The acknowledgements
+
+A batch or a run the caller may not read answers the service's own refusal: 403
+for a denied read, 404 for one that names nothing, 400 for an address the service
+calls invalid. A read whose service does not answer is 502.
 
 * Test Scenarios
 

@@ -20,5 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "grid_views_tests.cpp"
+    "job_routes_tests.cpp"
     "main.cpp"
 )

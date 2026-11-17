@@ -121,12 +121,56 @@ read_population_knobs(const std::vector<provision_tenant_parameter>& parameters)
  *         class's share cannot hold its codes, or when the knobs name a class
  *         the run books nothing for.
  */
+namespace detail {
+
+/**
+ * @brief Refuses a population whose stated counts cannot hold every code.
+ *
+ * A config books its codes by the slot's position, so a config shorter than its
+ * class's code list states a prefix and drops the rest without saying so. The
+ * check runs on the paths that keep the counts a recipe states, where no share
+ * would otherwise ask the question.
+ *
+ * @throws std::runtime_error naming the class, its configs and its codes.
+ */
+inline void require_every_config_holds_its_codes(
+    const std::vector<trade_generation_assignment>& assignments,
+    const std::function<std::size_t(const std::string&)>& code_count) {
+    std::map<std::string, std::uint32_t> shortest;
+    for (const auto& assignment : assignments) {
+        if (!assignment.trades_per_book)
+            continue;
+        const auto stated = *assignment.trades_per_book;
+        auto [it, added] = shortest.emplace(assignment.asset_class_code, stated);
+        if (stated < it->second)
+            it->second = stated;
+    }
+    for (const auto& [asset_class, stated] : shortest) {
+        const auto codes = static_cast<std::uint32_t>(code_count(asset_class));
+        if (stated >= codes)
+            continue;
+        throw std::runtime_error(
+            std::format("A config of '{}' states {} trade(s) per book, and its planner cycles {} "
+                        "code(s), so a config shorter than its codes books a prefix and drops the "
+                        "rest. State at least {} per book, or state a share and a total that hold "
+                        "them.",
+                        asset_class,
+                        stated,
+                        codes,
+                        codes));
+    }
+}
+
+}
+
 inline void
 apply_population_knobs(std::vector<trade_generation_assignment>& assignments,
                        const population_knobs& knobs,
                        const std::function<std::size_t(const std::string&)>& code_count) {
-    if (!knobs.states_any())
+    if (!knobs.states_any()) {
+        detail::require_every_config_holds_its_codes(assignments, code_count);
         return;
+    }
 
     std::map<std::string, std::vector<trade_generation_assignment*>> by_class;
     for (auto& assignment : assignments)
@@ -142,6 +186,7 @@ apply_population_knobs(std::vector<trade_generation_assignment>& assignments,
          * the book the operator asked to make bigger, and scaling them by a
          * guess would be a different book than the one they run.
          */
+        detail::require_every_config_holds_its_codes(assignments, code_count);
     } else {
         if (stated == 0)
             throw std::runtime_error(

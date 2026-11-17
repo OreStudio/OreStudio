@@ -581,6 +581,8 @@ std::vector<ores::iam::workflow::trade_generation_assignment> all_configs() {
         for (int i = 0; i < configs; ++i) {
             auto entry = four_configs(asset_class).front();
             entry.name = asset_class + std::to_string(i);
+            // Every code needs a slot, so a config states one per code it cycles.
+            entry.trades_per_book = static_cast<std::uint32_t>(codes_of(asset_class));
             assignments.push_back(std::move(entry));
         }
     return assignments;
@@ -623,7 +625,23 @@ TEST_CASE("a run that states no size keeps the counts its recipe states", "[popu
     apply_population_knobs(assignments, read_population_knobs({}), codes_of);
 
     for (const auto& entry : assignments)
-        CHECK(entry.trades_per_book == 1);
+        CHECK(entry.trades_per_book == codes_of(entry.asset_class_code));
+}
+
+TEST_CASE("a recipe that states fewer trades than its codes is refused", "[population_knobs]") {
+    /*
+     * The path the review of #4828 found: a run that states no knobs keeps the
+     * counts its recipe states, and a bond config of ten trades over eleven
+     * codes would book a prefix and drop BondFutureOption without saying so.
+     */
+    auto assignments = all_configs();
+    for (auto& entry : assignments)
+        if (entry.asset_class_code == "bond")
+            entry.trades_per_book = 10;
+
+    CHECK_THROWS_WITH(
+        apply_population_knobs(assignments, read_population_knobs({}), codes_of),
+        Catch::Matchers::ContainsSubstring("A config of 'bond' states 10 trade(s) per book"));
 }
 
 TEST_CASE("a mix states each class's share of the total, remainder first", "[population_knobs]") {
@@ -745,12 +763,12 @@ TEST_CASE("a class the run books nothing for is refused", "[population_knobs]") 
 
 TEST_CASE("a size stated alone leaves the mix as the recipe states it", "[population_knobs]") {
     auto assignments = all_configs();
-    assignments.front().trades_per_book = 7;
+    assignments.front().trades_per_book = 12;
     const std::vector<provision_tenant_parameter> parameters{{"population_size", "5000"}};
 
     apply_population_knobs(assignments, read_population_knobs(parameters), codes_of);
 
-    CHECK(assignments.front().trades_per_book == 7);
+    CHECK(assignments.front().trades_per_book == 12);
 }
 
 TEST_CASE("a share of zero books nothing of that class", "[population_knobs]") {

@@ -413,6 +413,9 @@ namespace {
 struct swap_choice final {
     ores::marketdata::datum::market_reference index;
     std::string convention;
+    /// Whether the swap floats on an Ibor index rather than an overnight one,
+    /// which is what the index's own address says.
+    bool ibor = false;
 };
 
 struct swap_choices final {
@@ -441,13 +444,25 @@ swap_choices swap_choices_of(const domain::trade_generation_scope& scope) {
         if (!added && swap.id < it->second->id)
             it->second = &swap;
     }
+    /*
+     * A swap floats on an index convention, and the convention's id is the
+     * index's name without the tenor a swap's own index states. A forward rate
+     * agreement may only float on an Ibor, so the pool says which swaps do.
+     */
+    const auto floats_on_an_ibor = [&](const std::string& index_code) {
+        for (const auto& ibor : scope.conventions.ibor_indices)
+            if (!ibor.id.empty() &&
+                (index_code == ibor.id || index_code.starts_with(ibor.id + "-")))
+                return true;
+        return false;
+    };
     swap_choices out;
     for (const auto& [legs, swap] : swaps) {
         auto index = md::market_reference::parse(*swap->oresmd_uri);
         if (!index || index->index() == nullptr || index->index()->get("tenor") == nullptr)
             continue;
         auto& pool = index->index()->subject() == scope.currency_code ? out.domestic : out.foreign;
-        pool.push_back(swap_choice{std::move(*index), swap->id});
+        pool.push_back(swap_choice{std::move(*index), swap->id, floats_on_an_ibor(swap->index)});
     }
     return out;
 }
@@ -1626,19 +1641,31 @@ build_rate_trade(const domain::trade_generation_scope& scope,
      * exactly.
      */
     const auto fixed_rate = money(std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0);
-    const auto swap_from = [&](year_month_day start, year_month_day maturity) {
-        return tb::vanilla_swap_terms{.notional = money(entry.notional),
-                                      .currency = scope.currency_code,
-                                      .start = start,
-                                      .maturity = maturity,
-                                      .fixed_rate = fixed_rate,
-                                      .index = domestic[slot % domestic.size()].index,
-                                      .fixed_side =
-                                          first_way(entry, 1) ? tb::side::pay : tb::side::receive,
-                                      .convention = domestic[slot % domestic.size()].convention};
-    };
+    const auto terms_with =
+        [&](const swap_choice& chosen, year_month_day start, year_month_day maturity) {
+            return tb::vanilla_swap_terms{.notional = money(entry.notional),
+                                          .currency = scope.currency_code,
+                                          .start = start,
+                                          .maturity = maturity,
+                                          .fixed_rate = fixed_rate,
+                                          .index = chosen.index,
+                                          .fixed_side = first_way(entry, 1) ? tb::side::pay :
+                                                                              tb::side::receive,
+                                          .convention = chosen.convention};
+        };
+    /*
+     * A forward rate agreement fixes on an Ibor index, and the tenant's swap
+     * conventions also state overnight ones. So the agreement draws from the
+     * swaps whose index is an Ibor, never from the whole pool.
+     */
+    std::vector<const swap_choice*> ibor_swaps;
+    for (const auto& choice : domestic)
+        if (choice.ibor)
+            ibor_swaps.push_back(&choice);
+
     const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-    const auto swap = swap_from(start, add_years(start, static_cast<int>(years)));
+    const auto swap = terms_with(
+        domestic[slot % domestic.size()], start, add_years(start, static_cast<int>(years)));
     const auto built = [&](auto result) {
         return swap_batch_of(std::move(result), type, "Generated interest rate trade.");
     };
@@ -1667,10 +1694,16 @@ build_rate_trade(const domain::trade_generation_scope& scope,
          * A forward rate agreement is a short contract that settles in the
          * future: it starts in three months and runs for six.
          */
+        if (ibor_swaps.empty())
+            throw trade_population_error(
+                "No swap convention of the tenant names an Ibor index in " + scope.currency_code +
+                ", so no forward rate agreement can state its index.");
         const auto from = add_months(scope.as_of_date, 3);
+        const auto& chosen = *ibor_swaps[slot % ibor_swaps.size()];
         return built(
             tb::forward_rate_agreement_builder(
-                conventions, {.period = swap_from(from, add_months(from, 6)), .position = position})
+                conventions,
+                {.period = terms_with(chosen, from, add_months(from, 6)), .position = position})
                 .build());
     }
     if (type == "CapFloor")
@@ -1688,7 +1721,9 @@ build_rate_trade(const domain::trade_generation_scope& scope,
         const auto expiry = add_years(scope.as_of_date, 1);
         const auto swap_start = year_month_day{sys_days{expiry} + days{2}};
         const tb::swaption_terms terms{
-            .swap = swap_from(swap_start, add_years(swap_start, static_cast<int>(years))),
+            .swap = terms_with(domestic[slot % domestic.size()],
+                               swap_start,
+                               add_years(swap_start, static_cast<int>(years))),
             .expiry = expiry,
             .position = position,
             .settles = tb::settlement::cash};

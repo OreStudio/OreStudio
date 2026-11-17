@@ -793,6 +793,37 @@ TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_popu
     CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 5144697870441103994ULL);
 }
 
+TEST_CASE("a_forward_rate_agreement_draws_an_ibor_index_not_an_overnight_one",
+          "[trade_population]") {
+    /*
+     * The tenant's swap conventions also state overnight indices, and an
+     * agreement fixes on an Ibor one. At this length the agreement is drawn
+     * often enough that a pool of every swap convention lands it on the
+     * overnight index, which its builder refuses.
+     */
+    auto scope = rate_scope();
+    auto overnight_swap = scope.conventions.swaps.front();
+    overnight_swap.id = "EUR-EONIA-1Y-SWAP";
+    overnight_swap.index = "EUR-EONIA";
+    overnight_swap.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=overnight&name=EONIA";
+    scope.conventions.swaps.push_back(overnight_swap);
+    ores::refdata::domain::overnight_index_convention eonia;
+    eonia.id = "EUR-EONIA";
+    scope.conventions.overnight_indices.push_back(eonia);
+    scope.trades_per_book = 22;
+
+    const auto plan = plan_of(scope);
+    bool saw_agreement = false;
+    for (const auto& slot : plan.slots) {
+        if (slot.trade_type_code != "ForwardRateAgreement")
+            continue;
+        saw_agreement = true;
+        const auto& floating = slot.instruments.swap_legs.back();
+        CHECK(floating.floating_index_code.find("index=ibor") != std::string::npos);
+    }
+    CHECK(saw_agreement);
+}
+
 TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_population]") {
     const auto scope = rate_scope();
     const auto plan = plan_of(scope);

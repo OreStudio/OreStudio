@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
 #include "ores.testing/fx_vol_surface_fixture.hpp"
@@ -142,26 +143,25 @@ TEST_CASE("a_derived_vendor_id_names_a_pair_an_expiry_and_a_label_and_reads_back
 }
 
 TEST_CASE("a_ladder_is_the_tenors_its_labels_name_shortest_first", derived_tags) {
-    CHECK(derived_fx_expiry_years("1W") == Approx(7.0 / 365.0));
-    CHECK(derived_fx_expiry_years("18M") == Approx(1.5));
-    CHECK(derived_fx_expiry_years("10Y") == Approx(10.0));
-    CHECK_FALSE(derived_fx_expiry_years("ATM"));
-    CHECK_FALSE(derived_fx_expiry_years("0Y"));
-    CHECK_FALSE(derived_fx_expiry_years("Y"));
-    CHECK_FALSE(derived_fx_expiry_years(""));
-    CHECK_FALSE(derived_fx_expiry_years("0M"));
-    CHECK_FALSE(derived_fx_expiry_years("1.5Y"));
-    CHECK_FALSE(derived_fx_expiry_years("3D"));
-    CHECK_FALSE(derived_fx_expiry_years("-1Y"));
+    // Each expiry is as long as the calibration reads it, so the derivation and the surface
+    // fitted to its quotes agree on the time a label names.
+    for (const auto& e : test_ladder)
+        CHECK(e.years == ores::analytics::quant::service::fx_vol_tenor_years(e.label));
+    CHECK(test_ladder.front().years == Approx(7.0 / 365.0));
+    CHECK(test_ladder.back().years == Approx(10.0));
 
     // A set orders its labels as text, so 10Y would come before 1Y; the ladder orders them by
     // length, and leaves out a label that is not a tenor.
-    const auto ladder = derived_fx_ladder({"10Y", "1Y", "18M", "1W", "ATM"});
+    const auto ladder = derived_fx_ladder({"10Y", "1Y", "18M", "1W", "ATM", "", "0M", "1.5Y"});
     REQUIRE(ladder.size() == 4);
     CHECK(ladder[0].label == "1W");
     CHECK(ladder[1].label == "1Y");
     CHECK(ladder[2].label == "18M");
     CHECK(ladder[3].label == "10Y");
+
+    // A day-counted tenor is a tenor to the calibration, so it is one to the ladder too.
+    REQUIRE(derived_fx_ladder({"3D"}).size() == 1);
+    CHECK(derived_fx_ladder({"3D"}).front().years == Approx(3.0 / 365.0));
 
     const auto ties = derived_fx_ladder({"1Y", "12M"});
     REQUIRE(ties.size() == 2);

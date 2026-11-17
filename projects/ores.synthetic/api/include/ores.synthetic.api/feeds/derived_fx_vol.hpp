@@ -72,15 +72,13 @@ struct derived_fx_expiry final {
     friend bool operator==(const derived_fx_expiry&, const derived_fx_expiry&) = default;
 };
 
-/// The length in years of a tenor label, such as 1W, 18M or 10Y, or nothing for a label that
-/// is not one.
-ORES_SYNTHETIC_API_EXPORT std::optional<double> derived_fx_expiry_years(std::string_view label);
-
 /// A pair's ladder: the expiries its quotes name, shortest first.
 ///
 /// The ladder is data: the source serves one quote for each pillar a published blueprint
-/// reads from it, so the expiries of a pair are the ones its vendor ids name. A label that is
-/// not a tenor is left out.
+/// reads from it, so the expiries of a pair are the ones its vendor ids name. An expiry's
+/// length is the one the surface is quoted and calibrated on, fx_vol_tenor_years, so a label
+/// means the same time to the derivation as to the calibration. A label that is not a tenor
+/// is left out.
 ORES_SYNTHETIC_API_EXPORT std::vector<derived_fx_expiry>
 derived_fx_ladder(const std::set<std::string>& labels);
 

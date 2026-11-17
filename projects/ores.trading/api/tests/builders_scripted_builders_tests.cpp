@@ -837,3 +837,11 @@ TEST_CASE("a_cash_position_holds_an_amount_long_or_short_and_refuses_none", scri
     REQUIRE_FALSE(none.has_value());
     CHECK(none.error().term == "amount");
 }
+
+TEST_CASE("a_cash_position_refuses_no_currency", scripted_tags) {
+    const auto built =
+        cash_position_builder({.currency = std::string(), .amount = scripted_amount("100")})
+            .build();
+    REQUIRE_FALSE(built.has_value());
+    CHECK(built.error().term == "currency");
+}

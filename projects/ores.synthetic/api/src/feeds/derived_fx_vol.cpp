@@ -17,10 +17,10 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
-#include <charconv>
 #include <cmath>
 #include <format>
 #include <map>
@@ -49,30 +49,10 @@ std::string derived_fx_external_id(const derived_fx_quote_id& id) {
     return id.pair.base + id.pair.quote + "/" + id.expiry + "/" + id.label;
 }
 
-std::optional<double> derived_fx_expiry_years(std::string_view label) {
-    if (label.size() < 2)
-        return std::nullopt;
-    int count = 0;
-    const auto digits = label.substr(0, label.size() - 1);
-    const auto [end, error] = std::from_chars(digits.data(), digits.data() + digits.size(), count);
-    if (error != std::errc{} || end != digits.data() + digits.size() || count <= 0)
-        return std::nullopt;
-    switch (label.back()) {
-        case 'W':
-            return count * 7.0 / 365.0;
-        case 'M':
-            return count / 12.0;
-        case 'Y':
-            return static_cast<double>(count);
-        default:
-            return std::nullopt;
-    }
-}
-
 std::vector<derived_fx_expiry> derived_fx_ladder(const std::set<std::string>& labels) {
     std::vector<derived_fx_expiry> ladder;
     for (const auto& label : labels)
-        if (const auto years = derived_fx_expiry_years(label))
+        if (const auto years = ores::analytics::quant::service::fx_vol_tenor_years(label))
             ladder.push_back({.label = label, .years = *years});
     // Two labels of one length, such as 12M and 1Y, are ordered by label, so the ladder does
     // not depend on the order of the set it was read from.
@@ -92,7 +72,8 @@ std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view
         return std::nullopt;
     const auto expiry = external_id.substr(first + 1, second - first - 1);
     const auto label = external_id.substr(second + 1);
-    const bool known_expiry = derived_fx_expiry_years(expiry).has_value();
+    const bool known_expiry =
+        ores::analytics::quant::service::fx_vol_tenor_years(expiry).has_value();
     const bool known_label = std::ranges::contains(derived_fx_labels, label);
     if (!known_expiry || !known_label)
         return std::nullopt;

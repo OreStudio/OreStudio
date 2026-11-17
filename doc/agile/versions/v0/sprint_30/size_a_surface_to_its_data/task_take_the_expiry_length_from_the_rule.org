@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :size_a_surface_to_its_data:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/take-the-expiry-length-from-the-rule
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,35 @@ derived_fx_expiries holds thirteen labels with a years figure each, a second sou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
 
-- An expiry's years are computed from the pair's convention and the expiry-date rule, for the day being derived.
+- An expiry's years are the ones the surface is calibrated on, =fx_vol_tenor_years=, beside the
+  expiry-date rule. (Revised: the first draft read "computed from the pair's convention and the
+  expiry-date rule, for the day being derived"; see the Plan.)
 - derived_fx_expiries is deleted, and nothing duplicates the ladder it used to state.
-- A test pins the years of every label to the rule's answer for a fixed spot date.
+- A test pins the years of every label to the calibration's.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *The premise did not hold.* The goal is that a label means the same thing to the ladder, the
+  calibration and the derivation. The calibration (=fx_vol_surface_calibration_plan.cpp=) and
+  the synthetic surface feed read a pillar's length with =fx_vol_tenor_years=, beside the
+  expiry-date rule in =fx_expiry_dates.hpp=, whose documentation keeps the two apart on
+  purpose: the rule dates when the cash moves, and the tenor's year fraction is the axis a
+  surface is quoted and fitted on, so producer and consumer cannot disagree. Taking the
+  derivation's years from the rule's dated expiry would have made it disagree with the
+  calibration (1M as 30 or 31 days over 365 against 1/12). The derivation takes the same
+  function instead.
+- *What is deleted.* The array went in the ladder task; this one deletes the tenor parse that
+  task added, which was a copy of =fx_vol_tenor_years=. Nothing in the source states an
+  expiry's length now.
 
 * Measurements
 
@@ -57,7 +68,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Functions in the derived source that state an expiry's length | 0, was 1 (the tenor parse the ladder task added) | =grep derived_fx_expiry_years= | this branch over origin/main |
+| Synthetic api suite | passed; each label's years equal the calibration's | =compass test run -- -R ores.synthetic.api.tests= | this branch over origin/main |
 
 * Notes
 
@@ -85,3 +97,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The derived source reads an expiry's length with =fx_vol_tenor_years=, the function the
+calibration and the synthetic surface feed read it with, so a label names the same time to the
+source that quotes it and to the calibration that fits it. Nothing in the source states a
+length, and a test pins every label's years to the calibration's. The first acceptance bullet
+was revised: the expiry-date rule dates settlement, which the surface's axis deliberately does
+not follow. The formulas are the ones the parse used, so the quotes the source publishes are
+unchanged.

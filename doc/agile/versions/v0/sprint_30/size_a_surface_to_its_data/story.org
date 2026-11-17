@@ -23,9 +23,9 @@ A surface should reach as far as its party's market data reaches and no further,
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The ladder is published data; next, an expiry's length from the expiry-date rule. |
+| Now           | The ladder is data and its lengths are the calibration's; next, a surface's reach. |
 | Waiting on    | Nothing.                               |
-| Next          | Take an expiry's length from the expiry-date rule. |
+| Next          | Compute how far a pair's surface reaches. |
 | Last touched  | 2026-11-17 |
 
 * Acceptance
@@ -42,7 +42,7 @@ A surface should reach as far as its party's market data reaches and no further,
 |------+-------+-------+-----+-------------|
 | [[id:019711B7-C3D9-4873-A913-D523496495D2][Scaffold story: Size a volatility surface to the data its party holds]] | DONE | 2026-11-15 | 2026-11-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:5B46EA9E-DA0F-44A3-9EBA-620C4458EF71][Publish the ladder as a data-quality artefact]] | DONE | 2026-11-17 | 2026-11-17 | Initial task for: Size a volatility surface to the data its party holds |
-| [[id:692B8571-8E4F-4955-980A-F261E2289680][Take an expiry's length from the expiry-date rule]] | BACKLOG | | | An expiry's length is a constant table in the derived source; take it from the expiry-date rule and the pair's convention, which is where the ladder and the feed already date an expiry. |
+| [[id:692B8571-8E4F-4955-980A-F261E2289680][Take an expiry's length from the expiry-date rule]] | DONE | 2026-11-17 | 2026-11-17 | An expiry's length is a constant table in the derived source; take it from the expiry-date rule and the pair's convention, which is where the ladder and the feed already date an expiry. |
 | [[id:1A7B554C-555E-4B20-BD8A-08C3F52C8036][Compute how far a pair's surface reaches]] | BACKLOG | | | A surface's horizon is what its sample can support: for each expiry, does the party's history hold years times trading days of returns? |
 | [[id:235B0F12-EFFD-4B9F-A397-362B2242149D][Calibrate the expiries a surface has and record the rest]] | BACKLOG | | | One wholly-unquoted expiry voids the whole surface; fit the expiries that have quotes, record the ones that do not in missing_pillars, and refuse only below a configured minimum. |
 | [[id:941B9145-879D-4C7B-AD94-C04E27E44C47][Give each party the configuration its surface is built with]] | BACKLOG | | | A surface belongs to a party, so the settings that build it belong to the party too: trading days, minimum window, prior, level multiplier, history days, minimum expiries and which CRM supplies its rates. |

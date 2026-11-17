@@ -41,6 +41,7 @@
 #include <format>
 #include <map>
 #include <string>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 
@@ -1809,7 +1810,8 @@ constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
 /// The products on two pairs in one quote currency, which they pay in.
 bool needs_second_pair(std::string_view type) {
     return type == "FxBasketOption" || type == "FxRainbowOption" ||
-           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap";
+           type == "FxBasketVarianceSwap" || type == "FxPairwiseVarianceSwap" ||
+           type == "FxWorstOfBasketSwap";
 }
 
 /// Whether a pair can stand beside another in a product on two pairs: quoted in the same
@@ -2049,6 +2051,12 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
      * holds in the same quote currency, which the product pays in.
      */
     const auto second_pair = [&]() -> const domain::currency_pair_reference& {
+        // A product that asks for a second pair must be listed, or the pair choice gives its
+        // slot a pair that may have none.
+        if (!needs_second_pair(type))
+            throw std::logic_error("The " + type +
+                                   " asks for a second pair but needs_second_pair "
+                                   "does not list it.");
         for (const auto& candidate : scope.currency_pairs)
             if (is_basket_partner(pair, candidate))
                 return candidate;

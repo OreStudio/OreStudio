@@ -26,11 +26,11 @@ The three products have a data model, a projection reader and writer, and a buil
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -44,9 +44,23 @@ The three products have a data model, a projection reader and writer, and a buil
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The three types route to the scripted instrument table through the class-read
+path, as the catalogue's scripted form says. Native rows would need new columns
+on the equity barrier row for the settlement terms, the kiko type and the
+barrier window.
+
+- The class-read path reads and writes a =BarrierData= member, and a member
+  that holds barriers (=Barriers=, =TransatlanticBarrier=). A holder's barriers
+  land in the shared barrier rows under the roles every family uses (=barrier=,
+  =transatlantic=), its schedule under =barrier_schedule=, and its own leaves as
+  parameters named for the holder and the leaf, such as =Barriers.KikoType=.
+  The writer states them in the schema's order, because =Barriers= is a
+  sequence.
+- The scripted carrier gains barrier and barrier level rows.
+- An element that states one =Underlying= or a list writes the form its rows
+  hold.
+- Builders: =window_barrier_option_builder= (equity and FX) and
+  =equity_generic_barrier_option_builder=.
 
 * Measurements
 
@@ -60,7 +74,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| trading api tests | 4665 cases pass | =./ores.trading.api.tests= | be6cc72676 |
+| ore core tests | 548 cases pass | =./ores.ore.core.tests= | be6cc72676 |
+| synthetic tests, not generated | 138 cases pass | =./ores.synthetic.core.tests "~[generated]"= | be6cc72676 |
+| generated trades with the ORE engine | 8 cases pass, engine test not skipped | =./ores.synthetic.core.tests "[generated]"= | be6cc72676 |
 
 * Notes
 
@@ -88,3 +105,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+EquityWindowBarrierOption, FxWindowBarrierOption and EquityGenericBarrierOption
+are held in the scripted instrument table. The barrier levels are barrier level
+rows, the monitoring schedule is a schedule row, and the kiko type is a
+parameter. The round-trip test reads ORE's FX window example and the user
+guide's generic barrier, with two barriers, rebates, a kiko type and a
+transatlantic barrier, and writes them back. Each type has a builder, the
+catalogue routes all three, and the generator books one trade of each. The ORE
+engine builds the recorded trades with no error, and the recorded FX window
+trades state every path ORE's example states.
+
+The first engine run refused a generic barrier whose expiry fell on a Sunday:
+ORE rolled the expiry past a settlement on the same day. The generator now
+settles five days after the expiry.

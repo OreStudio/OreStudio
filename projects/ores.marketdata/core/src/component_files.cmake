@@ -363,6 +363,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/party_curve_blueprints.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/party_required.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/party_surface_blueprints.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/party_surface_hold_back.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/provider_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/provider_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/provider_registrar.hpp"

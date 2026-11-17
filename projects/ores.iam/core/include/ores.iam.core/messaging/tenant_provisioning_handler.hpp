@@ -35,7 +35,6 @@
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.iam.core/messaging/party_surface_hold_back.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
@@ -49,11 +48,7 @@
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
-#include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
-#include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
-#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.nats/domain/delivery.hpp"
@@ -65,10 +60,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"
-#include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"
-#include "ores.refdata.api/messaging/fx_vol_surface_pillar_source_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
@@ -843,20 +834,6 @@ public:
         /// and the ones it could not, each with the reason it was last refused.
         std::vector<std::string> curves;
         std::vector<std::string> curves_not_published;
-        /// The forward sets a publish_party_forwards step published, the ones a party had
-        /// already, the pairs a party cannot build with the service's reason, and the ones it
-        /// raised and could not publish, each as "party: pair: detail".
-        std::vector<std::string> forwards;
-        std::vector<std::string> forwards_already_published;
-        std::vector<std::string> forwards_skipped;
-        std::vector<std::string> forwards_not_published;
-        /// The surfaces a publish_party_surfaces step published, the ones a party had already,
-        /// the ones held back because they failed an arbitrage or error check, and the ones it
-        /// could not calibrate or publish, each as "party: blueprint: detail".
-        std::vector<std::string> surfaces;
-        std::vector<std::string> surfaces_already_published;
-        std::vector<std::string> surfaces_held_back;
-        std::vector<std::string> surfaces_not_published;
     };
 
 private:
@@ -990,12 +967,6 @@ private:
                 return;
             case workflow::provision_step_action::attach_photos:
                 attach_photos_step(wf, command, resolve_step_actor(command));
-                return;
-            case workflow::provision_step_action::publish_party_forwards:
-                publish_party_forwards_step(wf, command, resolve_step_actor(command));
-                return;
-            case workflow::provision_step_action::publish_party_surfaces:
-                publish_party_surfaces_step(wf, command, resolve_step_actor(command));
                 return;
             case workflow::provision_step_action::schedule_reports:
                 schedule_reports_step(wf, command, resolve_step_actor(command));
@@ -1354,319 +1325,6 @@ private:
         }
         return std::nullopt;
     }
-
-    /// The pair codes of every currency pair convention the tenant holds.
-    static std::vector<std::string> pair_convention_codes(internal_request_client& client) {
-        std::vector<std::string> out;
-        ores::refdata::messaging::list_currency_pair_conventions_request request;
-        request.limit = 1000;
-        for (;;) {
-            const auto page = client.request(request);
-            for (const auto& c : page.conventions)
-                out.push_back(c.pair_code);
-            if (page.conventions.empty() || out.size() >= page.total)
-                break;
-            request.offset = static_cast<std::uint32_t>(out.size());
-        }
-        std::ranges::sort(out);
-        return out;
-    }
-
-    /**
-     * @brief Publishes each party's FX forward sets.
-     *
-     * A forward set is derived data, so it belongs to the party whose spot and funding curves it
-     * reads. Each party is asked for every currency pair convention the tenant holds, and the
-     * forward service decides which it can build: a pair it refuses before raising a request is
-     * skipped, with its reason. Under the tenant's auto-approval the raise closes and the set
-     * publishes at once.
-     *
-     * A set raised and not published fails the step, named with its party. A second run publishes
-     * only the pairs that are still missing.
-     */
-    void
-    publish_party_forwards_step(const ores::service::messaging::workflow_step_context& wf,
-                                const ores::iam::workflow::provision_tenant_step_command& command,
-                                const step_actor& actor) {
-        constexpr std::string_view publish_reason =
-            "Provisioning publishes the party's FX forward set from its spot and its published "
-            "funding curves.";
-
-        const auto parties = workflow::parse_party_forwards_arguments(command.arguments_json);
-        auto discover =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        const auto pairs = pair_convention_codes(discover);
-        if (pairs.empty()) {
-            wf.fail("The tenant holds no currency pair convention to publish a forward set for.");
-            return;
-        }
-
-        provision_step_result result;
-        result.kind = command.kind;
-        std::vector<ores::workflow::messaging::step_log_entry> step_log;
-        for (const auto& party_name : parties) {
-            const auto party = find_party(discover, party_name);
-            if (!party)
-                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
-            auto party_client =
-                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
-
-            std::size_t published = 0;
-            std::size_t held = 0;
-            const auto step_deadline = deadline_of(command.kind);
-            std::int64_t done = 0;
-            for (const auto& pair : pairs) {
-                const auto as_of = std::chrono::system_clock::now();
-                const auto line = party_name + ": " + pair;
-                wf.progress(line, done++, static_cast<std::int64_t>(pairs.size()));
-
-                // The read answers the newest set at or before the as-of, so a set an
-                // earlier run published is found by a later one.
-                ores::marketdata::messaging::get_published_fx_forward_request published_before;
-                published_before.pair_code = pair;
-                published_before.as_of = as_of;
-                if (party_client.request(published_before).success) {
-                    ++held;
-                    result.forwards_already_published.push_back(line);
-                    continue;
-                }
-
-                ores::marketdata::messaging::publish_fx_forward_request publish;
-                publish.pair_code = pair;
-                publish.as_of = as_of;
-                publish.reason = std::string(publish_reason);
-                const auto answer = call_with_retry(
-                    [&](const retry_attempt& attempt)
-                        -> ores::marketdata::messaging::publish_fx_forward_response {
-                        return do_unless_already_done(
-                            attempt,
-                            [&]() -> std::optional<
-                                      ores::marketdata::messaging::publish_fx_forward_response> {
-                                ores::marketdata::messaging::get_published_fx_forward_request read;
-                                read.pair_code = pair;
-                                read.as_of = as_of;
-                                const auto found = party_client.request(read, attempt.budget_left);
-                                if (!found.success)
-                                    return std::nullopt;
-                                return ores::marketdata::messaging::publish_fx_forward_response{
-                                    .success = true,
-                                    .message = "Published by an earlier attempt.",
-                                    .approval_request_id = found.request_id,
-                                    .state_code = "published",
-                                    .published_at = found.published_at,
-                                    .published_by = found.published_by};
-                            },
-                            [&] { return party_client.request(publish, attempt.budget_left); });
-                    },
-                    {.deadline = step_deadline,
-                     .what = line + " forward set",
-                     .note = attempts_recorded_in(step_log, wf)});
-                if (answer.success && answer.published_at) {
-                    ++published;
-                    result.forwards.push_back(
-                        line + ": as of " + ores::platform::time::datetime::to_iso8601_utc(as_of));
-                } else if (answer.approval_request_id.empty()) {
-                    result.forwards_skipped.push_back(line + ": " + answer.message);
-                } else if (answer.success) {
-                    result.forwards_not_published.push_back(
-                        line + ": the request " + answer.approval_request_id + " is " +
-                        answer.state_code + " and no person has answered it");
-                } else {
-                    result.forwards_not_published.push_back(line + ": " + answer.message);
-                }
-            }
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "publish_party_forwards: " << party_name << ": published " << published << " of "
-                << pairs.size() << " pair(s)";
-            wf.record(party_name + ": published forward sets for " + std::to_string(published) +
-                      " of " + std::to_string(pairs.size()) + " pair(s)");
-            // A refusal reads as a skip, so a service that refuses every pair for a reason of
-            // its own, such as a permission, would otherwise pass the step with nothing published.
-            if (published == 0 && held == 0)
-                result.forwards_not_published.push_back(
-                    party_name + ": no pair could be built, and the party holds no forward set");
-            result.parties.push_back(boost::uuids::to_string(party->id));
-        }
-
-        for (const auto& skipped : result.forwards_skipped)
-            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
-                                .message = "skipped " + skipped,
-                                .context = {}});
-        for (const auto& not_published : result.forwards_not_published)
-            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
-                                .message = not_published,
-                                .context = {}});
-        if (!result.forwards_not_published.empty()) {
-            std::string reason = std::to_string(result.forwards_not_published.size()) +
-                                 " forward set(s) were not published. A rerun is safe: it "
-                                 "publishes only the missing pairs:";
-            for (const auto& line : result.forwards_not_published)
-                reason += " " + line + ";";
-            wf.fail(reason, step_log);
-            return;
-        }
-        wf.complete(ores::utility::codec::json::write(result), step_log);
-    }
-
-    /**
-     * @brief Calibrates and publishes each party's volatility surfaces.
-     *
-     * A surface is derived data, so it belongs to the party whose blueprint, quotes and forward
-     * sets it reads. Each blueprint the party holds is calibrated at the present instant and
-     * published under the tenant's auto-approval.
-     *
-     * A surface with arbitrage, a fit that did not converge or a pillar beyond the tolerance is
-     * held back and named: a decider would weigh it, and provisioning has none. A surface that
-     * cannot be calibrated, or is raised and not published, fails the step, named with its party.
-     * A second run publishes only the surfaces that are still missing.
-     */
-    void
-    publish_party_surfaces_step(const ores::service::messaging::workflow_step_context& wf,
-                                const ores::iam::workflow::provision_tenant_step_command& command,
-                                const step_actor& actor) {
-        constexpr std::string_view publish_reason =
-            "Provisioning calibrates the party's surface from its volatility quotes and its "
-            "published forward sets.";
-
-        const auto parties = workflow::parse_party_surfaces_arguments(command.arguments_json);
-        auto discover =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-
-        provision_step_result result;
-        result.kind = command.kind;
-        std::vector<ores::workflow::messaging::step_log_entry> step_log;
-        for (const auto& party_name : parties) {
-            const auto party = find_party(discover, party_name);
-            if (!party)
-                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
-            auto party_client =
-                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
-
-            ores::refdata::messaging::list_fx_vol_surface_blueprints_request list;
-            list.limit = 1000;
-            std::vector<ores::refdata::domain::fx_vol_surface_blueprint> blueprints;
-            for (auto& b : party_client.request(list).blueprints)
-                if (b.party_id == party->id)
-                    blueprints.push_back(std::move(b));
-            if (blueprints.empty()) {
-                result.surfaces_not_published.push_back(party_name +
-                                                        ": the party holds no surface blueprint");
-                continue;
-            }
-
-            std::size_t published = 0;
-            const auto step_deadline = deadline_of(command.kind);
-            std::int64_t done = 0;
-            for (const auto& blueprint : blueprints) {
-                const auto id = boost::uuids::to_string(blueprint.id);
-                const auto as_of = std::chrono::system_clock::now();
-                const auto line = party_name + ": " + blueprint.name;
-                wf.progress(line, done++, static_cast<std::int64_t>(blueprints.size()));
-
-                // The read answers the newest published surface at or before the as-of, so a
-                // surface an earlier run published is found by a later one, even when a newer
-                // publish has since superseded it: the blueprint has a surface either way.
-                ores::marketdata::messaging::get_published_fx_vol_surface_request published_before;
-                published_before.blueprint_id = id;
-                published_before.as_of = as_of;
-                if (party_client.request(published_before).success) {
-                    result.surfaces_already_published.push_back(line);
-                    continue;
-                }
-
-                ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
-                calibrate.blueprint_id = id;
-                calibrate.as_of = as_of;
-                const auto calibrated =
-                    request_with_retry(party_client,
-                                       calibrate,
-                                       {.deadline = step_deadline,
-                                        .attempt_timeout = work_request_deadline,
-                                        .what = line + " surface calibration",
-                                        .note = attempts_recorded_in(step_log, wf)});
-                if (!calibrated.success) {
-                    result.surfaces_not_published.push_back(line + ": " + calibrated.message);
-                    continue;
-                }
-                if (const auto reason = party_surface_hold_back(calibrated)) {
-                    result.surfaces_held_back.push_back(line + ": " + *reason);
-                    continue;
-                }
-
-                ores::marketdata::messaging::publish_fx_vol_surface_request publish;
-                publish.blueprint_id = id;
-                publish.as_of = calibrated.as_of;
-                publish.reason = std::string(publish_reason);
-                const auto answer = call_with_retry(
-                    [&](const retry_attempt& attempt)
-                        -> ores::marketdata::messaging::publish_fx_vol_surface_response {
-                        return do_unless_already_done(
-                            attempt,
-                            [&]()
-                                -> std::optional<
-                                    ores::marketdata::messaging::publish_fx_vol_surface_response> {
-                                ores::marketdata::messaging::get_published_fx_vol_surface_request
-                                    read;
-                                read.blueprint_id = id;
-                                read.as_of = calibrated.as_of;
-                                const auto found = party_client.request(read, attempt.budget_left);
-                                if (!found.success)
-                                    return std::nullopt;
-                                return ores::marketdata::messaging::publish_fx_vol_surface_response{
-                                    .success = true,
-                                    .message = "Published by an earlier attempt.",
-                                    .approval_request_id = found.publish_request_id,
-                                    .state_code = "published",
-                                    .published_at = found.published_at,
-                                    .published_by = found.published_by};
-                            },
-                            [&] { return party_client.request(publish, attempt.budget_left); });
-                    },
-                    {.deadline = step_deadline,
-                     .what = line + " surface publish",
-                     .note = attempts_recorded_in(step_log, wf)});
-                if (answer.success && answer.published_at) {
-                    ++published;
-                    result.surfaces.push_back(
-                        line + ": as of " +
-                        ores::platform::time::datetime::to_iso8601_utc(calibrated.as_of) +
-                        ", from forward set " + calibrated.forward_publish_id);
-                } else if (answer.success) {
-                    result.surfaces_not_published.push_back(
-                        line + ": the request " + answer.approval_request_id + " is " +
-                        answer.state_code + " and no person has answered it");
-                } else {
-                    result.surfaces_not_published.push_back(line + ": " + answer.message);
-                }
-            }
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "publish_party_surfaces: " << party_name << ": published " << published << " of "
-                << blueprints.size() << " surface(s)";
-            wf.record(party_name + ": published " + std::to_string(published) + " of " +
-                      std::to_string(blueprints.size()) + " surface(s)");
-            result.parties.push_back(boost::uuids::to_string(party->id));
-        }
-
-        for (const auto& held : result.surfaces_held_back)
-            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
-                                .message = "held back " + held,
-                                .context = {}});
-        for (const auto& not_published : result.surfaces_not_published)
-            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
-                                .message = not_published,
-                                .context = {}});
-        if (!result.surfaces_not_published.empty()) {
-            std::string reason = std::to_string(result.surfaces_not_published.size()) +
-                                 " surface(s) were not published. A rerun is safe: it publishes "
-                                 "only the missing surfaces:";
-            for (const auto& line : result.surfaces_not_published)
-                reason += " " + line + ";";
-            wf.fail(reason, step_log);
-            return;
-        }
-        wf.complete(ores::utility::codec::json::write(result), step_log);
-    }
-
 
     void set_auto_approval_step(const ores::service::messaging::workflow_step_context& wf,
                                 const ores::iam::workflow::provision_tenant_step_command& command,
@@ -2899,15 +2557,7 @@ wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_resul
         field{"trades_already_present", &result::trades_already_present},
         field{"report_schedules", &result::report_schedules},
         field{"curves", &result::curves},
-        field{"curves_not_published", &result::curves_not_published},
-        field{"forwards", &result::forwards},
-        field{"forwards_already_published", &result::forwards_already_published},
-        field{"forwards_skipped", &result::forwards_skipped},
-        field{"forwards_not_published", &result::forwards_not_published},
-        field{"surfaces", &result::surfaces},
-        field{"surfaces_already_published", &result::surfaces_already_published},
-        field{"surfaces_held_back", &result::surfaces_held_back},
-        field{"surfaces_not_published", &result::surfaces_not_published}};
+        field{"curves_not_published", &result::curves_not_published}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<

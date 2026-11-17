@@ -224,7 +224,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/geo_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/login_info_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/login_info_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/party_surface_hold_back.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/permission_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/permission_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/principal.hpp"

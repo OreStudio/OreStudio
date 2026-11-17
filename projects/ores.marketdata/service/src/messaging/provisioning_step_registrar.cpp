@@ -41,9 +41,10 @@ std::vector<ores::nats::service::subscription> provisioning_step_registrar::regi
     routes.on(ores::iam::workflow::marketdata_provision_tenant_step_subject,
               [steps](ores::nats::delivery delivery) { steps->step(std::move(delivery)); });
 
-    // The curve step waits on quotes and publishes, and the subscription step
-    // beside it asks the catalogue: both spend their time waiting on other
-    // services, so two of them run at once and neither holds the other back.
+    // The curve step waits on quotes and publishes, the subscription step
+    // beside it asks the catalogue, and the forward and surface steps wait on
+    // one publish each: they all spend their time waiting on their own data
+    // arriving, so two of them run at once and neither holds the other back.
     constexpr std::size_t provisioning_step_workers = 2;
 
     std::vector<ores::nats::service::subscription> subs;

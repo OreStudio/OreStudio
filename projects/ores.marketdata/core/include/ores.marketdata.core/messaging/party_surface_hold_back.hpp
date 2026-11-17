@@ -17,23 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_CORE_MESSAGING_PARTY_SURFACE_HOLD_BACK_HPP
-#define ORES_IAM_CORE_MESSAGING_PARTY_SURFACE_HOLD_BACK_HPP
+#ifndef ORES_MARKETDATA_CORE_MESSAGING_PARTY_SURFACE_HOLD_BACK_HPP
+#define ORES_MARKETDATA_CORE_MESSAGING_PARTY_SURFACE_HOLD_BACK_HPP
 
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include <algorithm>
 #include <optional>
 #include <string>
 
-namespace ores::iam::messaging {
+namespace ores::marketdata::messaging {
 
 /**
  * @brief Why provisioning holds a calibrated surface back instead of publishing it, or nothing.
  *
  * Arbitrage is a blocking failure, which the surface publish refuses under any rule as well
- * (marketdata's blocking_failure_of); a change to one changes the other. A fit that did not
- * converge, or a pillar beyond the tolerance, is advisory: a decider would weigh it, and a
- * provisioning run has none, so it publishes only surfaces with neither.
+ * (blocking_failure_of); a change to one changes the other. A fit that did not converge, or a
+ * pillar beyond the tolerance, is advisory: a decider would weigh it, and a provisioning run has
+ * none, so it publishes only surfaces with neither.
  */
 [[nodiscard]] inline std::optional<std::string>
 party_surface_hold_back(const ores::marketdata::messaging::calibrate_fx_vol_surface_response& c) {

@@ -90,7 +90,7 @@ task and name that file in the Command column.
 | Identity column check | 46 identity fields, 59 columns, 62 switch cases, 10 asset-class views and 13 index names agree | `build/scripts/check_marketdata_identity_columns.py` | 964e4593b8 |
 | Stated shapes, Acme after provisioning | 0 rows of its own; it reads the system's 29 | per-tenant count over =ores_marketdata_series_identity_shapes_tbl=, and =series_identity_shapes list= as =tenant_admin@acme_corporation= | 67c0a4645d |
 | Identities that contradict a stated shape, Acme provisioned | 0 of 4,992 field checks: 920 Acme identities and 328 system ones | the =shape_scan= query of =marketdata_series_identity_shape_test.sql=, joined to the system tenant's shapes | 67c0a4645d |
-| Market data core suite | 431 test cases, 27,534 assertions, pass | `compass build test_ores.marketdata.core.tests` | 67c0a4645d |
+| Market data core suite | 432 test cases, 27,599 assertions, pass, with the review's unknown-field test | `compass build test_ores.marketdata.core.tests` | d4cece231b |
 | Market data service suite | 309 test cases, 2,698 assertions, pass | `compass build test_ores.marketdata.service.tests` | 67c0a4645d |
 | IAM core suite | 306 test cases, 1,436 assertions, pass | `compass build test_ores.iam.core.tests` | 67c0a4645d |
 | Shell market data suite | 441 test cases, 1,209 assertions, pass | `compass build test_ores.shell.marketdata.tests` | 67c0a4645d |
@@ -151,7 +151,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: a shape row that names a field the identity does not hold is ignored, so a misspelt forbidden field admits every row, and the shell can now write such a row | =series_identity_shape_check.cpp= | Accept | =text_of= gives no value for an unknown column, and the check refuses the shape by name; test =a_shape_that_names_a_field_an_identity_does_not_hold_is_refused= |
+| 2 | Important: the model says a family with no shape is refused; the projector projects it unguarded and counts it | =ores.marketdata.series_identity_shape.org= | Accept | Model text, generated header, table comment and ER diagram now say what the code does |
+| 3 | Minor: the check builds the family map again for every row | =series_identity_shape_check.cpp= | Decline | 29 rows over 7 families; the cost is small next to the write, and the pure function is what the tests call |
+| 4 | Minor: the backfill projects each missing series twice, once to judge it and once in =project= | =market_series_identity_projector.cpp= | Decline | A repair path that runs rarely; one projection would need =project= to take projected rows |
+| 5 | Minor: a tenant row on a system key adds to the system's shape and cannot relax it | =series_identity_shape_check.cpp= | Decline | Intended: the shared catalogue is the floor; a tenant that needs a different shape is a design question for the screen task |
+| 6 | Minor: misspell check | branch files | Accept | Clean on every file the branch changes |
 
 * Result
 

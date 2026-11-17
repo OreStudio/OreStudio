@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 2189859D-6B0B-493E-A858-0435091D2365
+:END:
+#+title: Task: Bootstrap every IBOR tenor the generated trades book
+#+description: The generator books trades on IBOR indices whose curve the system does not bootstrap: GBP-LIBOR 6M, 12M and 1W, EUR-EURIBOR 12M and others. ORE then cannot find the index, and those trades fail. Bootstrap and publish a curve for each IBOR index the generated trades name, so each party holds it and the package step forwards it.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bootstrap-every-ibor-tenor-the-trades-book
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every IBOR index a generated trade names has a bootstrapped curve the party publishes, so no trade fails for want of its index.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The IBOR indices the generated trades name are listed from the requirements function, with the ones not bootstrapped today.
+- Each listed index has a bootstrap config, the quotes it reads, and a published curve under each party.
+- The ACCOUK NPV run reports no 'did not find object' of type ibor index for a listed index.
+- An index left out is named with its reason, such as a GENERIC index of a currency ORE does not know.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

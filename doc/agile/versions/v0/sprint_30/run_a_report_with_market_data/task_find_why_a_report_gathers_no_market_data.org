@@ -100,10 +100,14 @@ EquityOutperformanceOption trades have no pricing engine; 14 KnockOutSwap
 trades report the GBP OIS convention as not found, although
 =conventions.xml= holds it; two commodity strips need a future convention.
 
-70 of the 148 index failures name a ceased LIBOR index (=GBP-LIBOR-3M=,
-=GBP-LIBOR-1W=, =USD-LIBOR-3M=). The generator books them. A market cannot
-forward a ceased index, so the trades need either a live index or an
-ORE IBOR fallback configuration.
+70 of the 148 index failures name a LIBOR index (=GBP-LIBOR-3M=,
+=GBP-LIBOR-1W=, =USD-LIBOR-3M=). The system generates LIBOR on purpose: the
+ICE and Tradeweb feeds simulate it, and the IR bootstrap publishes ten IBOR
+curves. The failures have two causes: the run's configuration named none of
+the published curves, and the generator books tenors the bootstrap does not
+build. Corrected on 2026-11-17: this paragraph first called the indices
+ceased, which was wrong. The tenors are added by
+[[id:2189859D-6B0B-493E-A858-0435091D2365][Bootstrap every IBOR tenor the generated trades book]].
 
 One defect was in the export, and this task fixes it. The export reported
 every series the session can read as the series it wrote, so the run

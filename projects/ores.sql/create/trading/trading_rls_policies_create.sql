@@ -938,3 +938,107 @@ as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Cash Position Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_cash_position_instruments_tbl enable row level security;
+
+drop policy if exists cash_position_instruments_tenant_isolation_policy
+    on ores_trading_cash_position_instruments_tbl;
+
+create policy cash_position_instruments_tenant_isolation_policy on ores_trading_cash_position_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists cash_position_instruments_party_isolation_policy
+    on ores_trading_cash_position_instruments_tbl;
+
+create policy cash_position_instruments_party_isolation_policy
+on ores_trading_cash_position_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Asian Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_asian_option_instruments_tbl enable row level security;
+
+drop policy if exists fx_asian_option_instruments_tenant_isolation_policy
+    on ores_trading_fx_asian_option_instruments_tbl;
+
+create policy fx_asian_option_instruments_tenant_isolation_policy on ores_trading_fx_asian_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists fx_asian_option_instruments_party_isolation_policy
+    on ores_trading_fx_asian_option_instruments_tbl;
+
+create policy fx_asian_option_instruments_party_isolation_policy
+on ores_trading_fx_asian_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Pairwise Variance Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_pairwise_variance_swap_instruments_tbl enable row level security;
+
+drop policy if exists fx_pairwise_variance_swap_instruments_tenant_isolation_policy
+    on ores_trading_fx_pairwise_variance_swap_instruments_tbl;
+
+create policy fx_pairwise_variance_swap_instruments_tenant_isolation_policy on ores_trading_fx_pairwise_variance_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists fx_pairwise_variance_swap_instruments_party_isolation_policy
+    on ores_trading_fx_pairwise_variance_swap_instruments_tbl;
+
+create policy fx_pairwise_variance_swap_instruments_party_isolation_policy
+on ores_trading_fx_pairwise_variance_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Pairwise Variance Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_pairwise_var_swap_instruments_tbl enable row level security;
+
+drop policy if exists equity_pairwise_var_swap_instruments_tenant_isolation_policy
+    on ores_trading_equity_pairwise_var_swap_instruments_tbl;
+
+create policy equity_pairwise_var_swap_instruments_tenant_isolation_policy on ores_trading_equity_pairwise_var_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+drop policy if exists equity_pairwise_var_swap_instruments_party_isolation_policy
+    on ores_trading_equity_pairwise_var_swap_instruments_tbl;
+
+create policy equity_pairwise_var_swap_instruments_party_isolation_policy
+on ores_trading_equity_pairwise_var_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);

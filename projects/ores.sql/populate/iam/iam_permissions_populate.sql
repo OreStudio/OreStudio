@@ -1476,6 +1476,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::cap_floor_instruments:read',                 'View cap floor instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::cap_floor_instruments:write',                'Create and modify cap floor instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::cap_floor_instruments:delete',               'Delete cap floor instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::cash_position_instruments:read',             'View cash position instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::cash_position_instruments:write',            'Create and modify cash position instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::cash_position_instruments:delete',           'Delete cash position instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::commodity_basket_constituents:read',         'View commodity basket constituents');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::commodity_basket_constituents:write',        'Create and modify commodity basket constituents');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::commodity_basket_constituents:delete',       'Delete commodity basket constituents');
@@ -1551,6 +1554,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_outperformance_option_instruments:read',  'View equity outperformance option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_outperformance_option_instruments:write',  'Create and modify equity outperformance option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_outperformance_option_instruments:delete',  'Delete equity outperformance option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_pairwise_variance_swap_instruments:read',  'View equity pairwise variance swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_pairwise_variance_swap_instruments:write',  'Create and modify equity pairwise variance swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_pairwise_variance_swap_instruments:delete',  'Delete equity pairwise variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_tarf_instruments:read',  'View equity target redemption instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_tarf_instruments:write',  'Create and modify equity target redemption instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_tarf_instruments:delete',  'Delete equity target redemption instruments');
@@ -1578,6 +1584,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_forward_instruments:read',          'View fx asian forward instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_forward_instruments:write',         'Create and modify fx asian forward instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_forward_instruments:delete',        'Delete fx asian forward instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:read',           'View fx asian option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:write',          'Create and modify fx asian option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:delete',         'Delete fx asian option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:read',         'View fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:write',        'Create and modify fx barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_barrier_option_instruments:delete',       'Delete fx barrier option instruments');
@@ -1587,6 +1596,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_instruments:read',                'View fx forward instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_instruments:write',               'Create and modify fx forward instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_instruments:delete',              'Delete fx forward instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:read',  'View fx pairwise variance swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:write', 'Create and modify fx pairwise variance swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:delete','Delete fx pairwise variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_vanilla_option_instruments:read',         'View fx vanilla option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_vanilla_option_instruments:write',        'Create and modify fx vanilla option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_vanilla_option_instruments:delete',       'Delete fx vanilla option instruments');

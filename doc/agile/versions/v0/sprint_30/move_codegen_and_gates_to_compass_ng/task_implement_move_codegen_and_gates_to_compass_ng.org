@@ -123,7 +123,15 @@ tool reported it, which is correct.
 - *Python component-drift renders into the shared /tmp tmpfs* and crashed
   with ENOSPC on one run when the fleet had filled it.
 
-** Verdict
+** Upstream response
+
+The compass session accepted all seven defects on 2026-11-17:
+
+- D2, the install name: fixed in compass PR #55 (613d778); the binary installs as compass-ng.
+- The integration guide now uses compass-ng, defaults rule_table off (D4), cites this pilot's drift figures (D6), says the ratchet needs .compass.org on the base branch (D3) and puts the hook after the baselines step (D5).
+- D1 (er-diagram RLS), D3 (warn and use the working tree's config), D5 (a hook mode for new findings only) and D6 (warn before deleting hand-written code) are queued in the compass task "Fix the pilot's findings". D7 belongs to its "Design output for LLMs" story.
+- Correctness work in flight will change some verdicts: generators that cannot produce output will report a finding, not pass. The compass session will list the changes before the next install.
+
 
 compass-ng is ready to run next to the Python gates now, and ready to replace
 them once the drift is fixed and the baselines are exceptions. It gives the

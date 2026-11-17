@@ -37,7 +37,7 @@ An agent that types a compass verb from the project docs reaches the tool that h
 
 - The installed binary is reached as compass-ng; ~/.local/bin/compass no longer shadows the Python compass verbs (today compass services status fails with unknown command: services).
 - ./compass.sh generate, diff, hook, gc and config forward to compass-ng. check stays the Python runner until the task that runs the ported gates through compass check. Every other verb stays in Python.
-- The change to the install name is made in the compass repository and recorded there.
+- The change to the install name is made in the compass repository and recorded there. Done upstream: compass PR #55 (613d778) links ~/.local/bin/compass-ng and removes only its own old compass link. It takes effect when the product owner reinstalls.
 
 * Plan
 

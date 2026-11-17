@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "config/database_configuration.cpp"
+    "domain/connection.cpp"
     "domain/context.cpp"
     "domain/database_options.cpp"
     "pq/codec.cpp"
@@ -41,6 +42,8 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/config/database_configuration.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/config/ores.database.config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/connection.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/connection_fwd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/context_fwd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/context_transact.hpp"

@@ -20,38 +20,46 @@
 #define ORES_DATABASE_CONTEXT_HPP
 
 #include "ores.database/export.hpp"
-#include "ores.database/pq/options.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/uuid/tenant_id_fwd.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace ores::database {
 
 namespace pq {
+struct connection_options;
+struct open_policy;
 class pool;
 class transaction;
 struct session_context;
 }
 
+class connection;
+
 /**
- * @brief Context for the operations on a postgres database.
+ * @brief Who a request acts for, and the database it acts on.
  *
- * The context names who a statement acts for: the tenant and, optionally, the
- * party and the parties it sees, which the row-level security policies read;
- * the actor, the end user behind the request, which modified_by records; and
- * the service account, the service performing the write, which performed_by
- * records. Every transaction it opens sets them as transaction-local settings,
- * so one pool serves every tenant and party.
+ * The context names the tenant and, optionally, the party and the parties it
+ * sees, which the row-level security policies read; the actor, the end user
+ * behind the request, which modified_by records; and the service account, the
+ * service performing the write, which performed_by records. Every transaction it
+ * opens sets them as transaction-local settings, so one pool serves every tenant
+ * and party.
  *
- * Copies share one libpq pool, opened on first use. A context bound to a unit
- * of work runs every call on that unit of work's transaction.
+ * It carries both halves of the database in one value, and neither half is
+ * defined here: the connection lives behind a shared pointer and the identity
+ * behind an implementation the translation unit owns. Copies share one libpq
+ * pool, opened on first use, and a copy that changes the identity copies it,
+ * because two requests never share an identity.
+ *
+ * A context bound to a unit of work runs every call on that unit of work's
+ * transaction.
  */
-class ORES_DATABASE_EXPORT context {
+class ORES_DATABASE_EXPORT context final {
 public:
     /**
      * @brief Constructs a tenant-only context.
@@ -59,8 +67,17 @@ public:
     explicit context(pq::connection_options options,
                      utility::uuid::tenant_id tenant_id,
                      std::string actor = "",
-                     std::string service_account = "",
-                     pq::open_policy policy = {});
+                     std::string service_account = "");
+
+    /**
+     * @brief Constructs a tenant-only context that opens its pool under
+     * @p policy.
+     */
+    context(pq::connection_options options,
+            utility::uuid::tenant_id tenant_id,
+            std::string actor,
+            std::string service_account,
+            pq::open_policy policy);
 
     /**
      * @brief Constructs a tenant-and-party-aware context.
@@ -70,16 +87,32 @@ public:
                      boost::uuids::uuid party_id,
                      std::vector<boost::uuids::uuid> visible_party_ids,
                      std::string actor = "",
-                     std::string service_account = "",
-                     pq::open_policy policy = {});
+                     std::string service_account = "");
+
+    /**
+     * @brief Constructs a tenant-and-party-aware context that opens its pool
+     * under @p policy.
+     */
+    context(pq::connection_options options,
+            utility::uuid::tenant_id tenant_id,
+            boost::uuids::uuid party_id,
+            std::vector<boost::uuids::uuid> visible_party_ids,
+            std::string actor,
+            std::string service_account,
+            pq::open_policy policy);
+
+    ~context();
+
+    context(const context&);
+    context& operator=(const context&);
+    context(context&&) noexcept;
+    context& operator=(context&&) noexcept;
 
     /**
      * @brief The transaction of the unit of work this context is bound to, if
      * any.
      */
-    [[nodiscard]] pq::transaction* active_transaction() const {
-        return active_transaction_;
-    }
+    [[nodiscard]] pq::transaction* active_transaction() const;
 
     /**
      * @brief A copy of this context bound to @p transaction.
@@ -87,51 +120,29 @@ public:
      * Every call made with the copy runs on that transaction, which must
      * outlive it: a unit of work hands out such a context for its own lifetime.
      */
-    [[nodiscard]] context with_transaction(pq::transaction& transaction) const {
-        auto copy = *this;
-        copy.active_transaction_ = &transaction;
-        return copy;
-    }
+    [[nodiscard]] context with_transaction(pq::transaction& transaction) const;
 
     /**
      * @brief The options a connection of this context opens with.
      */
-    [[nodiscard]] const pq::connection_options& connection_options() const {
-        return options_;
-    }
+    [[nodiscard]] const pq::connection_options& connection_options() const;
 
-    [[nodiscard]] const utility::uuid::tenant_id& tenant_id() const {
-        return tenant_id_;
-    }
+    [[nodiscard]] const utility::uuid::tenant_id& tenant_id() const;
 
-    [[nodiscard]] std::optional<boost::uuids::uuid> party_id() const {
-        return party_id_;
-    }
+    [[nodiscard]] std::optional<boost::uuids::uuid> party_id() const;
 
-    [[nodiscard]] const std::vector<boost::uuids::uuid>& visible_party_ids() const {
-        return visible_party_ids_;
-    }
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& visible_party_ids() const;
 
-    [[nodiscard]] const std::string& actor() const {
-        return actor_;
-    }
+    [[nodiscard]] const std::string& actor() const;
 
-    [[nodiscard]] const std::string& service_account() const {
-        return service_account_;
-    }
+    [[nodiscard]] const std::string& service_account() const;
 
     /**
      * @brief The roles the caller holds, when the request named them.
      */
-    [[nodiscard]] const std::optional<std::vector<std::string>>& roles() const {
-        return roles_;
-    }
+    [[nodiscard]] const std::optional<std::vector<std::string>>& roles() const;
 
-    [[nodiscard]] context with_roles(std::vector<std::string> roles) const {
-        auto copy = *this;
-        copy.roles_ = std::move(roles);
-        return copy;
-    }
+    [[nodiscard]] context with_roles(std::vector<std::string> roles) const;
 
     /**
      * @brief A context for another tenant, with no party.
@@ -144,15 +155,7 @@ public:
      * a unit of work holds its connection from the start, and a second one taken
      * while it does can wait on a bounded pool for ever.
      */
-    [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const {
-        auto scoped = *this;
-        scoped.tenant_id_ = std::move(tenant_id);
-        scoped.party_id_.reset();
-        scoped.visible_party_ids_.clear();
-        scoped.actor_ = std::move(actor);
-        refuse_change_inside_transaction(scoped);
-        return scoped;
-    }
+    [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const;
 
     /**
      * @brief A context for a tenant and a party, with the parties it sees.
@@ -162,15 +165,7 @@ public:
     [[nodiscard]] context with_party(utility::uuid::tenant_id tenant_id,
                                      boost::uuids::uuid party_id,
                                      std::vector<boost::uuids::uuid> visible_party_ids,
-                                     std::string actor) const {
-        auto scoped = *this;
-        scoped.tenant_id_ = std::move(tenant_id);
-        scoped.party_id_ = party_id;
-        scoped.visible_party_ids_ = std::move(visible_party_ids);
-        scoped.actor_ = std::move(actor);
-        refuse_change_inside_transaction(scoped);
-        return scoped;
-    }
+                                     std::string actor) const;
 
     /**
      * @brief The libpq pool every copy of this context shares, opened on its
@@ -189,37 +184,13 @@ public:
     pq::session_context pq_session() const;
 
 private:
-    void refuse_change_inside_transaction(const context& to) const {
-        if (active_transaction_ == nullptr)
-            return;
-        if (to.tenant_id_ == tenant_id_ && to.party_id_ == party_id_ &&
-            to.visible_party_ids_ == visible_party_ids_)
-            return;
-        throw std::logic_error(
-            "A context bound to a transaction cannot change its tenant or party: the "
-            "transaction set them when it opened. Make the read before the unit of work opens.");
-    }
+    struct impl;
 
-    pq::connection_options options_;
-    pq::open_policy policy_;
-    utility::uuid::tenant_id tenant_id_;
-    std::optional<boost::uuids::uuid> party_id_;
-    std::vector<boost::uuids::uuid> visible_party_ids_;
-    std::string actor_;
-    std::string service_account_;
-    std::optional<std::vector<std::string>> roles_;
-    pq::transaction* active_transaction_ = nullptr;
+    explicit context(std::shared_ptr<impl> p);
 
-    /**
-     * @brief The slot that holds the shared pool and its lock.
-     *
-     * Declared here and defined in the implementation, so that this header
-     * names neither =libpq=, =<mutex>= nor the pool. Every copy of a context
-     * shares one slot, which is why the slot is shared and not copied.
-     */
-    struct pq_slot;
+    void refuse_change_inside_transaction(const impl& to) const;
 
-    std::shared_ptr<pq_slot> pq_;
+    std::shared_ptr<impl> impl_;
 };
 
 }

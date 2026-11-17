@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: BABA997F-305E-4FBC-9756-4CF79A704A50
+:END:
+#+title: Task: Export one convention for each index id
+#+description: The curated convention set holds an IborIndex and an OvernightIndex convention under the same id for CAD-CORRA, CNH-HIBOR, GBP-SONIA, JPY-TONAR, MXN-TIIE and USD-SOFR. ORE keys conventions by id, keeps the IborIndex, and then cannot build the OIS convention on that index, so the GBP, USD, JPY and CAD discount curves fail and every trade discounted on them fails with them.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch: feature/export-one-convention-for-each-index-id
+#+pr: 4807
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-17
+#+updated: 2026-11-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each index id names one convention in the exported set, so the overnight discount curves build.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-17                               |
+
+* Acceptance
+
+- The curated set holds no id under both IborIndex and OvernightIndex, and the generator refuses one that does.
+- A run's conventions.xml holds one convention for each id.
+- The GBP OIS convention resolves in ORE on a run of the generated trades.
+
+* Plan
+
+Found by the prototype of the market configuration task: a run's package was
+amended by hand and run on the vendored ORE 1.8.17.0, and the GBP discount
+curve failed with "Convention 'GBP-OIS-CONVENTIONS' not found" although the
+package's =conventions.xml= held it.
+
+1. State the rule where the gate checks the table: =propose.py --check=
+   refuses an id that more than one row names, whatever the kinds. Run it on
+   the current table first, so the check is seen to fail.
+2. Keep one row for each of the six ids: an overnight rate keeps its
+   OvernightIndex, an IBOR family its IborIndex, because the swap and basis
+   conventions name the tenored IBOR indices.
+3. Record why in =propose_decisions.tsv= and the methodology, and
+   regenerate the seed.
+4. Run the generated trades on a recreated database and read whether the
+   OIS conventions resolve.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ids named by more than one row of the curated set | 6 before, 0 after | =propose.py --check= | 1c448eb84d, this branch |
+| Repeated ids in a run's =conventions.xml= | 6 before, 0 after | count of =<Id>= in the package of runs =82674fe7= and =21f9269c= | 1c448eb84d, this branch |
+| "Convention 'GBP-OIS-CONVENTIONS' not found" in the ORE log | 31 before, 0 after | the vendored ORE 1.8.17.0 run on each package | 1c448eb84d, this branch |
+| Trades ORE builds of 416 | 0 before, 1 after | "Built Portfolio" in the same logs | 1c448eb84d, this branch |
+
+* Notes
+
+The cause: ORE holds every convention in one map keyed by id and refuses the
+second of two with one id (the log reads "Convention already exists for id
+GBP-SONIA"). It keeps the first it reads, the IborIndex, so the OIS
+convention =GBP-OIS-CONVENTIONS=, which names =GBP-SONIA=, builds its index
+from an IBOR convention, fails, and is then reported as not found. Every
+trade discounted in GBP, USD, JPY or CAD failed at its discount curve,
+before any index or quote mattered.
+
+Removing the stray IborIndex from the package by hand turned the GBP OIS
+error count from 31 to 0, and ORE built a trade where it had built none.
+
+The IborIndex rows of the four overnight rates were mined from ORE's
+=indexparser.cpp=, where the ids name the term rates. ORE parses a term rate
+such as =GBP-SONIA-3M= without a convention, so dropping them loses nothing.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4807][#4807]] | [refdata,seeder] Export one convention for each index id |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local gate: the trading ER diagram was stale on main | ores_schema.trading.puml | Accept | Regenerated here. |
+| 2 | PR #4807 review: the removed OvernightIndex CNH-HIBOR has no decisions entry | propose_decisions.tsv | Decline | That row came from an OreStudio source, not from ORE, so propose.py has no ORE row to excuse; --check reports 0 findings. |
+| 3 | PR #4807 review: confirm the kept IBOR families parse their tenored forms | conventions.tsv | Decline | CNH-HIBOR-3M and MXN-TIIE-28D are what the swap and basis conventions name, and they read the IborIndex the table keeps. |
+| 4 | PR #4807 review: two sentences read awkwardly | propose.py, methodology.txt | Accept | Reworded, and the seed regenerated. |
+
+* Result
+
+Each id now names one convention. =propose.py --check= refuses an id that two
+rows name, and it reported the six before they were fixed. The four overnight
+rates keep their OvernightIndex and CNH-HIBOR and MXN-TIIE their IborIndex.
+The seed loses six rows, and the reasons are in the decisions file and the
+methodology.
